@@ -1,8 +1,9 @@
 //! packwing: a file archiver that opens archives safely.
 //!
-//! Usage: `packwing [--first-run]`. For now the window shows made-up archives
-//! (`demo.rs`) and its buttons start nothing real: reading and writing
-//! archives comes with hivepack. `--first-run` opens on the welcome.
+//! Usage: `packwing [--first-run] [--managed]`. For now the window shows
+//! made-up archives (`demo.rs`) and its buttons start nothing real: reading
+//! and writing archives comes with hivepack. `--first-run` opens on the
+//! welcome; `--managed` runs as an organization would, with its policies.
 
 // A GUI program on Windows: no console window opens beside it.
 #![cfg_attr(windows, windows_subsystem = "windows")]
@@ -60,6 +61,7 @@ macro_rules! icons {
 
 const ICONS: &[(&str, &[u8])] = icons![
     "archive",
+    "building",
     "check",
     "chevron-down",
     "extract",
@@ -102,11 +104,12 @@ impl gpui::AssetSource for Assets {
     }
 }
 
-const USAGE: &str = "usage: packwing [--first-run]
-  --first-run  open on the welcome, as on the first start";
+const USAGE: &str = "usage: packwing [--first-run] [--managed]
+  --first-run  open on the welcome, as on the first start
+  --managed    as an organization runs it: Settings › Security shows its policies";
 
 fn main() {
-    let mut first_run = false;
+    let (mut first_run, mut managed) = (false, false);
     for a in std::env::args().skip(1) {
         match a.as_str() {
             "-h" | "--help" => {
@@ -114,6 +117,7 @@ fn main() {
                 return;
             }
             "--first-run" => first_run = true,
+            "--managed" => managed = true,
             _ => {
                 eprintln!("packwing: unknown option {a}\n{USAGE}");
                 std::process::exit(2);
@@ -145,7 +149,7 @@ fn main() {
                 ..Default::default()
             };
             let opened = cx.open_window(options, |window, cx| {
-                let ws = cx.new(|cx| workspace::Workspace::new(first_run, window, cx));
+                let ws = cx.new(|cx| workspace::Workspace::new(first_run, managed, window, cx));
                 window.focus(&ws.read(cx).focus_handle(cx), cx);
                 ws
             });

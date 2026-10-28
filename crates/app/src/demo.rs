@@ -223,6 +223,80 @@ impl Damaged {
     }
 }
 
+/// A setting the user's organization has fixed.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Policy {
+    pub label: &'static str,
+    pub detail: &'static str,
+    /// What it is fixed at, as the user reads it.
+    pub value: &'static str,
+    /// Its name in the policy file, for IT.
+    pub key: &'static str,
+}
+
+/// packwing as an organization runs it: who set it up, and what they fixed.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Managed {
+    pub by: &'static str,
+    pub contact: &'static str,
+    pub organization: &'static str,
+    pub seats: u64,
+    pub channel: &'static str,
+    pub policies: &'static [Policy],
+}
+
+pub const MANAGED: Managed = Managed {
+    by: "IT department – Example Co.",
+    contact: "it@example.com",
+    organization: "Example Co.",
+    seats: 250,
+    channel: "LTS",
+    policies: &[
+        Policy {
+            label: "Keep the “downloaded from the Internet” mark",
+            detail: "The system warns before running files that came from a downloaded archive",
+            value: "Always on",
+            key: "PropagateMotW",
+        },
+        Policy {
+            label: "Require a password for new archives",
+            detail: "Archives can’t be created without encryption",
+            value: "AES-256",
+            key: "RequireEncryption",
+        },
+        Policy {
+            label: "Minimum password length",
+            detail: "Applies to every new archive",
+            value: "12 characters",
+            key: "MinPasswordLength",
+        },
+        Policy {
+            label: "FIPS cryptography",
+            detail: "Only validated algorithms; old ZipCrypto is blocked",
+            value: "On",
+            key: "FipsMode",
+        },
+        Policy {
+            label: "Password escrow",
+            detail: "IT can recover the password if you lose it",
+            value: "On",
+            key: "PasswordEscrow",
+        },
+        Policy {
+            label: "Activity log",
+            detail: "Compress and extract actions are written to the system log",
+            value: "On",
+            key: "AuditLog",
+        },
+        Policy {
+            label: "Block programs from Internet archives",
+            detail: ".exe, .msi, .js and .lnk files from downloaded archives",
+            value: "Blocked",
+            key: "BlockInternetExecutables",
+        },
+    ],
+};
+
 /// What New archive starts with: the files chosen to pack.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Selection {

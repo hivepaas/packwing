@@ -27,7 +27,7 @@ enum Dest {
 }
 
 /// How file names in the archive may be written, when it does not say.
-const ENCODINGS: [&str; 5] = [
+pub const ENCODINGS: [&str; 5] = [
     "Auto · UTF-8",
     "Vietnamese · Windows-1258",
     "Japanese · Shift_JIS",

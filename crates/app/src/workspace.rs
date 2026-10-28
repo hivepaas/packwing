@@ -58,11 +58,18 @@ fn looks_dark(window: &Window) -> bool {
 }
 
 impl Workspace {
-    pub fn new(first_run: bool, window: &mut Window, cx: &mut Context<Self>) -> Self {
+    /// `managed`: run as an organization would, with its policies.
+    pub fn new(
+        first_run: bool,
+        managed: bool,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Self {
         let appearance = Appearance::System;
         let archive = cx.new(|cx| ArchivePage::new(demo::PROJECT, cx));
         let recent = cx.new(|_| RecentPage::new(demo::RECENT));
-        let settings = cx.new(|cx| SettingsPage::new(appearance, cx));
+        let settings =
+            cx.new(|cx| SettingsPage::new(appearance, managed.then_some(demo::MANAGED), cx));
         let subscriptions = vec![
             cx.subscribe_in(
                 &archive,
@@ -138,6 +145,17 @@ impl Workspace {
     pub fn show_page(&mut self, page: Page, cx: &mut Context<Self>) {
         self.page = page;
         cx.notify();
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn show_settings(
+        &mut self,
+        section: crate::pages::settings::Section,
+        cx: &mut Context<Self>,
+    ) {
+        self.settings
+            .update(cx, |s, cx| s.show_section(section, cx));
+        self.show_page(Page::Settings, cx);
     }
 
     pub fn show_welcome(&mut self, window: &mut Window, cx: &mut Context<Self>) {

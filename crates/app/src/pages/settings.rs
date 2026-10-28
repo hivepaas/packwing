@@ -1,103 +1,109 @@
-//! Settings: a menu of sections and the one open. General is drawn; the
-//! others come with what they set.
+//! Settings: a menu of sections and the one open, each section a view of
+//! its own. Nothing is saved yet: each keeps what is chosen while it runs.
+
+mod about;
+mod compressing;
+mod extracting;
+mod general;
+mod right_click;
+mod security;
+mod updates;
+
+pub use general::{Appearance, AppearanceChosen, LANGUAGES};
 
 use gpui::{
-    Context, Entity, EventEmitter, FontWeight, Render, SharedString, Window, div, prelude::*, px,
-    rgb,
+    AnyView, Context, Div, Entity, EventEmitter, FontWeight, IntoElement, Render, SharedString,
+    Subscription, Window, div, prelude::*, px, rgb,
 };
 
 use super::{panel, title};
 use crate::colors::colors;
-use crate::widgets::{
-    Fill, Select, SelectLook, Size, button, chip, option_card, segment, segments, switch, titled,
-};
+use crate::demo::Managed;
 
-/// Light, dark, or as the system is.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-pub enum Appearance {
-    Light,
-    Dark,
-    #[default]
-    System,
+/// The sections, in the menu's order.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Section {
+    General,
+    Extracting,
+    Compressing,
+    Security,
+    RightClick,
+    Updates,
+    About,
 }
 
-/// Another appearance was chosen.
-pub struct AppearanceChosen(pub Appearance);
+impl Section {
+    const ALL: [Section; 7] = [
+        Section::General,
+        Section::Extracting,
+        Section::Compressing,
+        Section::Security,
+        Section::RightClick,
+        Section::Updates,
+        Section::About,
+    ];
 
-const SECTIONS: [&str; 7] = [
-    "General",
-    "Extracting",
-    "Compressing",
-    "Security",
-    "Right-click menu",
-    "Updates",
-    "About",
-];
-
-pub const LANGUAGES: [&str; 3] = ["Same as system (English)", "English", "Tiếng Việt"];
-
-/// The archive types packwing can open.
-const TYPES: [&str; 9] = ["ZIP", "RAR", "7z", "TAR", "GZ", "XZ", "ZST", "CBZ", "CBR"];
-
-struct Toggle {
-    label: &'static str,
-    detail: &'static str,
-    on: bool,
+    fn name(self) -> &'static str {
+        match self {
+            Section::General => "General",
+            Section::Extracting => "Extracting",
+            Section::Compressing => "Compressing",
+            Section::Security => "Security",
+            Section::RightClick => "Right-click menu",
+            Section::Updates => "Updates",
+            Section::About => "About",
+        }
+    }
 }
 
 pub struct SettingsPage {
-    section: usize,
-    appearance: Appearance,
-    language: Entity<Select>,
-    /// Double-click extracts at once, rather than opening the archive.
-    extract_on_open: bool,
-    toggles: Vec<Toggle>,
+    section: Section,
+    general: Entity<general::General>,
+    /// Each section's view, in [`Section::ALL`]'s order.
+    views: Vec<AnyView>,
+    _appearance: Subscription,
 }
 
 impl EventEmitter<AppearanceChosen> for SettingsPage {}
 
 impl SettingsPage {
-    pub fn new(appearance: Appearance, cx: &mut Context<Self>) -> Self {
+    /// `managed`: the organization's policies, when it runs packwing.
+    pub fn new(appearance: Appearance, managed: Option<Managed>, cx: &mut Context<Self>) -> Self {
+        let general = cx.new(|cx| general::General::new(appearance, cx));
+        let appearance = cx.subscribe(&general, |_, _, e: &AppearanceChosen, cx| {
+            cx.emit(AppearanceChosen(e.0))
+        });
+        let views = vec![
+            general.clone().into(),
+            cx.new(extracting::Extracting::new).into(),
+            cx.new(compressing::Compressing::new).into(),
+            cx.new(|_| security::Security::new(managed)).into(),
+            cx.new(|_| right_click::RightClick::new()).into(),
+            cx.new(|_| updates::Updates::new()).into(),
+            cx.new(|_| about::About).into(),
+        ];
         SettingsPage {
-            section: 0,
-            appearance,
-            language: cx.new(|_| Select::new(&LANGUAGES, 0, SelectLook::Field)),
-            extract_on_open: false,
-            toggles: vec![
-                Toggle {
-                    label: "Show packwing in the right-click menu",
-                    detail: "Extract and compress from any folder",
-                    on: true,
-                },
-                Toggle {
-                    label: "Open the folder when extraction is done",
-                    detail: "So you can find your files right away",
-                    on: true,
-                },
-                Toggle {
-                    label: "Delete the archive after extracting",
-                    detail: "Only when every file extracted without errors",
-                    on: false,
-                },
-                Toggle {
-                    label: "Send anonymous crash reports",
-                    detail: "No file names or contents are ever sent",
-                    on: false,
-                },
-            ],
+            section: Section::General,
+            general,
+            views,
+            _appearance: appearance,
         }
+    }
+
+    pub fn show_section(&mut self, section: Section, cx: &mut Context<Self>) {
+        self.section = section;
+        cx.notify();
     }
 
     /// Shows `a` as chosen, when it was chosen elsewhere.
     pub fn show_appearance(&mut self, a: Appearance, cx: &mut Context<Self>) {
-        self.appearance = a;
-        cx.notify();
+        self.general.update(cx, |g, cx| g.show_appearance(a, cx));
     }
 
     fn menu(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
-        let items = SECTIONS.iter().enumerate().map(|(i, label)| {
-            let on = i == self.section;
+        let items = Section::ALL.into_iter().enumerate().map(|(i, s)| {
+            let on = s == self.section;
             div()
                 .id(("section", i))
                 .flex()
@@ -114,13 +120,10 @@ impl SettingsPage {
                 })
                 .when(!on, |d| {
                     d.font_weight(FontWeight::MEDIUM)
-                        .hover(|s| s.bg(rgb(c.hover)))
+                        .hover(|st| st.bg(rgb(c.hover)))
                 })
-                .on_click(cx.listener(move |this, _, _, cx| {
-                    this.section = i;
-                    cx.notify();
-                }))
-                .child(*label)
+                .on_click(cx.listener(move |this, _, _, cx| this.show_section(s, cx)))
+                .child(s.name())
         });
         div()
             .w(px(240.))
@@ -133,154 +136,15 @@ impl SettingsPage {
             .child(title("Settings", 24.).px(px(16.)).pb(px(16.)))
             .children(items)
     }
-
-    fn general(&self, cx: &mut Context<Self>) -> impl IntoElement {
-        let c = colors();
-        let well = || {
-            div()
-                .flex()
-                .flex_col()
-                .gap(px(10.))
-                .px(px(18.))
-                .py(px(16.))
-                .rounded(px(22.))
-                .bg(rgb(c.well))
-        };
-        let label = |text: &'static str| {
-            div()
-                .text_size(px(15.))
-                .font_weight(FontWeight::SEMIBOLD)
-                .child(text)
-        };
-        let looks = [
-            (Appearance::Light, "Light"),
-            (Appearance::Dark, "Dark"),
-            (Appearance::System, "System"),
-        ]
-        .into_iter()
-        .map(|(a, name)| {
-            segment(name, name, a == self.appearance).on_click(cx.listener(
-                move |this, _, _, cx| {
-                    this.appearance = a;
-                    cx.emit(AppearanceChosen(a));
-                    cx.notify();
-                },
-            ))
-        });
-        let open = |id: &'static str, extract: bool, title: &'static str, detail: &'static str| {
-            let on = self.extract_on_open == extract;
-            option_card(id, on)
-                .px(px(14.))
-                .py(px(12.))
-                .rounded(px(18.))
-                .when(!on, |d| d.bg(rgb(c.surface)))
-                .on_click(cx.listener(move |this, _, _, cx| {
-                    this.extract_on_open = extract;
-                    cx.notify();
-                }))
-                .child(titled(title, detail, on))
-        };
-        let toggles = self.toggles.iter().enumerate().map(|(i, t)| {
-            div()
-                .flex()
-                .items_center()
-                .gap(px(16.))
-                .min_h(px(60.))
-                .px(px(18.))
-                .py(px(8.))
-                .rounded(px(18.))
-                .bg(rgb(c.well))
-                .child(
-                    div().flex_1().min_w_0().child(label(t.label)).child(
-                        div()
-                            .text_size(px(13.))
-                            .text_color(rgb(c.muted))
-                            .child(t.detail),
-                    ),
-                )
-                .child(
-                    switch(("toggle", i), t.on).on_click(cx.listener(move |this, _, _, cx| {
-                        this.toggles[i].on = !this.toggles[i].on;
-                        cx.notify();
-                    })),
-                )
-        });
-        div()
-            .flex()
-            .flex_col()
-            .gap(px(14.))
-            .child(
-                div()
-                    .grid()
-                    .grid_cols(2)
-                    .gap(px(12.))
-                    .child(well().child(label("Language")).child(self.language.clone()))
-                    .child(well().child(label("Appearance")).child(segments(looks))),
-            )
-            .child(
-                well().child(label("When I double-click an archive")).child(
-                    div()
-                        .grid()
-                        .grid_cols(2)
-                        .gap(px(8.))
-                        .child(open(
-                            "look-inside",
-                            false,
-                            "Look inside first",
-                            "Preview files, then decide",
-                        ))
-                        .child(open(
-                            "extract-at-once",
-                            true,
-                            "Extract right away",
-                            "Into a new folder next to it",
-                        )),
-                ),
-            )
-            .child(div().flex().flex_col().gap(px(6.)).children(toggles))
-            .child(
-                div()
-                    .flex()
-                    .items_center()
-                    .gap(px(12.))
-                    .px(px(18.))
-                    .py(px(14.))
-                    .rounded(px(22.))
-                    .bg(rgb(c.well))
-                    .child(
-                        div()
-                            .flex_1()
-                            .min_w_0()
-                            .flex()
-                            .flex_col()
-                            .gap(px(8.))
-                            .child(label("Open these with packwing"))
-                            .child(
-                                div()
-                                    .flex()
-                                    .flex_wrap()
-                                    .gap(px(6.))
-                                    .children(TYPES.iter().map(|t| chip(*t, c.surface, c.text))),
-                            ),
-                    )
-                    .child(button("types", "Choose types…", Fill::Outline, Size::Small)),
-            )
-    }
 }
 
 impl Render for SettingsPage {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let c = colors();
-        let name: SharedString = SECTIONS[self.section].into();
-        let body = if self.section == 0 {
-            self.general(cx).into_any_element()
-        } else {
-            div()
-                .text_size(px(15.))
-                .text_color(rgb(c.muted))
-                .child("Nothing to set here yet.")
-                .into_any_element()
-        };
+        let at = Section::ALL
+            .iter()
+            .position(|s| *s == self.section)
+            .unwrap_or(0);
+        let name: SharedString = self.section.name().into();
         div()
             .size_full()
             .flex()
@@ -299,7 +163,87 @@ impl Render for SettingsPage {
                     .px(px(24.))
                     .py(px(20.))
                     .child(title(name, 26.).pb(px(4.)))
-                    .child(body),
+                    .child(
+                        div()
+                            .flex_1()
+                            .flex()
+                            .flex_col()
+                            .child(self.views[at].clone()),
+                    ),
             )
     }
+}
+
+/// What a section's view is drawn in: its settings one under another.
+fn section() -> Div {
+    div().flex_1().flex().flex_col().gap(px(14.))
+}
+
+/// A group of settings on the well's tint.
+fn group() -> Div {
+    div()
+        .flex()
+        .flex_col()
+        .gap(px(10.))
+        .px(px(18.))
+        .py(px(16.))
+        .rounded(px(22.))
+        .bg(rgb(colors().well))
+}
+
+/// A setting's name.
+fn label(text: impl Into<SharedString>) -> Div {
+    div()
+        .text_size(px(15.))
+        .font_weight(FontWeight::SEMIBOLD)
+        .child(text.into())
+}
+
+/// What a setting does, under its name.
+fn explain(text: impl Into<SharedString>) -> Div {
+    div()
+        .text_size(px(13.))
+        .text_color(rgb(colors().muted))
+        .child(text.into())
+}
+
+/// A group's name and what it is for, close together.
+fn heading(name: impl Into<SharedString>, does: impl Into<SharedString>) -> Div {
+    div()
+        .flex()
+        .flex_col()
+        .gap(px(2.))
+        .child(label(name))
+        .child(explain(does))
+}
+
+/// A setting in a row of its own: its name and what it does, and what
+/// changes it at the right.
+fn setting(
+    name: impl Into<SharedString>,
+    does: impl Into<SharedString>,
+    control: impl IntoElement,
+) -> Div {
+    div()
+        .flex()
+        .items_center()
+        .gap(px(16.))
+        .min_h(px(60.))
+        .px(px(18.))
+        .py(px(8.))
+        .rounded(px(18.))
+        .bg(rgb(colors().well))
+        .child(
+            div()
+                .flex_1()
+                .min_w_0()
+                .child(label(name))
+                .child(explain(does)),
+        )
+        .child(div().flex_shrink_0().child(control))
+}
+
+/// Settings one under another, close together.
+fn rows(items: impl IntoIterator<Item = impl IntoElement>) -> Div {
+    div().flex().flex_col().gap(px(6.)).children(items)
 }

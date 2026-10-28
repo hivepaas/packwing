@@ -8,8 +8,9 @@ mod extract;
 mod progress;
 
 pub use create::CreateDialog;
+pub(crate) use create::{LEVELS, Level, PURPOSES, Purpose};
 pub use damaged::DamagedDialog;
-pub use extract::ExtractDialog;
+pub use extract::{ENCODINGS, ExtractDialog};
 pub use progress::ProgressDialog;
 
 use gpui::{Div, FontWeight, MouseButton, SharedString, Stateful, div, prelude::*, px, rgb};
