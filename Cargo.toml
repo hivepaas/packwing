@@ -1,0 +1,35 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+# The latest stable Rust: packwing follows it rather than keeping old ones working.
+rust-version = "1.99"
+repository = "https://github.com/hivepaas/packwing"
+license = "GPL-3.0-or-later"
+publish = false
+
+[workspace.dependencies]
+# GPUI as published by Longbridge, the same snapshot shellwing uses.
+gpui = { package = "gpui-pre", version = "=0.3.9" }
+# font-kit and runtime_shaders only affect macOS; the Linux backends are app features.
+gpui_platform = { package = "gpui-pre-platform", version = "=0.3.9", default-features = false, features = ["font-kit", "runtime_shaders"] }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+unwrap_used = "warn"
+dbg_macro = "deny"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 4
+strip = true
+
+# Dependencies optimised in dev builds too, so the UI is smooth while developing.
+[profile.dev.package."*"]
+opt-level = 2
