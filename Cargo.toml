@@ -5,7 +5,8 @@ members = ["crates/*"]
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.95"
+# The latest stable Rust: packwing follows it rather than keeping old ones working.
+rust-version = "1.99"
 repository = "https://github.com/hivepaas/packwing"
 license = "GPL-3.0-or-later"
 publish = false
