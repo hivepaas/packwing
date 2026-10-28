@@ -17,21 +17,21 @@ use crate::widgets::{
 
 /// What the archive is for: each picks a format.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Purpose {
+pub(crate) enum Purpose {
     Share,
     Small,
     Backup,
 }
 
-struct PurposeInfo {
-    purpose: Purpose,
-    label: &'static str,
-    hint: &'static str,
-    format: &'static str,
-    ext: &'static str,
+pub(crate) struct PurposeInfo {
+    pub purpose: Purpose,
+    pub label: &'static str,
+    pub hint: &'static str,
+    pub format: &'static str,
+    pub ext: &'static str,
 }
 
-const PURPOSES: [PurposeInfo; 3] = [
+pub(crate) const PURPOSES: [PurposeInfo; 3] = [
     PurposeInfo {
         purpose: Purpose::Share,
         label: "Share anywhere",
@@ -57,13 +57,13 @@ const PURPOSES: [PurposeInfo; 3] = [
 
 /// How hard the files are squeezed.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Level {
+pub(crate) enum Level {
     Faster,
     Balanced,
     Smaller,
 }
 
-const LEVELS: [(Level, &str); 3] = [
+pub(crate) const LEVELS: [(Level, &str); 3] = [
     (Level::Faster, "Faster"),
     (Level::Balanced, "Balanced"),
     (Level::Smaller, "Smaller"),

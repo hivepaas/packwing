@@ -12,37 +12,101 @@ use std::sync::Arc;
 
 use gpui::{AppContext as _, Context, HeadlessAppContext, Window, px, size};
 
-use crate::pages::settings::Appearance;
+use crate::pages::settings::{Appearance, Section};
 use crate::workspace::{Page, Workspace};
 
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
-const SCREENS: [(&str, SetUp); 9] = [
-    ("archive", |_, _, _| {}),
-    ("recent", |ws, _, cx| ws.show_page(Page::Recent, cx)),
-    ("settings", |ws, _, cx| ws.show_page(Page::Settings, cx)),
-    ("first-run", |ws, window, cx| ws.show_welcome(window, cx)),
-    ("extract", |ws, window, cx| ws.open_extract(window, cx)),
-    ("create", |ws, window, cx| {
-        ws.open_create(window, cx);
-    }),
-    ("create-advanced", |ws, window, cx| {
-        ws.open_create(window, cx)
-            .update(cx, |d, cx| d.show_advanced(cx));
-    }),
-    ("progress", |ws, window, cx| {
-        let a = crate::demo::PROJECT;
-        let job = crate::dialogs::Job {
-            verb: crate::dialogs::Verb::Extract,
-            name: a.name.into(),
-            to: Some(format!("{} › {}", a.location, a.stem()).into()),
-            files: a.files,
-            bytes: a.unpacked,
-        };
-        ws.open_progress(job, window, cx)
-            .update(cx, |p, cx| p.set_done(0.64, cx));
-    }),
-    ("damaged", |ws, window, cx| ws.open_damaged(window, cx)),
+/// Each screen's name, how to get to it, and whether packwing runs managed.
+const SCREENS: [(&str, SetUp, bool); 16] = [
+    ("archive", |_, _, _| {}, false),
+    ("recent", |ws, _, cx| ws.show_page(Page::Recent, cx), false),
+    (
+        "settings",
+        |ws, _, cx| ws.show_page(Page::Settings, cx),
+        false,
+    ),
+    (
+        "settings-extracting",
+        |ws, _, cx| ws.show_settings(Section::Extracting, cx),
+        false,
+    ),
+    (
+        "settings-compressing",
+        |ws, _, cx| ws.show_settings(Section::Compressing, cx),
+        false,
+    ),
+    (
+        "settings-security",
+        |ws, _, cx| ws.show_settings(Section::Security, cx),
+        false,
+    ),
+    (
+        "settings-managed",
+        |ws, _, cx| ws.show_settings(Section::Security, cx),
+        true,
+    ),
+    (
+        "settings-right-click",
+        |ws, _, cx| ws.show_settings(Section::RightClick, cx),
+        false,
+    ),
+    (
+        "settings-updates",
+        |ws, _, cx| ws.show_settings(Section::Updates, cx),
+        false,
+    ),
+    (
+        "settings-about",
+        |ws, _, cx| ws.show_settings(Section::About, cx),
+        false,
+    ),
+    (
+        "first-run",
+        |ws, window, cx| ws.show_welcome(window, cx),
+        false,
+    ),
+    (
+        "extract",
+        |ws, window, cx| ws.open_extract(window, cx),
+        false,
+    ),
+    (
+        "create",
+        |ws, window, cx| {
+            ws.open_create(window, cx);
+        },
+        false,
+    ),
+    (
+        "create-advanced",
+        |ws, window, cx| {
+            ws.open_create(window, cx)
+                .update(cx, |d, cx| d.show_advanced(cx));
+        },
+        false,
+    ),
+    (
+        "progress",
+        |ws, window, cx| {
+            let a = crate::demo::PROJECT;
+            let job = crate::dialogs::Job {
+                verb: crate::dialogs::Verb::Extract,
+                name: a.name.into(),
+                to: Some(format!("{} › {}", a.location, a.stem()).into()),
+                files: a.files,
+                bytes: a.unpacked,
+            };
+            ws.open_progress(job, window, cx)
+                .update(cx, |p, cx| p.set_done(0.64, cx));
+        },
+        false,
+    ),
+    (
+        "damaged",
+        |ws, window, cx| ws.open_damaged(window, cx),
+        false,
+    ),
 ];
 
 fn out_dir() -> PathBuf {
@@ -54,7 +118,7 @@ fn out_dir() -> PathBuf {
 #[test]
 fn shots() {
     let dir = out_dir();
-    for (name, set_up) in SCREENS {
+    for (name, set_up, managed) in SCREENS {
         for dark in [false, true] {
             let text = Arc::new(gpui_wgpu::CosmicTextSystem::new(crate::FONT));
             let mut cx = HeadlessAppContext::with_platform(text, Arc::new(crate::Assets), || {
@@ -63,7 +127,7 @@ fn shots() {
             cx.update(crate::load_fonts);
             let window = cx
                 .open_window(size(px(1280.), px(800.)), |window, cx| {
-                    cx.new(|cx| Workspace::new(false, window, cx))
+                    cx.new(|cx| Workspace::new(false, managed, window, cx))
                 })
                 .expect("cannot open a window");
             window

@@ -16,7 +16,7 @@ Built in Rust on [hivepack](https://github.com/hivepaas/hivepack-rs).
 packwing is a [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui) app, built with the latest stable Rust (1.99 or later; `rustup update` brings it):
 
 ```sh
-cargo run -p packwing                       # add `-- --first-run` for the welcome
+cargo run -p packwing   # `-- --first-run`: the welcome; `-- --managed`: as an organization runs it
 cargo test -p packwing
 ```
 
