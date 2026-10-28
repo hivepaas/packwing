@@ -13,7 +13,7 @@ Built in Rust on [hivepack](https://github.com/hivepaas/hivepack-rs).
 
 ## 🛠️ Building
 
-packwing is a [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui) app, built with the latest stable Rust (1.99 or later; `rustup update` brings it):
+packwing is a [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui) app, built with the Rust version in `rust-toolchain.toml` (rustup installs it by itself):
 
 ```sh
 cargo run -p packwing                       # add `-- --first-run` for the welcome

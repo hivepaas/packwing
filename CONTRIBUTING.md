@@ -10,6 +10,15 @@ open an issue first so we can agree on the shape before you write it.
 - Changes people see come with a line in the README when they change how
   something is used.
 
+## The Rust version
+
+`rust-toolchain.toml` pins the Rust every build uses, and `rust-version` in
+`Cargo.toml` follows it, so a new Rust never brings new clippy warnings on its
+own. Rust ships every six weeks; take every second release (about every twelve
+weeks), or one sooner when a fix or a feature in it is needed, once it is two
+weeks old (its point release, if any, is out by then). Raise both in a pull
+request of its own, with what the new clippy finds fixed.
+
 ## Licensing your contribution
 
 packwing is licensed under GPL-3.0-or-later and maintained by HivePaaS, who
