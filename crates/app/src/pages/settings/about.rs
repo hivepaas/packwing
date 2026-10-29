@@ -1,4 +1,4 @@
-//! About: what packwing is, its version, and its license and others'.
+//! About: what packwing is, its version, and its license.
 
 use gpui::{Context, FontWeight, Render, Window, div, prelude::*, px, relative, rgb};
 
@@ -71,11 +71,6 @@ impl Render for About {
                     "Made by HivePaaS",
                     "On hivepack, our library for reading and writing archives",
                     link("source", "Source code", SOURCE),
-                ),
-                setting(
-                    "Typeface",
-                    "Be Vietnam Pro, under the SIL Open Font License 1.1",
-                    div(),
                 ),
             ]))
     }
