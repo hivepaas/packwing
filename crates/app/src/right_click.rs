@@ -420,6 +420,45 @@ mod tests {
         assert_eq!(Request::parse("--first-run", []), None);
     }
 
+    /// The .deb's launcher puts packwing in every file manager's Open With
+    /// for the archives the menu's items are for, by MIME type, as the
+    /// system's shared-mime-info names them; it opens them as Open with
+    /// packwing does, and with nothing chosen, packwing as it starts.
+    #[test]
+    fn the_launcher_opens_what_the_items_are_for() {
+        let entry = include_str!("../../../packaging/linux/packwing.desktop");
+        let key = |k: &str| {
+            entry
+                .lines()
+                .find_map(|l| l.strip_prefix(k)?.strip_prefix('='))
+                .unwrap_or_default()
+        };
+        assert_eq!(
+            key("Exec"),
+            format!("packwing {} %F", Action::Open.option())
+        );
+        assert_eq!(Request::parse("--open", []).map(|r| r.paths.len()), Some(0));
+        let Ok(globs) = std::fs::read_to_string("/usr/share/mime/globs2") else {
+            return;
+        };
+        let listed: Vec<&str> = key("MimeType").split_terminator(';').collect();
+        for ext in ARCHIVES {
+            let glob = format!("*.{ext}");
+            let mime = globs
+                .lines()
+                .find_map(|l| {
+                    let mut parts = l.split(':').skip(1);
+                    let mime = parts.next()?;
+                    (parts.next()? == glob).then_some(mime)
+                })
+                .unwrap_or_else(|| panic!("shared-mime-info knows no type for .{ext}"));
+            assert!(
+                listed.contains(&mime),
+                ".{ext}'s type, {mime}, is not listed"
+            );
+        }
+    }
+
     #[test]
     fn the_first_run_puts_all_but_extract_in() {
         let c = Choice::default();
