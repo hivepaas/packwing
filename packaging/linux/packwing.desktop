@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=packwing
+GenericName=Archive Manager
+Comment=Open archives safely, and make smaller files to share
+Exec=packwing
+Icon=packwing
+Terminal=false
+Categories=Utility;Archiving;Compression;
+Keywords=zip;rar;7z;tar;archive;extract;compress;
+StartupWMClass=packwing
