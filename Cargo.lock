@@ -931,9 +931,9 @@ dependencies = [
 
 [[package]]
 name = "context-menu"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "737f7a4d717c6cae403bbf91499b5a2ac1d7ab0ee26785336fea05fb3c981cb9"
+checksum = "d731f7989ebe8d2674862f9b46a9ac8d7b50dcc3e0765d6ad4d125a83cb74791"
 dependencies = [
  "winreg",
 ]

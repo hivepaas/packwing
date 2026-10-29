@@ -38,12 +38,12 @@ esac
 # Where Debian and Ubuntu's Nautilus loads its extensions from.
 EXTENSIONS="usr/lib/$ARCH-linux-gnu/nautilus/extensions-4"
 
-# context-menu-rs 0.1.0's Nautilus extension.
-CONTEXT_MENU=0.1.0
+# context-menu-rs 0.2.0's Nautilus extension.
+CONTEXT_MENU=0.2.0
 EXTENSION_URL="https://github.com/hivepaas/context-menu-rs/releases/download/v$CONTEXT_MENU/libcontext-menu-nautilus-$ARCH.so"
 case "$ARCH" in
-x86_64) EXTENSION_SHA=a57bd4e8d6f2fff28966411071159afa307aa7bd8cd3346c9c20ad42eb327f46 ;;
-aarch64) EXTENSION_SHA=b6b0cee53ba008117bbe85ca6966fecf7c5121e4957e0b32af44f22930b600d5 ;;
+x86_64) EXTENSION_SHA=a85c9d885d0faaa65948a71bd2ca762a64fb0c993647b69f9b1faa3983017d1e ;;
+aarch64) EXTENSION_SHA=1d5cb8a183afa8d4eb61bab54a6a460b8d1ff364a88a16b098948dfe23d4ce60 ;;
 esac
 
 LOCKED="$(sed -n '/^name = "context-menu"$/{n;s/^version = "\(.*\)"/\1/p}' Cargo.lock)"

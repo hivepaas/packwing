@@ -16,13 +16,14 @@ use std::path::{Path, PathBuf};
 use context_menu::{Count, Item, Menu};
 use gpui::{AppContext as _, Context, Task};
 
-/// The menu's id, where the system keeps it.
-const ID: &str = "packwing";
+/// The menu's id, where the system keeps it, and Open With's
+/// (`open_with.rs`).
+pub const ID: &str = "packwing";
 
 /// What the archive items show for: the types packwing opens, by extension,
 /// and the short names of compressed tars. `gz` takes in `tar.gz`, and the
-/// others alike.
-const ARCHIVES: [&str; 12] = [
+/// others alike. Open With is for them too.
+pub const ARCHIVES: [&str; 12] = [
     "zip", "rar", "7z", "tar", "gz", "tgz", "xz", "txz", "zst", "tzst", "cbz", "cbr",
 ];
 

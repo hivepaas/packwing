@@ -15,6 +15,7 @@ mod colors;
 mod demo;
 mod dialogs;
 mod input;
+mod open_with;
 mod pages;
 mod right_click;
 mod widgets;
@@ -167,6 +168,7 @@ fn main() {
                 ..Default::default()
             };
             let menu = cx.new(RightClickMenu::installed);
+            open_with::keep_current(cx);
             let opened = cx.open_window(options, |window, cx| {
                 let ws = cx.new(|cx| {
                     let mut ws = workspace::Workspace::new(first_run, managed, menu, window, cx);
