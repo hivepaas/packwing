@@ -11,7 +11,10 @@ use crate::pages::settings::LANGUAGES;
 use crate::widgets::{Fill, Select, SelectLook, Size, button, icon, switch, tile};
 
 /// Get started was pressed.
-pub struct Done;
+pub struct Done {
+    /// Put packwing in the right-click menu.
+    pub right_click: bool,
+}
 
 struct Step {
     label: &'static str,
@@ -31,10 +34,10 @@ impl Onboarding {
         Onboarding {
             language: cx.new(|_| Select::new(&LANGUAGES, 0, SelectLook::Field)),
             steps: vec![
+                // The first: Get started says whether it is on.
                 Step {
                     label: "Add to the right-click menu",
-                    detail: "Extract or compress from any folder. On macOS you’ll be asked to \
-                             allow it in System Settings.",
+                    detail: "Extract or compress from any folder.",
                     on: true,
                 },
                 Step {
@@ -186,7 +189,11 @@ impl Render for Onboarding {
                     .child(
                         button("get-started", "Get started", Fill::Accent, Size::Large)
                             .px(px(32.))
-                            .on_click(cx.listener(|_, _, _, cx| cx.emit(Done))),
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                cx.emit(Done {
+                                    right_click: this.steps[0].on,
+                                })
+                            })),
                     ),
             );
         div().size_full().flex().justify_center().p(px(16.)).child(

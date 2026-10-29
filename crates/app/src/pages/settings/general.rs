@@ -5,6 +5,7 @@ use gpui::{Context, Entity, EventEmitter, Render, Window, div, prelude::*, px, r
 
 use super::{group, label, rows, section, setting};
 use crate::colors::colors;
+use crate::right_click::RightClickMenu;
 use crate::widgets::{
     Fill, Select, SelectLook, Size, button, chip, option_card, segment, segments, switch, titled,
 };
@@ -37,23 +38,26 @@ pub struct General {
     language: Entity<Select>,
     /// Double-click extracts at once, rather than opening the archive.
     extract_on_open: bool,
+    /// The right-click menu: whether packwing is in it is the first toggle.
+    menu: Entity<RightClickMenu>,
     toggles: Vec<Toggle>,
 }
 
 impl EventEmitter<AppearanceChosen> for General {}
 
 impl General {
-    pub fn new(appearance: Appearance, cx: &mut Context<Self>) -> Self {
+    pub fn new(
+        appearance: Appearance,
+        menu: Entity<RightClickMenu>,
+        cx: &mut Context<Self>,
+    ) -> Self {
+        cx.observe(&menu, |_, _, cx| cx.notify()).detach();
         General {
             appearance,
             language: cx.new(|_| Select::new(&LANGUAGES, 0, SelectLook::Field)),
             extract_on_open: false,
+            menu,
             toggles: vec![
-                Toggle {
-                    label: "Show packwing in the right-click menu",
-                    detail: "Extract and compress from any folder",
-                    on: true,
-                },
                 Toggle {
                     label: "Open the folder when extraction is done",
                     detail: "So you can find your files right away",
@@ -110,6 +114,14 @@ impl Render for General {
                 }))
                 .child(titled(title, detail, on))
         };
+        let shown = self.menu.read(cx).shown();
+        let menu = setting(
+            "Show packwing in the right-click menu",
+            "Extract and compress from any folder",
+            switch("right-click", shown).on_click(cx.listener(move |this, _, _, cx| {
+                this.menu.update(cx, |m, cx| m.show(!shown, cx));
+            })),
+        );
         let toggles = self.toggles.iter().enumerate().map(|(i, t)| {
             setting(
                 t.label,
@@ -120,6 +132,7 @@ impl Render for General {
                 })),
             )
         });
+        let toggles = std::iter::once(menu).chain(toggles);
         section()
             .child(
                 div()

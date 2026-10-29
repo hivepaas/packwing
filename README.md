@@ -22,6 +22,8 @@ cargo test -p packwing
 
 On Linux without the X11 development libraries (`libxkbcommon-x11-dev` and the like), build for Wayland alone: `cargo run -p packwing --no-default-features --features wayland`.
 
+The welcome, or Settings › Right-click menu, puts packwing's items in the file manager's right-click menu for the user, through [context-menu-rs](https://github.com/hivepaas/context-menu-rs). Each runs the program that put it there, so a menu put in by `cargo run` runs that build; the next start of another build points it at that one. Without the native extensions, which packwing's packages will hold, the menu is Nautilus's Scripts submenu (or its own menu with nautilus-python), Dolphin's, Nemo's and Thunar's on Linux, Windows's under "Show more options", and Finder's Quick Actions on macOS.
+
 To see every screen, light and dark, without opening the app (Linux, with a Vulkan driver such as Mesa's lavapipe):
 
 ```sh

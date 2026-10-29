@@ -24,6 +24,8 @@ shots = ["gpui_platform/test-support", "dep:gpui_wgpu", "dep:image"]
 [dependencies]
 gpui.workspace = true
 gpui_platform.workspace = true
+# The system's right-click menu: packwing's items in it (src/right_click.rs).
+context-menu = "0.1"
 unicode-segmentation = "1"
 
 # The screenshots' text system and PNG writer; `image` is the version GPUI uses.

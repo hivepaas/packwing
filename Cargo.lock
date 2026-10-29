@@ -930,6 +930,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "context-menu"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "737f7a4d717c6cae403bbf91499b5a2ac1d7ab0ee26785336fea05fb3c981cb9"
+dependencies = [
+ "winreg",
+]
+
+[[package]]
 name = "convert_case"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3685,6 +3694,7 @@ dependencies = [
 name = "packwing"
 version = "0.1.0"
 dependencies = [
+ "context-menu",
  "gpui-pre",
  "gpui-pre-platform",
  "gpui-pre-wgpu",

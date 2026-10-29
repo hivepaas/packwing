@@ -13,12 +13,13 @@ use std::sync::Arc;
 use gpui::{AppContext as _, Context, HeadlessAppContext, Window, px, size};
 
 use crate::pages::settings::{Appearance, Section};
+use crate::right_click::{Choice, RightClickMenu, Status};
 use crate::workspace::{Page, Workspace};
 
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 16] = [
+const SCREENS: [(&str, SetUp, bool); 18] = [
     ("archive", |_, _, _| {}, false),
     ("recent", |ws, _, cx| ws.show_page(Page::Recent, cx), false),
     (
@@ -49,6 +50,38 @@ const SCREENS: [(&str, SetUp, bool); 16] = [
     (
         "settings-right-click",
         |ws, _, cx| ws.show_settings(Section::RightClick, cx),
+        false,
+    ),
+    (
+        "settings-right-click-notes",
+        |ws, _, cx| {
+            ws.show_settings(Section::RightClick, cx);
+            let notes = vec![
+                "Nautilus: the items are in its Scripts submenu, for any file chosen. With \
+                 nautilus-python installed (python3-nautilus, nautilus-python), or the app's \
+                 package putting in the native extension, they show in the menu itself."
+                    .into(),
+                "Nemo: the items are not grouped in a submenu; Nemo's Actions layout can \
+                 group them."
+                    .into(),
+            ];
+            ws.right_click()
+                .update(cx, |m, cx| m.set_status(Status::Done(notes), cx));
+        },
+        false,
+    ),
+    (
+        "settings-right-click-off",
+        |ws, _, cx| {
+            ws.show_settings(Section::RightClick, cx);
+            ws.right_click().update(cx, |m, cx| {
+                m.show(false, cx);
+                m.set_status(
+                    Status::Failed("right-click menus are not supported here yet".into()),
+                    cx,
+                );
+            });
+        },
         false,
     ),
     (
@@ -127,7 +160,10 @@ fn shots() {
             cx.update(crate::load_fonts);
             let window = cx
                 .open_window(size(px(1280.), px(800.)), |window, cx| {
-                    cx.new(|cx| Workspace::new(false, managed, window, cx))
+                    // Nothing is put in the system's menu.
+                    let menu =
+                        cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
+                    cx.new(|cx| Workspace::new(false, managed, menu, window, cx))
                 })
                 .expect("cannot open a window");
             window

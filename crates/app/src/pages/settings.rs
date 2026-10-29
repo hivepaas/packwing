@@ -1,5 +1,6 @@
 //! Settings: a menu of sections and the one open, each section a view of
-//! its own. Nothing is saved yet: each keeps what is chosen while it runs.
+//! its own. Nothing is saved yet: each keeps what is chosen while it runs,
+//! but for the right-click menu, which is the system's.
 
 mod about;
 mod compressing;
@@ -19,6 +20,7 @@ use gpui::{
 use super::{panel, title};
 use crate::colors::colors;
 use crate::demo::Managed;
+use crate::right_click::RightClickMenu;
 
 /// The sections, in the menu's order.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -68,8 +70,13 @@ impl EventEmitter<AppearanceChosen> for SettingsPage {}
 
 impl SettingsPage {
     /// `managed`: the organization's policies, when it runs packwing.
-    pub fn new(appearance: Appearance, managed: Option<Managed>, cx: &mut Context<Self>) -> Self {
-        let general = cx.new(|cx| general::General::new(appearance, cx));
+    pub fn new(
+        appearance: Appearance,
+        managed: Option<Managed>,
+        menu: Entity<RightClickMenu>,
+        cx: &mut Context<Self>,
+    ) -> Self {
+        let general = cx.new(|cx| general::General::new(appearance, menu.clone(), cx));
         let appearance = cx.subscribe(&general, |_, _, e: &AppearanceChosen, cx| {
             cx.emit(AppearanceChosen(e.0))
         });
@@ -78,7 +85,7 @@ impl SettingsPage {
             cx.new(extracting::Extracting::new).into(),
             cx.new(compressing::Compressing::new).into(),
             cx.new(|_| security::Security::new(managed)).into(),
-            cx.new(|_| right_click::RightClick::new()).into(),
+            cx.new(|cx| right_click::RightClick::new(menu, cx)).into(),
             cx.new(|_| updates::Updates::new()).into(),
             cx.new(|_| about::About).into(),
         ];

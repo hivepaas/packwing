@@ -1,6 +1,8 @@
 //! The main window: the menu down its left side and the page chosen in it,
 //! the first run's welcome in their place, and a dialog over them all.
 
+use std::path::Path;
+
 use gpui::{
     AnyView, Context, Entity, EventEmitter, FocusHandle, Focusable, FontWeight, KeyDownEvent,
     PathPromptOptions, Render, Subscription, Window, WindowAppearance, div, prelude::*, px, rgb,
@@ -17,6 +19,7 @@ use crate::pages::archive::{ArchiveEvent, ArchivePage};
 use crate::pages::onboarding::{Done, Onboarding};
 use crate::pages::recent::{OpenRecent, RecentPage};
 use crate::pages::settings::{Appearance, AppearanceChosen, SettingsPage};
+use crate::right_click::{Action, Request, RightClickMenu};
 use crate::widgets::{icon, tile};
 
 /// The pages the menu leads to.
@@ -41,6 +44,8 @@ pub struct Workspace {
     archive: Entity<ArchivePage>,
     recent: Entity<RecentPage>,
     settings: Entity<SettingsPage>,
+    /// packwing's items in the system's right-click menu.
+    right_click: Entity<RightClickMenu>,
     /// The first run's welcome, shown instead of the pages.
     welcome: Option<(Entity<Onboarding>, Subscription)>,
     dialog: Option<Open>,
@@ -62,14 +67,21 @@ impl Workspace {
     pub fn new(
         first_run: bool,
         managed: bool,
+        right_click: Entity<RightClickMenu>,
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> Self {
         let appearance = Appearance::System;
         let archive = cx.new(|cx| ArchivePage::new(demo::PROJECT, cx));
         let recent = cx.new(|_| RecentPage::new(demo::RECENT));
-        let settings =
-            cx.new(|cx| SettingsPage::new(appearance, managed.then_some(demo::MANAGED), cx));
+        let settings = cx.new(|cx| {
+            SettingsPage::new(
+                appearance,
+                managed.then_some(demo::MANAGED),
+                right_click.clone(),
+                cx,
+            )
+        });
         let subscriptions = vec![
             cx.subscribe_in(
                 &archive,
@@ -112,6 +124,7 @@ impl Workspace {
             archive,
             recent,
             settings,
+            right_click,
             welcome: None,
             dialog: None,
             appearance,
@@ -158,9 +171,16 @@ impl Workspace {
         self.show_page(Page::Settings, cx);
     }
 
+    #[cfg(all(test, feature = "shots"))]
+    pub fn right_click(&self) -> &Entity<RightClickMenu> {
+        &self.right_click
+    }
+
     pub fn show_welcome(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let welcome = cx.new(Onboarding::new);
-        let done = cx.subscribe_in(&welcome, window, |this, _, _: &Done, _, cx| {
+        let done = cx.subscribe_in(&welcome, window, |this, _, done: &Done, _, cx| {
+            this.right_click
+                .update(cx, |m, cx| m.show(done.right_click, cx));
             this.welcome = None;
             cx.notify();
         });
@@ -228,6 +248,66 @@ impl Workspace {
         let view = cx.new(|cx| ProgressDialog::new(job, cx));
         self.show(view.clone(), false, window, cx);
         view
+    }
+
+    /// Does what an item of the right-click menu asked. Nothing reads the
+    /// files yet: the screens show their names and folder, and the made-up
+    /// archive for the rest.
+    pub fn start(&mut self, r: Request, window: &mut Window, cx: &mut Context<Self>) {
+        let Some(first) = r.paths.first() else {
+            return;
+        };
+        let name = |p: &Path| {
+            p.file_name()
+                .map(|n| n.to_string_lossy().into_owned())
+                .unwrap_or_default()
+        };
+        let folder = first.parent().unwrap_or(Path::new(""));
+        let one = r.paths.len() == 1;
+        let a = demo::PROJECT;
+        match r.action {
+            Action::ExtractHere | Action::ExtractToFolder => {
+                let archive = if one {
+                    name(first)
+                } else {
+                    format!("{} archives", r.paths.len())
+                };
+                let to = match r.action {
+                    Action::ExtractHere => folder.display().to_string(),
+                    _ if one => folder.join(demo::stem(&archive)).display().to_string(),
+                    _ => format!("{}, a folder for each", folder.display()),
+                };
+                let job = Job {
+                    verb: Verb::Extract,
+                    name: archive.into(),
+                    to: Some(to.into()),
+                    files: a.files,
+                    bytes: a.unpacked,
+                };
+                self.open_progress(job, window, cx);
+            }
+            Action::Extract => self.open_extract(window, cx),
+            Action::Open => self.show_page(Page::Archive, cx),
+            Action::CompressZip => {
+                // Named after what is packed, or with several, their folder.
+                let base = if one {
+                    first.file_stem().map(|s| s.to_string_lossy().into_owned())
+                } else {
+                    folder.file_name().map(|s| s.to_string_lossy().into_owned())
+                };
+                let job = Job {
+                    verb: Verb::Create,
+                    name: format!("{}.zip", base.unwrap_or_else(|| "Archive".into())).into(),
+                    to: Some(folder.display().to_string().into()),
+                    files: a.files,
+                    bytes: a.unpacked,
+                };
+                self.open_progress(job, window, cx);
+            }
+            Action::Compress => {
+                self.open_create(window, cx);
+            }
+        }
     }
 
     fn open_recent(&mut self, i: usize, window: &mut Window, cx: &mut Context<Self>) {
