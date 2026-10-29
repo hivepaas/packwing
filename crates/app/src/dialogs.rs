@@ -8,7 +8,7 @@ mod extract;
 mod progress;
 
 pub use create::CreateDialog;
-pub(crate) use create::{LEVELS, Level, PURPOSES, Purpose};
+pub(crate) use create::{Format, LEVELS, Level};
 pub use damaged::DamagedDialog;
 pub use extract::{ENCODINGS, ExtractDialog};
 pub use progress::ProgressDialog;

@@ -18,7 +18,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 16] = [
+const SCREENS: [(&str, SetUp, bool); 18] = [
     ("archive", |_, _, _| {}, false),
     ("recent", |ws, _, cx| ws.show_page(Page::Recent, cx), false),
     (
@@ -83,6 +83,25 @@ const SCREENS: [(&str, SetUp, bool); 16] = [
         |ws, window, cx| {
             ws.open_create(window, cx)
                 .update(cx, |d, cx| d.show_advanced(cx));
+        },
+        false,
+    ),
+    (
+        "create-7z",
+        |ws, window, cx| {
+            ws.open_create(window, cx).update(cx, |d, cx| {
+                d.fill(crate::dialogs::Format::SevenZip, "100", cx)
+            });
+        },
+        false,
+    ),
+    (
+        "create-missing",
+        |ws, window, cx| {
+            ws.open_create(window, cx).update(cx, |d, cx| {
+                d.fill(crate::dialogs::Format::SevenZip, "", cx);
+                d.press_create(cx);
+            });
         },
         false,
     ),
