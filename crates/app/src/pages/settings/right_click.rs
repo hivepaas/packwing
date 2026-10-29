@@ -24,7 +24,7 @@ impl Render for RightClick {
         let m = self.menu.read(cx);
         let (shown, choice, status) = (m.shown(), m.choice().clone(), m.status().clone());
         let items = Action::ALL.into_iter().enumerate().map(|(i, a)| {
-            check_row(("item", i), choice.has(a), a.label())
+            check_row(("item", i), choice.has(a), a.label(choice.submenu))
                 .text_size(px(15.))
                 .py(px(6.))
                 .on_click(cx.listener(move |this, _, _, cx| {

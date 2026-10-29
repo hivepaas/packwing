@@ -60,16 +60,23 @@ impl Action {
         }
     }
 
-    /// What the menu says. One label for every archive: the menu cannot
+    /// What the menu says. In the file manager's own menu, an item doing
+    /// what the file manager does too says it is packwing's: Nautilus has
+    /// its own Extract, Extract to… and Compress…. In packwing's submenu,
+    /// the submenu says it. One label for every archive: the menu cannot
     /// name the one chosen.
-    pub fn label(self) -> &'static str {
-        match self {
-            Action::ExtractHere => "Extract here",
-            Action::ExtractToFolder => "Extract to new folder",
-            Action::Extract => "Extract…",
-            Action::Open => "Open with packwing",
-            Action::CompressZip => "Compress to ZIP",
-            Action::Compress => "Compress…",
+    pub fn label(self, submenu: bool) -> &'static str {
+        match (self, submenu) {
+            (Action::ExtractHere, false) => "Extract here with packwing",
+            (Action::ExtractHere, true) => "Extract here",
+            (Action::ExtractToFolder, _) => "Extract to new folder",
+            (Action::Extract, false) => "Extract with packwing…",
+            (Action::Extract, true) => "Extract…",
+            (Action::Open, false) => "Open with packwing",
+            (Action::Open, true) => "Open",
+            (Action::CompressZip, _) => "Compress to ZIP",
+            (Action::Compress, false) => "Compress with packwing…",
+            (Action::Compress, true) => "Compress…",
         }
     }
 
@@ -85,9 +92,9 @@ impl Action {
         Action::ALL.into_iter().find(|a| a.id() == id)
     }
 
-    /// Its item in the menu, running `program`.
-    fn item(self, program: &Path) -> Item {
-        let item = Item::new(self.id(), self.label(), program).arg(self.option());
+    /// Its item in the menu, running `program`, in packwing's submenu or not.
+    fn item(self, program: &Path, submenu: bool) -> Item {
+        let item = Item::new(self.id(), self.label(submenu), program).arg(self.option());
         match self {
             Action::ExtractHere | Action::ExtractToFolder => item.extensions(ARCHIVES),
             // A dialog, or a window, for one archive.
@@ -160,7 +167,7 @@ impl Choice {
         Some(
             self.items
                 .iter()
-                .fold(menu, |menu, a| menu.item(a.item(program))),
+                .fold(menu, |menu, a| menu.item(a.item(program, self.submenu))),
         )
     }
 
@@ -471,8 +478,52 @@ mod tests {
     }
 
     #[test]
+    fn alone_in_the_menu_an_item_says_it_is_packwings() {
+        // Nautilus's own items for files and archives (Nautilus 50).
+        let nautilus = ["Extract", "Extract to…", "Compress…", "Open With…"];
+        let labels = |submenu: bool| -> Vec<String> {
+            let choice = Choice {
+                items: Action::ALL.to_vec(),
+                submenu,
+            };
+            let menu = choice.menu(&program()).expect("items");
+            menu.items.into_iter().map(|i| i.label).collect()
+        };
+        let alone = labels(false);
+        assert_eq!(
+            alone,
+            [
+                "Extract here with packwing",
+                "Extract to new folder",
+                "Extract with packwing…",
+                "Open with packwing",
+                "Compress to ZIP",
+                "Compress with packwing…"
+            ]
+        );
+        for label in &alone {
+            assert!(
+                !nautilus.iter().any(|n| n.eq_ignore_ascii_case(label)),
+                "{label} is Nautilus's too"
+            );
+        }
+        // Under "packwing", the submenu says whose they are.
+        assert_eq!(
+            labels(true),
+            [
+                "Extract here",
+                "Extract to new folder",
+                "Extract…",
+                "Open",
+                "Compress to ZIP",
+                "Compress…"
+            ]
+        );
+    }
+
+    #[test]
     fn each_item_shows_for_what_it_takes() {
-        let item = |a: Action| a.item(&program()).applies_to;
+        let item = |a: Action| a.item(&program(), false).applies_to;
         let zip = [chosen("Báo cáo.ZIP", false)];
         let two = [chosen("a.zip", false), chosen("b.tar.zst", false)];
         let folder = [chosen("Photos", true)];
