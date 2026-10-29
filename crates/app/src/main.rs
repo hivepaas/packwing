@@ -28,15 +28,17 @@ use gpui::{
 };
 
 /// The UI's typeface, drawn into the binary. The design asks for Figtree,
-/// which has no Vietnamese letters; Be Vietnam Pro has the same geometric
-/// shapes and every one of them.
-pub const FONT: &str = "Be Vietnam Pro";
+/// which has no Vietnamese letters; Nunito has every one of them, and its
+/// rounded ends suit the Soft tonal design. Its four weights are static
+/// instances of google/fonts' variable `ofl/nunito/Nunito[wght].ttf`, made
+/// with fontTools' `varLib.instancer --static --update-name-table`.
+pub const FONT: &str = "Nunito";
 
 const FONTS: [&[u8]; 4] = [
-    include_bytes!("../assets/fonts/BeVietnamPro-Regular.ttf"),
-    include_bytes!("../assets/fonts/BeVietnamPro-Medium.ttf"),
-    include_bytes!("../assets/fonts/BeVietnamPro-SemiBold.ttf"),
-    include_bytes!("../assets/fonts/BeVietnamPro-Bold.ttf"),
+    include_bytes!("../assets/fonts/Nunito-Regular.ttf"),
+    include_bytes!("../assets/fonts/Nunito-Medium.ttf"),
+    include_bytes!("../assets/fonts/Nunito-SemiBold.ttf"),
+    include_bytes!("../assets/fonts/Nunito-Bold.ttf"),
 ];
 
 /// Hands [`FONTS`] to GPUI; without them the system's font draws the UI.
