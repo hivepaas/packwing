@@ -16,7 +16,7 @@ pub use progress::ProgressDialog;
 use gpui::{Div, FontWeight, MouseButton, SharedString, Stateful, div, prelude::*, px, rgb};
 
 use crate::colors::{Tint, colors};
-use crate::widgets::{float_shadow, icon, tile};
+use crate::widgets::{float_shadow, icon, logo, tile};
 
 /// What a job does.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -78,7 +78,11 @@ pub fn header(
         .flex()
         .items_center()
         .gap(px(14.))
-        .child(tile(48., 16., tint).child(icon(icon_name, 24., tint.ink)))
+        .child(tile(48., 16., tint).child(if icon_name == "logo" {
+            logo(24., tint).into_any_element()
+        } else {
+            icon(icon_name, 24., tint.ink).into_any_element()
+        }))
         .child(
             div()
                 .flex_1()

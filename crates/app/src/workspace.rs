@@ -8,7 +8,7 @@ use gpui::{
 };
 
 use crate::chrome;
-use crate::colors::{self, Tint, colors};
+use crate::colors::{self, colors};
 use crate::demo;
 use crate::dialogs::{
     CreateDialog, DamagedDialog, DialogEvent, ExtractDialog, Job, ProgressDialog, Verb,
@@ -17,7 +17,7 @@ use crate::pages::archive::{ArchiveEvent, ArchivePage};
 use crate::pages::onboarding::{Done, Onboarding};
 use crate::pages::recent::{OpenRecent, RecentPage};
 use crate::pages::settings::{Appearance, AppearanceChosen, SettingsPage};
-use crate::widgets::{icon, tile};
+use crate::widgets::{accent_tint, icon, logo, tile};
 
 /// The pages the menu leads to.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -305,16 +305,9 @@ impl Workspace {
             .pt(px(top))
             .pb(px(20.))
             .child(
-                tile(
-                    48.,
-                    16.,
-                    Tint {
-                        ground: c.accent,
-                        ink: c.on_accent,
-                    },
-                )
-                .mb(px(12.))
-                .child(icon("logo", 24., c.on_accent)),
+                tile(48., 16., accent_tint())
+                    .mb(px(12.))
+                    .child(logo(24., accent_tint())),
             )
             .child(
                 item("nav-archive", "archive", "Archive", page == Page::Archive)

@@ -72,6 +72,7 @@ const ICONS: &[(&str, &[u8])] = icons![
     "image",
     "lock",
     "logo",
+    "logo-feather",
     "plus",
     "recent",
     "search",
