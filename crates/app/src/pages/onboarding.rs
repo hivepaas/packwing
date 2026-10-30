@@ -8,7 +8,7 @@ use gpui::{
 use super::{panel, title};
 use crate::colors::{Tint, colors};
 use crate::pages::settings::LANGUAGES;
-use crate::widgets::{Fill, Select, SelectLook, Size, button, icon, switch, tile};
+use crate::widgets::{Fill, Select, SelectLook, Size, accent_tint, button, logo, switch, tile};
 
 /// Get started was pressed.
 pub struct Done {
@@ -76,17 +76,7 @@ impl Render for Onboarding {
             .rounded(px(28.))
             .bg(rgb(c.tonal))
             .text_color(rgb(c.on_tonal))
-            .child(
-                tile(
-                    72.,
-                    24.,
-                    Tint {
-                        ground: c.accent,
-                        ink: c.on_accent,
-                    },
-                )
-                .child(icon("logo", 36., c.on_accent)),
-            )
+            .child(tile(72., 24., accent_tint()).child(logo(36., accent_tint())))
             .child(title("Welcome to packwing", 34.).line_height(relative(1.15)))
             .child(div().text_size(px(17.)).line_height(relative(1.5)).child(
                 "Open any archive, make smaller files to share, and stay safe from \

@@ -3,9 +3,9 @@
 //! notes, a segmented choice, and a select with its menu.
 
 use gpui::{
-    BoxShadow, Context, Div, ElementId, FontWeight, IntoElement, MouseButton, Render, SharedString,
-    Stateful, Svg, Window, anchored, deferred, div, point, prelude::*, px, relative, rgb, rgba,
-    svg,
+    BoxShadow, Context, Div, ElementId, EventEmitter, FontWeight, IntoElement, MouseButton, Render,
+    SharedString, Stateful, Svg, Window, anchored, deferred, div, point, prelude::*, px, relative,
+    rgb, rgba, svg,
 };
 
 use crate::colors::{Tint, colors};
@@ -30,6 +30,32 @@ pub fn tile(size: f32, radius: f32, tint: Tint) -> Div {
         .flex()
         .items_center()
         .justify_center()
+}
+
+/// The accent's tint, for the logo's tile.
+pub fn accent_tint() -> Tint {
+    let c = colors();
+    Tint {
+        ground: c.accent,
+        ink: c.on_accent,
+    }
+}
+
+/// packwing's logo on a tile of `tint`: the zipper in the tile's ink, and
+/// its pull, a feather, in the design's orange. GPUI draws an icon in one
+/// color, so the two are icons of their own, one over the other.
+pub fn logo(size: f32, tint: Tint) -> Div {
+    div()
+        .relative()
+        .size(px(size))
+        .flex_shrink_0()
+        .child(icon("logo", size, tint.ink).absolute().top_0().left_0())
+        .child(
+            icon("logo-feather", size, colors().feather(tint))
+                .absolute()
+                .top_0()
+                .left_0(),
+        )
 }
 
 /// The tint of the accent's soft fill, for a dialog's icon.
@@ -372,6 +398,11 @@ pub struct Select {
     look: SelectLook,
 }
 
+/// Another option of a [`Select`] was chosen: [`Select::chosen`] says which.
+pub struct Chosen;
+
+impl EventEmitter<Chosen> for Select {}
+
 impl Select {
     pub fn new(options: &[&str], chosen: usize, look: SelectLook) -> Self {
         Select {
@@ -383,6 +414,18 @@ impl Select {
             open: false,
             look,
         }
+    }
+
+    /// The index of the option chosen.
+    pub fn chosen(&self) -> usize {
+        self.chosen
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn choose(&mut self, i: usize, cx: &mut Context<Self>) {
+        self.chosen = i.min(self.options.len().saturating_sub(1));
+        cx.emit(Chosen);
+        cx.notify();
     }
 
     fn close(&mut self, cx: &mut Context<Self>) {
@@ -406,7 +449,10 @@ impl Select {
                 .hover(|s| s.bg(rgb(c.hover)))
                 .when(on, |d| d.font_weight(FontWeight::SEMIBOLD))
                 .on_click(cx.listener(move |this, _, _, cx| {
-                    this.chosen = i;
+                    if this.chosen != i {
+                        this.chosen = i;
+                        cx.emit(Chosen);
+                    }
                     this.close(cx);
                 }))
                 .child(div().flex_1().whitespace_nowrap().child(o.clone()))

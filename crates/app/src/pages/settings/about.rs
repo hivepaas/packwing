@@ -1,10 +1,10 @@
-//! About: what packwing is, its version, and its license and others'.
+//! About: what packwing is, its version, and its license.
 
 use gpui::{Context, FontWeight, Render, Window, div, prelude::*, px, relative, rgb};
 
 use super::{group, rows, section, setting};
-use crate::colors::{Tint, colors};
-use crate::widgets::{Fill, Size, button, icon, tile};
+use crate::colors::colors;
+use crate::widgets::{Fill, Size, accent_tint, button, logo, tile};
 
 const SOURCE: &str = "https://github.com/hivepaas/packwing";
 const LICENSE: &str = "https://github.com/hivepaas/packwing/blob/main/LICENSE";
@@ -24,17 +24,7 @@ impl Render for About {
                     .items_center()
                     .gap(px(18.))
                     .py(px(20.))
-                    .child(
-                        tile(
-                            72.,
-                            24.,
-                            Tint {
-                                ground: c.accent,
-                                ink: c.on_accent,
-                            },
-                        )
-                        .child(icon("logo", 36., c.on_accent)),
-                    )
+                    .child(tile(72., 24., accent_tint()).child(logo(36., accent_tint())))
                     .child(
                         div()
                             .flex()
@@ -71,11 +61,6 @@ impl Render for About {
                     "Made by HivePaaS",
                     "On hivepack, our library for reading and writing archives",
                     link("source", "Source code", SOURCE),
-                ),
-                setting(
-                    "Typeface",
-                    "Be Vietnam Pro, under the SIL Open Font License 1.1",
-                    div(),
                 ),
             ]))
     }
