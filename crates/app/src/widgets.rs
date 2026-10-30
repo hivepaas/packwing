@@ -3,9 +3,9 @@
 //! notes, a segmented choice, and a select with its menu.
 
 use gpui::{
-    BoxShadow, Context, Div, ElementId, EventEmitter, FontWeight, IntoElement, MouseButton, Render,
-    SharedString, Stateful, Svg, Window, anchored, deferred, div, point, prelude::*, px, relative,
-    rgb, rgba, svg,
+    AnyView, App, AppContext as _, BoxShadow, Context, Div, ElementId, EventEmitter, FontWeight,
+    IntoElement, MouseButton, Render, SharedString, Stateful, Svg, Window, anchored, deferred, div,
+    point, prelude::*, px, relative, rgb, rgba, svg,
 };
 
 use crate::colors::{Tint, colors};
@@ -544,4 +544,31 @@ impl Render for Select {
             .child(trigger)
             .children(menu)
     }
+}
+
+/// A tooltip: a short line on a small card by the pointer.
+pub struct Tip(SharedString);
+
+impl Render for Tip {
+    fn render(&mut self, _: &mut Window, _: &mut Context<Self>) -> impl IntoElement {
+        let c = colors();
+        div()
+            .px(px(10.))
+            .py(px(6.))
+            .rounded(px(10.))
+            .bg(rgb(c.surface))
+            .border_1()
+            .border_color(rgb(c.outline))
+            .shadow(float_shadow(4., 12.))
+            .font_family(crate::FONT)
+            .text_size(px(13.))
+            .text_color(rgb(c.text))
+            .child(self.0.clone())
+    }
+}
+
+/// A tooltip saying `text`, for an element's `tooltip`.
+pub fn tip(text: impl Into<SharedString>) -> impl Fn(&mut Window, &mut App) -> AnyView + 'static {
+    let text = text.into();
+    move |_, cx| cx.new(|_| Tip(text.clone())).into()
 }

@@ -68,6 +68,9 @@ macro_rules! icons {
 }
 
 const ICONS: &[(&str, &[u8])] = icons![
+    "appearance-dark",
+    "appearance-light",
+    "appearance-system",
     "archive",
     "building",
     "check",
@@ -197,4 +200,22 @@ fn main() {
             })
             .detach();
         });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn every_icon_is_drawn_into_the_binary() {
+        let dir = concat!(env!("CARGO_MANIFEST_DIR"), "/assets/icons");
+        for entry in std::fs::read_dir(dir).expect("assets/icons") {
+            let name = entry.expect("an icon").file_name();
+            let path = format!("icons/{}", name.to_string_lossy());
+            assert!(
+                ICONS.iter().any(|(p, _)| *p == path),
+                "{path} is not in ICONS"
+            );
+        }
+    }
 }
