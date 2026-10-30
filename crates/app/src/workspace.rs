@@ -1,7 +1,7 @@
 //! The main window: the menu down its left side and the page chosen in it,
 //! the first run's welcome in their place, and a dialog over them all.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use gpui::{
     AnyView, Context, Entity, EventEmitter, FocusHandle, Focusable, FontWeight, KeyDownEvent,
@@ -15,7 +15,8 @@ use crate::demo;
 use crate::dialogs::{
     CreateDialog, DamagedDialog, DialogEvent, ExtractDialog, Job, ProgressDialog, Verb,
 };
-use crate::pages::archive::{ArchiveEvent, ArchivePage};
+use crate::model::{Archive, stem};
+use crate::pages::archive::{ArchiveEvent, ArchivePage, Shown};
 use crate::pages::onboarding::{Done, Onboarding};
 use crate::pages::recent::{OpenRecent, RecentPage};
 use crate::pages::settings::{Appearance, AppearanceChosen, SettingsPage};
@@ -48,6 +49,9 @@ pub struct Workspace {
     right_click: Entity<RightClickMenu>,
     /// The first run's welcome, shown instead of the pages.
     welcome: Option<(Entity<Onboarding>, Subscription)>,
+    /// The file being read: a reading that ends after another began is
+    /// not shown.
+    reading: Option<PathBuf>,
     dialog: Option<Open>,
     appearance: Appearance,
     /// The system's own appearance is dark.
@@ -72,7 +76,7 @@ impl Workspace {
         cx: &mut Context<Self>,
     ) -> Self {
         let appearance = Appearance::System;
-        let archive = cx.new(|cx| ArchivePage::new(demo::PROJECT, cx));
+        let archive = cx.new(ArchivePage::new);
         let recent = cx.new(|_| RecentPage::new(demo::RECENT));
         let settings = cx.new(|cx| {
             SettingsPage::new(
@@ -89,20 +93,8 @@ impl Workspace {
                 |this, _, e: &ArchiveEvent, window, cx| match e {
                     ArchiveEvent::Extract => this.open_extract(window, cx),
                     ArchiveEvent::AddFiles => this.add_files(cx),
-                    ArchiveEvent::Test => {
-                        let a = demo::PROJECT;
-                        this.open_progress(
-                            Job {
-                                verb: Verb::Test,
-                                name: a.name.into(),
-                                to: None,
-                                files: a.files,
-                                bytes: a.unpacked,
-                            },
-                            window,
-                            cx,
-                        );
-                    }
+                    ArchiveEvent::Test => this.test_archive(window, cx),
+                    ArchiveEvent::Open => this.choose_archive(window, cx),
                 },
             ),
             cx.subscribe_in(&recent, window, |this, _, e: &OpenRecent, window, cx| {
@@ -126,6 +118,7 @@ impl Workspace {
             settings,
             right_click,
             welcome: None,
+            reading: None,
             dialog: None,
             appearance,
             system_dark: looks_dark(window),
@@ -219,9 +212,102 @@ impl Workspace {
         cx.notify();
     }
 
+    #[cfg(all(test, feature = "shots"))]
+    pub fn show_archive(&mut self, shown: Shown, cx: &mut Context<Self>) {
+        self.archive.update(cx, |p, cx| p.show(shown, cx));
+    }
+
+    /// Shows the sample archive, as the screenshots draw it.
+    pub fn show_sample(&mut self, cx: &mut Context<Self>) {
+        self.reading = None;
+        self.archive
+            .update(cx, |p, cx| p.show(Shown::Open(demo::project()), cx));
+    }
+
+    /// Reads the archive at `path` in the background and shows it; with
+    /// `then_extract`, the Extract dialog opens over it once it is read.
+    pub fn open_archive(
+        &mut self,
+        path: PathBuf,
+        then_extract: bool,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let name = path
+            .file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or_default();
+        self.archive
+            .update(cx, |p, cx| p.show(Shown::Opening(name.clone()), cx));
+        self.show_page(Page::Archive, cx);
+        self.reading = Some(path.clone());
+        let read = path.clone();
+        let task = cx.background_executor().spawn(async move {
+            let listing = packwing_core::list(&read, &packwing_core::Keys::default());
+            listing.map(|l| (l, packwing_core::came_from_internet(&read)))
+        });
+        cx.spawn_in(window, async move |this, cx| {
+            let result = task.await;
+            let _ = this.update_in(cx, |this, window, cx| {
+                if this.reading.as_ref() != Some(&path) {
+                    return;
+                }
+                this.reading = None;
+                let shown = match result {
+                    Ok((listing, marked)) => Shown::Open(Archive::read(path, listing, marked)),
+                    Err(e) => Shown::Failed {
+                        name,
+                        why: e.to_string(),
+                    },
+                };
+                let opened = matches!(shown, Shown::Open(_));
+                this.archive.update(cx, |p, cx| p.show(shown, cx));
+                if opened && then_extract {
+                    this.open_extract(window, cx);
+                }
+            });
+        })
+        .detach();
+    }
+
+    /// Asks which archive to open, and opens it.
+    fn choose_archive(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let picked = cx.prompt_for_paths(PathPromptOptions {
+            files: true,
+            directories: false,
+            multiple: false,
+            prompt: Some("Open".into()),
+        });
+        cx.spawn_in(window, async move |this, cx| {
+            if let Ok(Ok(Some(paths))) = picked.await
+                && let Some(path) = paths.into_iter().next()
+            {
+                let _ = this.update_in(cx, |this, window, cx| {
+                    this.open_archive(path, false, window, cx)
+                });
+            }
+        })
+        .detach();
+    }
+
     pub fn open_extract(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let view = cx.new(|cx| ExtractDialog::new(demo::PROJECT, cx));
+        let Some(archive) = self.archive.read(cx).archive().cloned() else {
+            return;
+        };
+        let view = cx.new(|cx| ExtractDialog::new(archive, cx));
         self.show(view, true, window, cx);
+    }
+
+    /// Reads every file of the archive open through, its checks made.
+    fn test_archive(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let Some(a) = self.archive.read(cx).archive().cloned() else {
+            return;
+        };
+        let mut job = Job::shown(Verb::Test, a.name.clone().into(), None, a.files, a.unpacked);
+        if let Some(path) = a.path {
+            job.work = vec![(path, None)];
+        }
+        self.open_progress(job, window, cx);
     }
 
     pub fn open_create(
@@ -250,9 +336,9 @@ impl Workspace {
         view
     }
 
-    /// Does what an item of the right-click menu asked. Nothing reads the
-    /// files yet: the screens show their names and folder, and the made-up
-    /// archive for the rest.
+    /// Does what an item of the right-click menu asked. Extracting and
+    /// opening read the files; compressing shows the sample's numbers until
+    /// hivepack writes archives.
     pub fn start(&mut self, r: Request, window: &mut Window, cx: &mut Context<Self>) {
         let Some(first) = r.paths.first() else {
             return;
@@ -264,7 +350,7 @@ impl Workspace {
         };
         let folder = first.parent().unwrap_or(Path::new(""));
         let one = r.paths.len() == 1;
-        let a = demo::PROJECT;
+        let a = demo::project();
         match r.action {
             Action::ExtractHere | Action::ExtractToFolder => {
                 let archive = if one {
@@ -274,20 +360,29 @@ impl Workspace {
                 };
                 let to = match r.action {
                     Action::ExtractHere => folder.display().to_string(),
-                    _ if one => folder.join(demo::stem(&archive)).display().to_string(),
+                    _ if one => folder.join(stem(&archive)).display().to_string(),
                     _ => format!("{}, a folder for each", folder.display()),
                 };
-                let job = Job {
-                    verb: Verb::Extract,
-                    name: archive.into(),
-                    to: Some(to.into()),
-                    files: a.files,
-                    bytes: a.unpacked,
-                };
+                // Each archive's files go beside it, or in a folder of their
+                // own there.
+                let work = r
+                    .paths
+                    .iter()
+                    .map(|p| {
+                        let here = p.parent().unwrap_or(Path::new("")).to_path_buf();
+                        let to = match r.action {
+                            Action::ExtractHere => here,
+                            _ => here.join(stem(&name(p))),
+                        };
+                        (p.clone(), Some(to))
+                    })
+                    .collect();
+                let mut job = Job::shown(Verb::Extract, archive.into(), Some(to.into()), 0, 0);
+                job.work = work;
                 self.open_progress(job, window, cx);
             }
-            Action::Extract => self.open_extract(window, cx),
-            Action::Open => self.show_page(Page::Archive, cx),
+            Action::Extract => self.open_archive(first.clone(), true, window, cx),
+            Action::Open => self.open_archive(first.clone(), false, window, cx),
             Action::CompressZip => {
                 // Named after what is packed, or with several, their folder.
                 let base = if one {
@@ -295,13 +390,13 @@ impl Workspace {
                 } else {
                     folder.file_name().map(|s| s.to_string_lossy().into_owned())
                 };
-                let job = Job {
-                    verb: Verb::Create,
-                    name: format!("{}.zip", base.unwrap_or_else(|| "Archive".into())).into(),
-                    to: Some(folder.display().to_string().into()),
-                    files: a.files,
-                    bytes: a.unpacked,
-                };
+                let job = Job::shown(
+                    Verb::Create,
+                    format!("{}.zip", base.unwrap_or_else(|| "Archive".into())).into(),
+                    Some(folder.display().to_string().into()),
+                    a.files,
+                    a.unpacked,
+                );
                 self.open_progress(job, window, cx);
             }
             Action::Compress => {
@@ -310,10 +405,13 @@ impl Workspace {
         }
     }
 
+    /// The Recent page's samples: the damaged one's dialog, or the sample
+    /// archive, until packwing keeps its own list.
     fn open_recent(&mut self, i: usize, window: &mut Window, cx: &mut Context<Self>) {
         if demo::RECENT.get(i).is_some_and(|r| r.damaged) {
             self.open_damaged(window, cx);
         } else {
+            self.show_sample(cx);
             self.show_page(Page::Archive, cx);
         }
     }

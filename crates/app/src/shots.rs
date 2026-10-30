@@ -12,6 +12,8 @@ use std::sync::Arc;
 
 use gpui::{AppContext as _, Context, HeadlessAppContext, Window, px, size};
 
+use crate::model::Archive;
+use crate::pages::archive::Shown;
 use crate::pages::settings::{Appearance, Section};
 use crate::right_click::{Choice, RightClickMenu, Status};
 use crate::workspace::{Page, Workspace};
@@ -19,8 +21,36 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 20] = [
+const SCREENS: [(&str, SetUp, bool); 25] = [
     ("archive", |_, _, _| {}, false),
+    (
+        "archive-opened",
+        |ws, window, cx| ws.open_archive(sample_tar(), false, window, cx),
+        false,
+    ),
+    (
+        "archive-none",
+        |ws, _, cx| ws.show_archive(Shown::Nothing, cx),
+        false,
+    ),
+    (
+        "archive-read",
+        |ws, _, cx| ws.show_archive(read(), cx),
+        false,
+    ),
+    (
+        "archive-failed",
+        |ws, _, cx| {
+            ws.show_archive(
+                Shown::Failed {
+                    name: "photo.jpg".into(),
+                    why: packwing_core::Error::NotAnArchive.to_string(),
+                },
+                cx,
+            )
+        },
+        false,
+    ),
     ("recent", |ws, _, cx| ws.show_page(Page::Recent, cx), false),
     (
         "settings",
@@ -141,14 +171,14 @@ const SCREENS: [(&str, SetUp, bool); 20] = [
     (
         "progress",
         |ws, window, cx| {
-            let a = crate::demo::PROJECT;
-            let job = crate::dialogs::Job {
-                verb: crate::dialogs::Verb::Extract,
-                name: a.name.into(),
-                to: Some(format!("{} › {}", a.location, a.stem()).into()),
-                files: a.files,
-                bytes: a.unpacked,
-            };
+            let a = crate::demo::project();
+            let job = crate::dialogs::Job::shown(
+                crate::dialogs::Verb::Extract,
+                a.name.clone().into(),
+                Some(format!("{} › {}", a.location, a.stem()).into()),
+                a.files,
+                a.unpacked,
+            );
             ws.open_progress(job, window, cx)
                 .update(cx, |p, cx| p.set_done(0.64, cx));
         },
@@ -159,7 +189,94 @@ const SCREENS: [(&str, SetUp, bool); 20] = [
         |ws, window, cx| ws.open_damaged(window, cx),
         false,
     ),
+    (
+        "progress-failed",
+        |ws, window, cx| {
+            let job = crate::dialogs::Job::shown(
+                crate::dialogs::Verb::Extract,
+                "site-backup-2026-10.tar.zst".into(),
+                Some("Downloads › site-backup-2026-10".into()),
+                6,
+                131_000_000,
+            );
+            ws.open_progress(job, window, cx).update(cx, |p, cx| {
+                p.set_failed(
+                    "entry 3 (site/../evil.sh): the name climbs out of the folder".into(),
+                    cx,
+                )
+            });
+        },
+        false,
+    ),
 ];
+
+/// A tar archive written for the screenshot to open through hivepack, as
+/// `--open` does.
+fn sample_tar() -> PathBuf {
+    let mut tar = Vec::new();
+    for (name, data) in [
+        ("photos/", &b""[..]),
+        ("photos/beach.jpg", &[7u8; 3000][..]),
+        ("notes.txt", b"Read through hivepack.\n"),
+    ] {
+        let mut b = vec![0u8; 512];
+        b[..name.len()].copy_from_slice(name.as_bytes());
+        let dir = name.ends_with('/');
+        b[100..108].copy_from_slice(if dir { b"0000755\0" } else { b"0000644\0" });
+        b[124..136].copy_from_slice(format!("{:011o}\0", data.len()).as_bytes());
+        b[136..148].copy_from_slice(b"15000000000\0");
+        b[156] = if dir { b'5' } else { b'0' };
+        b[257..265].copy_from_slice(b"ustar\x0000");
+        b[148..156].fill(b' ');
+        let sum: u32 = b.iter().map(|&c| u32::from(c)).sum();
+        b[148..156].copy_from_slice(format!("{sum:06o}\0 ").as_bytes());
+        tar.extend(b);
+        tar.extend_from_slice(data);
+        tar.resize(tar.len().div_ceil(512) * 512, 0);
+    }
+    tar.extend([0u8; 1024]);
+    let path = out_dir().join("holiday-2026.tar");
+    std::fs::write(&path, tar).expect("cannot write the sample tar");
+    path
+}
+
+/// An archive as packwing-core lists it, shown two folders down.
+fn read() -> Shown {
+    let entry = |path: &str, dir, size| packwing_core::Entry {
+        path: path.split('/').map(str::to_owned).collect(),
+        dir,
+        size,
+        modified: Some(1_760_000_000),
+    };
+    let listing = packwing_core::Listing {
+        name: "site-backup-2026-10.tar.zst".into(),
+        folder: PathBuf::from("/home/user/Downloads"),
+        packed: 48_200_000,
+        unpacked: 131_000_000,
+        files: 6,
+        layers: vec![packwing_core::Layer::Zstd],
+        container: packwing_core::Container::Tar,
+        encryption: None,
+        entries: vec![
+            entry("site", true, 0),
+            entry("site/public", true, 0),
+            entry("site/public/index.html", false, 18_000),
+            entry("site/public/hero.jpg", false, 2_400_000),
+            entry("site/public/fonts", true, 0),
+            entry("site/public/fonts/Nunito.ttf", false, 280_000),
+            entry("site/db.sql", false, 128_000_000),
+            entry("site/README.md", false, 4_000),
+            entry("site/deploy.sh", false, 2_000),
+        ],
+    };
+    let mut a = Archive::read(
+        PathBuf::from("/home/user/Downloads/site-backup-2026-10.tar.zst"),
+        listing,
+        false,
+    );
+    a.show(vec!["site".into(), "public".into()]);
+    Shown::Open(a)
+}
 
 fn out_dir() -> PathBuf {
     let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../target/shots");
@@ -193,6 +310,8 @@ fn shots() {
                         Appearance::Light
                     };
                     ws.set_appearance(look, window, cx);
+                    // The sample archive is open behind every screen.
+                    ws.show_sample(cx);
                     set_up(ws, window, cx);
                 })
                 .expect("cannot set the screen up");

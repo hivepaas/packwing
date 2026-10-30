@@ -13,6 +13,8 @@ pub use damaged::DamagedDialog;
 pub use extract::{ENCODINGS, ExtractDialog};
 pub use progress::ProgressDialog;
 
+use std::path::PathBuf;
+
 use gpui::{Div, FontWeight, MouseButton, SharedString, Stateful, div, prelude::*, px, rgb};
 
 use crate::colors::{Tint, colors};
@@ -27,17 +29,46 @@ pub enum Verb {
     Test,
 }
 
-/// A job the user started. Nothing runs yet: the progress dialog counts up
-/// at a made-up speed.
+/// A job the user started. Extracting and testing archives read from disk
+/// run, through packwing-core; the rest (a new archive, a repair, and the
+/// samples) count up at a made-up speed, until hivepack writes archives.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Job {
     pub verb: Verb,
     /// The archive.
     pub name: SharedString,
-    /// Where the files (or the new archive) go; none for a test.
+    /// Where the files (or the new archive) go, as the user knows the place;
+    /// none for a test.
     pub to: Option<SharedString>,
+    /// What it holds, as far as is known before it runs: 0 if not.
     pub files: u64,
     pub bytes: u64,
+    /// The archives it reads, one after another, and where each one's files
+    /// go (none for a test). Empty for a job that does not run.
+    pub work: Vec<(PathBuf, Option<PathBuf>)>,
+    /// The password typed, for a ZIP archive's encrypted files.
+    pub password: Option<String>,
+}
+
+impl Job {
+    /// A job that counts up at a made-up speed.
+    pub fn shown(
+        verb: Verb,
+        name: SharedString,
+        to: Option<SharedString>,
+        files: u64,
+        bytes: u64,
+    ) -> Job {
+        Job {
+            verb,
+            name,
+            to,
+            files,
+            bytes,
+            work: Vec::new(),
+            password: None,
+        }
+    }
 }
 
 /// What the user chose in a dialog.

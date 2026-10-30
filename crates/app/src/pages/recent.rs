@@ -4,7 +4,8 @@ use gpui::{Context, EventEmitter, FontWeight, Render, Window, div, prelude::*, p
 
 use super::{panel, title};
 use crate::colors::colors;
-use crate::demo::{Kind, Recent, size};
+use crate::demo::Recent;
+use crate::model::{Kind, size};
 use crate::widgets::{chip, tile};
 
 /// One of them was asked for: its index.

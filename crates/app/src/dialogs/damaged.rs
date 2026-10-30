@@ -7,7 +7,8 @@ use gpui::{
 
 use super::{DialogEvent, Job, Verb, card, footer};
 use crate::colors::{Tint, colors};
-use crate::demo::{Damaged, count, counted};
+use crate::demo::Damaged;
+use crate::model::{count, counted};
 use crate::widgets::{Fill, Size, button, icon, legend, link, option_card, tile, titled};
 
 pub struct DamagedDialog {
@@ -40,17 +41,17 @@ impl DamagedDialog {
     fn start(&mut self, cx: &mut Context<Self>) {
         let d = self.damaged;
         let files = if self.repair { d.files } else { d.fine };
-        cx.emit(DialogEvent::Start(Job {
-            verb: if self.repair {
+        cx.emit(DialogEvent::Start(Job::shown(
+            if self.repair {
                 Verb::Repair
             } else {
                 Verb::Extract
             },
-            name: d.name.into(),
-            to: Some(format!("{} › {}", d.location, crate::demo::stem(d.name)).into()),
+            d.name.into(),
+            Some(format!("{} › {}", d.location, crate::model::stem(d.name)).into()),
             files,
-            bytes: d.unpacked * files / d.files.max(1),
-        }));
+            d.unpacked * files / d.files.max(1),
+        )));
     }
 
     fn find_part(&mut self, cx: &mut Context<Self>) {

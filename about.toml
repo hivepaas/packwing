@@ -5,6 +5,9 @@
 accepted = [
     "MIT",
     "Apache-2.0",
+    # Apache-2.0 with an exception that only loosens it: cap-std's winx, on
+    # Windows, through hivepack-extract.
+    "Apache-2.0 WITH LLVM-exception",
     "Unicode-3.0",
     "BSD-3-Clause",
     "BSD-2-Clause",
@@ -12,8 +15,110 @@ accepted = [
     "Zlib",
     "CC0-1.0",
     "MPL-2.0",
+    # hivepack's ports of libbzip2 and liblzma keep their licenses.
+    "bzip2-1.0.6",
+    "0BSD",
 ]
-# Only what is built into the program: not what builds it, nor packwing.
+# Only what is built into the program: not what builds it.
 ignore-build-dependencies = true
 ignore-dev-dependencies = true
-private = { ignore = true }
+# hivepack's crates are not on crates.io (`publish = false`), as packwing's
+# are not: they are listed. packwing's own, the only crates under the GPL,
+# the template leaves out.
+private = { ignore = false }
+
+[packwing]
+accepted = ["GPL-3.0-or-later"]
+
+[packwing-core]
+accepted = ["GPL-3.0-or-later"]
+
+# hivepack's notices, whole: what each crate is a port of, and the
+# copyright lines, which cargo-about leaves out of a text it recognizes.
+# Each file is pinned to the commit packwing builds with: a notice that
+# changes stops the package until it is looked at again.
+
+[hivepack-age.clarify]
+license = "BSD-3-Clause"
+
+[[hivepack-age.clarify.files]]
+path = "LICENSE"
+license = "BSD-3-Clause"
+checksum = "2213f5ba10b67b59452a838df7c716993d484f8ac18582b824660de8da9c6398"
+
+[hivepack-bzip2.clarify]
+license = "bzip2-1.0.6"
+
+[[hivepack-bzip2.clarify.files]]
+path = "LICENSE"
+license = "bzip2-1.0.6"
+checksum = "2d4b9e1c508b6f26e310a4341c51ce11708b0a189d883ca3fec9b4dacef497ae"
+
+[hivepack-crypto.clarify]
+license = "MIT"
+
+[[hivepack-crypto.clarify.files]]
+path = "LICENSE"
+license = "MIT"
+checksum = "0946a0b053391de79223969b42bf30c7028625275e985a45074de5f52ff4279d"
+
+[hivepack-deflate.clarify]
+license = "Zlib"
+
+[[hivepack-deflate.clarify.files]]
+path = "LICENSE"
+license = "Zlib"
+checksum = "df0ecd5578093d80ded64637a256be17d19911be264e1f577adcbf39df9ba44b"
+
+[hivepack-extract.clarify]
+license = "MIT AND Unicode-3.0"
+
+[[hivepack-extract.clarify.files]]
+path = "../../LICENSE"
+license = "MIT"
+checksum = "0b17dee728dd7507cb1ff9d382daf665ebf0d93c8ef3e4042148146a07a6ef3e"
+
+[[hivepack-extract.clarify.files]]
+path = "LICENSE-UNICODE"
+license = "Unicode-3.0"
+checksum = "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+
+[hivepack-open.clarify]
+license = "MIT"
+
+[[hivepack-open.clarify.files]]
+path = "../../LICENSE"
+license = "MIT"
+checksum = "0b17dee728dd7507cb1ff9d382daf665ebf0d93c8ef3e4042148146a07a6ef3e"
+
+[hivepack-tar.clarify]
+license = "BSD-3-Clause"
+
+[[hivepack-tar.clarify.files]]
+path = "LICENSE"
+license = "BSD-3-Clause"
+checksum = "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
+
+[hivepack-xz.clarify]
+license = "0BSD"
+
+[[hivepack-xz.clarify.files]]
+path = "LICENSE"
+license = "0BSD"
+checksum = "aa3c2b5f35a69df8265dfa0818e027fd1656e8562742fbaaa9c9db148e95364e"
+
+[hivepack-zip.clarify]
+license = "BSD-3-Clause"
+
+[[hivepack-zip.clarify.files]]
+path = "LICENSE"
+license = "BSD-3-Clause"
+checksum = "dee4d2cce73a6fbed996ea32a8530d1d85bcd1ab5ee983e3def7919a8d34782d"
+
+[hivepack-zstd.clarify]
+license = "BSD-3-Clause"
+
+[[hivepack-zstd.clarify.files]]
+path = "LICENSE"
+license = "BSD-3-Clause"
+checksum = "a0503f74552053be5a07be8dfc83c9810da4766bc7d0dbd1051fa77358497f22"
