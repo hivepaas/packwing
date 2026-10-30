@@ -24,6 +24,8 @@ shots = ["gpui_platform/test-support", "dep:gpui_wgpu", "dep:image"]
 [dependencies]
 gpui.workspace = true
 gpui_platform.workspace = true
+# Reading, extracting and testing archives, through hivepack.
+packwing-core.workspace = true
 # The system's right-click menu: packwing's items in it (src/right_click.rs).
 context-menu = "0.2"
 unicode-segmentation = "1"

@@ -4,7 +4,7 @@
 
 Built in Rust on [hivepack](https://github.com/hivepaas/hivepack-rs).
 
-> **Status:** early development. There is nothing to download yet. The window is drawn, with made-up archives in it; it reads and writes no archive until hivepack is wired in.
+> **Status:** early development. There is nothing to download yet. packwing opens, extracts and tests ZIP and tar archives through hivepack, and the layers around them (gzip, zstd, xz, bzip2 and the others hivepack reads; age files need a passphrase prompt, which comes next). It writes no archive yet: New archive, Add files and Repair show made-up progress, as do Recent and the samples the screenshots draw.
 
 ## 🎯 Plans
 

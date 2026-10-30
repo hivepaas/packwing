@@ -8,8 +8,9 @@ use gpui::{
 
 use super::{DialogEvent, Job, Verb, footer, header};
 use crate::colors::colors;
-use crate::demo::{Selection, counted, size};
+use crate::demo::Selection;
 use crate::input::{Changed, TextInput};
+use crate::model::{counted, size};
 use crate::widgets::{
     Chosen, Fill, Select, SelectLook, Size, Tone, button, check_row, icon, icon_button, legend,
     note, segment, segments, switch, tonal_tint,
@@ -104,7 +105,7 @@ const SPLITS: [&str; 4] = [
 ];
 const CUSTOM: usize = 3;
 
-/// The units a part's size is typed in, as the app counts sizes (`demo::size`).
+/// The units a part's size is typed in, as the app counts sizes (`model::size`).
 const UNITS: [(&str, u64); 2] = [("MB", 1_000_000), ("GB", 1_000_000_000)];
 
 /// The smallest part: a ZIP's parts are 64 KB or more, and parts this small
@@ -270,13 +271,13 @@ impl CreateDialog {
             self.name.read(cx).text().trim(),
             self.format(cx).ext()
         );
-        cx.emit(DialogEvent::Start(Job {
-            verb: Verb::Create,
-            name: name.into(),
-            to: Some("Documents".into()),
-            files: self.selection.items,
-            bytes: self.selection.size,
-        }));
+        cx.emit(DialogEvent::Start(Job::shown(
+            Verb::Create,
+            name.into(),
+            Some("Documents".into()),
+            self.selection.items,
+            self.selection.size,
+        )));
     }
 
     /// What Advanced has changed, said beside it while it is hidden: the

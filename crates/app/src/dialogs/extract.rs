@@ -1,6 +1,8 @@
 //! Extract: where the files go, the password, how the names are read, and
 //! what the safety checks found.
 
+use std::path::PathBuf;
+
 use gpui::{
     Context, Entity, EventEmitter, FontWeight, PathPromptOptions, Render, SharedString, Window,
     div, prelude::*, px, rgb,
@@ -8,8 +10,8 @@ use gpui::{
 
 use super::{DialogEvent, Job, Verb, card, footer, header};
 use crate::colors::colors;
-use crate::demo::{Archive, Kind, counted, size};
 use crate::input::TextInput;
+use crate::model::{Archive, Kind, counted, size};
 use crate::widgets::{
     Fill, Select, SelectLook, Size, Tone, button, chip, icon, icon_button, legend, link, note,
     option_card, titled, tonal_tint,
@@ -23,7 +25,7 @@ enum Dest {
     /// The archive's own folder.
     Here,
     /// A folder the user picks: none picked yet.
-    Folder(Option<SharedString>),
+    Folder(Option<PathBuf>),
 }
 
 /// How file names in the archive may be written, when it does not say.
@@ -65,8 +67,21 @@ impl ExtractDialog {
     fn destination(&self) -> SharedString {
         match &self.dest {
             Dest::NewFolder => self.new_folder().into(),
-            Dest::Here => self.archive.location.into(),
-            Dest::Folder(f) => f.clone().unwrap_or_else(|| "…".into()),
+            Dest::Here => self.archive.location.clone().into(),
+            Dest::Folder(f) => f
+                .as_ref()
+                .map_or_else(|| "…".into(), |f| f.display().to_string().into()),
+        }
+    }
+
+    /// Where the files go on disk: none for a sample, or before a folder is
+    /// picked.
+    fn destination_path(&self) -> Option<PathBuf> {
+        let folder = self.archive.path.as_ref()?.parent()?.to_path_buf();
+        match &self.dest {
+            Dest::NewFolder => Some(folder.join(self.archive.stem())),
+            Dest::Here => Some(folder),
+            Dest::Folder(f) => f.clone(),
         }
     }
 
@@ -83,9 +98,8 @@ impl ExtractDialog {
             if let Ok(Ok(Some(paths))) = picked.await
                 && let Some(path) = paths.into_iter().next()
             {
-                let shown = SharedString::from(path.display().to_string());
                 let _ = this.update(cx, |this, cx| {
-                    this.dest = Dest::Folder(Some(shown));
+                    this.dest = Dest::Folder(Some(path));
                     cx.notify();
                 });
             }
@@ -94,13 +108,24 @@ impl ExtractDialog {
     }
 
     fn start(&mut self, cx: &mut Context<Self>) {
-        cx.emit(DialogEvent::Start(Job {
-            verb: Verb::Extract,
-            name: self.archive.name.into(),
-            to: Some(self.destination()),
-            files: self.archive.files,
-            bytes: self.archive.unpacked,
-        }));
+        let a = &self.archive;
+        let mut job = Job::shown(
+            Verb::Extract,
+            a.name.clone().into(),
+            Some(self.destination()),
+            a.files,
+            a.unpacked,
+        );
+        if let Some(source) = a.path.clone() {
+            // A folder still to pick: nothing starts yet.
+            let Some(destination) = self.destination_path() else {
+                return;
+            };
+            job.work = vec![(source, Some(destination))];
+            let typed = self.password.read(cx).text().to_owned();
+            job.password = (!typed.is_empty()).then_some(typed);
+        }
+        cx.emit(DialogEvent::Start(job));
     }
 
     fn destinations(&self, cx: &mut Context<Self>) -> impl IntoElement {
@@ -127,7 +152,7 @@ impl ExtractDialog {
             ));
         let here = on(&Dest::Here);
         let picked = match &self.dest {
-            Dest::Folder(Some(f)) => Some(f.clone()),
+            Dest::Folder(Some(f)) => Some(SharedString::from(f.display().to_string())),
             _ => None,
         };
         let folder = on(&Dest::Folder(None));
@@ -219,7 +244,7 @@ impl ExtractDialog {
             .entries
             .iter()
             .find(|e| e.kind != Kind::Folder && !e.name.is_ascii())
-            .map_or("", |e| e.name);
+            .map_or(String::new(), |e| e.name.clone());
         div()
             .flex()
             .items_center()
@@ -291,7 +316,7 @@ impl ExtractDialog {
 
 impl Render for ExtractDialog {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let a = self.archive;
+        let a = &self.archive;
         let detail = format!(
             "{} · {} · {}",
             a.name,

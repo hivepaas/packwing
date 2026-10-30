@@ -1,8 +1,9 @@
 //! packwing: a file archiver that opens archives safely.
 //!
-//! Usage: `packwing [--first-run] [--managed] [--<item> PATH…]`. For now the
-//! window shows made-up archives (`demo.rs`) and its buttons start nothing
-//! real: reading and writing archives comes with hivepack. `--first-run`
+//! Usage: `packwing [--first-run] [--managed] [--<item> PATH…]`. Archives
+//! are read, extracted and tested through packwing-core and hivepack
+//! (`--open PATH` opens one); writing them is to come, and New archive,
+//! Recent and the screenshots show made-up ones (`demo.rs`). `--first-run`
 //! opens on the welcome; `--managed` runs as an organization would, with its
 //! policies. An item of the right-click menu runs packwing with its option
 //! and the paths chosen (`right_click.rs`).
@@ -15,6 +16,7 @@ mod colors;
 mod demo;
 mod dialogs;
 mod input;
+mod model;
 mod open_with;
 mod pages;
 mod right_click;

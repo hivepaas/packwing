@@ -8,9 +8,12 @@ their source is.
 
 Licenses, by how many crates use them:
 {{#each overview}}
+{{#unless (eq id "GPL-3.0-or-later")}}
   {{count}}  {{{name}}} ({{id}})
+{{/unless}}
 {{/each}}
 {{#each licenses}}
+{{#unless (eq id "GPL-3.0-or-later")}}
 
 --------------------------------------------------------------------------------
 {{{name}}} ({{id}}), used by:
@@ -19,4 +22,5 @@ Licenses, by how many crates use them:
 {{/each}}
 
 {{{text}}}
+{{/unless}}
 {{/each}}

@@ -6,7 +6,8 @@ use gpui::{Context, FontWeight, Render, SharedString, Window, div, prelude::*, p
 
 use super::{rows, section, setting};
 use crate::colors::{Tint, colors};
-use crate::demo::{Managed, count};
+use crate::demo::Managed;
+use crate::model::count;
 use crate::widgets::{Fill, Size, button, icon, switch, tile};
 
 /// Monospace fonts for the policies' names, the first one installed.
