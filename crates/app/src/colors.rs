@@ -61,6 +61,10 @@ pub struct Palette {
     /// A switch's knob, on and off.
     pub knob_on: u32,
     pub knob_off: u32,
+    /// The logo's feather: the design's orange, light and dark (see
+    /// [`Palette::feather`]).
+    pub feather_light: u32,
+    pub feather_dark: u32,
 
     // Notes, by tone: a ground and its text.
     /// Something to know before going on: a file keeps its Internet mark.
@@ -115,6 +119,8 @@ pub const LIGHT: Palette = Palette {
     on_tonal: 0x0b3b2a,
     knob_on: 0xffffff,
     knob_off: 0xffffff,
+    feather_light: 0xffe1cc,
+    feather_dark: 0x5a2e0c,
 
     warn_bg: 0xffe1cc,
     warn_text: 0x5a2e0c,
@@ -177,6 +183,8 @@ pub const DARK: Palette = Palette {
     on_tonal: 0xb5f0d2,
     knob_on: 0x003824,
     knob_off: 0xa9b6af,
+    feather_light: 0xffdcc2,
+    feather_dark: 0x5a3a20,
 
     warn_bg: 0x5a3a20,
     warn_text: 0xffdcc2,
@@ -231,6 +239,24 @@ pub fn colors() -> Palette {
 /// Chooses the palette; the caller redraws.
 pub fn set_dark(dark: bool) {
     DARK_IN_USE.store(dark, Ordering::Relaxed);
+}
+
+impl Palette {
+    /// The logo's feather on a tile of `tint`: the design's orange, light
+    /// where the tile's ink is light and dark where it is dark, so it reads
+    /// on the tile as the ink does.
+    pub fn feather(&self, tint: Tint) -> u32 {
+        let (r, g, b) = (
+            (tint.ink >> 16) & 0xff,
+            (tint.ink >> 8) & 0xff,
+            tint.ink & 0xff,
+        );
+        if 299 * r + 587 * g + 114 * b > 127_500 {
+            self.feather_light
+        } else {
+            self.feather_dark
+        }
+    }
 }
 
 /// `color` (`0xRRGGBB`) with an alpha byte, for `gpui::rgba`.
@@ -290,6 +316,25 @@ mod tests {
                 p.orange_tag,
             ] {
                 assert!(contrast(t.ink, t.ground) >= 4.5, "{t:?}");
+            }
+        }
+    }
+
+    #[test]
+    fn the_feather_reads_on_the_logo_s_tiles() {
+        for p in [LIGHT, DARK] {
+            for t in [
+                Tint {
+                    ground: p.accent,
+                    ink: p.on_accent,
+                },
+                Tint {
+                    ground: p.tonal,
+                    ink: p.on_tonal,
+                },
+            ] {
+                let c = contrast(p.feather(t), t.ground);
+                assert!(c >= 3., "{t:?}: {c:.2}");
             }
         }
     }

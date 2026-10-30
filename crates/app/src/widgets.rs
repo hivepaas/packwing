@@ -32,6 +32,32 @@ pub fn tile(size: f32, radius: f32, tint: Tint) -> Div {
         .justify_center()
 }
 
+/// The accent's tint, for the logo's tile.
+pub fn accent_tint() -> Tint {
+    let c = colors();
+    Tint {
+        ground: c.accent,
+        ink: c.on_accent,
+    }
+}
+
+/// packwing's logo on a tile of `tint`: the zipper in the tile's ink, and
+/// its pull, a feather, in the design's orange. GPUI draws an icon in one
+/// color, so the two are icons of their own, one over the other.
+pub fn logo(size: f32, tint: Tint) -> Div {
+    div()
+        .relative()
+        .size(px(size))
+        .flex_shrink_0()
+        .child(icon("logo", size, tint.ink).absolute().top_0().left_0())
+        .child(
+            icon("logo-feather", size, colors().feather(tint))
+                .absolute()
+                .top_0()
+                .left_0(),
+        )
+}
+
 /// The tint of the accent's soft fill, for a dialog's icon.
 pub fn tonal_tint() -> Tint {
     let c = colors();
