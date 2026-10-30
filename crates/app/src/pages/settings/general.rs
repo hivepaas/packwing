@@ -19,6 +19,25 @@ pub enum Appearance {
     System,
 }
 
+impl Appearance {
+    pub fn name(self) -> &'static str {
+        match self {
+            Appearance::Light => "Light",
+            Appearance::Dark => "Dark",
+            Appearance::System => "System",
+        }
+    }
+
+    /// The one after this, as the title bar's switch goes round them.
+    pub fn next(self) -> Appearance {
+        match self {
+            Appearance::System => Appearance::Light,
+            Appearance::Light => Appearance::Dark,
+            Appearance::Dark => Appearance::System,
+        }
+    }
+}
+
 /// Another appearance was chosen.
 pub struct AppearanceChosen(pub Appearance);
 
@@ -86,21 +105,17 @@ impl General {
 impl Render for General {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
-        let looks = [
-            (Appearance::Light, "Light"),
-            (Appearance::Dark, "Dark"),
-            (Appearance::System, "System"),
-        ]
-        .into_iter()
-        .map(|(a, name)| {
-            segment(name, name, a == self.appearance).on_click(cx.listener(
-                move |this, _, _, cx| {
-                    this.appearance = a;
-                    cx.emit(AppearanceChosen(a));
-                    cx.notify();
-                },
-            ))
-        });
+        let looks = [Appearance::Light, Appearance::Dark, Appearance::System]
+            .into_iter()
+            .map(|a| {
+                segment(a.name(), a.name(), a == self.appearance).on_click(cx.listener(
+                    move |this, _, _, cx| {
+                        this.appearance = a;
+                        cx.emit(AppearanceChosen(a));
+                        cx.notify();
+                    },
+                ))
+            });
         let open = |id: &'static str, extract: bool, title: &'static str, detail: &'static str| {
             let on = self.extract_on_open == extract;
             option_card(id, on)

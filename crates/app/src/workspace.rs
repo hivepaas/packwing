@@ -105,6 +105,8 @@ impl Workspace {
                 window,
                 |this, _, e: &AppearanceChosen, window, cx| this.set_appearance(e.0, window, cx),
             ),
+            // The desktop may move the window's buttons to the other end.
+            cx.observe_button_layout_changed(window, |_, _, cx| cx.notify()),
             cx.observe_window_appearance(window, |this, window, cx| {
                 this.system_dark = looks_dark(window);
                 this.apply_appearance(window, cx);
@@ -588,10 +590,18 @@ impl Render for Workspace {
                     )
             }
         };
+        let switch = chrome::appearance_switch(self.appearance).on_click(cx.listener(
+            |this, _, window, cx| {
+                let next = this.appearance.next();
+                this.set_appearance(next, window, cx);
+            },
+        ));
         let framed = chrome::window_chrome(
             div().flex_1().min_h_0().flex().flex_col().child(body),
             rgb(c.page).into(),
+            switch,
             window,
+            cx,
         );
         let dialog = self.dialog.as_ref().map(|d| d.view.clone());
         div()
