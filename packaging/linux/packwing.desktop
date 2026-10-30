@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=packwing
+GenericName=Archive Manager
+Comment=Open archives safely, and make smaller files to share
+Exec=packwing --open %F
+Icon=packwing
+Terminal=false
+Categories=Utility;Archiving;Compression;
+Keywords=zip;rar;7z;tar;archive;extract;compress;
+MimeType=application/zip;application/vnd.rar;application/x-7z-compressed;application/x-tar;application/gzip;application/x-compressed-tar;application/x-xz;application/x-xz-compressed-tar;application/zstd;application/x-zstd-compressed-tar;application/vnd.comicbook+zip;application/vnd.comicbook-rar;
+StartupWMClass=packwing
