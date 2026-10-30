@@ -16,6 +16,11 @@
 # context-menu crate packwing builds with (it reads the menu's definition
 # that crate writes) and checked against its SHA-256 before it is packed.
 #
+# The licenses of the Rust crates the program is built with go in its doc
+# folder, written by cargo-about (about.toml, packaging/licenses.hbs):
+#
+#   cargo install cargo-about --locked --features cli
+#
 # Environment: BIN (default target/release/packwing), ARCH (default the
 # machine's: x86_64 or aarch64), DIST (default dist).
 
@@ -53,6 +58,7 @@ if [ "$LOCKED" != "$CONTEXT_MENU" ]; then
 	exit 1
 fi
 [ -x "$BIN" ] || { echo "no build at $BIN: cargo build --release -p packwing" >&2; exit 1; }
+cargo about --version >/dev/null 2>&1 || { echo "no cargo-about: cargo install cargo-about --locked --features cli" >&2; exit 1; }
 rm -rf "$WORK"
 mkdir -p "$WORK" "$DIST"
 
@@ -69,6 +75,11 @@ strip "$DEB/usr/bin/packwing"
 install -Dm644 packaging/linux/packwing.desktop "$DEB/usr/share/applications/packwing.desktop"
 install -Dm644 packaging/icons/packwing.svg "$DEB/usr/share/icons/hicolor/scalable/apps/packwing.svg"
 install -Dm644 packaging/linux/copyright "$DEB/usr/share/doc/packwing/copyright"
+# Those of the crates built for this machine; one under a license
+# about.toml does not accept stops here.
+cargo about generate --locked --fail -c about.toml -m crates/app/Cargo.toml \
+	--target "$ARCH-unknown-linux-gnu" -o "$WORK/THIRD-PARTY-LICENSES" packaging/licenses.hbs
+install -Dm644 "$WORK/THIRD-PARTY-LICENSES" "$DEB/usr/share/doc/packwing/THIRD-PARTY-LICENSES"
 # Named after packwing's menu, which is how the extension knows it.
 fetch "$EXTENSION_URL" "$EXTENSION_SHA" "$WORK/extension.so"
 install -Dm644 "$WORK/extension.so" "$DEB/$EXTENSIONS/libcontext-menu-packwing.so"

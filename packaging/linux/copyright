@@ -10,7 +10,11 @@ License: GPL-3.0-or-later
 Files: usr/bin/packwing
 Copyright: 2026 HivePaaS
  2014 The Nunito Project Authors (https://github.com/googlefonts/nunito)
-Comment: The program holds Nunito, the typeface its window is drawn in.
+Comment: The program holds Nunito, the typeface its window is drawn in, and
+ the Rust crates it is built with, each under its own license (MIT,
+ Apache-2.0, BSD, Unicode-3.0, Zlib, ISC, CC0-1.0, MPL-2.0): their texts,
+ and the crates under each, are in
+ /usr/share/doc/packwing/THIRD-PARTY-LICENSES.
 License: GPL-3.0-or-later and OFL-1.1
 
 Files: usr/lib/*/nautilus/extensions-4/libcontext-menu-packwing.so

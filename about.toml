@@ -1,0 +1,19 @@
+# The licenses packwing's crates may be under, for `cargo about`
+# (scripts/package_linux.sh writes the program's third-party licenses with
+# it). A crate under any other stops the package until it is looked at.
+# For a crate under several, the first of these is the one listed.
+accepted = [
+    "MIT",
+    "Apache-2.0",
+    "Unicode-3.0",
+    "BSD-3-Clause",
+    "BSD-2-Clause",
+    "ISC",
+    "Zlib",
+    "CC0-1.0",
+    "MPL-2.0",
+]
+# Only what is built into the program: not what builds it, nor packwing.
+ignore-build-dependencies = true
+ignore-dev-dependencies = true
+private = { ignore = true }
