@@ -1,6 +1,6 @@
 //! What packwing does with archives, through hivepack: it reads what a file
-//! holds, extracts it, checks that all of it reads, and makes ZIP archives. Nothing here draws;
-//! the window shows what comes back.
+//! holds, extracts it, checks that all of it reads, and makes ZIP, 7z and compressed tar
+//! archives. Nothing here draws; the window shows what comes back.
 //!
 //! A file is opened through its layers (age, zstd, xz, gzip, bzip2, an RPM
 //! package's lead and headers and the others hivepack-open finds), and what
@@ -11,12 +11,12 @@
 
 mod create;
 mod job;
+mod joined;
 mod listing;
 mod spool;
 mod volume;
 
 use std::fmt;
-use std::fs::File;
 use std::io;
 use std::path::Path;
 use std::sync::Arc;
@@ -24,7 +24,9 @@ use std::sync::Arc;
 use hivepack_age::{BoxedIdentity, LazyScryptIdentity, PassphrasePrompt};
 use hivepack_open::Opener;
 
-pub use create::{Measured, NewArchive, create_zip, measure};
+use crate::joined::Joined;
+
+pub use create::{Kind, Level, Measured, NewArchive, create, measure};
 pub use hivepack_extract::{Cancel, Progress, Summary};
 pub use hivepack_open::{Container, Layer};
 pub use job::{Control, extract, test};
@@ -316,7 +318,7 @@ pub fn came_from_internet(path: &Path) -> bool {
 /// none, it says so, and opening fails with [`Error::Locked`], so that the
 /// window can ask for one. The passphrase is asked for, and scrypt run,
 /// only for a layer that needs it.
-fn opener<'a>(path: &'a Path, keys: &Keys) -> Opener<impl FnMut() -> io::Result<File> + use<'a>> {
+fn opener<'a>(path: &'a Path, keys: &Keys) -> Opener<impl FnMut() -> io::Result<Joined> + use<'a>> {
     let passphrase = keys.passphrase.clone();
     let prompt: PassphrasePrompt = Arc::new(move |_| match &passphrase {
         Some(p) if !p.is_empty() => Ok(p.clone()),
@@ -329,7 +331,7 @@ fn opener<'a>(path: &'a Path, keys: &Keys) -> Opener<impl FnMut() -> io::Result<
         .file_name()
         .map(|n| n.to_string_lossy().into_owned())
         .unwrap_or_default();
-    Opener::new(move || File::open(path))
+    Opener::new(move || Joined::open(path))
         .name(&name)
         .identities(identities)
 }

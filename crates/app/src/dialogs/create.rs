@@ -1,7 +1,6 @@
 //! New archive: what goes in it and where it goes, its name and format, and
 //! under Advanced, how hard it is squeezed, whether it is split into parts,
-//! and a password. hivepack writes ZIP archives so far: the other formats
-//! say so, and do not start.
+//! and a password.
 
 use std::path::PathBuf;
 
@@ -9,7 +8,9 @@ use gpui::{
     App, Context, Entity, EventEmitter, FontWeight, PathPromptOptions, Render, Subscription, Task,
     Window, div, prelude::*, px, relative, rgb,
 };
-use packwing_core::NewArchive;
+use packwing_core::{Kind, NewArchive};
+
+pub(crate) use packwing_core::Level;
 
 use super::{Creating, DialogEvent, Job, Verb, footer, header};
 use crate::colors::colors;
@@ -75,39 +76,20 @@ impl Format {
         }
     }
 
-    /// Whether packwing can write it: hivepack has a writer for ZIP archives
-    /// and none yet for 7z or tar.
-    pub fn writes(self) -> bool {
-        self == Format::Zip
+    /// What packwing-core makes of it.
+    fn kind(self) -> Kind {
+        match self {
+            Format::Zip => Kind::Zip,
+            Format::SevenZip => Kind::SevenZip,
+            Format::TarGz => Kind::TarGz,
+            Format::TarXz => Kind::TarXz,
+            Format::TarZst => Kind::TarZst,
+        }
     }
 
     /// Whether its archives can have a password: tar has none.
     pub fn can_protect(self) -> bool {
         matches!(self, Format::Zip | Format::SevenZip)
-    }
-}
-
-/// How hard the files are squeezed: higher makes a smaller archive, which
-/// takes longer to make, not to open.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(crate) enum Level {
-    Lowest,
-    Low,
-    Medium,
-    High,
-    Highest,
-}
-
-impl Level {
-    /// The level Deflate is asked for.
-    fn deflate(self) -> u32 {
-        match self {
-            Level::Lowest => 1,
-            Level::Low => 3,
-            Level::Medium => 6,
-            Level::High => 8,
-            Level::Highest => 9,
-        }
     }
 }
 
@@ -384,10 +366,9 @@ impl CreateDialog {
         let format = self.format(cx);
         let typed = self.name.read(cx).text().trim().to_owned();
         let folder = self.folder.clone();
-        let (Some(folder), true, true, true) = (
+        let (Some(folder), true, true) = (
             folder.filter(|_| !self.selection.paths.is_empty()),
             name_fits(&typed),
-            format.writes(),
             self.advanced_ready(cx),
         ) else {
             self.checked = true;
@@ -409,8 +390,10 @@ impl CreateDialog {
             paths: self.selection.paths.clone(),
             archive: folder.join(name),
             how: NewArchive {
-                level: self.level.deflate(),
+                kind: format.kind(),
+                level: self.level,
                 password: password.then(|| self.password.read(cx).text().as_bytes().to_vec()),
+                hide_names: self.hide_names,
                 part_size: self.parts(cx),
             },
         });
@@ -536,21 +519,11 @@ impl CreateDialog {
                     )
                 },
             )
-            .map(|d| {
-                let format = self.format(cx);
-                if format.writes() {
-                    d.children(
-                        format
-                            .caveat()
-                            .map(|caveat| note(Tone::Warn).mt(px(4.)).child(caveat)),
-                    )
-                } else {
-                    d.child(note(Tone::Warn).mt(px(4.)).child(format!(
-                        "packwing can’t write {} archives yet. Pick .zip.",
-                        format.ext()
-                    )))
-                }
-            })
+            .children(
+                self.format(cx)
+                    .caveat()
+                    .map(|caveat| note(Tone::Warn).mt(px(4.)).child(caveat)),
+            )
     }
 
     fn advanced_toggle(&self, cx: &mut Context<Self>) -> impl IntoElement {
@@ -869,13 +842,6 @@ mod tests {
         for bad in ["", ".", "..", "a/b", "../a", "a\\b"] {
             assert!(!name_fits(bad), "{bad:?}");
         }
-    }
-
-    #[test]
-    fn every_level_squeezes_harder_than_the_last() {
-        let levels = LEVELS.map(|(l, _)| l.deflate());
-        assert!(levels.windows(2).all(|w| w[0] < w[1]), "{levels:?}");
-        assert!((1..=9).contains(&levels[0]) && (1..=9).contains(&levels[4]));
     }
 
     #[test]

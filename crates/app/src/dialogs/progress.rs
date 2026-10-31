@@ -86,7 +86,7 @@ impl ProgressDialog {
         let (verb, work, create) = (job.verb, job.work.clone(), job.create.clone());
         let task = cx.background_executor().spawn(async move {
             if let Some(c) = create {
-                return packwing_core::create_zip(&c.paths, &c.archive, &c.how, &control).map(Some);
+                return packwing_core::create(&c.paths, &c.archive, &c.how, &control).map(Some);
             }
             for (source, destination) in &work {
                 match (verb, destination) {

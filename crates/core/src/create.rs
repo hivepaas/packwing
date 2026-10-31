@@ -1,18 +1,22 @@
-//! Making a ZIP archive of files and folders, through hivepack-zip. It is
-//! written beside what is there, never over it, and taken away again if it
-//! fails or is stopped. Links are kept as links, on Unix; what is not a
+//! Making an archive of files and folders: ZIP through hivepack-zip, 7z
+//! through hivepack-7z, and tar through hivepack-tar under gzip, xz or zstd.
+//! It is written beside what is there, never over it, and taken away again
+//! if it fails or is stopped. Links are kept as links, on Unix; what is not a
 //! file, a folder or a link (a pipe, a socket, a device) is left out, as
-//! reading it could wait for ever.
+//! reading it could wait for ever. A tar archive's owners are left out too:
+//! its files may go to someone with other users.
 
 use std::fmt;
 use std::fs::{self, File, Metadata, OpenOptions};
-use std::io::{self, Seek, SeekFrom, Write};
+use std::io::{self, Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
 use std::time::UNIX_EPOCH;
 
+use hivepack_deflate::{DEF_MEM_LEVEL, Deflate, Flush, Z_DEFAULT_STRATEGY};
 use hivepack_extract::Progress;
+use hivepack_xz::{MtOptions, Stream, stream_encoder_mt_memusage};
 use hivepack_zip::{
     Archive, BufferSource, Closed, DataSource, ErrorCode, FileAttributes, Flags, OpenFlags, Stat,
     cm, em, file_attributes, opsys, stat,
@@ -20,33 +24,87 @@ use hivepack_zip::{
 
 use crate::{Control, Error};
 
+/// A kind of archive packwing makes.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Kind {
+    #[default]
+    Zip,
+    SevenZip,
+    TarGz,
+    TarXz,
+    TarZst,
+}
+
+/// How hard the files are squeezed: higher makes a smaller archive, which
+/// takes longer to make, not to open.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Level {
+    Lowest,
+    Low,
+    #[default]
+    Medium,
+    High,
+    Highest,
+}
+
+impl Level {
+    /// The level Deflate is asked for: zlib's own default in the middle.
+    fn deflate(self) -> u32 {
+        match self {
+            Level::Lowest => 1,
+            Level::Low => 3,
+            Level::Medium => 6,
+            Level::High => 8,
+            Level::Highest => 9,
+        }
+    }
+
+    /// The preset of LZMA and LZMA2: xz's own default in the middle.
+    fn xz(self) -> u32 {
+        match self {
+            Level::Lowest => 1,
+            Level::Low => 3,
+            Level::Medium => 6,
+            Level::High => 7,
+            Level::Highest => 9,
+        }
+    }
+
+    /// The level zstd is asked for: 19 is as far as the `zstd` tool goes
+    /// without `--ultra`, whose archives take far more memory to open.
+    fn zstd(self) -> i32 {
+        match self {
+            Level::Lowest => 1,
+            Level::Low => 3,
+            Level::Medium => 9,
+            Level::High => 15,
+            Level::Highest => 19,
+        }
+    }
+}
+
 /// How a new archive is made.
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, Default, PartialEq, Eq)]
 pub struct NewArchive {
-    /// How hard Deflate squeezes, 1 to 9.
-    pub level: u32,
-    /// Encrypts its files with WinZip AES-256.
+    pub kind: Kind,
+    pub level: Level,
+    /// Encrypts its files with AES-256: WinZip's in a ZIP archive, 7-Zip's in
+    /// a 7z one. A tar archive cannot have one.
     pub password: Option<Vec<u8>>,
+    /// Encrypts a 7z archive's names too, with its password.
+    pub hide_names: bool,
     /// Cuts it into `name.zip.001`, `name.zip.002`, … of this many bytes, as
     /// 7-Zip does.
     pub part_size: Option<u64>,
 }
 
-impl Default for NewArchive {
-    fn default() -> NewArchive {
-        NewArchive {
-            level: 6,
-            password: None,
-            part_size: None,
-        }
-    }
-}
-
 impl fmt::Debug for NewArchive {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("NewArchive")
+            .field("kind", &self.kind)
             .field("level", &self.level)
             .field("password", &self.password.is_some())
+            .field("hide_names", &self.hide_names)
             .field("part_size", &self.part_size)
             .finish()
     }
@@ -106,7 +164,7 @@ fn unicode_name(path: &Path) -> Result<String, Error> {
         .ok_or_else(|| Error::Failed(format!("{} has no name.", path.display())))?;
     name.to_str().map(str::to_owned).ok_or_else(|| {
         Error::Failed(format!(
-            "The name of {} is not valid Unicode, so it cannot go in a ZIP archive.",
+            "The name of {} is not valid Unicode, so it cannot go in an archive.",
             path.display()
         ))
     })
@@ -122,14 +180,22 @@ fn items_of(paths: &[PathBuf]) -> Result<Vec<Item>, Error> {
 
 /// Counts the files in `paths`, and the bytes in them.
 pub fn measure(paths: &[PathBuf]) -> Result<Measured, Error> {
+    Ok(measured(&items_of(paths)?))
+}
+
+/// The files in `items`, links too, and the bytes in the files: a link's
+/// target is not read as a file is.
+fn measured(items: &[Item]) -> Measured {
     let mut measured = Measured::default();
-    for item in items_of(paths)? {
+    for item in items {
         if !item.metadata.is_dir() {
             measured.files += 1;
+        }
+        if item.metadata.is_file() {
             measured.bytes += item.metadata.len();
         }
     }
-    Ok(measured)
+    measured
 }
 
 fn seconds(metadata: &Metadata) -> i64 {
@@ -151,7 +217,11 @@ fn attributes(metadata: &Metadata) -> (u8, u32) {
         (false, true) => 0o100444,
         (false, false) => 0o100644,
     };
-    (opsys::UNIX, (mode << 16) | u32::from(mode & 0o200 == 0))
+    let directory = if metadata.is_dir() { 0x10 } else { 0 };
+    (
+        opsys::UNIX,
+        (mode << 16) | directory | u32::from(mode & 0o200 == 0),
+    )
 }
 
 /// How far the whole archive is, and what a file that fails says.
@@ -334,6 +404,13 @@ fn part_path(base: &Path, part: u64) -> PathBuf {
     PathBuf::from(name)
 }
 
+/// A file's name, split before what names its kind: `a.tar` and `.gz` would
+/// make `a.tar (2).gz`.
+fn name_and_extension(name: &str) -> (&str, &str) {
+    let dot = name.rfind(".tar.").or_else(|| name.rfind('.'));
+    name.split_at(dot.filter(|d| *d > 0).unwrap_or(name.len()))
+}
+
 /// `wanted`, or if that is taken `name (2).zip`, `name (3).zip`, …, the
 /// first for which `take` makes something new.
 fn free_name<T>(
@@ -341,13 +418,12 @@ fn free_name<T>(
     mut take: impl FnMut(&Path) -> io::Result<T>,
 ) -> Result<(PathBuf, T), Error> {
     let folder = wanted.parent().unwrap_or(Path::new(""));
-    let stem = wanted.file_stem().unwrap_or_default().to_string_lossy();
-    let extension = wanted.extension().map(|e| e.to_string_lossy());
+    let name = wanted.file_name().unwrap_or_default().to_string_lossy();
+    let (stem, extension) = name_and_extension(&name);
     for n in 1..10_000 {
-        let path = match (n, &extension) {
-            (1, _) => wanted.to_path_buf(),
-            (_, Some(e)) => folder.join(format!("{stem} ({n}).{e}")),
-            (_, None) => folder.join(format!("{stem} ({n})")),
+        let path = match n {
+            1 => wanted.to_path_buf(),
+            _ => folder.join(format!("{stem} ({n}){extension}")),
         };
         match take(&path) {
             Ok(taken) => return Ok((path, taken)),
@@ -368,6 +444,21 @@ fn free_name<T>(
 
 /// Writes `items` in the archive to `out`.
 fn write_archive<W: Write + Seek>(
+    items: Vec<Item>,
+    new: &NewArchive,
+    tally: &Arc<Tally>,
+    out: W,
+) -> Result<(), Error> {
+    match new.kind {
+        Kind::Zip => write_zip(items, new, tally, out),
+        Kind::SevenZip => write_7z(items, new, tally, out),
+        Kind::TarGz | Kind::TarXz | Kind::TarZst => {
+            write_tar(items, tally, Squeezed::new(new, out)?)
+        }
+    }
+}
+
+fn write_zip<W: Write + Seek>(
     items: Vec<Item>,
     new: &NewArchive,
     tally: &Arc<Tally>,
@@ -396,6 +487,7 @@ fn write_archive<W: Write + Seek>(
             if new.password.is_some() {
                 za.file_set_encryption(index, em::AES_256, None)?;
             }
+            tally.advance(1, 0);
             index
         } else {
             let index = za.file_add(
@@ -411,7 +503,11 @@ fn write_archive<W: Write + Seek>(
                 },
                 Flags::ENC_UTF_8,
             )?;
-            za.set_file_compression(index, cm::DEFAULT, new.level)?;
+            za.set_file_compression(index, cm::DEFAULT, new.level.deflate())?;
+            // Nothing to read, so nothing would count it.
+            if item.metadata.len() == 0 {
+                tally.advance(1, 0);
+            }
             if new.password.is_some() {
                 za.file_set_encryption(index, em::AES_256, None)?;
             }
@@ -423,6 +519,290 @@ fn write_archive<W: Write + Seek>(
     match za.close_to(out)? {
         Closed::Written => Ok(()),
         Closed::Unchanged | Closed::Removed => Err(Error::Failed("Nothing to compress.".into())),
+    }
+}
+
+/// The data of `item`, a file, into `out`, a piece at a time: the size it had
+/// when it was counted, as a tar archive has said already by then. Reading it
+/// counts towards the progress, and is where a job stops.
+fn pump(item: &Item, out: &mut impl Write, tally: &Tally, buf: &mut [u8]) -> Result<(), Error> {
+    let read = |e: io::Error| Error::Failed(format!("Could not read {}: {e}", item.path.display()));
+    let mut file = File::open(&item.path).map_err(read)?;
+    let mut left = item.metadata.len();
+    while left > 0 {
+        tally.control.check()?;
+        let wanted = left.min(buf.len() as u64) as usize;
+        match file.read(&mut buf[..wanted]) {
+            Ok(0) => {
+                return Err(Error::Failed(format!(
+                    "{} got shorter while it was being read.",
+                    item.path.display()
+                )));
+            }
+            Ok(n) => {
+                out.write_all(&buf[..n])?;
+                left -= n as u64;
+                tally.advance(0, n as u64);
+            }
+            Err(e) if e.kind() == io::ErrorKind::Interrupted => {}
+            Err(e) => return Err(read(e)),
+        }
+    }
+    tally.advance(1, 0);
+    Ok(())
+}
+
+/// A time as 7z has it: in 100 ns since 1601, which an earlier one cannot be.
+fn ntfs_time(metadata: &Metadata) -> Option<u64> {
+    let since_1601 = seconds(metadata).checked_add(11_644_473_600)?;
+    u64::try_from(since_1601).ok()?.checked_mul(10_000_000)
+}
+
+fn write_7z<W: Write + Seek>(
+    items: Vec<Item>,
+    new: &NewArchive,
+    tally: &Tally,
+    out: W,
+) -> Result<(), Error> {
+    let password = match &new.password {
+        None => None,
+        Some(p) => Some(
+            String::from_utf8(p.clone())
+                .map_err(|_| Error::Failed("A password has to be valid Unicode.".into()))?,
+        ),
+    };
+    let options = hivepack_7z::WriteOptions {
+        method: hivepack_7z::Method::Lzma2 {
+            preset: new.level.xz(),
+        },
+        encrypt_headers: new.hide_names && password.is_some(),
+        password,
+        random_source: Some(Arc::new(|buffer: &mut [u8]| {
+            getrandom::fill(buffer).map_err(io::Error::other)
+        })),
+        ..hivepack_7z::WriteOptions::default()
+    };
+    let mut archive = hivepack_7z::Writer::with_options(out, options)?;
+    let mut buf = vec![0; PIECE];
+    for item in &items {
+        // 7-Zip keeps a Unix mode above its own attributes, marked by 0x8000.
+        let attributes = attributes(&item.metadata).1 | 0x8000;
+        let entry = hivepack_7z::NewEntry {
+            name: item.name.trim_end_matches('/').to_owned(),
+            attributes: Some(attributes),
+            mtime: ntfs_time(&item.metadata),
+            ctime: None,
+        };
+        if item.metadata.is_dir() {
+            archive.add_directory(entry)?;
+        } else if item.metadata.file_type().is_symlink() {
+            archive.start_file(entry)?;
+            archive.write_all(&link_target(&item.path)?)?;
+            tally.advance(1, 0);
+        } else {
+            archive.start_file(entry)?;
+            pump(item, &mut archive, tally, &mut buf)?;
+        }
+    }
+    archive.finish()?;
+    Ok(())
+}
+
+fn write_tar<W: Write>(items: Vec<Item>, tally: &Tally, out: Squeezed<W>) -> Result<(), Error> {
+    let mut tar = hivepack_tar::Writer::new(out);
+    let mut buf = vec![0; PIECE];
+    for item in &items {
+        let kind = item.metadata.file_type();
+        let link = kind.is_symlink();
+        let mut header = hivepack_tar::Header {
+            name: item.name.as_bytes().to_vec(),
+            mode: i64::from((attributes(&item.metadata).1 >> 16) & 0o7777),
+            mod_time: Some(hivepack_tar::Time {
+                secs: seconds(&item.metadata),
+                nanos: 0,
+            }),
+            ..hivepack_tar::Header::default()
+        };
+        if kind.is_dir() {
+            header.typeflag = hivepack_tar::TYPE_DIR;
+        } else if link {
+            header.typeflag = hivepack_tar::TYPE_SYMLINK;
+            header.linkname = link_target(&item.path)?;
+        } else {
+            header.typeflag = hivepack_tar::TYPE_REG;
+            header.size = i64::try_from(item.metadata.len())
+                .map_err(|_| Error::Failed(format!("{} is too big.", item.path.display())))?;
+        }
+        tar.write_header(&header)?;
+        if link {
+            tally.advance(1, 0);
+        } else if !kind.is_dir() {
+            pump(item, &mut tar, tally, &mut buf)?;
+        }
+    }
+    tar.close()?;
+    tar.into_inner().finish()?;
+    Ok(())
+}
+
+/// How much is read of a file at a time, and made of what compresses.
+const PIECE: usize = 1 << 16;
+
+/// The most xz's threads may take between them, in bytes. Each takes about
+/// three dictionaries, and the highest level's are 64 MiB.
+const XZ_MEMORY: u64 = 4 << 30;
+
+/// What compresses a tar archive.
+enum Coder {
+    Gzip(Box<Deflate>),
+    Xz(Box<Stream>),
+    Zstd(Box<hivepack_zstd::CCtx>),
+}
+
+/// A stream compressed into `out`, whose end [`Squeezed::finish`] writes.
+struct Squeezed<W> {
+    out: W,
+    coder: Coder,
+    buf: Vec<u8>,
+}
+
+/// As many threads as the machine has.
+fn threads() -> u32 {
+    std::thread::available_parallelism().map_or(1, |n| n.get() as u32)
+}
+
+impl<W: Write> Squeezed<W> {
+    fn new(new: &NewArchive, out: W) -> Result<Squeezed<W>, Error> {
+        let failed = |e: String| Error::Failed(format!("Could not start compressing: {e}"));
+        let coder = match new.kind {
+            Kind::TarXz => {
+                let mut options = MtOptions {
+                    threads: threads(),
+                    preset: new.level.xz(),
+                    check: hivepack_xz::Check::CRC64,
+                    ..MtOptions::default()
+                };
+                while options.threads > 1 && stream_encoder_mt_memusage(&options) > XZ_MEMORY {
+                    options.threads -= 1;
+                }
+                Coder::Xz(Box::new(
+                    Stream::stream_encoder_mt(&options).map_err(|e| failed(e.to_string()))?,
+                ))
+            }
+            Kind::TarZst => {
+                let mut cctx = hivepack_zstd::CCtx::new();
+                for parameter in [
+                    hivepack_zstd::CParameter::CompressionLevel(new.level.zstd()),
+                    hivepack_zstd::CParameter::ChecksumFlag(true),
+                    hivepack_zstd::CParameter::NbWorkers(threads()),
+                ] {
+                    cctx.set_parameter(parameter)
+                        .map_err(|e| failed(e.to_string()))?;
+                }
+                Coder::Zstd(Box::new(cctx))
+            }
+            // 16 more than the window's 15 asks for gzip's header and end.
+            _ => Coder::Gzip(Box::new(
+                Deflate::new(
+                    new.level.deflate() as i32,
+                    15 + 16,
+                    DEF_MEM_LEVEL,
+                    Z_DEFAULT_STRATEGY,
+                )
+                .map_err(|e| failed(e.to_string()))?,
+            )),
+        };
+        Ok(Squeezed {
+            out,
+            coder,
+            buf: vec![0; PIECE],
+        })
+    }
+
+    /// Compresses `input`, and with `finish`, ends the stream.
+    fn code(&mut self, input: &[u8], finish: bool) -> io::Result<()> {
+        let failed = |e: String| io::Error::other(format!("Could not compress: {e}"));
+        let mut at = 0;
+        loop {
+            let (made, done) = match &mut self.coder {
+                Coder::Gzip(stream) => {
+                    use hivepack_deflate::{InBuffer, OutBuffer, Status};
+                    let mut output = OutBuffer::new(&mut self.buf);
+                    let mut from = InBuffer::new(&input[at..]);
+                    let flush = if finish {
+                        Flush::Finish
+                    } else {
+                        Flush::NoFlush
+                    };
+                    let status = stream.deflate(&mut output, &mut from, flush);
+                    at += from.pos;
+                    let (made, full) = (output.pos, output.pos == output.dst.len());
+                    let status = match status {
+                        Ok(status) => status,
+                        // Nothing to do: no more input, and nothing held back.
+                        Err(e) if !finish && e.code() == hivepack_deflate::ErrorCode::Buf => {
+                            Status::Ok
+                        }
+                        Err(e) => return Err(failed(e.to_string())),
+                    };
+                    let done =
+                        status == Status::StreamEnd || (!finish && at == input.len() && !full);
+                    (made, done)
+                }
+                Coder::Xz(stream) => {
+                    use hivepack_xz::{Action, InBuffer, OutBuffer, Status};
+                    let mut output = OutBuffer::new(&mut self.buf);
+                    let mut from = InBuffer::new(&input[at..]);
+                    let action = if finish { Action::Finish } else { Action::Run };
+                    let status = stream
+                        .code(&mut output, &mut from, action)
+                        .map_err(|e| failed(e.to_string()))?;
+                    at += from.pos;
+                    let (made, full) = (output.pos, output.pos == output.dst.len());
+                    let done =
+                        status == Status::StreamEnd || (!finish && at == input.len() && !full);
+                    (made, done)
+                }
+                Coder::Zstd(cctx) => {
+                    use hivepack_zstd::{EndDirective, InBuffer, OutBuffer};
+                    let mut output = OutBuffer::new(&mut self.buf);
+                    let mut from = InBuffer::new(&input[at..]);
+                    let directive = if finish {
+                        EndDirective::End
+                    } else {
+                        EndDirective::Continue
+                    };
+                    let left = cctx
+                        .compress_stream2(&mut output, &mut from, directive)
+                        .map_err(|e| failed(e.to_string()))?;
+                    at += from.pos;
+                    let done = if finish { left == 0 } else { at == input.len() };
+                    (output.pos, done)
+                }
+            };
+            self.out.write_all(&self.buf[..made])?;
+            if done {
+                return Ok(());
+            }
+        }
+    }
+
+    fn finish(mut self) -> io::Result<W> {
+        self.code(&[], true)?;
+        self.out.flush()?;
+        Ok(self.out)
+    }
+}
+
+impl<W: Write> Write for Squeezed<W> {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        self.code(buf, false)?;
+        Ok(buf.len())
+    }
+
+    /// The stream is not flushed, which would make it bigger.
+    fn flush(&mut self) -> io::Result<()> {
+        self.out.flush()
     }
 }
 
@@ -442,28 +822,28 @@ fn link_target(path: &Path) -> Result<Vec<u8>, Error> {
     )))
 }
 
-/// Makes a ZIP archive of `paths`, each with what is under it, named after
+/// Makes an archive of `paths`, each with what is under it, named after
 /// `wanted` or the first name after it that is free, and gives where it
 /// went: the archive, or its first part if it took more than one. The names
 /// in it start from each path's own.
-pub fn create_zip(
+pub fn create(
     paths: &[PathBuf],
     wanted: &Path,
     new: &NewArchive,
     control: &Control,
 ) -> Result<PathBuf, Error> {
+    if new.password.is_some() && !matches!(new.kind, Kind::Zip | Kind::SevenZip) {
+        return Err(Error::Failed("A tar archive can’t have a password.".into()));
+    }
     let items = items_of(paths)?;
     if items.is_empty() {
         return Err(Error::Failed("Nothing to compress.".into()));
     }
     // Before the archive is made, so that it is not among them.
     let mut progress = Progress::default();
-    for item in &items {
-        if !item.metadata.is_dir() {
-            progress.total_entries += 1;
-            progress.total_bytes += item.metadata.len();
-        }
-    }
+    let counted = measured(&items);
+    progress.total_entries = counted.files;
+    progress.total_bytes = counted.bytes;
     let tally = Arc::new(Tally {
         control: control.clone(),
         progress: Mutex::new(progress),
