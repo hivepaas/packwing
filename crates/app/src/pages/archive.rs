@@ -350,7 +350,7 @@ impl ArchivePage {
             Shown::Failed { name, why } => (name.clone(), why.clone(), true),
             _ => (
                 "Open an archive".to_owned(),
-                "ZIP and tar archives, compressed or encrypted with age: .zip, .tar.gz, .tar.zst, .tar.xz, .tgz, .zst.age…"
+                "ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…"
                     .to_owned(),
                 true,
             ),

@@ -1,5 +1,6 @@
-//! A ZIP archive under layers, taken out to a temporary file: ZIP is read
-//! from its end, which a stream cannot give.
+//! An archive under layers that is read by random access, taken out to a
+//! temporary file: a ZIP archive, read from its end, or a UDF volume, read
+//! where its descriptors point, which a stream cannot give.
 
 use std::fs::{File, OpenOptions};
 use std::io::{self, Read, Seek, SeekFrom};
@@ -11,6 +12,15 @@ use std::sync::atomic::{AtomicU64, Ordering};
 pub(crate) struct Spooled {
     path: PathBuf,
     pub(crate) file: File,
+}
+
+impl Spooled {
+    /// The file, from its start: for a reader that is opened more than once.
+    pub(crate) fn rewound(&self) -> io::Result<&File> {
+        let mut file = &self.file;
+        file.seek(SeekFrom::Start(0))?;
+        Ok(file)
+    }
 }
 
 impl Drop for Spooled {
@@ -28,7 +38,7 @@ pub(crate) fn spool(from: &mut impl Read) -> io::Result<Spooled> {
     #[cfg(unix)]
     std::os::unix::fs::OpenOptionsExt::mode(&mut options, 0o600);
     let path = std::env::temp_dir().join(format!(
-        "packwing-{}-{}.zip",
+        "packwing-{}-{}.spool",
         std::process::id(),
         NEXT.fetch_add(1, Ordering::Relaxed)
     ));

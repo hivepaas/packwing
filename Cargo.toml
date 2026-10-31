@@ -19,13 +19,18 @@ gpui_platform = { package = "gpui-pre-platform", version = "=0.3.9", default-fea
 
 # hivepack, packwing's archive library: not on crates.io yet, so from its
 # repository at one commit. Every crate comes from the same one.
-hivepack-age = { git = "https://github.com/hivepaas/hivepack-rs", rev = "7a055747d1ff84572d4e3ba3a74fe79242b5f60a" }
-hivepack-deflate = { git = "https://github.com/hivepaas/hivepack-rs", rev = "7a055747d1ff84572d4e3ba3a74fe79242b5f60a" }
-hivepack-extract = { git = "https://github.com/hivepaas/hivepack-rs", rev = "7a055747d1ff84572d4e3ba3a74fe79242b5f60a" }
-hivepack-open = { git = "https://github.com/hivepaas/hivepack-rs", rev = "7a055747d1ff84572d4e3ba3a74fe79242b5f60a" }
-hivepack-tar = { git = "https://github.com/hivepaas/hivepack-rs", rev = "7a055747d1ff84572d4e3ba3a74fe79242b5f60a" }
-hivepack-zip = { git = "https://github.com/hivepaas/hivepack-rs", rev = "7a055747d1ff84572d4e3ba3a74fe79242b5f60a" }
-hivepack-zstd = { git = "https://github.com/hivepaas/hivepack-rs", rev = "7a055747d1ff84572d4e3ba3a74fe79242b5f60a" }
+hivepack-7z = { git = "https://github.com/hivepaas/hivepack-rs", rev = "3f9a79226cd446ea48b440a7f4cb45f159205852" }
+hivepack-age = { git = "https://github.com/hivepaas/hivepack-rs", rev = "3f9a79226cd446ea48b440a7f4cb45f159205852" }
+hivepack-cpio = { git = "https://github.com/hivepaas/hivepack-rs", rev = "3f9a79226cd446ea48b440a7f4cb45f159205852" }
+hivepack-deflate = { git = "https://github.com/hivepaas/hivepack-rs", rev = "3f9a79226cd446ea48b440a7f4cb45f159205852" }
+hivepack-extract = { git = "https://github.com/hivepaas/hivepack-rs", rev = "3f9a79226cd446ea48b440a7f4cb45f159205852" }
+hivepack-iso = { git = "https://github.com/hivepaas/hivepack-rs", rev = "3f9a79226cd446ea48b440a7f4cb45f159205852" }
+hivepack-open = { git = "https://github.com/hivepaas/hivepack-rs", rev = "3f9a79226cd446ea48b440a7f4cb45f159205852" }
+hivepack-tar = { git = "https://github.com/hivepaas/hivepack-rs", rev = "3f9a79226cd446ea48b440a7f4cb45f159205852" }
+hivepack-udf = { git = "https://github.com/hivepaas/hivepack-rs", rev = "3f9a79226cd446ea48b440a7f4cb45f159205852" }
+hivepack-xar = { git = "https://github.com/hivepaas/hivepack-rs", rev = "3f9a79226cd446ea48b440a7f4cb45f159205852" }
+hivepack-zip = { git = "https://github.com/hivepaas/hivepack-rs", rev = "3f9a79226cd446ea48b440a7f4cb45f159205852" }
+hivepack-zstd = { git = "https://github.com/hivepaas/hivepack-rs", rev = "3f9a79226cd446ea48b440a7f4cb45f159205852" }
 packwing-core = { path = "crates/core" }
 
 [workspace.lints.rust]

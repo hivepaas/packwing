@@ -2,15 +2,23 @@
 //! as they show, those it only implies by its paths too.
 
 use std::collections::BTreeMap;
+use std::fs::File;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 
-use hivepack_open::{Container, Layer};
+use hivepack_open::{Container, Layer, Opener};
 use hivepack_tar::{Reader, TYPE_DIR, TYPE_X_GLOBAL_HEADER};
+use hivepack_udf::{Udf, VType};
 use hivepack_zip::{Archive, Flags, OpenFlags, em};
 
 use crate::spool::spool;
-use crate::{Error, Keys, opener, without_layers};
+use crate::volume::walk;
+use crate::{Error, Keys, SevenZip, opener, seven_zip, without_layers};
+
+/// The names of a macOS package's payloads, which hivepack-extract expands
+/// into folders of their names, as `pkgutil --expand-full` does: a
+/// component package's files and scripts, and a `.xip` file's content.
+const PAYLOADS: [&str; 3] = ["Payload", "Scripts", "Content"];
 
 /// GNU's volume label and dump directory, in a tar archive.
 const TYPE_GNU_VOLUME: u8 = b'V';
@@ -129,6 +137,36 @@ pub fn list(path: &Path, keys: &Keys) -> Result<Listing, Error> {
             encryption = encryption.or(zip_encryption);
             entries
         }
+        // Read in order; from the file itself, a file whose data is before
+        // its directory is read by going back.
+        Container::Iso if layers.is_empty() => {
+            drop(opened);
+            iso_entries(hivepack_iso::Reader::seekable(File::open(path)?))?
+        }
+        Container::Iso => iso_entries(hivepack_iso::Reader::new(&mut opened))?,
+        Container::Udf if layers.is_empty() => {
+            drop(opened);
+            udf_entries(File::open(path)?)?
+        }
+        Container::Udf => {
+            let spooled = spool(&mut opened)?;
+            udf_entries(&spooled.file)?
+        }
+        Container::SevenZip => {
+            let (entries, seven_zip_encryption) = if layers.is_empty() {
+                drop(opened);
+                seven_zip_entries(seven_zip(|| File::open(path), keys)?)
+            } else {
+                let spooled = spool(&mut opened)?;
+                seven_zip_entries(seven_zip(|| spooled.rewound(), keys)?)
+            };
+            encryption = encryption.or(seven_zip_encryption);
+            entries
+        }
+        // An RPM package is its payload: the package's lead and headers
+        // are a layer.
+        Container::Cpio => cpio_entries(&mut opened)?,
+        Container::Xar => xar_entries(&mut opened)?,
         Container::Data if layers.is_empty() => return Err(Error::NotAnArchive),
         _ => {
             let size = io::copy(&mut opened, &mut io::sink())?;
@@ -207,6 +245,172 @@ fn zip_entries<R: hivepack_zip::ReadAt>(source: R) -> Result<(Vec<Entry>, Option
         });
     }
     Ok((entries, encryption))
+}
+
+/// An ISO 9660 image's entries: Rock Ridge's names, else Joliet's, else
+/// ISO 9660's. The root directory, `.`, is not one, nor is an entry
+/// whose name could not be made.
+fn iso_entries<R: Read>(mut iso: hivepack_iso::Reader<R>) -> Result<Vec<Entry>, Error> {
+    let mut entries = Vec::new();
+    while let Some(h) = iso.next()? {
+        let Some(name) = &h.path else {
+            continue;
+        };
+        let path = components(&String::from_utf8_lossy(name));
+        if path.is_empty() {
+            continue;
+        }
+        let dir = h.is_dir();
+        entries.push(Entry {
+            path,
+            dir,
+            // A hard link has no size: its data, the entry's before it, is
+            // counted there, once.
+            size: if dir { 0 } else { h.size.unwrap_or(0) },
+            modified: h.mod_time,
+        });
+    }
+    Ok(entries)
+}
+
+/// A 7z archive's entries, and `AES-256` if its files or names are
+/// encrypted (7z has no other encryption). One whose names are encrypted
+/// needs the password to be opened at all.
+fn seven_zip_entries<R: Read + io::Seek>(archive: SevenZip<R>) -> (Vec<Entry>, Option<String>) {
+    let mut entries = Vec::new();
+    let mut encrypted = archive.headers_encrypted;
+    for e in archive.archive.entries() {
+        encrypted |= e.encrypted;
+        let path = components(&e.name);
+        if path.is_empty() {
+            continue;
+        }
+        entries.push(Entry {
+            path,
+            dir: e.is_dir,
+            size: if e.is_dir { 0 } else { e.size },
+            modified: e.mtime.map(ntfs_to_unix),
+        });
+    }
+    (entries, encrypted.then(|| "AES-256".to_owned()))
+}
+
+/// An NTFS time, in 100 ns since 1601, in seconds since 1970.
+fn ntfs_to_unix(ntfs: u64) -> i64 {
+    (ntfs / 10_000_000) as i64 - 11_644_473_600
+}
+
+/// A cpio archive's entries: Linux's initramfs, an RPM package's payload.
+/// The root, `.`, is not one.
+fn cpio_entries(r: impl Read) -> Result<Vec<Entry>, Error> {
+    let mut cpio = hivepack_cpio::Reader::new(r);
+    let mut entries = Vec::new();
+    while let Some(h) = cpio.next()? {
+        let path = components(&String::from_utf8_lossy(&h.path));
+        if path.is_empty() {
+            continue;
+        }
+        let kind = h.file_type();
+        let dir = kind == hivepack_cpio::AE_IFDIR;
+        entries.push(Entry {
+            path,
+            dir,
+            size: if kind == hivepack_cpio::AE_IFREG {
+                h.size
+            } else {
+                0
+            },
+            modified: Some(h.mod_time),
+        });
+    }
+    Ok(entries)
+}
+
+/// A XAR archive's entries. A macOS package's payloads (`Payload`,
+/// `Scripts`, a `.xip` file's `Content`), cpio archives under gzip or
+/// pbzx, show as folders of what they hold, as they extract.
+fn xar_entries(r: impl Read + Send) -> Result<Vec<Entry>, Error> {
+    let mut xar = hivepack_xar::Reader::new(r);
+    let mut entries = Vec::new();
+    while let Some(h) = xar.next()? {
+        let Some(name) = &h.path else {
+            continue;
+        };
+        let path = components(&String::from_utf8_lossy(name));
+        if path.is_empty() {
+            continue;
+        }
+        let kind = h.mode & hivepack_xar::AE_IFMT;
+        let is_payload = kind == hivepack_xar::AE_IFREG
+            && h.hardlink.is_none()
+            && path
+                .last()
+                .is_some_and(|last| PAYLOADS.contains(&last.as_str()));
+        if is_payload && let Some(inside) = payload_entries(&mut xar)? {
+            entries.push(Entry {
+                path: path.clone(),
+                dir: true,
+                size: 0,
+                modified: h.mtime,
+            });
+            entries.extend(inside.into_iter().map(|mut e| {
+                e.path.splice(0..0, path.iter().cloned());
+                e
+            }));
+            continue;
+        }
+        let dir = kind == hivepack_xar::AE_IFDIR;
+        entries.push(Entry {
+            path,
+            dir,
+            size: if kind == hivepack_xar::AE_IFREG && h.hardlink.is_none() {
+                h.size
+            } else {
+                0
+            },
+            modified: h.mtime,
+        });
+    }
+    Ok(entries)
+}
+
+/// What the payload the XAR reader is at holds, if it is a cpio archive
+/// under its layers; `None` if it is something else, which shows as a
+/// file.
+fn payload_entries<R: Read + Send>(
+    xar: &mut hivepack_xar::Reader<R>,
+) -> Result<Option<Vec<Entry>>, Error> {
+    let mut once = Some(xar);
+    let mut opener = Opener::new(move || {
+        once.take()
+            .ok_or_else(|| io::Error::other("a payload opened twice"))
+    });
+    let opened = opener.open()?;
+    if opened.container() != Container::Cpio {
+        return Ok(None);
+    }
+    cpio_entries(opened).map(Some)
+}
+
+/// A UDF volume's entries, as its directories list them.
+fn udf_entries<R: Read + io::Seek>(image: R) -> Result<Vec<Entry>, Error> {
+    let mut udf = Udf::open(image)?;
+    let mut entries = Vec::new();
+    walk(&mut udf, |_, path, _, stat| {
+        let dir = stat.kind == VType::VDIR;
+        entries.push(Entry {
+            path: path.to_vec(),
+            dir,
+            size: if stat.kind == VType::VREG {
+                stat.size
+            } else {
+                0
+            },
+            modified: Some(stat.mtime.sec),
+        });
+        Ok(())
+    })?;
+    Ok(entries)
 }
 
 #[cfg(test)]
