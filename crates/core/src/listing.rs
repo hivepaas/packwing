@@ -2,15 +2,15 @@
 //! as they show, those it only implies by its paths too.
 
 use std::collections::BTreeMap;
-use std::fs::File;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 
 use hivepack_open::{Container, Layer, Opener};
 use hivepack_tar::{Reader, TYPE_DIR, TYPE_X_GLOBAL_HEADER};
 use hivepack_udf::{Udf, VType};
-use hivepack_zip::{Archive, Flags, OpenFlags, em};
+use hivepack_zip::{Archive, Flags, OpenFlags, Volumes, em, volume_paths};
 
+use crate::joined::{Joined, joined_size};
 use crate::spool::spool;
 use crate::volume::walk;
 use crate::{Error, Keys, SevenZip, opener, seven_zip, without_layers};
@@ -111,9 +111,18 @@ fn components(name: &str) -> Vec<String> {
         .collect()
 }
 
+/// How many bytes the volumes of the ZIP archive at `path` hold together.
+fn zip_size(path: &Path) -> io::Result<u64> {
+    let mut size = 0;
+    for volume in volume_paths(path) {
+        size += std::fs::metadata(volume)?.len();
+    }
+    Ok(size)
+}
+
 /// What the archive at `path` holds, opened with `keys`.
 pub fn list(path: &Path, keys: &Keys) -> Result<Listing, Error> {
-    let packed = std::fs::metadata(path)?.len();
+    let mut packed = joined_size(path)?;
     let name = path
         .file_name()
         .map(|n| n.to_string_lossy().into_owned())
@@ -129,7 +138,10 @@ pub fn list(path: &Path, keys: &Keys) -> Result<Listing, Error> {
         Container::Zip => {
             let (entries, zip_encryption) = if layers.is_empty() {
                 drop(opened);
-                zip_entries(std::fs::File::open(path)?)?
+                {
+                    packed = zip_size(path)?;
+                    zip_entries(Volumes::open(path)?)?
+                }
             } else {
                 let spooled = spool(&mut opened)?;
                 zip_entries(&spooled.file)?
@@ -141,12 +153,12 @@ pub fn list(path: &Path, keys: &Keys) -> Result<Listing, Error> {
         // its directory is read by going back.
         Container::Iso if layers.is_empty() => {
             drop(opened);
-            iso_entries(hivepack_iso::Reader::seekable(File::open(path)?))?
+            iso_entries(hivepack_iso::Reader::seekable(Joined::open(path)?))?
         }
         Container::Iso => iso_entries(hivepack_iso::Reader::new(&mut opened))?,
         Container::Udf if layers.is_empty() => {
             drop(opened);
-            udf_entries(File::open(path)?)?
+            udf_entries(Joined::open(path)?)?
         }
         Container::Udf => {
             let spooled = spool(&mut opened)?;
@@ -155,7 +167,7 @@ pub fn list(path: &Path, keys: &Keys) -> Result<Listing, Error> {
         Container::SevenZip => {
             let (entries, seven_zip_encryption) = if layers.is_empty() {
                 drop(opened);
-                seven_zip_entries(seven_zip(|| File::open(path), keys)?)
+                seven_zip_entries(seven_zip(|| Joined::open(path), keys)?)
             } else {
                 let spooled = spool(&mut opened)?;
                 seven_zip_entries(seven_zip(|| spooled.rewound(), keys)?)

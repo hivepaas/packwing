@@ -766,11 +766,11 @@ fn xar_archives_list_and_test_alone_and_under_zstd() {
         assert!(l.files > 0, "{name}");
         let summary = test(&path, &Keys::default(), &Control::default()).unwrap();
         assert!(summary.files > 0, "{name}");
-        // It holds a symbolic link, refused by default before anything is
-        // written.
+        // It holds a name Windows does not allow, refused everywhere before
+        // anything is written.
         let out = s.0.join(format!("out-{name}"));
         let e = extract(&path, &out, &Keys::default(), &Control::default()).unwrap_err();
-        assert!(e.to_string().contains("link"), "{name}: {e}");
+        assert!(e.to_string().contains("name refused"), "{name}: {e}");
         assert!(!out.exists(), "{name}");
     }
 }

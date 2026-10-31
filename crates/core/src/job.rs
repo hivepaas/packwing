@@ -1,19 +1,20 @@
 //! Extracting an archive, and testing it: every file read through, its
 //! checks made, nothing written.
 
-use std::fs::{File, OpenOptions};
+use std::fs::OpenOptions;
 use std::io::{self, Read, Seek, Write};
 use std::path::Path;
 
 use hivepack_extract::{
-    Cancel, Options, Origin, Progress, ProgressFn, Summary, extract_7z, extract_cpio, extract_iso,
-    extract_tar, extract_udf, extract_xar, extract_zip,
+    Cancel, Links, Options, Origin, Progress, ProgressFn, Summary, extract_7z, extract_cpio,
+    extract_iso, extract_tar, extract_udf, extract_xar, extract_zip,
 };
 use hivepack_open::{Container, Opened};
 use hivepack_tar::Reader;
 use hivepack_udf::{Udf, VType};
-use hivepack_zip::{Archive, Flags, OpenFlags, ReadAt};
+use hivepack_zip::{Archive, Flags, OpenFlags, ReadAt, Volumes};
 
+use crate::joined::Joined;
 use crate::spool::spool;
 use crate::volume::walk;
 use crate::{Error, Keys, opener, seven_zip, without_layers};
@@ -49,8 +50,10 @@ fn zip_archive<R: ReadAt>(source: R) -> Result<Archive<R>, Error> {
 
 /// Extracts the archive at `path` into `destination`, made if it is not
 /// there, with hivepack-extract's checks: nothing outside it, over what is
-/// there, or through a link. The files keep the archive's mark of where it
-/// came from.
+/// there, or through a link. A link that stays inside it is made, last; one
+/// that leaves it stops the job. On Windows, where most accounts cannot make
+/// links, a link is a file that holds its target. The files keep the archive's
+/// mark of where it came from.
 pub fn extract(
     path: &Path,
     destination: &Path,
@@ -62,6 +65,11 @@ pub fn extract(
     options.progress = control.progress.clone();
     options.cancel = control.cancel.clone();
     options.origin = Origin::of(path)?;
+    options.links = if cfg!(windows) {
+        Links::AsFile
+    } else {
+        Links::Inside
+    };
     let mut opener = opener(path, keys);
     let mut opened = opener.open()?;
     let layers = opened.layers().to_vec();
@@ -72,7 +80,7 @@ pub fn extract(
         }
         Container::Zip if layers.is_empty() => {
             drop(opened);
-            let archive = zip_archive(File::open(path)?)?;
+            let archive = zip_archive(Volumes::open(path)?)?;
             Ok(extract_zip(&archive, destination, &options)?)
         }
         Container::Zip => {
@@ -87,7 +95,7 @@ pub fn extract(
         }
         Container::Udf if layers.is_empty() => {
             drop(opened);
-            let mut udf = Udf::open(File::open(path)?)?;
+            let mut udf = Udf::open(Joined::open(path)?)?;
             Ok(extract_udf(&mut udf, destination, &options)?)
         }
         Container::Udf => {
@@ -97,7 +105,7 @@ pub fn extract(
         }
         Container::SevenZip if layers.is_empty() => {
             drop(opened);
-            let mut seven = seven_zip(|| File::open(path), keys)?;
+            let mut seven = seven_zip(|| Joined::open(path), keys)?;
             Ok(extract_7z(&mut seven.archive, destination, &options)?)
         }
         Container::SevenZip => {
@@ -227,7 +235,12 @@ pub fn test(path: &Path, keys: &Keys, control: &Control) -> Result<Summary, Erro
         }
         Container::Zip if layers.is_empty() => {
             drop(opened);
-            test_zip(zip_archive(File::open(path)?)?, keys, control, &mut summary)?;
+            test_zip(
+                zip_archive(Volumes::open(path)?)?,
+                keys,
+                control,
+                &mut summary,
+            )?;
         }
         Container::Zip => {
             let spooled = spool(&mut opened)?;
@@ -243,7 +256,7 @@ pub fn test(path: &Path, keys: &Keys, control: &Control) -> Result<Summary, Erro
         }
         Container::Udf if layers.is_empty() => {
             drop(opened);
-            test_udf(Udf::open(File::open(path)?)?, control, &mut summary)?;
+            test_udf(Udf::open(Joined::open(path)?)?, control, &mut summary)?;
         }
         Container::Udf => {
             let spooled = spool(&mut opened)?;
@@ -251,7 +264,7 @@ pub fn test(path: &Path, keys: &Keys, control: &Control) -> Result<Summary, Erro
         }
         Container::SevenZip if layers.is_empty() => {
             drop(opened);
-            let seven = seven_zip(|| File::open(path), keys)?;
+            let seven = seven_zip(|| Joined::open(path), keys)?;
             test_7z(seven.archive, control, &mut summary)?;
         }
         Container::SevenZip => {

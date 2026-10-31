@@ -8,22 +8,23 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
-# The random bytes of WinZip AES, on every system.
+# The random bytes of WinZip AES and 7z's AES, on every system.
 getrandom = "0.4"
 hivepack-7z.workspace = true
 hivepack-age.workspace = true
 hivepack-cpio.workspace = true
+hivepack-deflate.workspace = true
 hivepack-extract.workspace = true
 hivepack-iso.workspace = true
 hivepack-open.workspace = true
 hivepack-tar.workspace = true
 hivepack-udf.workspace = true
 hivepack-xar.workspace = true
+hivepack-xz.workspace = true
 hivepack-zip.workspace = true
+hivepack-zstd.workspace = true
 
 [dev-dependencies]
-hivepack-deflate.workspace = true
-hivepack-zstd.workspace = true
 # Encrypted ZIP archives, written by the tests.
 hivepack-zip.workspace = true
 
