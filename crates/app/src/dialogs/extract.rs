@@ -122,8 +122,13 @@ impl ExtractDialog {
                 return;
             };
             job.work = vec![(source, Some(destination))];
-            let typed = self.password.read(cx).text().to_owned();
-            job.password = (!typed.is_empty()).then_some(typed);
+            // What the archive was opened with; a password typed here
+            // over it.
+            job.keys = a.keys.clone();
+            let typed = self.password.read(cx).text();
+            if !typed.is_empty() {
+                job.keys.password = Some(typed.as_bytes().to_vec());
+            }
         }
         cx.emit(DialogEvent::Start(job));
     }
@@ -336,7 +341,11 @@ impl Render for ExtractDialog {
                 Some(close),
             ))
             .child(self.destinations(cx))
-            .when(a.encryption.is_some(), |d| d.child(self.password(cx)))
+            // An archive opened with its password needs no more; one whose
+            // files only are encrypted is asked for it here.
+            .when(a.encryption.is_some() && a.keys.password.is_none(), |d| {
+                d.child(self.password(cx))
+            })
             .child(self.names())
             .child(self.safety())
             .child(

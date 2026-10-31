@@ -12,9 +12,9 @@ use std::time::{Duration, Instant};
 use gpui::{
     Context, EventEmitter, FontWeight, Render, Task, Window, div, prelude::*, px, relative, rgb,
 };
-use packwing_core::{Cancel, Control, Error, Keys, Progress};
+use packwing_core::{Cancel, Control, Error, Progress};
 
-use super::{DialogEvent, Job, Verb, card, footer, header};
+use super::{DialogEvent, Job, Verb, asked_for, card, footer, header};
 use crate::colors::colors;
 use crate::model::{count, size};
 use crate::widgets::{Fill, Size, Tone, button, check_row, icon, note, tonal_tint};
@@ -80,10 +80,7 @@ impl ProgressDialog {
             })),
             cancel: Some(cancel.clone()),
         };
-        let keys = Keys {
-            passphrase: None,
-            password: job.password.clone().map(String::into_bytes),
-        };
+        let keys = job.keys.clone();
         let (verb, work) = (job.verb, job.work.clone());
         let task = cx.background_executor().spawn(async move {
             for (source, destination) in &work {
@@ -123,6 +120,15 @@ impl ProgressDialog {
                 cx.emit(DialogEvent::Close);
             }
             Err(Error::Cancelled) => cx.emit(DialogEvent::Close),
+            // One archive that needs a passphrase or password: asked for,
+            // and run again. Several would extract those before it twice.
+            Err(e)
+                if self.job.work.len() == 1
+                    && let Some((asked, again)) = asked_for(&e, &self.job.keys) =>
+            {
+                let again = again.then(|| e.to_string());
+                cx.emit(DialogEvent::Ask(self.job.clone(), asked, again));
+            }
             Err(e) => {
                 self.failed = Some(e.to_string());
                 cx.notify();

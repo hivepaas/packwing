@@ -5,17 +5,20 @@
 mod create;
 mod damaged;
 mod extract;
+mod password;
 mod progress;
 
 pub use create::CreateDialog;
 pub(crate) use create::{Format, LEVELS, Level};
 pub use damaged::DamagedDialog;
 pub use extract::{ENCODINGS, ExtractDialog};
+pub use password::{PasswordDialog, PasswordEvent, asked_for};
 pub use progress::ProgressDialog;
 
 use std::path::PathBuf;
 
 use gpui::{Div, FontWeight, MouseButton, SharedString, Stateful, div, prelude::*, px, rgb};
+use packwing_core::{Asked, Keys};
 
 use crate::colors::{Tint, colors};
 use crate::widgets::{float_shadow, icon, logo, tile};
@@ -46,8 +49,9 @@ pub struct Job {
     /// The archives it reads, one after another, and where each one's files
     /// go (none for a test). Empty for a job that does not run.
     pub work: Vec<(PathBuf, Option<PathBuf>)>,
-    /// The password typed, for a ZIP archive's encrypted files.
-    pub password: Option<String>,
+    /// What opens the archive: the passphrase and password it was opened
+    /// with, or one typed in Extract.
+    pub keys: Keys,
 }
 
 impl Job {
@@ -66,7 +70,7 @@ impl Job {
             files,
             bytes,
             work: Vec::new(),
-            password: None,
+            keys: Keys::default(),
         }
     }
 }
@@ -75,6 +79,10 @@ impl Job {
 pub enum DialogEvent {
     Close,
     Start(Job),
+    /// A job stopped for a passphrase or password (`Asked`): asked for, it
+    /// runs again with it. The text says why it is asked again, when the
+    /// one given was wrong.
+    Ask(Job, Asked, Option<String>),
 }
 
 /// The card a dialog is drawn on.
