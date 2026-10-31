@@ -26,14 +26,14 @@ pub struct Control {
 }
 
 impl Control {
-    fn check(&self) -> Result<(), Error> {
+    pub(crate) fn check(&self) -> Result<(), Error> {
         match &self.cancel {
             Some(c) if c.is_cancelled() => Err(Error::Cancelled),
             _ => Ok(()),
         }
     }
 
-    fn report(&self, p: &Progress) {
+    pub(crate) fn report(&self, p: &Progress) {
         if let Some(progress) = &self.progress {
             progress(p);
         }

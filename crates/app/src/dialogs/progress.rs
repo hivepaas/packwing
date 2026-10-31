@@ -2,10 +2,11 @@
 //! failed.
 //!
 //! A job with work runs it in the background through packwing-core, and the
-//! dialog shows what it reports. One without (a new archive, a repair, the
-//! screenshots' sample) counts up at a made-up speed, so the screen can be
+//! dialog shows what it reports. One without (a repair, the screenshots'
+//! sample) counts up at a made-up speed, so the screen can be
 //! seen moving, and closes itself at the end.
 
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex, PoisonError};
 use std::time::{Duration, Instant};
 
@@ -57,7 +58,7 @@ impl ProgressDialog {
                 }
             }
         });
-        let running = (!job.work.is_empty()).then(|| Self::run(&job, cx));
+        let running = (!job.work.is_empty() || job.create.is_some()).then(|| Self::run(&job, cx));
         ProgressDialog {
             job,
             done: 0.,
@@ -69,7 +70,8 @@ impl ProgressDialog {
         }
     }
 
-    /// Starts `job`'s work in the background: each archive in turn.
+    /// Starts `job`'s work in the background: the new archive, or each archive
+    /// in turn. It ends with the new archive's place, if it made one.
     fn run(job: &Job, cx: &mut Context<Self>) -> Running {
         let progress = Arc::new(Mutex::new(Progress::default()));
         let cancel = Cancel::new();
@@ -81,8 +83,11 @@ impl ProgressDialog {
             cancel: Some(cancel.clone()),
         };
         let keys = job.keys.clone();
-        let (verb, work) = (job.verb, job.work.clone());
+        let (verb, work, create) = (job.verb, job.work.clone(), job.create.clone());
         let task = cx.background_executor().spawn(async move {
+            if let Some(c) = create {
+                return packwing_core::create_zip(&c.paths, &c.archive, &c.how, &control).map(Some);
+            }
             for (source, destination) in &work {
                 match (verb, destination) {
                     (Verb::Extract, Some(to)) => {
@@ -93,7 +98,7 @@ impl ProgressDialog {
                     }
                 }
             }
-            Ok::<(), Error>(())
+            Ok::<Option<PathBuf>, Error>(None)
         });
         let work = cx.spawn(async move |this, cx| {
             let result = task.await;
@@ -108,10 +113,12 @@ impl ProgressDialog {
     }
 
     /// The job ended: done, cancelled, or failed.
-    fn finish(&mut self, result: Result<(), Error>, cx: &mut Context<Self>) {
+    fn finish(&mut self, result: Result<Option<PathBuf>, Error>, cx: &mut Context<Self>) {
         match result {
-            Ok(()) => {
-                if self.open_folder
+            Ok(made) => {
+                if let Some(made) = made.filter(|_| self.open_folder) {
+                    cx.reveal_path(&made);
+                } else if self.open_folder
                     && self.job.verb == Verb::Extract
                     && let Some((_, Some(to))) = self.job.work.first()
                 {

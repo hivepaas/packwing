@@ -221,19 +221,15 @@ pub const MANAGED: Managed = Managed {
     ],
 };
 
-/// What New archive starts with: the files chosen to pack.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Selection {
-    pub name: &'static str,
-    pub items: u64,
-    pub size: u64,
+/// What New archive holds in the screenshots.
+#[cfg(all(test, feature = "shots"))]
+pub fn selection() -> crate::model::Selection {
+    crate::model::Selection {
+        paths: vec!["/home/you/Documents/Báo cáo quý 3".into()],
+        files: 6,
+        bytes: 1_800_000_000,
+    }
 }
-
-pub const SELECTION: Selection = Selection {
-    name: "Báo cáo quý 3",
-    items: 6,
-    size: 1_800_000_000,
-};
 
 #[cfg(test)]
 mod tests {

@@ -1,5 +1,5 @@
 //! What packwing does with archives, through hivepack: it reads what a file
-//! holds, extracts it, and checks that all of it reads. Nothing here draws;
+//! holds, extracts it, checks that all of it reads, and makes ZIP archives. Nothing here draws;
 //! the window shows what comes back.
 //!
 //! A file is opened through its layers (age, zstd, xz, gzip, bzip2, an RPM
@@ -9,6 +9,7 @@
 //! file (taken out to a temporary one first when it is under layers), or
 //! one file, compressed or encrypted on its own (`notes.txt.zst`).
 
+mod create;
 mod job;
 mod listing;
 mod spool;
@@ -23,6 +24,7 @@ use std::sync::Arc;
 use hivepack_age::{BoxedIdentity, LazyScryptIdentity, PassphrasePrompt};
 use hivepack_open::Opener;
 
+pub use create::{Measured, NewArchive, create_zip, measure};
 pub use hivepack_extract::{Cancel, Progress, Summary};
 pub use hivepack_open::{Container, Layer};
 pub use job::{Control, extract, test};
