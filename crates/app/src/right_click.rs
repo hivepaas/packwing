@@ -22,9 +22,12 @@ pub const ID: &str = "packwing";
 
 /// What the archive items show for: the types packwing opens, by extension,
 /// and the short names of compressed tars. `gz` takes in `tar.gz`, and the
-/// others alike. Open With is for them too.
-pub const ARCHIVES: [&str; 12] = [
-    "zip", "rar", "7z", "tar", "gz", "tgz", "xz", "txz", "zst", "tzst", "cbz", "cbr",
+/// others alike. Open With is for them too. `iso` is a disc image, ISO 9660
+/// or UDF; `rpm` a package whose payload is a cpio archive; `pkg` a macOS
+/// package, a XAR archive.
+pub const ARCHIVES: [&str; 17] = [
+    "zip", "rar", "7z", "tar", "gz", "tgz", "xz", "txz", "zst", "tzst", "cbz", "cbr", "iso",
+    "cpio", "rpm", "xar", "pkg",
 ];
 
 /// One of packwing's items.

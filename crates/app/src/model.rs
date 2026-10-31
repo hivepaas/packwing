@@ -55,7 +55,7 @@ impl Kind {
             "exe" | "msi" | "dll" | "app" | "dmg" | "pkg" | "deb" | "rpm" | "sh" | "bat"
             | "cmd" | "ps1" | "js" | "lnk" | "jar" | "apk" => Kind::Program,
             "zip" | "tar" | "gz" | "tgz" | "zst" | "xz" | "bz2" | "lz" | "lz4" | "lzma" | "7z"
-            | "rar" | "age" => Kind::Archive,
+            | "rar" | "age" | "iso" | "cpio" | "xar" => Kind::Archive,
             _ => Kind::Text,
         }
     }
@@ -206,9 +206,9 @@ pub fn tag_of(name: &str, kind: Kind) -> String {
 /// `name` without its archive extensions and a part number: what it unpacks
 /// to (`Báo cáo.part1.rar` → `Báo cáo`, `backup.tar.zst.age` → `backup`).
 pub fn stem(name: &str) -> &str {
-    const EXTENSIONS: [&str; 17] = [
+    const EXTENSIONS: [&str; 22] = [
         ".age", ".zst", ".gz", ".xz", ".bz2", ".lz4", ".lz", ".lzma", ".tgz", ".tbz2", ".txz",
-        ".tzst", ".tlz", ".tar", ".7z", ".zip", ".rar",
+        ".tzst", ".tlz", ".tar", ".7z", ".zip", ".rar", ".iso", ".cpio", ".rpm", ".xar", ".pkg",
     ];
     let mut s = name;
     while let Some(rest) = EXTENSIONS
@@ -307,6 +307,11 @@ mod tests {
         assert_eq!(stem("backup-2026-10.tar.zst"), "backup-2026-10");
         assert_eq!(stem("backup.tar.zst.age"), "backup");
         assert_eq!(stem("logs.tgz"), "logs");
+        assert_eq!(stem("ubuntu-26.04-desktop.iso"), "ubuntu-26.04-desktop");
+        assert_eq!(stem("disc.iso.xz"), "disc");
+        assert_eq!(stem("hello-1.0-1.x86_64.rpm"), "hello-1.0-1.x86_64");
+        assert_eq!(stem("Install Example.pkg"), "Install Example");
+        assert_eq!(stem("initramfs.cpio.zst"), "initramfs");
         assert_eq!(stem("notes.txt"), "notes.txt");
         assert_eq!(stem(".tar"), ".tar");
     }

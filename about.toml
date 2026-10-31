@@ -38,6 +38,14 @@ accepted = ["GPL-3.0-or-later"]
 # Each file is pinned to the commit packwing builds with: a notice that
 # changes stops the package until it is looked at again.
 
+[hivepack-7z.clarify]
+license = "MIT"
+
+[[hivepack-7z.clarify.files]]
+path = "../../LICENSE"
+license = "MIT"
+checksum = "0b17dee728dd7507cb1ff9d382daf665ebf0d93c8ef3e4042148146a07a6ef3e"
+
 [hivepack-age.clarify]
 license = "BSD-3-Clause"
 
@@ -54,13 +62,21 @@ path = "LICENSE"
 license = "bzip2-1.0.6"
 checksum = "2d4b9e1c508b6f26e310a4341c51ce11708b0a189d883ca3fec9b4dacef497ae"
 
+[hivepack-cpio.clarify]
+license = "BSD-2-Clause"
+
+[[hivepack-cpio.clarify.files]]
+path = "LICENSE"
+license = "BSD-2-Clause"
+checksum = "c657d3499541ac9145e63c061d5ebee035ad667cd58aea137149ce88e532d37c"
+
 [hivepack-crypto.clarify]
 license = "MIT"
 
 [[hivepack-crypto.clarify.files]]
 path = "LICENSE"
 license = "MIT"
-checksum = "0946a0b053391de79223969b42bf30c7028625275e985a45074de5f52ff4279d"
+checksum = "4e110962027363e5507b7437ae428cc0ab82d9652202945e1cfb47b1dbc58eaf"
 
 [hivepack-deflate.clarify]
 license = "Zlib"
@@ -83,6 +99,22 @@ path = "LICENSE-UNICODE"
 license = "Unicode-3.0"
 checksum = "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
 
+[hivepack-iso.clarify]
+license = "BSD-2-Clause"
+
+[[hivepack-iso.clarify.files]]
+path = "LICENSE"
+license = "BSD-2-Clause"
+checksum = "08806520e0de991c990c860b7b1502d25efff8f69708ce5a7dd53dfa28ca6434"
+
+[hivepack-lz4.clarify]
+license = "BSD-2-Clause"
+
+[[hivepack-lz4.clarify.files]]
+path = "LICENSE"
+license = "BSD-2-Clause"
+checksum = "fe5427e219b3ea9f3aca0e4b0771879ef894543952c3d3c0bec6dfdf84cc4855"
+
 [hivepack-open.clarify]
 license = "MIT"
 
@@ -98,6 +130,22 @@ license = "BSD-3-Clause"
 path = "LICENSE"
 license = "BSD-3-Clause"
 checksum = "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
+
+[hivepack-udf.clarify]
+license = "BSD-2-Clause AND BSD-3-Clause"
+
+[[hivepack-udf.clarify.files]]
+path = "LICENSE"
+license = "BSD-2-Clause AND BSD-3-Clause"
+checksum = "98454bb8b109fc9867d909814e34fab4c68db34876bb04880fe001f061ce13c2"
+
+[hivepack-xar.clarify]
+license = "BSD-2-Clause AND MIT"
+
+[[hivepack-xar.clarify.files]]
+path = "LICENSE"
+license = "BSD-2-Clause AND MIT"
+checksum = "578d7e3ded960e216c646fce2f51de06294afda7d24e6a2de2aa6905a3589f08"
 
 [hivepack-xz.clarify]
 license = "0BSD"
@@ -116,9 +164,9 @@ license = "BSD-3-Clause"
 checksum = "dee4d2cce73a6fbed996ea32a8530d1d85bcd1ab5ee983e3def7919a8d34782d"
 
 [hivepack-zstd.clarify]
-license = "BSD-3-Clause"
+license = "BSD-3-Clause AND MIT"
 
 [[hivepack-zstd.clarify.files]]
 path = "LICENSE"
-license = "BSD-3-Clause"
-checksum = "a0503f74552053be5a07be8dfc83c9810da4766bc7d0dbd1051fa77358497f22"
+license = "BSD-3-Clause AND MIT"
+checksum = "a38996d3e7387fc721f7f3b7f9323b5c04b089fc932fcbd3d8d54fd4fc13bba8"

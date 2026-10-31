@@ -4,7 +4,7 @@
 
 Built in Rust on [hivepack](https://github.com/hivepaas/hivepack-rs).
 
-> **Status:** early development. There is nothing to download yet. packwing opens, extracts and tests ZIP and tar archives through hivepack, and the layers around them (gzip, zstd, xz, bzip2 and the others hivepack reads; age files need a passphrase prompt, which comes next). It writes no archive yet: New archive, Add files and Repair show made-up progress, as do Recent and the samples the screenshots draw.
+> **Status:** early development. There is nothing to download yet. packwing opens, extracts and tests ZIP, 7z (encrypted too, with its password), tar and cpio archives, disc images (`.iso`: ISO 9660, and UDF as DVDs and Windows' images have it), RPM packages and macOS packages (`.pkg`, their payloads expanded as `pkgutil --expand-full` does) through hivepack, and the layers around them (gzip, zstd, xz, bzip2 and the others hivepack reads; age files need a passphrase prompt, which comes next). It writes no archive yet: New archive, Add files and Repair show made-up progress, as do Recent and the samples the screenshots draw.
 
 ## 🎯 Plans
 

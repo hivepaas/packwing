@@ -8,10 +8,15 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
+hivepack-7z.workspace = true
 hivepack-age.workspace = true
+hivepack-cpio.workspace = true
 hivepack-extract.workspace = true
+hivepack-iso.workspace = true
 hivepack-open.workspace = true
 hivepack-tar.workspace = true
+hivepack-udf.workspace = true
+hivepack-xar.workspace = true
 hivepack-zip.workspace = true
 
 [dev-dependencies]
