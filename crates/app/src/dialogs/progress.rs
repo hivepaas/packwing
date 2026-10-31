@@ -58,7 +58,8 @@ impl ProgressDialog {
                 }
             }
         });
-        let running = (!job.work.is_empty() || job.create.is_some()).then(|| Self::run(&job, cx));
+        let running = (!job.work.is_empty() || job.create.is_some() || job.add.is_some())
+            .then(|| Self::run(&job, cx));
         ProgressDialog {
             job,
             done: 0.,
@@ -83,10 +84,19 @@ impl ProgressDialog {
             cancel: Some(cancel.clone()),
         };
         let keys = job.keys.clone();
-        let (verb, work, create) = (job.verb, job.work.clone(), job.create.clone());
+        let (verb, work, create, add) = (
+            job.verb,
+            job.work.clone(),
+            job.create.clone(),
+            job.add.clone(),
+        );
         let task = cx.background_executor().spawn(async move {
             if let Some(c) = create {
                 return packwing_core::create(&c.paths, &c.archive, &c.how, &control).map(Some);
+            }
+            if let Some(a) = add {
+                packwing_core::add(&a.paths, &a.archive, &a.folder, &keys, &control)?;
+                return Ok(None);
             }
             for (source, destination) in &work {
                 match (verb, destination) {
@@ -115,6 +125,15 @@ impl ProgressDialog {
     /// The job ended: done, cancelled, or failed.
     fn finish(&mut self, result: Result<Option<PathBuf>, Error>, cx: &mut Context<Self>) {
         match result {
+            Ok(_) if self.job.add.is_some() => {
+                if let Some(a) = self.job.add.clone() {
+                    cx.emit(DialogEvent::Added(
+                        a.archive,
+                        a.folder,
+                        self.job.keys.clone(),
+                    ));
+                }
+            }
             Ok(made) => {
                 if let Some(made) = made.filter(|_| self.open_folder) {
                     cx.reveal_path(&made);
@@ -130,7 +149,7 @@ impl ProgressDialog {
             // One archive that needs a passphrase or password: asked for,
             // and run again. Several would extract those before it twice.
             Err(e)
-                if self.job.work.len() == 1
+                if (self.job.work.len() == 1 || self.job.add.is_some())
                     && let Some((asked, again)) = asked_for(&e, &self.job.keys) =>
             {
                 let again = again.then(|| e.to_string());
@@ -246,10 +265,12 @@ impl ProgressDialog {
         match (self.job.verb, self.failed.is_some()) {
             (Verb::Extract, false) => "Extracting…",
             (Verb::Create, false) => "Creating…",
+            (Verb::Add, false) => "Adding…",
             (Verb::Repair, false) => "Repairing…",
             (Verb::Test, false) => "Testing…",
             (Verb::Extract, true) => "Couldn’t extract",
             (Verb::Create, true) => "Couldn’t create the archive",
+            (Verb::Add, true) => "Couldn’t add the files",
             (Verb::Repair, true) => "Couldn’t repair",
             (Verb::Test, true) => "The test failed",
         }
@@ -284,7 +305,7 @@ impl Render for ProgressDialog {
         };
         let icon_name = match j.verb {
             Verb::Extract => "extract",
-            Verb::Create => "logo",
+            Verb::Create | Verb::Add => "logo",
             Verb::Repair | Verb::Test => "shield",
         };
         let header = header(icon_name, tonal_tint(), self.title(), detail, None);
@@ -391,7 +412,7 @@ impl Render for ProgressDialog {
                         ),
                 )
             })
-            .when(j.verb != Verb::Test, |d| {
+            .when(!matches!(j.verb, Verb::Test | Verb::Add), |d| {
                 d.child(
                     check_row(
                         "open-folder",

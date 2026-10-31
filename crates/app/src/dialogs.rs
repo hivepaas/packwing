@@ -1,13 +1,15 @@
-//! The dialogs drawn over the main window: extracting, a new archive, a job's
-//! progress and a damaged archive. Each is a view that says what the user
+//! The dialogs drawn over the main window: extracting, a new archive, adding
+//! to one, a job's progress and a damaged archive. Each is a view that says what the user
 //! chose through [`DialogEvent`]; the workspace opens and closes them.
 
+mod add;
 mod create;
 mod damaged;
 mod extract;
 mod password;
 mod progress;
 
+pub use add::AddDialog;
 pub use create::CreateDialog;
 pub(crate) use create::{Format, LEVELS, Level};
 pub use damaged::DamagedDialog;
@@ -28,8 +30,18 @@ use crate::widgets::{float_shadow, icon, logo, tile};
 pub enum Verb {
     Extract,
     Create,
+    Add,
     Repair,
     Test,
+}
+
+/// Files to add to an archive, through packwing-core.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Adding {
+    pub paths: Vec<PathBuf>,
+    pub archive: PathBuf,
+    /// The folder of it they go in.
+    pub folder: Vec<String>,
 }
 
 /// A new archive to make, through packwing-core.
@@ -41,8 +53,8 @@ pub struct Creating {
     pub how: NewArchive,
 }
 
-/// A job the user started. Extracting and testing archives and making new
-/// ones run, through packwing-core; the rest (a repair, and the samples)
+/// A job the user started. Extracting and testing archives, making new ones
+/// and adding to them run, through packwing-core; the rest (a repair, and the samples)
 /// count up at a made-up speed.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Job {
@@ -63,6 +75,8 @@ pub struct Job {
     pub keys: Keys,
     /// The new archive it makes, if that is what it does.
     pub create: Option<Creating>,
+    /// The files it adds, if that is what it does.
+    pub add: Option<Adding>,
 }
 
 impl Job {
@@ -83,6 +97,7 @@ impl Job {
             work: Vec::new(),
             keys: Keys::default(),
             create: None,
+            add: None,
         }
     }
 }
@@ -95,6 +110,9 @@ pub enum DialogEvent {
     /// runs again with it. The text says why it is asked again, when the
     /// one given was wrong.
     Ask(Job, Asked, Option<String>),
+    /// Files went in the archive at this path, in this folder: it is read
+    /// again, with these keys.
+    Added(PathBuf, Vec<String>, Keys),
 }
 
 /// The card a dialog is drawn on.
