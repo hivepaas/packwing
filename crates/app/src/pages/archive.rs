@@ -29,7 +29,7 @@ pub enum Shown {
     Nothing,
     /// The file named, being read.
     Opening(String),
-    Open(Archive),
+    Open(Box<Archive>),
     /// The file named could not be opened, and why.
     Failed {
         name: String,
@@ -73,7 +73,7 @@ impl ArchivePage {
     /// The archive open, if one is.
     pub fn archive(&self) -> Option<&Archive> {
         match &self.shown {
-            Shown::Open(a) => Some(a),
+            Shown::Open(a) => Some(a.as_ref()),
             _ => None,
         }
     }

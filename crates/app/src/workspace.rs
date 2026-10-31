@@ -305,8 +305,9 @@ impl Workspace {
     /// Shows the sample archive, as the screenshots draw it.
     pub fn show_sample(&mut self, cx: &mut Context<Self>) {
         self.reading = None;
-        self.archive
-            .update(cx, |p, cx| p.show(Shown::Open(demo::project()), cx));
+        self.archive.update(cx, |p, cx| {
+            p.show(Shown::Open(Box::new(demo::project())), cx)
+        });
     }
 
     /// Reads the archive at `path` in the background and shows it; with
@@ -354,7 +355,7 @@ impl Workspace {
                 this.reading = None;
                 let shown = match result {
                     Ok((listing, marked)) => {
-                        Shown::Open(Archive::read(path, listing, keys, marked))
+                        Shown::Open(Box::new(Archive::read(path, listing, keys, marked)))
                     }
                     Err(e) => match asked_for(&e, &keys) {
                         Some((asked, again)) => {
@@ -424,6 +425,8 @@ impl Workspace {
                         let why = match ask.asked {
                             Asked::Passphrase => "This file is encrypted with a passphrase.",
                             Asked::Password => "This archive needs its password.",
+                            Asked::KeyFile => "This file is encrypted to a key.",
+                            Asked::KeyPassphrase => "This key file needs its passphrase.",
                         };
                         let shown = Shown::Failed {
                             name: name.clone(),
