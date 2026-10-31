@@ -1,10 +1,14 @@
-//! The passphrase or password an encrypted archive needs: asked for when
-//! it turns out to need one, and again, with why, when the one typed is
-//! wrong.
+//! The passphrase, password or key file an encrypted archive needs: asked
+//! for when it turns out to need one, and again, with why, when the one given
+//! is wrong.
+
+use std::fs::File;
+use std::io::{self, Read};
+use std::path::Path;
 
 use gpui::{
-    Context, Entity, EventEmitter, Focusable as _, KeyDownEvent, Render, SharedString, Window, div,
-    prelude::*, px, rgb,
+    Context, Entity, EventEmitter, Focusable as _, KeyDownEvent, PathPromptOptions, Render,
+    SharedString, Window, div, prelude::*, px, rgb,
 };
 use packwing_core::{Asked, Error, Keys};
 
@@ -15,7 +19,7 @@ use crate::widgets::{Fill, Size, Tone, button, icon, icon_button, legend, note, 
 
 /// What the user chose.
 pub enum PasswordEvent {
-    /// Open with what was typed.
+    /// Open with what was typed, or what is in the key file chosen.
     Typed(Vec<u8>),
     Cancelled,
 }
@@ -55,11 +59,50 @@ impl PasswordDialog {
 
     /// Opens with what is typed: nothing typed, nothing to open with.
     fn open(&mut self, cx: &mut Context<Self>) {
+        if self.asked == Asked::KeyFile {
+            self.pick_key(cx);
+            return;
+        }
         let typed = self.field.read(cx).text().as_bytes().to_vec();
         if typed.is_empty() {
             return;
         }
         cx.emit(PasswordEvent::Typed(typed));
+    }
+
+    /// Asks for a key file: one that packwing can use opens, and another says
+    /// why it cannot.
+    fn pick_key(&mut self, cx: &mut Context<Self>) {
+        let picked = cx.prompt_for_paths(PathPromptOptions {
+            files: true,
+            directories: false,
+            multiple: false,
+            prompt: Some("Choose".into()),
+        });
+        cx.spawn(async move |this, cx| {
+            let Ok(Ok(Some(mut paths))) = picked.await else {
+                return;
+            };
+            let Some(path) = paths.pop() else { return };
+            let read = cx
+                .background_executor()
+                .spawn(async move {
+                    let contents = read_key_file(&path)?;
+                    packwing_core::check_key_file(&contents).map_err(|why| {
+                        format!("This is not a key file packwing can use: {why}.")
+                    })?;
+                    Ok::<Vec<u8>, String>(contents)
+                })
+                .await;
+            let _ = this.update(cx, |this, cx| match read {
+                Ok(contents) => cx.emit(PasswordEvent::Typed(contents)),
+                Err(why) => {
+                    this.again = Some(why.into());
+                    cx.notify();
+                }
+            });
+        })
+        .detach();
     }
 
     /// Enter opens, Escape gives up: the field leaves both to its holder.
@@ -73,19 +116,35 @@ impl PasswordDialog {
     }
 }
 
-/// What a person can type to get past `e`, met with `keys`, and whether
-/// they typed it before (it was wrong); `None` for what typing does not
-/// open: a key packwing does not have, damage, anything else.
+/// The most a key file is read of: more than any key file is, as hivepack-age
+/// takes 16 MiB, and a file chosen by mistake may be any size.
+const KEY_FILE_LIMIT: u64 = 16 << 20;
+
+fn read_key_file(path: &Path) -> Result<Vec<u8>, String> {
+    let why = |e: io::Error| format!("Could not read {}: {e}.", path.display());
+    let mut contents = Vec::new();
+    File::open(path)
+        .map_err(why)?
+        .take(KEY_FILE_LIMIT)
+        .read_to_end(&mut contents)
+        .map_err(why)?;
+    Ok(contents)
+}
+
+/// What a person can give to get past `e`, met with `keys`, and whether
+/// they gave it before (it was wrong); `None` for what that does not open: a
+/// kind of key hivepack does not read, damage, anything else.
 pub fn asked_for(e: &Error, keys: &Keys) -> Option<(Asked, bool)> {
     match e {
         Error::Locked { needs } => {
             let asked = Keys::asks_for(needs)?;
-            Some((asked, false))
+            Some((asked, asked == Asked::KeyFile && keys.key_file.is_some()))
         }
         // Only a password typed can be the wrong one: a ZIP or 7z archive's
         // damaged data with none says nothing of passwords.
         Error::WrongPassword if keys.password.is_some() => Some((Asked::Password, true)),
         Error::WrongPassphrase => Some((Asked::Passphrase, true)),
+        Error::WrongKeyPassphrase => Some((Asked::KeyPassphrase, true)),
         _ => None,
     }
 }
@@ -95,6 +154,8 @@ fn placeholder(asked: Asked) -> &'static str {
     match asked {
         Asked::Passphrase => "The passphrase",
         Asked::Password => "The archive’s password",
+        Asked::KeyFile => "",
+        Asked::KeyPassphrase => "The key file’s passphrase",
     }
 }
 
@@ -113,6 +174,19 @@ fn words(asked: Asked) -> (&'static str, &'static str, &'static str) {
             "This archive is encrypted. packwing keeps its password only while the archive is \
              open, and never writes it down.",
         ),
+        Asked::KeyFile => (
+            "Choose the key file",
+            "Key file",
+            "This file is encrypted with age to a key: an age key file or an SSH key. packwing \
+             keeps what it reads from it only while the archive is open, and never writes it \
+             down.",
+        ),
+        Asked::KeyPassphrase => (
+            "Enter the key file’s passphrase",
+            "Passphrase",
+            "The key file is itself protected. packwing keeps its passphrase only while the \
+             archive is open, and never writes it down.",
+        ),
     }
 }
 
@@ -121,6 +195,7 @@ impl Render for PasswordDialog {
         let c = colors();
         let (title, label, why) = words(self.asked);
         let shown = self.shown;
+        let picks_file = self.asked == Asked::KeyFile;
         let close = icon_button("close", "x", 44.)
             .on_click(cx.listener(|_, _, _, cx| cx.emit(PasswordEvent::Cancelled)));
         let eye = div()
@@ -160,14 +235,16 @@ impl Render for PasswordDialog {
                 self.name.clone(),
                 Some(close),
             ))
-            .child(
-                div()
-                    .flex()
-                    .flex_col()
-                    .gap(px(6.))
-                    .child(legend(label))
-                    .child(field),
-            )
+            .when(!picks_file, |d| {
+                d.child(
+                    div()
+                        .flex()
+                        .flex_col()
+                        .gap(px(6.))
+                        .child(legend(label))
+                        .child(field),
+                )
+            })
             .children(
                 self.again
                     .clone()
@@ -182,9 +259,14 @@ impl Render for PasswordDialog {
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(PasswordEvent::Cancelled))),
                     )
                     .child(
-                        button("open", "Open", Fill::Accent, Size::Medium)
-                            .px(px(28.))
-                            .on_click(cx.listener(|this, _, _, cx| this.open(cx))),
+                        button(
+                            "open",
+                            if picks_file { "Choose…" } else { "Open" },
+                            Fill::Accent,
+                            Size::Medium,
+                        )
+                        .px(px(28.))
+                        .on_click(cx.listener(|this, _, _, cx| this.open(cx))),
                     ),
             )
     }
@@ -225,10 +307,24 @@ mod tests {
             asked_for(&Error::WrongPassword, &typed),
             Some((Asked::Password, true))
         );
-        // Not asked: data that fails with no password typed, a key no one
-        // can type, and what is not about keys at all.
+        // A key file, and again if it was not the key.
+        assert_eq!(
+            asked_for(&locked(&["X25519"]), &none),
+            Some((Asked::KeyFile, false))
+        );
+        let with_key = none.with(Asked::KeyFile, b"key".to_vec());
+        assert_eq!(
+            asked_for(&locked(&["ssh-ed25519"]), &with_key),
+            Some((Asked::KeyFile, true))
+        );
+        assert_eq!(
+            asked_for(&Error::WrongKeyPassphrase, &with_key),
+            Some((Asked::KeyPassphrase, true))
+        );
+        // Not asked: data that fails with no password typed, a kind of key
+        // hivepack does not read, and what is not about keys at all.
         assert_eq!(asked_for(&Error::WrongPassword, &none), None);
-        assert_eq!(asked_for(&locked(&["X25519"]), &none), None);
+        assert_eq!(asked_for(&locked(&["mlkem768x25519"]), &none), None);
         assert_eq!(asked_for(&Error::NotAnArchive, &none), None);
         assert_eq!(asked_for(&Error::Failed("damaged".into()), &typed), None);
     }

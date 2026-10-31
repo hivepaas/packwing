@@ -21,7 +21,9 @@ use std::io;
 use std::path::Path;
 use std::sync::Arc;
 
-use hivepack_age::{BoxedIdentity, LazyScryptIdentity, PassphrasePrompt};
+use hivepack_age::{
+    BoxedIdentity, LazyScryptIdentity, PassphraseFor, PassphrasePrompt, parse_identities_file,
+};
 use hivepack_open::Opener;
 
 use crate::joined::Joined;
@@ -44,6 +46,13 @@ pub const PASSWORD: &str = "password";
 /// its recipient stanza.
 pub const PASSPHRASE: &str = "scrypt";
 
+/// What [`Error::Locked`] needs for a key file's own passphrase.
+pub const KEY_PASSPHRASE: &str = "key passphrase";
+
+/// What a passphrase prompt says when a key file's passphrase is not there,
+/// told apart from other errors by it as [`NO_PASSPHRASE`] is.
+const NO_KEY_PASSPHRASE: &str = "no key passphrase given";
+
 /// What a passphrase prompt says when there is none to give: age's
 /// "could not read passphrase" then names it, and it is told apart from
 /// other errors of the header by it.
@@ -59,27 +68,42 @@ pub struct Keys {
     /// The password of a ZIP or 7z archive's encrypted files, and of a 7z
     /// archive's encrypted names.
     pub password: Option<Vec<u8>>,
+    /// What is in the key file an age layer was encrypted to: age's keys or
+    /// an SSH key, maybe encrypted itself.
+    pub key_file: Option<Vec<u8>>,
+    /// The passphrase of that key file, if it has one.
+    pub key_passphrase: Option<Vec<u8>>,
 }
 
 impl Keys {
     /// What `needs` (an [`Error::Locked`]'s) asks for that a person types: a
-    /// passphrase or a password; `None` for a key packwing cannot ask for.
+    /// passphrase, a password, or a key file; `None` for a kind of key
+    /// hivepack does not read.
     pub fn asks_for(needs: &[String]) -> Option<Asked> {
         if needs.iter().any(|n| n == PASSWORD) {
             Some(Asked::Password)
         } else if needs.iter().any(|n| n == PASSPHRASE) {
             Some(Asked::Passphrase)
+        } else if needs.iter().any(|n| n == KEY_PASSPHRASE) {
+            Some(Asked::KeyPassphrase)
+        } else if needs.iter().any(|n| n == "X25519" || n == "ssh-ed25519") {
+            Some(Asked::KeyFile)
         } else {
             None
         }
     }
 
-    /// These keys with `secret`, typed for what was asked.
+    /// These keys with `secret`, typed or read from a file for what was asked.
     pub fn with(&self, asked: Asked, secret: Vec<u8>) -> Keys {
         let mut keys = self.clone();
         match asked {
             Asked::Password => keys.password = Some(secret),
             Asked::Passphrase => keys.passphrase = Some(secret),
+            Asked::KeyFile => {
+                keys.key_file = Some(secret);
+                keys.key_passphrase = None;
+            }
+            Asked::KeyPassphrase => keys.key_passphrase = Some(secret),
         }
         keys
     }
@@ -92,6 +116,16 @@ pub enum Asked {
     Passphrase,
     /// A ZIP or 7z archive's password.
     Password,
+    /// The file of the key an age file was encrypted to.
+    KeyFile,
+    /// That key file's own passphrase.
+    KeyPassphrase,
+}
+
+/// Why `contents` is no key file that packwing can use, as the window says it.
+pub fn check_key_file(contents: &[u8]) -> Result<(), String> {
+    let prompt: PassphrasePrompt = Arc::new(|_| Err(NO_KEY_PASSPHRASE.to_owned()));
+    parse_identities_file(contents, prompt).map(|_| ())
 }
 
 impl fmt::Debug for Keys {
@@ -99,6 +133,8 @@ impl fmt::Debug for Keys {
         f.debug_struct("Keys")
             .field("passphrase", &self.passphrase.is_some())
             .field("password", &self.password.is_some())
+            .field("key_file", &self.key_file.is_some())
+            .field("key_passphrase", &self.key_passphrase.is_some())
             .finish()
     }
 }
@@ -118,6 +154,8 @@ pub enum Error {
     WrongPassword,
     /// The passphrase given is not the age file's.
     WrongPassphrase,
+    /// The passphrase given is not the key file's.
+    WrongKeyPassphrase,
     /// Stopped by [`Cancel`].
     Cancelled,
     /// What hivepack said: the archive is damaged, refused, or could not be
@@ -135,10 +173,14 @@ impl fmt::Display for Error {
             Error::Locked { needs } if needs.iter().any(|n| n == PASSWORD) => {
                 f.write_str("This archive needs its password.")
             }
+            Error::Locked { needs } if needs.iter().any(|n| n == KEY_PASSPHRASE) => {
+                f.write_str("This key file needs its passphrase.")
+            }
             Error::WrongPassword => {
                 f.write_str("The password is wrong, or the archive is damaged.")
             }
             Error::WrongPassphrase => f.write_str("The passphrase is wrong."),
+            Error::WrongKeyPassphrase => f.write_str("The key file’s passphrase is wrong."),
             Error::Locked { .. } => {
                 f.write_str("This file is encrypted to a key packwing does not have.")
             }
@@ -209,6 +251,18 @@ fn age_header_error(message: String) -> Error {
     }
     if message == "incorrect passphrase" {
         return Error::WrongPassphrase;
+    }
+    // A key file's own passphrase comes wrapped in what it was for.
+    if message.contains(NO_KEY_PASSPHRASE) {
+        return Error::Locked {
+            needs: vec![KEY_PASSPHRASE.to_owned()],
+        };
+    }
+    if message.contains("failed to decrypt SSH key file")
+        || (message.contains("failed to decrypt identity file")
+            && message.contains("incorrect passphrase"))
+    {
+        return Error::WrongKeyPassphrase;
     }
     Error::Failed(message)
 }
@@ -317,16 +371,30 @@ pub fn came_from_internet(path: &Path) -> bool {
 /// An age layer encrypted with a passphrase takes the one of `keys`; with
 /// none, it says so, and opening fails with [`Error::Locked`], so that the
 /// window can ask for one. The passphrase is asked for, and scrypt run,
-/// only for a layer that needs it.
+/// only for a layer that needs it. So is a key file's own, the key file taken
+/// first to [`check_key_file`].
 fn opener<'a>(path: &'a Path, keys: &Keys) -> Opener<impl FnMut() -> io::Result<Joined> + use<'a>> {
-    let passphrase = keys.passphrase.clone();
-    let prompt: PassphrasePrompt = Arc::new(move |_| match &passphrase {
-        Some(p) if !p.is_empty() => Ok(p.clone()),
-        _ => Err(NO_PASSPHRASE.to_owned()),
+    let (passphrase, key_passphrase) = (keys.passphrase.clone(), keys.key_passphrase.clone());
+    let prompt: PassphrasePrompt = Arc::new(move |what| {
+        let (secret, none) = match what {
+            PassphraseFor::File => (&passphrase, NO_PASSPHRASE),
+            _ => (&key_passphrase, NO_KEY_PASSPHRASE),
+        };
+        match secret {
+            Some(p) if !p.is_empty() => Ok(p.clone()),
+            _ => Err(none.to_owned()),
+        }
     });
-    let mut lazy = LazyScryptIdentity::new(prompt);
+    let mut lazy = LazyScryptIdentity::new(prompt.clone());
     lazy.set_max_work_factor(MAX_WORK_FACTOR);
-    let identities: Vec<BoxedIdentity> = vec![Box::new(lazy)];
+    let mut identities: Vec<BoxedIdentity> = vec![Box::new(lazy)];
+    if let Some(found) = keys
+        .key_file
+        .as_deref()
+        .and_then(|key| parse_identities_file(key, prompt).ok())
+    {
+        identities.extend(found);
+    }
     let name = path
         .file_name()
         .map(|n| n.to_string_lossy().into_owned())
