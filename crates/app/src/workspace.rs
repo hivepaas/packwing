@@ -14,8 +14,8 @@ use crate::chrome;
 use crate::colors::{self, colors};
 use crate::demo;
 use crate::dialogs::{
-    CreateDialog, Creating, DamagedDialog, DialogEvent, ExtractDialog, Job, PasswordDialog,
-    PasswordEvent, ProgressDialog, Verb, asked_for,
+    AddDialog, CreateDialog, Creating, DamagedDialog, DialogEvent, ExtractDialog, Job,
+    PasswordDialog, PasswordEvent, ProgressDialog, Verb, asked_for,
 };
 use crate::model::{Archive, Selection, stem};
 use crate::pages::archive::{ArchiveEvent, ArchivePage, Shown};
@@ -53,7 +53,7 @@ enum Then {
     },
     /// Running a job again: an item of the right-click menu, which reads
     /// no listing first.
-    Run(Job),
+    Run(Box<Job>),
 }
 
 impl Then {
@@ -98,6 +98,9 @@ pub struct Workspace {
     /// The file being read: a reading that ends after another began is
     /// not shown.
     reading: Option<PathBuf>,
+    /// The folder to show when what is being read is read: the one files
+    /// were just added to.
+    folder_after_reading: Option<Vec<String>>,
     dialog: Option<Open>,
     appearance: Appearance,
     /// The system's own appearance is dark.
@@ -138,7 +141,7 @@ impl Workspace {
                 window,
                 |this, _, e: &ArchiveEvent, window, cx| match e {
                     ArchiveEvent::Extract => this.open_extract(window, cx),
-                    ArchiveEvent::AddFiles => this.add_files(cx),
+                    ArchiveEvent::AddFiles => this.add_files(window, cx),
                     ArchiveEvent::Test => this.test_archive(window, cx),
                     ArchiveEvent::Open => this.choose_archive(window, cx),
                 },
@@ -167,6 +170,7 @@ impl Workspace {
             right_click,
             welcome: None,
             reading: None,
+            folder_after_reading: None,
             dialog: None,
             appearance,
             system_dark: looks_dark(window),
@@ -245,10 +249,15 @@ impl Workspace {
                 DialogEvent::Start(job) => {
                     this.open_progress(job.clone(), window, cx);
                 }
+                DialogEvent::Added(path, folder, keys) => {
+                    this.close_dialog(cx);
+                    this.folder_after_reading = Some(folder.clone());
+                    this.read_archive(path.clone(), keys.clone(), false, window, cx);
+                }
                 DialogEvent::Ask(job, asked, again) => {
                     let ask = Ask {
                         asked: *asked,
-                        then: Then::Run(job.clone()),
+                        then: Then::Run(Box::new(job.clone())),
                     };
                     this.ask(ask, again.clone(), window, cx);
                 }
@@ -365,7 +374,13 @@ impl Workspace {
                     },
                 };
                 let opened = matches!(shown, Shown::Open(_));
-                this.archive.update(cx, |p, cx| p.show(shown, cx));
+                let folder = this.folder_after_reading.take();
+                this.archive.update(cx, |p, cx| {
+                    p.show(shown, cx);
+                    if let Some(folder) = folder {
+                        p.enter(folder, cx);
+                    }
+                });
                 if opened && then_extract {
                     this.open_extract(window, cx);
                 }
@@ -399,7 +414,7 @@ impl Workspace {
                                 path, then_extract, ..
                             } => this.read_archive(path.clone(), keys, *then_extract, window, cx),
                             Then::Run(job) => {
-                                let mut job = job.clone();
+                                let mut job = job.as_ref().clone();
                                 job.keys = keys;
                                 this.open_progress(job, window, cx);
                             }
@@ -484,6 +499,16 @@ impl Workspace {
             view.update(cx, |d, cx| d.add(paths, cx));
         }
         self.show(view, true, window, cx);
+    }
+
+    /// Add files, holding the screenshots' sample.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn open_add_sample(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let dialog = self.archive.read(cx).archive().map(AddDialog::sample);
+        if let Some(dialog) = dialog {
+            let view = cx.new(|_| dialog);
+            self.show(view, true, window, cx);
+        }
     }
 
     /// New archive, holding the screenshots' sample.
@@ -593,18 +618,13 @@ impl Workspace {
         }
     }
 
-    fn add_files(&mut self, cx: &mut Context<Self>) {
-        // Nothing is done with them yet: adding means writing the archive.
-        let picked = cx.prompt_for_paths(PathPromptOptions {
-            files: true,
-            directories: true,
-            multiple: true,
-            prompt: Some("Add".into()),
-        });
-        cx.spawn(async move |_, _| {
-            let _ = picked.await;
-        })
-        .detach();
+    /// Asks what to add to the archive open; the samples have no file to add to.
+    pub fn add_files(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let dialog = self.archive.read(cx).archive().and_then(AddDialog::new);
+        if let Some(dialog) = dialog {
+            let view = cx.new(|_| dialog);
+            self.show(view, true, window, cx);
+        }
     }
 
     fn on_key(&mut self, e: &KeyDownEvent, _: &mut Window, cx: &mut Context<Self>) {

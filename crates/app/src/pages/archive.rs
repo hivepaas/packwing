@@ -79,7 +79,7 @@ impl ArchivePage {
     }
 
     /// Shows `folder` of the open archive.
-    fn enter(&mut self, folder: Vec<String>, cx: &mut Context<Self>) {
+    pub fn enter(&mut self, folder: Vec<String>, cx: &mut Context<Self>) {
         if let Shown::Open(a) = &mut self.shown {
             a.show(folder);
             self.chosen = None;
@@ -188,9 +188,18 @@ impl ArchivePage {
                             .px(px(28.))
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Extract))),
                     )
-                    .child(
-                        button("add-files", "Add files", Fill::Raised, Size::Large)
-                            .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::AddFiles))),
+                    // A 7z or tar archive has to be written whole again, and
+                    // packwing does not do that yet.
+                    .when(
+                        a.listing.as_ref().is_none_or(|l| packwing_core::can_add(l)),
+                        |d| {
+                            d.child(
+                                button("add-files", "Add files", Fill::Raised, Size::Large)
+                                    .on_click(
+                                        cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::AddFiles)),
+                                    ),
+                            )
+                        },
                     )
                     .child(
                         button("test", "Test", Fill::Raised, Size::Large)

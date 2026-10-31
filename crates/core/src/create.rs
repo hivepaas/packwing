@@ -5,7 +5,12 @@
 //! file, a folder or a link (a pipe, a socket, a device) is left out, as
 //! reading it could wait for ever. A tar archive's owners are left out too:
 //! its files may go to someone with other users.
+//!
+//! Files are added to a ZIP archive by writing it anew beside itself, read
+//! back, and only then put in its place: if anything goes wrong, it is as it
+//! was.
 
+use std::collections::HashSet;
 use std::fmt;
 use std::fs::{self, File, Metadata, OpenOptions};
 use std::io::{self, Read, Seek, SeekFrom, Write};
@@ -16,13 +21,14 @@ use std::time::UNIX_EPOCH;
 
 use hivepack_deflate::{DEF_MEM_LEVEL, Deflate, Flush, Z_DEFAULT_STRATEGY};
 use hivepack_extract::Progress;
+use hivepack_open::Container;
 use hivepack_xz::{MtOptions, Stream, stream_encoder_mt_memusage};
 use hivepack_zip::{
-    Archive, BufferSource, Closed, DataSource, ErrorCode, FileAttributes, Flags, OpenFlags, Stat,
-    cm, em, file_attributes, opsys, stat,
+    Archive, BufferSource, Closed, DataSource, ErrorCode, FileAttributes, Flags, OpenFlags, ReadAt,
+    Stat, cm, em, file_attributes, opsys, stat, volume_paths,
 };
 
-use crate::{Control, Error};
+use crate::{Control, Error, Keys, Listing, opener};
 
 /// A kind of archive packwing makes.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -471,6 +477,21 @@ fn write_zip<W: Write + Seek>(
     if new.password.is_some() {
         za.set_default_password(new.password.as_deref());
     }
+    add_items(&mut za, items, new.level, new.password.is_some(), tally)?;
+    match za.close_to(out)? {
+        Closed::Written => Ok(()),
+        Closed::Unchanged | Closed::Removed => Err(Error::Failed("Nothing to compress.".into())),
+    }
+}
+
+/// `items` in the ZIP archive `za`, to be read when it closes.
+fn add_items<R: ReadAt>(
+    za: &mut Archive<R>,
+    items: Vec<Item>,
+    level: Level,
+    encrypt: bool,
+    tally: &Arc<Tally>,
+) -> Result<(), Error> {
     for item in items {
         let mtime = seconds(&item.metadata);
         let (system, external) = attributes(&item.metadata);
@@ -484,7 +505,7 @@ fn write_zip<W: Write + Seek>(
                 Flags::ENC_UTF_8,
             )?;
             za.set_file_compression(index, i32::from(cm::STORE), 0)?;
-            if new.password.is_some() {
+            if encrypt {
                 za.file_set_encryption(index, em::AES_256, None)?;
             }
             tally.advance(1, 0);
@@ -503,12 +524,12 @@ fn write_zip<W: Write + Seek>(
                 },
                 Flags::ENC_UTF_8,
             )?;
-            za.set_file_compression(index, cm::DEFAULT, new.level.deflate())?;
+            za.set_file_compression(index, cm::DEFAULT, level.deflate())?;
             // Nothing to read, so nothing would count it.
             if item.metadata.len() == 0 {
                 tally.advance(1, 0);
             }
-            if new.password.is_some() {
+            if encrypt {
                 za.file_set_encryption(index, em::AES_256, None)?;
             }
             index
@@ -516,10 +537,7 @@ fn write_zip<W: Write + Seek>(
         za.file_set_mtime(index, mtime, Flags::NONE)?;
         za.file_set_external_attributes(index, Flags::NONE, system, external)?;
     }
-    match za.close_to(out)? {
-        Closed::Written => Ok(()),
-        Closed::Unchanged | Closed::Removed => Err(Error::Failed("Nothing to compress.".into())),
-    }
+    Ok(())
 }
 
 /// The data of `item`, a file, into `out`, a piece at a time: the size it had
@@ -822,6 +840,156 @@ fn link_target(path: &Path) -> Result<Vec<u8>, Error> {
     )))
 }
 
+/// What stopped a job, said as well as can be: that it was stopped, what could
+/// not be read, or else the error it came to.
+fn why(result: Result<(), Error>, tally: &Tally) -> Result<(), Error> {
+    match result {
+        Err(_) if tally.control.check().is_err() => Err(Error::Cancelled),
+        Err(e) => {
+            let failed = tally.failed.lock().unwrap_or_else(PoisonError::into_inner);
+            Err(failed.clone().map_or(e, Error::Failed))
+        }
+        ok => ok,
+    }
+}
+
+/// Whether files can be added to the archive listed: a ZIP archive that is one
+/// file, under no layers. A 7z or tar archive would be written whole again, and
+/// a compressed one is a stream that has no place to add to.
+pub fn can_add(listing: &Listing) -> bool {
+    listing.container == Container::Zip
+        && listing.layers.is_empty()
+        && volume_paths(&listing.folder.join(&listing.name)).len() == 1
+}
+
+/// Adds `paths`, each with what is under it, to the ZIP archive at `archive`,
+/// in its folder `folder`. A name it holds already stops it, as what to do
+/// with that is the user's to say. In an archive with encrypted files, the new
+/// ones are encrypted too, with its password. If this fails or is stopped, the
+/// archive is as it was.
+pub fn add(
+    paths: &[PathBuf],
+    archive: &Path,
+    folder: &[String],
+    keys: &Keys,
+    control: &Control,
+) -> Result<(), Error> {
+    let opened = opener(archive, keys).open()?;
+    let whole = opened.container() == Container::Zip
+        && opened.layers().is_empty()
+        && volume_paths(archive).len() == 1;
+    drop(opened);
+    if !whole {
+        return Err(Error::Failed(
+            "packwing can add files only to a ZIP archive that is one file.".into(),
+        ));
+    }
+    let mut items = items_of(paths)?;
+    let inside = archive.canonicalize()?;
+    let mut prefix = folder.join("/");
+    if !prefix.is_empty() {
+        prefix.push('/');
+    }
+    for item in &mut items {
+        if item.path.canonicalize().is_ok_and(|p| p == inside) {
+            return Err(Error::Failed("An archive can’t go inside itself.".into()));
+        }
+        item.name.insert_str(0, &prefix);
+    }
+
+    let mut za = Archive::open(File::open(archive)?, OpenFlags::CHECKCONS)?;
+    let (mut files, mut dirs) = (HashSet::new(), HashSet::new());
+    let mut encrypted = None;
+    for i in 0..za.get_num_entries(Flags::NONE) {
+        let stat = za.stat_index(i, Flags::NONE)?;
+        let name = String::from_utf8_lossy(stat.name.unwrap_or_default()).into_owned();
+        if !name.ends_with('/') {
+            if stat.encryption_method != em::NONE {
+                encrypted = encrypted.or(Some(i));
+            }
+            files.insert(name.clone());
+        }
+        // Its folders, which it may hold only by implication.
+        let mut end = 0;
+        while let Some(slash) = name[end..].find('/') {
+            end += slash + 1;
+            dirs.insert(name[..end - 1].to_owned());
+        }
+    }
+    let mut new = Vec::new();
+    for item in items {
+        let bare = item.name.trim_end_matches('/');
+        let folder = item.metadata.is_dir();
+        if files.contains(bare) || (!folder && dirs.contains(bare)) {
+            return Err(Error::Failed(format!(
+                "“{bare}” is already in the archive. Nothing was changed."
+            )));
+        }
+        if !(folder && dirs.contains(bare)) {
+            new.push(item);
+        }
+    }
+    if new.is_empty() {
+        return Ok(());
+    }
+    // The password that opens what is there, or new files would have another.
+    if let Some(i) = encrypted {
+        if keys.password.is_none() {
+            return Err(Error::Locked {
+                needs: vec![crate::PASSWORD.to_owned()],
+            });
+        }
+        za.set_default_password(keys.password.as_deref());
+        za.fopen_index(i, Flags::NONE)?;
+    }
+    za.set_random_source(Some(Arc::new(|buffer: &mut [u8]| {
+        getrandom::fill(buffer).map_err(io::Error::other)
+    })));
+
+    let mut progress = Progress::default();
+    let counted = measured(&new);
+    progress.total_entries = counted.files;
+    progress.total_bytes = counted.bytes;
+    let tally = Arc::new(Tally {
+        control: control.clone(),
+        progress: Mutex::new(progress),
+        failed: Mutex::new(None),
+    });
+    control.report(&progress);
+
+    let expected = za.get_num_entries(Flags::NONE) + new.len() as u64;
+    let name = archive.file_name().unwrap_or_default().to_string_lossy();
+    let beside = archive.with_file_name(format!(".{name}.adding"));
+    let (written_to, mut file) = free_name(&beside, |path| {
+        OpenOptions::new().write(true).create_new(true).open(path)
+    })?;
+    let written = add_items(&mut za, new, Level::default(), encrypted.is_some(), &tally)
+        .and_then(|()| match za.close_to(&mut file)? {
+            Closed::Written => Ok(()),
+            Closed::Unchanged | Closed::Removed => Err(Error::Failed("Nothing was added.".into())),
+        })
+        .and_then(|()| {
+            file.sync_all()?;
+            drop(file);
+            let back = Archive::open(File::open(&written_to)?, OpenFlags::CHECKCONS)?;
+            if back.get_num_entries(Flags::NONE) != expected {
+                return Err(Error::Failed("The archive did not come out whole.".into()));
+            }
+            drop(back);
+            // Its own file goes before the new one takes its place, as
+            // Windows wants.
+            drop(za);
+            fs::set_permissions(&written_to, fs::metadata(archive)?.permissions())?;
+            fs::rename(&written_to, archive)?;
+            Ok(())
+        });
+    if let Err(e) = why(written, &tally) {
+        let _ = fs::remove_file(&written_to);
+        return Err(e);
+    }
+    Ok(())
+}
+
 /// Makes an archive of `paths`, each with what is under it, named after
 /// `wanted` or the first name after it that is free, and gives where it
 /// went: the archive, or its first part if it took more than one. The names
@@ -850,14 +1018,6 @@ pub fn create(
         failed: Mutex::new(None),
     });
     control.report(&progress);
-    let why = |result: Result<(), Error>, tally: &Tally| match result {
-        Err(_) if control.check().is_err() => Err(Error::Cancelled),
-        Err(e) => {
-            let failed = tally.failed.lock().unwrap_or_else(PoisonError::into_inner);
-            Err(failed.clone().map_or(e, Error::Failed))
-        }
-        ok => ok,
-    };
     match new.part_size {
         Some(size) if size > 0 => {
             let (base, mut parts) = free_name(wanted, |base| {

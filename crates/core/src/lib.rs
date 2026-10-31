@@ -26,7 +26,7 @@ use hivepack_open::Opener;
 
 use crate::joined::Joined;
 
-pub use create::{Kind, Level, Measured, NewArchive, create, measure};
+pub use create::{Kind, Level, Measured, NewArchive, add, can_add, create, measure};
 pub use hivepack_extract::{Cancel, Progress, Summary};
 pub use hivepack_open::{Container, Layer};
 pub use job::{Control, extract, test};

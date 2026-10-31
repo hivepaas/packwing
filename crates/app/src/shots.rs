@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 29] = [
+const SCREENS: [(&str, SetUp, bool); 30] = [
     ("archive", |_, _, _| {}, false),
     (
         "archive-opened",
@@ -139,6 +139,11 @@ const SCREENS: [(&str, SetUp, bool); 29] = [
         |ws, window, cx| {
             ws.open_create_sample(window, cx);
         },
+        false,
+    ),
+    (
+        "add",
+        |ws, window, cx| ws.open_add_sample(window, cx),
         false,
     ),
     (

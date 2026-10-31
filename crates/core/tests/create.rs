@@ -10,8 +10,8 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use packwing_core::{
-    Cancel, Control, Error, Keys, Kind, Level, NewArchive, Progress, create, extract, list,
-    measure, test,
+    Cancel, Control, Error, Keys, Kind, Level, NewArchive, Progress, add, can_add, create, extract,
+    list, measure, test,
 };
 
 /// A folder of a test's own, gone when it ends.
@@ -741,4 +741,258 @@ fn seven_zip_reads_the_7z_archives_and_their_passwords() {
         .unwrap();
     assert!(said.status.success(), "{said:?}");
     same_tree(&out.join("Báo cáo"));
+}
+
+/// `a.zip`, holding `Báo cáo/`, to add to.
+fn to_add_to(s: &Scratch, password: Option<&str>) -> PathBuf {
+    let new = NewArchive {
+        password: password.map(|p| p.as_bytes().to_vec()),
+        ..NewArchive::default()
+    };
+    create(&[s.tree()], &s.path("a.zip"), &new, &Control::default()).unwrap()
+}
+
+/// Nothing beside the archive but what the test made: no `.a.zip.adding`.
+fn nothing_left_beside(s: &Scratch) {
+    for entry in fs::read_dir(&s.0).unwrap() {
+        let name = entry.unwrap().file_name();
+        assert!(!name.to_string_lossy().contains("adding"), "{name:?}");
+    }
+}
+
+#[test]
+fn added_files_join_what_is_there() {
+    let s = Scratch::new("add");
+    let made = to_add_to(&s, None);
+    let (one, folder) = (s.path("mới.txt"), s.path("thêm"));
+    fs::write(&one, "mới").unwrap();
+    fs::create_dir_all(folder.join("trong")).unwrap();
+    fs::write(folder.join("trong/x.txt"), "x").unwrap();
+    add(
+        &[one, folder],
+        &made,
+        &[],
+        &Keys::default(),
+        &Control::default(),
+    )
+    .unwrap();
+    // Into a folder it holds, whose other files stay.
+    let two = s.path("two.txt");
+    fs::write(&two, "2").unwrap();
+    let inner = ["Báo cáo".to_owned(), "Hình ảnh".to_owned()];
+    add(&[two], &made, &inner, &Keys::default(), &Control::default()).unwrap();
+
+    assert_eq!(list(&made, &Keys::default()).unwrap().files, 6);
+    test(&made, &Keys::default(), &Control::default()).unwrap();
+    let out = s.path("out");
+    extract(&made, &out, &Keys::default(), &Control::default()).unwrap();
+    same_tree(&out.join("Báo cáo"));
+    assert_eq!(fs::read_to_string(out.join("mới.txt")).unwrap(), "mới");
+    assert_eq!(
+        fs::read_to_string(out.join("thêm/trong/x.txt")).unwrap(),
+        "x"
+    );
+    assert_eq!(
+        fs::read_to_string(out.join("Báo cáo/Hình ảnh/two.txt")).unwrap(),
+        "2"
+    );
+    nothing_left_beside(&s);
+    if let Ok(said) = Command::new("unzip").arg("-t").arg(&made).output() {
+        assert!(said.status.success(), "{said:?}");
+    }
+}
+
+#[test]
+fn a_name_it_holds_changes_nothing() {
+    let s = Scratch::new("add-taken");
+    let made = to_add_to(&s, None);
+    let before = fs::read(&made).unwrap();
+    let dir = s.path("x");
+    fs::create_dir_all(&dir).unwrap();
+    let taken = dir.join("ghi chú.txt");
+    fs::write(&taken, "other").unwrap();
+    let err = add(
+        &[taken],
+        &made,
+        &["Báo cáo".to_owned()],
+        &Keys::default(),
+        &Control::default(),
+    )
+    .unwrap_err();
+    assert!(err.to_string().contains("ghi chú.txt"), "{err}");
+    assert_eq!(fs::read(&made).unwrap(), before);
+    nothing_left_beside(&s);
+}
+
+#[test]
+fn a_folder_it_holds_takes_new_files_without_a_second_entry() {
+    let s = Scratch::new("add-merge");
+    let made = to_add_to(&s, None);
+    let source = s.path("nguồn/Báo cáo");
+    fs::create_dir_all(&source).unwrap();
+    fs::write(source.join("mới.txt"), "mới").unwrap();
+    add(&[source], &made, &[], &Keys::default(), &Control::default()).unwrap();
+    let za = hivepack_zip::Archive::open(
+        fs::File::open(&made).unwrap(),
+        hivepack_zip::OpenFlags::RDONLY,
+    )
+    .unwrap();
+    let mut folders = 0;
+    for i in 0..za.get_num_entries(hivepack_zip::Flags::NONE) {
+        let stat = za.stat_index(i, hivepack_zip::Flags::NONE).unwrap();
+        folders += usize::from(stat.name == Some("Báo cáo/".as_bytes()));
+    }
+    assert_eq!(folders, 1);
+    assert_eq!(list(&made, &Keys::default()).unwrap().files, 4);
+}
+
+#[test]
+fn an_encrypted_archive_needs_its_password_and_encrypts_what_is_added() {
+    let s = Scratch::new("add-password");
+    let made = to_add_to(&s, Some("mật khẩu"));
+    let before = fs::read(&made).unwrap();
+    let new = s.path("mới.txt");
+    fs::write(&new, "bí mật").unwrap();
+    let paths = std::slice::from_ref(&new);
+    let with = |p: &str| Keys {
+        password: Some(p.as_bytes().to_vec()),
+        ..Keys::default()
+    };
+    assert!(matches!(
+        add(paths, &made, &[], &Keys::default(), &Control::default()),
+        Err(Error::Locked { .. })
+    ));
+    assert!(matches!(
+        add(paths, &made, &[], &with("sai"), &Control::default()),
+        Err(Error::WrongPassword)
+    ));
+    assert_eq!(fs::read(&made).unwrap(), before);
+    nothing_left_beside(&s);
+
+    let right = with("mật khẩu");
+    add(paths, &made, &[], &right, &Control::default()).unwrap();
+    assert!(
+        !fs::read(&made)
+            .unwrap()
+            .windows("bí mật".len())
+            .any(|w| w == "bí mật".as_bytes())
+    );
+    assert!(matches!(
+        extract(&made, &s.path("no"), &Keys::default(), &Control::default()),
+        Err(Error::Locked { .. })
+    ));
+    let out = s.path("out");
+    extract(&made, &out, &right, &Control::default()).unwrap();
+    same_tree(&out.join("Báo cáo"));
+    assert_eq!(fs::read_to_string(out.join("mới.txt")).unwrap(), "bí mật");
+}
+
+#[test]
+fn stopping_or_failing_leaves_the_archive_as_it_was() {
+    let s = Scratch::new("add-stop");
+    let made = to_add_to(&s, None);
+    let before = fs::read(&made).unwrap();
+    let big_one = s.path("lớn.bin");
+    fs::write(&big_one, big()).unwrap();
+    let cancel = Cancel::new();
+    let stop = cancel.clone();
+    let control = Control {
+        progress: Some(Arc::new(move |p: &Progress| {
+            if p.bytes > 0 {
+                stop.cancel();
+            }
+        })),
+        cancel: Some(cancel),
+    };
+    let stopped = add(&[big_one], &made, &[], &Keys::default(), &control);
+    assert!(matches!(stopped, Err(Error::Cancelled)), "{stopped:?}");
+    assert_eq!(fs::read(&made).unwrap(), before);
+    nothing_left_beside(&s);
+
+    let err = add(
+        &[s.path("not there")],
+        &made,
+        &[],
+        &Keys::default(),
+        &Control::default(),
+    )
+    .unwrap_err();
+    assert!(err.to_string().contains("not there"), "{err}");
+    assert_eq!(fs::read(&made).unwrap(), before);
+}
+
+#[test]
+fn only_a_zip_archive_of_one_file_takes_more() {
+    let s = Scratch::new("add-kinds");
+    let root = s.tree();
+    let extra = s.path("x.txt");
+    fs::write(&extra, "x").unwrap();
+    for (kind, extension) in KINDS {
+        let new = NewArchive {
+            kind,
+            ..NewArchive::default()
+        };
+        let path = s.path(&format!("a.{extension}"));
+        let made = create(
+            std::slice::from_ref(&root),
+            &path,
+            &new,
+            &Control::default(),
+        )
+        .unwrap();
+        let listing = list(&made, &Keys::default()).unwrap();
+        assert_eq!(can_add(&listing), kind == Kind::Zip, "{kind:?}");
+        let added = add(
+            std::slice::from_ref(&extra),
+            &made,
+            &[],
+            &Keys::default(),
+            &Control::default(),
+        );
+        assert_eq!(added.is_ok(), kind == Kind::Zip, "{kind:?}: {added:?}");
+    }
+    let parts = NewArchive {
+        part_size: Some(1_000_000),
+        ..NewArchive::default()
+    };
+    let made = create(
+        std::slice::from_ref(&root),
+        &s.path("p.zip"),
+        &parts,
+        &Control::default(),
+    )
+    .unwrap();
+    assert!(!can_add(&list(&made, &Keys::default()).unwrap()));
+    assert!(add(&[extra], &made, &[], &Keys::default(), &Control::default()).is_err());
+}
+
+#[test]
+fn an_archive_does_not_go_inside_itself() {
+    let s = Scratch::new("add-itself");
+    let made = to_add_to(&s, None);
+    let before = fs::read(&made).unwrap();
+    let err = add(
+        std::slice::from_ref(&made),
+        &made,
+        &[],
+        &Keys::default(),
+        &Control::default(),
+    )
+    .unwrap_err();
+    assert!(err.to_string().contains("itself"), "{err}");
+    assert_eq!(fs::read(&made).unwrap(), before);
+}
+
+#[cfg(unix)]
+#[test]
+fn an_archive_keeps_its_permissions_when_added_to() {
+    use std::os::unix::fs::PermissionsExt;
+    let s = Scratch::new("add-mode");
+    let made = to_add_to(&s, None);
+    fs::set_permissions(&made, fs::Permissions::from_mode(0o640)).unwrap();
+    let new = s.path("mới.txt");
+    fs::write(&new, "x").unwrap();
+    add(&[new], &made, &[], &Keys::default(), &Control::default()).unwrap();
+    let mode = fs::metadata(&made).unwrap().permissions().mode();
+    assert_eq!(mode & 0o777, 0o640);
 }
