@@ -53,6 +53,7 @@ pub fn project() -> Archive {
         ],
         marked: vec!["setup_tool.exe".into()],
         listing: None,
+        keys: packwing_core::Keys::default(),
     }
 }
 

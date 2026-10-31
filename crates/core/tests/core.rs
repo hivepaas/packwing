@@ -11,7 +11,8 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
 use packwing_core::{
-    Cancel, Child, Container, Control, Error, Keys, Layer, PASSWORD, Progress, extract, list, test,
+    Asked, Cancel, Child, Container, Control, Error, Keys, Layer, PASSPHRASE, PASSWORD, Progress,
+    extract, list, test,
 };
 
 /// A folder in the system's temporary one, removed when dropped.
@@ -791,4 +792,150 @@ fn cpio_and_7z_cancelled_before_they_start() {
         let e = test(&path, &Keys::default(), &control).unwrap_err();
         assert!(matches!(e, Error::Cancelled), "{name}: {e:?}");
     }
+}
+
+/// Keys with only a passphrase, or only a password.
+fn passphrase(p: &[u8]) -> Keys {
+    Keys {
+        passphrase: Some(p.to_vec()),
+        ..Keys::default()
+    }
+}
+
+fn password(p: &[u8]) -> Keys {
+    Keys {
+        password: Some(p.to_vec()),
+        ..Keys::default()
+    }
+}
+
+#[test]
+fn an_age_file_says_it_needs_a_passphrase_and_opens_with_it() {
+    let s = Scratch::new();
+    let path = s.file("notes.tar.zst.age", &image("notes.tar.zst.age"));
+    // None given: it says what it needs, which the window asks for.
+    let e = list(&path, &Keys::default()).unwrap_err();
+    assert!(
+        matches!(&e, Error::Locked { needs } if needs == &[PASSPHRASE]),
+        "{e:?}"
+    );
+    assert_eq!(e.to_string(), "This file is encrypted with a passphrase.");
+    let Error::Locked { needs } = &e else {
+        unreachable!()
+    };
+    assert_eq!(Keys::asks_for(needs), Some(Asked::Passphrase));
+    // A wrong one.
+    let e = list(&path, &passphrase(b"wrong")).unwrap_err();
+    assert!(matches!(e, Error::WrongPassphrase), "{e:?}");
+    assert_eq!(e.to_string(), "The passphrase is wrong.");
+    // The right one: what is under the layers.
+    let keys = Keys::default().with(Asked::Passphrase, b"password".to_vec());
+    let l = list(&path, &keys).unwrap();
+    assert_eq!(
+        (&l.layers, l.container),
+        (&vec![Layer::Age, Layer::Zstd], Container::Tar)
+    );
+    assert_eq!(l.encryption.as_deref(), Some("age"));
+    assert_eq!(l.files, 2);
+    let out = s.0.join("out");
+    let summary = extract(&path, &out, &keys, &Control::default()).unwrap();
+    assert_eq!(summary.files, 2);
+    assert_eq!(
+        std::fs::read(out.join("docs/notes.txt")).unwrap(),
+        b"Hello from inside the layers.\n"
+    );
+    assert_eq!(test(&path, &keys, &Control::default()).unwrap().files, 2);
+    // Extracting and testing without it say the same as listing.
+    let e = test(&path, &Keys::default(), &Control::default()).unwrap_err();
+    assert!(matches!(e, Error::Locked { .. }), "{e:?}");
+    let e = extract(
+        &path,
+        &s.0.join("no"),
+        &Keys::default(),
+        &Control::default(),
+    )
+    .unwrap_err();
+    assert!(matches!(e, Error::Locked { .. }), "{e:?}");
+    assert!(!s.0.join("no").exists());
+}
+
+/// A ZIP archive of `sample()`'s files, encrypted with WinZip AES-256 to
+/// `password`, as hivepack-zip writes it.
+fn encrypted_zip(password: &[u8]) -> Vec<u8> {
+    use hivepack_zip::{Archive, BufferSource, Flags, OpenFlags, em};
+    let mut za = Archive::open(&[][..], OpenFlags(0)).unwrap();
+    for (name, data) in sample() {
+        if name.ends_with('/') {
+            za.dir_add(name.as_bytes(), Flags::NONE).unwrap();
+            continue;
+        }
+        let i = za
+            .file_add(
+                name.as_bytes(),
+                BufferSource::with_mtime(data, IMAGE_TIME),
+                Flags::NONE,
+            )
+            .unwrap();
+        za.file_set_encryption(i, em::AES_256, Some(password))
+            .unwrap();
+    }
+    let mut out = std::io::Cursor::new(Vec::new());
+    za.close_to(&mut out).unwrap();
+    out.into_inner()
+}
+
+#[test]
+fn an_encrypted_zip_archive_needs_its_password() {
+    let s = Scratch::new();
+    let path = s.file("secret.zip", &encrypted_zip(b"secret"));
+    // Its names are not encrypted: it lists, and says it is.
+    let l = listed(&path);
+    assert_eq!((l.files, l.encryption.as_deref()), (3, Some("AES-256")));
+    // None given: what it needs, before anything is written.
+    let out = s.0.join("out");
+    let e = extract(&path, &out, &Keys::default(), &Control::default()).unwrap_err();
+    assert!(
+        matches!(&e, Error::Locked { needs } if needs == &[PASSWORD]),
+        "{e:?}"
+    );
+    let Error::Locked { needs } = &e else {
+        unreachable!()
+    };
+    assert_eq!(Keys::asks_for(needs), Some(Asked::Password));
+    let e = test(&path, &Keys::default(), &Control::default()).unwrap_err();
+    assert!(matches!(e, Error::Locked { .. }), "{e:?}");
+    // A wrong one.
+    let e = extract(&path, &out, &password(b"wrong"), &Control::default()).unwrap_err();
+    assert!(matches!(e, Error::WrongPassword), "{e:?}");
+    let e = test(&path, &password(b"wrong"), &Control::default()).unwrap_err();
+    assert!(matches!(e, Error::WrongPassword), "{e:?}");
+    // The right one.
+    let summary = extract(&path, &out, &password(b"secret"), &Control::default()).unwrap();
+    assert_eq!(summary.files, 3);
+    assert_eq!(std::fs::read(out.join("docs/notes.txt")).unwrap(), NOTES);
+    assert_eq!(
+        test(&path, &password(b"secret"), &Control::default())
+            .unwrap()
+            .files,
+        3
+    );
+}
+
+#[test]
+fn keys_ask_for_what_a_person_types() {
+    let needs = |n: &[&str]| n.iter().map(|s| s.to_string()).collect::<Vec<_>>();
+    assert_eq!(Keys::asks_for(&needs(&["scrypt"])), Some(Asked::Passphrase));
+    assert_eq!(Keys::asks_for(&needs(&["password"])), Some(Asked::Password));
+    // A key packwing cannot ask a person for.
+    assert_eq!(Keys::asks_for(&needs(&["X25519"])), None);
+    assert_eq!(Keys::asks_for(&needs(&["ssh-ed25519", "X25519"])), None);
+    // What is given keeps what was given before.
+    let keys = Keys::default()
+        .with(Asked::Passphrase, b"one".to_vec())
+        .with(Asked::Password, b"two".to_vec());
+    assert_eq!(keys.passphrase.as_deref(), Some(&b"one"[..]));
+    assert_eq!(keys.password.as_deref(), Some(&b"two"[..]));
+    // Neither shows when printed.
+    let shown = format!("{keys:?}");
+    assert!(!shown.contains("one") && !shown.contains("two"), "{shown}");
 }

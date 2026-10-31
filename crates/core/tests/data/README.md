@@ -15,7 +15,13 @@ packwing-core's tests read them.
   package's one file is `Payload/usr/local/share/example/readme.txt`, in a
   cpio archive under gzip.
 
-cpio archives and RPM packages are made by the tests themselves.
+- `notes.tar.zst.age`: a tar archive (`docs/notes.txt`, `docs/data.bin`)
+  under zstd, encrypted by age v1.3.2 to the passphrase `password` at
+  work factor 10: hivepack-rs's `testdata/oracle/open.txt`, its first file
+  (MIT, Copyright (c) 2026 HivePaaS).
+
+cpio archives, RPM packages and encrypted ZIP archives are made by the
+tests themselves.
 
 ```sh
 mkdir -p src/docs/plans

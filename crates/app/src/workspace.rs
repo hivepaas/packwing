@@ -8,12 +8,14 @@ use gpui::{
     PathPromptOptions, Render, Subscription, Window, WindowAppearance, div, prelude::*, px, rgb,
     rgba,
 };
+use packwing_core::{Asked, Keys};
 
 use crate::chrome;
 use crate::colors::{self, colors};
 use crate::demo;
 use crate::dialogs::{
-    CreateDialog, DamagedDialog, DialogEvent, ExtractDialog, Job, ProgressDialog, Verb,
+    CreateDialog, DamagedDialog, DialogEvent, ExtractDialog, Job, PasswordDialog, PasswordEvent,
+    ProgressDialog, Verb, asked_for,
 };
 use crate::model::{Archive, stem};
 use crate::pages::archive::{ArchiveEvent, ArchivePage, Shown};
@@ -29,6 +31,50 @@ pub enum Page {
     Archive,
     Recent,
     Settings,
+}
+
+/// An archive that needs a passphrase or a password: what is asked, and
+/// what to do again with it.
+#[derive(Clone)]
+struct Ask {
+    asked: Asked,
+    then: Then,
+}
+
+/// What a passphrase or password typed is for.
+#[derive(Clone)]
+enum Then {
+    /// Reading the archive at `path`, read with `keys` so far; with
+    /// `then_extract`, Extract opens over it once it is read.
+    Read {
+        path: PathBuf,
+        keys: Keys,
+        then_extract: bool,
+    },
+    /// Running a job again: an item of the right-click menu, which reads
+    /// no listing first.
+    Run(Job),
+}
+
+impl Then {
+    /// What it was tried with.
+    fn keys(&self) -> &Keys {
+        match self {
+            Then::Read { keys, .. } => keys,
+            Then::Run(job) => &job.keys,
+        }
+    }
+
+    /// The archive's name, as the dialog shows it.
+    fn name(&self) -> String {
+        match self {
+            Then::Read { path, .. } => path
+                .file_name()
+                .map(|n| n.to_string_lossy().into_owned())
+                .unwrap_or_default(),
+            Then::Run(job) => job.name.to_string(),
+        }
+    }
 }
 
 /// The dialog open over the window.
@@ -199,6 +245,13 @@ impl Workspace {
                 DialogEvent::Start(job) => {
                     this.open_progress(job.clone(), window, cx);
                 }
+                DialogEvent::Ask(job, asked, again) => {
+                    let ask = Ask {
+                        asked: *asked,
+                        then: Then::Run(job.clone()),
+                    };
+                    this.ask(ask, again.clone(), window, cx);
+                }
             },
         );
         self.dialog = Some(Open {
@@ -212,6 +265,27 @@ impl Workspace {
     fn close_dialog(&mut self, cx: &mut Context<Self>) {
         self.dialog = None;
         cx.notify();
+    }
+
+    /// Asks for `asked`, as an archive that needs it does; with `again`,
+    /// as after a wrong one.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn show_ask(
+        &mut self,
+        asked: Asked,
+        again: Option<String>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let ask = Ask {
+            asked,
+            then: Then::Read {
+                path: PathBuf::from("/home/user/Downloads/Tài liệu dự án 2026.7z"),
+                keys: Keys::default(),
+                then_extract: false,
+            },
+        };
+        self.ask(ask, again, window, cx);
     }
 
     #[cfg(all(test, feature = "shots"))]
@@ -235,6 +309,20 @@ impl Workspace {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
+        self.read_archive(path, Keys::default(), then_extract, window, cx);
+    }
+
+    /// Reads the archive at `path` with `keys`. One that turns out to need
+    /// a passphrase or a password asks for it, and is read again with it;
+    /// a wrong one asks again, saying so.
+    fn read_archive(
+        &mut self,
+        path: PathBuf,
+        keys: Keys,
+        then_extract: bool,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
         let name = path
             .file_name()
             .map(|n| n.to_string_lossy().into_owned())
@@ -243,9 +331,9 @@ impl Workspace {
             .update(cx, |p, cx| p.show(Shown::Opening(name.clone()), cx));
         self.show_page(Page::Archive, cx);
         self.reading = Some(path.clone());
-        let read = path.clone();
+        let (read, with) = (path.clone(), keys.clone());
         let task = cx.background_executor().spawn(async move {
-            let listing = packwing_core::list(&read, &packwing_core::Keys::default());
+            let listing = packwing_core::list(&read, &with);
             listing.map(|l| (l, packwing_core::came_from_internet(&read)))
         });
         cx.spawn_in(window, async move |this, cx| {
@@ -256,10 +344,24 @@ impl Workspace {
                 }
                 this.reading = None;
                 let shown = match result {
-                    Ok((listing, marked)) => Shown::Open(Archive::read(path, listing, marked)),
-                    Err(e) => Shown::Failed {
-                        name,
-                        why: e.to_string(),
+                    Ok((listing, marked)) => {
+                        Shown::Open(Archive::read(path, listing, keys, marked))
+                    }
+                    Err(e) => match asked_for(&e, &keys) {
+                        Some((asked, again)) => {
+                            let then = Then::Read {
+                                path,
+                                keys,
+                                then_extract,
+                            };
+                            let ask = Ask { asked, then };
+                            this.ask(ask, again.then(|| e.to_string()), window, cx);
+                            return;
+                        }
+                        None => Shown::Failed {
+                            name,
+                            why: e.to_string(),
+                        },
                     },
                 };
                 let opened = matches!(shown, Shown::Open(_));
@@ -270,6 +372,63 @@ impl Workspace {
             });
         })
         .detach();
+    }
+
+    /// Asks for what `ask` needs; `again` says why the one typed before
+    /// did not open it. Typed, what was stopped goes again with it;
+    /// cancelled, a reading's page says what it needs, and a job stops.
+    fn ask(
+        &mut self,
+        ask: Ask,
+        again: Option<String>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let name = ask.then.name();
+        let view = cx.new(|cx| PasswordDialog::new(ask.asked, name.clone(), again, window, cx));
+        let events = cx.subscribe_in(
+            &view,
+            window,
+            move |this, _, e: &PasswordEvent, window, cx| {
+                this.close_dialog(cx);
+                match (e, &ask.then) {
+                    (PasswordEvent::Typed(secret), then) => {
+                        let keys = then.keys().with(ask.asked, secret.clone());
+                        match then {
+                            Then::Read {
+                                path, then_extract, ..
+                            } => this.read_archive(path.clone(), keys, *then_extract, window, cx),
+                            Then::Run(job) => {
+                                let mut job = job.clone();
+                                job.keys = keys;
+                                this.open_progress(job, window, cx);
+                            }
+                        }
+                    }
+                    (PasswordEvent::Cancelled, Then::Read { .. }) => {
+                        let why = match ask.asked {
+                            Asked::Passphrase => "This file is encrypted with a passphrase.",
+                            Asked::Password => "This archive needs its password.",
+                        };
+                        let shown = Shown::Failed {
+                            name: name.clone(),
+                            why: why.into(),
+                        };
+                        this.archive.update(cx, |p, cx| p.show(shown, cx));
+                    }
+                    (PasswordEvent::Cancelled, Then::Run(_)) => {}
+                }
+                // The window takes the keys again, for Escape.
+                window.focus(&this.focus, cx);
+            },
+        );
+        self.dialog = Some(Open {
+            view: view.into(),
+            // Escape goes to the dialog, which gives up as Cancel does.
+            dismissable: false,
+            _events: events,
+        });
+        cx.notify();
     }
 
     /// Asks which archive to open, and opens it.
@@ -308,6 +467,7 @@ impl Workspace {
         let mut job = Job::shown(Verb::Test, a.name.clone().into(), None, a.files, a.unpacked);
         if let Some(path) = a.path {
             job.work = vec![(path, None)];
+            job.keys = a.keys;
         }
         self.open_progress(job, window, cx);
     }

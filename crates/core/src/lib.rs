@@ -18,6 +18,7 @@ use std::fmt;
 use std::fs::File;
 use std::io;
 use std::path::Path;
+use std::sync::Arc;
 
 use hivepack_age::{BoxedIdentity, LazyScryptIdentity, PassphrasePrompt};
 use hivepack_open::Opener;
@@ -35,14 +36,58 @@ pub const MAX_WORK_FACTOR: u8 = 20;
 /// What [`Error::Locked`] needs for an archive's own password.
 pub const PASSWORD: &str = "password";
 
-/// What opens an encrypted archive.
-#[derive(Clone, Default)]
+/// What [`Error::Locked`] needs for an age file's passphrase: the type of
+/// its recipient stanza.
+pub const PASSPHRASE: &str = "scrypt";
+
+/// What a passphrase prompt says when there is none to give: age's
+/// "could not read passphrase" then names it, and it is told apart from
+/// other errors of the header by it.
+const NO_PASSPHRASE: &str = "no passphrase given";
+
+/// What opens an encrypted archive. A file is opened with what is here; one
+/// that needs more says so ([`Error::Locked`]), and the window asks for it
+/// and opens it again.
+#[derive(Clone, Default, PartialEq, Eq)]
 pub struct Keys {
-    /// Asked for a passphrase when an age layer turns out to need one.
-    pub passphrase: Option<PassphrasePrompt>,
+    /// The passphrase of an age layer encrypted with one.
+    pub passphrase: Option<Vec<u8>>,
     /// The password of a ZIP or 7z archive's encrypted files, and of a 7z
     /// archive's encrypted names.
     pub password: Option<Vec<u8>>,
+}
+
+impl Keys {
+    /// What `needs` (an [`Error::Locked`]'s) asks for that a person types: a
+    /// passphrase or a password; `None` for a key packwing cannot ask for.
+    pub fn asks_for(needs: &[String]) -> Option<Asked> {
+        if needs.iter().any(|n| n == PASSWORD) {
+            Some(Asked::Password)
+        } else if needs.iter().any(|n| n == PASSPHRASE) {
+            Some(Asked::Passphrase)
+        } else {
+            None
+        }
+    }
+
+    /// These keys with `secret`, typed for what was asked.
+    pub fn with(&self, asked: Asked, secret: Vec<u8>) -> Keys {
+        let mut keys = self.clone();
+        match asked {
+            Asked::Password => keys.password = Some(secret),
+            Asked::Passphrase => keys.passphrase = Some(secret),
+        }
+        keys
+    }
+}
+
+/// What a person is asked for, to open an encrypted archive.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Asked {
+    /// An age file's passphrase.
+    Passphrase,
+    /// A ZIP or 7z archive's password.
+    Password,
 }
 
 impl fmt::Debug for Keys {
@@ -67,6 +112,8 @@ pub enum Error {
     /// The password given is not the archive's, or its data is damaged:
     /// 7z has nothing to tell the two apart with.
     WrongPassword,
+    /// The passphrase given is not the age file's.
+    WrongPassphrase,
     /// Stopped by [`Cancel`].
     Cancelled,
     /// What hivepack said: the archive is damaged, refused, or could not be
@@ -87,6 +134,7 @@ impl fmt::Display for Error {
             Error::WrongPassword => {
                 f.write_str("The password is wrong, or the archive is damaged.")
             }
+            Error::WrongPassphrase => f.write_str("The passphrase is wrong."),
             Error::Locked { .. } => {
                 f.write_str("This file is encrypted to a key packwing does not have.")
             }
@@ -112,10 +160,17 @@ impl From<io::Error> for Error {
             }
             return Error::Failed("the archive could not be read".into());
         }
-        // A 7z file's data, read with a password that is not its own.
+        // A 7z or ZIP file's data, read with a password that is not its own.
         if let Some(&inner) = e
             .get_ref()
             .and_then(|inner| inner.downcast_ref::<hivepack_7z::Error>())
+        {
+            return Error::from(inner);
+        }
+        if let Some(&inner) = e
+            .get_ref()
+            .and_then(|inner| inner.downcast_ref::<hivepack_zip::Error>())
+            && is_password_error(&inner)
         {
             return Error::from(inner);
         }
@@ -129,10 +184,29 @@ impl From<hivepack_open::Error> for Error {
             hivepack_open::Error::Age(hivepack_age::Error::NoMatch(m)) => Error::Locked {
                 needs: m.stanza_types,
             },
+            hivepack_open::Error::Age(hivepack_age::Error::Header(message)) => {
+                age_header_error(message)
+            }
             hivepack_open::Error::Io(e) => Error::Failed(e.to_string()),
             e => Error::Failed(e.to_string()),
         }
     }
+}
+
+/// An age header's error: the passphrase the prompt had none to give
+/// ([`Error::Locked`]), or a wrong one, as age says them; anything else as
+/// it is.
+fn age_header_error(message: String) -> Error {
+    // LazyScryptIdentity's words, as age's `cmd/age` has them.
+    if message.starts_with("could not read passphrase") && message.ends_with(NO_PASSPHRASE) {
+        return Error::Locked {
+            needs: vec![PASSPHRASE.to_owned()],
+        };
+    }
+    if message == "incorrect passphrase" {
+        return Error::WrongPassphrase;
+    }
+    Error::Failed(message)
 }
 
 impl From<hivepack_extract::Error> for Error {
@@ -140,6 +214,9 @@ impl From<hivepack_extract::Error> for Error {
         match e.kind {
             hivepack_extract::ErrorKind::Cancelled => Error::Cancelled,
             hivepack_extract::ErrorKind::Io(io) => Error::from(io),
+            hivepack_extract::ErrorKind::Archive(zip) if is_password_error(&zip) => {
+                Error::from(zip)
+            }
             hivepack_extract::ErrorKind::SevenZip(
                 inner @ (hivepack_7z::Error::PasswordRequired | hivepack_7z::Error::WrongPassword),
             ) => Error::from(inner),
@@ -180,9 +257,23 @@ impl From<hivepack_xar::Error> for Error {
     }
 }
 
+/// Whether a ZIP archive's error is about its password.
+fn is_password_error(e: &hivepack_zip::Error) -> bool {
+    matches!(
+        e.code(),
+        hivepack_zip::ErrorCode::NoPasswd | hivepack_zip::ErrorCode::WrongPasswd
+    )
+}
+
 impl From<hivepack_zip::Error> for Error {
     fn from(e: hivepack_zip::Error) -> Error {
-        Error::Failed(e.to_string())
+        match e.code() {
+            hivepack_zip::ErrorCode::NoPasswd => Error::Locked {
+                needs: vec![PASSWORD.to_owned()],
+            },
+            hivepack_zip::ErrorCode::WrongPasswd => Error::WrongPassword,
+            _ => Error::Failed(e.to_string()),
+        }
     }
 }
 
@@ -219,13 +310,19 @@ pub fn came_from_internet(path: &Path) -> bool {
 }
 
 /// The file at `path`, to be opened through its layers as often as asked.
+/// An age layer encrypted with a passphrase takes the one of `keys`; with
+/// none, it says so, and opening fails with [`Error::Locked`], so that the
+/// window can ask for one. The passphrase is asked for, and scrypt run,
+/// only for a layer that needs it.
 fn opener<'a>(path: &'a Path, keys: &Keys) -> Opener<impl FnMut() -> io::Result<File> + use<'a>> {
-    let mut identities: Vec<BoxedIdentity> = Vec::new();
-    if let Some(prompt) = &keys.passphrase {
-        let mut lazy = LazyScryptIdentity::new(prompt.clone());
-        lazy.set_max_work_factor(MAX_WORK_FACTOR);
-        identities.push(Box::new(lazy));
-    }
+    let passphrase = keys.passphrase.clone();
+    let prompt: PassphrasePrompt = Arc::new(move |_| match &passphrase {
+        Some(p) if !p.is_empty() => Ok(p.clone()),
+        _ => Err(NO_PASSPHRASE.to_owned()),
+    });
+    let mut lazy = LazyScryptIdentity::new(prompt);
+    lazy.set_max_work_factor(MAX_WORK_FACTOR);
+    let identities: Vec<BoxedIdentity> = vec![Box::new(lazy)];
     let name = path
         .file_name()
         .map(|n| n.to_string_lossy().into_owned())

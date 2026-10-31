@@ -22,6 +22,8 @@ hivepack-zip.workspace = true
 [dev-dependencies]
 hivepack-deflate.workspace = true
 hivepack-zstd.workspace = true
+# Encrypted ZIP archives, written by the tests.
+hivepack-zip.workspace = true
 
 [lints]
 workspace = true

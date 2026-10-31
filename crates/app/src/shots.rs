@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 25] = [
+const SCREENS: [(&str, SetUp, bool); 28] = [
     ("archive", |_, _, _| {}, false),
     (
         "archive-opened",
@@ -190,6 +190,26 @@ const SCREENS: [(&str, SetUp, bool); 25] = [
         false,
     ),
     (
+        "password",
+        |ws, window, cx| ws.show_ask(packwing_core::Asked::Password, None, window, cx),
+        false,
+    ),
+    (
+        // An age file opened for real: its reading stops for the
+        // passphrase, which is asked for.
+        "passphrase-asked",
+        |ws, window, cx| ws.open_archive(age_file(), false, window, cx),
+        false,
+    ),
+    (
+        "passphrase-wrong",
+        |ws, window, cx| {
+            let again = packwing_core::Error::WrongPassphrase.to_string();
+            ws.show_ask(packwing_core::Asked::Passphrase, Some(again), window, cx)
+        },
+        false,
+    ),
+    (
         "progress-failed",
         |ws, window, cx| {
             let job = crate::dialogs::Job::shown(
@@ -240,6 +260,11 @@ fn sample_tar() -> PathBuf {
     path
 }
 
+/// An age file encrypted to a passphrase, as packwing-core's tests keep it.
+fn age_file() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../core/tests/data/notes.tar.zst.age")
+}
+
 /// An archive as packwing-core lists it, shown two folders down.
 fn read() -> Shown {
     let entry = |path: &str, dir, size| packwing_core::Entry {
@@ -272,6 +297,7 @@ fn read() -> Shown {
     let mut a = Archive::read(
         PathBuf::from("/home/user/Downloads/site-backup-2026-10.tar.zst"),
         listing,
+        packwing_core::Keys::default(),
         false,
     );
     a.show(vec!["site".into(), "public".into()]);

@@ -5,7 +5,7 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use packwing_core::{Child, Listing};
+use packwing_core::{Child, Keys, Listing};
 
 use crate::colors::{Palette, Tint};
 
@@ -110,13 +110,17 @@ pub struct Archive {
     pub marked: Vec<String>,
     /// All it holds, to show its other folders: none for the samples.
     pub listing: Option<Arc<Listing>>,
+    /// The passphrase and password it was opened with, which extracting
+    /// and testing it take again: kept in memory while it is open, never
+    /// written down.
+    pub keys: Keys,
 }
 
 impl Archive {
-    /// The archive at `path`, as packwing-core listed it; its top folder
-    /// shown. `marked`: the file came from the Internet, and the programs
-    /// in it will keep that mark.
-    pub fn read(path: PathBuf, listing: Listing, marked: bool) -> Archive {
+    /// The archive at `path`, as packwing-core listed it with `keys`; its
+    /// top folder shown. `marked`: the file came from the Internet, and the
+    /// programs in it will keep that mark.
+    pub fn read(path: PathBuf, listing: Listing, keys: Keys, marked: bool) -> Archive {
         let location = listing
             .folder
             .file_name()
@@ -146,6 +150,7 @@ impl Archive {
             entries: Vec::new(),
             marked,
             listing: Some(Arc::new(listing)),
+            keys,
         };
         archive.show(Vec::new());
         archive
