@@ -8,16 +8,16 @@ use gpui::{
     PathPromptOptions, Render, Subscription, Window, WindowAppearance, div, prelude::*, px, rgb,
     rgba,
 };
-use packwing_core::{Asked, Keys};
+use packwing_core::{Asked, Keys, NewArchive};
 
 use crate::chrome;
 use crate::colors::{self, colors};
 use crate::demo;
 use crate::dialogs::{
-    CreateDialog, DamagedDialog, DialogEvent, ExtractDialog, Job, PasswordDialog, PasswordEvent,
-    ProgressDialog, Verb, asked_for,
+    CreateDialog, Creating, DamagedDialog, DialogEvent, ExtractDialog, Job, PasswordDialog,
+    PasswordEvent, ProgressDialog, Verb, asked_for,
 };
-use crate::model::{Archive, stem};
+use crate::model::{Archive, Selection, stem};
 use crate::pages::archive::{ArchiveEvent, ArchivePage, Shown};
 use crate::pages::onboarding::{Done, Onboarding};
 use crate::pages::recent::{OpenRecent, RecentPage};
@@ -472,12 +472,28 @@ impl Workspace {
         self.open_progress(job, window, cx);
     }
 
+    /// New archive, holding `paths` so far.
     pub fn open_create(
+        &mut self,
+        paths: Vec<PathBuf>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let view = cx.new(|cx| CreateDialog::new(Selection::default(), cx));
+        if !paths.is_empty() {
+            view.update(cx, |d, cx| d.add(paths, cx));
+        }
+        self.show(view, true, window, cx);
+    }
+
+    /// New archive, holding the screenshots' sample.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn open_create_sample(
         &mut self,
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> Entity<CreateDialog> {
-        let view = cx.new(|cx| CreateDialog::new(demo::SELECTION, cx));
+        let view = cx.new(|cx| CreateDialog::new(demo::selection(), cx));
         self.show(view.clone(), true, window, cx);
         view
     }
@@ -498,9 +514,7 @@ impl Workspace {
         view
     }
 
-    /// Does what an item of the right-click menu asked. Extracting and
-    /// opening read the files; compressing shows the sample's numbers until
-    /// hivepack writes archives.
+    /// Does what an item of the right-click menu asked.
     pub fn start(&mut self, r: Request, window: &mut Window, cx: &mut Context<Self>) {
         let Some(first) = r.paths.first() else {
             return;
@@ -512,7 +526,6 @@ impl Workspace {
         };
         let folder = first.parent().unwrap_or(Path::new(""));
         let one = r.paths.len() == 1;
-        let a = demo::project();
         match r.action {
             Action::ExtractHere | Action::ExtractToFolder => {
                 let archive = if one {
@@ -546,24 +559,26 @@ impl Workspace {
             Action::Extract => self.open_archive(first.clone(), true, window, cx),
             Action::Open => self.open_archive(first.clone(), false, window, cx),
             Action::CompressZip => {
-                // Named after what is packed, or with several, their folder.
-                let base = if one {
-                    first.file_stem().map(|s| s.to_string_lossy().into_owned())
-                } else {
-                    folder.file_name().map(|s| s.to_string_lossy().into_owned())
+                let selection = Selection {
+                    paths: r.paths.clone(),
+                    ..Selection::default()
                 };
-                let job = Job::shown(
+                let archive = format!("{}.zip", selection.suggested_name());
+                let mut job = Job::shown(
                     Verb::Create,
-                    format!("{}.zip", base.unwrap_or_else(|| "Archive".into())).into(),
+                    archive.clone().into(),
                     Some(folder.display().to_string().into()),
-                    a.files,
-                    a.unpacked,
+                    0,
+                    0,
                 );
+                job.create = Some(Creating {
+                    archive: folder.join(archive),
+                    paths: selection.paths,
+                    how: NewArchive::default(),
+                });
                 self.open_progress(job, window, cx);
             }
-            Action::Compress => {
-                self.open_create(window, cx);
-            }
+            Action::Compress => self.open_create(r.paths, window, cx),
         }
     }
 
@@ -659,7 +674,7 @@ impl Workspace {
             )
             .child(item("nav-new", "plus", "New", false).on_click(cx.listener(
                 |this, _, window, cx| {
-                    this.open_create(window, cx);
+                    this.open_create(Vec::new(), window, cx);
                 },
             )))
             .child(

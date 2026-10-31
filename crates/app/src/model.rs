@@ -2,7 +2,7 @@
 //! read. An archive read from disk fills [`Archive`] from what
 //! packwing-core lists; the samples of `demo.rs` fill the same.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use packwing_core::{Child, Keys, Listing};
@@ -274,6 +274,37 @@ pub fn count(n: u64) -> String {
 /// `n` and the noun, singular or plural: `1 file`, `1,284 files`.
 pub fn counted(n: u64, one: &str, many: &str) -> String {
     format!("{} {}", count(n), if n == 1 { one } else { many })
+}
+
+/// What New archive is to pack: the files and folders chosen, and what they
+/// were counted to hold.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Selection {
+    pub paths: Vec<PathBuf>,
+    pub files: u64,
+    pub bytes: u64,
+}
+
+impl Selection {
+    /// The folder a new archive goes in: the one the first of them is in.
+    pub fn folder(&self) -> Option<PathBuf> {
+        self.paths.first()?.parent().map(Path::to_path_buf)
+    }
+
+    /// What a new archive is called unless it is told otherwise: after what
+    /// it holds, or with several, after their folder.
+    pub fn suggested_name(&self) -> String {
+        let of = |p: &Path, whole: bool| {
+            let name = if whole { p.file_name() } else { p.file_stem() };
+            name.map(|n| n.to_string_lossy().into_owned())
+        };
+        let name = match self.paths.as_slice() {
+            [] => None,
+            [one] => of(one, one.is_dir()),
+            [first, ..] => first.parent().and_then(|p| of(p, true)),
+        };
+        name.unwrap_or_else(|| "Archive".into())
+    }
 }
 
 #[cfg(test)]

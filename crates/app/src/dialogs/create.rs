@@ -1,16 +1,20 @@
-//! New archive: its name and format, and under Advanced, how hard it is
-//! squeezed, whether it is split into parts, and a password.
+//! New archive: what goes in it and where it goes, its name and format, and
+//! under Advanced, how hard it is squeezed, whether it is split into parts,
+//! and a password. hivepack writes ZIP archives so far: the other formats
+//! say so, and do not start.
+
+use std::path::PathBuf;
 
 use gpui::{
-    App, Context, Entity, EventEmitter, FontWeight, Render, Subscription, Window, div, prelude::*,
-    px, relative, rgb,
+    App, Context, Entity, EventEmitter, FontWeight, PathPromptOptions, Render, Subscription, Task,
+    Window, div, prelude::*, px, relative, rgb,
 };
+use packwing_core::NewArchive;
 
-use super::{DialogEvent, Job, Verb, footer, header};
+use super::{Creating, DialogEvent, Job, Verb, footer, header};
 use crate::colors::colors;
-use crate::demo::Selection;
 use crate::input::{Changed, TextInput};
-use crate::model::{counted, size};
+use crate::model::{Selection, counted, size};
 use crate::widgets::{
     Chosen, Fill, Select, SelectLook, Size, Tone, button, check_row, icon, icon_button, legend,
     note, segment, segments, switch, tonal_tint,
@@ -71,6 +75,12 @@ impl Format {
         }
     }
 
+    /// Whether packwing can write it: hivepack has a writer for ZIP archives
+    /// and none yet for 7z or tar.
+    pub fn writes(self) -> bool {
+        self == Format::Zip
+    }
+
     /// Whether its archives can have a password: tar has none.
     pub fn can_protect(self) -> bool {
         matches!(self, Format::Zip | Format::SevenZip)
@@ -86,6 +96,19 @@ pub(crate) enum Level {
     Medium,
     High,
     Highest,
+}
+
+impl Level {
+    /// The level Deflate is asked for.
+    fn deflate(self) -> u32 {
+        match self {
+            Level::Lowest => 1,
+            Level::Low => 3,
+            Level::Medium => 6,
+            Level::High => 8,
+            Level::Highest => 9,
+        }
+    }
 }
 
 pub(crate) const LEVELS: [(Level, &str); 5] = [
@@ -120,6 +143,11 @@ fn part_size(typed: &str, unit: u64) -> Option<u64> {
     (bytes.is_finite() && bytes >= SMALLEST_PART as f64).then(|| bytes.round() as u64)
 }
 
+/// Whether `name` can name a file in a folder: nothing that leads elsewhere.
+fn name_fits(name: &str) -> bool {
+    !name.is_empty() && !name.contains(['/', '\\']) && name != "." && name != ".."
+}
+
 /// How hard a password is to guess, roughly: its length and the kinds of
 /// characters in it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -151,6 +179,13 @@ fn strength(password: &str) -> Strength {
 
 pub struct CreateDialog {
     selection: Selection,
+    /// Where the archive goes.
+    folder: Option<PathBuf>,
+    /// The name it was given last: while the field still says it, more
+    /// files change it.
+    suggested: String,
+    /// What the files are counted to hold, being counted.
+    _counting: Option<Task<()>>,
     name: Entity<TextInput>,
     format: Entity<Select>,
     level: Level,
@@ -170,10 +205,14 @@ impl EventEmitter<DialogEvent> for CreateDialog {}
 
 impl CreateDialog {
     pub fn new(selection: Selection, cx: &mut Context<Self>) -> Self {
+        let suggested = if selection.paths.is_empty() {
+            String::new()
+        } else {
+            selection.suggested_name()
+        };
         let name = cx.new(|cx| {
             let mut field = TextInput::new("Name", cx);
-            let len = selection.name.len();
-            field.set_text(selection.name, len..len, cx);
+            field.set_text(&suggested, suggested.len()..suggested.len(), cx);
             field
         });
         let format = cx.new(|_| Select::new(&Format::ALL.map(Format::ext), 0, SelectLook::Pill));
@@ -191,7 +230,10 @@ impl CreateDialog {
             cx.subscribe(&password, |_, _, _: &Changed, cx| cx.notify()),
         ];
         CreateDialog {
+            folder: selection.folder(),
             selection,
+            suggested,
+            _counting: None,
             name,
             format,
             level: Level::Medium,
@@ -231,6 +273,76 @@ impl CreateDialog {
         self.start(cx);
     }
 
+    /// Adds `paths` to what goes in the archive, and counts what is in them.
+    pub fn add(&mut self, paths: Vec<PathBuf>, cx: &mut Context<Self>) {
+        for path in paths {
+            if !self.selection.paths.contains(&path) {
+                self.selection.paths.push(path);
+            }
+        }
+        if self.folder.is_none() {
+            self.folder = self.selection.folder();
+        }
+        let suggested = self.selection.suggested_name();
+        if self.name.read(cx).text() == self.suggested {
+            self.name.update(cx, |f, cx| {
+                f.set_text(&suggested, suggested.len()..suggested.len(), cx)
+            });
+            self.suggested = suggested;
+        }
+        let paths = self.selection.paths.clone();
+        let counting = cx
+            .background_executor()
+            .spawn(async move { packwing_core::measure(&paths) });
+        self._counting = Some(cx.spawn(async move |this, cx| {
+            // One that cannot be read says so when the archive is made.
+            let measured = counting.await.unwrap_or_default();
+            let _ = this.update(cx, |this, cx| {
+                this.selection.files = measured.files;
+                this.selection.bytes = measured.bytes;
+                cx.notify();
+            });
+        }));
+        cx.notify();
+    }
+
+    /// Asks for files, or for a folder, to add.
+    fn pick(&mut self, folders: bool, cx: &mut Context<Self>) {
+        let picked = cx.prompt_for_paths(PathPromptOptions {
+            files: !folders,
+            directories: folders,
+            multiple: true,
+            prompt: Some("Add".into()),
+        });
+        cx.spawn(async move |this, cx| {
+            if let Ok(Ok(Some(paths))) = picked.await {
+                let _ = this.update(cx, |this, cx| this.add(paths, cx));
+            }
+        })
+        .detach();
+    }
+
+    /// Asks for the folder the archive goes in.
+    fn pick_folder(&mut self, cx: &mut Context<Self>) {
+        let picked = cx.prompt_for_paths(PathPromptOptions {
+            files: false,
+            directories: true,
+            multiple: false,
+            prompt: Some("Save here".into()),
+        });
+        cx.spawn(async move |this, cx| {
+            if let Ok(Ok(Some(mut paths))) = picked.await
+                && let Some(folder) = paths.pop()
+            {
+                let _ = this.update(cx, |this, cx| {
+                    this.folder = Some(folder);
+                    cx.notify();
+                });
+            }
+        })
+        .detach();
+    }
+
     fn format(&self, cx: &App) -> Format {
         Format::of_option(self.format.read(cx).chosen())
     }
@@ -252,32 +364,57 @@ impl CreateDialog {
 
     /// Whatever Advanced asks for is there: a part's size when one is to be
     /// typed, a password when one is asked for.
-    fn ready(&self, cx: &App) -> bool {
+    fn advanced_ready(&self, cx: &App) -> bool {
         let part = !self.custom_split(cx) || self.part_size(cx).is_some();
         let password = !self.protected(cx) || !self.password.read(cx).text().is_empty();
         part && password
     }
 
+    /// How big each part is, if it is split.
+    fn parts(&self, cx: &App) -> Option<u64> {
+        match self.split.read(cx).chosen() {
+            0 => None,
+            1 => Some(25_000_000),
+            2 => Some(4_000_000_000),
+            _ => self.part_size(cx),
+        }
+    }
+
     fn start(&mut self, cx: &mut Context<Self>) {
-        if !self.ready(cx) {
-            // What is missing is under Advanced, which may be hidden.
+        let format = self.format(cx);
+        let typed = self.name.read(cx).text().trim().to_owned();
+        let folder = self.folder.clone();
+        let (Some(folder), true, true, true) = (
+            folder.filter(|_| !self.selection.paths.is_empty()),
+            name_fits(&typed),
+            format.writes(),
+            self.advanced_ready(cx),
+        ) else {
             self.checked = true;
-            self.advanced = true;
+            // What is missing may be under Advanced, which may be hidden.
+            self.advanced |= !self.advanced_ready(cx);
             cx.notify();
             return;
-        }
-        let name = format!(
-            "{}{}",
-            self.name.read(cx).text().trim(),
-            self.format(cx).ext()
-        );
-        cx.emit(DialogEvent::Start(Job::shown(
+        };
+        let name = format!("{typed}{}", format.ext());
+        let password = self.protected(cx);
+        let mut job = Job::shown(
             Verb::Create,
-            name.into(),
-            Some("Documents".into()),
-            self.selection.items,
-            self.selection.size,
-        )));
+            name.clone().into(),
+            Some(folder.display().to_string().into()),
+            self.selection.files,
+            self.selection.bytes,
+        );
+        job.create = Some(Creating {
+            paths: self.selection.paths.clone(),
+            archive: folder.join(name),
+            how: NewArchive {
+                level: self.level.deflate(),
+                password: password.then(|| self.password.read(cx).text().as_bytes().to_vec()),
+                part_size: self.parts(cx),
+            },
+        });
+        cx.emit(DialogEvent::Start(job));
     }
 
     /// What Advanced has changed, said beside it while it is hidden: the
@@ -304,6 +441,70 @@ impl CreateDialog {
         said
     }
 
+    /// What goes in the archive, and where it goes.
+    fn contents(&self, cx: &mut Context<Self>) -> impl IntoElement {
+        let c = colors();
+        let chosen = &self.selection.paths;
+        let names: Vec<String> = chosen
+            .iter()
+            .take(3)
+            .filter_map(|p| p.file_name())
+            .map(|n| n.to_string_lossy().into_owned())
+            .collect();
+        let more = chosen.len().saturating_sub(names.len());
+        let line = match (names.is_empty(), more) {
+            (true, _) => "Nothing chosen yet".to_owned(),
+            (false, 0) => names.join(", "),
+            (false, more) => format!("{} and {more} more", names.join(", ")),
+        };
+        let row = |label: &'static str, text: String| {
+            div().flex_1().min_w_0().child(legend(label)).child(
+                div()
+                    .truncate()
+                    .text_size(px(13.))
+                    .text_color(rgb(c.muted))
+                    .child(text),
+            )
+        };
+        let folder = self.folder.as_ref().map_or_else(
+            || "Beside the files".to_owned(),
+            |f| f.display().to_string(),
+        );
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(10.))
+            .child(
+                div()
+                    .flex()
+                    .items_center()
+                    .gap(px(8.))
+                    .child(row("What goes in", line))
+                    .child(
+                        button("add-files", "Add files…", Fill::Outline, Size::Small)
+                            .on_click(cx.listener(|this, _, _, cx| this.pick(false, cx))),
+                    )
+                    .child(
+                        button("add-folder", "Add a folder…", Fill::Outline, Size::Small)
+                            .on_click(cx.listener(|this, _, _, cx| this.pick(true, cx))),
+                    ),
+            )
+            .when(chosen.is_empty() && self.checked, |d| {
+                d.child(note(Tone::Warn).child("Add the files or a folder to put in the archive."))
+            })
+            .child(
+                div()
+                    .flex()
+                    .items_center()
+                    .gap(px(8.))
+                    .child(row("Save in", folder))
+                    .child(
+                        button("change-folder", "Change…", Fill::Outline, Size::Small)
+                            .on_click(cx.listener(|this, _, _, cx| this.pick_folder(cx))),
+                    ),
+            )
+    }
+
     fn name_field(&self, cx: &App) -> impl IntoElement {
         let c = colors();
         div()
@@ -325,11 +526,31 @@ impl CreateDialog {
                     .child(self.name.clone())
                     .child(self.format.clone()),
             )
-            .children(
-                self.format(cx)
-                    .caveat()
-                    .map(|caveat| note(Tone::Warn).mt(px(4.)).child(caveat)),
+            .when(
+                self.checked && !name_fits(self.name.read(cx).text().trim()),
+                |d| {
+                    d.child(
+                        note(Tone::Warn)
+                            .mt(px(4.))
+                            .child("Give it a name, without / or \\ in it."),
+                    )
+                },
             )
+            .map(|d| {
+                let format = self.format(cx);
+                if format.writes() {
+                    d.children(
+                        format
+                            .caveat()
+                            .map(|caveat| note(Tone::Warn).mt(px(4.)).child(caveat)),
+                    )
+                } else {
+                    d.child(note(Tone::Warn).mt(px(4.)).child(format!(
+                        "packwing can’t write {} archives yet. Pick .zip.",
+                        format.ext()
+                    )))
+                }
+            })
     }
 
     fn advanced_toggle(&self, cx: &mut Context<Self>) -> impl IntoElement {
@@ -451,6 +672,13 @@ impl CreateDialog {
                         .child(self.unit.clone()),
                 )
             })
+            .when(self.split.read(cx).chosen() != 0, |d| {
+                d.child(
+                    div().text_size(px(13.)).text_color(rgb(c.muted)).child(
+                        "Parts open in 7-Zip and archivers like it, not in the tools built into Windows and macOS.",
+                    ),
+                )
+            })
             .when(bad_part, |d| {
                 d.child(
                     note(Tone::Warn).child("A part takes a size of 1 MB or more, such as 100 MB."),
@@ -563,8 +791,14 @@ fn strength_bar(s: Strength) -> impl IntoElement {
 
 impl Render for CreateDialog {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let s = self.selection;
-        let detail = format!("{} · {}", counted(s.items, "item", "items"), size(s.size));
+        let s = &self.selection;
+        let detail = if s.paths.is_empty() {
+            "Choose what to put in it".to_owned()
+        } else if self._counting.is_some() && s.files == 0 {
+            counted(s.paths.len() as u64, "item", "items")
+        } else {
+            format!("{} · {}", counted(s.files, "file", "files"), size(s.bytes))
+        };
         let close = icon_button("close", "x", 44.)
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         super::card()
@@ -590,6 +824,7 @@ impl Render for CreateDialog {
                     .flex()
                     .flex_col()
                     .gap(px(14.))
+                    .child(self.contents(cx))
                     .child(self.name_field(cx))
                     .child(self.advanced_toggle(cx))
                     .when(self.advanced, |d| {
@@ -625,6 +860,22 @@ mod tests {
         assert_eq!(strength("abcdefgh"), Strength::Fair);
         assert_eq!(strength("Abcdefgh12!x"), Strength::Strong);
         assert_eq!(strength("correct horse battery"), Strength::Strong);
+    }
+
+    #[test]
+    fn a_name_stays_in_its_folder() {
+        assert!(name_fits("Báo cáo quý 3"));
+        assert!(name_fits(".hidden"));
+        for bad in ["", ".", "..", "a/b", "../a", "a\\b"] {
+            assert!(!name_fits(bad), "{bad:?}");
+        }
+    }
+
+    #[test]
+    fn every_level_squeezes_harder_than_the_last() {
+        let levels = LEVELS.map(|(l, _)| l.deflate());
+        assert!(levels.windows(2).all(|w| w[0] < w[1]), "{levels:?}");
+        assert!((1..=9).contains(&levels[0]) && (1..=9).contains(&levels[4]));
     }
 
     #[test]

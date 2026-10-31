@@ -18,7 +18,7 @@ pub use progress::ProgressDialog;
 use std::path::PathBuf;
 
 use gpui::{Div, FontWeight, MouseButton, SharedString, Stateful, div, prelude::*, px, rgb};
-use packwing_core::{Asked, Keys};
+use packwing_core::{Asked, Keys, NewArchive};
 
 use crate::colors::{Tint, colors};
 use crate::widgets::{float_shadow, icon, logo, tile};
@@ -32,9 +32,18 @@ pub enum Verb {
     Test,
 }
 
-/// A job the user started. Extracting and testing archives read from disk
-/// run, through packwing-core; the rest (a new archive, a repair, and the
-/// samples) count up at a made-up speed, until hivepack writes archives.
+/// A new archive to make, through packwing-core.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Creating {
+    pub paths: Vec<PathBuf>,
+    /// What it is called and where, or the first free name after that.
+    pub archive: PathBuf,
+    pub how: NewArchive,
+}
+
+/// A job the user started. Extracting and testing archives and making new
+/// ones run, through packwing-core; the rest (a repair, and the samples)
+/// count up at a made-up speed.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Job {
     pub verb: Verb,
@@ -52,6 +61,8 @@ pub struct Job {
     /// What opens the archive: the passphrase and password it was opened
     /// with, or one typed in Extract.
     pub keys: Keys,
+    /// The new archive it makes, if that is what it does.
+    pub create: Option<Creating>,
 }
 
 impl Job {
@@ -71,6 +82,7 @@ impl Job {
             bytes,
             work: Vec::new(),
             keys: Keys::default(),
+            create: None,
         }
     }
 }

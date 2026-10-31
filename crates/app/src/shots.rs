@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 28] = [
+const SCREENS: [(&str, SetUp, bool); 29] = [
     ("archive", |_, _, _| {}, false),
     (
         "archive-opened",
@@ -137,14 +137,19 @@ const SCREENS: [(&str, SetUp, bool); 28] = [
     (
         "create",
         |ws, window, cx| {
-            ws.open_create(window, cx);
+            ws.open_create_sample(window, cx);
         },
+        false,
+    ),
+    (
+        "create-empty",
+        |ws, window, cx| ws.open_create(Vec::new(), window, cx),
         false,
     ),
     (
         "create-advanced",
         |ws, window, cx| {
-            ws.open_create(window, cx)
+            ws.open_create_sample(window, cx)
                 .update(cx, |d, cx| d.show_advanced(cx));
         },
         false,
@@ -152,7 +157,7 @@ const SCREENS: [(&str, SetUp, bool); 28] = [
     (
         "create-7z",
         |ws, window, cx| {
-            ws.open_create(window, cx).update(cx, |d, cx| {
+            ws.open_create_sample(window, cx).update(cx, |d, cx| {
                 d.fill(crate::dialogs::Format::SevenZip, "100", cx)
             });
         },
@@ -161,7 +166,7 @@ const SCREENS: [(&str, SetUp, bool); 28] = [
     (
         "create-missing",
         |ws, window, cx| {
-            ws.open_create(window, cx).update(cx, |d, cx| {
+            ws.open_create_sample(window, cx).update(cx, |d, cx| {
                 d.fill(crate::dialogs::Format::SevenZip, "", cx);
                 d.press_create(cx);
             });

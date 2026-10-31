@@ -8,6 +8,8 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
+# The random bytes of WinZip AES, on every system.
+getrandom = "0.4"
 hivepack-7z.workspace = true
 hivepack-age.workspace = true
 hivepack-cpio.workspace = true
