@@ -363,3 +363,86 @@ fn shots() {
         }
     }
 }
+
+/// A press and a release at `at`, the pointer having gone there first, as a
+/// person's click comes to the window.
+fn click(
+    cx: &mut HeadlessAppContext,
+    window: gpui::WindowHandle<Workspace>,
+    at: gpui::Point<gpui::Pixels>,
+) {
+    use gpui::{
+        Modifiers, MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent, PlatformInput,
+    };
+    let events = [
+        PlatformInput::MouseMove(MouseMoveEvent {
+            position: at,
+            pressed_button: None,
+            modifiers: Modifiers::default(),
+        }),
+        PlatformInput::MouseDown(MouseDownEvent {
+            button: MouseButton::Left,
+            position: at,
+            modifiers: Modifiers::default(),
+            click_count: 1,
+            first_mouse: false,
+        }),
+        PlatformInput::MouseUp(MouseUpEvent {
+            button: MouseButton::Left,
+            position: at,
+            modifiers: Modifiers::default(),
+            click_count: 1,
+        }),
+    ];
+    for event in events {
+        window
+            .update(cx, |_, window, cx| {
+                window.dispatch_event(event, cx);
+            })
+            .expect("cannot send the event");
+        cx.run_until_parked();
+        cx.capture_screenshot(window.into())
+            .expect("cannot draw the window");
+    }
+}
+
+/// An option of a menu takes a click, which a screenshot does not show.
+#[test]
+fn a_menu_option_takes_a_click() {
+    let text = Arc::new(gpui_wgpu::CosmicTextSystem::new(crate::FONT));
+    let mut cx = HeadlessAppContext::with_platform(text, Arc::new(crate::Assets), || {
+        gpui_platform::current_headless_renderer()
+    });
+    cx.update(crate::load_fonts);
+    let window = cx
+        .open_window(size(px(1280.), px(800.)), |window, cx| {
+            let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
+            cx.new(|cx| Workspace::new(false, false, menu, window, cx))
+        })
+        .expect("cannot open a window");
+    let dialog = window
+        .update(&mut cx, |ws, window, cx| {
+            ws.show_sample(cx);
+            ws.open_create_sample(window, cx)
+        })
+        .expect("cannot set the screen up");
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    // The format's pill, then the second option under it (.7z), as
+    // `create-light.png` draws them.
+    let (pill, option) = (
+        gpui::point(px(890.), px(449.)),
+        gpui::point(px(890.), px(540.)),
+    );
+    click(&mut cx, window, pill);
+    click(&mut cx, window, option);
+    let chosen = dialog.read_with(&cx, |d, cx| d.format_chosen(cx));
+    assert_eq!(chosen, crate::dialogs::Format::SevenZip);
+    // A press elsewhere closes it, and what was under the option then stays.
+    click(&mut cx, window, pill);
+    click(&mut cx, window, gpui::point(px(40.), px(700.)));
+    click(&mut cx, window, gpui::point(px(890.), px(590.)));
+    let chosen = dialog.read_with(&cx, |d, cx| d.format_chosen(cx));
+    assert_eq!(chosen, crate::dialogs::Format::SevenZip);
+}

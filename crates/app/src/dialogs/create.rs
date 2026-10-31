@@ -251,6 +251,11 @@ impl CreateDialog {
     }
 
     #[cfg(all(test, feature = "shots"))]
+    pub fn format_chosen(&self, cx: &App) -> Format {
+        self.format(cx)
+    }
+
+    #[cfg(all(test, feature = "shots"))]
     pub fn press_create(&mut self, cx: &mut Context<Self>) {
         self.start(cx);
     }
