@@ -164,6 +164,9 @@ pub trait StorageKind: Send + Sync {
 
     fn keep_secrets(&self, id: &str, secrets: &Values) -> io::Result<()>;
 
+    /// The secrets kept under `id`, to change them; an empty one if there is none.
+    fn kept_secrets(&self, id: &str) -> io::Result<Values>;
+
     fn forget_secrets(&self, id: &str);
 }
 

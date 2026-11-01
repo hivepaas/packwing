@@ -10,6 +10,7 @@
 
 mod chrome;
 mod colors;
+mod confirm;
 // Most of it only the screenshots draw.
 #[cfg_attr(not(all(test, feature = "shots")), allow(dead_code))]
 mod demo;

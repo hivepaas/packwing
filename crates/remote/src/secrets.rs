@@ -28,6 +28,13 @@ pub fn get(id: &str, key: &str) -> io::Result<String> {
     }
 }
 
+/// The secrets kept as `keys`, by key.
+pub fn kept(id: &str, keys: &[&str]) -> io::Result<Values> {
+    keys.iter()
+        .map(|key| Ok(((*key).to_owned(), get(id, key)?)))
+        .collect()
+}
+
 pub fn forget(id: &str, keys: &[&str]) {
     for key in keys {
         if let Ok(entry) = entry(id, key) {
