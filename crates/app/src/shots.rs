@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 30] = [
+const SCREENS: [(&str, SetUp, bool); 31] = [
     ("archive", |_, _, _| {}, false),
     (
         "archive-opened",
@@ -200,6 +200,11 @@ const SCREENS: [(&str, SetUp, bool); 30] = [
         false,
     ),
     (
+        "key-file",
+        |ws, window, cx| ws.show_ask(packwing_core::Asked::KeyFile, None, window, cx),
+        false,
+    ),
+    (
         "password",
         |ws, window, cx| ws.show_ask(packwing_core::Asked::Password, None, window, cx),
         false,
@@ -311,7 +316,7 @@ fn read() -> Shown {
         false,
     );
     a.show(vec!["site".into(), "public".into()]);
-    Shown::Open(a)
+    Shown::Open(Box::new(a))
 }
 
 fn out_dir() -> PathBuf {

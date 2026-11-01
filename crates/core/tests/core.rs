@@ -926,9 +926,14 @@ fn keys_ask_for_what_a_person_types() {
     let needs = |n: &[&str]| n.iter().map(|s| s.to_string()).collect::<Vec<_>>();
     assert_eq!(Keys::asks_for(&needs(&["scrypt"])), Some(Asked::Passphrase));
     assert_eq!(Keys::asks_for(&needs(&["password"])), Some(Asked::Password));
-    // A key packwing cannot ask a person for.
-    assert_eq!(Keys::asks_for(&needs(&["X25519"])), None);
-    assert_eq!(Keys::asks_for(&needs(&["ssh-ed25519", "X25519"])), None);
+    // A key is asked for as its file.
+    assert_eq!(Keys::asks_for(&needs(&["X25519"])), Some(Asked::KeyFile));
+    assert_eq!(
+        Keys::asks_for(&needs(&["ssh-ed25519", "X25519"])),
+        Some(Asked::KeyFile)
+    );
+    // One hivepack does not read is not.
+    assert_eq!(Keys::asks_for(&needs(&["mlkem768x25519"])), None);
     // What is given keeps what was given before.
     let keys = Keys::default()
         .with(Asked::Passphrase, b"one".to_vec())
@@ -938,4 +943,92 @@ fn keys_ask_for_what_a_person_types() {
     // Neither shows when printed.
     let shown = format!("{keys:?}");
     assert!(!shown.contains("one") && !shown.contains("two"), "{shown}");
+}
+
+/// An age file and its key file, of `tests/data`.
+fn keyed(s: &Scratch, file: &str) -> PathBuf {
+    s.file(file, &image(file))
+}
+
+fn with_key(key: &str) -> Keys {
+    Keys::default().with(Asked::KeyFile, image(key))
+}
+
+fn opens_with(path: &Path, keys: &Keys, s: &Scratch) {
+    let l = list(path, keys).unwrap();
+    assert_eq!(
+        (&l.layers, l.container, l.files),
+        (&vec![Layer::Age, Layer::Zstd], Container::Tar, 1)
+    );
+    test(path, keys, &Control::default()).unwrap();
+    let out = s.0.join("out");
+    let _ = std::fs::remove_dir_all(&out);
+    extract(path, &out, keys, &Control::default()).unwrap();
+    assert_eq!(
+        std::fs::read_to_string(out.join("docs/notes.txt")).unwrap(),
+        "Ghi chú về khoá\n"
+    );
+}
+
+#[test]
+fn an_age_file_encrypted_to_a_key_asks_for_the_key_file() {
+    let s = Scratch::new();
+    for (file, key, stanza) in [
+        ("x25519.tar.zst.age", "test-age.key", "X25519"),
+        ("ssh.tar.zst.age", "test-ssh.key", "ssh-ed25519"),
+    ] {
+        let path = keyed(&s, file);
+        let e = list(&path, &Keys::default()).unwrap_err();
+        let Error::Locked { needs } = &e else {
+            panic!("{e:?}")
+        };
+        assert_eq!(needs, &[stanza]);
+        assert_eq!(Keys::asks_for(needs), Some(Asked::KeyFile));
+        opens_with(&path, &with_key(key), &s);
+    }
+    // Another key is no key.
+    let path = keyed(&s, "x25519.tar.zst.age");
+    assert!(matches!(
+        list(&path, &with_key("test-ssh.key")),
+        Err(Error::Locked { .. })
+    ));
+}
+
+#[test]
+fn a_key_file_with_a_passphrase_asks_for_it() {
+    let s = Scratch::new();
+    for (file, key, secret) in [
+        ("ssh-locked.tar.zst.age", "test-ssh-locked.key", "khoá ssh"),
+        ("x25519.tar.zst.age", "test-age-locked.key", "khoá age"),
+    ] {
+        let path = keyed(&s, file);
+        let keys = with_key(key);
+        let e = list(&path, &keys).unwrap_err();
+        let Error::Locked { needs } = &e else {
+            panic!("{key}: {e:?}")
+        };
+        assert_eq!(Keys::asks_for(needs), Some(Asked::KeyPassphrase), "{key}");
+        let wrong = keys.with(Asked::KeyPassphrase, b"sai".to_vec());
+        let e = list(&path, &wrong).unwrap_err();
+        assert!(matches!(e, Error::WrongKeyPassphrase), "{key}: {e:?}");
+        opens_with(
+            &path,
+            &keys.with(Asked::KeyPassphrase, secret.as_bytes().to_vec()),
+            &s,
+        );
+    }
+}
+
+#[test]
+fn what_is_no_key_file_says_so() {
+    for key in [
+        "test-age.key",
+        "test-age-locked.key",
+        "test-ssh.key",
+        "test-ssh-locked.key",
+    ] {
+        packwing_core::check_key_file(&image(key)).unwrap();
+    }
+    assert!(packwing_core::check_key_file(b"not a key\n").is_err());
+    assert!(packwing_core::check_key_file(b"").is_err());
 }
