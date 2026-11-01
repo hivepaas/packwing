@@ -41,10 +41,10 @@ pub enum ArchiveEvent {
 
 /// The largest file a preview reads: all of it has to be read, as an archive
 /// gives its files out whole.
-const MOST_PREVIEWED: u64 = 32_000_000;
+pub(crate) const MOST_PREVIEWED: u64 = 32_000_000;
 
 /// How much of a text a preview shows.
-const MOST_TEXT: usize = 8_000;
+pub(crate) const MOST_TEXT: usize = 8_000;
 
 /// What the preview shows of the file chosen.
 #[derive(Clone, Debug, Default)]
@@ -61,7 +61,7 @@ enum Preview {
 
 /// What a picture of this name is, for those GPUI decodes. SVG is left out: it
 /// can point at other files.
-fn picture_format(name: &str) -> Option<ImageFormat> {
+pub(crate) fn picture_format(name: &str) -> Option<ImageFormat> {
     let (_, extension) = name.rsplit_once('.')?;
     match extension.to_ascii_lowercase().as_str() {
         "png" => Some(ImageFormat::Png),

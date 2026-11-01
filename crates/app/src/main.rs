@@ -17,6 +17,8 @@ mod colors;
 #[cfg_attr(not(all(test, feature = "shots")), allow(dead_code))]
 mod demo;
 mod dialogs;
+mod editors;
+mod explorer;
 mod input;
 mod model;
 mod open_with;
@@ -78,6 +80,7 @@ const ICONS: &[(&str, &[u8])] = icons![
     "appearance-light",
     "appearance-system",
     "archive",
+    "arrow-up",
     "building",
     "check",
     "chevron-down",
@@ -90,9 +93,11 @@ const ICONS: &[(&str, &[u8])] = icons![
     "logo-feather",
     "plus",
     "recent",
+    "refresh",
     "search",
     "shield",
     "sliders",
+    "storages",
     "warning",
     "x",
     // The window's buttons, as GNOME and Windows draw them.

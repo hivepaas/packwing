@@ -5,6 +5,7 @@ pub mod archive;
 pub mod onboarding;
 pub mod recent;
 pub mod settings;
+pub mod storages;
 
 use gpui::{Div, FontWeight, SharedString, div, prelude::*, px, rgb};
 

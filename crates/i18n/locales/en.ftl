@@ -73,13 +73,27 @@ t0dad409a = Strong
 t5461cfa6 = Choose what to put in it
 tf352befb = New archive
 t990de47d = Create
+tfff7fd6c =
+    { $n ->
+        [one] { $n } item
+       *[other] { $n } items
+    }
+tdf5a8d53 = Move { $what } to the Trash?
+ta297d6c5 = Delete { $what }?
+te5e137a1 = It can be put back from the system’s Trash.
+t3947dab4 = This cannot be undone from packwing.
+t6f358d35 =
+    { $n ->
+        [one] and { $n } more
+       *[other] and { $n } more
+    }
+ta036661b = Move to Trash
+t5797ea6a = Delete
 t49912bd4 = { $many } items
 t83401013 = Rename { $what }
-ta297d6c5 = Delete { $what }?
 taf4cad88 = New name
 t33cb3e89 = It goes from the archive for good, folders with all they hold. This can’t be undone.
 tc80631f3 = Rename
-t5797ea6a = Delete
 t8a168799 = The archive’s password
 td571ce35 = one folder
 t95c9ec7b = one file
@@ -129,6 +143,10 @@ t2060c750 = Adding…
 t186fbef5 = Changing the archive…
 tc40f2321 = Opening…
 t19d1cb65 = Testing…
+t02dd17e0 = Copying…
+t890f7ed1 = Moving…
+t613e4e9c = Couldn’t copy
+t9796adec = Couldn’t move
 tacd22c56 = Couldn’t extract
 t9d0e01bc = Couldn’t create the archive
 tfbd989b0 = Couldn’t add the files
@@ -148,6 +166,60 @@ tf0f1017b = Open the folder when it’s done
 tb800c0ef = Run in background
 t454d1d8a = Resume
 t44f9bf2d = Pause
+tc168ca56 = Move { $what }
+teda01f26 = Copy { $what }
+t1aaf57aa = Move here
+t85f0245a = Copy here
+t658f3664 = Copy
+t7f2c2a34 = Move
+tc99c037f = If a name is taken
+t5318c14e = They are in this folder already. Choose another.
+t8ecbab4e = Each original goes once its copy has been read back and matches.
+t5937f050 = The originals stay where they are.
+t1b339d35 = Too big to show here
+tb909bf3c = packwing can’t show this kind of file
+tb7927177 = It could not be read
+t26005fe3 = It could not be read: { $why }
+t6aad8485 = Reading…
+tb60fb288 = It could not be shown
+t5ef80ec5 = Open with default app
+tbf2a5d3a = no editor command
+t6256b3da = no text editor found
+t2c814039 = Search this folder
+t2c6017b2 = This folder could not be read: { $why }
+t466e87c4 = Could not load more: { $why }
+te5951d38 = Could not delete: { $why }
+t91cdab0c = the text editor
+t8deb160a = Cannot start { $who }: { $why }
+td8d39fb8 = Edit in text editor
+te44cd57b = Edit in { $editor }
+tdd13a6b2 = Modified
+tc4e2f181 = Loading…
+t39c5f536 = Only what is loaded was searched.
+t41f9a787 = Search the whole folder
+t30bed46a = Load { $n } more
+t0815aad4 = Refresh
+t3375c9c0 = Hide hidden files
+tf18c7057 = Show hidden files
+t5e4baa18 = View
+t4a09490e = Extract…
+t690f9553 = Compress…
+t543cf15b = Copy to…
+t7a32320b = Move to…
+tf165cb2b = Copy path
+tad1b72f6 =
+    { $n ->
+        [one] Compress { $n } item…
+       *[other] Compress { $n } items…
+    }
+t29a52578 = { $n } loaded, more in this folder
+t037d01ae = Sorted among those loaded
+tebda8468 = { $n } selected
+t213e90fa = Try again
+t0f9a8a58 = Nothing here matches that.
+t0b82c83a = Add a storage to browse it.
+tc7731c8f = No folders here.
+td9e47db6 = This folder is empty.
 te8f231ba =
     { $n ->
         [one] { $n } byte
@@ -155,10 +227,8 @@ te8f231ba =
     }
 t73690b65 = Archive
 tb35c0c27 = Search inside this archive
-t1b339d35 = Too big to show here
 ta413eca5 = Not text it can show
 t81f5dbce = It needs the password to show it
-tb7927177 = It could not be read
 t3c93bb70 = Safe to extract
 tdd45c7bb = Add files
 t2ffcbe05 = Test
@@ -170,8 +240,6 @@ t8382bd3e = Open an archive
 t4a498ac8 = ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
 tff74a552 = Open another…
 t2cf2a8ee = Open an archive…
-tb60fb288 = It could not be shown
-t6aad8485 = Reading…
 t37854216 = Choose a file to see it here
 ta8ada385 = { $counted } in this folder will keep { $their } Internet mark when extracted.
 t8608cb1c =
@@ -219,10 +287,16 @@ t8ad2f8cf = Light
 t45570065 = Dark
 t8f3184bc = System
 t5bd525d3 = Same as system ({ $language })
+t1d68c60b = The system’s
+ta391dade = Custom…
+t455dc834 = e.g. code -n, or /path/to/editor --flag
 t5d0d23cc = Show packwing in the right-click menu
 t94a46acb = Extract and compress from any folder
 t9a73db9b = Language
 t31018b9f = Appearance
+t1ca82aab = Text editor
+t62506ced = What Edit opens a file of a storage in
+teba749d4 = The file’s path is added at the end.
 te216d656 = They show when you right-click files, folders and archives.
 t3ddc5e66 = packwing is not in the menu now: these go in when it is.
 tc7f1a2f0 = Changing the menu…
@@ -249,15 +323,62 @@ tc2fe21db = Security
 t1287ae97 = Right-click menu
 t58e096de = About
 t4b058728 = Settings
+t52f50eae = Home
+t539307de = Downloads
+tc776c52f = Storages
+te858d6b5 = Add storage
+t50aac02b = Choose a file to see its information here
+tbb5a2d5f =
+    { $n ->
+        [one] { $n } selected
+       *[other] { $n } selected
+    }
+t0cca93f1 = Files in them come to { $size }
+t2fed07aa = Delete…
+t4b408baf = Link to a folder
+t8e08e589 = Link
+t06357afd = Folder
+ta56bbbe9 = { $tag } file
+t72e46dc5 = { $files }, { $folders }
+teee8d81a =
+    { $n ->
+        [one] { $n } file
+       *[other] { $n } files
+    }
+te89ea942 =
+    { $n ->
+        [one] { $n } folder
+       *[other] { $n } folders
+    }
+tc87daf59 = { $size } so far
+t3ff50c63 = Kind
+tffe19c31 = Holds
+t8700fd83 = Permissions
+teb66e456 = Path
+t0f23db17 = Count size and files
+t6d165412 =
+    { $n ->
+        [one] { $n } folder in it could not be read.
+       *[other] { $n } folders in it could not be read.
+    }
+t8c7c7c57 = Remove from this list
 tc5e54e4a = Extract here with packwing
 tda62691f = Extract to new folder
 tda9255a0 = Extract with packwing…
-t4a09490e = Extract…
 teb657427 = Open with packwing
 t344b1175 = Compress to ZIP
 t9ec9b77d = Compress with packwing…
-t690f9553 = Compress…
 t1934ce08 = packwing cannot find its program: { $e }
+t843cf8f1 =
+    { $n ->
+        [one] { $n } file was skipped, as its name was taken.
+       *[other] { $n } files were skipped, as their names were taken.
+    }
+tbdeb1b33 =
+    { $n ->
+        [one] { $n } link stayed where it was.
+       *[other] { $n } links stayed where they were.
+    }
 t23ab4fa0 = This file is encrypted with a passphrase.
 td46b69a1 = This archive needs its password.
 tbd048b4e = This file is encrypted to a key.
@@ -303,3 +424,14 @@ tcf18f6e9 = This can’t be extracted, as a file’s name can’t be used here: 
 t3803103c = A volume of this archive is not there.
 t066227f9 = { $named }: its data is damaged.
 t7923a417 = The archive is damaged: UnRAR would exit with { $number }.
+t1a9d8e4e = The name is empty.
+t74c8683a = That name is kept for the system.
+t4c0596ec = A name cannot hold / or other special characters.
+tf16ba7f1 = On Windows a name cannot end with a dot or a space.
+t43a2bce1 = That name is taken in this folder.
+t07c1f2bc = { $name } is not there any more.
+tb5e7b134 = { $name } is already there.
+t99f437a6 = { $name } cannot go inside itself.
+t15558940 = Stopped.
+t02a45af5 = { $name } is a file in one place and a folder in the other.
+t779a64f3 = The copy of { $name } does not match. The original was kept.

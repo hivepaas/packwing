@@ -29,6 +29,8 @@ hivepack-xar.workspace = true
 hivepack-xz.workspace = true
 hivepack-zip.workspace = true
 hivepack-zstd.workspace = true
+# Moving files to the system's Trash, when a storage on this computer deletes them.
+trash = "5"
 # The size of a picture, before it is decoded to show it.
 imagesize = "0.14"
 # Finding `bao cao` in `Báo cáo`, whichever way its accents are written.

@@ -1,7 +1,7 @@
 //! The main window: the menu down its left side and the page chosen in it,
 //! the first run's welcome in their place, and a dialog over them all.
 
-use packwing_i18n::tr;
+use packwing_i18n::{tr, tr_n};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
@@ -16,14 +16,17 @@ use crate::chrome;
 use crate::colors::{self, colors};
 use crate::demo;
 use crate::dialogs::{
-    AddDialog, CreateDialog, Creating, DialogEvent, EditDialog, ExtractDialog, Job, OpenFileDialog,
-    PasswordDialog, PasswordEvent, ProgressDialog, Verb, asked_for,
+    AddDialog, CreateDialog, Creating, DeleteDialog, DialogEvent, EditDialog, ExtractDialog, Job,
+    OpenFileDialog, PasswordDialog, PasswordEvent, ProgressDialog, TransferDialog, Verb,
+    ViewDialog, asked_for,
 };
+use crate::explorer::ExplorerEvent;
 use crate::model::{Archive, Kind, Selection, stem};
 use crate::pages::archive::{ArchiveEvent, ArchivePage, Shown};
 use crate::pages::onboarding::{Done, Onboarding};
 use crate::pages::recent::{OpenRecent, RecentPage, Row};
 use crate::pages::settings::{Appearance, AppearanceChosen, SettingsPage};
+use crate::pages::storages::StoragesPage;
 use crate::placement::{self, WindowPlace};
 use crate::prefs;
 use crate::right_click::{Action, Request, RightClickMenu};
@@ -33,6 +36,7 @@ use crate::widgets::{accent_tint, icon, logo, tile};
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Page {
     Archive,
+    Storages,
     Recent,
     Settings,
 }
@@ -93,6 +97,7 @@ pub struct Workspace {
     focus: FocusHandle,
     page: Page,
     archive: Entity<ArchivePage>,
+    storages: Entity<StoragesPage>,
     recent: Entity<RecentPage>,
     settings: Entity<SettingsPage>,
     /// packwing's items in the system's right-click menu.
@@ -169,6 +174,8 @@ impl Workspace {
         let kept = prefs::prefs(cx);
         let appearance = kept.appearance;
         let archive = cx.new(ArchivePage::new);
+        let storages = cx.new(StoragesPage::new);
+        let explorer = storages.read(cx).explorer().clone();
         let recent = cx.new(|_| RecentPage::new(kept.recent.iter().map(Row::of).collect()));
         let settings = cx.new(|cx| {
             SettingsPage::new(
@@ -192,6 +199,32 @@ impl Workspace {
                     ArchiveEvent::OpenEntry(entry) => this.open_entry(entry.clone(), window, cx),
                 },
             ),
+            cx.subscribe_in(
+                &explorer,
+                window,
+                |this, explorer, e: &ExplorerEvent, window, cx| match e {
+                    ExplorerEvent::OpenArchive(path) => {
+                        this.open_archive(path.clone(), false, window, cx)
+                    }
+                    ExplorerEvent::Extract(path) => {
+                        this.open_archive(path.clone(), true, window, cx)
+                    }
+                    ExplorerEvent::Compress(paths) => this.open_create(paths.clone(), window, cx),
+                    ExplorerEvent::View(item) => {
+                        let (item, explorer) = (item.clone(), explorer.clone());
+                        let view = cx.new(|cx| ViewDialog::new(item, explorer, cx));
+                        this.show(view, true, window, cx);
+                    }
+                    ExplorerEvent::Transfer { moving } => {
+                        this.open_transfer(*moving, window, cx);
+                    }
+                    ExplorerEvent::AskDelete(names) => {
+                        let (names, explorer) = (names.clone(), explorer.clone());
+                        let view = cx.new(|cx| DeleteDialog::new(names, explorer, cx));
+                        this.show(view, true, window, cx);
+                    }
+                },
+            ),
             cx.subscribe_in(&recent, window, |this, _, e: &OpenRecent, window, cx| {
                 this.open_recent(e.0, window, cx)
             }),
@@ -211,6 +244,7 @@ impl Workspace {
             focus: cx.focus_handle(),
             page: Page::Archive,
             archive,
+            storages,
             recent,
             settings,
             right_click,
@@ -333,6 +367,33 @@ impl Workspace {
                 DialogEvent::Start(job) => {
                     this.open_progress(job.clone(), window, cx);
                 }
+                DialogEvent::Transferred(went) => {
+                    this.close_dialog(cx);
+                    let mut said = Vec::new();
+                    if went.skipped > 0 {
+                        said.push(tr_n!(
+                            went.skipped,
+                            "{n} file was skipped, as its name was taken.",
+                            "{n} files were skipped, as their names were taken."
+                        ));
+                    }
+                    if went.links_left > 0 {
+                        said.push(tr_n!(
+                            went.links_left,
+                            "{n} link stayed where it was.",
+                            "{n} links stayed where they were."
+                        ));
+                    }
+                    let said = (!said.is_empty()).then(|| said.join(" "));
+                    this.storages
+                        .read(cx)
+                        .explorer()
+                        .clone()
+                        .update(cx, |e, cx| {
+                            e.refresh(cx);
+                            e.say(said, cx);
+                        });
+                }
                 DialogEvent::Added(path, folder, keys) => {
                     this.close_dialog(cx);
                     this.folder_after_reading = Some(folder.clone());
@@ -384,6 +445,45 @@ impl Workspace {
     #[cfg(all(test, feature = "shots"))]
     pub fn show_archive(&mut self, shown: Shown, cx: &mut Context<Self>) {
         self.archive.update(cx, |p, cx| p.show(shown, cx));
+    }
+
+    /// The Storages page, browsing the folder at `path`.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn show_storage(&mut self, path: PathBuf, cx: &mut Context<Self>) {
+        self.storages.update(cx, |p, cx| p.add(path, cx));
+        self.show_page(Page::Storages, cx);
+    }
+
+    /// Copies or moves what is chosen to the storage at `to`, as its dialog would.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn start_transfer_to(
+        &mut self,
+        moving: bool,
+        to: &Path,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let page = self.storages.read(cx);
+        let explorer = page.explorer().read(cx);
+        let from = explorer.place().cloned().expect("a storage is shown");
+        let t = packwing_core::Transfer {
+            from: from.storage,
+            from_folder: explorer.folder().to_vec(),
+            names: explorer.selection().into_iter().map(|i| i.name).collect(),
+            to: std::sync::Arc::new(packwing_core::LocalFolder::new(to)),
+            to_folder: Vec::new(),
+            moving,
+            on_existing: packwing_core::OnExisting::Stop,
+        };
+        let verb = if moving { Verb::Move } else { Verb::Copy };
+        let mut job = Job::shown(verb, "test".into(), None, 0, 0);
+        job.transfer = Some(crate::dialogs::Transferring(t, Default::default()));
+        self.open_progress(job, window, cx);
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn explorer(&self, cx: &gpui::App) -> Entity<crate::explorer::Explorer> {
+        self.storages.read(cx).explorer().clone()
     }
 
     /// Shows the sample archive, as the screenshots draw it.
@@ -563,6 +663,23 @@ impl Workspace {
         };
         let picked = self.archive.read(cx).picked();
         let view = cx.new(|cx| ExtractDialog::new(archive, picked, cx));
+        self.show(view, true, window, cx);
+    }
+
+    /// Asks where to copy or move what is chosen in the storage shown.
+    fn open_transfer(&mut self, moving: bool, window: &mut Window, cx: &mut Context<Self>) {
+        let page = self.storages.read(cx);
+        let explorer = page.explorer().read(cx);
+        let Some(from) = explorer.place().cloned() else {
+            return;
+        };
+        let (folder, names): (Vec<String>, Vec<String>) = (
+            explorer.folder().to_vec(),
+            explorer.selection().into_iter().map(|i| i.name).collect(),
+        );
+        let (places, chosen) = page.places();
+        let view =
+            cx.new(|cx| TransferDialog::new(from, folder, names, moving, places, chosen, cx));
         self.show(view, true, window, cx);
     }
 
@@ -910,6 +1027,15 @@ impl Workspace {
                 .on_click(cx.listener(|this, _, _, cx| this.show_page(Page::Archive, cx))),
             )
             .child(
+                item(
+                    "nav-storages",
+                    "storages",
+                    tr!("Storages"),
+                    page == Page::Storages,
+                )
+                .on_click(cx.listener(|this, _, _, cx| this.show_page(Page::Storages, cx))),
+            )
+            .child(
                 item("nav-recent", "recent", tr!("Recent"), page == Page::Recent)
                     .on_click(cx.listener(|this, _, _, cx| this.show_page(Page::Recent, cx))),
             )
@@ -986,6 +1112,7 @@ impl Render for Workspace {
             None => {
                 let page: AnyView = match self.page {
                     Page::Archive => self.archive.clone().into(),
+                    Page::Storages => self.storages.clone().into(),
                     Page::Recent => self.recent.clone().into(),
                     Page::Settings => self.settings.clone().into(),
                 };

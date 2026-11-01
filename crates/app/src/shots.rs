@@ -21,7 +21,75 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 41] = [
+const SCREENS: [(&str, SetUp, bool); 50] = [
+    (
+        "storages-copy",
+        |ws, _, cx| {
+            storage_with(ws, "readme.txt", cx);
+            ws.explorer(cx)
+                .update(cx, |e, cx| e.ask_transfer(false, cx));
+        },
+        false,
+    ),
+    (
+        "storages",
+        |ws, _, cx| {
+            ws.show_storage(sample_storage(), cx);
+        },
+        false,
+    ),
+    (
+        "storages-chosen",
+        |ws, _, cx| storage_with(ws, "site-2026-10.zip", cx),
+        false,
+    ),
+    (
+        "storages-folder-info",
+        |ws, _, cx| storage_with(ws, "assets", cx),
+        false,
+    ),
+    (
+        "storages-menu",
+        |ws, _, cx| {
+            storage_with(ws, "readme.txt", cx);
+            ws.explorer(cx)
+                .update(cx, |e, cx| e.show_menu(640., 330., false, cx));
+        },
+        false,
+    ),
+    (
+        "storages-rename",
+        |ws, window, cx| {
+            storage_with(ws, "readme.txt", cx);
+            ws.explorer(cx)
+                .update(cx, |e, cx| e.type_rename(window, cx));
+        },
+        false,
+    ),
+    (
+        "storages-delete",
+        |ws, _, cx| {
+            storage_with(ws, "readme.txt", cx);
+            let explorer = ws.explorer(cx);
+            explorer.update(cx, |e, cx| e.ask_delete(cx));
+        },
+        false,
+    ),
+    (
+        "storages-view",
+        |ws, _, cx| {
+            storage_with(ws, "readme.txt", cx);
+            let explorer = ws.explorer(cx);
+            let item = explorer.read(cx).selection().remove(0);
+            explorer.update(cx, |e, cx| e.open(&item, cx));
+        },
+        false,
+    ),
+    (
+        "settings-editor",
+        |ws, _, cx| ws.show_settings(Section::General, cx),
+        false,
+    ),
     ("archive", |_, _, _| {}, false),
     (
         "archive-opened",
@@ -333,6 +401,42 @@ const SCREENS: [(&str, SetUp, bool); 41] = [
     ),
 ];
 
+/// A folder for the Storages screens.
+fn sample_storage() -> PathBuf {
+    let dir = out_dir().join("sample-storage");
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(dir.join("assets")).expect("cannot make a folder");
+    std::fs::create_dir_all(dir.join("Báo cáo")).expect("cannot make a folder");
+    std::fs::write(dir.join("assets/logo.svg"), "<svg/>").expect("cannot write");
+    for (name, bytes) in [
+        ("site-2026-10.zip", 42_000_000usize),
+        ("photos.7z", 18_600_000),
+        ("logs-2026-q3.tar.zst", 9_400_000),
+        ("readme.txt", 2_100),
+        ("notes.pdf", 1_400_000),
+        ("deploy.sh", 840),
+        ("hero.png", 480_000),
+    ] {
+        let f = std::fs::File::create(dir.join(name)).expect("cannot write");
+        f.set_len(bytes as u64).expect("cannot size");
+    }
+    std::fs::write(
+        dir.join("readme.txt"),
+        "acme-backups\n\nSite archives are written on the last day of each month.\n",
+    )
+    .expect("cannot write");
+    dir
+}
+
+/// The sample folder browsed, once listed, with `name` chosen.
+fn storage_with(ws: &mut Workspace, name: &str, cx: &mut Context<Workspace>) {
+    ws.show_storage(sample_storage(), cx);
+    ws.explorer(cx).update(cx, |e, cx| {
+        e.list_now(cx);
+        e.choose(name, cx);
+    });
+}
+
 /// A tar archive written for the screenshot to open through hivepack, as
 /// `--open` does.
 fn sample_tar() -> PathBuf {
@@ -429,7 +533,7 @@ fn sample_png() -> Vec<u8> {
 fn out_dir() -> PathBuf {
     let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../target/shots");
     std::fs::create_dir_all(&dir).expect("cannot make target/shots");
-    dir
+    dir.canonicalize().expect("cannot find target/shots")
 }
 
 #[test]
@@ -711,5 +815,300 @@ fn a_large_window_gives_the_preview_more() {
         .expect("cannot draw the window");
     image
         .save(out_dir().join("preview-wide-light.png"))
+        .expect("cannot save the picture");
+}
+
+/// A folder of `n` files, for one test.
+fn folder_of(test: &str, n: usize) -> PathBuf {
+    let dir = out_dir().join(format!("storage-{test}"));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).expect("cannot make a folder");
+    for i in 0..n {
+        std::fs::write(dir.join(format!("file{i}.txt")), "x").expect("cannot write");
+    }
+    dir
+}
+
+/// A window with the Storages page browsing `dir`, listed.
+fn explorer_on(
+    dir: PathBuf,
+) -> (
+    HeadlessAppContext,
+    gpui::WindowHandle<Workspace>,
+    gpui::Entity<crate::explorer::Explorer>,
+) {
+    let text = Arc::new(gpui_wgpu::CosmicTextSystem::new(crate::FONT));
+    let mut cx = HeadlessAppContext::with_platform(text, Arc::new(crate::Assets), || {
+        gpui_platform::current_headless_renderer()
+    });
+    let window = cx
+        .open_window(size(px(1280.), px(800.)), |window, cx| {
+            let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
+            cx.new(|cx| Workspace::new(false, false, menu, window, cx))
+        })
+        .expect("cannot open a window");
+    let explorer = window
+        .update(&mut cx, |ws, _, cx| {
+            ws.show_storage(dir, cx);
+            ws.explorer(cx)
+        })
+        .expect("cannot show the page");
+    cx.run_until_parked();
+    (cx, window, explorer)
+}
+
+#[test]
+fn a_folder_comes_a_page_at_a_time() {
+    let dir = folder_of("pages", 2_300);
+    let (mut cx, window, explorer) = explorer_on(dir);
+    let names = |cx: &mut HeadlessAppContext| {
+        window
+            .update(cx, |ws, _, cx| ws.explorer(cx).read(cx).shown_names())
+            .expect("the window")
+    };
+    let more = |cx: &mut HeadlessAppContext| {
+        window
+            .update(cx, |ws, _, cx| ws.explorer(cx).read(cx).has_more())
+            .expect("the window")
+    };
+    assert_eq!(names(&mut cx).len(), crate::explorer::PAGE);
+    assert!(more(&mut cx));
+    // In the order people read: 2 before 10.
+    assert_eq!(names(&mut cx)[..3], ["file0.txt", "file1.txt", "file2.txt"]);
+    window
+        .update(&mut cx, |_, _, cx| {
+            explorer.update(cx, |e, cx| e.load_more(crate::explorer::PAGE, cx))
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    assert_eq!(names(&mut cx).len(), 2 * crate::explorer::PAGE);
+    assert!(more(&mut cx));
+    // A search of what is loaded, then of all of it.
+    window
+        .update(&mut cx, |_, _, cx| {
+            explorer.update(cx, |e, cx| e.search_for("file2299", cx))
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    assert!(names(&mut cx).is_empty());
+    window
+        .update(&mut cx, |_, _, cx| {
+            explorer.update(cx, |e, cx| e.load_more(usize::MAX, cx))
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    assert_eq!(names(&mut cx), ["file2299.txt"]);
+    assert!(!more(&mut cx));
+}
+
+#[test]
+fn a_name_typed_makes_a_folder_and_renames_a_file() {
+    let dir = folder_of("names", 3);
+    let (mut cx, window, explorer) = explorer_on(dir.clone());
+    window
+        .update(&mut cx, |_, window, cx| {
+            explorer.update(cx, |e, cx| {
+                e.type_new_folder(window, cx);
+                e.type_name("Thư mục", cx);
+                e.commit_name(window, cx);
+            })
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    assert!(dir.join("Thư mục").is_dir());
+    window
+        .update(&mut cx, |_, window, cx| {
+            explorer.update(cx, |e, cx| {
+                assert_eq!(e.selection().remove(0).name, "Thư mục");
+                e.choose("file1.txt", cx);
+                e.type_rename(window, cx);
+                // Taken: it says so, and the name can be typed again.
+                e.type_name("file2.txt", cx);
+                e.commit_name(window, cx);
+            })
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    window
+        .update(&mut cx, |_, window, cx| {
+            explorer.update(cx, |e, cx| {
+                assert!(e.problem().is_some());
+                e.type_name("../out.txt", cx);
+                e.commit_name(window, cx);
+            })
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    assert!(dir.join("file1.txt").exists());
+    assert!(!dir.parent().expect("a parent").join("out.txt").exists());
+    window
+        .update(&mut cx, |_, window, cx| {
+            explorer.update(cx, |e, cx| {
+                e.type_name("đổi tên.txt", cx);
+                e.commit_name(window, cx);
+            })
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    assert!(dir.join("đổi tên.txt").exists());
+    assert!(!dir.join("file1.txt").exists());
+    let shown = explorer.read_with(&cx, |e, _| e.shown_names());
+    assert!(shown.contains(&"đổi tên.txt".to_owned()), "{shown:?}");
+}
+
+#[test]
+fn a_folder_that_cannot_be_read_says_so() {
+    let dir = out_dir().join("storage-not-there");
+    let _ = std::fs::remove_dir_all(&dir);
+    let (mut cx, window, _) = explorer_on(dir);
+    cx.run_until_parked();
+    let image = cx
+        .capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    image
+        .save(out_dir().join("storages-not-there-light.png"))
+        .expect("cannot save the picture");
+}
+
+/// A press and a release of `button`, the pointer having gone there first.
+fn press(
+    cx: &mut HeadlessAppContext,
+    window: gpui::WindowHandle<Workspace>,
+    at: gpui::Point<gpui::Pixels>,
+    button: gpui::MouseButton,
+    clicks: usize,
+) {
+    use gpui::{Modifiers, MouseDownEvent, MouseMoveEvent, MouseUpEvent, PlatformInput};
+    let mut events = vec![PlatformInput::MouseMove(MouseMoveEvent {
+        position: at,
+        pressed_button: None,
+        modifiers: Modifiers::default(),
+    })];
+    for click_count in 1..=clicks {
+        events.push(PlatformInput::MouseDown(MouseDownEvent {
+            button,
+            position: at,
+            modifiers: Modifiers::default(),
+            click_count,
+            first_mouse: false,
+        }));
+        events.push(PlatformInput::MouseUp(MouseUpEvent {
+            button,
+            position: at,
+            modifiers: Modifiers::default(),
+            click_count,
+        }));
+    }
+    for event in events {
+        window
+            .update(cx, |_, window, cx| {
+                window.dispatch_event(event, cx);
+            })
+            .expect("cannot send the event");
+        cx.run_until_parked();
+        cx.capture_screenshot(window.into())
+            .expect("cannot draw the window");
+    }
+}
+
+#[test]
+fn the_mouse_chooses_opens_and_goes_up() {
+    use gpui::{MouseButton, point};
+    let dir = out_dir().join("storage-mouse");
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(dir.join("inner")).expect("cannot make a folder");
+    std::fs::write(dir.join("inner/deep.txt"), "x").expect("cannot write");
+    std::fs::write(dir.join("one.txt"), "x").expect("cannot write");
+    std::fs::write(dir.join("two.txt"), "x").expect("cannot write");
+    let (mut cx, window, explorer) = explorer_on(dir);
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    // The rows, as `storages-light.png` draws them.
+    let row = |n: f32| point(px(620.), px(141. + 48. * n));
+    press(&mut cx, window, row(1.), MouseButton::Left, 1);
+    let chosen = |cx: &HeadlessAppContext| {
+        explorer.read_with(cx, |e, _| {
+            e.selection()
+                .into_iter()
+                .map(|i| i.name)
+                .collect::<Vec<_>>()
+        })
+    };
+    assert_eq!(chosen(&cx), ["one.txt"]);
+    // A right click on another chooses it alone.
+    press(&mut cx, window, row(2.), MouseButton::Right, 1);
+    assert_eq!(chosen(&cx), ["two.txt"]);
+    // A click beside the menu closes it; another, beside the rows, chooses nothing.
+    press(
+        &mut cx,
+        window,
+        point(px(430.), px(650.)),
+        MouseButton::Left,
+        1,
+    );
+    press(
+        &mut cx,
+        window,
+        point(px(430.), px(650.)),
+        MouseButton::Left,
+        1,
+    );
+    assert!(chosen(&cx).is_empty());
+    // A double click goes into a folder.
+    press(&mut cx, window, row(0.), MouseButton::Left, 2);
+    assert_eq!(
+        explorer.read_with(&cx, |e, _| e.shown_names()),
+        ["deep.txt"]
+    );
+}
+
+#[test]
+fn moving_runs_as_a_job_and_lists_again() {
+    let top = out_dir().join("storage-transfer");
+    let _ = std::fs::remove_dir_all(&top);
+    let (a, b) = (top.join("a"), top.join("b"));
+    std::fs::create_dir_all(&a).expect("cannot make a folder");
+    std::fs::create_dir_all(&b).expect("cannot make a folder");
+    std::fs::write(a.join("đi.txt"), "x").expect("cannot write");
+    let (mut cx, window, explorer) = explorer_on(a.clone());
+    window
+        .update(&mut cx, |ws, window, cx| {
+            explorer.update(cx, |e, cx| e.choose("đi.txt", cx));
+            ws.start_transfer_to(true, &b, window, cx);
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    assert!(b.join("đi.txt").exists());
+    assert!(!a.join("đi.txt").exists());
+    window
+        .update(&mut cx, |ws, _, _| assert!(!ws.dialog_open()))
+        .expect("the window");
+    assert!(explorer.read_with(&cx, |e, _| e.shown_names()).is_empty());
+}
+
+#[test]
+fn a_large_window_gives_the_info_a_quarter() {
+    let text = Arc::new(gpui_wgpu::CosmicTextSystem::new(crate::FONT));
+    let mut cx = HeadlessAppContext::with_platform(text, Arc::new(crate::Assets), || {
+        gpui_platform::current_headless_renderer()
+    });
+    cx.update(crate::load_fonts);
+    let window = cx
+        .open_window(size(px(1920.), px(1080.)), |window, cx| {
+            let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
+            cx.new(|cx| Workspace::new(false, false, menu, window, cx))
+        })
+        .expect("cannot open a window");
+    window
+        .update(&mut cx, |ws, _, cx| {
+            storage_with(ws, "site-2026-10.zip", cx)
+        })
+        .expect("cannot set the screen up");
+    cx.run_until_parked();
+    let image = cx
+        .capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    image
+        .save(out_dir().join("storages-wide-light.png"))
         .expect("cannot save the picture");
 }

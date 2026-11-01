@@ -16,7 +16,7 @@ use gpui::{
 };
 use packwing_core::{Cancel, Control, Error, Progress};
 
-use super::{DialogEvent, Editing, Job, Verb, asked_for, card, footer, header};
+use super::{DialogEvent, Editing, Job, Transferring, Verb, asked_for, card, footer, header};
 use crate::colors::colors;
 use crate::model::{count, size};
 use crate::widgets::{Fill, Size, Tone, button, check_row, icon, note, tonal_tint};
@@ -62,7 +62,8 @@ impl ProgressDialog {
         let running = (!job.work.is_empty()
             || job.create.is_some()
             || job.add.is_some()
-            || job.edit.is_some())
+            || job.edit.is_some()
+            || job.transfer.is_some())
         .then(|| Self::run(&job, cx));
         ProgressDialog {
             job,
@@ -95,7 +96,13 @@ impl ProgressDialog {
             job.add.clone(),
         );
         let edit = job.edit.clone();
+        let transfer = job.transfer.clone();
         let task = cx.background_executor().spawn(async move {
+            if let Some(Transferring(t, went)) = transfer {
+                let done = packwing_core::transfer(&t, &control)?;
+                *went.lock().unwrap_or_else(PoisonError::into_inner) = done;
+                return Ok(None);
+            }
             if let Some(c) = create {
                 return packwing_core::create(&c.paths, &c.archive, &c.how, &control).map(Some);
             }
@@ -168,6 +175,12 @@ impl ProgressDialog {
             Ok(_) if self.job.edit.is_some() => {
                 if let Some((archive, folder, _)) = self.job.edit.clone() {
                     cx.emit(DialogEvent::Added(archive, folder, self.job.keys.clone()));
+                }
+            }
+            Ok(_) if self.job.transfer.is_some() => {
+                if let Some(Transferring(_, went)) = &self.job.transfer {
+                    let went = *went.lock().unwrap_or_else(PoisonError::into_inner);
+                    cx.emit(DialogEvent::Transferred(went));
                 }
             }
             Ok(Some(copy)) if self.job.verb == Verb::Open => {
@@ -309,6 +322,10 @@ impl ProgressDialog {
             (Verb::Edit, false) => tr!("Changing the archive…"),
             (Verb::Open, false) => tr!("Opening…"),
             (Verb::Test, false) => tr!("Testing…"),
+            (Verb::Copy, false) => tr!("Copying…"),
+            (Verb::Move, false) => tr!("Moving…"),
+            (Verb::Copy, true) => tr!("Couldn’t copy"),
+            (Verb::Move, true) => tr!("Couldn’t move"),
             (Verb::Extract, true) => tr!("Couldn’t extract"),
             (Verb::Create, true) => tr!("Couldn’t create the archive"),
             (Verb::Add, true) => tr!("Couldn’t add the files"),
@@ -352,6 +369,7 @@ impl Render for ProgressDialog {
             Verb::Extract | Verb::Open => "extract",
             Verb::Create | Verb::Add | Verb::Edit => "logo",
             Verb::Test => "shield",
+            Verb::Copy | Verb::Move => "storages",
         };
         let header = header(icon_name, tonal_tint(), self.title(), detail, None);
         if let Some(why) = &self.failed {
@@ -458,7 +476,10 @@ impl Render for ProgressDialog {
                 )
             })
             .when(
-                !matches!(j.verb, Verb::Test | Verb::Add | Verb::Edit | Verb::Open),
+                !matches!(
+                    j.verb,
+                    Verb::Test | Verb::Add | Verb::Edit | Verb::Open | Verb::Copy | Verb::Move
+                ),
                 |d| {
                     d.child(
                         check_row(
