@@ -1,0 +1,20 @@
+[package]
+name = "packwing-remote"
+description = "Storages across the network for packwing: S3 and WebDAV, through OpenDAL"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+packwing-core.workspace = true
+packwing-i18n.workspace = true
+futures = "0.3"
+# The system's keychain, for a storage's secrets.
+keyring = "4"
+opendal = { version = "0.59", features = ["services-s3", "services-webdav"] }
+tokio = { version = "1", features = ["rt-multi-thread", "time"] }
+
+[lints]
+workspace = true

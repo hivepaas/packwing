@@ -18,6 +18,8 @@ accepted = [
     # hivepack's ports of libbzip2 and liblzma keep their licenses.
     "bzip2-1.0.6",
     "0BSD",
+    # The root certificates of webpki-root-certs, through OpenDAL's HTTP client.
+    "CDLA-Permissive-2.0",
 ]
 # Only what is built into the program: not what builds it.
 ignore-build-dependencies = true

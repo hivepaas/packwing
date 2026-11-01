@@ -8,6 +8,8 @@ Built in Rust on [hivepack](https://github.com/hivepaas/hivepack-rs).
 
 The Storages page browses folders on this computer as a file manager does: a folder's items a page at a time, with Load more, sorted by a column, searched, with a right-click menu and the keys of a file manager (Enter, Backspace, F2, Delete, Space, F5). It shows what is known about what is chosen and counts a folder when asked; renames, makes folders, moves to the system's Trash, copies and moves between folders and storages, opens archives, and shows or edits files in the text editor chosen in Settings. A copy appears under its name only when all of it is written, and a moved file's original goes once its copy has been read back and matches. Links are not followed: they stay where they are. A file that could run is never opened from here with its default app.
 
+S3 buckets and WebDAV folders are storages too, added from Add storage with what they need, their secrets in the system's keychain. They are browsed a page at a time and take everything above but what needs a file on this computer: opening an archive in place, the editor and the default app wait for a copy on this computer. A folder there is moved a file at a time rather than renamed, and a file sent to WebDAV is held in memory, up to 1 GB. Copies and moves go through this computer, and a file to S3 goes in parts, so that a stopped one leaves nothing.
+
 ## 🎯 Plans
 
 - **Formats:** ZIP (split archives too), RAR (reading), tar and `.tar.zst`.
