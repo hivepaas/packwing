@@ -17,7 +17,7 @@ use crate::colors::{self, colors};
 use crate::demo;
 use crate::dialogs::{
     AddDialog, AddStorageDialog, CreateDialog, Creating, DeleteDialog, DialogEvent, EditDialog,
-    ExtractDialog, Job, OpenFileDialog, PasswordDialog, PasswordEvent, ProgressDialog,
+    ExtractDialog, Job, OpenFileDialog, PasswordDialog, PasswordEvent, ProgressDialog, Saving,
     TransferDialog, Verb, ViewDialog, asked_for,
 };
 use crate::explorer::ExplorerEvent;
@@ -400,6 +400,24 @@ impl Workspace {
                             e.say(said, cx);
                         });
                 }
+                DialogEvent::Stored {
+                    place,
+                    folder,
+                    show,
+                } => {
+                    this.close_dialog(cx);
+                    if *show {
+                        this.show_page(Page::Storages, cx);
+                        this.storages
+                            .update(cx, |p, cx| p.show(place, folder.clone(), cx));
+                    } else {
+                        this.storages
+                            .read(cx)
+                            .explorer()
+                            .clone()
+                            .update(cx, |e, cx| e.refresh(cx));
+                    }
+                }
                 DialogEvent::Added(path, folder, keys) => {
                     this.close_dialog(cx);
                     this.folder_after_reading = Some(folder.clone());
@@ -493,6 +511,11 @@ impl Workspace {
         let page = self.storages.clone();
         let view = cx.new(|cx| AddStorageDialog::new(page, window, cx));
         self.show(view, true, window, cx);
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn page_shown(&self) -> Page {
+        self.page
     }
 
     #[cfg(all(test, feature = "shots"))]
@@ -762,11 +785,35 @@ impl Workspace {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
-        let view = cx.new(|cx| CreateDialog::new(Selection::default(), cx));
+        self.open_create_holding(paths, window, cx);
+    }
+
+    /// [`Self::open_create`], for what is to be asked of the dialog.
+    fn open_create_holding(
+        &mut self,
+        paths: Vec<PathBuf>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Entity<CreateDialog> {
+        let (places, chosen) = self.storages.read(cx).places(cx);
+        let view =
+            cx.new(|cx| CreateDialog::new(Selection::default(), cx).with_places(places, chosen));
         if !paths.is_empty() {
             view.update(cx, |d, cx| d.add(paths, cx));
         }
-        self.show(view, true, window, cx);
+        self.show(view.clone(), true, window, cx);
+        view
+    }
+
+    /// New archive holding `paths`, for tests.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn open_create_of(
+        &mut self,
+        paths: Vec<PathBuf>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Entity<CreateDialog> {
+        self.open_create_holding(paths, window, cx)
     }
 
     /// Add files, holding the screenshots' sample.
@@ -875,7 +922,7 @@ impl Workspace {
                     0,
                 );
                 job.create = Some(Creating {
-                    archive: folder.join(archive),
+                    to: Saving::Here(folder.join(archive)),
                     paths: selection.paths,
                     how: NewArchive {
                         level: prefs::prefs(cx).level,

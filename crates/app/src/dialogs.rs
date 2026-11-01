@@ -11,6 +11,7 @@ mod edit;
 mod extract;
 mod open_file;
 mod password;
+mod places;
 mod progress;
 mod transfer;
 mod view_file;
@@ -29,6 +30,7 @@ pub use transfer::TransferDialog;
 pub use view_file::ViewDialog;
 
 use std::path::PathBuf;
+use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex};
 
 use gpui::{Div, FontWeight, MouseButton, SharedString, Stateful, div, prelude::*, px, rgb};
@@ -37,6 +39,7 @@ use packwing_core::{
 };
 
 use crate::colors::{Tint, colors};
+use crate::explorer::Place;
 use crate::widgets::{float_shadow, icon, logo, tile};
 
 /// What a job does.
@@ -92,9 +95,38 @@ pub enum Editing {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Creating {
     pub paths: Vec<PathBuf>,
-    /// What it is called and where, or the first free name after that.
-    pub archive: PathBuf,
+    pub to: Saving,
     pub how: NewArchive,
+}
+
+/// Where a new archive goes: what it is called and where, or the first free name
+/// after that.
+#[derive(Clone, Debug, PartialEq)]
+pub enum Saving {
+    Here(PathBuf),
+    On(SavingOn),
+}
+
+/// A new archive's place on a storage.
+#[derive(Clone)]
+pub struct SavingOn {
+    pub place: Place,
+    pub folder: Vec<String>,
+    pub name: String,
+    /// It has been made, and is on its way there.
+    pub uploading: Arc<AtomicBool>,
+}
+
+impl PartialEq for SavingOn {
+    fn eq(&self, other: &SavingOn) -> bool {
+        Arc::ptr_eq(&self.uploading, &other.uploading)
+    }
+}
+
+impl std::fmt::Debug for SavingOn {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "SavingOn({} {:?})", self.place.name, self.name)
+    }
 }
 
 /// A job the user started. Extracting and testing archives, making new ones
@@ -172,6 +204,12 @@ pub enum DialogEvent {
     Added(PathBuf, Vec<String>, Keys),
     /// Items of a storage were copied or moved, and how it went.
     Transferred(Transferred),
+    /// A new archive went in this folder of this storage: shown, if `show`.
+    Stored {
+        place: Place,
+        folder: Vec<String>,
+        show: bool,
+    },
 }
 
 /// The card a dialog is drawn on.

@@ -29,6 +29,9 @@ use hivepack_zip::{
     Stat, cm, em, file_attributes, opsys, stat, volume_paths,
 };
 
+use crate::job::opened_subfolder;
+use crate::storage::{Item as StoredItem, Storage};
+use crate::transfer::Watched;
 use crate::{Control, Error, Keys, Listing, opener};
 
 /// A kind of archive packwing makes.
@@ -138,7 +141,8 @@ struct Item {
 /// `path` and what is under it, its names under `name`, in order of name;
 /// links are not followed, and what is neither a file, a folder nor a link
 /// is left out.
-fn walk(path: &Path, name: String, items: &mut Vec<Item>) -> Result<(), Error> {
+fn walk(path: &Path, name: String, items: &mut Vec<Item>, control: &Control) -> Result<(), Error> {
+    control.check()?;
     let read = |e: io::Error| {
         Error::Failed(tr!(
             "Could not read {path}: {e}",
@@ -161,7 +165,7 @@ fn walk(path: &Path, name: String, items: &mut Vec<Item>) -> Result<(), Error> {
         });
         for child in children {
             let under = format!("{name}/{}", unicode_name(&child.path())?);
-            walk(&child.path(), under, items)?;
+            walk(&child.path(), under, items, control)?;
         }
     } else if kind.is_file() || (cfg!(unix) && kind.is_symlink()) {
         items.push(Item {
@@ -187,10 +191,10 @@ fn unicode_name(path: &Path) -> Result<String, Error> {
     })
 }
 
-fn items_of(paths: &[PathBuf]) -> Result<Vec<Item>, Error> {
+fn items_of(paths: &[PathBuf], control: &Control) -> Result<Vec<Item>, Error> {
     let mut items = Vec::new();
     for path in paths {
-        walk(path, unicode_name(path)?, &mut items)?;
+        walk(path, unicode_name(path)?, &mut items, control)?;
     }
     Ok(items)
 }
@@ -204,7 +208,7 @@ fn is_mac_file(name: &str) -> bool {
 
 /// Counts the files in `paths`, and the bytes in them.
 pub fn measure(paths: &[PathBuf]) -> Result<Measured, Error> {
-    Ok(measured(&items_of(paths)?))
+    Ok(measured(&items_of(paths, &Control::default())?))
 }
 
 /// The files in `items`, links too, and the bytes in the files: a link's
@@ -1077,7 +1081,7 @@ pub fn add_with(
             "packwing can add files only to a ZIP archive that is one file."
         )));
     }
-    let mut items = items_of(paths)?;
+    let mut items = items_of(paths, control)?;
     let inside = archive.canonicalize()?;
     let mut prefix = folder.join("/");
     if !prefix.is_empty() {
@@ -1186,14 +1190,34 @@ pub fn create(
     if new.password.is_some() && !matches!(new.kind, Kind::Zip | Kind::SevenZip) {
         return Err(Error::Failed(tr!("A tar archive can’t have a password.")));
     }
-    let mut items = items_of(paths)?;
+    // Before the archive is made, so that it is not among them.
+    create_of(chosen_items(paths, new, control)?, wanted, new, control)
+}
+
+/// What goes in a new archive of `paths`, walked once: what it holds, how much that
+/// is and whether there is room for it all come from here. Stops when it is told to.
+fn chosen_items(
+    paths: &[PathBuf],
+    new: &NewArchive,
+    control: &Control,
+) -> Result<Vec<Item>, Error> {
+    let mut items = items_of(paths, control)?;
     if new.skip_mac_files {
         items.retain(|item| !is_mac_file(&item.name));
     }
+    Ok(items)
+}
+
+/// [`create`], its `items` found.
+fn create_of(
+    items: Vec<Item>,
+    wanted: &Path,
+    new: &NewArchive,
+    control: &Control,
+) -> Result<PathBuf, Error> {
     if items.is_empty() {
         return Err(Error::Failed(tr!("Nothing to compress.")));
     }
-    // Before the archive is made, so that it is not among them.
     let mut progress = Progress::default();
     let counted = measured(&items);
     progress.total_entries = counted.files;
@@ -1252,5 +1276,162 @@ pub fn create(
             }
             Ok(path)
         }
+    }
+}
+
+/// A folder that goes when this does, with what is in it.
+struct Scratch(PathBuf);
+
+impl Drop for Scratch {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.0);
+    }
+}
+
+/// How much room making an archive of `bytes` may take: data that does not
+/// compress is stored, with a little around it.
+fn room_needed(bytes: u64) -> u64 {
+    bytes.saturating_add(bytes / 64).saturating_add(1 << 20)
+}
+
+/// Why an archive that may take `need` bytes should not start in `folder`, with
+/// `free` bytes free there.
+fn no_room(need: u64, free: u64, folder: &Path) -> Option<Error> {
+    (free < need).then(|| {
+        Error::Failed(tr!(
+            "Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.",
+            folder = folder.display(),
+            need = crate::size(need),
+            free = crate::size(free)
+        ))
+    })
+}
+
+/// `name`, or the first name after it that is free in `folder` of `to`: for an
+/// archive split into parts, free for the archive and for its first part.
+fn free_name_on(
+    to: &dyn Storage,
+    folder: &[String],
+    name: &str,
+    parts: bool,
+) -> Result<String, Error> {
+    let taken = |name: &str| to.stat(folder, name).map(|found| found.is_some());
+    let (free, ()) = free_name(Path::new(name), |path| {
+        let tried = path.to_string_lossy();
+        if taken(&tried)? || (parts && taken(&part_path(path, 0).to_string_lossy())?) {
+            return Err(io::ErrorKind::AlreadyExists.into());
+        }
+        Ok(())
+    })?;
+    Ok(free.to_string_lossy().into_owned())
+}
+
+/// Makes an archive of `paths` in `folder` of `to`, as [`create`] does in a folder
+/// here, named `name` or the first name after it that is free. In a folder on this
+/// computer it is made where it goes, and that place is given. Anywhere else it is
+/// made in a temporary folder first, if there is room for it, then uploaded and
+/// taken away; `uploading` is called as that starts, and the progress starts again
+/// with what is to go up. Failed or stopped, nothing is left in either place.
+pub fn create_on(
+    paths: &[PathBuf],
+    to: &dyn Storage,
+    folder: &[String],
+    name: &str,
+    new: &NewArchive,
+    control: &Control,
+    uploading: &dyn Fn(),
+) -> Result<Option<PathBuf>, Error> {
+    if let Some(here) = to.local_path(folder) {
+        return create(paths, &here.join(name), new, control).map(Some);
+    }
+    if new.password.is_some() && !matches!(new.kind, Kind::Zip | Kind::SevenZip) {
+        return Err(Error::Failed(tr!("A tar archive can’t have a password.")));
+    }
+    let failed = |e: io::Error| Error::Failed(e.to_string());
+    // Asked before anything is compressed: what stops it soon stops it first.
+    let name = free_name_on(to, folder, name, new.part_size.is_some())?;
+    let items = chosen_items(paths, new, control)?;
+    let scratch = Scratch(opened_subfolder()?);
+    // Not told, it is found out by trying.
+    if let Ok(free) = fs4::available_space(&scratch.0)
+        && let Some(e) = no_room(room_needed(measured(&items).bytes), free, &scratch.0)
+    {
+        return Err(e);
+    }
+    create_of(items, &scratch.0.join(&name), new, control)?;
+    let mut files = Vec::new();
+    for entry in fs::read_dir(&scratch.0)? {
+        let entry = entry?;
+        files.push((entry.file_name(), entry.metadata()?));
+    }
+    files.sort_by(|a, b| a.0.cmp(&b.0));
+    let mut progress = Progress::default();
+    progress.total_entries = files.len() as u64;
+    progress.total_bytes = files.iter().map(|(_, m)| m.len()).sum();
+    control.report(&progress);
+    uploading();
+    let mut sent: Vec<Vec<String>> = Vec::new();
+    for (file, metadata) in files {
+        let name = file.to_string_lossy().into_owned();
+        let mut path = folder.to_vec();
+        path.push(name.clone());
+        let like = StoredItem {
+            name,
+            dir: false,
+            link: false,
+            hidden: false,
+            size: metadata.len(),
+            modified: Some(seconds(&metadata)),
+            mode: None,
+        };
+        let local = scratch.0.join(&file);
+        let put = File::open(&local).and_then(|from| {
+            let mut reader = Watched {
+                inner: Box::new(from),
+                crc: 0,
+                control,
+                progress: &mut progress,
+            };
+            to.put(&path, &mut reader, &like, false)
+        });
+        if let Err(e) = put {
+            for path in &sent {
+                let _ = to.remove(path);
+            }
+            return Err(match control.check() {
+                Err(stopped) => stopped,
+                Ok(()) => failed(e),
+            });
+        }
+        sent.push(path);
+        // What has gone up need not stay.
+        let _ = fs::remove_file(&local);
+        progress.entries += 1;
+        control.report(&progress);
+    }
+    Ok(None)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn room_is_asked_for_what_does_not_compress() {
+        assert!(room_needed(0) > 0);
+        assert!(room_needed(6_400) > 6_400);
+        assert_eq!(room_needed(u64::MAX), u64::MAX);
+    }
+
+    #[test]
+    fn too_little_room_says_how_much_and_where() {
+        let folder = Path::new("/tmp/here");
+        assert!(no_room(100, 100, folder).is_none());
+        let said = no_room(5_000_000, 1_000, folder)
+            .expect("no room")
+            .to_string();
+        assert!(said.contains("/tmp/here"), "{said}");
+        assert!(said.contains("5 MB"), "{said}");
+        assert!(said.contains("1 KB"), "{said}");
     }
 }

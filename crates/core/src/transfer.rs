@@ -164,11 +164,11 @@ fn checksum(storage: &dyn Storage, path: &[String], control: &Control) -> Result
 
 /// What reads from a file on its way: its checksum, how far it has come, and
 /// whether to stop.
-struct Watched<'a> {
-    inner: Box<dyn Read + Send>,
-    crc: u32,
-    control: &'a Control,
-    progress: &'a mut Progress,
+pub(crate) struct Watched<'a> {
+    pub(crate) inner: Box<dyn Read + Send>,
+    pub(crate) crc: u32,
+    pub(crate) control: &'a Control,
+    pub(crate) progress: &'a mut Progress,
 }
 
 impl Read for Watched<'_> {

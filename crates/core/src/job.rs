@@ -280,8 +280,10 @@ pub fn read_entry(
     read
 }
 
-/// A new folder for a copy of an entry, under the temporary one.
-fn opened_subfolder() -> Result<PathBuf, Error> {
+/// A new folder for a copy of an entry, or a new archive on its way to a storage,
+/// under the temporary one. If packwing goes before it does,
+/// [`clean_opened_files`] takes it.
+pub(crate) fn opened_subfolder() -> Result<PathBuf, Error> {
     let root = opened_folder();
     let mut builder = std::fs::DirBuilder::new();
     builder.recursive(true);
