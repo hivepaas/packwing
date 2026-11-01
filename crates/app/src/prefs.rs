@@ -48,6 +48,8 @@ pub struct Prefs {
     /// An index in [`LIMITS`].
     pub limit: usize,
     pub keep_mark: bool,
+    /// Asks before a file in an archive is opened. A program always asks.
+    pub ask_before_open: bool,
     /// The latest first.
     pub recent: Vec<Opened>,
 }
@@ -67,6 +69,7 @@ impl Default for Prefs {
             overwrite: false,
             limit: 1,
             keep_mark: true,
+            ask_before_open: true,
             recent: Vec::new(),
         }
     }
@@ -137,6 +140,7 @@ impl Prefs {
                 "new_folder" => p.new_folder = on(value, p.new_folder),
                 "overwrite" => p.overwrite = on(value, p.overwrite),
                 "keep_mark" => p.keep_mark = on(value, p.keep_mark),
+                "ask_before_open" => p.ask_before_open = on(value, p.ask_before_open),
                 "limit" => {
                     if let Some(i) = LIMITS.iter().position(|(name, _)| *name == value) {
                         p.limit = i;
@@ -174,13 +178,15 @@ impl Prefs {
         let limit = LIMITS.get(self.limit).map_or(LIMITS[1].0, |(name, _)| name);
         let mut text = format!(
             "appearance={appearance}\nformat={}\nlevel={level}\nhide_names={}\n\
-             skip_mac_files={}\nnew_folder={}\noverwrite={}\nlimit={limit}\nkeep_mark={}\n",
+             skip_mac_files={}\nnew_folder={}\noverwrite={}\nlimit={limit}\nkeep_mark={}\n\
+             ask_before_open={}\n",
             self.format.ext(),
             self.hide_names,
             self.skip_mac_files,
             self.new_folder,
             self.overwrite,
             self.keep_mark,
+            self.ask_before_open,
         );
         for opened in &self.recent {
             if let Some(path) = opened.path.to_str().filter(|p| !p.contains('\n')) {
@@ -267,6 +273,7 @@ mod tests {
             overwrite: true,
             limit: 3,
             keep_mark: false,
+            ask_before_open: false,
             ..Prefs::default()
         };
         p.recent.push(Opened {

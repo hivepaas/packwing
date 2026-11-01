@@ -1,8 +1,10 @@
 //! The open archive: a search over all of it, its header with what it is and what
-//! to do with it, the folder's files, and the one chosen. Before one is
+//! to do with it, the folder's files, and those chosen. Before one is
 //! open, or while it is read, or when it cannot be, the page says so.
 
 use packwing_core::Found;
+
+use std::collections::BTreeSet;
 
 use gpui::{
     Context, Div, Entity, EventEmitter, FontWeight, Render, Subscription, Window, div, prelude::*,
@@ -22,6 +24,8 @@ pub enum ArchiveEvent {
     Test,
     /// Choose an archive to open.
     Open,
+    /// Open this file in it, as its path in the archive says.
+    OpenEntry(Vec<String>),
 }
 
 /// The most a search lists: more is not read, and takes long to draw.
@@ -47,6 +51,9 @@ pub struct ArchivePage {
     search: Entity<TextInput>,
     /// The entry chosen, by its index in the folder's.
     chosen: Option<usize>,
+    /// Those selected, to extract: clicked, with Ctrl or Cmd for more, with
+    /// Shift for those between. What only shows in the preview is not one.
+    selected: BTreeSet<usize>,
     /// What the search found: all of it, as it was typed, in an archive with
     /// a listing. A sample's search looks in its one folder.
     found: Vec<Found>,
@@ -71,6 +78,7 @@ impl ArchivePage {
             shown: Shown::Nothing,
             search,
             chosen: None,
+            selected: BTreeSet::new(),
             found: Vec::new(),
             _typing: typing,
         }
@@ -83,9 +91,44 @@ impl ArchivePage {
             _ => None,
         };
         self.shown = shown;
+        self.selected.clear();
         self.found.clear();
         self.search.update(cx, |s, cx| s.set_text("", 0..0, cx));
         cx.notify();
+    }
+
+    /// The entries selected in the folder shown, by their paths in the archive.
+    pub fn picked(&self) -> Vec<Vec<String>> {
+        let Some(a) = self.archive() else {
+            return Vec::new();
+        };
+        self.selected
+            .iter()
+            .filter_map(|i| a.entries.get(*i))
+            .map(|e| {
+                let mut path = a.folder.clone();
+                path.push(e.name.clone());
+                path
+            })
+            .collect()
+    }
+
+    /// A click on the entry at `i`: it alone, or with `more` as well, or with
+    /// `range` those from the one chosen last.
+    fn select(&mut self, i: usize, more: bool, range: bool) {
+        match (range, self.chosen) {
+            (true, Some(from)) => self.selected.extend(from.min(i)..=from.max(i)),
+            _ if more => {
+                if !self.selected.remove(&i) {
+                    self.selected.insert(i);
+                }
+            }
+            _ => {
+                self.selected.clear();
+                self.selected.insert(i);
+            }
+        }
+        self.chosen = Some(i);
     }
 
     /// The archive open, if one is.
@@ -101,6 +144,7 @@ impl ArchivePage {
         if let Shown::Open(a) = &mut self.shown {
             a.show(folder);
             self.chosen = None;
+            self.selected.clear();
             cx.notify();
         }
     }
@@ -120,6 +164,7 @@ impl ArchivePage {
         self.chosen = self
             .archive()
             .and_then(|a| a.entries.iter().position(|e| &e.name == name));
+        self.selected.extend(self.chosen);
         cx.notify();
     }
 
@@ -143,6 +188,13 @@ impl ArchivePage {
             .filter(|(_, e)| query.is_empty() || e.name.to_lowercase().contains(&query))
             .map(|(i, e)| (i, e, None))
             .collect()
+    }
+
+    /// Selects the entries at `at`, as the screenshots do.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn select_for_shot(&mut self, at: &[usize], cx: &mut Context<Self>) {
+        self.selected = at.iter().copied().collect();
+        cx.notify();
     }
 
     /// Types `query` in the search, as the screenshots do.
@@ -269,7 +321,12 @@ impl ArchivePage {
         let more = self.found.len().saturating_sub(MOST_FOUND);
         let searching = !query.is_empty() && a.listing.is_some();
         let rows = shown.into_iter().map(|(i, e, found)| {
-            let on = !searching && self.chosen == Some(i);
+            let on = !searching && self.selected.contains(&i);
+            let file_path = (e.kind != Kind::Folder && found.is_none()).then(|| {
+                let mut path = a.folder.clone();
+                path.push(e.name.clone());
+                path
+            });
             let under = found.as_ref().map(|path| {
                 let folders = &path[..path.len().saturating_sub(1)];
                 if folders.is_empty() {
@@ -297,16 +354,20 @@ impl ArchivePage {
                 .cursor_pointer()
                 .when(on, |d| d.bg(rgb(c.chosen)))
                 .when(!on, |d| d.hover(|s| s.bg(rgb(c.hover))))
-                // A click chooses; a double click opens a folder.
+                // A click selects; a double click opens.
                 .on_click(cx.listener(move |this, e: &gpui::ClickEvent, _, cx| {
                     if let Some(path) = &found {
                         this.reveal(path, dir, cx);
                         return;
                     }
-                    match &inside {
-                        Some(folder) if e.click_count() >= 2 => this.enter(folder.clone(), cx),
+                    match (&inside, &file_path) {
+                        (Some(folder), _) if e.click_count() >= 2 => this.enter(folder.clone(), cx),
+                        (_, Some(path)) if e.click_count() >= 2 => {
+                            cx.emit(ArchiveEvent::OpenEntry(path.clone()));
+                        }
                         _ => {
-                            this.chosen = Some(i);
+                            let keys = e.modifiers();
+                            this.select(i, keys.secondary(), keys.shift);
                             cx.notify();
                         }
                     }

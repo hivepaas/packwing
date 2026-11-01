@@ -83,7 +83,7 @@ impl ProgressDialog {
             })),
             cancel: Some(cancel.clone()),
         };
-        let (keys, how) = (job.keys.clone(), job.how);
+        let (keys, how, picked) = (job.keys.clone(), job.how, job.picked.clone());
         let (verb, work, create, add) = (
             job.verb,
             job.work.clone(),
@@ -100,6 +100,16 @@ impl ProgressDialog {
             }
             for (source, destination) in &work {
                 match (verb, destination) {
+                    (Verb::Open, _) => {
+                        let entry = picked.first().map_or(&[][..], Vec::as_slice);
+                        let copy = packwing_core::extract_to_open(source, entry, &keys, &control)?;
+                        return Ok(Some(copy));
+                    }
+                    (Verb::Extract, Some(to)) if !picked.is_empty() => {
+                        packwing_core::extract_selected(
+                            source, to, &picked, &keys, &how, &control,
+                        )?;
+                    }
                     (Verb::Extract, Some(to)) => {
                         packwing_core::extract_with(source, to, &keys, &how, &control)?;
                     }
@@ -133,6 +143,10 @@ impl ProgressDialog {
                         self.job.keys.clone(),
                     ));
                 }
+            }
+            Ok(Some(copy)) if self.job.verb == Verb::Open => {
+                cx.open_with_system(&copy);
+                cx.emit(DialogEvent::Close);
             }
             Ok(made) => {
                 if let Some(made) = made.filter(|_| self.open_folder) {
@@ -266,10 +280,12 @@ impl ProgressDialog {
             (Verb::Extract, false) => "Extracting…",
             (Verb::Create, false) => "Creating…",
             (Verb::Add, false) => "Adding…",
+            (Verb::Open, false) => "Opening…",
             (Verb::Test, false) => "Testing…",
             (Verb::Extract, true) => "Couldn’t extract",
             (Verb::Create, true) => "Couldn’t create the archive",
             (Verb::Add, true) => "Couldn’t add the files",
+            (Verb::Open, true) => "Couldn’t open the file",
             (Verb::Test, true) => "The test failed",
         }
     }
@@ -302,7 +318,7 @@ impl Render for ProgressDialog {
             None => format!("{} · checking that every file reads", j.name),
         };
         let icon_name = match j.verb {
-            Verb::Extract => "extract",
+            Verb::Extract | Verb::Open => "extract",
             Verb::Create | Verb::Add => "logo",
             Verb::Test => "shield",
         };
@@ -410,19 +426,22 @@ impl Render for ProgressDialog {
                         ),
                 )
             })
-            .when(!matches!(j.verb, Verb::Test | Verb::Add), |d| {
-                d.child(
-                    check_row(
-                        "open-folder",
-                        self.open_folder,
-                        "Open the folder when it’s done",
+            .when(
+                !matches!(j.verb, Verb::Test | Verb::Add | Verb::Open),
+                |d| {
+                    d.child(
+                        check_row(
+                            "open-folder",
+                            self.open_folder,
+                            "Open the folder when it’s done",
+                        )
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.open_folder = !this.open_folder;
+                            cx.notify();
+                        })),
                     )
-                    .on_click(cx.listener(|this, _, _, cx| {
-                        this.open_folder = !this.open_folder;
-                        cx.notify();
-                    })),
-                )
-            })
+                },
+            )
             .child(
                 footer()
                     // A job that runs cannot go on without its dialog, or

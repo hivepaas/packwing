@@ -11,7 +11,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use packwing_core::{
     Cancel, Control, Error, ExtractOptions, Keys, Kind, Level, NewArchive, Progress, add, can_add,
-    create, extract, extract_with, list, measure, test,
+    create, extract, extract_selected, extract_to_open, extract_with, list, measure, test,
 };
 
 /// A folder of a test's own, gone when it ends.
@@ -1071,4 +1071,146 @@ fn the_limit_stops_what_unpacks_to_more() {
     };
     extract_with(&made, &out, &keys, &none, &Control::default()).unwrap();
     same_tree(&out.join("Báo cáo"));
+}
+
+fn path_of(text: &str) -> Vec<String> {
+    text.split('/').map(str::to_owned).collect()
+}
+
+#[test]
+fn what_is_picked_comes_out_straight_into_the_folder() {
+    let s = Scratch::new("picked");
+    let root = s.tree();
+    let how = ExtractOptions::default();
+    for (kind, extension) in KINDS {
+        let new = NewArchive {
+            kind,
+            ..NewArchive::default()
+        };
+        let path = s.path(&format!("a.{extension}"));
+        let made = create(
+            std::slice::from_ref(&root),
+            &path,
+            &new,
+            &Control::default(),
+        )
+        .unwrap();
+        let out = s.path(&format!("out-{extension}"));
+        let picked = [path_of("Báo cáo/Hình ảnh"), path_of("Báo cáo/ghi chú.txt")];
+        extract_selected(
+            &made,
+            &out,
+            &picked,
+            &Keys::default(),
+            &how,
+            &Control::default(),
+        )
+        .unwrap();
+        let mut names: Vec<String> = fs::read_dir(&out)
+            .unwrap()
+            .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+            .collect();
+        names.sort();
+        assert_eq!(names, ["Hình ảnh", "ghi chú.txt"], "{kind:?}");
+        assert_eq!(fs::read(out.join("Hình ảnh/lớn.bin")).unwrap(), big());
+        assert_eq!(
+            fs::read_to_string(out.join("ghi chú.txt")).unwrap(),
+            "xin chào\n"
+        );
+    }
+}
+
+#[test]
+fn a_picked_name_that_is_there_stops_it_unless_replacing() {
+    let s = Scratch::new("picked-there");
+    let made = to_add_to(&s, None);
+    let out = s.path("out");
+    fs::create_dir_all(&out).unwrap();
+    fs::write(out.join("ghi chú.txt"), "của tôi").unwrap();
+    let picked = [path_of("Báo cáo/ghi chú.txt")];
+    let keep = ExtractOptions::default();
+    assert!(
+        extract_selected(
+            &made,
+            &out,
+            &picked,
+            &Keys::default(),
+            &keep,
+            &Control::default()
+        )
+        .is_err()
+    );
+    assert_eq!(
+        fs::read_to_string(out.join("ghi chú.txt")).unwrap(),
+        "của tôi"
+    );
+    let replace = ExtractOptions {
+        overwrite: true,
+        ..keep
+    };
+    extract_selected(
+        &made,
+        &out,
+        &picked,
+        &Keys::default(),
+        &replace,
+        &Control::default(),
+    )
+    .unwrap();
+    assert_eq!(
+        fs::read_to_string(out.join("ghi chú.txt")).unwrap(),
+        "xin chào\n"
+    );
+    let names: Vec<_> = fs::read_dir(&out).unwrap().collect();
+    assert_eq!(names.len(), 1, "nothing but it is left");
+}
+
+#[test]
+fn stopping_a_picked_extraction_leaves_nothing() {
+    let s = Scratch::new("picked-stop");
+    let made = to_add_to(&s, None);
+    let out = s.path("out");
+    let cancel = Cancel::new();
+    let stop = cancel.clone();
+    let control = Control {
+        progress: Some(Arc::new(move |p: &Progress| {
+            if p.bytes > 0 {
+                stop.cancel();
+            }
+        })),
+        cancel: Some(cancel),
+    };
+    let picked = [path_of("Báo cáo/Hình ảnh")];
+    let how = ExtractOptions::default();
+    let stopped = extract_selected(&made, &out, &picked, &Keys::default(), &how, &control);
+    assert!(matches!(stopped, Err(Error::Cancelled)), "{stopped:?}");
+    assert_eq!(fs::read_dir(&out).unwrap().count(), 0);
+}
+
+#[test]
+fn a_file_to_open_is_a_copy_in_a_folder_of_its_own() {
+    let s = Scratch::new("to-open");
+    let made = to_add_to(&s, Some("mật khẩu"));
+    let entry = path_of("Báo cáo/ghi chú.txt");
+    assert!(matches!(
+        extract_to_open(&made, &entry, &Keys::default(), &Control::default()),
+        Err(Error::Locked { .. })
+    ));
+    let keys = Keys {
+        password: Some("mật khẩu".as_bytes().to_vec()),
+        ..Keys::default()
+    };
+    let copy = extract_to_open(&made, &entry, &keys, &Control::default()).unwrap();
+    assert_eq!(fs::read_to_string(&copy).unwrap(), "xin chào\n");
+    assert_eq!(copy.file_name().unwrap().to_string_lossy(), "ghi chú.txt");
+    let again = extract_to_open(&made, &entry, &keys, &Control::default()).unwrap();
+    assert_ne!(copy, again);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let folder = fs::metadata(copy.parent().unwrap()).unwrap();
+        assert_eq!(folder.permissions().mode() & 0o777, 0o700);
+    }
+    let _ = fs::remove_dir_all(copy.parent().unwrap());
+    let _ = fs::remove_dir_all(again.parent().unwrap());
 }

@@ -14,10 +14,10 @@ use crate::chrome;
 use crate::colors::{self, colors};
 use crate::demo;
 use crate::dialogs::{
-    AddDialog, CreateDialog, Creating, DialogEvent, ExtractDialog, Job, PasswordDialog,
-    PasswordEvent, ProgressDialog, Verb, asked_for,
+    AddDialog, CreateDialog, Creating, DialogEvent, ExtractDialog, Job, OpenFileDialog,
+    PasswordDialog, PasswordEvent, ProgressDialog, Verb, asked_for,
 };
-use crate::model::{Archive, Selection, stem};
+use crate::model::{Archive, Kind, Selection, stem};
 use crate::pages::archive::{ArchiveEvent, ArchivePage, Shown};
 use crate::pages::onboarding::{Done, Onboarding};
 use crate::pages::recent::{OpenRecent, RecentPage, Row};
@@ -146,6 +146,7 @@ impl Workspace {
                     ArchiveEvent::AddFiles => this.add_files(window, cx),
                     ArchiveEvent::Test => this.test_archive(window, cx),
                     ArchiveEvent::Open => this.choose_archive(window, cx),
+                    ArchiveEvent::OpenEntry(entry) => this.open_entry(entry.clone(), window, cx),
                 },
             ),
             cx.subscribe_in(&recent, window, |this, _, e: &OpenRecent, window, cx| {
@@ -480,8 +481,31 @@ impl Workspace {
         let Some(archive) = self.archive.read(cx).archive().cloned() else {
             return;
         };
-        let view = cx.new(|cx| ExtractDialog::new(archive, cx));
+        let picked = self.archive.read(cx).picked();
+        let view = cx.new(|cx| ExtractDialog::new(archive, picked, cx));
         self.show(view, true, window, cx);
+    }
+
+    /// Opens a file of the archive open, a copy of it: asked first, as
+    /// Settings says, and always for a program.
+    pub fn open_entry(&mut self, entry: Vec<String>, window: &mut Window, cx: &mut Context<Self>) {
+        let Some(a) = self.archive.read(cx).archive().cloned() else {
+            return;
+        };
+        let (Some(path), Some(name)) = (a.path, entry.last().cloned()) else {
+            return;
+        };
+        let mut job = Job::shown(Verb::Open, a.name.into(), None, 1, 0);
+        job.work = vec![(path, None)];
+        job.keys = a.keys;
+        job.picked = vec![entry];
+        let program = Kind::of(&name, false) == Kind::Program;
+        if program || prefs::prefs(cx).ask_before_open {
+            let view = cx.new(|_| OpenFileDialog::new(job, name, program));
+            self.show(view, true, window, cx);
+        } else {
+            self.open_progress(job, window, cx);
+        }
     }
 
     /// Reads every file of the archive open through, its checks made.
@@ -622,6 +646,12 @@ impl Workspace {
         if let Some(opened) = prefs::prefs(cx).recent.get(i) {
             self.open_archive(opened.path.clone(), false, window, cx);
         }
+    }
+
+    /// Selects entries of the archive open, as the screenshots draw it.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn select_in_archive(&mut self, at: &[usize], cx: &mut Context<Self>) {
+        self.archive.update(cx, |p, cx| p.select_for_shot(at, cx));
     }
 
     /// Searches the archive open, as the screenshots draw it.

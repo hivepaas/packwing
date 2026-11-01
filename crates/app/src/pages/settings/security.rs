@@ -22,7 +22,8 @@ const MONO_FONTS: [&str; 8] = [
     "Ubuntu Mono",
 ];
 
-/// The one of these packwing acts on so far, and keeps.
+/// Those packwing acts on so far, and keeps.
+const ASK_OPEN: &str = "Ask before opening files without extracting";
 const KEEP_MARK: &str = "Keep the “downloaded from the Internet” mark";
 
 struct Toggle {
@@ -40,7 +41,7 @@ pub struct Security {
 }
 
 impl Security {
-    pub fn new(managed: Option<Managed>, keep_mark: bool) -> Self {
+    pub fn new(managed: Option<Managed>, keep_mark: bool, ask_open: bool) -> Self {
         let mut toggles = vec![
             Toggle {
                 label: "Check archives before extracting",
@@ -61,9 +62,10 @@ impl Security {
                 on: false,
             },
             Toggle {
-                label: "Ask before opening files without extracting",
-                detail: "Opening a file inside an archive puts a copy in a temporary folder",
-                on: true,
+                label: ASK_OPEN,
+                detail: "Opening a file inside an archive puts a copy in a temporary folder. \
+                         A program always asks.",
+                on: ask_open,
             },
         ];
         if managed.is_some() {
@@ -178,6 +180,10 @@ impl Render for Security {
                     if this.toggles[i].label == KEEP_MARK {
                         let on = this.toggles[i].on;
                         crate::prefs::change(cx, |p| p.keep_mark = on);
+                    }
+                    if this.toggles[i].label == ASK_OPEN {
+                        let on = this.toggles[i].on;
+                        crate::prefs::change(cx, |p| p.ask_before_open = on);
                     }
                     cx.notify();
                 })),

@@ -159,6 +159,7 @@ fn main() {
         .run(move |cx: &mut App| {
             load_fonts(cx);
             cx.set_global(prefs::Prefs::load());
+            packwing_core::clean_opened_files();
             // GNOME's Wayland compositor draws no window frame, so Linux gets
             // client-side decorations. macOS and Windows keep the system's
             // frame but hide its title bar, and the app draws its own.

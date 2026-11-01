@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 32] = [
+const SCREENS: [(&str, SetUp, bool); 36] = [
     ("archive", |_, _, _| {}, false),
     (
         "archive-opened",
@@ -33,6 +33,41 @@ const SCREENS: [(&str, SetUp, bool); 32] = [
         |ws, _, cx| {
             ws.show_archive(read(), cx);
             ws.search_archive("readme", cx);
+        },
+        false,
+    ),
+    (
+        "archive-selected",
+        |ws, _, cx| {
+            ws.show_archive(read(), cx);
+            ws.select_in_archive(&[1, 2], cx);
+        },
+        false,
+    ),
+    (
+        "extract-selected",
+        |ws, window, cx| {
+            ws.show_archive(read(), cx);
+            ws.select_in_archive(&[1, 2], cx);
+            ws.open_extract(window, cx);
+        },
+        false,
+    ),
+    (
+        "open-file",
+        |ws, window, cx| {
+            ws.show_archive(read(), cx);
+            let entry = ["site", "public", "index.html"].map(String::from).to_vec();
+            ws.open_entry(entry, window, cx);
+        },
+        false,
+    ),
+    (
+        "open-program",
+        |ws, window, cx| {
+            ws.show_archive(read(), cx);
+            let entry = ["site", "deploy.exe"].map(String::from).to_vec();
+            ws.open_entry(entry, window, cx);
         },
         false,
     ),
