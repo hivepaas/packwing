@@ -68,8 +68,6 @@ pub struct Recent {
     pub location: &'static str,
     pub size: u64,
     pub opened: &'static str,
-    /// Part of it cannot be read: opening it shows [`DAMAGED`].
-    pub damaged: bool,
 }
 
 impl Recent {
@@ -84,68 +82,26 @@ pub const RECENT: &[Recent] = &[
         location: PROJECT_LOCATION,
         size: PROJECT_PACKED,
         opened: "Today, 09:12",
-        damaged: false,
     },
     Recent {
         name: "Báo cáo thuế Q3.part1.rar",
         location: "Desktop",
         size: 2_300_000_000,
         opened: "Yesterday, 17:40",
-        damaged: true,
     },
     Recent {
         name: "Ảnh cưới – bản gốc.zip",
         location: "Pictures",
         size: 3_800_000_000,
         opened: "2026-10-20",
-        damaged: false,
     },
     Recent {
         name: "backup-2026-10.tar.zst",
         location: "Backups",
         size: 940_000_000,
         opened: "2026-10-14",
-        damaged: false,
     },
 ];
-
-/// A split archive with a part missing.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Damaged {
-    pub name: &'static str,
-    pub location: &'static str,
-    /// Unpacked, in bytes.
-    pub unpacked: u64,
-    pub files: u64,
-    /// Those that read well.
-    pub fine: u64,
-    /// The folder the others are in.
-    pub folder: &'static str,
-    pub missing_part: &'static str,
-    /// It carries recovery data, so repair can be tried.
-    pub recoverable: bool,
-}
-
-pub const DAMAGED: Damaged = Damaged {
-    name: "Báo cáo thuế Q3.part1.rar",
-    location: "Desktop",
-    unpacked: 2_900_000_000,
-    files: 1284,
-    fine: 1212,
-    folder: "Hóa đơn",
-    missing_part: "Báo cáo thuế Q3.part3.rar",
-    recoverable: true,
-};
-
-impl Damaged {
-    /// The missing part's number, as people count them: `3`.
-    pub fn missing_number(&self) -> &'static str {
-        self.missing_part
-            .rsplit_once(".part")
-            .and_then(|(_, rest)| rest.split('.').next())
-            .unwrap_or("")
-    }
-}
 
 /// A setting the user's organization has fixed.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -243,6 +199,5 @@ mod tests {
         assert_eq!(p.entries[3].tag(), "DOCX");
         assert_eq!(RECENT[3].tag(), "ZST");
         assert_eq!(p.ratio(), 33);
-        assert_eq!(DAMAGED.missing_number(), "3");
     }
 }

@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 32] = [
+const SCREENS: [(&str, SetUp, bool); 31] = [
     ("archive", |_, _, _| {}, false),
     (
         "archive-opened",
@@ -197,11 +197,6 @@ const SCREENS: [(&str, SetUp, bool); 32] = [
             ws.open_progress(job, window, cx)
                 .update(cx, |p, cx| p.set_done(0.64, cx));
         },
-        false,
-    ),
-    (
-        "damaged",
-        |ws, window, cx| ws.open_damaged(window, cx),
         false,
     ),
     (

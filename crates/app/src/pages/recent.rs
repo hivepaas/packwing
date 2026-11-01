@@ -6,7 +6,7 @@ use super::{panel, title};
 use crate::colors::colors;
 use crate::model::{Kind, date, size, tag_of};
 use crate::prefs::Opened;
-use crate::widgets::{chip, tile};
+use crate::widgets::tile;
 
 /// One of them was asked for: its index.
 pub struct OpenRecent(pub usize);
@@ -19,7 +19,6 @@ pub struct Row {
     /// Its size; none if it is not there any more.
     pub size: Option<u64>,
     pub opened: String,
-    pub damaged: bool,
 }
 
 impl Row {
@@ -37,7 +36,6 @@ impl Row {
                 .unwrap_or_default(),
             size: std::fs::metadata(path).ok().map(|m| m.len()),
             opened: date(opened.at),
-            damaged: false,
         }
     }
 }
@@ -86,21 +84,14 @@ impl Render for RecentPage {
                         .flex_1()
                         .min_w_0()
                         .child(
-                            div()
-                                .flex()
-                                .items_center()
-                                .gap(px(8.))
-                                .child(
-                                    div()
-                                        .min_w_0()
-                                        .truncate()
-                                        .text_size(px(15.))
-                                        .font_weight(FontWeight::MEDIUM)
-                                        .child(r.name.clone()),
-                                )
-                                .when(r.damaged, |d| {
-                                    d.child(chip("Damaged", c.bad_bg, c.bad_text))
-                                }),
+                            div().flex().items_center().gap(px(8.)).child(
+                                div()
+                                    .min_w_0()
+                                    .truncate()
+                                    .text_size(px(15.))
+                                    .font_weight(FontWeight::MEDIUM)
+                                    .child(r.name.clone()),
+                            ),
                         )
                         .child(div().text_size(px(13.)).text_color(rgb(c.muted)).child(
                             match r.size {
