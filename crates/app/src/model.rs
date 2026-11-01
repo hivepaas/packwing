@@ -116,7 +116,43 @@ pub struct Archive {
     pub keys: Keys,
 }
 
+/// What macOS leaves in archives it makes, which nobody asked for.
+pub fn left_by_macos(name: &str) -> bool {
+    name == "__MACOSX" || name == ".DS_Store" || name.starts_with("._")
+}
+
 impl Archive {
+    /// The names at its top, but for what macOS leaves. For the samples, what
+    /// is shown stands for that.
+    pub fn top_names(&self) -> Vec<String> {
+        let names: Vec<String> = match &self.listing {
+            Some(listing) => listing.children(&[]).into_iter().map(|c| c.name).collect(),
+            None => self.entries.iter().map(|e| e.name.clone()).collect(),
+        };
+        names.into_iter().filter(|n| !left_by_macos(n)).collect()
+    }
+
+    /// Whether `name`, at its top, is a folder.
+    pub fn top_is_folder(&self, name: &str) -> bool {
+        match &self.listing {
+            Some(listing) => listing
+                .children(&[])
+                .iter()
+                .any(|c| c.name == name && c.dir),
+            None => self
+                .entries
+                .iter()
+                .any(|e| e.name == name && e.kind == Kind::Folder),
+        }
+    }
+
+    /// Whether that leaves out anything.
+    pub fn has_macos_files(&self) -> bool {
+        self.listing
+            .as_ref()
+            .is_some_and(|listing| listing.children(&[]).iter().any(|c| left_by_macos(&c.name)))
+    }
+
     /// The archive at `path`, as packwing-core listed it with `keys`; its
     /// top folder shown. `marked`: the file came from the Internet, and the
     /// programs in it will keep that mark.
@@ -334,6 +370,56 @@ impl Selection {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn holding(paths: &[(&str, bool)]) -> Archive {
+        let entries = paths
+            .iter()
+            .map(|(path, dir)| packwing_core::Entry {
+                path: path.split('/').map(String::from).collect(),
+                dir: *dir,
+                size: 0,
+                modified: None,
+            })
+            .collect();
+        Archive::read(
+            PathBuf::from("/a/t12.zip"),
+            packwing_core::Listing {
+                name: "t12.zip".into(),
+                folder: PathBuf::from("/a"),
+                packed: 0,
+                unpacked: 0,
+                files: 0,
+                layers: Vec::new(),
+                container: packwing_core::Container::Tar,
+                encryption: None,
+                entries,
+            },
+            Keys::default(),
+            false,
+        )
+    }
+
+    #[test]
+    fn what_macos_leaves_does_not_count_at_the_top() {
+        let a = holding(&[
+            ("t12", true),
+            ("t12/a.txt", false),
+            ("__MACOSX/t12/._a.txt", false),
+            (".DS_Store", false),
+        ]);
+        assert_eq!(a.top_names(), ["t12"]);
+        assert!(a.has_macos_files());
+        assert!(a.top_is_folder("t12"));
+    }
+
+    #[test]
+    fn several_at_the_top_stay_several() {
+        let a = holding(&[("a.txt", false), ("b/c.txt", false)]);
+        assert_eq!(a.top_names().len(), 2);
+        assert!(!a.has_macos_files());
+        assert!(!a.top_is_folder("a.txt"));
+        assert!(a.top_is_folder("b"));
+    }
 
     #[test]
     fn sizes_read_as_the_design_shows_them() {

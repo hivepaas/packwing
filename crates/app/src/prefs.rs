@@ -33,6 +33,33 @@ pub struct Opened {
     pub at: i64,
 }
 
+/// Where Extract starts.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ExtractTo {
+    /// Right here if the archive holds one thing, else a new folder.
+    Smart,
+    /// A new folder beside the archive, named after it.
+    NewFolder,
+    /// The archive's own folder.
+    Here,
+}
+
+impl ExtractTo {
+    fn name(self) -> &'static str {
+        match self {
+            ExtractTo::Smart => "smart",
+            ExtractTo::NewFolder => "new-folder",
+            ExtractTo::Here => "here",
+        }
+    }
+
+    fn named(name: &str) -> Option<ExtractTo> {
+        [ExtractTo::Smart, ExtractTo::NewFolder, ExtractTo::Here]
+            .into_iter()
+            .find(|to| to.name() == name)
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Prefs {
     /// Where they are kept: none while they are only for this run, as in tests.
@@ -42,8 +69,8 @@ pub struct Prefs {
     pub level: Level,
     pub hide_names: bool,
     pub skip_mac_files: bool,
-    /// Extract starts on a new folder, rather than the archive's own.
-    pub new_folder: bool,
+    /// Where Extract starts.
+    pub extract_to: ExtractTo,
     pub overwrite: bool,
     /// An index in [`LIMITS`].
     pub limit: usize,
@@ -65,7 +92,7 @@ impl Default for Prefs {
             level: Level::Medium,
             hide_names: true,
             skip_mac_files: true,
-            new_folder: true,
+            extract_to: ExtractTo::Smart,
             overwrite: false,
             limit: 1,
             keep_mark: true,
@@ -137,7 +164,10 @@ impl Prefs {
                 }
                 "hide_names" => p.hide_names = on(value, p.hide_names),
                 "skip_mac_files" => p.skip_mac_files = on(value, p.skip_mac_files),
-                "new_folder" => p.new_folder = on(value, p.new_folder),
+                "extract_to" => p.extract_to = ExtractTo::named(value).unwrap_or(p.extract_to),
+                // What it was before there was Smart: a new folder was the
+                // default then, as Smart is now.
+                "new_folder" if value == "false" => p.extract_to = ExtractTo::Here,
                 "overwrite" => p.overwrite = on(value, p.overwrite),
                 "keep_mark" => p.keep_mark = on(value, p.keep_mark),
                 "ask_before_open" => p.ask_before_open = on(value, p.ask_before_open),
@@ -178,12 +208,12 @@ impl Prefs {
         let limit = LIMITS.get(self.limit).map_or(LIMITS[1].0, |(name, _)| name);
         let mut text = format!(
             "appearance={appearance}\nformat={}\nlevel={level}\nhide_names={}\n\
-             skip_mac_files={}\nnew_folder={}\noverwrite={}\nlimit={limit}\nkeep_mark={}\n\
+             skip_mac_files={}\nextract_to={}\noverwrite={}\nlimit={limit}\nkeep_mark={}\n\
              ask_before_open={}\n",
             self.format.ext(),
             self.hide_names,
             self.skip_mac_files,
-            self.new_folder,
+            self.extract_to.name(),
             self.overwrite,
             self.keep_mark,
             self.ask_before_open,
@@ -269,7 +299,7 @@ mod tests {
             level: Level::Highest,
             hide_names: false,
             skip_mac_files: false,
-            new_folder: false,
+            extract_to: ExtractTo::Here,
             overwrite: true,
             limit: 3,
             keep_mark: false,
@@ -281,6 +311,18 @@ mod tests {
             at: 1_790_000_000,
         });
         assert_eq!(Prefs::parse(&p.text()), p);
+    }
+
+    #[test]
+    fn where_it_extracted_before_there_was_smart() {
+        assert_eq!(
+            Prefs::parse("new_folder=false\n").extract_to,
+            ExtractTo::Here
+        );
+        assert_eq!(
+            Prefs::parse("new_folder=true\n").extract_to,
+            ExtractTo::Smart
+        );
     }
 
     #[test]
