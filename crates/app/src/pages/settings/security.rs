@@ -44,22 +44,10 @@ impl Security {
     pub fn new(managed: Option<Managed>, keep_mark: bool, ask_open: bool) -> Self {
         let mut toggles = vec![
             Toggle {
-                label: "Check archives before extracting",
-                detail: "Blocks files that try to escape the folder, or reach out of it \
-                         through links",
-                on: true,
-            },
-            Toggle {
                 label: KEEP_MARK,
                 detail: "The system warns before running files that came from a downloaded \
                          archive",
                 on: keep_mark,
-            },
-            Toggle {
-                label: "Block programs from Internet archives",
-                detail: ".exe, .msi, .js and .lnk files from downloaded archives are not \
-                         extracted",
-                on: false,
             },
             Toggle {
                 label: ASK_OPEN,

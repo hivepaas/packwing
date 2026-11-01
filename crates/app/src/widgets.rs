@@ -136,19 +136,6 @@ pub fn button(
         .child(label.into())
 }
 
-/// A link-like button: the accent's text, no fill.
-pub fn link(id: impl Into<ElementId>, label: impl Into<SharedString>) -> Stateful<Div> {
-    div()
-        .id(id)
-        .flex_shrink_0()
-        .text_size(px(14.))
-        .font_weight(FontWeight::SEMIBOLD)
-        .text_color(rgb(colors().accent))
-        .cursor_pointer()
-        .hover(|s| s.underline())
-        .child(label.into())
-}
-
 /// A round button with an icon alone, such as a dialog's close button.
 pub fn icon_button(id: impl Into<ElementId>, name: &str, size: f32) -> Stateful<Div> {
     let c = colors();

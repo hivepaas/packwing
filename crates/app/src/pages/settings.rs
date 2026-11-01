@@ -1,6 +1,5 @@
 //! Settings: a menu of sections and the one open, each section a view of
-//! its own. What they choose is kept (`prefs.rs`) and acted on, but for the
-//! rows hivepack has nothing to act with yet: those last while packwing runs.
+//! its own. What they choose is kept (`prefs.rs`) and acted on.
 
 mod about;
 mod compressing;
@@ -8,9 +7,8 @@ mod extracting;
 mod general;
 mod right_click;
 mod security;
-mod updates;
 
-pub use general::{Appearance, AppearanceChosen, LANGUAGES};
+pub use general::{Appearance, AppearanceChosen};
 
 use gpui::{
     AnyView, Context, Div, Entity, EventEmitter, FontWeight, IntoElement, Render, SharedString,
@@ -30,18 +28,16 @@ pub enum Section {
     Compressing,
     Security,
     RightClick,
-    Updates,
     About,
 }
 
 impl Section {
-    const ALL: [Section; 7] = [
+    const ALL: [Section; 6] = [
         Section::General,
         Section::Extracting,
         Section::Compressing,
         Section::Security,
         Section::RightClick,
-        Section::Updates,
         Section::About,
     ];
 
@@ -52,7 +48,6 @@ impl Section {
             Section::Compressing => "Compressing",
             Section::Security => "Security",
             Section::RightClick => "Right-click menu",
-            Section::Updates => "Updates",
             Section::About => "About",
         }
     }
@@ -91,7 +86,6 @@ impl SettingsPage {
                     .into()
             },
             cx.new(|cx| right_click::RightClick::new(menu, cx)).into(),
-            cx.new(|_| updates::Updates::new()).into(),
             cx.new(|_| about::About).into(),
         ];
         SettingsPage {

@@ -6,7 +6,7 @@ use gpui::{Context, Entity, Render, Subscription, Window, div, prelude::*, px, r
 use super::{group, heading, rows, section, setting};
 use crate::colors::colors;
 use crate::prefs::{ExtractTo, LIMITS, change, prefs};
-use crate::widgets::{Chosen, Select, SelectLook, option_card, switch, titled};
+use crate::widgets::{Chosen, Select, SelectLook, option_card, titled};
 
 /// What hivepack can do with a file that is there, the first what it does
 /// unless told.
@@ -16,8 +16,6 @@ pub struct Extracting {
     extract_to: ExtractTo,
     existing: Entity<Select>,
     limit: Entity<Select>,
-    keep_folders: bool,
-    keep_dates: bool,
     _chosen: Vec<Subscription>,
 }
 
@@ -43,8 +41,6 @@ impl Extracting {
             existing,
             limit,
             _chosen: chosen,
-            keep_folders: true,
-            keep_dates: true,
         }
     }
 }
@@ -108,28 +104,6 @@ impl Render for Extracting {
                     "Largest an archive may unpack to",
                     "Stops archive bombs: small files that unpack to fill the disk",
                     self.limit.clone(),
-                ),
-            ]))
-            .child(rows([
-                setting(
-                    "Keep the folders inside the archive",
-                    "Off puts every file straight into one folder",
-                    switch("keep-folders", self.keep_folders).on_click(cx.listener(
-                        |this, _, _, cx| {
-                            this.keep_folders = !this.keep_folders;
-                            cx.notify();
-                        },
-                    )),
-                ),
-                setting(
-                    "Keep the files’ dates",
-                    "The dates they had when they were packed, not today’s",
-                    switch("keep-dates", self.keep_dates).on_click(cx.listener(
-                        |this, _, _, cx| {
-                            this.keep_dates = !this.keep_dates;
-                            cx.notify();
-                        },
-                    )),
                 ),
             ]))
     }

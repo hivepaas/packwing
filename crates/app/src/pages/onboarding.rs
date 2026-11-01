@@ -1,14 +1,11 @@
-//! The first run: a welcome, the language, and what packwing may set up on
-//! the computer, each with a switch.
+//! The first run: a welcome, and what packwing may set up on the computer,
+//! each with a switch.
 
-use gpui::{
-    Context, Entity, EventEmitter, FontWeight, Render, Window, div, prelude::*, px, relative, rgb,
-};
+use gpui::{Context, EventEmitter, FontWeight, Render, Window, div, prelude::*, px, relative, rgb};
 
 use super::{panel, title};
 use crate::colors::{Tint, colors};
-use crate::pages::settings::LANGUAGES;
-use crate::widgets::{Fill, Select, SelectLook, Size, accent_tint, button, logo, switch, tile};
+use crate::widgets::{Fill, Size, accent_tint, button, logo, switch, tile};
 
 /// Get started was pressed.
 pub struct Done {
@@ -23,39 +20,20 @@ struct Step {
 }
 
 pub struct Onboarding {
-    language: Entity<Select>,
     steps: Vec<Step>,
 }
 
 impl EventEmitter<Done> for Onboarding {}
 
 impl Onboarding {
-    pub fn new(cx: &mut Context<Self>) -> Self {
+    pub fn new() -> Self {
         Onboarding {
-            language: cx.new(|_| Select::new(&LANGUAGES, 0, SelectLook::Field)),
             steps: vec![
                 // The first: Get started says whether it is on.
                 Step {
                     label: "Add to the right-click menu",
                     detail: "Extract or compress from any folder.",
                     on: true,
-                },
-                Step {
-                    label: "Open archives with packwing",
-                    detail: "ZIP, RAR, 7z, TAR, comics (CBZ, CBR) and more. Double-click to \
-                             look inside.",
-                    on: true,
-                },
-                Step {
-                    label: "Check archives before extracting",
-                    detail: "Blocks files that try to escape the folder and keeps the “from the \
-                             Internet” mark.",
-                    on: true,
-                },
-                Step {
-                    label: "Send anonymous crash reports",
-                    detail: "Helps us fix bugs. No file names or contents are ever sent.",
-                    on: false,
                 },
             ],
         }
@@ -82,20 +60,7 @@ impl Render for Onboarding {
                 "Open any archive, make smaller files to share, and stay safe from \
                          harmful downloads.",
             ))
-            .child(div().flex_1())
-            .child(
-                div()
-                    .flex()
-                    .flex_col()
-                    .gap(px(6.))
-                    .child(
-                        div()
-                            .text_size(px(13.))
-                            .font_weight(FontWeight::SEMIBOLD)
-                            .child("Language"),
-                    )
-                    .child(self.language.clone()),
-            );
+            .child(div().flex_1());
         let steps = self.steps.iter().enumerate().map(|(i, s)| {
             let tint = if s.on {
                 Tint {

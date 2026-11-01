@@ -259,7 +259,7 @@ impl Workspace {
     }
 
     pub fn show_welcome(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let welcome = cx.new(Onboarding::new);
+        let welcome = cx.new(|_| Onboarding::new());
         let done = cx.subscribe_in(&welcome, window, |this, _, done: &Done, _, cx| {
             this.right_click
                 .update(cx, |m, cx| m.show(done.right_click, cx));
