@@ -54,6 +54,19 @@ path = "LICENSE"
 license = "BSD-3-Clause"
 checksum = "2213f5ba10b67b59452a838df7c716993d484f8ac18582b824660de8da9c6398"
 
+# A port of UnRAR, under UnRAR's license, for this crate alone: see
+# GPL-ADDITIONAL-PERMISSION.md.
+[hivepack-rar]
+accepted = ["UnRAR"]
+
+[hivepack-rar.clarify]
+license = "UnRAR"
+
+[[hivepack-rar.clarify.files]]
+path = "LICENSE"
+license = "UnRAR"
+checksum = "0ba8b407184231d368a3522ba5d875bdc3b585b34a92bb240f843b1197c99052"
+
 [hivepack-bzip2.clarify]
 license = "bzip2-1.0.6"
 

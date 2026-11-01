@@ -14,9 +14,11 @@ hivepack-7z.workspace = true
 hivepack-age.workspace = true
 hivepack-cpio.workspace = true
 hivepack-deflate.workspace = true
-hivepack-extract.workspace = true
+# With RAR, under UnRAR's license: see GPL-ADDITIONAL-PERMISSION.md.
+hivepack-extract = { workspace = true, features = ["rar"] }
 hivepack-iso.workspace = true
 hivepack-open.workspace = true
+hivepack-rar.workspace = true
 hivepack-tar.workspace = true
 hivepack-udf.workspace = true
 hivepack-xar.workspace = true
