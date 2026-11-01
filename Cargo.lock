@@ -2574,6 +2574,7 @@ dependencies = [
  "hivepack-cpio",
  "hivepack-iso",
  "hivepack-open",
+ "hivepack-rar",
  "hivepack-tar",
  "hivepack-udf",
  "hivepack-xar",
@@ -2606,6 +2607,15 @@ dependencies = [
  "hivepack-lz4",
  "hivepack-xz",
  "hivepack-zstd",
+]
+
+[[package]]
+name = "hivepack-rar"
+version = "0.0.0"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=b84f3dc2d627bda40b58b11d5b13e94f5b99ec90#b84f3dc2d627bda40b58b11d5b13e94f5b99ec90"
+dependencies = [
+ "hivepack-crypto",
+ "hivepack-deflate",
 ]
 
 [[package]]
@@ -3936,6 +3946,7 @@ dependencies = [
  "hivepack-extract",
  "hivepack-iso",
  "hivepack-open",
+ "hivepack-rar",
  "hivepack-tar",
  "hivepack-udf",
  "hivepack-xar",
@@ -6236,7 +6247,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]

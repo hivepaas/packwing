@@ -4,6 +4,8 @@
 use std::collections::BTreeMap;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use hivepack_open::{Container, Layer, Opener};
 use hivepack_tar::{Reader, TYPE_DIR, TYPE_X_GLOBAL_HEADER};
@@ -11,6 +13,7 @@ use hivepack_udf::{Udf, VType};
 use hivepack_zip::{Archive, Flags, OpenFlags, Volumes, em, volume_paths};
 
 use crate::joined::{Joined, joined_size};
+use crate::rar;
 use crate::spool::spool;
 use crate::volume::walk;
 use crate::{Error, Keys, SevenZip, opener, seven_zip, without_layers};
@@ -102,7 +105,7 @@ impl Listing {
 
 /// The path of a name in an archive, a component at a time: `/` between
 /// them, a leading `./` and empty components dropped.
-fn components(name: &str) -> Vec<String> {
+pub(crate) fn components(name: &str) -> Vec<String> {
     name.split('/')
         .filter(|c| !c.is_empty())
         .enumerate()
@@ -174,6 +177,30 @@ pub fn list(path: &Path, keys: &Keys) -> Result<Listing, Error> {
             };
             encryption = encryption.or(seven_zip_encryption);
             entries
+        }
+        Container::Rar => {
+            let password = rar::password(keys);
+            let (found, encrypted) = if layers.is_empty() {
+                drop(opened);
+                let more = Arc::new(AtomicU64::new(0));
+                let found = rar::entries(rar::open(path, &password, more.clone())?, keys)?;
+                packed += more.load(Ordering::Relaxed);
+                found
+            } else {
+                let spooled = spool(&mut opened)?;
+                rar::entries(
+                    hivepack_rar::Archive::open_with_password(
+                        spooled.rewound()?,
+                        false,
+                        &password,
+                    )?,
+                    keys,
+                )?
+            };
+            if encrypted {
+                encryption = encryption.or(Some("Encrypted".to_owned()));
+            }
+            found
         }
         // An RPM package is its payload: the package's lead and headers
         // are a layer.

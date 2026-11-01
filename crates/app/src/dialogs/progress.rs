@@ -2,7 +2,7 @@
 //! failed.
 //!
 //! A job with work runs it in the background through packwing-core, and the
-//! dialog shows what it reports. One without (a repair, the screenshots'
+//! dialog shows what it reports. One without (the screenshots'
 //! sample) counts up at a made-up speed, so the screen can be
 //! seen moving, and closes itself at the end.
 
@@ -266,12 +266,10 @@ impl ProgressDialog {
             (Verb::Extract, false) => "Extracting…",
             (Verb::Create, false) => "Creating…",
             (Verb::Add, false) => "Adding…",
-            (Verb::Repair, false) => "Repairing…",
             (Verb::Test, false) => "Testing…",
             (Verb::Extract, true) => "Couldn’t extract",
             (Verb::Create, true) => "Couldn’t create the archive",
             (Verb::Add, true) => "Couldn’t add the files",
-            (Verb::Repair, true) => "Couldn’t repair",
             (Verb::Test, true) => "The test failed",
         }
     }
@@ -306,7 +304,7 @@ impl Render for ProgressDialog {
         let icon_name = match j.verb {
             Verb::Extract => "extract",
             Verb::Create | Verb::Add => "logo",
-            Verb::Repair | Verb::Test => "shield",
+            Verb::Test => "shield",
         };
         let header = header(icon_name, tonal_tint(), self.title(), detail, None);
         if let Some(why) = &self.failed {

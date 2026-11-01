@@ -5,7 +5,7 @@
 //! A file is opened through its layers (age, zstd, xz, gzip, bzip2, an RPM
 //! package's lead and headers and the others hivepack-open finds), and what
 //! is under them read: a tar, cpio or XAR archive (a macOS package) or an
-//! ISO 9660 image as it streams, a ZIP or 7z archive or a UDF volume from a
+//! ISO 9660 image as it streams, a ZIP, RAR or 7z archive or a UDF volume from a
 //! file (taken out to a temporary one first when it is under layers), or
 //! one file, compressed or encrypted on its own (`notes.txt.zst`).
 
@@ -13,6 +13,7 @@ mod create;
 mod job;
 mod joined;
 mod listing;
+mod rar;
 mod spool;
 mod volume;
 
@@ -267,10 +268,31 @@ fn age_header_error(message: String) -> Error {
     Error::Failed(message)
 }
 
+impl From<hivepack_rar::Error> for Error {
+    fn from(e: hivepack_rar::Error) -> Error {
+        match e {
+            hivepack_rar::Error::MissingPassword { .. } => Error::Locked {
+                needs: vec![PASSWORD.to_owned()],
+            },
+            hivepack_rar::Error::Io(io) => Error::from(io),
+            e => Error::Failed(e.to_string()),
+        }
+    }
+}
+
 impl From<hivepack_extract::Error> for Error {
     fn from(e: hivepack_extract::Error) -> Error {
         match e.kind {
             hivepack_extract::ErrorKind::Cancelled => Error::Cancelled,
+            hivepack_extract::ErrorKind::Rar(inner) => Error::from(inner),
+            hivepack_extract::ErrorKind::RarEntry(
+                hivepack_extract::RarProblem::MissingPassword,
+            ) => Error::Locked {
+                needs: vec![PASSWORD.to_owned()],
+            },
+            hivepack_extract::ErrorKind::RarEntry(hivepack_extract::RarProblem::BadPassword) => {
+                Error::WrongPassword
+            }
             hivepack_extract::ErrorKind::Io(io) => Error::from(io),
             hivepack_extract::ErrorKind::Archive(zip) if is_password_error(&zip) => {
                 Error::from(zip)

@@ -27,6 +27,12 @@ packwing-core's tests read them.
   (passphrase `khoá age`). These keys were made for these tests and open
   nothing else.
 
+- `rar5_multiple_files.rar`, `rar4_solid_encrypted.rar`,
+  `rar5_solid_encrypted.rar`, `rar4_encrypted_filenames.rar`,
+  `rar5_encrypted_filenames.rar` (password `password`), `test_rar_multivolume_multiple_files.part*.rar`:
+  libarchive 3.8.10's test archives (`libarchive/test/*rar*.uu`), decoded
+  (BSD-2-Clause). packwing never writes RAR, so its tests read what others made.
+
 cpio archives, RPM packages and encrypted ZIP archives are made by the
 tests themselves.
 

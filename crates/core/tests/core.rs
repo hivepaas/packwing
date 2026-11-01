@@ -1032,3 +1032,122 @@ fn what_is_no_key_file_says_so() {
     assert!(packwing_core::check_key_file(b"not a key\n").is_err());
     assert!(packwing_core::check_key_file(b"").is_err());
 }
+
+/// `tests/data`'s RAR files, copied beside each other as they were made.
+fn rar_files(s: &Scratch, names: &[&str]) -> Vec<PathBuf> {
+    names.iter().map(|n| s.file(n, &image(n))).collect()
+}
+
+fn with_password(p: &str) -> Keys {
+    Keys::default().with(Asked::Password, p.as_bytes().to_vec())
+}
+
+#[test]
+fn a_rar_archive_lists_tests_and_extracts() {
+    let s = Scratch::new();
+    let path = rar_files(&s, &["rar5_multiple_files.rar"]).remove(0);
+    let l = listed(&path);
+    assert_eq!(l.container, Container::Rar);
+    assert!(l.files > 1, "{}", l.files);
+    assert_eq!(l.encryption, None);
+    let summary = test(&path, &Keys::default(), &Control::default()).unwrap();
+    assert_eq!(summary.files, l.files);
+    assert_eq!(summary.bytes, l.unpacked);
+    let out = s.0.join("out");
+    let done = extract(&path, &out, &Keys::default(), &Control::default()).unwrap();
+    assert_eq!(done.files, l.files);
+    assert_eq!(done.bytes, l.unpacked);
+}
+
+#[test]
+fn a_rar_archive_in_volumes_reads_from_the_first() {
+    let s = Scratch::new();
+    let names: Vec<String> = (1..=6)
+        .map(|i| format!("test_rar_multivolume_multiple_files.part{i}.rar"))
+        .collect();
+    let refs: Vec<&str> = names.iter().map(String::as_str).collect();
+    let paths = rar_files(&s, &refs);
+    let all: u64 = paths
+        .iter()
+        .map(|p| std::fs::metadata(p).unwrap().len())
+        .sum();
+    let l = listed(&paths[0]);
+    assert_eq!(l.packed, all);
+    assert!(l.files > 1, "{}", l.files);
+    let summary = test(&paths[0], &Keys::default(), &Control::default()).unwrap();
+    assert_eq!(summary.files, l.files);
+    let done = extract(
+        &paths[0],
+        &s.0.join("out"),
+        &Keys::default(),
+        &Control::default(),
+    )
+    .unwrap();
+    assert_eq!((done.files, done.bytes), (l.files, l.unpacked));
+    // Without a volume, it says so and writes nothing.
+    std::fs::remove_file(&paths[3]).unwrap();
+    assert!(test(&paths[0], &Keys::default(), &Control::default()).is_err());
+    let cut = s.0.join("cut");
+    assert!(extract(&paths[0], &cut, &Keys::default(), &Control::default()).is_err());
+    assert!(!cut.exists());
+}
+
+#[test]
+fn an_encrypted_rar_archive_asks_for_its_password() {
+    let s = Scratch::new();
+    for (file, names_hidden) in [
+        ("rar4_solid_encrypted.rar", false),
+        ("rar5_solid_encrypted.rar", false),
+        ("rar4_encrypted_filenames.rar", true),
+        ("rar5_encrypted_filenames.rar", true),
+    ] {
+        let path = rar_files(&s, &[file]).remove(0);
+        let none = Keys::default();
+        let right = with_password("password");
+        if names_hidden {
+            let e = list(&path, &none).unwrap_err();
+            assert!(matches!(e, Error::Locked { .. }), "{file}: {e:?}");
+        } else {
+            assert!(list(&path, &none).unwrap().encryption.is_some(), "{file}");
+        }
+        let e = test(&path, &none, &Control::default()).unwrap_err();
+        assert!(matches!(e, Error::Locked { .. }), "{file}: {e:?}");
+        let e = test(&path, &with_password("sai"), &Control::default()).unwrap_err();
+        assert!(matches!(e, Error::WrongPassword), "{file}: {e:?}");
+        let out = s.0.join(format!("wrong-{file}"));
+        let e = extract(&path, &out, &with_password("sai"), &Control::default()).unwrap_err();
+        assert!(matches!(e, Error::WrongPassword), "{file}: {e:?}");
+        // RAR 3 has only the data to tell by: what failed its check is gone.
+        let left = std::fs::read_dir(&out)
+            .map_or(0, |d| d.flatten().filter(|e| e.path().is_file()).count());
+        assert_eq!(left, 0, "{file}");
+        if names_hidden {
+            let e = list(&path, &with_password("sai")).unwrap_err();
+            assert!(matches!(e, Error::WrongPassword), "{file}: {e:?}");
+        }
+        test(&path, &right, &Control::default()).unwrap();
+        let out = s.0.join(format!("out-{file}"));
+        let done = extract(&path, &out, &right, &Control::default()).unwrap();
+        assert!(done.files > 0, "{file}");
+    }
+}
+
+#[test]
+fn stopping_a_rar_job_stops_it() {
+    let s = Scratch::new();
+    let path = rar_files(&s, &["rar5_multiple_files.rar"]).remove(0);
+    let cancel = Cancel::new();
+    cancel.cancel();
+    let control = Control {
+        progress: None,
+        cancel: Some(cancel),
+    };
+    assert!(matches!(
+        test(&path, &Keys::default(), &control),
+        Err(Error::Cancelled)
+    ));
+    assert!(matches!(
+        extract(&path, &s.0.join("out"), &Keys::default(), &control),
+        Err(Error::Cancelled)
+    ));
+}

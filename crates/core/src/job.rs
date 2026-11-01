@@ -4,10 +4,12 @@
 use std::fs::OpenOptions;
 use std::io::{self, Read, Seek, Write};
 use std::path::Path;
+use std::sync::Arc;
+use std::sync::atomic::AtomicU64;
 
 use hivepack_extract::{
-    Cancel, Links, Options, Origin, Progress, ProgressFn, Summary, extract_7z, extract_cpio,
-    extract_iso, extract_tar, extract_udf, extract_xar, extract_zip,
+    Cancel, Links, Options, Origin, Progress, ProgressFn, RarProblem, Summary, extract_7z,
+    extract_cpio, extract_iso, extract_rar, extract_tar, extract_udf, extract_xar, extract_zip,
 };
 use hivepack_open::{Container, Opened};
 use hivepack_tar::Reader;
@@ -15,6 +17,7 @@ use hivepack_udf::{Udf, VType};
 use hivepack_zip::{Archive, Flags, OpenFlags, ReadAt, Volumes};
 
 use crate::joined::Joined;
+use crate::rar;
 use crate::spool::spool;
 use crate::volume::walk;
 use crate::{Error, Keys, opener, seven_zip, without_layers};
@@ -171,6 +174,27 @@ pub fn extract_with(
             drop(opened);
             Ok(extract_xar(|| Ok(opener.open()?), destination, &options)?)
         }
+        Container::Rar if layers.is_empty() => {
+            drop(opened);
+            let packed = Arc::new(AtomicU64::new(0));
+            let result = extract_rar(
+                |password| rar::open(path, password, packed.clone()),
+                destination,
+                &options,
+            );
+            rar_result(result, keys)
+        }
+        Container::Rar => {
+            let spooled = spool(&mut opened)?;
+            let result = extract_rar(
+                |password| {
+                    hivepack_rar::Archive::open_with_password(spooled.rewound()?, false, password)
+                },
+                destination,
+                &options,
+            );
+            rar_result(result, keys)
+        }
         Container::Data if layers.is_empty() => Err(Error::NotAnArchive),
         _ => {
             let name = path
@@ -186,6 +210,27 @@ pub fn extract_with(
             )
         }
     }
+}
+
+/// What extracting a RAR archive came to: data that fails its hash with a
+/// password given is the wrong password, which RAR 3 and earlier have nothing
+/// else to tell by.
+fn rar_result(
+    result: Result<Summary, hivepack_extract::Error>,
+    keys: &Keys,
+) -> Result<Summary, Error> {
+    result.map_err(|e| match e.kind {
+        hivepack_extract::ErrorKind::RarEntry(
+            RarProblem::BrokenData | RarProblem::BrokenArchive,
+        ) if keys.password.is_some() => Error::WrongPassword,
+        _ => Error::from(e),
+    })
+}
+
+/// `bytes` more were read.
+pub(crate) fn copy_progress(control: &Control, done: &mut Progress, bytes: usize) {
+    done.bytes += bytes as u64;
+    control.report(done);
 }
 
 /// One file under layers, written as `name` in `destination`: over what is
@@ -338,6 +383,21 @@ pub fn test(path: &Path, keys: &Keys, control: &Control) -> Result<Summary, Erro
                 &mut summary,
             )?;
             read_to_end(&mut opened, control, &mut done)?;
+        }
+        Container::Rar if layers.is_empty() => {
+            drop(opened);
+            let packed = Arc::new(AtomicU64::new(0));
+            let arc = rar::open(path, &rar::password(keys), packed)?;
+            rar::test(arc, keys, control, &mut summary)?;
+        }
+        Container::Rar => {
+            let spooled = spool(&mut opened)?;
+            let arc = hivepack_rar::Archive::open_with_password(
+                spooled.rewound()?,
+                false,
+                &rar::password(keys),
+            )?;
+            rar::test(arc, keys, control, &mut summary)?;
         }
         Container::Data if layers.is_empty() => return Err(Error::NotAnArchive),
         _ => {

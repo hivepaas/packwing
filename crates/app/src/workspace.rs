@@ -533,12 +533,6 @@ impl Workspace {
         view
     }
 
-    #[cfg(all(test, feature = "shots"))]
-    pub fn open_damaged(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let view = cx.new(|_| crate::dialogs::DamagedDialog::new(demo::DAMAGED));
-        self.show(view, true, window, cx);
-    }
-
     pub fn open_progress(
         &mut self,
         job: Job,
@@ -640,7 +634,6 @@ impl Workspace {
                 location: r.location.to_owned(),
                 size: Some(r.size),
                 opened: r.opened.to_owned(),
-                damaged: r.damaged,
             })
             .collect();
         self.recent.update(cx, |p, cx| p.show(rows, cx));

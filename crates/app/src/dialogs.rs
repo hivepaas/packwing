@@ -1,12 +1,9 @@
 //! The dialogs drawn over the main window: extracting, a new archive, adding
-//! to one, a job's progress and a damaged archive. Each is a view that says what the user
+//! to one and a job's progress. Each is a view that says what the user
 //! chose through [`DialogEvent`]; the workspace opens and closes them.
 
 mod add;
 mod create;
-// Nothing in a run opens it until hivepack can repair: only the screenshots do.
-#[cfg_attr(not(all(test, feature = "shots")), allow(dead_code))]
-mod damaged;
 mod extract;
 mod password;
 mod progress;
@@ -14,8 +11,6 @@ mod progress;
 pub use add::AddDialog;
 pub use create::CreateDialog;
 pub(crate) use create::{Format, LEVELS, Level};
-#[cfg(all(test, feature = "shots"))]
-pub use damaged::DamagedDialog;
 pub use extract::{ENCODINGS, ExtractDialog};
 pub use password::{PasswordDialog, PasswordEvent, asked_for};
 pub use progress::ProgressDialog;
@@ -34,8 +29,6 @@ pub enum Verb {
     Extract,
     Create,
     Add,
-    #[cfg_attr(not(all(test, feature = "shots")), allow(dead_code))]
-    Repair,
     Test,
 }
 
@@ -58,7 +51,7 @@ pub struct Creating {
 }
 
 /// A job the user started. Extracting and testing archives, making new ones
-/// and adding to them run, through packwing-core; the rest (a repair, and the samples)
+/// and adding to them run, through packwing-core; the samples
 /// count up at a made-up speed.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Job {
