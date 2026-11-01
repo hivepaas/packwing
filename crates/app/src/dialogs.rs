@@ -4,6 +4,7 @@
 
 mod add;
 mod add_storage;
+mod chosen;
 mod create;
 mod delete_items;
 mod edit;

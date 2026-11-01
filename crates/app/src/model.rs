@@ -3,6 +3,7 @@
 //! packwing-core lists; the samples of `demo.rs` fill the same.
 
 use packwing_i18n::{tr, tr_n};
+use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -337,11 +338,39 @@ pub fn count(n: u64) -> String {
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Selection {
     pub paths: Vec<PathBuf>,
+    /// Those that are folders, as they were when added.
+    pub folders: BTreeSet<PathBuf>,
     pub files: u64,
     pub bytes: u64,
 }
 
 impl Selection {
+    /// Adds `paths`, each once.
+    pub fn add(&mut self, paths: Vec<PathBuf>) {
+        for path in paths {
+            if !self.paths.contains(&path) {
+                if path.is_dir() {
+                    self.folders.insert(path.clone());
+                }
+                self.paths.push(path);
+            }
+        }
+    }
+
+    /// Takes `path` out. With nothing left, nothing is counted either.
+    pub fn remove(&mut self, path: &Path) {
+        self.paths.retain(|p| p != path);
+        self.folders.remove(path);
+        if self.paths.is_empty() {
+            self.files = 0;
+            self.bytes = 0;
+        }
+    }
+
+    pub fn is_folder(&self, path: &Path) -> bool {
+        self.folders.contains(path)
+    }
+
     /// The folder a new archive goes in: the one the first of them is in.
     pub fn folder(&self) -> Option<PathBuf> {
         self.paths.first()?.parent().map(Path::to_path_buf)
@@ -462,6 +491,22 @@ mod tests {
         assert_eq!(stem("initramfs.cpio.zst"), "initramfs");
         assert_eq!(stem("notes.txt"), "notes.txt");
         assert_eq!(stem(".tar"), ".tar");
+    }
+
+    #[test]
+    fn a_selection_holds_each_path_once_and_gives_them_up() {
+        let mut s = Selection::default();
+        let (a, b) = (PathBuf::from("/a/one"), PathBuf::from("/a/two"));
+        s.add(vec![a.clone(), b.clone(), a.clone()]);
+        assert_eq!(s.paths, [a.clone(), b.clone()]);
+        s.files = 3;
+        s.bytes = 30;
+        s.remove(&a);
+        assert_eq!(s.paths, std::slice::from_ref(&b));
+        assert_eq!((s.files, s.bytes), (3, 30), "counted again by its dialog");
+        s.remove(&b);
+        assert!(s.paths.is_empty());
+        assert_eq!((s.files, s.bytes), (0, 0));
     }
 
     #[test]
