@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 51] = [
+const SCREENS: [(&str, SetUp, bool); 52] = [
     (
         "storages-add",
         |ws, window, cx| {
@@ -313,6 +313,13 @@ const SCREENS: [(&str, SetUp, bool); 51] = [
     (
         "add",
         |ws, window, cx| ws.open_add_sample(window, cx),
+        false,
+    ),
+    (
+        "create-chosen",
+        |ws, window, cx| {
+            ws.open_create_many(window, cx);
+        },
         false,
     ),
     (
@@ -1169,7 +1176,7 @@ impl packwing_core::Storage for Far {
     }
 }
 
-/// A kind of storage, as a paid build adds them: its setting `folder` is the
+/// A kind of storage, as a program adds them: its setting `folder` is the
 /// folder it is, and its secret goes where the test can see it.
 struct FarKind(Arc<std::sync::Mutex<Vec<(String, packwing_core::Values)>>>);
 
@@ -1274,4 +1281,43 @@ fn a_kind_a_build_adds_is_browsed_without_a_local_path() {
         })
         .expect("the window");
     assert!(kept.lock().expect("the list").is_empty());
+}
+
+/// The list of what goes in takes real clicks: `✕` takes a row out, and the eye
+/// closes it.
+#[test]
+fn a_click_takes_a_row_out_and_the_eye_closes_the_list() {
+    let text = Arc::new(gpui_wgpu::CosmicTextSystem::new(crate::FONT));
+    let mut cx = HeadlessAppContext::with_platform(text, Arc::new(crate::Assets), || {
+        gpui_platform::current_headless_renderer()
+    });
+    cx.update(crate::load_fonts);
+    let window = cx
+        .open_window(size(px(1280.), px(800.)), |window, cx| {
+            let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
+            cx.new(|cx| Workspace::new(false, false, menu, window, cx))
+        })
+        .expect("cannot open a window");
+    let dialog = window
+        .update(&mut cx, |ws, window, cx| {
+            ws.show_sample(cx);
+            ws.open_create_many(window, cx)
+        })
+        .expect("cannot set the screen up");
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    let paths = dialog.read_with(&cx, |d, _| d.selection_paths());
+    assert_eq!(paths.len(), 9);
+    // As `create-chosen-light.png` draws them: the first row's `✕`, and the eye.
+    click(&mut cx, window, gpui::point(px(915.), px(207.)));
+    let left = dialog.read_with(&cx, |d, _| d.selection_paths());
+    assert_eq!(left, paths[1..]);
+    assert!(dialog.read_with(&cx, |d, _| d.list_is_open()));
+    click(&mut cx, window, gpui::point(px(722.), px(148.)));
+    assert!(!dialog.read_with(&cx, |d, _| d.list_is_open()));
+    assert_eq!(
+        dialog.read_with(&cx, |d, _| d.selection_paths()),
+        paths[1..]
+    );
 }

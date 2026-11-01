@@ -780,6 +780,19 @@ impl Workspace {
         }
     }
 
+    /// New archive, holding more than its list shows at once, the list open.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn open_create_many(
+        &mut self,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Entity<CreateDialog> {
+        let view = cx.new(|cx| CreateDialog::new(demo::many_chosen(), cx));
+        view.update(cx, |d, cx| d.open_list(cx));
+        self.show(view.clone(), true, window, cx);
+        view
+    }
+
     /// New archive, holding the screenshots' sample.
     #[cfg(all(test, feature = "shots"))]
     pub fn open_create_sample(
