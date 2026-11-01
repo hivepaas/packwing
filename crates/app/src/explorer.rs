@@ -21,7 +21,8 @@ use gpui::{
     deferred, div, prelude::*, px, rgb, uniform_list,
 };
 use packwing_core::{
-    Cancel, Counted, Item, Lister, Storage, bad_name, count, folded_query, name_holds,
+    Cancel, Counted, Item, Lister, Source, Storage, Stored, bad_name, count, folded_query,
+    name_holds,
 };
 use packwing_i18n::{tr, tr_n};
 
@@ -44,10 +45,10 @@ const ROW: f32 = 48.;
 
 /// What the explorer needs someone else to do.
 pub enum ExplorerEvent {
-    /// Open the archive at this path.
-    OpenArchive(PathBuf),
-    /// Open the archive at this path, and offer to extract it.
-    Extract(PathBuf),
+    /// Open this archive.
+    OpenArchive(Source),
+    /// Open this archive, and offer to extract it.
+    Extract(Source),
     /// Make a new archive of these.
     Compress(Vec<PathBuf>),
     /// Show this file, by its name in the folder.
@@ -485,6 +486,16 @@ impl Explorer {
             .unwrap_or_default()
     }
 
+    /// `item` as an archive to read: its file here, or by ranges from the storage.
+    fn source_of(&self, item: &Item) -> Option<Source> {
+        let place = self.place.as_ref()?;
+        let path = self.path_of(&item.name);
+        Some(match place.storage.local_path(&path) {
+            Some(file) => Source::File(file),
+            None => Source::Stored(Stored::new(place.storage.clone(), path, item.size)),
+        })
+    }
+
     /// A click on the row at `i`.
     fn select(&mut self, i: usize, more: bool, range: bool, cx: &mut Context<Self>) {
         let Some(name) = self.at(i).map(|item| item.name.clone()) else {
@@ -532,14 +543,8 @@ impl Explorer {
             let path = self.path_of(&item.name);
             self.open_folder(path, cx);
         } else if is_archive(item) {
-            match self.local_path_of(&item.name) {
-                Some(path) => cx.emit(ExplorerEvent::OpenArchive(path)),
-                None => {
-                    self.problem = Some(tr!(
-                        "An archive here cannot be opened in place yet. Copy it to this computer first."
-                    ));
-                    cx.notify();
-                }
+            if let Some(source) = self.source_of(item) {
+                cx.emit(ExplorerEvent::OpenArchive(source));
             }
         } else {
             cx.emit(ExplorerEvent::View(item.clone()));
@@ -547,8 +552,8 @@ impl Explorer {
     }
 
     pub fn extract(&mut self, item: &Item, cx: &mut Context<Self>) {
-        if let Some(path) = self.local_path_of(&item.name) {
-            cx.emit(ExplorerEvent::Extract(path));
+        if let Some(source) = self.source_of(item) {
+            cx.emit(ExplorerEvent::Extract(source));
         }
     }
 
@@ -1340,7 +1345,7 @@ impl Explorer {
                     })),
                 );
                 let local = self.is_local();
-                if archive && local {
+                if archive {
                     menu = menu.child(item("menu-extract", tr!("Extract…"), "", false).on_click(
                         cx.listener(move |this, _, _, cx| {
                             this.menu = None;

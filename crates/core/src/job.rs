@@ -19,8 +19,8 @@ use hivepack_tar::Reader;
 use hivepack_udf::{Udf, VType};
 use hivepack_zip::{Archive, Flags, OpenFlags, ReadAt, Volumes};
 
-use crate::joined::Joined;
 use crate::rar;
+use crate::source::Source;
 use crate::spool::spool;
 use crate::volume::walk;
 use crate::{Error, Keys, opener, seven_zip, without_layers};
@@ -83,12 +83,18 @@ impl Default for ExtractOptions {
 
 /// [`extract_with`] the default options.
 pub fn extract(
-    path: &Path,
+    source: impl Into<Source>,
     destination: &Path,
     keys: &Keys,
     control: &Control,
 ) -> Result<Summary, Error> {
-    extract_with(path, destination, keys, &ExtractOptions::default(), control)
+    extract_with(
+        source,
+        destination,
+        keys,
+        &ExtractOptions::default(),
+        control,
+    )
 }
 
 /// Extracts the archive at `path` into `destination`, made if it is not
@@ -98,13 +104,13 @@ pub fn extract(
 /// links, a link is a file that holds its target. The files keep the archive's
 /// mark of where it came from.
 pub fn extract_with(
-    path: &Path,
+    source: impl Into<Source>,
     destination: &Path,
     keys: &Keys,
     how: &ExtractOptions,
     control: &Control,
 ) -> Result<Summary, Error> {
-    extract_picked(path, destination, keys, how, None, control)
+    extract_picked(&source.into(), destination, keys, how, None, control)
 }
 
 /// Extracts only `picked` of the archive at `path`, files or folders given by
@@ -114,7 +120,7 @@ pub fn extract_with(
 /// or is stopped leaves nothing. One already there stops it first, unless it is
 /// to be replaced; a folder takes what is new in it.
 pub fn extract_selected(
-    path: &Path,
+    source: impl Into<Source>,
     destination: &Path,
     picked: &[Vec<String>],
     keys: &Keys,
@@ -136,8 +142,8 @@ pub fn extract_selected(
     let chosen: Vec<Vec<String>> = picked.to_vec();
     let select: Select =
         Arc::new(move |entry: &[String]| chosen.iter().any(|p| entry.starts_with(p)));
-    let result =
-        extract_picked(path, &scratch, keys, how, Some(select), control).and_then(|done| {
+    let result = extract_picked(&source.into(), &scratch, keys, how, Some(select), control)
+        .and_then(|done| {
             for entry in picked {
                 let Some(name) = entry.last() else { continue };
                 let from = entry.iter().fold(scratch.clone(), |at, c| at.join(c));
@@ -224,7 +230,7 @@ pub fn clean_opened_files() {
 /// folder of the temporary one, readable by its owner only, with the archive's
 /// mark of where it came from, whatever Settings says.
 pub fn extract_to_open(
-    path: &Path,
+    source: impl Into<Source>,
     entry: &[String],
     keys: &Keys,
     control: &Control,
@@ -232,7 +238,7 @@ pub fn extract_to_open(
     let name = entry.last().ok_or(Error::NotAnArchive)?.clone();
     let folder = opened_subfolder()?;
     let how = ExtractOptions::default();
-    match extract_selected(path, &folder, &[entry.to_vec()], keys, &how, control) {
+    match extract_selected(source, &folder, &[entry.to_vec()], keys, &how, control) {
         Ok(_) => Ok(folder.join(name)),
         Err(e) => {
             let _ = std::fs::remove_dir_all(&folder);
@@ -255,7 +261,7 @@ pub fn image_fits(bytes: &[u8]) -> bool {
 /// bytes or less. It passes through a folder of the temporary one that its
 /// owner only can read, and is gone from there when this returns.
 pub fn read_entry(
-    path: &Path,
+    source: impl Into<Source>,
     entry: &[String],
     keys: &Keys,
     most: u64,
@@ -268,7 +274,7 @@ pub fn read_entry(
     };
     let name = entry.last().ok_or(Error::NotAnArchive)?;
     let folder = opened_subfolder()?;
-    let read = extract_selected(path, &folder, &[entry.to_vec()], keys, &how, control)
+    let read = extract_selected(source, &folder, &[entry.to_vec()], keys, &how, control)
         .and_then(|_| Ok(std::fs::read(folder.join(name))?));
     let _ = std::fs::remove_dir_all(&folder);
     read
@@ -286,7 +292,7 @@ fn opened_subfolder() -> Result<PathBuf, Error> {
 }
 
 fn extract_picked(
-    path: &Path,
+    source: &Source,
     destination: &Path,
     keys: &Keys,
     how: &ExtractOptions,
@@ -297,10 +303,10 @@ fn extract_picked(
     options.password = keys.password.clone();
     options.progress = control.progress.clone();
     options.cancel = control.cancel.clone();
-    options.origin = if how.keep_mark {
-        Origin::of(path)?
-    } else {
-        None
+    // A file on a storage has no mark to keep.
+    options.origin = match source.path() {
+        Some(path) if how.keep_mark => Origin::of(path)?,
+        _ => None,
     };
     options.overwrite = how.overwrite;
     options.limits.max_entries = MAX_ENTRIES;
@@ -316,7 +322,7 @@ fn extract_picked(
     } else {
         Links::Inside
     };
-    let mut opener = opener(path, keys);
+    let mut opener = opener(source, keys);
     let mut opened = opener.open()?;
     let layers = opened.layers().to_vec();
     match opened.container() {
@@ -326,8 +332,16 @@ fn extract_picked(
         }
         Container::Zip if layers.is_empty() => {
             drop(opened);
-            let archive = zip_archive(Volumes::open(path)?)?;
-            Ok(extract_zip(&archive, destination, &options)?)
+            match source {
+                Source::File(path) => {
+                    let archive = zip_archive(Volumes::open(path)?)?;
+                    Ok(extract_zip(&archive, destination, &options)?)
+                }
+                Source::Stored(stored) => {
+                    let archive = zip_archive(stored.stored_reader())?;
+                    Ok(extract_zip(&archive, destination, &options)?)
+                }
+            }
         }
         Container::Zip => {
             let spooled = spool(&mut opened)?;
@@ -341,7 +355,7 @@ fn extract_picked(
         }
         Container::Udf if layers.is_empty() => {
             drop(opened);
-            let mut udf = Udf::open(Joined::open(path)?)?;
+            let mut udf = Udf::open(source.reader()?)?;
             Ok(extract_udf(&mut udf, destination, &options)?)
         }
         Container::Udf => {
@@ -351,7 +365,7 @@ fn extract_picked(
         }
         Container::SevenZip if layers.is_empty() => {
             drop(opened);
-            let mut seven = seven_zip(|| Joined::open(path), keys)?;
+            let mut seven = seven_zip(|| source.reader(), keys)?;
             Ok(extract_7z(&mut seven.archive, destination, &options)?)
         }
         Container::SevenZip => {
@@ -370,8 +384,9 @@ fn extract_picked(
             drop(opened);
             Ok(extract_xar(|| Ok(opener.open()?), destination, &options)?)
         }
-        Container::Rar if layers.is_empty() => {
+        Container::Rar if layers.is_empty() && source.path().is_some() => {
             drop(opened);
+            let path = source.path().expect("just looked at");
             let packed = Arc::new(AtomicU64::new(0));
             let result = extract_rar(
                 |password| rar::open(path, password, packed.clone()),
@@ -393,10 +408,7 @@ fn extract_picked(
         }
         Container::Data if layers.is_empty() => Err(Error::NotAnArchive),
         _ => {
-            let name = path
-                .file_name()
-                .map(|n| n.to_string_lossy().into_owned())
-                .unwrap_or_default();
+            let name = source.name();
             extract_one(
                 opened,
                 &without_layers(&name, &layers),
@@ -499,8 +511,10 @@ fn copy(
 /// Reads every file of the archive at `path` through, with every check its
 /// format has (CRC-32s, the compressors' checks, age's authentication),
 /// and writes nothing. The summary counts the files and bytes read.
-pub fn test(path: &Path, keys: &Keys, control: &Control) -> Result<Summary, Error> {
-    let mut opener = opener(path, keys);
+pub fn test(source: impl Into<Source>, keys: &Keys, control: &Control) -> Result<Summary, Error> {
+    let source: Source = source.into();
+    let source = &source;
+    let mut opener = opener(source, keys);
     let mut opened = opener.open()?;
     let layers = opened.layers().to_vec();
     let mut done = Progress::default();
@@ -527,12 +541,20 @@ pub fn test(path: &Path, keys: &Keys, control: &Control) -> Result<Summary, Erro
         }
         Container::Zip if layers.is_empty() => {
             drop(opened);
-            test_zip(
-                zip_archive(Volumes::open(path)?)?,
-                keys,
-                control,
-                &mut summary,
-            )?;
+            match source {
+                Source::File(path) => test_zip(
+                    zip_archive(Volumes::open(path)?)?,
+                    keys,
+                    control,
+                    &mut summary,
+                )?,
+                Source::Stored(stored) => test_zip(
+                    zip_archive(stored.stored_reader())?,
+                    keys,
+                    control,
+                    &mut summary,
+                )?,
+            }
         }
         Container::Zip => {
             let spooled = spool(&mut opened)?;
@@ -548,7 +570,7 @@ pub fn test(path: &Path, keys: &Keys, control: &Control) -> Result<Summary, Erro
         }
         Container::Udf if layers.is_empty() => {
             drop(opened);
-            test_udf(Udf::open(Joined::open(path)?)?, control, &mut summary)?;
+            test_udf(Udf::open(source.reader()?)?, control, &mut summary)?;
         }
         Container::Udf => {
             let spooled = spool(&mut opened)?;
@@ -556,7 +578,7 @@ pub fn test(path: &Path, keys: &Keys, control: &Control) -> Result<Summary, Erro
         }
         Container::SevenZip if layers.is_empty() => {
             drop(opened);
-            let seven = seven_zip(|| Joined::open(path), keys)?;
+            let seven = seven_zip(|| source.reader(), keys)?;
             test_7z(seven.archive, control, &mut summary)?;
         }
         Container::SevenZip => {
@@ -580,8 +602,9 @@ pub fn test(path: &Path, keys: &Keys, control: &Control) -> Result<Summary, Erro
             )?;
             read_to_end(&mut opened, control, &mut done)?;
         }
-        Container::Rar if layers.is_empty() => {
+        Container::Rar if layers.is_empty() && source.path().is_some() => {
             drop(opened);
+            let path = source.path().expect("just looked at");
             let packed = Arc::new(AtomicU64::new(0));
             let arc = rar::open(path, &rar::password(keys), packed)?;
             rar::test(arc, keys, control, &mut summary)?;

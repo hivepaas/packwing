@@ -14,6 +14,7 @@ mod job;
 mod joined;
 mod listing;
 mod rar;
+mod source;
 mod spool;
 mod storage;
 mod transfer;
@@ -30,7 +31,7 @@ use hivepack_age::{
 };
 use hivepack_open::Opener;
 
-use crate::joined::Joined;
+use crate::source::SourceReader;
 
 pub use create::{
     Kind, Level, Measured, NewArchive, OnExisting, add, add_with, can_add, create, delete, measure,
@@ -43,6 +44,7 @@ pub use job::{
     extract_with, image_fits, read_entry, test,
 };
 pub use listing::{Child, Entry, Found, Listing, list};
+pub use source::{Source, Stored};
 pub use storage::{
     Counted, Field, Item, Lister, LocalFolder, Storage, StorageKind, Values, bad_name, by_name,
     count, folded_query, name_holds,
@@ -422,7 +424,10 @@ pub fn came_from_internet(path: &Path) -> bool {
 /// window can ask for one. The passphrase is asked for, and scrypt run,
 /// only for a layer that needs it. So is a key file's own, the key file taken
 /// first to [`check_key_file`].
-fn opener<'a>(path: &'a Path, keys: &Keys) -> Opener<impl FnMut() -> io::Result<Joined> + use<'a>> {
+fn opener<'a>(
+    source: &'a Source,
+    keys: &Keys,
+) -> Opener<impl FnMut() -> io::Result<SourceReader> + use<'a>> {
     let (passphrase, key_passphrase) = (keys.passphrase.clone(), keys.key_passphrase.clone());
     let prompt: PassphrasePrompt = Arc::new(move |what| {
         let (secret, none) = match what {
@@ -444,11 +449,8 @@ fn opener<'a>(path: &'a Path, keys: &Keys) -> Opener<impl FnMut() -> io::Result<
     {
         identities.extend(found);
     }
-    let name = path
-        .file_name()
-        .map(|n| n.to_string_lossy().into_owned())
-        .unwrap_or_default();
-    Opener::new(move || Joined::open(path))
+    let name = source.name();
+    Opener::new(move || source.reader())
         .name(&name)
         .identities(identities)
 }
