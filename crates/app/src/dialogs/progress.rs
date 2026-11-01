@@ -83,7 +83,7 @@ impl ProgressDialog {
             })),
             cancel: Some(cancel.clone()),
         };
-        let keys = job.keys.clone();
+        let (keys, how) = (job.keys.clone(), job.how);
         let (verb, work, create, add) = (
             job.verb,
             job.work.clone(),
@@ -101,7 +101,7 @@ impl ProgressDialog {
             for (source, destination) in &work {
                 match (verb, destination) {
                     (Verb::Extract, Some(to)) => {
-                        packwing_core::extract(source, to, &keys, &control)?;
+                        packwing_core::extract_with(source, to, &keys, &how, &control)?;
                     }
                     _ => {
                         packwing_core::test(source, &keys, &control)?;

@@ -2,8 +2,8 @@
 //!
 //! Usage: `packwing [--first-run] [--managed] [--<item> PATH…]`. Archives
 //! are read, extracted and tested through packwing-core and hivepack
-//! (`--open PATH` opens one); writing them is to come, and New archive,
-//! Recent and the screenshots show made-up ones (`demo.rs`). `--first-run`
+//! (`--open PATH` opens one), and made; the screenshots show made-up ones
+//! (`demo.rs`). What the user chooses is kept (`prefs.rs`). `--first-run`
 //! opens on the welcome; `--managed` runs as an organization would, with its
 //! policies. An item of the right-click menu runs packwing with its option
 //! and the paths chosen (`right_click.rs`).
@@ -13,12 +13,15 @@
 
 mod chrome;
 mod colors;
+// Most of it only the screenshots draw.
+#[cfg_attr(not(all(test, feature = "shots")), allow(dead_code))]
 mod demo;
 mod dialogs;
 mod input;
 mod model;
 mod open_with;
 mod pages;
+mod prefs;
 mod right_click;
 mod widgets;
 mod workspace;
@@ -155,6 +158,7 @@ fn main() {
         .with_assets(Assets)
         .run(move |cx: &mut App| {
             load_fonts(cx);
+            cx.set_global(prefs::Prefs::load());
             // GNOME's Wayland compositor draws no window frame, so Linux gets
             // client-side decorations. macOS and Windows keep the system's
             // frame but hide its title bar, and the app draws its own.

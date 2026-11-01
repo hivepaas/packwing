@@ -14,14 +14,15 @@ use crate::chrome;
 use crate::colors::{self, colors};
 use crate::demo;
 use crate::dialogs::{
-    AddDialog, CreateDialog, Creating, DamagedDialog, DialogEvent, ExtractDialog, Job,
-    PasswordDialog, PasswordEvent, ProgressDialog, Verb, asked_for,
+    AddDialog, CreateDialog, Creating, DialogEvent, ExtractDialog, Job, PasswordDialog,
+    PasswordEvent, ProgressDialog, Verb, asked_for,
 };
 use crate::model::{Archive, Selection, stem};
 use crate::pages::archive::{ArchiveEvent, ArchivePage, Shown};
 use crate::pages::onboarding::{Done, Onboarding};
-use crate::pages::recent::{OpenRecent, RecentPage};
+use crate::pages::recent::{OpenRecent, RecentPage, Row};
 use crate::pages::settings::{Appearance, AppearanceChosen, SettingsPage};
+use crate::prefs;
 use crate::right_click::{Action, Request, RightClickMenu};
 use crate::widgets::{accent_tint, icon, logo, tile};
 
@@ -124,9 +125,10 @@ impl Workspace {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> Self {
-        let appearance = Appearance::System;
+        let kept = prefs::prefs(cx);
+        let appearance = kept.appearance;
         let archive = cx.new(ArchivePage::new);
-        let recent = cx.new(|_| RecentPage::new(demo::RECENT));
+        let recent = cx.new(|_| RecentPage::new(kept.recent.iter().map(Row::of).collect()));
         let settings = cx.new(|cx| {
             SettingsPage::new(
                 appearance,
@@ -196,6 +198,7 @@ impl Workspace {
 
     pub fn set_appearance(&mut self, a: Appearance, window: &mut Window, cx: &mut Context<Self>) {
         self.appearance = a;
+        prefs::change(cx, |p| p.appearance = a);
         self.settings.update(cx, |s, cx| s.show_appearance(a, cx));
         self.apply_appearance(window, cx);
     }
@@ -303,6 +306,7 @@ impl Workspace {
     }
 
     /// Shows the sample archive, as the screenshots draw it.
+    #[cfg(all(test, feature = "shots"))]
     pub fn show_sample(&mut self, cx: &mut Context<Self>) {
         self.reading = None;
         self.archive.update(cx, |p, cx| {
@@ -355,6 +359,9 @@ impl Workspace {
                 this.reading = None;
                 let shown = match result {
                     Ok((listing, marked)) => {
+                        prefs::change(cx, |p| p.opened(&path));
+                        let rows = prefs::prefs(cx).recent.iter().map(Row::of).collect();
+                        this.recent.update(cx, |r, cx| r.show(rows, cx));
                         Shown::Open(Box::new(Archive::read(path, listing, keys, marked)))
                     }
                     Err(e) => match asked_for(&e, &keys) {
@@ -526,8 +533,9 @@ impl Workspace {
         view
     }
 
+    #[cfg(all(test, feature = "shots"))]
     pub fn open_damaged(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let view = cx.new(|_| DamagedDialog::new(demo::DAMAGED));
+        let view = cx.new(|_| crate::dialogs::DamagedDialog::new(demo::DAMAGED));
         self.show(view, true, window, cx);
     }
 
@@ -582,6 +590,7 @@ impl Workspace {
                     .collect();
                 let mut job = Job::shown(Verb::Extract, archive.into(), Some(to.into()), 0, 0);
                 job.work = work;
+                job.how = prefs::prefs(cx).extract_options();
                 self.open_progress(job, window, cx);
             }
             Action::Extract => self.open_archive(first.clone(), true, window, cx),
@@ -602,7 +611,11 @@ impl Workspace {
                 job.create = Some(Creating {
                     archive: folder.join(archive),
                     paths: selection.paths,
-                    how: NewArchive::default(),
+                    how: NewArchive {
+                        level: prefs::prefs(cx).level,
+                        skip_mac_files: prefs::prefs(cx).skip_mac_files,
+                        ..NewArchive::default()
+                    },
                 });
                 self.open_progress(job, window, cx);
             }
@@ -610,15 +623,28 @@ impl Workspace {
         }
     }
 
-    /// The Recent page's samples: the damaged one's dialog, or the sample
-    /// archive, until packwing keeps its own list.
+    /// Opens an archive of the Recent page.
     fn open_recent(&mut self, i: usize, window: &mut Window, cx: &mut Context<Self>) {
-        if demo::RECENT.get(i).is_some_and(|r| r.damaged) {
-            self.open_damaged(window, cx);
-        } else {
-            self.show_sample(cx);
-            self.show_page(Page::Archive, cx);
+        if let Some(opened) = prefs::prefs(cx).recent.get(i) {
+            self.open_archive(opened.path.clone(), false, window, cx);
         }
+    }
+
+    /// The Recent page as the screenshots draw it.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn show_recent_samples(&mut self, cx: &mut Context<Self>) {
+        let rows = demo::RECENT
+            .iter()
+            .map(|r| Row {
+                name: r.name.to_owned(),
+                location: r.location.to_owned(),
+                size: Some(r.size),
+                opened: r.opened.to_owned(),
+                damaged: r.damaged,
+            })
+            .collect();
+        self.recent.update(cx, |p, cx| p.show(rows, cx));
+        self.show_page(Page::Recent, cx);
     }
 
     /// Asks what to add to the archive open; the samples have no file to add to.

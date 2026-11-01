@@ -4,6 +4,8 @@
 
 mod add;
 mod create;
+// Nothing in a run opens it until hivepack can repair: only the screenshots do.
+#[cfg_attr(not(all(test, feature = "shots")), allow(dead_code))]
 mod damaged;
 mod extract;
 mod password;
@@ -12,6 +14,7 @@ mod progress;
 pub use add::AddDialog;
 pub use create::CreateDialog;
 pub(crate) use create::{Format, LEVELS, Level};
+#[cfg(all(test, feature = "shots"))]
 pub use damaged::DamagedDialog;
 pub use extract::{ENCODINGS, ExtractDialog};
 pub use password::{PasswordDialog, PasswordEvent, asked_for};
@@ -20,7 +23,7 @@ pub use progress::ProgressDialog;
 use std::path::PathBuf;
 
 use gpui::{Div, FontWeight, MouseButton, SharedString, Stateful, div, prelude::*, px, rgb};
-use packwing_core::{Asked, Keys, NewArchive};
+use packwing_core::{Asked, ExtractOptions, Keys, NewArchive};
 
 use crate::colors::{Tint, colors};
 use crate::widgets::{float_shadow, icon, logo, tile};
@@ -31,6 +34,7 @@ pub enum Verb {
     Extract,
     Create,
     Add,
+    #[cfg_attr(not(all(test, feature = "shots")), allow(dead_code))]
     Repair,
     Test,
 }
@@ -73,6 +77,8 @@ pub struct Job {
     /// What opens the archive: the passphrase and password it was opened
     /// with, or one typed in Extract.
     pub keys: Keys,
+    /// How it extracts, if that is what it does.
+    pub how: ExtractOptions,
     /// The new archive it makes, if that is what it does.
     pub create: Option<Creating>,
     /// The files it adds, if that is what it does.
@@ -96,6 +102,7 @@ impl Job {
             bytes,
             work: Vec::new(),
             keys: Keys::default(),
+            how: ExtractOptions::default(),
             create: None,
             add: None,
         }

@@ -1,6 +1,6 @@
 //! Settings: a menu of sections and the one open, each section a view of
-//! its own. Nothing is saved yet: each keeps what is chosen while it runs,
-//! but for the right-click menu, which is the system's.
+//! its own. What they choose is kept (`prefs.rs`) and acted on, but for the
+//! rows hivepack has nothing to act with yet: those last while packwing runs.
 
 mod about;
 mod compressing;
@@ -84,7 +84,11 @@ impl SettingsPage {
             general.clone().into(),
             cx.new(extracting::Extracting::new).into(),
             cx.new(compressing::Compressing::new).into(),
-            cx.new(|_| security::Security::new(managed)).into(),
+            {
+                let keep_mark = crate::prefs::prefs(cx).keep_mark;
+                cx.new(|_| security::Security::new(managed, keep_mark))
+                    .into()
+            },
             cx.new(|cx| right_click::RightClick::new(menu, cx)).into(),
             cx.new(|_| updates::Updates::new()).into(),
             cx.new(|_| about::About).into(),

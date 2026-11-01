@@ -10,8 +10,8 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use packwing_core::{
-    Cancel, Control, Error, Keys, Kind, Level, NewArchive, Progress, add, can_add, create, extract,
-    list, measure, test,
+    Cancel, Control, Error, ExtractOptions, Keys, Kind, Level, NewArchive, Progress, add, can_add,
+    create, extract, extract_with, list, measure, test,
 };
 
 /// A folder of a test's own, gone when it ends.
@@ -995,4 +995,80 @@ fn an_archive_keeps_its_permissions_when_added_to() {
     add(&[new], &made, &[], &Keys::default(), &Control::default()).unwrap();
     let mode = fs::metadata(&made).unwrap().permissions().mode();
     assert_eq!(mode & 0o777, 0o640);
+}
+
+#[test]
+fn mac_files_are_left_out_when_asked() {
+    let s = Scratch::new("mac");
+    let root = s.path("d");
+    fs::create_dir_all(root.join("__MACOSX/x")).unwrap();
+    fs::create_dir_all(root.join("giữ")).unwrap();
+    fs::write(root.join(".DS_Store"), "x").unwrap();
+    fs::write(root.join("giữ/._a.txt"), "x").unwrap();
+    fs::write(root.join("__MACOSX/x/y"), "x").unwrap();
+    fs::write(root.join("giữ/a.txt"), "a").unwrap();
+    fs::write(root.join("giữ/.hidden"), "h").unwrap();
+    for (skip, files) in [(false, 5), (true, 2)] {
+        for (kind, extension) in KINDS {
+            let new = NewArchive {
+                kind,
+                skip_mac_files: skip,
+                ..NewArchive::default()
+            };
+            let path = s.path(&format!("{skip}.{extension}"));
+            let made = create(
+                std::slice::from_ref(&root),
+                &path,
+                &new,
+                &Control::default(),
+            )
+            .unwrap();
+            let listing = list(&made, &Keys::default()).unwrap();
+            assert_eq!(listing.files, files, "{kind:?} {skip}");
+        }
+    }
+}
+
+/// `a.zip` holding `Báo cáo/`, extracted once to `out`.
+fn extracted_once(s: &Scratch) -> (PathBuf, PathBuf) {
+    let made = to_add_to(s, None);
+    let out = s.path("out");
+    extract(&made, &out, &Keys::default(), &Control::default()).unwrap();
+    (made, out)
+}
+
+#[test]
+fn a_file_that_is_there_stops_the_job_unless_it_is_to_be_replaced() {
+    let s = Scratch::new("replace");
+    let (made, out) = extracted_once(&s);
+    let note = out.join("Báo cáo/ghi chú.txt");
+    fs::write(&note, "của tôi").unwrap();
+    assert!(extract(&made, &out, &Keys::default(), &Control::default()).is_err());
+    assert_eq!(fs::read_to_string(&note).unwrap(), "của tôi");
+    let how = ExtractOptions {
+        overwrite: true,
+        ..ExtractOptions::default()
+    };
+    extract_with(&made, &out, &Keys::default(), &how, &Control::default()).unwrap();
+    same_tree(&out.join("Báo cáo"));
+}
+
+#[test]
+fn the_limit_stops_what_unpacks_to_more() {
+    let s = Scratch::new("limit");
+    let made = to_add_to(&s, None);
+    let keys = Keys::default();
+    let small = ExtractOptions {
+        limit: Some(1_000_000),
+        ..ExtractOptions::default()
+    };
+    let out = s.path("out");
+    assert!(extract_with(&made, &out, &keys, &small, &Control::default()).is_err());
+    assert!(!out.join("Báo cáo/Hình ảnh/lớn.bin").exists());
+    let none = ExtractOptions {
+        limit: None,
+        ..ExtractOptions::default()
+    };
+    extract_with(&made, &out, &keys, &none, &Control::default()).unwrap();
+    same_tree(&out.join("Báo cáo"));
 }

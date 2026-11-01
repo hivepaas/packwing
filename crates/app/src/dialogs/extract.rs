@@ -52,7 +52,11 @@ impl ExtractDialog {
     pub fn new(archive: Archive, cx: &mut Context<Self>) -> Self {
         ExtractDialog {
             archive,
-            dest: Dest::NewFolder,
+            dest: if crate::prefs::prefs(cx).new_folder {
+                Dest::NewFolder
+            } else {
+                Dest::Here
+            },
             password: cx.new(|cx| TextInput::new("The archive’s password", cx).masked()),
             shown: false,
             names: cx.new(|_| Select::new(&ENCODINGS, 0, SelectLook::Pill)),
@@ -125,6 +129,7 @@ impl ExtractDialog {
             // What the archive was opened with; a password typed here
             // over it.
             job.keys = a.keys.clone();
+            job.how = crate::prefs::prefs(cx).extract_options();
             let typed = self.password.read(cx).text();
             if !typed.is_empty() {
                 job.keys.password = Some(typed.as_bytes().to_vec());

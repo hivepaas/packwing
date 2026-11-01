@@ -1,18 +1,17 @@
 //! Extracting: where the files go, what happens to a file already there, how
 //! old archives' names are read, and how big an archive may unpack.
 
-use gpui::{Context, Entity, Render, Window, div, prelude::*, px, rgb};
+use gpui::{Context, Entity, Render, Subscription, Window, div, prelude::*, px, rgb};
 
 use super::{group, heading, rows, section, setting};
 use crate::colors::colors;
 use crate::dialogs::ENCODINGS;
-use crate::widgets::{Select, SelectLook, option_card, switch, titled};
+use crate::prefs::{LIMITS, change, prefs};
+use crate::widgets::{Chosen, Select, SelectLook, option_card, switch, titled};
 
-const EXISTING: [&str; 4] = ["Ask me", "Keep both", "Replace it", "Skip it"];
-
-/// The most an archive may unpack to before extracting stops: what stops an
-/// archive bomb, a small file that unpacks to fill the disk.
-const LIMITS: [&str; 4] = ["10 GB", "100 GB", "1 TB", "No limit"];
+/// What hivepack can do with a file that is there, the first what it does
+/// unless told.
+const EXISTING: [&str; 2] = ["Stop and say so", "Replace it"];
 
 pub struct Extracting {
     /// Into a new folder named after the archive, rather than beside it.
@@ -22,15 +21,32 @@ pub struct Extracting {
     limit: Entity<Select>,
     keep_folders: bool,
     keep_dates: bool,
+    _chosen: Vec<Subscription>,
 }
 
 impl Extracting {
     pub fn new(cx: &mut Context<Self>) -> Self {
+        let kept = prefs(cx);
+        let existing =
+            cx.new(|_| Select::new(&EXISTING, usize::from(kept.overwrite), SelectLook::Pill));
+        let limit =
+            cx.new(|_| Select::new(&LIMITS.map(|(name, _)| name), kept.limit, SelectLook::Pill));
+        let chosen = vec![
+            cx.subscribe(&existing, |_, select, _: &Chosen, cx| {
+                let overwrite = select.read(cx).chosen() == 1;
+                change(cx, |p| p.overwrite = overwrite);
+            }),
+            cx.subscribe(&limit, |_, select, _: &Chosen, cx| {
+                let limit = select.read(cx).chosen();
+                change(cx, |p| p.limit = limit);
+            }),
+        ];
         Extracting {
-            new_folder: true,
-            existing: cx.new(|_| Select::new(&EXISTING, 0, SelectLook::Pill)),
+            new_folder: kept.new_folder,
+            existing,
             names: cx.new(|_| Select::new(&ENCODINGS, 0, SelectLook::Pill)),
-            limit: cx.new(|_| Select::new(&LIMITS, 1, SelectLook::Pill)),
+            limit,
+            _chosen: chosen,
             keep_folders: true,
             keep_dates: true,
         }
@@ -50,6 +66,7 @@ impl Render for Extracting {
                     .when(!on, |d| d.bg(rgb(c.surface)))
                     .on_click(cx.listener(move |this, _, _, cx| {
                         this.new_folder = new_folder;
+                        change(cx, |p| p.new_folder = new_folder);
                         cx.notify();
                     }))
                     .child(titled(title, detail, on))
@@ -59,8 +76,7 @@ impl Render for Extracting {
                 group()
                     .child(heading(
                         "Where the files go",
-                        "When you extract without choosing, from the right-click menu or a \
-                         double-click.",
+                        "Where Extract starts: you can pick another there.",
                     ))
                     .child(
                         div()

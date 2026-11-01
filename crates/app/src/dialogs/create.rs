@@ -187,6 +187,11 @@ impl EventEmitter<DialogEvent> for CreateDialog {}
 
 impl CreateDialog {
     pub fn new(selection: Selection, cx: &mut Context<Self>) -> Self {
+        let kept = crate::prefs::prefs(cx);
+        let chosen = Format::ALL
+            .iter()
+            .position(|f| *f == kept.format)
+            .unwrap_or(0);
         let suggested = if selection.paths.is_empty() {
             String::new()
         } else {
@@ -197,7 +202,8 @@ impl CreateDialog {
             field.set_text(&suggested, suggested.len()..suggested.len(), cx);
             field
         });
-        let format = cx.new(|_| Select::new(&Format::ALL.map(Format::ext), 0, SelectLook::Pill));
+        let format =
+            cx.new(|_| Select::new(&Format::ALL.map(Format::ext), chosen, SelectLook::Pill));
         let split = cx.new(|_| Select::new(&SPLITS, 0, SelectLook::Pill));
         let part = cx.new(|cx| TextInput::new("Size", cx));
         let unit = cx.new(|_| Select::new(&UNITS.map(|(u, _)| u), 0, SelectLook::Pill));
@@ -218,14 +224,14 @@ impl CreateDialog {
             _counting: None,
             name,
             format,
-            level: Level::Medium,
+            level: kept.level,
             advanced: false,
             split,
             part,
             unit,
             protect: false,
             password,
-            hide_names: true,
+            hide_names: kept.hide_names,
             checked: false,
             _follow: follow,
         }
@@ -399,6 +405,7 @@ impl CreateDialog {
                 level: self.level,
                 password: password.then(|| self.password.read(cx).text().as_bytes().to_vec()),
                 hide_names: self.hide_names,
+                skip_mac_files: crate::prefs::prefs(cx).skip_mac_files,
                 part_size: self.parts(cx),
             },
         });

@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 31] = [
+const SCREENS: [(&str, SetUp, bool); 32] = [
     ("archive", |_, _, _| {}, false),
     (
         "archive-opened",
@@ -51,7 +51,12 @@ const SCREENS: [(&str, SetUp, bool); 31] = [
         },
         false,
     ),
-    ("recent", |ws, _, cx| ws.show_page(Page::Recent, cx), false),
+    ("recent", |ws, _, cx| ws.show_recent_samples(cx), false),
+    (
+        "recent-empty",
+        |ws, _, cx| ws.show_page(Page::Recent, cx),
+        false,
+    ),
     (
         "settings",
         |ws, _, cx| ws.show_page(Page::Settings, cx),
