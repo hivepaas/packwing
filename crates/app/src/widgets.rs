@@ -460,6 +460,9 @@ impl Select {
         });
         let menu = div()
             .id("menu")
+            // A press on it is not one elsewhere: the catcher below would close
+            // the menu before the press's release chooses the option.
+            .occlude()
             .min_w(px(220.))
             .p(px(6.))
             .flex()
