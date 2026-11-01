@@ -1726,6 +1726,11 @@ fn the_route_follows_the_storage_the_format_and_the_size() {
         part_size: Some(1_000_000),
         ..tar(Some(100))
     };
+    let seven = NewArchive {
+        kind: Kind::SevenZip,
+        stream_above: Some(100),
+        ..NewArchive::default()
+    };
     // A folder here takes anything where it is.
     assert_eq!(
         route(&LocalFolder::new(&there), &[], &zip, 1000),
@@ -1737,21 +1742,23 @@ fn the_route_follows_the_storage_the_format_and_the_size() {
     assert_eq!(route(&across, &[], &tar(Some(100)), 1000), Route::Straight);
     assert_eq!(route(&across, &[], &tar(Some(100)), 100), Route::Temporary);
     assert_eq!(route(&across, &[], &tar(None), 1000), Route::Temporary);
-    assert_eq!(route(&across, &[], &zip, 1000), Route::Temporary);
+    assert_eq!(route(&across, &[], &zip, 1000), Route::Straight);
+    assert_eq!(route(&across, &[], &seven, 1000), Route::Temporary);
     assert_eq!(route(&across, &[], &parts, 1000), Route::Temporary);
     across.writes_anywhere = true;
-    assert_eq!(route(&across, &[], &zip, 1000), Route::Straight);
+    assert_eq!(route(&across, &[], &seven, 1000), Route::Straight);
     assert_eq!(route(&across, &[], &parts, 1000), Route::Temporary);
 }
 
 #[test]
-fn a_tar_archive_goes_straight_as_it_is_written_and_reads_back() {
+fn a_tar_or_zip_archive_goes_straight_as_it_is_written_and_reads_back() {
     let (what, there, mut across) = up_scratch("piped");
     across.sends_as_read = true;
     for (kind, name) in [
         (Kind::TarGz, "a.tar.gz"),
         (Kind::TarXz, "a.tar.xz"),
         (Kind::TarZst, "a.tar.zst"),
+        (Kind::Zip, "a.zip"),
     ] {
         let through = up(&what, &across, name, &straight(kind), &Control::default()).unwrap();
         assert!(!through, "{name}");
@@ -1831,4 +1838,42 @@ fn stopped_on_its_way_straight_nothing_is_left() {
     let e = up(&what, &across, "a.zip", &straight(Kind::Zip), &control);
     assert!(matches!(e, Err(Error::Cancelled)), "{e:?}");
     assert!(files_in(&there).is_empty(), "{:?}", files_in(&there));
+}
+
+#[test]
+fn a_zip_archive_with_a_password_goes_straight_and_opens_with_it() {
+    let (what, there, mut across) = up_scratch("piped-password");
+    across.sends_as_read = true;
+    let how = NewArchive {
+        password: Some(b"pass".to_vec()),
+        ..straight(Kind::Zip)
+    };
+    assert!(!up(&what, &across, "a.zip", &how, &Control::default()).unwrap());
+    let keys = Keys {
+        password: Some(b"pass".to_vec()),
+        ..Keys::default()
+    };
+    let out = there.join("out");
+    extract(there.join("a.zip"), &out, &keys, &Control::default()).unwrap();
+    assert_eq!(
+        fs::metadata(out.join("what/noise.bin")).unwrap().len(),
+        3_000_000
+    );
+}
+
+#[test]
+fn seven_zip_goes_through_a_temporary_file_where_it_cannot_go_back() {
+    let (what, there, mut across) = up_scratch("seven-temporary");
+    across.sends_as_read = true;
+    assert!(
+        up(
+            &what,
+            &across,
+            "a.7z",
+            &straight(Kind::SevenZip),
+            &Control::default()
+        )
+        .unwrap()
+    );
+    assert_eq!(files_in(&there), ["a.7z"]);
 }

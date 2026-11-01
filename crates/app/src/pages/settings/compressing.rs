@@ -111,7 +111,7 @@ impl Render for Compressing {
             )
             .child(setting(
                 tr!("Write straight to a storage above"),
-                tr!("Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar this way, SFTP every format."),
+                tr!("Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too."),
                 self.stream_above.clone(),
             ))
             .child(rows([

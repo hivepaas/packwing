@@ -23,21 +23,21 @@ gpui_platform = { package = "gpui-pre-platform", version = "=0.3.9", default-fea
 # With `unsafe-fast` where a crate has it, which hivepack leaves off by default:
 # the processor's CRC-32, AES, SHA and ChaCha20 instructions, and the unchecked
 # fast loops of zstd and LZ4. What each does is in hivepack's docs/unsafe.md.
-hivepack-7z = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e", features = ["unsafe-fast"] }
-hivepack-age = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e", features = ["unsafe-fast"] }
-hivepack-cpio = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e" }
-hivepack-deflate = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e", features = ["unsafe-fast"] }
-hivepack-extract = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e" }
-hivepack-iso = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e" }
-hivepack-lz4 = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e", features = ["unsafe-fast"] }
-hivepack-open = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e" }
-hivepack-rar = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e" }
-hivepack-tar = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e" }
-hivepack-udf = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e" }
-hivepack-xar = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e" }
-hivepack-xz = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e" }
-hivepack-zip = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e", features = ["unsafe-fast"] }
-hivepack-zstd = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e", features = ["unsafe-fast"] }
+hivepack-7z = { git = "https://github.com/hivepaas/hivepack-rs", rev = "799fdf1db4f66834ddd04122279bcbd176e1f69e", features = ["unsafe-fast"] }
+hivepack-age = { git = "https://github.com/hivepaas/hivepack-rs", rev = "799fdf1db4f66834ddd04122279bcbd176e1f69e", features = ["unsafe-fast"] }
+hivepack-cpio = { git = "https://github.com/hivepaas/hivepack-rs", rev = "799fdf1db4f66834ddd04122279bcbd176e1f69e" }
+hivepack-deflate = { git = "https://github.com/hivepaas/hivepack-rs", rev = "799fdf1db4f66834ddd04122279bcbd176e1f69e", features = ["unsafe-fast"] }
+hivepack-extract = { git = "https://github.com/hivepaas/hivepack-rs", rev = "799fdf1db4f66834ddd04122279bcbd176e1f69e" }
+hivepack-iso = { git = "https://github.com/hivepaas/hivepack-rs", rev = "799fdf1db4f66834ddd04122279bcbd176e1f69e" }
+hivepack-lz4 = { git = "https://github.com/hivepaas/hivepack-rs", rev = "799fdf1db4f66834ddd04122279bcbd176e1f69e", features = ["unsafe-fast"] }
+hivepack-open = { git = "https://github.com/hivepaas/hivepack-rs", rev = "799fdf1db4f66834ddd04122279bcbd176e1f69e" }
+hivepack-rar = { git = "https://github.com/hivepaas/hivepack-rs", rev = "799fdf1db4f66834ddd04122279bcbd176e1f69e" }
+hivepack-tar = { git = "https://github.com/hivepaas/hivepack-rs", rev = "799fdf1db4f66834ddd04122279bcbd176e1f69e" }
+hivepack-udf = { git = "https://github.com/hivepaas/hivepack-rs", rev = "799fdf1db4f66834ddd04122279bcbd176e1f69e" }
+hivepack-xar = { git = "https://github.com/hivepaas/hivepack-rs", rev = "799fdf1db4f66834ddd04122279bcbd176e1f69e" }
+hivepack-xz = { git = "https://github.com/hivepaas/hivepack-rs", rev = "799fdf1db4f66834ddd04122279bcbd176e1f69e" }
+hivepack-zip = { git = "https://github.com/hivepaas/hivepack-rs", rev = "799fdf1db4f66834ddd04122279bcbd176e1f69e", features = ["unsafe-fast"] }
+hivepack-zstd = { git = "https://github.com/hivepaas/hivepack-rs", rev = "799fdf1db4f66834ddd04122279bcbd176e1f69e", features = ["unsafe-fast"] }
 packwing-core = { path = "crates/core" }
 packwing-remote = { path = "crates/remote" }
 packwing-i18n = { path = "crates/i18n" }

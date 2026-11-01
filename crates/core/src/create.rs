@@ -132,9 +132,9 @@ pub fn route(to: &dyn Storage, folder: &[String], new: &NewArchive, bytes: u64) 
     if to.local_path(folder).is_some() {
         return Route::Here;
     }
-    // A tar archive only goes forwards. A ZIP or 7z one goes back to what it wrote,
-    // and parts are files of their own, which are not worth the trouble yet.
-    let forwards = matches!(new.kind, Kind::TarGz | Kind::TarXz | Kind::TarZst);
+    // A tar or ZIP archive can be written going only forwards. A 7z one goes back to
+    // its start, and parts are files of their own, which are not worth the trouble yet.
+    let forwards = new.kind != Kind::SevenZip;
     let can = new.part_size.is_none() && (to.writes_anywhere() || (forwards && to.sends_as_read()));
     match new.stream_above {
         Some(above) if can && bytes > above => Route::Straight,
@@ -528,6 +528,23 @@ fn write_zip<W: Write + Seek>(
     tally: &Arc<Tally>,
     out: W,
 ) -> Result<(), Error> {
+    zip_closed(new_zip(items, new, tally)?.close_to(out)?)
+}
+
+/// What closing a new ZIP archive came to.
+fn zip_closed(closed: Closed) -> Result<(), Error> {
+    match closed {
+        Closed::Written => Ok(()),
+        Closed::Unchanged | Closed::Removed => Err(Error::Failed(tr!("Nothing to compress."))),
+    }
+}
+
+/// A new ZIP archive of `items`, to close.
+fn new_zip(
+    items: Vec<Item>,
+    new: &NewArchive,
+    tally: &Arc<Tally>,
+) -> Result<Archive<&'static [u8]>, Error> {
     let mut za = Archive::open(&[][..], OpenFlags(0))?;
     za.set_random_source(Some(Arc::new(|buffer: &mut [u8]| {
         getrandom::fill(buffer).map_err(io::Error::other)
@@ -536,10 +553,7 @@ fn write_zip<W: Write + Seek>(
         za.set_default_password(new.password.as_deref());
     }
     add_items(&mut za, items, new.level, new.password.is_some(), tally)?;
-    match za.close_to(out)? {
-        Closed::Written => Ok(()),
-        Closed::Unchanged | Closed::Removed => Err(Error::Failed(tr!("Nothing to compress."))),
-    }
+    Ok(za)
 }
 
 /// `items` in the ZIP archive `za`, to be read when it closes.
@@ -1368,7 +1382,7 @@ fn free_name_on(
 const PIPED_PIECES: usize = 8;
 const PIPED_PIECE: usize = 1 << 20;
 
-/// What a tar archive is written to, on its way to [`PipeReader`].
+/// What an archive is written to, on its way to [`PipeReader`].
 struct Piped {
     to: SyncSender<io::Result<Vec<u8>>>,
     piece: Vec<u8>,
@@ -1487,7 +1501,12 @@ fn straight(
             piece: Vec::with_capacity(PIPED_PIECE),
             broken: broken.clone(),
         };
-        let written = Squeezed::new(new, out).and_then(|out| write_tar(items, &tally, out));
+        let written = match new.kind {
+            Kind::Zip => new_zip(items, new, &tally)
+                .and_then(|mut za| Ok(za.close_to_stream(out)?))
+                .and_then(zip_closed),
+            _ => Squeezed::new(new, out).and_then(|out| write_tar(items, &tally, out)),
+        };
         let written = why(written, &tally);
         if let Err(e) = &written {
             // Stops the upload, so that nothing appears.
