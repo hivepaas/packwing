@@ -10,6 +10,7 @@
 //! back, and only then put in its place: if anything goes wrong, it is as it
 //! was.
 
+use packwing_i18n::tr;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::fs::{self, File, Metadata, OpenOptions};
@@ -138,7 +139,13 @@ struct Item {
 /// links are not followed, and what is neither a file, a folder nor a link
 /// is left out.
 fn walk(path: &Path, name: String, items: &mut Vec<Item>) -> Result<(), Error> {
-    let read = |e: io::Error| Error::Failed(format!("Could not read {}: {e}", path.display()));
+    let read = |e: io::Error| {
+        Error::Failed(tr!(
+            "Could not read {path}: {e}",
+            path = path.display(),
+            e = e
+        ))
+    };
     let metadata = fs::symlink_metadata(path).map_err(read)?;
     let kind = metadata.file_type();
     if kind.is_dir() {
@@ -171,11 +178,11 @@ fn walk(path: &Path, name: String, items: &mut Vec<Item>) -> Result<(), Error> {
 fn unicode_name(path: &Path) -> Result<String, Error> {
     let name = path
         .file_name()
-        .ok_or_else(|| Error::Failed(format!("{} has no name.", path.display())))?;
+        .ok_or_else(|| Error::Failed(tr!("{path} has no name.", path = path.display())))?;
     name.to_str().map(str::to_owned).ok_or_else(|| {
-        Error::Failed(format!(
-            "The name of {} is not valid Unicode, so it cannot go in an archive.",
-            path.display()
+        Error::Failed(tr!(
+            "The name of {path} is not valid Unicode, so it cannot go in an archive.",
+            path = path.display()
         ))
     })
 }
@@ -277,8 +284,11 @@ impl DiskFile {
             .tally
             .failed
             .lock()
-            .unwrap_or_else(PoisonError::into_inner) =
-            Some(format!("Could not read {}: {e}", self.path.display()));
+            .unwrap_or_else(PoisonError::into_inner) = Some(tr!(
+            "Could not read {path}: {e}",
+            path = self.path.display(),
+            e = e
+        ));
         hivepack_zip::Error::new(ErrorCode::Read, e.raw_os_error().unwrap_or(0))
     }
 }
@@ -446,16 +456,17 @@ fn free_name<T>(
             Ok(taken) => return Ok((path, taken)),
             Err(e) if e.kind() == io::ErrorKind::AlreadyExists => {}
             Err(e) => {
-                return Err(Error::Failed(format!(
-                    "Could not write {}: {e}",
-                    path.display()
+                return Err(Error::Failed(tr!(
+                    "Could not write {path}: {e}",
+                    path = path.display(),
+                    e = e
                 )));
             }
         }
     }
-    Err(Error::Failed(format!(
-        "{} and the names after it are taken.",
-        wanted.display()
+    Err(Error::Failed(tr!(
+        "{wanted} and the names after it are taken.",
+        wanted = wanted.display()
     )))
 }
 
@@ -491,7 +502,7 @@ fn write_zip<W: Write + Seek>(
     add_items(&mut za, items, new.level, new.password.is_some(), tally)?;
     match za.close_to(out)? {
         Closed::Written => Ok(()),
-        Closed::Unchanged | Closed::Removed => Err(Error::Failed("Nothing to compress.".into())),
+        Closed::Unchanged | Closed::Removed => Err(Error::Failed(tr!("Nothing to compress."))),
     }
 }
 
@@ -555,7 +566,13 @@ fn add_items<R: ReadAt>(
 /// when it was counted, as a tar archive has said already by then. Reading it
 /// counts towards the progress, and is where a job stops.
 fn pump(item: &Item, out: &mut impl Write, tally: &Tally, buf: &mut [u8]) -> Result<(), Error> {
-    let read = |e: io::Error| Error::Failed(format!("Could not read {}: {e}", item.path.display()));
+    let read = |e: io::Error| {
+        Error::Failed(tr!(
+            "Could not read {path}: {e}",
+            path = item.path.display(),
+            e = e
+        ))
+    };
     let mut file = File::open(&item.path).map_err(read)?;
     let mut left = item.metadata.len();
     while left > 0 {
@@ -563,9 +580,9 @@ fn pump(item: &Item, out: &mut impl Write, tally: &Tally, buf: &mut [u8]) -> Res
         let wanted = left.min(buf.len() as u64) as usize;
         match file.read(&mut buf[..wanted]) {
             Ok(0) => {
-                return Err(Error::Failed(format!(
-                    "{} got shorter while it was being read.",
-                    item.path.display()
+                return Err(Error::Failed(tr!(
+                    "{path} got shorter while it was being read.",
+                    path = item.path.display()
                 )));
             }
             Ok(n) => {
@@ -597,7 +614,7 @@ fn write_7z<W: Write + Seek>(
         None => None,
         Some(p) => Some(
             String::from_utf8(p.clone())
-                .map_err(|_| Error::Failed("A password has to be valid Unicode.".into()))?,
+                .map_err(|_| Error::Failed(tr!("A password has to be valid Unicode.")))?,
         ),
     };
     let options = hivepack_7z::WriteOptions {
@@ -659,8 +676,9 @@ fn write_tar<W: Write>(items: Vec<Item>, tally: &Tally, out: Squeezed<W>) -> Res
             header.linkname = link_target(&item.path)?;
         } else {
             header.typeflag = hivepack_tar::TYPE_REG;
-            header.size = i64::try_from(item.metadata.len())
-                .map_err(|_| Error::Failed(format!("{} is too big.", item.path.display())))?;
+            header.size = i64::try_from(item.metadata.len()).map_err(|_| {
+                Error::Failed(tr!("{path} is too big.", path = item.path.display()))
+            })?;
         }
         tar.write_header(&header)?;
         if link {
@@ -702,7 +720,7 @@ fn threads() -> u32 {
 
 impl<W: Write> Squeezed<W> {
     fn new(new: &NewArchive, out: W) -> Result<Squeezed<W>, Error> {
-        let failed = |e: String| Error::Failed(format!("Could not start compressing: {e}"));
+        let failed = |e: String| Error::Failed(tr!("Could not start compressing: {e}", e = e));
         let coder = match new.kind {
             Kind::TarXz => {
                 let mut options = MtOptions {
@@ -750,7 +768,7 @@ impl<W: Write> Squeezed<W> {
 
     /// Compresses `input`, and with `finish`, ends the stream.
     fn code(&mut self, input: &[u8], finish: bool) -> io::Result<()> {
-        let failed = |e: String| io::Error::other(format!("Could not compress: {e}"));
+        let failed = |e: String| io::Error::other(tr!("Could not compress: {e}", e = e));
         let mut at = 0;
         loop {
             let (made, done) = match &mut self.coder {
@@ -840,14 +858,20 @@ fn link_target(path: &Path) -> Result<Vec<u8>, Error> {
     use std::os::unix::ffi::OsStringExt;
     fs::read_link(path)
         .map(|target| target.into_os_string().into_vec())
-        .map_err(|e| Error::Failed(format!("Could not read {}: {e}", path.display())))
+        .map_err(|e| {
+            Error::Failed(tr!(
+                "Could not read {path}: {e}",
+                path = path.display(),
+                e = e
+            ))
+        })
 }
 
 #[cfg(not(unix))]
 fn link_target(path: &Path) -> Result<Vec<u8>, Error> {
-    Err(Error::Failed(format!(
-        "{} is a link, which is kept only on Unix.",
-        path.display()
+    Err(Error::Failed(tr!(
+        "{path} is a link, which is kept only on Unix.",
+        path = path.display()
     )))
 }
 
@@ -920,7 +944,7 @@ fn replace_with<R: ReadAt>(
     })?;
     let written = match za.close_to(&mut file) {
         Ok(Closed::Written) => Ok(()),
-        Ok(Closed::Unchanged | Closed::Removed) => Err(Error::Failed("Nothing changed.".into())),
+        Ok(Closed::Unchanged | Closed::Removed) => Err(Error::Failed(tr!("Nothing changed."))),
         Err(e) => Err(Error::from(e)),
     }
     .and_then(|()| {
@@ -928,7 +952,7 @@ fn replace_with<R: ReadAt>(
         drop(file);
         let back = Archive::open(File::open(&written_to)?, OpenFlags::CHECKCONS)?;
         if back.get_num_entries(Flags::NONE) != expected {
-            return Err(Error::Failed("The archive did not come out whole.".into()));
+            return Err(Error::Failed(tr!("The archive did not come out whole.")));
         }
         drop(back);
         // Its own file goes before the new one takes its place, as Windows wants.
@@ -961,9 +985,9 @@ fn entries_of<R: ReadAt>(za: &Archive<R>) -> Result<Vec<(u64, Vec<String>, bool)
 /// nothing is not one.
 pub fn delete(archive: &Path, picked: &[Vec<String>], keys: &Keys) -> Result<(), Error> {
     if !can_change(archive, keys)? {
-        return Err(Error::Failed(
-            "packwing can change only a ZIP archive that is one file.".into(),
-        ));
+        return Err(Error::Failed(tr!(
+            "packwing can change only a ZIP archive that is one file."
+        )));
     }
     let mut za = Archive::open(File::open(archive)?, OpenFlags::CHECKCONS)?;
     let entries = entries_of(&za)?;
@@ -973,12 +997,12 @@ pub fn delete(archive: &Path, picked: &[Vec<String>], keys: &Keys) -> Result<(),
         .map(|(i, _, _)| *i)
         .collect();
     if gone.is_empty() {
-        return Err(Error::Failed("That is not in the archive.".into()));
+        return Err(Error::Failed(tr!("That is not in the archive.")));
     }
     if gone.len() == entries.len() {
-        return Err(Error::Failed(
-            "That is all the archive holds. Delete the archive itself instead.".into(),
-        ));
+        return Err(Error::Failed(tr!(
+            "That is all the archive holds. Delete the archive itself instead."
+        )));
     }
     for i in &gone {
         za.delete(*i)?;
@@ -990,15 +1014,15 @@ pub fn delete(archive: &Path, picked: &[Vec<String>], keys: &Keys) -> Result<(),
 /// in the same folder. A name there already stops it.
 pub fn rename(archive: &Path, from: &[String], to: &str, keys: &Keys) -> Result<(), Error> {
     if !can_change(archive, keys)? {
-        return Err(Error::Failed(
-            "packwing can change only a ZIP archive that is one file.".into(),
-        ));
+        return Err(Error::Failed(tr!(
+            "packwing can change only a ZIP archive that is one file."
+        )));
     }
     if to.is_empty() || to.contains(['/', '\\']) || to == "." || to == ".." {
-        return Err(Error::Failed(format!("“{to}” cannot be a name.")));
+        return Err(Error::Failed(tr!("“{to}” cannot be a name.", to = to)));
     }
     let Some((_, parent)) = from.split_last() else {
-        return Err(Error::Failed("That is not in the archive.".into()));
+        return Err(Error::Failed(tr!("That is not in the archive.")));
     };
     let mut target = parent.to_vec();
     target.push(to.to_owned());
@@ -1008,8 +1032,9 @@ pub fn rename(archive: &Path, from: &[String], to: &str, keys: &Keys) -> Result<
     let mut za = Archive::open(File::open(archive)?, OpenFlags::CHECKCONS)?;
     let entries = entries_of(&za)?;
     if entries.iter().any(|(_, path, _)| path.starts_with(&target)) {
-        return Err(Error::Failed(format!(
-            "“{to}” is already in that folder. Nothing was changed."
+        return Err(Error::Failed(tr!(
+            "“{to}” is already in that folder. Nothing was changed.",
+            to = to
         )));
     }
     let mut renamed = 0;
@@ -1028,7 +1053,7 @@ pub fn rename(archive: &Path, from: &[String], to: &str, keys: &Keys) -> Result<
         }
     }
     if renamed == 0 {
-        return Err(Error::Failed("That is not in the archive.".into()));
+        return Err(Error::Failed(tr!("That is not in the archive.")));
     }
     replace_with(za, archive, entries.len() as u64, |r| r)
 }
@@ -1047,9 +1072,9 @@ pub fn add_with(
     control: &Control,
 ) -> Result<(), Error> {
     if !can_change(archive, keys)? {
-        return Err(Error::Failed(
-            "packwing can add files only to a ZIP archive that is one file.".into(),
-        ));
+        return Err(Error::Failed(tr!(
+            "packwing can add files only to a ZIP archive that is one file."
+        )));
     }
     let mut items = items_of(paths)?;
     let inside = archive.canonicalize()?;
@@ -1059,7 +1084,7 @@ pub fn add_with(
     }
     for item in &mut items {
         if item.path.canonicalize().is_ok_and(|p| p == inside) {
-            return Err(Error::Failed("An archive can’t go inside itself.".into()));
+            return Err(Error::Failed(tr!("An archive can’t go inside itself.")));
         }
         item.name.insert_str(0, &prefix);
     }
@@ -1089,8 +1114,9 @@ pub fn add_with(
         let bare = item.name.trim_end_matches('/');
         let folder = item.metadata.is_dir();
         let taken = || {
-            Err(Error::Failed(format!(
-                "“{bare}” is already in the archive. Nothing was changed."
+            Err(Error::Failed(tr!(
+                "“{bare}” is already in the archive. Nothing was changed.",
+                bare = bare
             )))
         };
         // A file where there is a folder, or the other way, is never replaced.
@@ -1157,14 +1183,14 @@ pub fn create(
     control: &Control,
 ) -> Result<PathBuf, Error> {
     if new.password.is_some() && !matches!(new.kind, Kind::Zip | Kind::SevenZip) {
-        return Err(Error::Failed("A tar archive can’t have a password.".into()));
+        return Err(Error::Failed(tr!("A tar archive can’t have a password.")));
     }
     let mut items = items_of(paths)?;
     if new.skip_mac_files {
         items.retain(|item| !is_mac_file(&item.name));
     }
     if items.is_empty() {
-        return Err(Error::Failed("Nothing to compress.".into()));
+        return Err(Error::Failed(tr!("Nothing to compress.")));
     }
     // Before the archive is made, so that it is not among them.
     let mut progress = Progress::default();

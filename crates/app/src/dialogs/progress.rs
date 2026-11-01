@@ -6,6 +6,7 @@
 //! sample) counts up at a made-up speed, so the screen can be
 //! seen moving, and closes itself at the end.
 
+use packwing_i18n::tr;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, PoisonError};
 use std::time::{Duration, Instant};
@@ -300,38 +301,41 @@ impl ProgressDialog {
         }
     }
 
-    fn title(&self) -> &'static str {
+    fn title(&self) -> String {
         match (self.job.verb, self.failed.is_some()) {
-            (Verb::Extract, false) => "Extracting…",
-            (Verb::Create, false) => "Creating…",
-            (Verb::Add, false) => "Adding…",
-            (Verb::Edit, false) => "Changing the archive…",
-            (Verb::Open, false) => "Opening…",
-            (Verb::Test, false) => "Testing…",
-            (Verb::Extract, true) => "Couldn’t extract",
-            (Verb::Create, true) => "Couldn’t create the archive",
-            (Verb::Add, true) => "Couldn’t add the files",
-            (Verb::Edit, true) => "Couldn’t change the archive",
-            (Verb::Open, true) => "Couldn’t open the file",
-            (Verb::Test, true) => "The test failed",
+            (Verb::Extract, false) => tr!("Extracting…"),
+            (Verb::Create, false) => tr!("Creating…"),
+            (Verb::Add, false) => tr!("Adding…"),
+            (Verb::Edit, false) => tr!("Changing the archive…"),
+            (Verb::Open, false) => tr!("Opening…"),
+            (Verb::Test, false) => tr!("Testing…"),
+            (Verb::Extract, true) => tr!("Couldn’t extract"),
+            (Verb::Create, true) => tr!("Couldn’t create the archive"),
+            (Verb::Add, true) => tr!("Couldn’t add the files"),
+            (Verb::Edit, true) => tr!("Couldn’t change the archive"),
+            (Verb::Open, true) => tr!("Couldn’t open the file"),
+            (Verb::Test, true) => tr!("The test failed"),
         }
     }
 
     fn left(&self) -> String {
         if self.paused {
-            return "Paused".into();
+            return tr!("Paused");
         }
         let speed = self.speed();
         if speed == 0 {
-            return "Starting…".into();
+            return tr!("Starting…");
         }
         let (_, _, bytes, total) = self.counts();
         let secs = (total.saturating_sub(bytes) as f64 / speed as f64).round() as u64;
         match secs {
-            0..=4 => "Almost done".into(),
-            5..=59 => format!("About {secs} seconds left"),
-            60..=119 => "About a minute left".into(),
-            _ => format!("About {} minutes left", secs.div_ceil(60)),
+            0..=4 => tr!("Almost done"),
+            5..=59 => tr!("About {secs} seconds left", secs = secs),
+            60..=119 => tr!("About a minute left"),
+            _ => tr!(
+                "About {div_ceil} minutes left",
+                div_ceil = secs.div_ceil(60)
+            ),
         }
     }
 }
@@ -342,7 +346,7 @@ impl Render for ProgressDialog {
         let j = &self.job;
         let detail = match &j.to {
             Some(to) => format!("{} → {}", j.name, to),
-            None => format!("{} · checking that every file reads", j.name),
+            None => tr!("{name} · checking that every file reads", name = j.name),
         };
         let icon_name = match j.verb {
             Verb::Extract | Verb::Open => "extract",
@@ -357,7 +361,7 @@ impl Render for ProgressDialog {
                 .child(note(Tone::Warn).child(why.clone()))
                 .child(
                     footer().child(div().flex_1()).child(
-                        button("close", "Close", Fill::Accent, Size::Medium)
+                        button("close", tr!("Close"), Fill::Accent, Size::Medium)
                             .px(px(28.))
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close))),
                     ),
@@ -418,12 +422,12 @@ impl Render for ProgressDialog {
                             .gap_y(px(4.))
                             .text_size(px(14.))
                             .text_color(rgb(c.muted))
-                            .child(format!(
-                                "{} of {} files · {} of {}",
-                                count(files),
-                                count(all_files),
-                                size(bytes),
-                                size(all_bytes)
+                            .child(tr!(
+                                "{count} of {count2} files · {size} of {size2}",
+                                count = count(files),
+                                count2 = count(all_files),
+                                size = size(bytes),
+                                size2 = size(all_bytes)
                             ))
                             .child(if self.paused || speed == 0 {
                                 "—".to_string()
@@ -460,7 +464,7 @@ impl Render for ProgressDialog {
                         check_row(
                             "open-folder",
                             self.open_folder,
-                            "Open the folder when it’s done",
+                            tr!("Open the folder when it’s done"),
                         )
                         .on_click(cx.listener(|this, _, _, cx| {
                             this.open_folder = !this.open_folder;
@@ -475,9 +479,14 @@ impl Render for ProgressDialog {
                     // pause, yet.
                     .when(!real, |d| {
                         d.child(
-                            button("background", "Run in background", Fill::Tonal, Size::Medium)
-                                .px(px(20.))
-                                .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close))),
+                            button(
+                                "background",
+                                tr!("Run in background"),
+                                Fill::Tonal,
+                                Size::Medium,
+                            )
+                            .px(px(20.))
+                            .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close))),
                         )
                     })
                     .child(div().flex_1())
@@ -485,7 +494,11 @@ impl Render for ProgressDialog {
                         d.child(
                             button(
                                 "pause",
-                                if self.paused { "Resume" } else { "Pause" },
+                                if self.paused {
+                                    tr!("Resume")
+                                } else {
+                                    tr!("Pause")
+                                },
                                 Fill::Text,
                                 Size::Medium,
                             )
@@ -497,7 +510,7 @@ impl Render for ProgressDialog {
                         )
                     })
                     .child(
-                        button("cancel", "Cancel", Fill::Outline, Size::Medium)
+                        button("cancel", tr!("Cancel"), Fill::Outline, Size::Medium)
                             .on_click(cx.listener(|this, _, _, cx| this.cancel(cx))),
                     ),
             )

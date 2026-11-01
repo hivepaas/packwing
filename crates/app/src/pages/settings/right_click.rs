@@ -3,6 +3,7 @@
 //! the last change.
 
 use gpui::{Context, Entity, Render, Window, prelude::*, px};
+use packwing_i18n::tr;
 
 use super::{explain, group, heading, label, section, setting};
 use crate::right_click::{Action, RightClickMenu, Status};
@@ -36,42 +37,42 @@ impl Render for RightClick {
                 }))
         });
         let items_are = if shown {
-            "They show when you right-click files, folders and archives."
+            tr!("They show when you right-click files, folders and archives.")
         } else {
-            "packwing is not in the menu now: these go in when it is."
+            tr!("packwing is not in the menu now: these go in when it is.")
         };
         let came = match status {
             Status::Idle => None,
-            Status::Working => Some(explain("Changing the menu…").into_any_element()),
+            Status::Working => Some(explain(tr!("Changing the menu…")).into_any_element()),
             Status::Done(notes) if notes.is_empty() => None,
             Status::Done(notes) => Some(
                 group()
-                    .child(label("Good to know"))
+                    .child(label(tr!("Good to know")))
                     .children(notes.into_iter().map(explain))
                     .into_any_element(),
             ),
             Status::Failed(why) => Some(
                 note(Tone::Warn)
-                    .child(format!("The menu could not be changed: {why}"))
+                    .child(tr!("The menu could not be changed: {why}", why = why))
                     .into_any_element(),
             ),
         };
         section()
             .child(setting(
-                "Show packwing in the right-click menu",
-                "Extract and compress from any folder",
+                tr!("Show packwing in the right-click menu"),
+                tr!("Extract and compress from any folder"),
                 switch("shown", shown).on_click(cx.listener(move |this, _, _, cx| {
                     this.menu.update(cx, |m, cx| m.show(!shown, cx));
                 })),
             ))
             .child(
                 group()
-                    .child(heading("Items in the menu", items_are))
+                    .child(heading(tr!("Items in the menu"), items_are))
                     .children(items),
             )
             .child(setting(
-                "Put them in a submenu",
-                "One packwing item, with these under it",
+                tr!("Put them in a submenu"),
+                tr!("One packwing item, with these under it"),
                 switch("submenu", choice.submenu).on_click(cx.listener(|this, _, _, cx| {
                     this.menu.update(cx, |m, cx| {
                         let mut c = m.choice().clone();

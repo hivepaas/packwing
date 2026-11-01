@@ -1,6 +1,7 @@
 //! Changing what a ZIP archive holds: deleting what is selected, asked first as
 //! it cannot be undone, and renaming the one selected.
 
+use packwing_i18n::tr;
 use std::path::PathBuf;
 
 use gpui::{
@@ -46,7 +47,7 @@ impl EditDialog {
             .unwrap_or_default();
         let new_name = rename.then(|| {
             let field = cx.new(|cx| {
-                let mut field = TextInput::new("Name", cx);
+                let mut field = TextInput::new(tr!("Name"), cx);
                 field.set_text(&old, old.len()..old.len(), cx);
                 field
             });
@@ -92,13 +93,13 @@ impl Render for EditDialog {
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         let what = match self.picked.as_slice() {
             [one] => one.last().cloned().unwrap_or_default(),
-            many => format!("{} items", many.len()),
+            many => tr!("{many} items", many = many.len()),
         };
         let renaming = self.new_name.is_some();
         let title = if renaming {
-            format!("Rename {what}")
+            tr!("Rename {what}", what = what)
         } else {
-            format!("Delete {what}?")
+            tr!("Delete {what}?", what = what)
         };
         let bad = self
             .new_name
@@ -118,7 +119,7 @@ impl Render for EditDialog {
                     .flex()
                     .flex_col()
                     .gap(px(6.))
-                    .child(legend("New name"))
+                    .child(legend(tr!("New name")))
                     .child(
                         div()
                             .flex()
@@ -132,24 +133,24 @@ impl Render for EditDialog {
                     )
             }))
             .when(bad, |d| {
-                d.child(note(Tone::Warn).child("Give it a name, without / or \\ in it."))
+                d.child(note(Tone::Warn).child(tr!("Give it a name, without / or \\ in it.")))
             })
             .when(!renaming, |d| {
                 d.child(note(Tone::Warn).child(
-                    "It goes from the archive for good, folders with all they hold. This can’t be undone.",
+                    tr!("It goes from the archive for good, folders with all they hold. This can’t be undone."),
                 ))
             })
             .child(
                 footer()
                     .justify_end()
                     .child(
-                        button("cancel", "Cancel", Fill::Text, Size::Medium)
+                        button("cancel", tr!("Cancel"), Fill::Text, Size::Medium)
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close))),
                     )
                     .child(
                         button(
                             "go",
-                            if renaming { "Rename" } else { "Delete" },
+                            if renaming { tr!("Rename") } else { tr!("Delete") },
                             Fill::Accent,
                             Size::Medium,
                         )

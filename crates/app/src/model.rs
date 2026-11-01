@@ -2,6 +2,7 @@
 //! read. An archive read from disk fills [`Archive`] from what
 //! packwing-core lists; the samples of `demo.rs` fill the same.
 
+use packwing_i18n::{tr, tr_n};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -296,7 +297,7 @@ pub fn stem(name: &str) -> &str {
 pub fn size(bytes: u64) -> String {
     const UNITS: [&str; 5] = ["bytes", "KB", "MB", "GB", "TB"];
     if bytes < 1000 {
-        return format!("{bytes} {}", if bytes == 1 { "byte" } else { "bytes" });
+        return tr_n!(bytes, "{n} byte", "{n} bytes");
     }
     let mut v = bytes as f64;
     let mut unit = 0;
@@ -331,11 +332,6 @@ pub fn count(n: u64) -> String {
     out
 }
 
-/// `n` and the noun, singular or plural: `1 file`, `1,284 files`.
-pub fn counted(n: u64, one: &str, many: &str) -> String {
-    format!("{} {}", count(n), if n == 1 { one } else { many })
-}
-
 /// What New archive is to pack: the files and folders chosen, and what they
 /// were counted to hold.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -363,7 +359,7 @@ impl Selection {
             [one] => of(one, one.is_dir()),
             [first, ..] => first.parent().and_then(|p| of(p, true)),
         };
-        name.unwrap_or_else(|| "Archive".into())
+        name.unwrap_or_else(|| tr!("Archive"))
     }
 }
 
@@ -442,8 +438,14 @@ mod tests {
         assert_eq!(count(7), "7");
         assert_eq!(count(1284), "1,284");
         assert_eq!(count(1_000_000), "1,000,000");
-        assert_eq!(counted(1, "file", "files"), "1 file");
-        assert_eq!(counted(1284, "file", "files"), "1,284 files");
+        assert_eq!(
+            tr_n!(1, "{count} file", "{count} files", count = count(1)),
+            "1 file"
+        );
+        assert_eq!(
+            tr_n!(1284, "{count} file", "{count} files", count = count(1284)),
+            "1,284 files"
+        );
     }
 
     #[test]

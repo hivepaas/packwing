@@ -2,6 +2,7 @@
 //! under Advanced, how hard it is squeezed, whether it is split into parts,
 //! and a password.
 
+use packwing_i18n::{tr, tr_n};
 use std::path::PathBuf;
 
 use gpui::{
@@ -15,7 +16,7 @@ pub(crate) use packwing_core::Level;
 use super::{Creating, DialogEvent, Job, Verb, footer, header};
 use crate::colors::colors;
 use crate::input::{Changed, TextInput};
-use crate::model::{Selection, counted, size};
+use crate::model::{Selection, count, size};
 use crate::widgets::{
     Chosen, Fill, Select, SelectLook, Size, Tone, button, check_row, icon, icon_button, legend,
     note, segment, segments, switch, tonal_tint,
@@ -58,21 +59,21 @@ impl Format {
 
     /// Where its archives may not open without an archiver app, said under
     /// the name: none for ZIP, which opens on every phone and computer.
-    pub fn caveat(self) -> Option<&'static str> {
+    pub fn caveat(self) -> Option<String> {
         match self {
             Format::Zip => None,
-            Format::SevenZip => Some(
+            Format::SevenZip => Some(tr!(
                 "Windows 11 and Linux open 7z on their own; macOS, phones and older Windows \
-                 may need an archiver app. To share with anyone, pick .zip.",
-            ),
-            Format::TarGz | Format::TarXz => Some(
+                 may need an archiver app. To share with anyone, pick .zip."
+            )),
+            Format::TarGz | Format::TarXz => Some(tr!(
                 "Linux, macOS and Windows 11 open it on their own; phones and older Windows \
-                 may need an archiver app. To share with anyone, pick .zip.",
-            ),
-            Format::TarZst => Some(
+                 may need an archiver app. To share with anyone, pick .zip."
+            )),
+            Format::TarZst => Some(tr!(
                 "Linux and Windows 11 open it on their own; macOS, phones and older Windows \
-                 may need an archiver app. To share with anyone, pick .zip.",
-            ),
+                 may need an archiver app. To share with anyone, pick .zip."
+            )),
         }
     }
 
@@ -93,6 +94,7 @@ impl Format {
     }
 }
 
+/// The levels, by the names they are kept under.
 pub(crate) const LEVELS: [(Level, &str); 5] = [
     (Level::Lowest, "Lowest"),
     (Level::Low, "Low"),
@@ -101,13 +103,26 @@ pub(crate) const LEVELS: [(Level, &str); 5] = [
     (Level::Highest, "Highest"),
 ];
 
+/// A level as the user reads it.
+pub(crate) fn level_name(level: Level) -> String {
+    match level {
+        Level::Lowest => tr!("Lowest"),
+        Level::Low => tr!("Low"),
+        Level::Medium => tr!("Medium"),
+        Level::High => tr!("High"),
+        Level::Highest => tr!("Highest"),
+    }
+}
+
 /// How the archive is split: the last takes a size typed in.
-const SPLITS: [&str; 4] = [
-    "Don’t split",
-    "25 MB (email)",
-    "4 GB (USB stick)",
-    "Custom size…",
-];
+fn splits() -> [String; 4] {
+    [
+        tr!("Don’t split"),
+        tr!("25 MB (email)"),
+        tr!("4 GB (USB stick)"),
+        tr!("Custom size…"),
+    ]
+}
 const CUSTOM: usize = 3;
 
 /// The units a part's size is typed in, as the app counts sizes (`model::size`).
@@ -198,16 +213,16 @@ impl CreateDialog {
             selection.suggested_name()
         };
         let name = cx.new(|cx| {
-            let mut field = TextInput::new("Name", cx);
+            let mut field = TextInput::new(tr!("Name"), cx);
             field.set_text(&suggested, suggested.len()..suggested.len(), cx);
             field
         });
         let format =
             cx.new(|_| Select::new(&Format::ALL.map(Format::ext), chosen, SelectLook::Pill));
-        let split = cx.new(|_| Select::new(&SPLITS, 0, SelectLook::Pill));
-        let part = cx.new(|cx| TextInput::new("Size", cx));
+        let split = cx.new(|_| Select::new(&splits(), 0, SelectLook::Pill));
+        let part = cx.new(|cx| TextInput::new(tr!("Size"), cx));
         let unit = cx.new(|_| Select::new(&UNITS.map(|(u, _)| u), 0, SelectLook::Pill));
-        let password = cx.new(|cx| TextInput::new("Password", cx).masked());
+        let password = cx.new(|cx| TextInput::new(tr!("Password"), cx).masked());
         // What is drawn follows what is typed and chosen: the extension, the
         // notes, the password's strength.
         let follow = vec![
@@ -310,7 +325,7 @@ impl CreateDialog {
             files: !folders,
             directories: folders,
             multiple: true,
-            prompt: Some("Add".into()),
+            prompt: Some(tr!("Add").into()),
         });
         cx.spawn(async move |this, cx| {
             if let Ok(Ok(Some(paths))) = picked.await {
@@ -326,7 +341,7 @@ impl CreateDialog {
             files: false,
             directories: true,
             multiple: false,
-            prompt: Some("Save here".into()),
+            prompt: Some(tr!("Save here").into()),
         });
         cx.spawn(async move |this, cx| {
             if let Ok(Ok(Some(mut paths))) = picked.await
@@ -421,22 +436,20 @@ impl CreateDialog {
     /// level, the parts, a password.
     fn changed(&self, cx: &App) -> Vec<String> {
         let mut said = Vec::new();
-        if self.level != Level::Medium
-            && let Some((_, name)) = LEVELS.iter().find(|(l, _)| *l == self.level)
-        {
-            said.push(format!("{name} compression"));
+        if self.level != Level::Medium {
+            said.push(tr!("{name} compression", name = level_name(self.level)));
         }
         match self.split.read(cx).chosen() {
             0 => {}
-            1 => said.push("Parts of 25 MB".into()),
-            2 => said.push("Parts of 4 GB".into()),
+            1 => said.push(tr!("Parts of 25 MB")),
+            2 => said.push(tr!("Parts of 4 GB")),
             _ => said.push(match self.part_size(cx) {
-                Some(bytes) => format!("Parts of {}", size(bytes)),
-                None => "Parts of a size to type".into(),
+                Some(bytes) => tr!("Parts of {size}", size = size(bytes)),
+                None => tr!("Parts of a size to type"),
             }),
         }
         if self.protected(cx) {
-            said.push("Password".into());
+            said.push(tr!("Password"));
         }
         said
     }
@@ -453,11 +466,15 @@ impl CreateDialog {
             .collect();
         let more = chosen.len().saturating_sub(names.len());
         let line = match (names.is_empty(), more) {
-            (true, _) => "Nothing chosen yet".to_owned(),
+            (true, _) => tr!("Nothing chosen yet").to_owned(),
             (false, 0) => names.join(", "),
-            (false, more) => format!("{} and {more} more", names.join(", ")),
+            (false, more) => tr!(
+                "{join} and {more} more",
+                join = names.join(", "),
+                more = more
+            ),
         };
-        let row = |label: &'static str, text: String| {
+        let row = |label: String, text: String| {
             div().flex_1().min_w_0().child(legend(label)).child(
                 div()
                     .truncate()
@@ -467,7 +484,7 @@ impl CreateDialog {
             )
         };
         let folder = self.folder.as_ref().map_or_else(
-            || "Beside the files".to_owned(),
+            || tr!("Beside the files").to_owned(),
             |f| f.display().to_string(),
         );
         div()
@@ -479,27 +496,34 @@ impl CreateDialog {
                     .flex()
                     .items_center()
                     .gap(px(8.))
-                    .child(row("What goes in", line))
+                    .child(row(tr!("What goes in"), line))
                     .child(
-                        button("add-files", "Add files…", Fill::Outline, Size::Small)
+                        button("add-files", tr!("Add files…"), Fill::Outline, Size::Small)
                             .on_click(cx.listener(|this, _, _, cx| this.pick(false, cx))),
                     )
                     .child(
-                        button("add-folder", "Add a folder…", Fill::Outline, Size::Small)
-                            .on_click(cx.listener(|this, _, _, cx| this.pick(true, cx))),
+                        button(
+                            "add-folder",
+                            tr!("Add a folder…"),
+                            Fill::Outline,
+                            Size::Small,
+                        )
+                        .on_click(cx.listener(|this, _, _, cx| this.pick(true, cx))),
                     ),
             )
             .when(chosen.is_empty() && self.checked, |d| {
-                d.child(note(Tone::Warn).child("Add the files or a folder to put in the archive."))
+                d.child(
+                    note(Tone::Warn).child(tr!("Add the files or a folder to put in the archive.")),
+                )
             })
             .child(
                 div()
                     .flex()
                     .items_center()
                     .gap(px(8.))
-                    .child(row("Save in", folder))
+                    .child(row(tr!("Save in"), folder))
                     .child(
-                        button("change-folder", "Change…", Fill::Outline, Size::Small)
+                        button("change-folder", tr!("Change…"), Fill::Outline, Size::Small)
                             .on_click(cx.listener(|this, _, _, cx| this.pick_folder(cx))),
                     ),
             )
@@ -511,7 +535,7 @@ impl CreateDialog {
             .flex()
             .flex_col()
             .gap(px(6.))
-            .child(legend("Name"))
+            .child(legend(tr!("Name")))
             .child(
                 div()
                     .flex()
@@ -532,7 +556,7 @@ impl CreateDialog {
                     d.child(
                         note(Tone::Warn)
                             .mt(px(4.))
-                            .child("Give it a name, without / or \\ in it."),
+                            .child(tr!("Give it a name, without / or \\ in it.")),
                     )
                 },
             )
@@ -570,9 +594,9 @@ impl CreateDialog {
                         cx.notify();
                     }))
                     .child(if self.advanced {
-                        "Hide advanced"
+                        tr!("Hide advanced")
                     } else {
-                        "Advanced options"
+                        tr!("Advanced options")
                     }),
             )
             .when(!changed.is_empty(), |d| {
@@ -590,7 +614,7 @@ impl CreateDialog {
     fn compression(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
         let levels = LEVELS.iter().map(|&(level, label)| {
-            segment(label, label, level == self.level).on_click(cx.listener(
+            segment(label, level_name(level), level == self.level).on_click(cx.listener(
                 move |this, _, _, cx| {
                     this.level = level;
                     cx.notify();
@@ -617,11 +641,11 @@ impl CreateDialog {
                         div()
                             .text_size(px(13.))
                             .font_weight(FontWeight::SEMIBOLD)
-                            .child("Compression level"),
+                            .child(tr!("Compression level")),
                     )
                     .child(segments(levels))
                     .child(div().text_size(px(13.)).text_color(rgb(c.muted)).child(
-                        "Higher makes a smaller archive, which takes longer to make, not to open.",
+                        tr!("Higher makes a smaller archive, which takes longer to make, not to open."),
                     )),
             )
             .child(
@@ -634,7 +658,7 @@ impl CreateDialog {
                             .flex_1()
                             .text_size(px(14.))
                             .font_weight(FontWeight::SEMIBOLD)
-                            .child("Split into parts"),
+                            .child(tr!("Split into parts")),
                     )
                     .child(self.split.clone()),
             )
@@ -644,7 +668,7 @@ impl CreateDialog {
                         .flex()
                         .items_center()
                         .gap(px(8.))
-                        .child(div().flex_1().text_size(px(14.)).child("Each part"))
+                        .child(div().flex_1().text_size(px(14.)).child(tr!("Each part")))
                         .child(
                             div()
                                 .flex()
@@ -665,13 +689,13 @@ impl CreateDialog {
             .when(self.split.read(cx).chosen() != 0, |d| {
                 d.child(
                     div().text_size(px(13.)).text_color(rgb(c.muted)).child(
-                        "Parts open in 7-Zip and archivers like it, not in the tools built into Windows and macOS.",
+                        tr!("Parts open in 7-Zip and archivers like it, not in the tools built into Windows and macOS."),
                     ),
                 )
             })
             .when(bad_part, |d| {
                 d.child(
-                    note(Tone::Warn).child("A part takes a size of 1 MB or more, such as 100 MB."),
+                    note(Tone::Warn).child(tr!("A part takes a size of 1 MB or more, such as 100 MB.")),
                 )
             })
     }
@@ -700,7 +724,7 @@ impl CreateDialog {
                             .flex_1()
                             .text_size(px(15.))
                             .font_weight(FontWeight::SEMIBOLD)
-                            .child("Protect with a password"),
+                            .child(tr!("Protect with a password")),
                     )
                     .child(switch("protect", on).on_click(cx.listener(|this, _, _, cx| {
                         this.protect = !this.protect;
@@ -721,11 +745,11 @@ impl CreateDialog {
                 )
                 .when_some(strength, |d, s| d.child(strength_bar(s)))
                 .when(typed.is_empty() && self.checked, |d| {
-                    d.child(note(Tone::Warn).child("Type a password, or turn this off."))
+                    d.child(note(Tone::Warn).child(tr!("Type a password, or turn this off.")))
                 })
                 .when(format == Format::SevenZip, |d| {
                     d.child(
-                        check_row("hide-names", self.hide_names, "Hide file names too").on_click(
+                        check_row("hide-names", self.hide_names, tr!("Hide file names too")).on_click(
                             cx.listener(|this, _, _, cx| {
                                 this.hide_names = !this.hide_names;
                                 cx.notify();
@@ -735,15 +759,15 @@ impl CreateDialog {
                 })
                 .when(format == Format::Zip, |d| {
                     d.child(note(Tone::Warn).child(
-                        "With a password, the built-in Windows and macOS tools can’t open this ZIP. \
+                        tr!("With a password, the built-in Windows and macOS tools can’t open this ZIP. \
                          The recipient needs an archiver app. File names also stay visible; \
-                         pick .7z to hide them.",
+                         pick .7z to hide them."),
                     ))
                 })
             })
             .when(!format.can_protect(), |d| {
                 d.child(note(Tone::Warn).child(
-                    "tar archives can’t have a password. Pick .zip or .7z to protect it.",
+                    tr!("tar archives can’t have a password. Pick .zip or .7z to protect it."),
                 ))
             })
     }
@@ -753,9 +777,9 @@ impl CreateDialog {
 fn strength_bar(s: Strength) -> impl IntoElement {
     let c = colors();
     let (part, color, word) = match s {
-        Strength::Weak => (0.33, c.bad_text, "Weak"),
-        Strength::Fair => (0.66, c.warn_text, "Fair"),
-        Strength::Strong => (1., c.accent, "Strong"),
+        Strength::Weak => (0.33, c.bad_text, tr!("Weak")),
+        Strength::Fair => (0.66, c.warn_text, tr!("Fair")),
+        Strength::Strong => (1., c.accent, tr!("Strong")),
     };
     div()
         .flex()
@@ -783,11 +807,25 @@ impl Render for CreateDialog {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let s = &self.selection;
         let detail = if s.paths.is_empty() {
-            "Choose what to put in it".to_owned()
+            tr!("Choose what to put in it").to_owned()
         } else if self._counting.is_some() && s.files == 0 {
-            counted(s.paths.len() as u64, "item", "items")
+            tr_n!(
+                s.paths.len() as u64,
+                "{count} item",
+                "{count} items",
+                count = count(s.paths.len() as u64)
+            )
         } else {
-            format!("{} · {}", counted(s.files, "file", "files"), size(s.bytes))
+            format!(
+                "{} · {}",
+                tr_n!(
+                    s.files,
+                    "{count} file",
+                    "{count} files",
+                    count = count(s.files)
+                ),
+                size(s.bytes)
+            )
         };
         let close = icon_button("close", "x", 44.)
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
@@ -802,7 +840,7 @@ impl Render for CreateDialog {
             .child(div().px(px(28.)).pt(px(24.)).pb(px(8.)).child(header(
                 "logo",
                 tonal_tint(),
-                "New archive",
+                tr!("New archive"),
                 detail,
                 Some(close),
             )))
@@ -832,11 +870,11 @@ impl Render for CreateDialog {
                     .pt(px(16.))
                     .pb(px(24.))
                     .child(
-                        button("cancel", "Cancel", Fill::Text, Size::Medium)
+                        button("cancel", tr!("Cancel"), Fill::Text, Size::Medium)
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close))),
                     )
                     .child(
-                        button("create", "Create", Fill::Accent, Size::Medium)
+                        button("create", tr!("Create"), Fill::Accent, Size::Medium)
                             .px(px(28.))
                             .on_click(cx.listener(|this, _, _, cx| this.start(cx))),
                     ),

@@ -2,9 +2,10 @@
 //! as New archive starts, and what is left out of them.
 
 use gpui::{Context, Entity, Render, Subscription, Window, prelude::*};
+use packwing_i18n::tr;
 
 use super::{group, heading, rows, section, setting};
-use crate::dialogs::{Format, LEVELS, Level};
+use crate::dialogs::{Format, LEVELS, Level, level_name};
 use crate::prefs::{change, prefs};
 use crate::widgets::{Chosen, Select, SelectLook, segment, segments, switch};
 
@@ -43,11 +44,13 @@ impl Compressing {
 impl Render for Compressing {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let levels = LEVELS.iter().map(|&(level, name)| {
-            segment(name, name, level == self.level).on_click(cx.listener(move |this, _, _, cx| {
-                this.level = level;
-                change(cx, |p| p.level = level);
-                cx.notify();
-            }))
+            segment(name, level_name(level), level == self.level).on_click(cx.listener(
+                move |this, _, _, cx| {
+                    this.level = level;
+                    change(cx, |p| p.level = level);
+                    cx.notify();
+                },
+            ))
         });
         let toggle = |id: &'static str, on: bool, flip: fn(&mut Compressing)| {
             switch(id, on).on_click(cx.listener(move |this, _, _, cx| {
@@ -62,29 +65,31 @@ impl Render for Compressing {
         };
         section()
             .child(setting(
-                "Format of new archives",
-                "New archive starts with it; you can pick another there.",
+                tr!("Format of new archives"),
+                tr!("New archive starts with it; you can pick another there."),
                 self.format.clone(),
             ))
             .child(
                 group()
                     .child(heading(
-                        "Compression level",
-                        "Higher makes smaller archives, which take longer to make, not to open.",
+                        tr!("Compression level"),
+                        tr!(
+                            "Higher makes smaller archives, which take longer to make, not to open."
+                        ),
                     ))
                     .child(segments(levels)),
             )
             .child(rows([
                 setting(
-                    "Leave out Mac-only files",
+                    tr!("Leave out Mac-only files"),
                     ".DS_Store, __MACOSX and resource forks, clutter anywhere but a Mac",
                     toggle("skip-mac-files", self.skip_mac_files, |s| {
                         s.skip_mac_files = !s.skip_mac_files
                     }),
                 ),
                 setting(
-                    "Hide file names behind the password",
-                    "For 7z: nobody sees what is inside without it",
+                    tr!("Hide file names behind the password"),
+                    tr!("For 7z: nobody sees what is inside without it"),
                     toggle("hide-names", self.hide_names, |s| {
                         s.hide_names = !s.hide_names
                     }),

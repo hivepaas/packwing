@@ -2,6 +2,7 @@
 //! for when it turns out to need one, and again, with why, when the one given
 //! is wrong.
 
+use packwing_i18n::tr;
 use std::fs::File;
 use std::io::{self, Read};
 use std::path::Path;
@@ -77,7 +78,7 @@ impl PasswordDialog {
             files: true,
             directories: false,
             multiple: false,
-            prompt: Some("Choose".into()),
+            prompt: Some(tr!("Choose").into()),
         });
         cx.spawn(async move |this, cx| {
             let Ok(Ok(Some(mut paths))) = picked.await else {
@@ -89,7 +90,7 @@ impl PasswordDialog {
                 .spawn(async move {
                     let contents = read_key_file(&path)?;
                     packwing_core::check_key_file(&contents).map_err(|why| {
-                        format!("This is not a key file packwing can use: {why}.")
+                        tr!("This is not a key file packwing can use: {why}.", why = why)
                     })?;
                     Ok::<Vec<u8>, String>(contents)
                 })
@@ -121,7 +122,7 @@ impl PasswordDialog {
 const KEY_FILE_LIMIT: u64 = 16 << 20;
 
 fn read_key_file(path: &Path) -> Result<Vec<u8>, String> {
-    let why = |e: io::Error| format!("Could not read {}: {e}.", path.display());
+    let why = |e: io::Error| tr!("Could not read {path}: {e}.", path = path.display(), e = e);
     let mut contents = Vec::new();
     File::open(path)
         .map_err(why)?
@@ -150,42 +151,50 @@ pub fn asked_for(e: &Error, keys: &Keys) -> Option<(Asked, bool)> {
 }
 
 /// What the field says before anything is typed.
-fn placeholder(asked: Asked) -> &'static str {
+fn placeholder(asked: Asked) -> String {
     match asked {
-        Asked::Passphrase => "The passphrase",
-        Asked::Password => "The archive’s password",
-        Asked::KeyFile => "",
-        Asked::KeyPassphrase => "The key file’s passphrase",
+        Asked::Passphrase => tr!("The passphrase"),
+        Asked::Password => tr!("The archive’s password"),
+        Asked::KeyFile => String::new(),
+        Asked::KeyPassphrase => tr!("The key file’s passphrase"),
     }
 }
 
 /// The dialog's title, the field's label, and what it says under it.
-fn words(asked: Asked) -> (&'static str, &'static str, &'static str) {
+fn words(asked: Asked) -> (String, String, String) {
     match asked {
         Asked::Passphrase => (
-            "Enter the passphrase",
-            "Passphrase",
-            "This file is encrypted with age. packwing keeps the passphrase only while the \
-             archive is open, and never writes it down.",
+            tr!("Enter the passphrase"),
+            tr!("Passphrase"),
+            tr!(
+                "This file is encrypted with age. packwing keeps the passphrase only while the \
+             archive is open, and never writes it down."
+            ),
         ),
         Asked::Password => (
-            "Enter the password",
-            "Password",
-            "This archive is encrypted. packwing keeps its password only while the archive is \
-             open, and never writes it down.",
+            tr!("Enter the password"),
+            tr!("Password"),
+            tr!(
+                "This archive is encrypted. packwing keeps its password only while the archive is \
+             open, and never writes it down."
+            ),
         ),
         Asked::KeyFile => (
-            "Choose the key file",
-            "Key file",
-            "This file is encrypted with age to a key: an age key file or an SSH key. packwing \
+            tr!("Choose the key file"),
+            tr!("Key file"),
+            tr!(
+                "This file is encrypted with age to a key: an age key file or an SSH key. packwing \
              keeps what it reads from it only while the archive is open, and never writes it \
-             down.",
+             down."
+            ),
         ),
         Asked::KeyPassphrase => (
-            "Enter the key file’s passphrase",
-            "Passphrase",
-            "The key file is itself protected. packwing keeps its passphrase only while the \
-             archive is open, and never writes it down.",
+            tr!("Enter the key file’s passphrase"),
+            tr!("Passphrase"),
+            tr!(
+                "The key file is itself protected. packwing keeps its passphrase only while the \
+             archive is open, and never writes it down."
+            ),
         ),
     }
 }
@@ -255,13 +264,17 @@ impl Render for PasswordDialog {
                 footer()
                     .child(div().flex_1())
                     .child(
-                        button("cancel", "Cancel", Fill::Text, Size::Medium)
+                        button("cancel", tr!("Cancel"), Fill::Text, Size::Medium)
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(PasswordEvent::Cancelled))),
                     )
                     .child(
                         button(
                             "open",
-                            if picks_file { "Choose…" } else { "Open" },
+                            if picks_file {
+                                tr!("Choose…")
+                            } else {
+                                tr!("Open")
+                            },
                             Fill::Accent,
                             Size::Medium,
                         )

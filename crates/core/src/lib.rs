@@ -17,6 +17,7 @@ mod rar;
 mod spool;
 mod volume;
 
+use packwing_i18n::tr;
 use std::fmt;
 use std::io;
 use std::path::Path;
@@ -173,25 +174,27 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::NotAnArchive => f.write_str("This file is not an archive packwing can open."),
+            Error::NotAnArchive => {
+                f.write_str(&tr!("This file is not an archive packwing can open."))
+            }
             Error::Locked { needs } if needs.iter().any(|n| n == "scrypt") => {
-                f.write_str("This file is encrypted with a passphrase.")
+                f.write_str(&tr!("This file is encrypted with a passphrase."))
             }
             Error::Locked { needs } if needs.iter().any(|n| n == PASSWORD) => {
-                f.write_str("This archive needs its password.")
+                f.write_str(&tr!("This archive needs its password."))
             }
             Error::Locked { needs } if needs.iter().any(|n| n == KEY_PASSPHRASE) => {
-                f.write_str("This key file needs its passphrase.")
+                f.write_str(&tr!("This key file needs its passphrase."))
             }
             Error::WrongPassword => {
-                f.write_str("The password is wrong, or the archive is damaged.")
+                f.write_str(&tr!("The password is wrong, or the archive is damaged."))
             }
-            Error::WrongPassphrase => f.write_str("The passphrase is wrong."),
-            Error::WrongKeyPassphrase => f.write_str("The key file’s passphrase is wrong."),
-            Error::Locked { .. } => {
-                f.write_str("This file is encrypted to a key packwing does not have.")
-            }
-            Error::Cancelled => f.write_str("Cancelled."),
+            Error::WrongPassphrase => f.write_str(&tr!("The passphrase is wrong.")),
+            Error::WrongKeyPassphrase => f.write_str(&tr!("The key file’s passphrase is wrong.")),
+            Error::Locked { .. } => f.write_str(&tr!(
+                "This file is encrypted to a key packwing does not have."
+            )),
+            Error::Cancelled => f.write_str(&tr!("Cancelled.")),
             Error::Failed(message) => f.write_str(message),
         }
     }
@@ -211,7 +214,7 @@ impl From<io::Error> for Error {
             {
                 return Error::from(*open);
             }
-            return Error::Failed("the archive could not be read".into());
+            return Error::Failed(tr!("the archive could not be read"));
         }
         // A 7z or ZIP file's data, read with a password that is not its own.
         if let Some(&inner) = e
@@ -295,8 +298,10 @@ impl From<hivepack_extract::Error> for Error {
                     .name
                     .as_deref()
                     .map_or_else(String::new, |raw| String::from_utf8_lossy(raw).into_owned());
-                Error::Failed(format!(
-                    "This can’t be extracted, as a file’s name can’t be used here: “{name}” ({why})."
+                Error::Failed(tr!(
+                    "This can’t be extracted, as a file’s name can’t be used here: “{name}” ({why}).",
+                    name = name,
+                    why = why
                 ))
             }
             hivepack_extract::ErrorKind::Rar(inner) => Error::from(inner),

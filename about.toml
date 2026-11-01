@@ -33,6 +33,9 @@ accepted = ["GPL-3.0-or-later"]
 [packwing-core]
 accepted = ["GPL-3.0-or-later"]
 
+[packwing-i18n]
+accepted = ["GPL-3.0-or-later"]
+
 # hivepack's notices, whole: what each crate is a port of, and the
 # copyright lines, which cargo-about leaves out of a text it recognizes.
 # Each file is pinned to the commit packwing builds with: a notice that

@@ -1,6 +1,7 @@
 //! The archives opened before, the latest first.
 
 use gpui::{Context, EventEmitter, FontWeight, Render, Window, div, prelude::*, px, rgb};
+use packwing_i18n::tr;
 
 use super::{panel, title};
 use crate::colors::colors;
@@ -96,7 +97,9 @@ impl Render for RecentPage {
                         .child(div().text_size(px(13.)).text_color(rgb(c.muted)).child(
                             match r.size {
                                 Some(bytes) => format!("{} · {}", r.location, size(bytes)),
-                                None => format!("{} · not there any more", r.location),
+                                None => {
+                                    tr!("{location} · not there any more", location = r.location)
+                                }
                             },
                         )),
                 )
@@ -113,7 +116,7 @@ impl Render for RecentPage {
             .flex()
             .flex_col()
             .gap(px(18.))
-            .child(title("Recent", 26.).px(px(8.)).pt(px(12.)))
+            .child(title(tr!("Recent"), 26.).px(px(8.)).pt(px(12.)))
             .child(
                 panel()
                     .id("recent-list")
@@ -129,7 +132,7 @@ impl Render for RecentPage {
                                 .p(px(16.))
                                 .text_size(px(14.))
                                 .text_color(rgb(c.muted))
-                                .child("The archives you open will show here."),
+                                .child(tr!("The archives you open will show here.")),
                         )
                     })
                     .children(rows),

@@ -1,6 +1,7 @@
 //! Extracting an archive, and testing it: every file read through, its
 //! checks made, nothing written.
 
+use packwing_i18n::tr;
 use std::fs::OpenOptions;
 use std::io::{self, Read, Seek, Write};
 use std::path::{Path, PathBuf};
@@ -123,7 +124,10 @@ pub fn extract_selected(
     if !how.overwrite {
         for name in picked.iter().filter_map(|p| p.last()) {
             if destination.join(name).symlink_metadata().is_ok() {
-                return Err(Error::Failed(format!("{name} is already in the folder.")));
+                return Err(Error::Failed(tr!(
+                    "{name} is already in the folder.",
+                    name = name
+                )));
             }
         }
     }
@@ -159,9 +163,9 @@ fn fresh_folder(parent: &Path, stem: &str) -> Result<PathBuf, Error> {
             Err(e) => return Err(e.into()),
         }
     }
-    Err(Error::Failed(format!(
-        "Could not make a folder in {}.",
-        parent.display()
+    Err(Error::Failed(tr!(
+        "Could not make a folder in {parent}.",
+        parent = parent.display()
     )))
 }
 
@@ -178,9 +182,9 @@ fn move_into(from: &Path, to: &Path) -> Result<(), Error> {
             return Ok(());
         }
         Ok(there) if there.is_dir() => {
-            return Err(Error::Failed(format!(
-                "{} is a folder, and a file would replace it.",
-                to.display()
+            return Err(Error::Failed(tr!(
+                "{to} is a folder, and a file would replace it.",
+                to = to.display()
             )));
         }
         Ok(_) => std::fs::remove_file(to)?,
@@ -444,7 +448,7 @@ fn extract_one(
         .open(&path)
         .map_err(|e| match e.kind() {
             io::ErrorKind::AlreadyExists => {
-                Error::Failed(format!("{name} is already in the folder"))
+                Error::Failed(tr!("{name} is already in the folder", name = name))
             }
             _ => Error::from(e),
         })?;

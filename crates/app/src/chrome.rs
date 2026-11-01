@@ -29,6 +29,7 @@ use gpui::{
     WindowButtonLayout, WindowControlArea, canvas, div, point, prelude::*, px, rgb, rgba, svg,
     transparent_black,
 };
+use packwing_i18n::tr;
 
 use crate::colors::colors;
 use crate::pages::settings::Appearance;
@@ -174,10 +175,10 @@ pub fn appearance_switch(now: Appearance) -> Stateful<Div> {
         Appearance::Dark => "icons/appearance-dark.svg",
         Appearance::System => "icons/appearance-system.svg",
     };
-    let said = format!(
-        "Appearance: {}. Click for {}.",
-        now.name(),
-        now.next().name()
+    let said = tr!(
+        "Appearance: {name}. Click for {name2}.",
+        name = now.name(),
+        name2 = now.next().name()
     );
     div()
         .id("appearance")
