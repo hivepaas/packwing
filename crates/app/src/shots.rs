@@ -21,11 +21,19 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 31] = [
+const SCREENS: [(&str, SetUp, bool); 32] = [
     ("archive", |_, _, _| {}, false),
     (
         "archive-opened",
         |ws, window, cx| ws.open_archive(sample_tar(), false, window, cx),
+        false,
+    ),
+    (
+        "archive-search",
+        |ws, _, cx| {
+            ws.show_archive(read(), cx);
+            ws.search_archive("readme", cx);
+        },
         false,
     ),
     (

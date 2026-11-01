@@ -25,6 +25,8 @@ hivepack-xar.workspace = true
 hivepack-xz.workspace = true
 hivepack-zip.workspace = true
 hivepack-zstd.workspace = true
+# Finding `bao cao` in `Báo cáo`, whichever way its accents are written.
+unicode-normalization = "0.1"
 
 [dev-dependencies]
 # Encrypted ZIP archives, written by the tests.

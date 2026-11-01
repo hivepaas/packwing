@@ -33,7 +33,7 @@ pub use create::{Kind, Level, Measured, NewArchive, add, can_add, create, measur
 pub use hivepack_extract::{Cancel, Progress, Summary};
 pub use hivepack_open::{Container, Layer};
 pub use job::{Control, ExtractOptions, extract, extract_with, test};
-pub use listing::{Child, Entry, Listing, list};
+pub use listing::{Child, Entry, Found, Listing, list};
 
 /// The largest scrypt work factor accepted: 2^20, 1 GiB and about a second.
 /// age encrypts with 2^18; hivepack's default, 2^22, takes 4 GiB, which a
