@@ -353,6 +353,15 @@ impl Storage for Dal {
         Ok(got.to_vec())
     }
 
+    fn read_at(&self, path: &[String], offset: u64, len: usize) -> io::Result<Vec<u8>> {
+        let op = self.op()?.clone();
+        let key = self.key(path)?;
+        let got = runtime()
+            .block_on(async move { op.read_with(&key).range(offset..offset + len as u64).await })
+            .map_err(said)?;
+        Ok(got.to_vec())
+    }
+
     fn stat(&self, folder: &[String], name: &str) -> io::Result<Option<Item>> {
         let op = self.op()?.clone();
         let path = Self::joined(folder, name);

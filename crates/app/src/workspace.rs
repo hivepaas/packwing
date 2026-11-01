@@ -10,7 +10,7 @@ use gpui::{
     KeyDownEvent, PathPromptOptions, Render, Subscription, Window, WindowAppearance, div,
     prelude::*, px, rgb, rgba,
 };
-use packwing_core::{Asked, Keys, NewArchive};
+use packwing_core::{Asked, Keys, NewArchive, Source};
 
 use crate::chrome;
 use crate::colors::{self, colors};
@@ -52,10 +52,10 @@ struct Ask {
 /// What a passphrase or password typed is for.
 #[derive(Clone)]
 enum Then {
-    /// Reading the archive at `path`, read with `keys` so far; with
+    /// Reading the archive at `source`, read with `keys` so far; with
     /// `then_extract`, Extract opens over it once it is read.
     Read {
-        path: PathBuf,
+        source: Source,
         keys: Keys,
         then_extract: bool,
     },
@@ -76,10 +76,7 @@ impl Then {
     /// The archive's name, as the dialog shows it.
     fn name(&self) -> String {
         match self {
-            Then::Read { path, .. } => path
-                .file_name()
-                .map(|n| n.to_string_lossy().into_owned())
-                .unwrap_or_default(),
+            Then::Read { source, .. } => source.name(),
             Then::Run(job) => job.name.to_string(),
         }
     }
@@ -106,7 +103,7 @@ pub struct Workspace {
     welcome: Option<(Entity<Onboarding>, Subscription)>,
     /// The file being read: a reading that ends after another began is
     /// not shown.
-    reading: Option<PathBuf>,
+    reading: Option<Source>,
     /// The folder to show when what is being read is read: the one files
     /// were just added to.
     folder_after_reading: Option<Vec<String>>,
@@ -203,11 +200,11 @@ impl Workspace {
                 &explorer,
                 window,
                 |this, explorer, e: &ExplorerEvent, window, cx| match e {
-                    ExplorerEvent::OpenArchive(path) => {
-                        this.open_archive(path.clone(), false, window, cx)
+                    ExplorerEvent::OpenArchive(source) => {
+                        this.read_archive(source.clone(), Keys::default(), false, window, cx)
                     }
-                    ExplorerEvent::Extract(path) => {
-                        this.open_archive(path.clone(), true, window, cx)
+                    ExplorerEvent::Extract(source) => {
+                        this.read_archive(source.clone(), Keys::default(), true, window, cx)
                     }
                     ExplorerEvent::Compress(paths) => this.open_create(paths.clone(), window, cx),
                     ExplorerEvent::View(item) => {
@@ -406,7 +403,7 @@ impl Workspace {
                 DialogEvent::Added(path, folder, keys) => {
                     this.close_dialog(cx);
                     this.folder_after_reading = Some(folder.clone());
-                    this.read_archive(path.clone(), keys.clone(), false, window, cx);
+                    this.read_archive(path.into(), keys.clone(), false, window, cx);
                 }
                 DialogEvent::Ask(job, asked, again) => {
                     let ask = Ask {
@@ -443,7 +440,7 @@ impl Workspace {
         let ask = Ask {
             asked,
             then: Then::Read {
-                path: PathBuf::from("/home/user/Downloads/Tài liệu dự án 2026.7z"),
+                source: PathBuf::from("/home/user/Downloads/Tài liệu dự án 2026.7z").into(),
                 keys: Keys::default(),
                 then_extract: false,
             },
@@ -526,51 +523,52 @@ impl Workspace {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
-        self.read_archive(path, Keys::default(), then_extract, window, cx);
+        self.read_archive(path.into(), Keys::default(), then_extract, window, cx);
     }
 
-    /// Reads the archive at `path` with `keys`. One that turns out to need
+    /// Reads the archive at `source` with `keys`. One that turns out to need
     /// a passphrase or a password asks for it, and is read again with it;
     /// a wrong one asks again, saying so.
     fn read_archive(
         &mut self,
-        path: PathBuf,
+        source: Source,
         keys: Keys,
         then_extract: bool,
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
-        let name = path
-            .file_name()
-            .map(|n| n.to_string_lossy().into_owned())
-            .unwrap_or_default();
+        let name = source.name();
         self.archive
             .update(cx, |p, cx| p.show(Shown::Opening(name.clone()), cx));
         self.show_page(Page::Archive, cx);
-        self.reading = Some(path.clone());
-        let (read, with) = (path.clone(), keys.clone());
+        self.reading = Some(source.clone());
+        let (read, with) = (source.clone(), keys.clone());
         let task = cx.background_executor().spawn(async move {
             let listing = packwing_core::list(&read, &with);
-            listing.map(|l| (l, packwing_core::came_from_internet(&read)))
+            let marked = read.path().is_some_and(packwing_core::came_from_internet);
+            listing.map(|l| (l, marked))
         });
         cx.spawn_in(window, async move |this, cx| {
             let result = task.await;
             let _ = this.update_in(cx, |this, window, cx| {
-                if this.reading.as_ref() != Some(&path) {
+                if this.reading.as_ref() != Some(&source) {
                     return;
                 }
                 this.reading = None;
                 let shown = match result {
                     Ok((listing, marked)) => {
-                        prefs::change(cx, |p| p.opened(&path));
+                        // Only what is on this computer: Recent opens it by its path.
+                        if let Some(path) = source.path() {
+                            prefs::change(cx, |p| p.opened(path));
+                        }
                         let rows = prefs::prefs(cx).recent.iter().map(Row::of).collect();
                         this.recent.update(cx, |r, cx| r.show(rows, cx));
-                        Shown::Open(Box::new(Archive::read(path, listing, keys, marked)))
+                        Shown::Open(Box::new(Archive::read(source, listing, keys, marked)))
                     }
                     Err(e) => match asked_for(&e, &keys) {
                         Some((asked, again)) => {
                             let then = Then::Read {
-                                path,
+                                source,
                                 keys,
                                 then_extract,
                             };
@@ -622,8 +620,10 @@ impl Workspace {
                         let keys = then.keys().with(ask.asked, secret.clone());
                         match then {
                             Then::Read {
-                                path, then_extract, ..
-                            } => this.read_archive(path.clone(), keys, *then_extract, window, cx),
+                                source,
+                                then_extract,
+                                ..
+                            } => this.read_archive(source.clone(), keys, *then_extract, window, cx),
                             Then::Run(job) => {
                                 let mut job = job.as_ref().clone();
                                 job.keys = keys;
@@ -726,11 +726,11 @@ impl Workspace {
         let Some(a) = self.archive.read(cx).archive().cloned() else {
             return;
         };
-        let (Some(path), Some(name)) = (a.path, entry.last().cloned()) else {
+        let (Some(source), Some(name)) = (a.source, entry.last().cloned()) else {
             return;
         };
         let mut job = Job::shown(Verb::Open, a.name.into(), None, 1, 0);
-        job.work = vec![(path, None)];
+        job.work = vec![(source, None)];
         job.keys = a.keys;
         job.picked = vec![entry];
         let program = Kind::of(&name, false) == Kind::Program;
@@ -748,8 +748,8 @@ impl Workspace {
             return;
         };
         let mut job = Job::shown(Verb::Test, a.name.clone().into(), None, a.files, a.unpacked);
-        if let Some(path) = a.path {
-            job.work = vec![(path, None)];
+        if let Some(source) = a.source {
+            job.work = vec![(source, None)];
             job.keys = a.keys;
         }
         self.open_progress(job, window, cx);
@@ -851,7 +851,7 @@ impl Workspace {
                             Action::ExtractHere => here,
                             _ => here.join(stem(&name(p))),
                         };
-                        (p.clone(), Some(to))
+                        (Source::from(p), Some(to))
                     })
                     .collect();
                 let mut job = Job::shown(Verb::Extract, archive.into(), Some(to.into()), 0, 0);
@@ -968,6 +968,7 @@ impl Workspace {
                 .archive
                 .read(cx)
                 .archive()
+                .filter(|a| a.path.is_some())
                 .and_then(|a| a.listing.as_ref())
                 .is_some_and(|l| packwing_core::can_add(l));
         match what_a_drop_means(&paths, takes_more) {

@@ -11,7 +11,10 @@
 use std::io::Read;
 use std::sync::Arc;
 
-use packwing_core::{Control, Item, LocalFolder, OnExisting, Storage, Transfer, transfer};
+use packwing_core::{
+    Control, Item, Keys, LocalFolder, NewArchive, OnExisting, Source, Storage, Stored, Transfer,
+    create, extract_selected, list, read_entry, transfer,
+};
 use packwing_remote::{S3Settings, SftpSettings, WebDavSettings, s3, sftp, webdav};
 
 /// A folder for one test on each server there is.
@@ -391,4 +394,56 @@ fn a_link_is_told_from_what_it_points_at() {
     // Deleting the link leaves what it points at.
     s.delete(f, &["to-real".to_owned()]).expect("delete");
     assert!(s.stat(f, "real").expect("stat").is_some());
+}
+
+#[test]
+fn an_archive_on_a_server_is_read_in_place() {
+    for (server, s) in storages("archive") {
+        let dir =
+            std::env::temp_dir().join(format!("packwing-remote-{}-{server}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(dir.join("in")).expect("mkdir");
+        std::fs::write(dir.join("in/small.txt"), "small").expect("write");
+        // Does not compress, so most of the archive is what is not asked for.
+        let mut noise = vec![0u8; 5 << 20];
+        let mut x = 88172645463325252u64;
+        for b in noise.iter_mut() {
+            x ^= x << 13;
+            x ^= x >> 7;
+            x ^= x << 17;
+            *b = x as u8;
+        }
+        std::fs::write(dir.join("in/big.bin"), &noise).expect("write");
+        let made = create(
+            &[dir.join("in")],
+            &dir.join("a.zip"),
+            &NewArchive::default(),
+            &none(),
+        )
+        .expect("an archive");
+        let body = std::fs::read(&made).expect("read");
+        put(s.as_ref(), &["a.zip"], &body);
+
+        let storage: Arc<dyn Storage> = Arc::from(s);
+        let stored = Stored::new(storage, vec!["a.zip".into()], body.len() as u64);
+        let source = Source::Stored(stored.clone());
+        let keys = Keys::default();
+        let listing = list(&source, &keys).expect("list");
+        assert_eq!(listing.files, 2, "{server}");
+        let small = ["in", "small.txt"].map(String::from).to_vec();
+        let got = read_entry(&source, &small, &keys, 100, &none()).expect("a file");
+        assert_eq!(got, b"small", "{server}");
+        assert!(
+            stored.fetched() < body.len() as u64 / 4,
+            "{server}: {} of {}",
+            stored.fetched(),
+            body.len()
+        );
+        let to = dir.join("out");
+        let big = ["in", "big.bin"].map(String::from).to_vec();
+        extract_selected(&source, &to, &[big], &keys, &Default::default(), &none())
+            .expect("the large file");
+        assert_eq!(std::fs::read(to.join("big.bin")).expect("read"), noise);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
 }

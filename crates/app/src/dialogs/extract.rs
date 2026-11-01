@@ -31,6 +31,15 @@ enum Dest {
     Folder(Option<PathBuf>),
 }
 
+/// The Downloads folder of this user, or their home folder if there is none.
+fn downloads() -> Option<PathBuf> {
+    let home = std::env::var_os(if cfg!(windows) { "USERPROFILE" } else { "HOME" })
+        .filter(|h| !h.is_empty())
+        .map(PathBuf::from)?;
+    let downloads = home.join("Downloads");
+    Some(if downloads.is_dir() { downloads } else { home })
+}
+
 pub struct ExtractDialog {
     archive: Archive,
     picked: Vec<Vec<String>>,
@@ -140,7 +149,13 @@ impl ExtractDialog {
     /// Where the files go on disk: none for a sample, or before a folder is
     /// picked.
     fn destination_path(&self) -> Option<PathBuf> {
-        let folder = self.archive.path.as_ref()?.parent()?.to_path_buf();
+        let a = &self.archive;
+        // One on a storage has no folder here: it comes to Downloads.
+        let folder = match &a.path {
+            Some(path) => path.parent()?.to_path_buf(),
+            None if a.source.is_some() => downloads()?,
+            None => return None,
+        };
         match &self.resolved() {
             Dest::Smart => None,
             Dest::NewFolder => Some(folder.join(self.archive.stem())),
@@ -180,7 +195,7 @@ impl ExtractDialog {
             a.files,
             a.unpacked,
         );
-        if let Some(source) = a.path.clone() {
+        if let Some(source) = a.source.clone() {
             // A folder still to pick: nothing starts yet.
             let Some(destination) = self.destination_path() else {
                 return;

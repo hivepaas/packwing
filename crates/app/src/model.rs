@@ -7,7 +7,7 @@ use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use packwing_core::{Child, Keys, Listing};
+use packwing_core::{Child, Keys, Listing, Source};
 
 use crate::colors::{Palette, Tint};
 
@@ -97,8 +97,11 @@ pub struct Archive {
     pub name: String,
     /// The folder it is in, as the user knows it.
     pub location: String,
-    /// Its file: none for the samples.
+    /// Its file, if it is on this computer: none for the samples, and for one on
+    /// a storage, which is only read.
     pub path: Option<PathBuf>,
+    /// Where it is read from: none for the samples.
+    pub source: Option<Source>,
     /// Its own size, and what it holds unpacked, in bytes.
     pub packed: u64,
     pub unpacked: u64,
@@ -158,7 +161,7 @@ impl Archive {
     /// The archive at `path`, as packwing-core listed it with `keys`; its
     /// top folder shown. `marked`: the file came from the Internet, and the
     /// programs in it will keep that mark.
-    pub fn read(path: PathBuf, listing: Listing, keys: Keys, marked: bool) -> Archive {
+    pub fn read(source: Source, listing: Listing, keys: Keys, marked: bool) -> Archive {
         let location = listing
             .folder
             .file_name()
@@ -179,7 +182,8 @@ impl Archive {
         let mut archive = Archive {
             name: listing.name.clone(),
             location,
-            path: Some(path),
+            path: source.path().map(Path::to_path_buf),
+            source: Some(source),
             packed: listing.packed,
             unpacked: listing.unpacked,
             files: listing.files,
@@ -407,7 +411,7 @@ mod tests {
             })
             .collect();
         Archive::read(
-            PathBuf::from("/a/t12.zip"),
+            PathBuf::from("/a/t12.zip").into(),
             packwing_core::Listing {
                 name: "t12.zip".into(),
                 folder: PathBuf::from("/a"),
