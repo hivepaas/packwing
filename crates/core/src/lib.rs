@@ -20,7 +20,7 @@ mod storage;
 mod transfer;
 mod volume;
 
-use packwing_i18n::tr;
+use packwing_i18n::{tr, tr_n};
 use std::fmt;
 use std::io;
 use std::path::Path;
@@ -34,8 +34,8 @@ use hivepack_open::Opener;
 use crate::source::SourceReader;
 
 pub use create::{
-    Kind, Level, Measured, NewArchive, OnExisting, add, add_with, can_add, create, delete, measure,
-    rename,
+    Kind, Level, Measured, NewArchive, OnExisting, add, add_with, can_add, create, create_on,
+    delete, measure, rename,
 };
 pub use hivepack_extract::{Cancel, Progress, Summary};
 pub use hivepack_open::{Container, Layer};
@@ -544,3 +544,30 @@ fn without_layers(name: &str, layers: &[Layer]) -> String {
 const _: () = assert!(hivepack_deflate::UNSAFE_FAST);
 const _: () = assert!(hivepack_lz4::UNSAFE_FAST);
 const _: () = assert!(hivepack_zstd::UNSAFE_FAST);
+
+/// A size as people read it: three figures at most, no trailing zeros, in SI
+/// units as macOS shows them (`880 KB`, `6.4 MB`, `412 MB`, `1.24 GB`).
+pub fn size(bytes: u64) -> String {
+    const UNITS: [&str; 5] = ["bytes", "KB", "MB", "GB", "TB"];
+    if bytes < 1000 {
+        return tr_n!(bytes, "{n} byte", "{n} bytes");
+    }
+    let mut v = bytes as f64;
+    let mut unit = 0;
+    while v >= 999.5 && unit < UNITS.len() - 1 {
+        v /= 1000.;
+        unit += 1;
+    }
+    let text = if unit == 1 || v >= 99.95 {
+        format!("{v:.0}")
+    } else if unit == 2 || v >= 9.995 {
+        format!("{v:.1}")
+    } else {
+        format!("{v:.2}")
+    };
+    let text = match text.split_once('.') {
+        Some(_) => text.trim_end_matches('0').trim_end_matches('.'),
+        None => &text,
+    };
+    format!("{text} {}", UNITS[unit])
+}

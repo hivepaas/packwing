@@ -2,7 +2,7 @@
 //! read. An archive read from disk fills [`Archive`] from what
 //! packwing-core lists; the samples of `demo.rs` fill the same.
 
-use packwing_i18n::{tr, tr_n};
+use packwing_i18n::tr;
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -297,32 +297,7 @@ pub fn stem(name: &str) -> &str {
     s
 }
 
-/// A size as people read it: three figures at most, no trailing zeros, in SI
-/// units as macOS shows them (`880 KB`, `6.4 MB`, `412 MB`, `1.24 GB`).
-pub fn size(bytes: u64) -> String {
-    const UNITS: [&str; 5] = ["bytes", "KB", "MB", "GB", "TB"];
-    if bytes < 1000 {
-        return tr_n!(bytes, "{n} byte", "{n} bytes");
-    }
-    let mut v = bytes as f64;
-    let mut unit = 0;
-    while v >= 999.5 && unit < UNITS.len() - 1 {
-        v /= 1000.;
-        unit += 1;
-    }
-    let text = if unit == 1 || v >= 99.95 {
-        format!("{v:.0}")
-    } else if unit == 2 || v >= 9.995 {
-        format!("{v:.1}")
-    } else {
-        format!("{v:.2}")
-    };
-    let text = match text.split_once('.') {
-        Some(_) => text.trim_end_matches('0').trim_end_matches('.'),
-        None => &text,
-    };
-    format!("{text} {}", UNITS[unit])
-}
+pub use packwing_core::size;
 
 /// A count with thousands grouped: `1,284`.
 pub fn count(n: u64) -> String {
@@ -399,6 +374,7 @@ impl Selection {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use packwing_i18n::tr_n;
 
     fn holding(paths: &[(&str, bool)]) -> Archive {
         let entries = paths

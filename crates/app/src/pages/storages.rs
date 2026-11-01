@@ -140,6 +140,17 @@ impl StoragesPage {
         cx.notify();
     }
 
+    /// Browses `folder` of the storage `place` is, if it is still on the list.
+    pub fn show(&mut self, place: &Place, folder: Vec<String>, cx: &mut Context<Self>) {
+        let at = self.storages.iter().position(|s| {
+            s.name == place.name && Self::place_of(s, cx).is_some_and(|p| p.tag == place.tag)
+        });
+        if let Some(at) = at {
+            self.choose(at, cx);
+            self.explorer.update(cx, |e, cx| e.open_folder(folder, cx));
+        }
+    }
+
     fn keep(&self, cx: &mut Context<Self>) {
         let storages = self.storages.clone();
         prefs::change(cx, |p| {

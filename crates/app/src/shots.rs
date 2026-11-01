@@ -1236,6 +1236,81 @@ fn fake_extensions() -> crate::Extensions {
 }
 
 #[test]
+fn a_new_archive_goes_to_a_storage_chosen_and_is_shown_there() {
+    let what = folder_of("far-what", 2);
+    let far = folder_of("far-to", 0);
+    let (mut cx, window, explorer) = explorer_on(out_dir());
+    let values: packwing_core::Values = [("folder".to_owned(), far.display().to_string())].into();
+    window
+        .update(&mut cx, |ws, _, cx| {
+            cx.set_global(fake_extensions());
+            ws.storages_page().update(cx, |p, cx| {
+                p.add_other("far", "Far one".into(), values, &Default::default(), cx)
+                    .expect("added");
+            });
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    let dialog = window
+        .update(&mut cx, |ws, window, cx| {
+            let (places, _) = ws.storages_page().read(cx).places(cx);
+            let far_one = places
+                .iter()
+                .position(|p| p.name == "Far one")
+                .expect("on the list");
+            let dialog = ws.open_create_of(vec![what.clone()], window, cx);
+            dialog.update(cx, |d, cx| d.press_storage(far_one, cx));
+            dialog
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window")
+        .save(out_dir().join("create-save-in.png"))
+        .expect("cannot save the picture");
+    window
+        .update(&mut cx, |_, _, cx| {
+            dialog.update(cx, |d, cx| {
+                assert!(d.is_picking());
+                d.press_save_here(cx);
+                assert!(!d.is_picking());
+            })
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window")
+        .save(out_dir().join("create-on-storage.png"))
+        .expect("cannot save the picture");
+    window
+        .update(&mut cx, |_, _, cx| {
+            dialog.update(cx, |d, cx| d.press_create(cx))
+        })
+        .expect("the window");
+    for _ in 0..200 {
+        cx.run_until_parked();
+        if far.read_dir().expect("the folder").count() > 0 {
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(25));
+    }
+    cx.run_until_parked();
+    let name = format!(
+        "{}.zip",
+        what.file_name().expect("a name").to_string_lossy()
+    );
+    assert!(far.join(&name).is_file(), "{name} is not there");
+    let (names, page) = (
+        explorer.read_with(&cx, |e, _| e.shown_names()),
+        window
+            .update(&mut cx, |ws, _, _| ws.page_shown())
+            .expect("the window"),
+    );
+    assert_eq!(page, Page::Storages);
+    assert!(names.contains(&name), "{names:?}");
+}
+
+#[test]
 fn a_kind_a_build_adds_is_browsed_without_a_local_path() {
     let dir = folder_of("far", 2);
     std::fs::write(dir.join("backup.zip"), "not one").expect("cannot write");

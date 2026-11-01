@@ -4,19 +4,21 @@
 
 use packwing_i18n::{tr, tr_n};
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use gpui::{
-    App, Context, Entity, EventEmitter, ExternalPaths, FontWeight, PathPromptOptions, Render,
-    ScrollHandle, Subscription, Task, UniformListScrollHandle, Window, div, prelude::*, px,
-    relative, rgb,
+    App, Context, Div, Entity, EventEmitter, ExternalPaths, FontWeight, PathPromptOptions, Render,
+    ScrollHandle, Stateful, Subscription, Task, UniformListScrollHandle, Window, div, prelude::*,
+    px, relative, rgb,
 };
 use packwing_core::{Kind, NewArchive};
 
 pub(crate) use packwing_core::Level;
 
 use super::chosen::{self, Choosing};
-use super::{Creating, DialogEvent, Job, Verb, footer, header};
+use super::{Creating, DialogEvent, Job, Saving, SavingOn, Verb, footer, header, places};
 use crate::colors::colors;
+use crate::explorer::{Explorer, Place};
 use crate::input::{Changed, TextInput};
 use crate::model::{Selection, count, size};
 use crate::widgets::{
@@ -176,6 +178,13 @@ fn strength(password: &str) -> Strength {
     }
 }
 
+/// The storages shown to choose where the archive goes.
+struct Picking {
+    chosen: usize,
+    picker: Entity<Explorer>,
+    _picker_changed: Subscription,
+}
+
 pub struct CreateDialog {
     selection: Selection,
     /// The list of what goes in is open.
@@ -185,6 +194,12 @@ pub struct CreateDialog {
     body_scroll: ScrollHandle,
     /// Where the archive goes.
     folder: Option<PathBuf>,
+    /// Or this folder of a storage, if one was chosen.
+    on: Option<(Place, Vec<String>)>,
+    /// The storages it can go on, and the one to show first.
+    places: Vec<Place>,
+    first_place: usize,
+    picking: Option<Picking>,
     /// The name it was given last: while the field still says it, more
     /// files change it.
     suggested: String,
@@ -269,6 +284,10 @@ impl CreateDialog {
         ];
         CreateDialog {
             folder: selection.folder(),
+            on: None,
+            places: Vec::new(),
+            first_place: 0,
+            picking: None,
             selection,
             list_shown: false,
             list_scroll: UniformListScrollHandle::new(),
@@ -288,6 +307,13 @@ impl CreateDialog {
             checked: false,
             _follow: follow,
         }
+    }
+
+    /// With `places` to save on, the one at `first` shown first.
+    pub fn with_places(mut self, places: Vec<Place>, first: usize) -> Self {
+        self.places = places;
+        self.first_place = first;
+        self
     }
 
     #[cfg(all(test, feature = "shots"))]
@@ -337,6 +363,24 @@ impl CreateDialog {
     #[cfg(all(test, feature = "shots"))]
     pub fn format_chosen(&self, cx: &App) -> Format {
         self.format(cx)
+    }
+
+    /// Whether it is choosing a storage, for tests.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn is_picking(&self) -> bool {
+        self.picking.is_some()
+    }
+
+    /// Chooses the storage at `i` and the folder it opens on, as pressing them would.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn press_storage(&mut self, i: usize, cx: &mut Context<Self>) {
+        self.pick_storage(cx);
+        self.pick_place(i, cx);
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn press_save_here(&mut self, cx: &mut Context<Self>) {
+        self.save_here(cx);
     }
 
     #[cfg(all(test, feature = "shots"))]
@@ -412,11 +456,60 @@ impl CreateDialog {
             {
                 let _ = this.update(cx, |this, cx| {
                     this.folder = Some(folder);
+                    this.on = None;
                     cx.notify();
                 });
             }
         })
         .detach();
+    }
+
+    /// Shows the storages, to choose where the archive goes.
+    fn pick_storage(&mut self, cx: &mut Context<Self>) {
+        let (chosen, folder) = match &self.on {
+            Some((place, folder)) => (
+                self.places
+                    .iter()
+                    .position(|p| p.name == place.name && p.tag == place.tag)
+                    .unwrap_or(self.first_place),
+                folder.clone(),
+            ),
+            None => (self.first_place, Vec::new()),
+        };
+        let start = self.places.get(chosen).cloned();
+        let picker = cx.new(|cx| {
+            let mut picker = Explorer::picker(cx);
+            picker.show_place(start, cx);
+            picker.open_folder(folder, cx);
+            picker
+        });
+        let changed = cx.observe(&picker, |_, _, cx| cx.notify());
+        self.picking = Some(Picking {
+            chosen,
+            picker,
+            _picker_changed: changed,
+        });
+        cx.notify();
+    }
+
+    fn pick_place(&mut self, i: usize, cx: &mut Context<Self>) {
+        let place = self.places.get(i).cloned();
+        if let Some(picking) = &mut self.picking {
+            picking.chosen = i;
+            picking.picker.update(cx, |p, cx| p.show_place(place, cx));
+        }
+        cx.notify();
+    }
+
+    /// The archive goes in the folder the storages show.
+    fn save_here(&mut self, cx: &mut Context<Self>) {
+        if let Some(picking) = self.picking.take() {
+            let picker = picking.picker.read(cx);
+            if let Some(place) = picker.place().cloned() {
+                self.on = Some((place, picker.folder().to_vec()));
+            }
+        }
+        cx.notify();
     }
 
     fn format(&self, cx: &App) -> Format {
@@ -459,30 +552,46 @@ impl CreateDialog {
     fn start(&mut self, cx: &mut Context<Self>) {
         let format = self.format(cx);
         let typed = self.name.read(cx).text().trim().to_owned();
-        let folder = self.folder.clone();
-        let (Some(folder), true, true) = (
-            folder.filter(|_| !self.selection.paths.is_empty()),
-            name_fits(&typed),
-            self.advanced_ready(cx),
-        ) else {
+        let chosen_place = self.on.is_some() || self.folder.is_some();
+        if self.selection.paths.is_empty()
+            || !chosen_place
+            || !name_fits(&typed)
+            || !self.advanced_ready(cx)
+        {
             self.checked = true;
             // What is missing may be under Advanced, which may be hidden.
             self.advanced |= !self.advanced_ready(cx);
             cx.notify();
             return;
-        };
+        }
         let name = format!("{typed}{}", format.ext());
         let password = self.protected(cx);
+        let (shown, to) = match (&self.on, &self.folder) {
+            (Some((place, folder)), _) => (
+                places::shown(&place.name, folder),
+                Saving::On(SavingOn {
+                    place: place.clone(),
+                    folder: folder.clone(),
+                    name: name.clone(),
+                    uploading: Arc::default(),
+                }),
+            ),
+            (None, Some(folder)) => (
+                folder.display().to_string(),
+                Saving::Here(folder.join(&name)),
+            ),
+            (None, None) => return,
+        };
         let mut job = Job::shown(
             Verb::Create,
-            name.clone().into(),
-            Some(folder.display().to_string().into()),
+            name.into(),
+            Some(shown.into()),
             self.selection.files,
             self.selection.bytes,
         );
         job.create = Some(Creating {
             paths: self.selection.paths.clone(),
-            archive: folder.join(name),
+            to,
             how: NewArchive {
                 kind: format.kind(),
                 level: self.level,
@@ -520,10 +629,18 @@ impl CreateDialog {
     /// What goes in the archive, and where it goes.
     fn contents(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
-        let folder = self
-            .folder
+        let shown = match &self.on {
+            Some((place, folder)) => places::shown(&place.name, folder),
+            None => self
+                .folder
+                .as_ref()
+                .map_or_else(|| tr!("Beside the files"), |f| f.display().to_string()),
+        };
+        // Across a network, it does not go straight there yet.
+        let through = self
+            .on
             .as_ref()
-            .map_or_else(|| tr!("Beside the files"), |f| f.display().to_string());
+            .is_some_and(|(place, folder)| place.storage.local_path(folder).is_none());
         div()
             .flex()
             .flex_col()
@@ -544,12 +661,80 @@ impl CreateDialog {
                                     .truncate()
                                     .text_size(px(13.))
                                     .text_color(rgb(c.muted))
-                                    .child(folder),
+                                    .child(shown),
                             ),
                     )
                     .child(
-                        button("change-folder", tr!("Change…"), Fill::Outline, Size::Small)
+                        button("change-folder", tr!("Folder…"), Fill::Outline, Size::Small)
                             .on_click(cx.listener(|this, _, _, cx| this.pick_folder(cx))),
+                    )
+                    .child(
+                        button("change-storage", tr!("Storage…"), Fill::Outline, Size::Small)
+                            .on_click(cx.listener(|this, _, _, cx| this.pick_storage(cx))),
+                    ),
+            )
+            .when(through, |d| {
+                d.child(div().text_size(px(13.)).text_color(rgb(c.muted)).child(tr!(
+                    "It is made in this computer’s temporary folder first, then uploaded, so it needs room there."
+                )))
+            })
+    }
+
+    /// The storages and their folders, in place of the form, as a list that scrolls
+    /// has no place in a body that does.
+    fn storages_shown(&self, picking: &Picking, cx: &mut Context<Self>) -> Stateful<Div> {
+        let c = colors();
+        let back = |this: &mut Self, cx: &mut Context<Self>| {
+            this.picking = None;
+            cx.notify();
+        };
+        let close = icon_button("close", "x", 44.)
+            .on_click(cx.listener(move |this, _, _, cx| back(this, cx)));
+        let picker = picking.picker.clone();
+        super::card()
+            .id("save-in")
+            .w(px(900.))
+            .child(header(
+                "storages",
+                tonal_tint(),
+                tr!("Save in"),
+                tr!("Choose a storage, and a folder in it"),
+                Some(close),
+            ))
+            .child(
+                div()
+                    .flex()
+                    .gap(px(8.))
+                    .h(px(340.))
+                    .flex_shrink_0()
+                    .p(px(10.))
+                    .rounded(px(22.))
+                    .bg(rgb(c.well))
+                    .child(places::list(
+                        &self.places,
+                        picking.chosen,
+                        Self::pick_place,
+                        cx,
+                    ))
+                    .child(div().flex_1().min_w_0().child(picking.picker.clone())),
+            )
+            .child(
+                footer()
+                    .child(
+                        button("new-folder", tr!("New folder"), Fill::Text, Size::Medium).on_click(
+                            move |_, window, cx| {
+                                picker.update(cx, |p, cx| p.new_folder(window, cx));
+                            },
+                        ),
+                    )
+                    .child(div().flex_1())
+                    .child(
+                        button("cancel", tr!("Cancel"), Fill::Outline, Size::Medium)
+                            .on_click(cx.listener(move |this, _, _, cx| back(this, cx))),
+                    )
+                    .child(
+                        button("save-here", tr!("Save here"), Fill::Accent, Size::Medium)
+                            .on_click(cx.listener(|this, _, _, cx| this.save_here(cx))),
                     ),
             )
     }
@@ -830,6 +1015,11 @@ fn strength_bar(s: Strength) -> impl IntoElement {
 
 impl Render for CreateDialog {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        if let Some(picking) = self.picking.take() {
+            let shown = self.storages_shown(&picking, cx);
+            self.picking = Some(picking);
+            return shown;
+        }
         let s = &self.selection;
         let detail = if s.paths.is_empty() {
             tr!("Choose what to put in it").to_owned()

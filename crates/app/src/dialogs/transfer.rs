@@ -1,20 +1,16 @@
 //! Copying or moving what is chosen in a storage: where to, in the same explorer
 //! as the page's, showing folders alone. The folder it shows is where they go.
 
-use gpui::{
-    Context, Entity, EventEmitter, FontWeight, Render, Subscription, Window, div, prelude::*, px,
-    rgb,
-};
+use gpui::{Context, Entity, EventEmitter, Render, Subscription, Window, div, prelude::*, px, rgb};
 use packwing_core::{OnExisting, Transfer};
 use packwing_i18n::{tr, tr_n};
 use std::sync::{Arc, Mutex};
 
-use super::{DialogEvent, Job, Transferring, Verb, footer, header};
+use super::{DialogEvent, Job, Transferring, Verb, footer, header, places};
 use crate::colors::colors;
 use crate::explorer::{Explorer, Place};
 use crate::widgets::{
-    Fill, Select, SelectLook, Size, button, icon_button, legend, segment, segments, tile,
-    tonal_tint,
+    Fill, Select, SelectLook, Size, button, icon_button, legend, segment, segments, tonal_tint,
 };
 
 /// What a name taken can come to.
@@ -103,10 +99,7 @@ impl TransferDialog {
             [one] => one.clone(),
             many => tr_n!(many.len() as u64, "{n} item", "{n} items"),
         };
-        let shown_to = std::iter::once(to.name.clone())
-            .chain(to_folder.iter().cloned())
-            .collect::<Vec<_>>()
-            .join(" › ");
+        let shown_to = places::shown(&to.name, &to_folder);
         let verb = if self.moving { Verb::Move } else { Verb::Copy };
         let mut job = Job::shown(verb, what.into(), Some(shown_to.into()), 0, 0);
         job.transfer = Some(Transferring(
@@ -140,41 +133,8 @@ impl Render for TransferDialog {
         } else {
             tr!("Copy {what}", what = what)
         };
-        let from = std::iter::once(self.from.name.clone())
-            .chain(self.from_folder.iter().cloned())
-            .collect::<Vec<_>>()
-            .join(" › ");
-        let places = self.places.iter().enumerate().map(|(i, place)| {
-            let on = i == self.chosen;
-            div()
-                .id(("to-place", i))
-                .flex()
-                .items_center()
-                .gap(px(10.))
-                .min_h(px(48.))
-                .px(px(10.))
-                .rounded(px(14.))
-                .cursor_pointer()
-                .when(on, |d| d.bg(rgb(c.tonal)))
-                .when(!on, |d| d.hover(|s| s.bg(rgb(c.well_hover))))
-                .on_click(cx.listener(move |this, _, _, cx| this.pick_place(i, cx)))
-                .child(
-                    tile(34., 10., place.tint(&c))
-                        .h(px(30.))
-                        .text_size(px(10.))
-                        .font_weight(FontWeight::BOLD)
-                        .child(place.tag),
-                )
-                .child(
-                    div()
-                        .flex_1()
-                        .min_w_0()
-                        .truncate()
-                        .text_size(px(14.))
-                        .when(on, |d| d.font_weight(FontWeight::SEMIBOLD))
-                        .child(place.name.clone()),
-                )
-        });
+        let from = places::shown(&self.from.name, &self.from_folder);
+        let places = places::list(&self.places, self.chosen, Self::pick_place, cx);
         let same = self.is_where_they_are(cx);
         let there = self.picker.read(cx).is_local();
         let through = !there || self.from.storage.local_path(&[]).is_none();
@@ -196,17 +156,7 @@ impl Render for TransferDialog {
                     .p(px(10.))
                     .rounded(px(22.))
                     .bg(rgb(c.well))
-                    .child(
-                        div()
-                            .id("to-places")
-                            .w(px(200.))
-                            .flex_shrink_0()
-                            .overflow_y_scroll()
-                            .flex()
-                            .flex_col()
-                            .gap(px(4.))
-                            .children(places),
-                    )
+                    .child(places)
                     .child(div().flex_1().min_w_0().child(self.picker.clone())),
             )
             .child(

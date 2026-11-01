@@ -8,6 +8,7 @@
 
 use packwing_i18n::tr;
 use std::path::PathBuf;
+use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex, PoisonError};
 use std::time::{Duration, Instant};
 
@@ -16,7 +17,10 @@ use gpui::{
 };
 use packwing_core::{Cancel, Control, Error, Progress};
 
-use super::{DialogEvent, Editing, Job, Transferring, Verb, asked_for, card, footer, header};
+use super::{
+    DialogEvent, Editing, Job, Saving, SavingOn, Transferring, Verb, asked_for, card, footer,
+    header,
+};
 use crate::colors::colors;
 use crate::model::{count, size};
 use crate::widgets::{Fill, Size, Tone, button, check_row, icon, note, tonal_tint};
@@ -40,6 +44,8 @@ pub struct ProgressDialog {
     done: f64,
     paused: bool,
     open_folder: bool,
+    /// A new archive was made, and is going to its storage.
+    uploading: bool,
     running: Option<Running>,
     /// Why it stopped, if it failed.
     failed: Option<String>,
@@ -70,6 +76,7 @@ impl ProgressDialog {
             done: 0.,
             paused: false,
             open_folder: true,
+            uploading: false,
             running,
             failed: None,
             _ticking: ticking,
@@ -104,7 +111,20 @@ impl ProgressDialog {
                 return Ok(None);
             }
             if let Some(c) = create {
-                return packwing_core::create(&c.paths, &c.archive, &c.how, &control).map(Some);
+                return match &c.to {
+                    Saving::Here(archive) => {
+                        packwing_core::create(&c.paths, archive, &c.how, &control).map(Some)
+                    }
+                    Saving::On(on) => packwing_core::create_on(
+                        &c.paths,
+                        on.place.storage.as_ref(),
+                        &on.folder,
+                        &on.name,
+                        &c.how,
+                        &control,
+                        &|| on.uploading.store(true, Ordering::Relaxed),
+                    ),
+                };
             }
             if let Some(a) = add {
                 packwing_core::add_with(
@@ -187,6 +207,17 @@ impl ProgressDialog {
                 cx.open_with_system(&copy);
                 cx.emit(DialogEvent::Close);
             }
+            Ok(made) if let Some(on) = self.saving_on().cloned() => {
+                let show = self.open_folder && made.is_none();
+                if let Some(made) = made.filter(|_| self.open_folder) {
+                    cx.reveal_path(&made);
+                }
+                cx.emit(DialogEvent::Stored {
+                    place: on.place,
+                    folder: on.folder,
+                    show,
+                });
+            }
             Ok(made) => {
                 if let Some(made) = made.filter(|_| self.open_folder) {
                     cx.reveal_path(&made);
@@ -212,6 +243,14 @@ impl ProgressDialog {
                 self.failed = Some(e.to_string());
                 cx.notify();
             }
+        }
+    }
+
+    /// The new archive's place on a storage, if that is where it goes.
+    fn saving_on(&self) -> Option<&SavingOn> {
+        match self.job.create.as_ref().map(|c| &c.to) {
+            Some(Saving::On(on)) => Some(on),
+            _ => None,
         }
     }
 
@@ -283,6 +322,17 @@ impl ProgressDialog {
         if self.failed.is_some() {
             return true;
         }
+        if !self.uploading
+            && self
+                .saving_on()
+                .is_some_and(|on| on.uploading.load(Ordering::Relaxed))
+        {
+            self.uploading = true;
+            // A new count, and a new speed.
+            if let Some(r) = &mut self.running {
+                r.started = Instant::now();
+            }
+        }
         if self.running.is_some() {
             let (_, _, bytes, total) = self.counts();
             self.done = if total == 0 {
@@ -317,6 +367,7 @@ impl ProgressDialog {
     fn title(&self) -> String {
         match (self.job.verb, self.failed.is_some()) {
             (Verb::Extract, false) => tr!("Extracting…"),
+            (Verb::Create, false) if self.uploading => tr!("Uploading…"),
             (Verb::Create, false) => tr!("Creating…"),
             (Verb::Add, false) => tr!("Adding…"),
             (Verb::Edit, false) => tr!("Changing the archive…"),

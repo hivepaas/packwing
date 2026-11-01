@@ -4,15 +4,17 @@
 #![allow(clippy::unwrap_used)]
 
 use std::fs;
+use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use packwing_core::{
-    Cancel, Control, Error, ExtractOptions, Keys, Kind, Level, NewArchive, OnExisting, Progress,
-    add, add_with, can_add, create, delete, extract, extract_selected, extract_to_open,
-    extract_with, image_fits, list, measure, read_entry, rename, test,
+    Cancel, Control, Error, ExtractOptions, Item, Keys, Kind, Level, Lister, LocalFolder,
+    NewArchive, OnExisting, Progress, Storage, add, add_with, can_add, create, create_on, delete,
+    extract, extract_selected, extract_to_open, extract_with, image_fits, list, measure,
+    read_entry, rename, test,
 };
 
 /// A folder of a test's own, gone when it ends.
@@ -1399,4 +1401,222 @@ fn only_a_zip_archive_of_one_file_is_changed() {
     let keys = Keys::default();
     assert!(delete(&made, &[path_of("Báo cáo/rỗng")], &keys).is_err());
     assert!(rename(&made, &path_of("Báo cáo/rỗng"), "x", &keys).is_err());
+}
+
+/// A folder as a storage across a network is: no path on this computer. `refuse`
+/// fails the write of a file named that.
+struct Across {
+    folder: LocalFolder,
+    refuse: Option<&'static str>,
+}
+
+impl Storage for Across {
+    fn list(&self, folder: &[String]) -> io::Result<Box<dyn Lister>> {
+        self.folder.list(folder)
+    }
+    fn read(&self, path: &[String], most: u64) -> io::Result<Vec<u8>> {
+        self.folder.read(path, most)
+    }
+    fn read_at(&self, path: &[String], offset: u64, len: usize) -> io::Result<Vec<u8>> {
+        self.folder.read_at(path, offset, len)
+    }
+    fn stat(&self, folder: &[String], name: &str) -> io::Result<Option<Item>> {
+        self.folder.stat(folder, name)
+    }
+    fn open(&self, path: &[String]) -> io::Result<Box<dyn Read + Send>> {
+        self.folder.open(path)
+    }
+    fn put(
+        &self,
+        path: &[String],
+        from: &mut dyn Read,
+        like: &Item,
+        replace: bool,
+    ) -> io::Result<u64> {
+        if self.refuse == path.last().map(String::as_str) {
+            return Err(io::Error::other("refused"));
+        }
+        self.folder.put(path, from, like, replace)
+    }
+    fn remove(&self, path: &[String]) -> io::Result<()> {
+        self.folder.remove(path)
+    }
+    fn make_folder(&self, folder: &[String], name: &str) -> io::Result<()> {
+        self.folder.make_folder(folder, name)
+    }
+    fn rename(&self, folder: &[String], from: &str, to: &str) -> io::Result<()> {
+        self.folder.rename(folder, from, to)
+    }
+    fn delete(&self, folder: &[String], names: &[String]) -> io::Result<()> {
+        self.folder.delete(folder, names)
+    }
+    fn has_trash(&self) -> bool {
+        false
+    }
+    fn local_path(&self, _: &[String]) -> Option<PathBuf> {
+        None
+    }
+    fn show_path(&self, path: &[String]) -> String {
+        path.join("/")
+    }
+}
+
+/// A folder to make an archive of, and an empty one as the storage.
+fn up_scratch(name: &str) -> (PathBuf, PathBuf, Across) {
+    let top = std::env::temp_dir().join(format!("packwing-up-{}-{name}", std::process::id()));
+    let _ = fs::remove_dir_all(&top);
+    let (what, there) = (top.join("what"), top.join("there"));
+    fs::create_dir_all(&what).unwrap();
+    fs::create_dir_all(&there).unwrap();
+    // Random, so that it does not fit in one small part.
+    let mut noise = vec![0u8; 3_000_000];
+    let mut state = 1u32;
+    for byte in &mut noise {
+        state = state.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+        *byte = (state >> 24) as u8;
+    }
+    fs::write(what.join("noise.bin"), noise).unwrap();
+    let across = Across {
+        folder: LocalFolder::new(&there),
+        refuse: None,
+    };
+    (what, there, across)
+}
+
+fn files_in(folder: &Path) -> Vec<String> {
+    let mut names: Vec<String> = fs::read_dir(folder)
+        .unwrap()
+        .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+        .collect();
+    names.sort();
+    names
+}
+
+#[test]
+fn an_archive_goes_up_whole_and_reads_back() {
+    let (what, there, across) = up_scratch("whole");
+    let told = std::sync::atomic::AtomicU32::new(0);
+    let made = create_on(
+        std::slice::from_ref(&what),
+        &across,
+        &[],
+        "a.zip",
+        &NewArchive::default(),
+        &Control::default(),
+        &|| {
+            told.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        },
+    )
+    .unwrap();
+    assert_eq!(made, None);
+    assert_eq!(told.into_inner(), 1);
+    assert_eq!(files_in(&there), ["a.zip"]);
+    let out = there.join("out");
+    extract(
+        there.join("a.zip"),
+        &out,
+        &Keys::default(),
+        &Control::default(),
+    )
+    .unwrap();
+    assert_eq!(
+        fs::metadata(out.join("what/noise.bin")).unwrap().len(),
+        3_000_000
+    );
+}
+
+#[test]
+fn a_name_taken_there_moves_on_to_the_next() {
+    let (what, there, across) = up_scratch("taken");
+    fs::write(there.join("a.tar.gz"), "someone else's").unwrap();
+    let how = NewArchive {
+        kind: Kind::TarGz,
+        ..NewArchive::default()
+    };
+    create_on(
+        &[what],
+        &across,
+        &[],
+        "a.tar.gz",
+        &how,
+        &Control::default(),
+        &|| {},
+    )
+    .unwrap();
+    assert_eq!(files_in(&there), ["a (2).tar.gz", "a.tar.gz"]);
+    assert_eq!(fs::read(there.join("a.tar.gz")).unwrap(), b"someone else's");
+}
+
+#[test]
+fn parts_all_go_up_and_a_failure_takes_back_those_sent() {
+    let (what, there, mut across) = up_scratch("parts");
+    let how = NewArchive {
+        part_size: Some(1_000_000),
+        ..NewArchive::default()
+    };
+    across.refuse = Some("a.zip.003");
+    let e = create_on(
+        std::slice::from_ref(&what),
+        &across,
+        &[],
+        "a.zip",
+        &how,
+        &Control::default(),
+        &|| {},
+    );
+    assert!(e.is_err());
+    assert!(files_in(&there).is_empty(), "{:?}", files_in(&there));
+    across.refuse = None;
+    create_on(
+        &[what],
+        &across,
+        &[],
+        "a.zip",
+        &how,
+        &Control::default(),
+        &|| {},
+    )
+    .unwrap();
+    assert_eq!(
+        files_in(&there),
+        ["a.zip.001", "a.zip.002", "a.zip.003", "a.zip.004"]
+    );
+}
+
+#[test]
+fn on_a_folder_here_it_is_made_where_it_goes() {
+    let (what, there, _) = up_scratch("here");
+    let made = create_on(
+        &[what],
+        &LocalFolder::new(&there),
+        &[],
+        "a.zip",
+        &NewArchive::default(),
+        &Control::default(),
+        &|| panic!("nothing goes up"),
+    )
+    .unwrap();
+    assert_eq!(made, Some(there.join("a.zip")));
+}
+
+#[test]
+fn stopped_while_it_looks_through_the_files_nothing_is_left() {
+    let (what, there, across) = up_scratch("stopped");
+    let cancel = Cancel::new();
+    cancel.cancel();
+    let control = Control {
+        progress: None,
+        cancel: Some(cancel),
+    };
+    let e = create_on(
+        &[what],
+        &across,
+        &[],
+        "a.zip",
+        &NewArchive::default(),
+        &control,
+        &|| {},
+    );
+    assert!(matches!(e, Err(Error::Cancelled)), "{e:?}");
+    assert!(files_in(&there).is_empty());
 }

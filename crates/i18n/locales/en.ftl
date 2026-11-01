@@ -64,7 +64,11 @@ tdd286479 = Parts of { $size }
 tafd4b17d = Parts of a size to type
 t757989af = Beside the files
 tf2d34837 = Save in
-t16f90b63 = Change…
+tc8abcd43 = Folder…
+td0d8c806 = Storage…
+ted6f948e = It is made in this computer’s temporary folder first, then uploaded, so it needs room there.
+td7627e48 = Choose a storage, and a folder in it
+t1926d127 = New folder
 ta598b15b = Give it a name, without / or \ in it.
 tae2a96e9 = Hide advanced
 t701d5ed9 = Advanced options
@@ -118,7 +122,6 @@ td12e23bf = What should it extract?
 t54535972 = Smart
 t7865024c = Recommended
 td35f540c = Where should the files go?
-t1926d127 = New folder
 t900a8a39 = Right here
 t9f128ba8 = Another folder
 t58daae9c = Choose…
@@ -150,6 +153,7 @@ tcda9a50a = This file is encrypted with age to a key: an age key file or an SSH 
 t808b85c5 = Enter the key file’s passphrase
 t2a39d1e8 = The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t94279f82 = Extracting…
+tc75fe478 = Uploading…
 t01fcd896 = Creating…
 t2060c750 = Adding…
 t186fbef5 = Changing the archive…
@@ -233,11 +237,6 @@ t0f9a8a58 = Nothing here matches that.
 t0b82c83a = Add a storage to browse it.
 tc7731c8f = No folders here.
 td9e47db6 = This folder is empty.
-te8f231ba =
-    { $n ->
-        [one] { $n } byte
-       *[other] { $n } bytes
-    }
 t73690b65 = Archive
 tb35c0c27 = Search inside this archive
 ta413eca5 = Not text it can show
@@ -424,6 +423,7 @@ t11a330d3 = packwing can add files only to a ZIP archive that is one file.
 tff43ce74 = An archive can’t go inside itself.
 t2c3e91c4 = “{ $bare }” is already in the archive. Nothing was changed.
 tc0557734 = A tar archive can’t have a password.
+tdb9326d3 = Before it is uploaded, this archive is made in { $folder }, where it may take up to { $need }. Only { $free } is free there.
 tbe7fab8a = { $name } is already in the folder.
 tec7ca3a9 = Could not make a folder in { $parent }.
 tf606b3b3 = { $to } is a folder, and a file would replace it.
@@ -436,6 +436,11 @@ te162af76 = This file is encrypted to a key packwing does not have.
 t27c010d6 = Cancelled.
 t2267c3b1 = the archive could not be read
 tcf18f6e9 = This can’t be extracted, as a file’s name can’t be used here: “{ $name }” ({ $why }).
+te8f231ba =
+    { $n ->
+        [one] { $n } byte
+       *[other] { $n } bytes
+    }
 t3803103c = A volume of this archive is not there.
 t066227f9 = { $named }: its data is damaged.
 t7923a417 = The archive is damaged: UnRAR would exit with { $number }.

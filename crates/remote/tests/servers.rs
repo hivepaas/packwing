@@ -13,7 +13,7 @@ use std::sync::Arc;
 
 use packwing_core::{
     Control, Item, Keys, LocalFolder, NewArchive, OnExisting, Source, Storage, Stored, Transfer,
-    create, extract_selected, list, read_entry, transfer,
+    create, create_on, extract_selected, list, read_entry, transfer,
 };
 use packwing_remote::{S3Settings, SftpSettings, WebDavSettings, s3, sftp, webdav};
 
@@ -446,4 +446,49 @@ fn an_archive_on_a_server_is_read_in_place() {
         assert_eq!(std::fs::read(to.join("big.bin")).expect("read"), noise);
         let _ = std::fs::remove_dir_all(&dir);
     }
+}
+
+#[test]
+fn a_new_archive_goes_up_and_reads_back() {
+    let here = std::env::temp_dir().join(format!("packwing-up-{}", std::process::id()));
+    std::fs::create_dir_all(&here).expect("a folder");
+    let what = here.join("what.txt");
+    std::fs::write(&what, "hello ".repeat(100_000)).expect("a file");
+    for (kind, s) in storages("up") {
+        let keys = Keys::default();
+        let made = create_on(
+            std::slice::from_ref(&what),
+            s.as_ref(),
+            &[],
+            "new.zip",
+            &NewArchive::default(),
+            &none(),
+            &|| {},
+        )
+        .expect(kind);
+        assert_eq!(made, None, "{kind}");
+        // A second takes the next name, and reads back from where it is.
+        create_on(
+            std::slice::from_ref(&what),
+            s.as_ref(),
+            &[],
+            "new.zip",
+            &NewArchive::default(),
+            &none(),
+            &|| {},
+        )
+        .expect(kind);
+        let names: Vec<String> = all(s.as_ref(), &[]).into_iter().map(|i| i.name).collect();
+        assert!(
+            names.contains(&"new (2).zip".to_owned()),
+            "{kind}: {names:?}"
+        );
+        let size = s.stat(&[], "new (2).zip").expect(kind).expect(kind).size;
+        let storage: Arc<dyn Storage> = Arc::from(s);
+        let source = Source::Stored(Stored::new(storage, vec!["new (2).zip".into()], size));
+        let body =
+            read_entry(&source, &["what.txt".to_owned()], &keys, 1 << 20, &none()).expect(kind);
+        assert_eq!(body.len(), 600_000, "{kind}");
+    }
+    let _ = std::fs::remove_dir_all(&here);
 }
