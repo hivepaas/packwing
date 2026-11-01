@@ -7,7 +7,7 @@
 
 use std::cmp::Ordering;
 use std::fs;
-use std::io::{self, Read};
+use std::io::{self, Read, Seek};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, UNIX_EPOCH};
@@ -51,6 +51,9 @@ pub trait Storage: Send + Sync {
 
     /// Up to `most` bytes from the start of the file at `path`.
     fn read(&self, path: &[String], most: u64) -> io::Result<Vec<u8>>;
+
+    /// Up to `len` bytes of the file at `path`, from `offset`; fewer only at its end.
+    fn read_at(&self, path: &[String], offset: u64, len: usize) -> io::Result<Vec<u8>>;
 
     /// The item called `name` in `folder`, if there is one. A link is not followed.
     fn stat(&self, folder: &[String], name: &str) -> io::Result<Option<Item>>;
@@ -328,6 +331,14 @@ impl Storage for LocalFolder {
         fs::File::open(self.at(path)?)?
             .take(most)
             .read_to_end(&mut bytes)?;
+        Ok(bytes)
+    }
+
+    fn read_at(&self, path: &[String], offset: u64, len: usize) -> io::Result<Vec<u8>> {
+        let mut file = fs::File::open(self.at(path)?)?;
+        file.seek(io::SeekFrom::Start(offset))?;
+        let mut bytes = Vec::with_capacity(len);
+        file.take(len as u64).read_to_end(&mut bytes)?;
         Ok(bytes)
     }
 

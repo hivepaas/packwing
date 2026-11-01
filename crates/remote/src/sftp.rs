@@ -17,7 +17,7 @@ use shellwing_ssh::{
     Auth, FilesConnection, HostKeyPolicy, Learned, Options, RemoteFile, Secrets, Sftp, config,
     connect_files,
 };
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
 
 use crate::dal::runtime;
 use crate::secrets;
@@ -242,6 +242,20 @@ impl Storage for SftpStorage {
             .take(most)
             .read_to_end(&mut bytes)?;
         Ok(bytes)
+    }
+
+    fn read_at(&self, path: &[String], offset: u64, len: usize) -> io::Result<Vec<u8>> {
+        Self::checked(path)?;
+        let open = self.connected()?;
+        let at = Self::at(&open.top, path)?;
+        let sftp = open.connection.sftp();
+        runtime().block_on(async {
+            let mut file = sftp.reader(&at).await.map_err(said)?;
+            file.seek(std::io::SeekFrom::Start(offset)).await?;
+            let mut bytes = Vec::with_capacity(len);
+            (&mut file).take(len as u64).read_to_end(&mut bytes).await?;
+            Ok(bytes)
+        })
     }
 
     fn stat(&self, folder: &[String], name: &str) -> io::Result<Option<Item>> {

@@ -14,8 +14,8 @@ use hivepack_zip::{Archive, Flags, OpenFlags, Volumes, em, volume_paths};
 use unicode_normalization::UnicodeNormalization;
 use unicode_normalization::char::is_combining_mark;
 
-use crate::joined::{Joined, joined_size};
 use crate::rar;
+use crate::source::Source;
 use crate::spool::spool;
 use crate::volume::walk;
 use crate::{Error, Keys, SevenZip, opener, seven_zip, without_layers};
@@ -181,15 +181,14 @@ fn zip_size(path: &Path) -> io::Result<u64> {
     Ok(size)
 }
 
-/// What the archive at `path` holds, opened with `keys`.
-pub fn list(path: &Path, keys: &Keys) -> Result<Listing, Error> {
-    let mut packed = joined_size(path)?;
-    let name = path
-        .file_name()
-        .map(|n| n.to_string_lossy().into_owned())
-        .unwrap_or_default();
-    let folder = path.parent().map(Path::to_path_buf).unwrap_or_default();
-    let mut opener = opener(path, keys);
+/// What the archive at `source` holds, opened with `keys`.
+pub fn list(source: impl Into<Source>, keys: &Keys) -> Result<Listing, Error> {
+    let source: Source = source.into();
+    let source = &source;
+    let mut packed = source.size()?;
+    let name = source.name();
+    let folder = source.folder();
+    let mut opener = opener(source, keys);
     let mut opened = opener.open()?;
     let layers = opened.layers().to_vec();
     let container = opened.container();
@@ -199,9 +198,12 @@ pub fn list(path: &Path, keys: &Keys) -> Result<Listing, Error> {
         Container::Zip => {
             let (entries, zip_encryption) = if layers.is_empty() {
                 drop(opened);
-                {
-                    packed = zip_size(path)?;
-                    zip_entries(Volumes::open(path)?)?
+                match source {
+                    Source::File(path) => {
+                        packed = zip_size(path)?;
+                        zip_entries(Volumes::open(path)?)?
+                    }
+                    Source::Stored(stored) => zip_entries(stored.stored_reader())?,
                 }
             } else {
                 let spooled = spool(&mut opened)?;
@@ -214,12 +216,12 @@ pub fn list(path: &Path, keys: &Keys) -> Result<Listing, Error> {
         // its directory is read by going back.
         Container::Iso if layers.is_empty() => {
             drop(opened);
-            iso_entries(hivepack_iso::Reader::seekable(Joined::open(path)?))?
+            iso_entries(hivepack_iso::Reader::seekable(source.reader()?))?
         }
         Container::Iso => iso_entries(hivepack_iso::Reader::new(&mut opened))?,
         Container::Udf if layers.is_empty() => {
             drop(opened);
-            udf_entries(Joined::open(path)?)?
+            udf_entries(source.reader()?)?
         }
         Container::Udf => {
             let spooled = spool(&mut opened)?;
@@ -228,7 +230,7 @@ pub fn list(path: &Path, keys: &Keys) -> Result<Listing, Error> {
         Container::SevenZip => {
             let (entries, seven_zip_encryption) = if layers.is_empty() {
                 drop(opened);
-                seven_zip_entries(seven_zip(|| Joined::open(path), keys)?)
+                seven_zip_entries(seven_zip(|| source.reader(), keys)?)
             } else {
                 let spooled = spool(&mut opened)?;
                 seven_zip_entries(seven_zip(|| spooled.rewound(), keys)?)
@@ -238,7 +240,8 @@ pub fn list(path: &Path, keys: &Keys) -> Result<Listing, Error> {
         }
         Container::Rar => {
             let password = rar::password(keys);
-            let (found, encrypted) = if layers.is_empty() {
+            let (found, encrypted) = if let (true, Some(path)) = (layers.is_empty(), source.path())
+            {
                 drop(opened);
                 let more = Arc::new(AtomicU64::new(0));
                 let found = rar::entries(rar::open(path, &password, more.clone())?, keys)?;

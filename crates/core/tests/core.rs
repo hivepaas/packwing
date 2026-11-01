@@ -433,7 +433,7 @@ fn tests_every_file() {
             "a.zip" => zip(&sample()),
             _ => zstd(&zip(&sample())),
         };
-        let summary = test(&s.file(name, &data), &Keys::default(), &Control::default()).unwrap();
+        let summary = test(s.file(name, &data), &Keys::default(), &Control::default()).unwrap();
         assert_eq!(
             (summary.files, summary.bytes),
             (3, (NOTES.len() + 14) as u64),
@@ -445,7 +445,7 @@ fn tests_every_file() {
     let at = data.windows(5).position(|w| w == b"Notes").unwrap();
     data[at] = b'M';
     let e = test(
-        &s.file("bad.zip", &data),
+        s.file("bad.zip", &data),
         &Keys::default(),
         &Control::default(),
     )
@@ -541,7 +541,7 @@ fn extracts_disc_images_with_progress() {
 fn tests_every_file_of_disc_images() {
     let s = Scratch::new();
     for (name, data, _, _) in images() {
-        let summary = test(&s.file(name, &data), &Keys::default(), &Control::default()).unwrap();
+        let summary = test(s.file(name, &data), &Keys::default(), &Control::default()).unwrap();
         assert_eq!(
             (summary.files, summary.bytes),
             (3, (NOTES.len() + 14) as u64),

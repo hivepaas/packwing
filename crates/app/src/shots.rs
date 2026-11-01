@@ -524,7 +524,7 @@ fn read_named(name: &str) -> Shown {
         ],
     };
     let mut a = Archive::read(
-        PathBuf::from("/home/user/Downloads/site-backup-2026-10.tar.zst"),
+        PathBuf::from("/home/user/Downloads/site-backup-2026-10.tar.zst").into(),
         listing,
         packwing_core::Keys::default(),
         false,
@@ -1138,6 +1138,9 @@ impl packwing_core::Storage for Far {
     fn read(&self, p: &[String], most: u64) -> std::io::Result<Vec<u8>> {
         self.0.read(p, most)
     }
+    fn read_at(&self, p: &[String], offset: u64, len: usize) -> std::io::Result<Vec<u8>> {
+        self.0.read_at(p, offset, len)
+    }
     fn stat(&self, f: &[String], n: &str) -> std::io::Result<Option<packwing_core::Item>> {
         self.0.stat(f, n)
     }
@@ -1254,7 +1257,7 @@ fn a_kind_a_build_adds_is_browsed_without_a_local_path() {
         .expect("the window");
     cx.run_until_parked();
     assert_eq!(kept.lock().expect("the list")[0].1["token"], "hush");
-    // Listed like any other, and what needs a local path says so.
+    // Listed like any other, and an archive there is read in place.
     let names = explorer.read_with(&cx, |e, _| e.shown_names());
     assert!(names.contains(&"backup.zip".to_owned()), "{names:?}");
     window
@@ -1264,10 +1267,51 @@ fn a_kind_a_build_adds_is_browsed_without_a_local_path() {
                 e.choose("backup.zip", cx);
                 let item = e.selection().remove(0);
                 e.open(&item, cx);
-                assert!(e.problem().is_some());
             })
         })
         .expect("the window");
+    cx.run_until_parked();
+    let page = window
+        .update(&mut cx, |ws, _, cx| {
+            ws.archive_page().read(cx).shown_failed()
+        })
+        .expect("the window");
+    // It is not an archive, and says so as one on this computer would.
+    assert!(page.is_some(), "{page:?}");
+    let zip = dir.join("real.zip");
+    std::fs::write(&zip, zip_of(&[("inner.txt", b"hello")])).expect("cannot write");
+    window
+        .update(&mut cx, |_, _, cx| {
+            explorer.update(cx, |e, cx| e.refresh(cx));
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    window
+        .update(&mut cx, |_, _, cx| {
+            explorer.update(cx, |e, cx| {
+                e.choose("real.zip", cx);
+                let item = e.selection().remove(0);
+                e.open(&item, cx);
+            })
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    window
+        .update(&mut cx, |ws, _, cx| {
+            let page = ws.archive_page();
+            let archive = page.read(cx).archive().expect("it opens");
+            assert_eq!(archive.files, 1);
+            // Nothing on it to add to or change: it is only read.
+            assert!(archive.path.is_none());
+            assert!(archive.source.as_ref().and_then(|s| s.fetched()).is_some());
+        })
+        .expect("the window");
+    let image = cx
+        .capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    image
+        .save(out_dir().join("archive-on-storage-light.png"))
+        .expect("cannot save the picture");
     // Secrets do not go with the settings.
     let text = window
         .update(&mut cx, |_, _, cx| crate::prefs::prefs(cx).text_for_test())
@@ -1320,4 +1364,29 @@ fn a_click_takes_a_row_out_and_the_eye_closes_the_list() {
         dialog.read_with(&cx, |d, _| d.selection_paths()),
         paths[1..]
     );
+}
+
+/// A ZIP archive of `files`, stored, written as the format has it.
+fn zip_of(files: &[(&str, &[u8])]) -> Vec<u8> {
+    let dir = out_dir().join(format!("zip-of-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).expect("cannot make a folder");
+    let mut paths = Vec::new();
+    for (name, body) in files {
+        std::fs::write(dir.join(name), body).expect("cannot write");
+        paths.push(dir.join(name));
+    }
+    let made = packwing_core::create(
+        &paths,
+        &dir.join("made.zip"),
+        &packwing_core::NewArchive::default(),
+        &packwing_core::Control {
+            progress: None,
+            cancel: None,
+        },
+    )
+    .expect("cannot make an archive");
+    let bytes = std::fs::read(made).expect("cannot read");
+    let _ = std::fs::remove_dir_all(&dir);
+    bytes
 }

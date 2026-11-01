@@ -197,7 +197,7 @@ fn parts_join_into_the_archive() {
     assert!(!s.path("a.zip.005").exists());
     fs::write(s.path("joined.zip"), joined).unwrap();
     extract(
-        &s.path("joined.zip"),
+        s.path("joined.zip"),
         &s.path("out"),
         &Keys::default(),
         &Control::default(),
