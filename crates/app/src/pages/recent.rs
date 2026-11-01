@@ -1,9 +1,9 @@
-//! The archives opened before, the latest first.
+//! The archives opened before, the latest first: a tab of Browse.
 
 use gpui::{Context, EventEmitter, FontWeight, Render, Window, div, prelude::*, px, rgb};
 use packwing_i18n::tr;
 
-use super::{panel, title};
+use super::panel;
 use crate::colors::colors;
 use crate::model::{Kind, date, size, tag_of};
 use crate::prefs::Opened;
@@ -111,31 +111,25 @@ impl Render for RecentPage {
                         .child(r.opened.clone()),
                 )
         });
-        div()
-            .size_full()
-            .flex()
-            .flex_col()
-            .gap(px(18.))
-            .child(title(tr!("Recent"), 26.).px(px(8.)).pt(px(12.)))
-            .child(
-                panel()
-                    .id("recent-list")
-                    .max_h_full()
-                    .min_h_0()
-                    .overflow_y_scroll()
-                    .flex()
-                    .flex_col()
-                    .p(px(10.))
-                    .when(self.archives.is_empty(), |d| {
-                        d.child(
-                            div()
-                                .p(px(16.))
-                                .text_size(px(14.))
-                                .text_color(rgb(c.muted))
-                                .child(tr!("The archives you open will show here.")),
-                        )
-                    })
-                    .children(rows),
-            )
+        div().size_full().flex().flex_col().child(
+            panel()
+                .id("recent-list")
+                .max_h_full()
+                .min_h_0()
+                .overflow_y_scroll()
+                .flex()
+                .flex_col()
+                .p(px(10.))
+                .when(self.archives.is_empty(), |d| {
+                    d.child(
+                        div()
+                            .p(px(16.))
+                            .text_size(px(14.))
+                            .text_color(rgb(c.muted))
+                            .child(tr!("The archives you open will show here.")),
+                    )
+                })
+                .children(rows),
+        )
     }
 }

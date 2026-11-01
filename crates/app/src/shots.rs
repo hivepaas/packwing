@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 53] = [
+const SCREENS: [(&str, SetUp, bool); 54] = [
     (
         "storages-add",
         |ws, window, cx| {
@@ -220,12 +220,17 @@ const SCREENS: [(&str, SetUp, bool); 53] = [
         },
         false,
     ),
-    ("recent", |ws, _, cx| ws.show_recent_samples(cx), false),
     (
-        "recent-empty",
-        |ws, _, cx| ws.show_page(Page::Recent, cx),
+        "browse",
+        |ws, _, cx| {
+            let sample = sample_storage();
+            ws.browse_page().update(cx, |b, cx| b.go_to(&sample, cx));
+            ws.show_page(Page::Browse, cx);
+        },
         false,
     ),
+    ("recent", |ws, _, cx| ws.show_recent_samples(cx), false),
+    ("recent-empty", |ws, _, cx| ws.show_recent_tab(cx), false),
     (
         "settings",
         |ws, _, cx| ws.show_page(Page::Settings, cx),
@@ -1387,6 +1392,45 @@ fn a_test_says_how_it_went_whichever_way() {
     let (passed, failed) = tested(broken);
     assert_eq!(passed, None);
     assert!(failed.is_some());
+}
+
+#[test]
+fn browse_goes_where_it_is_told_and_remembers_it() {
+    let (mut cx, window, _) = explorer_on(out_dir());
+    let dir = folder_of("browse", 3);
+    window
+        .update(&mut cx, |ws, _, cx| {
+            ws.show_page(Page::Browse, cx);
+            ws.browse_page().update(cx, |b, cx| b.go_to(&dir, cx));
+        })
+        .expect("the window");
+    for _ in 0..40 {
+        cx.run_until_parked();
+        std::thread::sleep(std::time::Duration::from_millis(5));
+    }
+    let (names, kept) = window
+        .update(&mut cx, |ws, _, cx| {
+            let explorer = ws.browse_page().read(cx).explorer().clone();
+            (
+                explorer.read(cx).shown_names(),
+                crate::prefs::prefs(cx).browse_folder,
+            )
+        })
+        .expect("the window");
+    assert_eq!(names.len(), 3, "{names:?}");
+    assert_eq!(kept, Some(dir.clone()));
+    // It can go up from there, past where it started.
+    window
+        .update(&mut cx, |ws, _, cx| {
+            let explorer = ws.browse_page().read(cx).explorer().clone();
+            explorer.update(cx, |e, cx| e.go_up(cx));
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    let kept = window
+        .update(&mut cx, |_, _, cx| crate::prefs::prefs(cx).browse_folder)
+        .expect("the window");
+    assert_eq!(kept.as_deref(), dir.parent());
 }
 
 #[test]

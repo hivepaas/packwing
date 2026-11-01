@@ -125,6 +125,8 @@ pub struct Prefs {
     pub storages: Vec<KeptStorage>,
     pub storages_kept: bool,
     pub show_hidden: bool,
+    /// The folder Browse showed last.
+    pub browse_folder: Option<PathBuf>,
     /// The command that starts the text editor, or none for the system's.
     pub editor: Option<String>,
 }
@@ -152,6 +154,7 @@ impl Default for Prefs {
             storages: Vec::new(),
             storages_kept: false,
             show_hidden: false,
+            browse_folder: None,
             editor: None,
         }
     }
@@ -249,6 +252,7 @@ impl Prefs {
                 }
                 "storages_kept" => p.storages_kept = on(value, p.storages_kept),
                 "show_hidden" => p.show_hidden = on(value, p.show_hidden),
+                "browse_folder" => p.browse_folder = Some(PathBuf::from(value)),
                 "editor" => p.editor = Some(value.to_owned()).filter(|v| !v.trim().is_empty()),
                 // A local folder: its name, a tab, and its path. Another kind: its
                 // kind, then tabs between its name, its id and its settings.
@@ -331,6 +335,14 @@ impl Prefs {
                 .unwrap_or_default()
                 .replace('\n', " "),
         ));
+        if let Some(folder) = self
+            .browse_folder
+            .as_ref()
+            .and_then(|f| f.to_str())
+            .filter(|f| !f.contains('\n'))
+        {
+            text.push_str(&format!("browse_folder={folder}\n"));
+        }
         for s in &self.storages {
             let name = s.name.replace(['\n', '\t'], " ");
             match &s.place {
@@ -426,6 +438,7 @@ mod tests {
         let mut p = Prefs {
             storages_kept: true,
             show_hidden: true,
+            browse_folder: Some(PathBuf::from("/home/a b/c")),
             editor: Some("code -n".to_owned()),
             ..Prefs::default()
         };
@@ -446,6 +459,7 @@ mod tests {
         assert_eq!(back.storages[0].place, p.storages[0].place);
         assert_eq!(back.storages[1], p.storages[1]);
         assert!(back.storages_kept && back.show_hidden);
+        assert_eq!(back.browse_folder, Some(PathBuf::from("/home/a b/c")));
         assert_eq!(back.editor.as_deref(), Some("code -n"));
         assert!(!Prefs::parse("").storages_kept);
         assert_eq!(Prefs::parse("editor=\n").editor, None);

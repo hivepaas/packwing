@@ -1,7 +1,9 @@
-//! The main window's pages, each a view: the open archive, the archives
-//! opened before, Settings, and the first run's welcome.
+//! The main window's pages, each a view: the open archive, this computer's
+//! folders and the archives opened before, Settings, and the first run's welcome.
 
 pub mod archive;
+pub mod browse;
+mod explorer_info;
 pub mod onboarding;
 pub mod recent;
 pub mod settings;

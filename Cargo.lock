@@ -5101,6 +5101,7 @@ name = "packwing"
 version = "0.1.0"
 dependencies = [
  "context-menu",
+ "dirs",
  "gpui-pre",
  "gpui-pre-platform",
  "gpui-pre-wgpu",

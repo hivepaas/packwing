@@ -269,6 +269,46 @@ t8608cb1c =
         [one] { $count } executable
        *[other] { $count } executables
     }
+tfa0d176a = This computer
+t52f50eae = Home
+t64215c53 = Desktop
+t539307de = Downloads
+t0eac1f07 = Browse
+t50e888fe = Recent
+t50aac02b = Choose a file to see its information here
+tbb5a2d5f =
+    { $n ->
+        [one] { $n } selected
+       *[other] { $n } selected
+    }
+t0cca93f1 = Files in them come to { $size }
+t2fed07aa = Delete…
+t4b408baf = Link to a folder
+t8e08e589 = Link
+t06357afd = Folder
+ta56bbbe9 = { $tag } file
+t72e46dc5 = { $files }, { $folders }
+teee8d81a =
+    { $n ->
+        [one] { $n } file
+       *[other] { $n } files
+    }
+te89ea942 =
+    { $n ->
+        [one] { $n } folder
+       *[other] { $n } folders
+    }
+tc87daf59 = { $size } so far
+t3ff50c63 = Kind
+tffe19c31 = Holds
+t8700fd83 = Permissions
+teb66e456 = Path
+t0f23db17 = Count size and files
+t6d165412 =
+    { $n ->
+        [one] { $n } folder in it could not be read.
+       *[other] { $n } folders in it could not be read.
+    }
 t116d3868 = Add to the right-click menu
 t20864983 = Extract or compress from any folder.
 tb38a86a6 = Welcome to packwing
@@ -277,7 +317,6 @@ t63f9c1cd = Set things up
 t95f41ffb = You can change these later in Settings.
 te83ca5ee = Get started
 t7d0c09c7 = { $location } · not there any more
-t50e888fe = Recent
 tc0cc82d5 = The archives you open will show here.
 t86de0290 = Version { $env }
 t3c244df9 = A file archiver that opens archives safely.
@@ -348,45 +387,9 @@ tc2fe21db = Security
 t1287ae97 = Right-click menu
 t58e096de = About
 t4b058728 = Settings
-t52f50eae = Home
-t539307de = Downloads
 tfb56d8cf = This copy of packwing cannot open it.
 tc776c52f = Storages
 te858d6b5 = Add storage
-t50aac02b = Choose a file to see its information here
-tbb5a2d5f =
-    { $n ->
-        [one] { $n } selected
-       *[other] { $n } selected
-    }
-t0cca93f1 = Files in them come to { $size }
-t2fed07aa = Delete…
-t4b408baf = Link to a folder
-t8e08e589 = Link
-t06357afd = Folder
-ta56bbbe9 = { $tag } file
-t72e46dc5 = { $files }, { $folders }
-teee8d81a =
-    { $n ->
-        [one] { $n } file
-       *[other] { $n } files
-    }
-te89ea942 =
-    { $n ->
-        [one] { $n } folder
-       *[other] { $n } folders
-    }
-tc87daf59 = { $size } so far
-t3ff50c63 = Kind
-tffe19c31 = Holds
-t8700fd83 = Permissions
-teb66e456 = Path
-t0f23db17 = Count size and files
-t6d165412 =
-    { $n ->
-        [one] { $n } folder in it could not be read.
-       *[other] { $n } folders in it could not be read.
-    }
 t8c7c7c57 = Remove from this list
 tc5e54e4a = Extract here with packwing
 tda62691f = Extract to new folder
