@@ -18,13 +18,7 @@ tde674bd8 =
         [one] { $count } file
        *[other] { $count } files
     }
-tcf390b0a = Nothing chosen yet
-t8399ef70 = { $join } and { $more } more
 t0d53ac5e = Add to { $name }
-t3b7c797a = What goes in
-ted08dbe5 = Add files…
-tb5930e43 = Add a folder…
-t2e5c8c3e = Add the files or a folder to put in the archive.
 t36e95c22 = Goes in
 t34c69cec = If a file of that name is there
 t52b1d223 = The new files are encrypted with the archive’s password.
@@ -38,6 +32,16 @@ t0ac8fa44 = It did not answer: { $why }
 t4fe8f806 = Add a storage
 t3f9544ac = Secrets go in the system’s keychain, not with the settings.
 te0f3b6b7 = Test connection
+tcf390b0a = Nothing chosen yet
+t8399ef70 = { $join } and { $more } more
+t5a420780 = Hide what goes in
+t9a20eb53 = Show what goes in
+t90a93ec7 = Take it out
+t6a4aedbe = Drop them to add them
+t3b7c797a = What goes in
+tba8a1e71 = + Files
+tcef8b0ce = + Folder
+t2e5c8c3e = Add the files or a folder to put in the archive.
 tf7f64b21 = Windows 11 and Linux open 7z on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
 t051031b1 = Linux, macOS and Windows 11 open it on their own; phones and older Windows may need an archiver app. To share with anyone, pick .zip.
 tc2c29183 = Linux and Windows 11 open it on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
