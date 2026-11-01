@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 36] = [
+const SCREENS: [(&str, SetUp, bool); 38] = [
     ("archive", |_, _, _| {}, false),
     (
         "archive-opened",
@@ -68,6 +68,25 @@ const SCREENS: [(&str, SetUp, bool); 36] = [
             ws.show_archive(read(), cx);
             let entry = ["site", "deploy.exe"].map(String::from).to_vec();
             ws.open_entry(entry, window, cx);
+        },
+        false,
+    ),
+    (
+        "preview-picture",
+        |ws, _, cx| {
+            ws.show_archive(read(), cx);
+            ws.select_in_archive(&[1], cx);
+            ws.preview_in_archive(Some(sample_png()), "", cx);
+        },
+        false,
+    ),
+    (
+        "preview-text",
+        |ws, _, cx| {
+            ws.show_archive(read(), cx);
+            ws.select_in_archive(&[1], cx);
+            let text = "# Trang của công ty\n\nCách chạy:\n\n    ./deploy.sh --production\n\nHỏi ai nếu có lỗi? Xem docs/.\n";
+            ws.preview_in_archive(None, text, cx);
         },
         false,
     ),
@@ -362,6 +381,18 @@ fn read() -> Shown {
     Shown::Open(Box::new(a))
 }
 
+/// A small picture for the preview: a green and orange gradient.
+fn sample_png() -> Vec<u8> {
+    let picture = image::RgbImage::from_fn(320, 200, |x, y| {
+        image::Rgb([(x * 255 / 320) as u8, 120, (y * 255 / 200) as u8])
+    });
+    let mut bytes = std::io::Cursor::new(Vec::new());
+    picture
+        .write_to(&mut bytes, image::ImageFormat::Png)
+        .expect("cannot make a picture");
+    bytes.into_inner()
+}
+
 fn out_dir() -> PathBuf {
     let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../target/shots");
     std::fs::create_dir_all(&dir).expect("cannot make target/shots");
@@ -493,4 +524,67 @@ fn a_menu_option_takes_a_click() {
     click(&mut cx, window, gpui::point(px(890.), px(590.)));
     let chosen = dialog.read_with(&cx, |d, cx| d.format_chosen(cx));
     assert_eq!(chosen, crate::dialogs::Format::SevenZip);
+}
+
+/// A click on a real archive's file selects it, and reads it for the preview.
+#[test]
+fn a_click_on_a_file_shows_it_in_the_preview() {
+    let folder = std::env::temp_dir().join(format!("packwing-preview-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&folder);
+    std::fs::create_dir_all(&folder).expect("cannot make a folder");
+    let note = folder.join("ghi chú.txt");
+    std::fs::write(&note, "xin chào\n").expect("cannot write a file");
+    let archive = packwing_core::create(
+        &[note],
+        &folder.join("a.zip"),
+        &packwing_core::NewArchive::default(),
+        &packwing_core::Control::default(),
+    )
+    .expect("cannot make an archive");
+
+    let text = Arc::new(gpui_wgpu::CosmicTextSystem::new(crate::FONT));
+    let mut cx = HeadlessAppContext::with_platform(text, Arc::new(crate::Assets), || {
+        gpui_platform::current_headless_renderer()
+    });
+    cx.update(crate::load_fonts);
+    let window = cx
+        .open_window(size(px(1280.), px(800.)), |window, cx| {
+            let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
+            cx.new(|cx| Workspace::new(false, false, menu, window, cx))
+        })
+        .expect("cannot open a window");
+    window
+        .update(&mut cx, |ws, window, cx| {
+            ws.open_archive(archive, false, window, cx)
+        })
+        .expect("cannot open the archive");
+    let page = window
+        .update(&mut cx, |ws, _, _| ws.archive_page())
+        .expect("no page");
+    // Reading happens on other threads.
+    let wait_for = |cx: &mut HeadlessAppContext, done: &dyn Fn(&mut HeadlessAppContext) -> bool| {
+        for _ in 0..200 {
+            cx.run_until_parked();
+            if done(cx) {
+                return;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(20));
+        }
+    };
+    let listed = page.clone();
+    wait_for(&mut cx, &|cx| {
+        listed.read_with(cx, |p, _| p.archive().is_some())
+    });
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    // The first row of the list, as `archive-read-light.png` draws it.
+    click(&mut cx, window, gpui::point(px(300.), px(307.)));
+    let reading = page.clone();
+    wait_for(&mut cx, &|cx| {
+        !reading.read_with(cx, |p, _| p.previewed().1)
+    });
+    let (shown, picked) = page.read_with(&cx, |p, _| (p.previewed().0, p.picked()));
+    assert_eq!(shown.as_deref(), Some("xin chào\n"));
+    assert_eq!(picked, [vec!["ghi chú.txt".to_owned()]]);
+    let _ = std::fs::remove_dir_all(&folder);
 }

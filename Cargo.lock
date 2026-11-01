@@ -3953,6 +3953,7 @@ dependencies = [
  "hivepack-xz",
  "hivepack-zip",
  "hivepack-zstd",
+ "imagesize",
  "unicode-normalization",
 ]
 

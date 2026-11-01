@@ -1,20 +1,27 @@
 //! The open archive: a search over all of it, its header with what it is and what
 //! to do with it, the folder's files, and those chosen. Before one is
 //! open, or while it is read, or when it cannot be, the page says so.
+//!
+//! The file chosen last shows in the preview, a picture or the start of a text,
+//! read in the background once it is clicked. Only what asks no more of the user
+//! is shown: a file that needs a password says so.
 
 use packwing_core::Found;
 
 use std::collections::BTreeSet;
 
+use std::sync::Arc;
+
 use gpui::{
-    Context, Div, Entity, EventEmitter, FontWeight, Render, Subscription, Window, div, prelude::*,
-    px, relative, rgb,
+    Context, Div, Entity, EventEmitter, FontWeight, Image, ImageFormat, ObjectFit, Render,
+    StyledImage, Subscription, Task, Window, div, img, prelude::*, px, relative, rgb,
 };
+use packwing_core::{Cancel, Control, Error, image_fits, read_entry};
 
 use super::panel;
 use crate::colors::colors;
 use crate::input::{Changed, TextInput};
-use crate::model::{Archive, Entry, Kind, counted, size};
+use crate::model::{Archive, Entry, Kind, counted, size, text_preview};
 use crate::widgets::{Fill, Size, Tone, button, chip, icon, note, tile, tonal_tint};
 
 /// What the user asked of the archive.
@@ -26,6 +33,41 @@ pub enum ArchiveEvent {
     Open,
     /// Open this file in it, as its path in the archive says.
     OpenEntry(Vec<String>),
+}
+
+/// The largest file a preview reads: all of it has to be read, as an archive
+/// gives its files out whole.
+const MOST_PREVIEWED: u64 = 32_000_000;
+
+/// How much of a text a preview shows.
+const MOST_TEXT: usize = 8_000;
+
+/// What the preview shows of the file chosen.
+#[derive(Clone, Debug, Default)]
+enum Preview {
+    /// Its tag.
+    #[default]
+    Nothing,
+    Reading,
+    Picture(Arc<Image>),
+    Text(String),
+    /// Why it cannot be shown.
+    Not(&'static str),
+}
+
+/// What a picture of this name is, for those GPUI decodes. SVG is left out: it
+/// can point at other files.
+fn picture_format(name: &str) -> Option<ImageFormat> {
+    let (_, extension) = name.rsplit_once('.')?;
+    match extension.to_ascii_lowercase().as_str() {
+        "png" => Some(ImageFormat::Png),
+        "jpg" | "jpeg" => Some(ImageFormat::Jpeg),
+        "webp" => Some(ImageFormat::Webp),
+        "gif" => Some(ImageFormat::Gif),
+        "bmp" => Some(ImageFormat::Bmp),
+        "tif" | "tiff" => Some(ImageFormat::Tiff),
+        _ => None,
+    }
 }
 
 /// The most a search lists: more is not read, and takes long to draw.
@@ -54,6 +96,9 @@ pub struct ArchivePage {
     /// Those selected, to extract: clicked, with Ctrl or Cmd for more, with
     /// Shift for those between. What only shows in the preview is not one.
     selected: BTreeSet<usize>,
+    preview: Preview,
+    /// What stops the preview being read, and the reading.
+    previewing: Option<(Cancel, Task<()>)>,
     /// What the search found: all of it, as it was typed, in an archive with
     /// a listing. A sample's search looks in its one folder.
     found: Vec<Found>,
@@ -79,6 +124,8 @@ impl ArchivePage {
             search,
             chosen: None,
             selected: BTreeSet::new(),
+            preview: Preview::Nothing,
+            previewing: None,
             found: Vec::new(),
             _typing: typing,
         }
@@ -91,6 +138,7 @@ impl ArchivePage {
             _ => None,
         };
         self.shown = shown;
+        self.stop_preview();
         self.selected.clear();
         self.found.clear();
         self.search.update(cx, |s, cx| s.set_text("", 0..0, cx));
@@ -111,6 +159,95 @@ impl ArchivePage {
                 path
             })
             .collect()
+    }
+
+    fn stop_preview(&mut self) {
+        if let Some((cancel, _)) = self.previewing.take() {
+            cancel.cancel();
+        }
+        self.preview = Preview::Nothing;
+    }
+
+    /// Reads the file chosen for the preview, if it is one that shows.
+    fn start_preview(&mut self, cx: &mut Context<Self>) {
+        self.stop_preview();
+        let Some(a) = self.archive() else {
+            return;
+        };
+        let Some(entry) = self.chosen.and_then(|i| a.entries.get(i)) else {
+            return;
+        };
+        let format = picture_format(&entry.name);
+        if format.is_none() && entry.kind != Kind::Text {
+            return;
+        }
+        let Some(source) = a.path.clone() else {
+            return;
+        };
+        if entry.size > MOST_PREVIEWED {
+            self.preview = Preview::Not("Too big to show here");
+            return;
+        }
+        let mut path = a.folder.clone();
+        path.push(entry.name.clone());
+        let keys = a.keys.clone();
+        let cancel = Cancel::new();
+        let control = Control {
+            progress: None,
+            cancel: Some(cancel.clone()),
+        };
+        let reading = cx.background_executor().spawn(async move {
+            match read_entry(&source, &path, &keys, MOST_PREVIEWED, &control) {
+                Ok(bytes) => match format {
+                    Some(format) if image_fits(&bytes) => {
+                        Preview::Picture(Arc::new(Image::from_bytes(format, bytes)))
+                    }
+                    Some(_) => Preview::Not("Too big to show here"),
+                    None => text_preview(&bytes, MOST_TEXT)
+                        .map_or(Preview::Not("Not text it can show"), Preview::Text),
+                },
+                Err(Error::Cancelled) => Preview::Nothing,
+                Err(Error::Locked { .. } | Error::WrongPassword) => {
+                    Preview::Not("It needs the password to show it")
+                }
+                Err(_) => Preview::Not("It could not be read"),
+            }
+        });
+        self.preview = Preview::Reading;
+        let task = cx.spawn(async move |this, cx| {
+            let preview = reading.await;
+            let _ = this.update(cx, |this, cx| {
+                this.previewing = None;
+                this.preview = preview;
+                cx.notify();
+            });
+        });
+        self.previewing = Some((cancel, task));
+    }
+
+    /// The text the preview shows, and whether it is still reading, for tests.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn previewed(&self) -> (Option<String>, bool) {
+        match &self.preview {
+            Preview::Text(text) => (Some(text.clone()), false),
+            Preview::Reading => (None, true),
+            _ => (None, false),
+        }
+    }
+
+    /// Shows `preview`, as the screenshots draw it.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn preview_for_shot(
+        &mut self,
+        picture: Option<Vec<u8>>,
+        text: &str,
+        cx: &mut Context<Self>,
+    ) {
+        self.preview = match picture {
+            Some(bytes) => Preview::Picture(Arc::new(Image::from_bytes(ImageFormat::Png, bytes))),
+            None => Preview::Text(text.to_owned()),
+        };
+        cx.notify();
     }
 
     /// A click on the entry at `i`: it alone, or with `more` as well, or with
@@ -143,6 +280,7 @@ impl ArchivePage {
     pub fn enter(&mut self, folder: Vec<String>, cx: &mut Context<Self>) {
         if let Shown::Open(a) = &mut self.shown {
             a.show(folder);
+            self.stop_preview();
             self.chosen = None;
             self.selected.clear();
             cx.notify();
@@ -165,6 +303,7 @@ impl ArchivePage {
             .archive()
             .and_then(|a| a.entries.iter().position(|e| &e.name == name));
         self.selected.extend(self.chosen);
+        self.start_preview(cx);
         cx.notify();
     }
 
@@ -368,6 +507,7 @@ impl ArchivePage {
                         _ => {
                             let keys = e.modifiers();
                             this.select(i, keys.secondary(), keys.shift);
+                            this.start_preview(cx);
                             cx.notify();
                         }
                     }
@@ -575,15 +715,50 @@ impl ArchivePage {
             .flex()
             .items_center()
             .justify_center()
-            .map(|d| match &entry {
-                Some(e) if e.kind == Kind::Image => d.child(icon("image", 40., c.muted)),
-                Some(e) => d.child(
+            .overflow_hidden()
+            .map(|d| match (&entry, &self.preview) {
+                (Some(_), Preview::Picture(picture)) => d.child(
+                    img(picture.clone())
+                        .size_full()
+                        .object_fit(ObjectFit::Contain)
+                        .with_fallback(move || {
+                            div()
+                                .text_size(px(13.))
+                                .text_color(rgb(c.muted))
+                                .child("It could not be shown")
+                                .into_any_element()
+                        }),
+                ),
+                (Some(_), Preview::Text(text)) => d.items_start().justify_start().child(
+                    div()
+                        .id("preview-text")
+                        .size_full()
+                        .overflow_y_scroll()
+                        .p(px(12.))
+                        .text_size(px(12.))
+                        .child(text.clone()),
+                ),
+                (Some(_), Preview::Reading) => d.child(
+                    div()
+                        .text_size(px(13.))
+                        .text_color(rgb(c.muted))
+                        .child("Reading…"),
+                ),
+                (Some(_), Preview::Not(why)) => d.child(
+                    div()
+                        .px(px(16.))
+                        .text_size(px(13.))
+                        .text_color(rgb(c.muted))
+                        .child(*why),
+                ),
+                (Some(e), _) if e.kind == Kind::Image => d.child(icon("image", 40., c.muted)),
+                (Some(e), _) => d.child(
                     tile(64., 20., e.kind.tint(&c))
                         .text_size(px(15.))
                         .font_weight(FontWeight::BOLD)
                         .child(e.tag()),
                 ),
-                None => d.child(
+                (None, _) => d.child(
                     div()
                         .text_size(px(13.))
                         .text_color(rgb(c.muted))
