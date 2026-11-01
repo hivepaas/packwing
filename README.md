@@ -20,11 +20,13 @@ S3 buckets, WebDAV folders and servers over SFTP are storages too, added from Ad
 packwing is a [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui) app, built with the Rust version in `rust-toolchain.toml` (rustup installs it by itself):
 
 ```sh
-cargo run -p packwing   # `-- --first-run`: the welcome; `-- --managed`: as an organization runs it
-cargo test -p packwing
+make release   # the window
+make debug     # the same, built for debugging
+make test
+make           # lists the rest
 ```
 
-On Linux without the X11 development libraries (`libxkbcommon-x11-dev` and the like), build for Wayland alone: `cargo run -p packwing --no-default-features --features wayland`.
+On Linux, `make` builds for Wayland alone, which needs no X11 development libraries (`libxkbcommon-x11-dev` and the like). For X11 too: `make release FEATURES=wayland,x11`. `cargo run -p packwing` builds for both; add `-- --first-run` for the welcome, or `-- --managed` to run it as an organization does.
 
 The welcome, or Settings › Right-click menu, puts packwing's items in the file manager's right-click menu for the user, through [context-menu-rs](https://github.com/hivepaas/context-menu-rs). Each runs the program that put it there, so a menu put in by `cargo run` runs that build; the next start of another build points it at that one. On Linux the items are in the menus of Dolphin, Nemo and Thunar; in Nautilus's own menu with the .deb's extension (below), and otherwise in its Scripts submenu, or its own menu with nautilus-python. On Windows they are under "Show more options", and on macOS in Finder's Quick Actions, until packwing's packages there hold the native extensions.
 
