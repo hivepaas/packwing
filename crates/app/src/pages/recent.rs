@@ -4,22 +4,58 @@ use gpui::{Context, EventEmitter, FontWeight, Render, Window, div, prelude::*, p
 
 use super::{panel, title};
 use crate::colors::colors;
-use crate::demo::Recent;
-use crate::model::{Kind, size};
+use crate::model::{Kind, date, size, tag_of};
+use crate::prefs::Opened;
 use crate::widgets::{chip, tile};
 
 /// One of them was asked for: its index.
 pub struct OpenRecent(pub usize);
 
+/// A row of the page.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Row {
+    pub name: String,
+    pub location: String,
+    /// Its size; none if it is not there any more.
+    pub size: Option<u64>,
+    pub opened: String,
+    pub damaged: bool,
+}
+
+impl Row {
+    /// What `opened` is now, as its file says.
+    pub fn of(opened: &Opened) -> Row {
+        let path = &opened.path;
+        Row {
+            name: path.file_name().map_or_else(
+                || path.display().to_string(),
+                |n| n.to_string_lossy().into_owned(),
+            ),
+            location: path
+                .parent()
+                .map(|p| p.display().to_string())
+                .unwrap_or_default(),
+            size: std::fs::metadata(path).ok().map(|m| m.len()),
+            opened: date(opened.at),
+            damaged: false,
+        }
+    }
+}
+
 pub struct RecentPage {
-    archives: &'static [Recent],
+    archives: Vec<Row>,
 }
 
 impl EventEmitter<OpenRecent> for RecentPage {}
 
 impl RecentPage {
-    pub fn new(archives: &'static [Recent]) -> Self {
+    pub fn new(archives: Vec<Row>) -> Self {
         RecentPage { archives }
+    }
+
+    pub fn show(&mut self, archives: Vec<Row>, cx: &mut Context<Self>) {
+        self.archives = archives;
+        cx.notify();
     }
 }
 
@@ -43,7 +79,7 @@ impl Render for RecentPage {
                     tile(40., 14., Kind::Archive.tint(&c))
                         .text_size(px(11.))
                         .font_weight(FontWeight::BOLD)
-                        .child(r.tag()),
+                        .child(tag_of(&r.name, Kind::Archive)),
                 )
                 .child(
                     div()
@@ -60,25 +96,25 @@ impl Render for RecentPage {
                                         .truncate()
                                         .text_size(px(15.))
                                         .font_weight(FontWeight::MEDIUM)
-                                        .child(r.name),
+                                        .child(r.name.clone()),
                                 )
                                 .when(r.damaged, |d| {
                                     d.child(chip("Damaged", c.bad_bg, c.bad_text))
                                 }),
                         )
-                        .child(
-                            div()
-                                .text_size(px(13.))
-                                .text_color(rgb(c.muted))
-                                .child(format!("{} · {}", r.location, size(r.size))),
-                        ),
+                        .child(div().text_size(px(13.)).text_color(rgb(c.muted)).child(
+                            match r.size {
+                                Some(bytes) => format!("{} · {}", r.location, size(bytes)),
+                                None => format!("{} · not there any more", r.location),
+                            },
+                        )),
                 )
                 .child(
                     div()
                         .flex_shrink_0()
                         .text_size(px(13.))
                         .text_color(rgb(c.muted))
-                        .child(r.opened),
+                        .child(r.opened.clone()),
                 )
         });
         div()
@@ -96,6 +132,15 @@ impl Render for RecentPage {
                     .flex()
                     .flex_col()
                     .p(px(10.))
+                    .when(self.archives.is_empty(), |d| {
+                        d.child(
+                            div()
+                                .p(px(16.))
+                                .text_size(px(14.))
+                                .text_color(rgb(c.muted))
+                                .child("The archives you open will show here."),
+                        )
+                    })
                     .children(rows),
             )
     }

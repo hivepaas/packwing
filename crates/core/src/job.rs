@@ -48,23 +48,70 @@ fn zip_archive<R: ReadAt>(source: R) -> Result<Archive<R>, Error> {
     )?)
 }
 
-/// Extracts the archive at `path` into `destination`, made if it is not
-/// there, with hivepack-extract's checks: nothing outside it, over what is
-/// there, or through a link. A link that stays inside it is made, last; one
-/// that leaves it stops the job. On Windows, where most accounts cannot make
-/// links, a link is a file that holds its target. The files keep the archive's
-/// mark of where it came from.
+/// The most entries an archive may hold: hivepack's default, 100,000, is less
+/// than a folder of a program's sources may be.
+const MAX_ENTRIES: u64 = 10_000_000;
+
+/// What a user can choose about extracting.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ExtractOptions {
+    /// Replaces files that are there; otherwise one of them stops the job.
+    pub overwrite: bool,
+    /// The most it may write, in bytes in all and so in a file: what stops an
+    /// archive bomb. None for no limit, but the ratio of written to compressed
+    /// stays.
+    pub limit: Option<u64>,
+    /// The files keep the archive's mark of where it came from.
+    pub keep_mark: bool,
+}
+
+impl Default for ExtractOptions {
+    fn default() -> ExtractOptions {
+        ExtractOptions {
+            overwrite: false,
+            limit: Some(100_000_000_000),
+            keep_mark: true,
+        }
+    }
+}
+
+/// [`extract_with`] the default options.
 pub fn extract(
     path: &Path,
     destination: &Path,
     keys: &Keys,
     control: &Control,
 ) -> Result<Summary, Error> {
+    extract_with(path, destination, keys, &ExtractOptions::default(), control)
+}
+
+/// Extracts the archive at `path` into `destination`, made if it is not
+/// there, with hivepack-extract's checks: nothing outside it, over what is
+/// there, or through a link. A link that stays inside it is made, last; one
+/// that leaves it stops the job. On Windows, where most accounts cannot make
+/// links, a link is a file that holds its target. The files keep the archive's
+/// mark of where it came from.
+pub fn extract_with(
+    path: &Path,
+    destination: &Path,
+    keys: &Keys,
+    how: &ExtractOptions,
+    control: &Control,
+) -> Result<Summary, Error> {
     let mut options = Options::default();
     options.password = keys.password.clone();
     options.progress = control.progress.clone();
     options.cancel = control.cancel.clone();
-    options.origin = Origin::of(path)?;
+    options.origin = if how.keep_mark {
+        Origin::of(path)?
+    } else {
+        None
+    };
+    options.overwrite = how.overwrite;
+    options.limits.max_entries = MAX_ENTRIES;
+    let limit = how.limit.unwrap_or(u64::MAX);
+    options.limits.max_entry_size = limit;
+    options.limits.max_total_size = limit;
     options.links = if cfg!(windows) {
         Links::AsFile
     } else {
@@ -134,25 +181,29 @@ pub fn extract(
                 opened,
                 &without_layers(&name, &layers),
                 destination,
+                how,
                 control,
             )
         }
     }
 }
 
-/// One file under layers, written as `name` in `destination`: never over
-/// what is there, and removed if it fails or is cancelled.
+/// One file under layers, written as `name` in `destination`: over what is
+/// there only if asked, and removed if it fails or is cancelled.
 fn extract_one(
     mut opened: Opened<'_>,
     name: &str,
     destination: &Path,
+    how: &ExtractOptions,
     control: &Control,
 ) -> Result<Summary, Error> {
     std::fs::create_dir_all(destination)?;
     let path = destination.join(name);
     let mut file = OpenOptions::new()
         .write(true)
-        .create_new(true)
+        .create_new(!how.overwrite)
+        .create(how.overwrite)
+        .truncate(how.overwrite)
         .open(&path)
         .map_err(|e| match e.kind() {
             io::ErrorKind::AlreadyExists => {

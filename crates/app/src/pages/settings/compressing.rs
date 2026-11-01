@@ -1,14 +1,16 @@
 //! Compressing: the format new archives get and how hard they are squeezed,
 //! as New archive starts, and what is left out of them.
 
-use gpui::{Context, Entity, Render, Window, prelude::*};
+use gpui::{Context, Entity, Render, Subscription, Window, prelude::*};
 
 use super::{group, heading, rows, section, setting};
 use crate::dialogs::{Format, LEVELS, Level};
-use crate::widgets::{Select, SelectLook, segment, segments, switch};
+use crate::prefs::{change, prefs};
+use crate::widgets::{Chosen, Select, SelectLook, segment, segments, switch};
 
 pub struct Compressing {
     format: Entity<Select>,
+    _format_chosen: Subscription,
     level: Level,
     /// Leave out what only a Mac uses: `.DS_Store`, `__MACOSX`, resource forks.
     skip_mac_files: bool,
@@ -19,12 +21,24 @@ pub struct Compressing {
 
 impl Compressing {
     pub fn new(cx: &mut Context<Self>) -> Self {
+        let kept = prefs(cx);
+        let chosen = Format::ALL
+            .iter()
+            .position(|f| *f == kept.format)
+            .unwrap_or(0);
+        let format =
+            cx.new(|_| Select::new(&Format::ALL.map(Format::ext), chosen, SelectLook::Pill));
+        let format_chosen = cx.subscribe(&format, |_, select, _: &Chosen, cx| {
+            let format = Format::of_option(select.read(cx).chosen());
+            change(cx, |p| p.format = format);
+        });
         Compressing {
-            format: cx.new(|_| Select::new(&Format::ALL.map(Format::ext), 0, SelectLook::Pill)),
-            level: Level::Medium,
-            skip_mac_files: true,
+            format,
+            _format_chosen: format_chosen,
+            level: kept.level,
+            skip_mac_files: kept.skip_mac_files,
             utf8_names: true,
-            hide_names: true,
+            hide_names: kept.hide_names,
         }
     }
 }
@@ -34,12 +48,18 @@ impl Render for Compressing {
         let levels = LEVELS.iter().map(|&(level, name)| {
             segment(name, name, level == self.level).on_click(cx.listener(move |this, _, _, cx| {
                 this.level = level;
+                change(cx, |p| p.level = level);
                 cx.notify();
             }))
         });
         let toggle = |id: &'static str, on: bool, flip: fn(&mut Compressing)| {
             switch(id, on).on_click(cx.listener(move |this, _, _, cx| {
                 flip(this);
+                let (skip, hide) = (this.skip_mac_files, this.hide_names);
+                change(cx, |p| {
+                    p.skip_mac_files = skip;
+                    p.hide_names = hide;
+                });
                 cx.notify();
             }))
         };

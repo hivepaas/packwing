@@ -99,6 +99,9 @@ pub struct NewArchive {
     pub password: Option<Vec<u8>>,
     /// Encrypts a 7z archive's names too, with its password.
     pub hide_names: bool,
+    /// Leaves out what only a Mac uses, under the paths chosen: `.DS_Store`,
+    /// `__MACOSX` and the `._` files of resource forks.
+    pub skip_mac_files: bool,
     /// Cuts it into `name.zip.001`, `name.zip.002`, … of this many bytes, as
     /// 7-Zip does.
     pub part_size: Option<u64>,
@@ -111,6 +114,7 @@ impl fmt::Debug for NewArchive {
             .field("level", &self.level)
             .field("password", &self.password.is_some())
             .field("hide_names", &self.hide_names)
+            .field("skip_mac_files", &self.skip_mac_files)
             .field("part_size", &self.part_size)
             .finish()
     }
@@ -182,6 +186,13 @@ fn items_of(paths: &[PathBuf]) -> Result<Vec<Item>, Error> {
         walk(path, unicode_name(path)?, &mut items)?;
     }
     Ok(items)
+}
+
+/// Whether `name`, in an archive, is what only a Mac uses. A path chosen by
+/// name is that path's own business: only what is under it is looked at.
+fn is_mac_file(name: &str) -> bool {
+    let mut parts = name.trim_end_matches('/').split('/').skip(1);
+    parts.any(|part| part == ".DS_Store" || part == "__MACOSX" || part.starts_with("._"))
 }
 
 /// Counts the files in `paths`, and the bytes in them.
@@ -1003,7 +1014,10 @@ pub fn create(
     if new.password.is_some() && !matches!(new.kind, Kind::Zip | Kind::SevenZip) {
         return Err(Error::Failed("A tar archive can’t have a password.".into()));
     }
-    let items = items_of(paths)?;
+    let mut items = items_of(paths)?;
+    if new.skip_mac_files {
+        items.retain(|item| !is_mac_file(&item.name));
+    }
     if items.is_empty() {
         return Err(Error::Failed("Nothing to compress.".into()));
     }

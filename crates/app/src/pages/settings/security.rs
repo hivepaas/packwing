@@ -22,6 +22,9 @@ const MONO_FONTS: [&str; 8] = [
     "Ubuntu Mono",
 ];
 
+/// The one of these packwing acts on so far, and keeps.
+const KEEP_MARK: &str = "Keep the “downloaded from the Internet” mark";
+
 struct Toggle {
     label: &'static str,
     detail: &'static str,
@@ -37,7 +40,7 @@ pub struct Security {
 }
 
 impl Security {
-    pub fn new(managed: Option<Managed>) -> Self {
+    pub fn new(managed: Option<Managed>, keep_mark: bool) -> Self {
         let mut toggles = vec![
             Toggle {
                 label: "Check archives before extracting",
@@ -46,10 +49,10 @@ impl Security {
                 on: true,
             },
             Toggle {
-                label: "Keep the “downloaded from the Internet” mark",
+                label: KEEP_MARK,
                 detail: "The system warns before running files that came from a downloaded \
                          archive",
-                on: true,
+                on: keep_mark,
             },
             Toggle {
                 label: "Block programs from Internet archives",
@@ -172,6 +175,10 @@ impl Render for Security {
                 t.detail,
                 switch(("security", i), t.on).on_click(cx.listener(move |this, _, _, cx| {
                     this.toggles[i].on = !this.toggles[i].on;
+                    if this.toggles[i].label == KEEP_MARK {
+                        let on = this.toggles[i].on;
+                        crate::prefs::change(cx, |p| p.keep_mark = on);
+                    }
                     cx.notify();
                 })),
             )
