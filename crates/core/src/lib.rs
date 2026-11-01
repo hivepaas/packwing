@@ -290,6 +290,15 @@ impl From<hivepack_extract::Error> for Error {
     fn from(e: hivepack_extract::Error) -> Error {
         match e.kind {
             hivepack_extract::ErrorKind::Cancelled => Error::Cancelled,
+            hivepack_extract::ErrorKind::Name(why) => {
+                let name = e
+                    .name
+                    .as_deref()
+                    .map_or_else(String::new, |raw| String::from_utf8_lossy(raw).into_owned());
+                Error::Failed(format!(
+                    "This can’t be extracted, as a file’s name can’t be used here: “{name}” ({why})."
+                ))
+            }
             hivepack_extract::ErrorKind::Rar(inner) => Error::from(inner),
             hivepack_extract::ErrorKind::RarEntry(
                 hivepack_extract::RarProblem::MissingPassword,

@@ -770,7 +770,7 @@ fn xar_archives_list_and_test_alone_and_under_zstd() {
         // anything is written.
         let out = s.0.join(format!("out-{name}"));
         let e = extract(&path, &out, &Keys::default(), &Control::default()).unwrap_err();
-        assert!(e.to_string().contains("name refused"), "{name}: {e}");
+        assert!(e.to_string().contains("name can’t be used"), "{name}: {e}");
         assert!(!out.exists(), "{name}");
     }
 }
@@ -1198,4 +1198,57 @@ fn a_search_finds_names_at_any_depth_whatever_their_case_and_accents() {
     let folder = &listing.search("bao cao")[0];
     assert!(folder.child.dir);
     assert_eq!((folder.child.files, folder.child.size), (1, 10));
+}
+
+/// A tar archive of a file named by these bytes, as GNU's format takes any.
+fn tar_named(name: &[u8]) -> Vec<u8> {
+    let mut tar = hivepack_tar::Writer::new(Vec::new());
+    tar.write_header(&hivepack_tar::Header {
+        typeflag: hivepack_tar::TYPE_REG,
+        name: name.to_vec(),
+        mode: 0o644,
+        size: 2,
+        format: hivepack_tar::Format::GNU,
+        ..Default::default()
+    })
+    .unwrap();
+    std::io::Write::write_all(&mut tar, b"hi").unwrap();
+    tar.close().unwrap();
+    tar.into_inner()
+}
+
+#[test]
+fn a_name_in_an_old_encoding_does_not_stop_a_tar_archive() {
+    let s = Scratch::new();
+    let path = s.file("old.tar", &tar_named(b"B\xe1o.txt"));
+    let keys = Keys::default();
+    let control = Control::default();
+    let shown = "B\u{fffd}o.txt";
+    let l = list(&path, &keys).unwrap();
+    assert_eq!(l.entries[0].path, [shown]);
+    let out = s.0.join("out");
+    extract(&path, &out, &keys, &control).unwrap();
+    assert_eq!(std::fs::read(out.join(shown)).unwrap(), b"hi");
+    // By the name the list shows, what is selected or opened is found.
+    let some = s.0.join("some");
+    let how = packwing_core::ExtractOptions::default();
+    let picked = [vec![shown.to_owned()]];
+    packwing_core::extract_selected(&path, &some, &picked, &keys, &how, &control).unwrap();
+    assert_eq!(std::fs::read(some.join(shown)).unwrap(), b"hi");
+    let read = packwing_core::read_entry(&path, &picked[0], &keys, 100, &control).unwrap();
+    assert_eq!(read, b"hi");
+}
+
+#[test]
+fn a_name_that_cannot_be_used_says_which_and_writes_nothing() {
+    let s = Scratch::new();
+    let path = s.file("bad.tar", &tar_named(b"../evil.txt"));
+    let out = s.0.join("out");
+    let e = extract(&path, &out, &Keys::default(), &Control::default()).unwrap_err();
+    let said = e.to_string();
+    assert!(
+        said.contains("../evil.txt") && said.contains("name"),
+        "{said}"
+    );
+    assert!(!s.0.join("evil.txt").exists());
 }
