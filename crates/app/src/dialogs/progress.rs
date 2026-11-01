@@ -15,7 +15,7 @@ use gpui::{
 };
 use packwing_core::{Cancel, Control, Error, Progress};
 
-use super::{DialogEvent, Job, Verb, asked_for, card, footer, header};
+use super::{DialogEvent, Editing, Job, Verb, asked_for, card, footer, header};
 use crate::colors::colors;
 use crate::model::{count, size};
 use crate::widgets::{Fill, Size, Tone, button, check_row, icon, note, tonal_tint};
@@ -58,8 +58,11 @@ impl ProgressDialog {
                 }
             }
         });
-        let running = (!job.work.is_empty() || job.create.is_some() || job.add.is_some())
-            .then(|| Self::run(&job, cx));
+        let running = (!job.work.is_empty()
+            || job.create.is_some()
+            || job.add.is_some()
+            || job.edit.is_some())
+        .then(|| Self::run(&job, cx));
         ProgressDialog {
             job,
             done: 0.,
@@ -90,12 +93,29 @@ impl ProgressDialog {
             job.create.clone(),
             job.add.clone(),
         );
+        let edit = job.edit.clone();
         let task = cx.background_executor().spawn(async move {
             if let Some(c) = create {
                 return packwing_core::create(&c.paths, &c.archive, &c.how, &control).map(Some);
             }
             if let Some(a) = add {
-                packwing_core::add(&a.paths, &a.archive, &a.folder, &keys, &control)?;
+                packwing_core::add_with(
+                    &a.paths,
+                    &a.archive,
+                    &a.folder,
+                    a.on_existing,
+                    &keys,
+                    &control,
+                )?;
+                return Ok(None);
+            }
+            if let Some((archive, _, edit)) = edit {
+                match edit {
+                    Editing::Delete(picked) => packwing_core::delete(&archive, &picked, &keys)?,
+                    Editing::Rename { from, to } => {
+                        packwing_core::rename(&archive, &from, &to, &keys)?
+                    }
+                }
                 return Ok(None);
             }
             for (source, destination) in &work {
@@ -142,6 +162,11 @@ impl ProgressDialog {
                         a.folder,
                         self.job.keys.clone(),
                     ));
+                }
+            }
+            Ok(_) if self.job.edit.is_some() => {
+                if let Some((archive, folder, _)) = self.job.edit.clone() {
+                    cx.emit(DialogEvent::Added(archive, folder, self.job.keys.clone()));
                 }
             }
             Ok(Some(copy)) if self.job.verb == Verb::Open => {
@@ -280,11 +305,13 @@ impl ProgressDialog {
             (Verb::Extract, false) => "Extracting…",
             (Verb::Create, false) => "Creating…",
             (Verb::Add, false) => "Adding…",
+            (Verb::Edit, false) => "Changing the archive…",
             (Verb::Open, false) => "Opening…",
             (Verb::Test, false) => "Testing…",
             (Verb::Extract, true) => "Couldn’t extract",
             (Verb::Create, true) => "Couldn’t create the archive",
             (Verb::Add, true) => "Couldn’t add the files",
+            (Verb::Edit, true) => "Couldn’t change the archive",
             (Verb::Open, true) => "Couldn’t open the file",
             (Verb::Test, true) => "The test failed",
         }
@@ -319,7 +346,7 @@ impl Render for ProgressDialog {
         };
         let icon_name = match j.verb {
             Verb::Extract | Verb::Open => "extract",
-            Verb::Create | Verb::Add => "logo",
+            Verb::Create | Verb::Add | Verb::Edit => "logo",
             Verb::Test => "shield",
         };
         let header = header(icon_name, tonal_tint(), self.title(), detail, None);
@@ -427,7 +454,7 @@ impl Render for ProgressDialog {
                 )
             })
             .when(
-                !matches!(j.verb, Verb::Test | Verb::Add | Verb::Open),
+                !matches!(j.verb, Verb::Test | Verb::Add | Verb::Edit | Verb::Open),
                 |d| {
                     d.child(
                         check_row(

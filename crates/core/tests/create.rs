@@ -10,9 +10,9 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use packwing_core::{
-    Cancel, Control, Error, ExtractOptions, Keys, Kind, Level, NewArchive, Progress, add, can_add,
-    create, extract, extract_selected, extract_to_open, extract_with, image_fits, list, measure,
-    read_entry, test,
+    Cancel, Control, Error, ExtractOptions, Keys, Kind, Level, NewArchive, OnExisting, Progress,
+    add, add_with, can_add, create, delete, extract, extract_selected, extract_to_open,
+    extract_with, image_fits, list, measure, read_entry, rename, test,
 };
 
 /// A folder of a test's own, gone when it ends.
@@ -1269,4 +1269,134 @@ fn a_picture_that_says_it_is_huge_is_not_decoded() {
     assert!(image_fits(&png_of_size(4_000, 3_000)));
     assert!(!image_fits(&png_of_size(50_000, 50_000)));
     assert!(!image_fits(b"not a picture"));
+}
+
+fn names_in(path: &Path, keys: &Keys) -> Vec<String> {
+    let mut names: Vec<String> = list(path, keys)
+        .unwrap()
+        .entries
+        .iter()
+        .filter(|e| !e.dir)
+        .map(|e| e.path.join("/"))
+        .collect();
+    names.sort();
+    names
+}
+
+#[test]
+fn a_name_it_holds_can_be_replaced_or_skipped() {
+    let s = Scratch::new("on-existing");
+    let made = to_add_to(&s, None);
+    let source = s.path("nguồn/Báo cáo");
+    fs::create_dir_all(&source).unwrap();
+    fs::write(source.join("ghi chú.txt"), "mới").unwrap();
+    fs::write(source.join("thêm.txt"), "thêm").unwrap();
+    let keys = Keys::default();
+    let control = Control::default();
+    let read_note = |s: &Scratch, name: &str| {
+        let out = s.path(name);
+        extract(&made, &out, &keys, &control).unwrap();
+        fs::read_to_string(out.join("Báo cáo/ghi chú.txt")).unwrap()
+    };
+    assert!(add(std::slice::from_ref(&source), &made, &[], &keys, &control).is_err());
+    add_with(
+        std::slice::from_ref(&source),
+        &made,
+        &[],
+        OnExisting::Skip,
+        &keys,
+        &control,
+    )
+    .unwrap();
+    assert_eq!(read_note(&s, "skipped"), "xin chào\n");
+    assert_eq!(list(&made, &keys).unwrap().files, 4);
+    fs::write(source.join("thêm.txt"), "lần hai").unwrap();
+    add_with(
+        std::slice::from_ref(&source),
+        &made,
+        &[],
+        OnExisting::Replace,
+        &keys,
+        &control,
+    )
+    .unwrap();
+    assert_eq!(read_note(&s, "replaced"), "mới");
+    assert_eq!(list(&made, &keys).unwrap().files, 4, "no name twice");
+    test(&made, &keys, &control).unwrap();
+    if let Ok(said) = Command::new("unzip").arg("-t").arg(&made).output() {
+        assert!(said.status.success(), "{said:?}");
+    }
+    // A file where it holds a folder is never replaced.
+    let clash = s.path("khác");
+    fs::create_dir_all(&clash).unwrap();
+    fs::write(clash.join("Hình ảnh"), "x").unwrap();
+    let inner = ["Báo cáo".to_owned()];
+    let file = [clash.join("Hình ảnh")];
+    assert!(add_with(&file, &made, &inner, OnExisting::Replace, &keys, &control).is_err());
+}
+
+#[test]
+fn entries_can_be_deleted_folders_with_what_they_hold() {
+    let s = Scratch::new("delete");
+    let made = to_add_to(&s, None);
+    let keys = Keys::default();
+    delete(&made, &[path_of("Báo cáo/rỗng")], &keys).unwrap();
+    delete(&made, &[path_of("Báo cáo/Hình ảnh")], &keys).unwrap();
+    assert_eq!(names_in(&made, &keys), ["Báo cáo/ghi chú.txt"]);
+    test(&made, &keys, &Control::default()).unwrap();
+    if let Ok(said) = Command::new("unzip").arg("-t").arg(&made).output() {
+        assert!(said.status.success(), "{said:?}");
+    }
+    let before = fs::read(&made).unwrap();
+    assert!(delete(&made, &[path_of("không có")], &keys).is_err());
+    assert!(
+        delete(&made, &[path_of("Báo cáo")], &keys).is_err(),
+        "all of it"
+    );
+    assert_eq!(fs::read(&made).unwrap(), before);
+    nothing_left_beside(&s);
+}
+
+#[test]
+fn entries_can_be_renamed_folders_with_what_they_hold() {
+    let s = Scratch::new("rename");
+    let made = to_add_to(&s, Some("mật khẩu"));
+    let keys = Keys {
+        password: Some("mật khẩu".as_bytes().to_vec()),
+        ..Keys::default()
+    };
+    rename(&made, &path_of("Báo cáo/ghi chú.txt"), "đã đổi.txt", &keys).unwrap();
+    rename(&made, &path_of("Báo cáo/Hình ảnh"), "Ảnh", &keys).unwrap();
+    assert_eq!(
+        names_in(&made, &keys),
+        ["Báo cáo/rỗng", "Báo cáo/đã đổi.txt", "Báo cáo/Ảnh/lớn.bin"]
+    );
+    // The data is as it was, and still needs the password.
+    let out = s.path("out");
+    assert!(extract(&made, &s.path("no"), &Keys::default(), &Control::default()).is_err());
+    extract(&made, &out, &keys, &Control::default()).unwrap();
+    assert_eq!(fs::read(out.join("Báo cáo/Ảnh/lớn.bin")).unwrap(), big());
+    let before = fs::read(&made).unwrap();
+    for bad in ["", "a/b", "a\\b", "..", "rỗng"] {
+        assert!(
+            rename(&made, &path_of("Báo cáo/đã đổi.txt"), bad, &keys).is_err(),
+            "{bad:?}"
+        );
+    }
+    assert_eq!(fs::read(&made).unwrap(), before);
+    nothing_left_beside(&s);
+}
+
+#[test]
+fn only_a_zip_archive_of_one_file_is_changed() {
+    let s = Scratch::new("change-kinds");
+    let root = s.tree();
+    let new = NewArchive {
+        kind: Kind::TarGz,
+        ..NewArchive::default()
+    };
+    let made = create(&[root], &s.path("a.tar.gz"), &new, &Control::default()).unwrap();
+    let keys = Keys::default();
+    assert!(delete(&made, &[path_of("Báo cáo/rỗng")], &keys).is_err());
+    assert!(rename(&made, &path_of("Báo cáo/rỗng"), "x", &keys).is_err());
 }

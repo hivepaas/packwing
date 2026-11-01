@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 38] = [
+const SCREENS: [(&str, SetUp, bool); 40] = [
     ("archive", |_, _, _| {}, false),
     (
         "archive-opened",
@@ -87,6 +87,24 @@ const SCREENS: [(&str, SetUp, bool); 38] = [
             ws.select_in_archive(&[1], cx);
             let text = "# Trang của công ty\n\nCách chạy:\n\n    ./deploy.sh --production\n\nHỏi ai nếu có lỗi? Xem docs/.\n";
             ws.preview_in_archive(None, text, cx);
+        },
+        false,
+    ),
+    (
+        "rename",
+        |ws, window, cx| {
+            ws.show_archive(read(), cx);
+            ws.select_in_archive(&[1], cx);
+            ws.open_edit(true, window, cx);
+        },
+        false,
+    ),
+    (
+        "delete",
+        |ws, window, cx| {
+            ws.show_archive(read(), cx);
+            ws.select_in_archive(&[1, 2], cx);
+            ws.open_edit(false, window, cx);
         },
         false,
     ),

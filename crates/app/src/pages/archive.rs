@@ -31,6 +31,9 @@ pub enum ArchiveEvent {
     Test,
     /// Choose an archive to open.
     Open,
+    /// Delete what is selected, or rename the one selected.
+    Delete,
+    Rename,
     /// Open this file in it, as its path in the archive says.
     OpenEntry(Vec<String>),
 }
@@ -548,6 +551,12 @@ impl ArchivePage {
                 )
         });
         let empty = rows.len() == 0;
+        let changeable = !searching
+            && !self.selected.is_empty()
+            && a.listing
+                .as_ref()
+                .is_some_and(|l| packwing_core::can_add(l));
+        let one = self.selected.len() == 1;
         panel()
             .flex_1()
             .min_w_0()
@@ -555,7 +564,25 @@ impl ArchivePage {
             .flex()
             .flex_col()
             .p(px(10.))
-            .child(crumb)
+            .child(
+                div()
+                    .flex()
+                    .items_center()
+                    .gap(px(8.))
+                    .child(div().flex_1().min_w_0().child(crumb))
+                    .when(changeable && one, |d| {
+                        d.child(
+                            button("rename", "Rename", Fill::Outline, Size::Small)
+                                .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Rename))),
+                        )
+                    })
+                    .when(changeable, |d| {
+                        d.child(
+                            button("delete", "Delete", Fill::Outline, Size::Small)
+                                .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Delete))),
+                        )
+                    }),
+            )
             .child(
                 div()
                     .id("entries")
