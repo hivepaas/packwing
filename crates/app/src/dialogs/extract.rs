@@ -246,7 +246,11 @@ impl ExtractDialog {
                 this.dest = Dest::Smart;
                 cx.notify();
             }))
-            .child(titled("Smart", self.smart_detail(), smart).flex_1())
+            .child(
+                titled("Smart", self.smart_detail(), smart)
+                    .flex_1()
+                    .min_w_0(),
+            )
             .child(chip(
                 "Recommended",
                 c.surface,
@@ -272,6 +276,7 @@ impl ExtractDialog {
                 div()
                     .grid()
                     .grid_cols(3)
+                    .min_w_0()
                     .gap(px(8.))
                     .child(
                         option_card("dest-new", new_folder)

@@ -183,6 +183,7 @@ pub fn header(
                     div()
                         .text_size(px(22.))
                         .font_weight(FontWeight::BOLD)
+                        .truncate()
                         .child(title.into()),
                 )
                 .child(

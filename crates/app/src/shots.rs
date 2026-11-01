@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 40] = [
+const SCREENS: [(&str, SetUp, bool); 42] = [
     ("archive", |_, _, _| {}, false),
     (
         "archive-opened",
@@ -105,6 +105,19 @@ const SCREENS: [(&str, SetUp, bool); 40] = [
             ws.show_archive(read(), cx);
             ws.select_in_archive(&[1, 2], cx);
             ws.open_edit(false, window, cx);
+        },
+        false,
+    ),
+    (
+        "archive-long-name",
+        |ws, _, cx| ws.show_archive(read_named(LONG_NAME), cx),
+        false,
+    ),
+    (
+        "extract-long-name",
+        |ws, window, cx| {
+            ws.show_archive(read_named(LONG_NAME), cx);
+            ws.open_extract(window, cx);
         },
         false,
     ),
@@ -362,6 +375,13 @@ fn age_file() -> PathBuf {
 
 /// An archive as packwing-core lists it, shown two folders down.
 fn read() -> Shown {
+    read_named("site-backup-2026-10.tar.zst")
+}
+
+/// A name too long for anything it is shown in.
+const LONG_NAME: &str = "Báo-cáo-tài-chính-hợp-nhất-toàn-bộ-công-ty-và-các-đơn-vị-thành-viên-năm-2026-bản-cuối-cùng-đã-được-ban-giám-đốc-phê-duyệt-và-ký-tên-đóng-dấu.tar.zst";
+
+fn read_named(name: &str) -> Shown {
     let entry = |path: &str, dir, size| packwing_core::Entry {
         path: path.split('/').map(str::to_owned).collect(),
         dir,
@@ -369,7 +389,7 @@ fn read() -> Shown {
         modified: Some(1_760_000_000),
     };
     let listing = packwing_core::Listing {
-        name: "site-backup-2026-10.tar.zst".into(),
+        name: name.into(),
         folder: PathBuf::from("/home/user/Downloads"),
         packed: 48_200_000,
         unpacked: 131_000_000,
@@ -667,4 +687,34 @@ fn a_drop_on_the_window_starts_a_new_archive_and_the_dialog_takes_more() {
         held,
         [PathBuf::from("/tmp/a.txt"), PathBuf::from("/tmp/b.txt")]
     );
+}
+
+/// In a large window the preview takes a quarter of the row.
+#[test]
+fn a_large_window_gives_the_preview_more() {
+    let text = Arc::new(gpui_wgpu::CosmicTextSystem::new(crate::FONT));
+    let mut cx = HeadlessAppContext::with_platform(text, Arc::new(crate::Assets), || {
+        gpui_platform::current_headless_renderer()
+    });
+    cx.update(crate::load_fonts);
+    let window = cx
+        .open_window(size(px(1920.), px(1080.)), |window, cx| {
+            let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
+            cx.new(|cx| Workspace::new(false, false, menu, window, cx))
+        })
+        .expect("cannot open a window");
+    window
+        .update(&mut cx, |ws, _, cx| {
+            ws.show_archive(read(), cx);
+            ws.select_in_archive(&[1], cx);
+            ws.preview_in_archive(Some(sample_png()), "", cx);
+        })
+        .expect("cannot set the screen up");
+    cx.run_until_parked();
+    let image = cx
+        .capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    image
+        .save(out_dir().join("preview-wide-light.png"))
+        .expect("cannot save the picture");
 }
