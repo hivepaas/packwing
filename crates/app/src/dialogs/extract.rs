@@ -1,5 +1,4 @@
-//! Extract: where the files go, the password, and what the safety checks
-//! found.
+//! Extract: where the files go, the password, and what is checked.
 
 use std::path::PathBuf;
 
@@ -14,7 +13,7 @@ use crate::input::TextInput;
 use crate::model::{Archive, counted, size};
 use crate::prefs::ExtractTo;
 use crate::widgets::{
-    Fill, Size, Tone, button, chip, icon, icon_button, legend, link, note, option_card, segment,
+    Fill, Size, Tone, button, chip, icon, icon_button, legend, note, option_card, segment,
     segments, titled, tonal_tint,
 };
 
@@ -350,8 +349,9 @@ impl ExtractDialog {
 
     fn safety(&self) -> impl IntoElement {
         let c = colors();
-        // The checks: no path leaves the folder, no link points out of it,
-        // and the sizes are what the archive says.
+        // What hivepack-extract does for every archive, said before it has run:
+        // no path leaves the folder, no link points out of it, and what is
+        // written stops at the limit. It is not a verdict on this archive.
         div()
             .flex()
             .flex_col()
@@ -371,13 +371,13 @@ impl ExtractDialog {
                         div()
                             .text_size(px(15.))
                             .font_weight(FontWeight::BOLD)
-                            .child("Looks safe"),
+                            .child("Checked as it goes"),
                     )
                     .child(
                         div()
                             .text_size(px(13.))
                             .font_weight(FontWeight::MEDIUM)
-                            .child("· 3 checks passed"),
+                            .child("· Nothing leaves the folder or passes the size limit"),
                     ),
             )
             .children(self.archive.marked.iter().map(|name| {
@@ -419,7 +419,6 @@ impl Render for ExtractDialog {
             .child(self.safety())
             .child(
                 footer()
-                    .child(link("more-options", "More options"))
                     .child(div().flex_1())
                     .child(
                         button("cancel", "Cancel", Fill::Text, Size::Medium)

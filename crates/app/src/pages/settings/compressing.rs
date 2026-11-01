@@ -14,8 +14,6 @@ pub struct Compressing {
     level: Level,
     /// Leave out what only a Mac uses: `.DS_Store`, `__MACOSX`, resource forks.
     skip_mac_files: bool,
-    /// Write names in UTF-8 and mark them so.
-    utf8_names: bool,
     hide_names: bool,
 }
 
@@ -37,7 +35,6 @@ impl Compressing {
             _format_chosen: format_chosen,
             level: kept.level,
             skip_mac_files: kept.skip_mac_files,
-            utf8_names: true,
             hide_names: kept.hide_names,
         }
     }
@@ -83,13 +80,6 @@ impl Render for Compressing {
                     ".DS_Store, __MACOSX and resource forks, clutter anywhere but a Mac",
                     toggle("skip-mac-files", self.skip_mac_files, |s| {
                         s.skip_mac_files = !s.skip_mac_files
-                    }),
-                ),
-                setting(
-                    "Write names that read right everywhere",
-                    "UTF-8, so Vietnamese, Chinese or Japanese names open on any computer",
-                    toggle("utf8-names", self.utf8_names, |s| {
-                        s.utf8_names = !s.utf8_names
                     }),
                 ),
                 setting(
