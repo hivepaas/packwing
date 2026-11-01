@@ -1180,15 +1180,6 @@ impl Workspace {
                 .on_click(cx.listener(|this, _, _, cx| this.show_page(Page::Archive, cx))),
             )
             .child(
-                item(
-                    "nav-storages",
-                    "storages",
-                    tr!("Storages"),
-                    page == Page::Storages,
-                )
-                .on_click(cx.listener(|this, _, _, cx| this.show_page(Page::Storages, cx))),
-            )
-            .child(
                 item("nav-browse", "folder", tr!("Browse"), page == Page::Browse)
                     .on_click(cx.listener(|this, _, _, cx| this.show_page(Page::Browse, cx))),
             )
@@ -1198,6 +1189,15 @@ impl Workspace {
                         this.open_create(Vec::new(), window, cx);
                     },
                 )),
+            )
+            .child(
+                item(
+                    "nav-storages",
+                    "storages",
+                    tr!("Storages"),
+                    page == Page::Storages,
+                )
+                .on_click(cx.listener(|this, _, _, cx| this.show_page(Page::Storages, cx))),
             )
             .child(
                 item(
