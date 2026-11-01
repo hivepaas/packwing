@@ -3,7 +3,7 @@
 //! picker on Linux and Windows gives one or the other.
 
 use packwing_i18n::{tr, tr_n};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use gpui::{
     App, AppContext as _, Context, Entity, EventEmitter, ExternalPaths, PathPromptOptions, Render,
@@ -11,12 +11,11 @@ use gpui::{
 };
 use packwing_core::{Keys, OnExisting};
 
+use super::chosen::{self, Choosing};
 use super::{Adding, DialogEvent, Job, Verb, footer, header};
 use crate::colors::colors;
 use crate::model::{Archive, Selection, count, size};
-use crate::widgets::{
-    Fill, Select, SelectLook, Size, Tone, button, icon_button, legend, note, tonal_tint,
-};
+use crate::widgets::{Fill, Select, SelectLook, Size, button, icon_button, legend, tonal_tint};
 
 /// What a file of the same name in the archive can come to.
 fn on_existing() -> [(String, OnExisting); 3] {
@@ -36,6 +35,8 @@ pub struct AddDialog {
     keys: Keys,
     encrypted: bool,
     selection: Selection,
+    /// The list of what goes in is open.
+    list_shown: bool,
     _counting: Option<Task<()>>,
     on_existing: Entity<Select>,
     /// Add was pressed with nothing chosen: a note says so.
@@ -43,6 +44,30 @@ pub struct AddDialog {
 }
 
 impl EventEmitter<DialogEvent> for AddDialog {}
+
+impl Choosing for AddDialog {
+    fn selection(&self) -> &Selection {
+        &self.selection
+    }
+
+    fn list_shown(&self) -> bool {
+        self.list_shown
+    }
+
+    fn show_list(&mut self, shown: bool) {
+        self.list_shown = shown;
+    }
+
+    fn pick(&mut self, folders: bool, cx: &mut Context<Self>) {
+        self.pick_paths(folders, cx);
+    }
+
+    fn remove(&mut self, path: &Path, cx: &mut Context<Self>) {
+        self.selection.remove(path);
+        self.list_shown &= !self.selection.paths.is_empty();
+        self.count_what_goes_in(cx);
+    }
+}
 
 impl AddDialog {
     /// For `archive`, or `None` if it has no file: the samples.
@@ -56,6 +81,7 @@ impl AddDialog {
             keys: archive.keys.clone(),
             encrypted: archive.encryption.is_some(),
             selection: Selection::default(),
+            list_shown: false,
             _counting: None,
             on_existing,
             checked: false,
@@ -74,6 +100,7 @@ impl AddDialog {
             keys: Keys::default(),
             encrypted: true,
             selection: crate::demo::selection(),
+            list_shown: false,
             _counting: None,
             on_existing,
             checked: false,
@@ -82,11 +109,11 @@ impl AddDialog {
 
     /// Adds `paths` to what goes in, and counts what is in them.
     pub fn add(&mut self, paths: Vec<PathBuf>, cx: &mut Context<Self>) {
-        for path in paths {
-            if !self.selection.paths.contains(&path) {
-                self.selection.paths.push(path);
-            }
-        }
+        self.selection.add(paths);
+        self.count_what_goes_in(cx);
+    }
+
+    fn count_what_goes_in(&mut self, cx: &mut Context<Self>) {
         let paths = self.selection.paths.clone();
         let counting = cx
             .background_executor()
@@ -103,7 +130,7 @@ impl AddDialog {
         cx.notify();
     }
 
-    fn pick(&mut self, folders: bool, cx: &mut Context<Self>) {
+    fn pick_paths(&mut self, folders: bool, cx: &mut Context<Self>) {
         let picked = cx.prompt_for_paths(PathPromptOptions {
             files: !folders,
             directories: folders,
@@ -176,23 +203,6 @@ impl Render for AddDialog {
                 size(s.bytes)
             )
         };
-        let names: Vec<String> = s
-            .paths
-            .iter()
-            .take(3)
-            .filter_map(|p| p.file_name())
-            .map(|n| n.to_string_lossy().into_owned())
-            .collect();
-        let more = s.paths.len().saturating_sub(names.len());
-        let line = match (names.is_empty(), more) {
-            (true, _) => tr!("Nothing chosen yet").to_owned(),
-            (false, 0) => names.join(", "),
-            (false, more) => tr!(
-                "{join} and {more} more",
-                join = names.join(", "),
-                more = more
-            ),
-        };
         let row = |label: String, text: String| {
             div().flex_1().min_w_0().child(legend(label)).child(
                 div()
@@ -206,6 +216,8 @@ impl Render for AddDialog {
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         super::card()
             .id("add-dialog")
+            .overflow_y_scroll()
+            .drag_over::<ExternalPaths>(|style, _, _, _| style.bg(rgb(colors().tonal)))
             .on_drop(cx.listener(|this, dropped: &ExternalPaths, _, cx| {
                 this.add(dropped.paths().to_vec(), cx)
             }))
@@ -216,31 +228,7 @@ impl Render for AddDialog {
                 detail,
                 Some(close),
             ))
-            .child(
-                div()
-                    .flex()
-                    .items_center()
-                    .gap(px(8.))
-                    .child(row(tr!("What goes in"), line))
-                    .child(
-                        button("add-files", tr!("Add files…"), Fill::Outline, Size::Small)
-                            .on_click(cx.listener(|this, _, _, cx| this.pick(false, cx))),
-                    )
-                    .child(
-                        button(
-                            "add-folder",
-                            tr!("Add a folder…"),
-                            Fill::Outline,
-                            Size::Small,
-                        )
-                        .on_click(cx.listener(|this, _, _, cx| this.pick(true, cx))),
-                    ),
-            )
-            .when(s.paths.is_empty() && self.checked, |d| {
-                d.child(
-                    note(Tone::Warn).child(tr!("Add the files or a folder to put in the archive.")),
-                )
-            })
+            .child(chosen::section(self, self.checked, cx))
             .child(div().flex().child(row(tr!("Goes in"), self.goes_in())))
             .child(
                 div()

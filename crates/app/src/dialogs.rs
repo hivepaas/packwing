@@ -3,6 +3,7 @@
 //! chose through [`DialogEvent`]; the workspace opens and closes them.
 
 mod add;
+mod chosen;
 mod create;
 mod delete_items;
 mod edit;
