@@ -3,20 +3,20 @@
 //! asks which.
 
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
 
 use gpui::{
-    Context, Div, Entity, FontWeight, MouseButton, PathPromptOptions, Pixels, Point, Render,
-    Subscription, Window, anchored, deferred, div, prelude::*, px, rgb,
+    App, Context, Div, Entity, EventEmitter, FontWeight, MouseButton, PathPromptOptions, Pixels,
+    Point, Render, Subscription, Window, anchored, deferred, div, prelude::*, px, rgb,
 };
-use packwing_core::{Item, LocalFolder};
+use packwing_core::{Item, Values};
 use packwing_i18n::{tr, tr_n};
 
 use super::{panel, title};
+use crate::Extensions;
 use crate::colors::colors;
-use crate::explorer::{Explorer, LOCAL_TAG, Place, is_archive, runs_when_opened};
+use crate::explorer::{Explorer, Place, is_archive, runs_when_opened};
 use crate::model::{Kind, date, size, tag_of};
-use crate::prefs::{self, KeptStorage};
+use crate::prefs::{self, KeptPlace, KeptStorage};
 use crate::widgets::{Fill, Size, button, float_shadow, icon, tile};
 
 /// A storage's name, from its folder.
@@ -39,16 +39,33 @@ fn at_first() -> Vec<KeptStorage> {
     let downloads = home.join("Downloads");
     let mut kept = vec![KeptStorage {
         name: tr!("Home"),
-        path: home,
+        place: KeptPlace::Local(home),
     }];
     if downloads.is_dir() {
         kept.push(KeptStorage {
             name: tr!("Downloads"),
-            path: downloads,
+            place: KeptPlace::Local(downloads),
         });
     }
     kept
 }
+
+/// The storage kinds and the like this build adds.
+fn extensions(cx: &App) -> Extensions {
+    cx.try_global::<Extensions>().cloned().unwrap_or_default()
+}
+
+fn kind_named(kind: &str, cx: &App) -> Option<std::sync::Arc<dyn packwing_core::StorageKind>> {
+    extensions(cx)
+        .storage_kinds
+        .into_iter()
+        .find(|k| k.id() == kind)
+}
+
+/// Add storage was pressed where there is more to choose from than a folder.
+pub struct AddStorageAsked;
+
+impl EventEmitter<AddStorageAsked> for StoragesPage {}
 
 pub struct StoragesPage {
     storages: Vec<KeptStorage>,
@@ -80,29 +97,44 @@ impl StoragesPage {
         page
     }
 
-    /// The storages, and the index of the one chosen.
-    pub fn places(&self) -> (Vec<Place>, usize) {
-        let places = self
-            .storages
-            .iter()
-            .map(|s| Place {
-                name: s.name.clone(),
-                storage: Arc::new(LocalFolder::new(&s.path)),
-            })
-            .collect();
-        (places, self.chosen.unwrap_or(0))
+    /// The storages this build can reach, and the index of the one chosen.
+    pub fn places(&self, cx: &App) -> (Vec<Place>, usize) {
+        let mut chosen = 0;
+        let mut places = Vec::new();
+        for (i, s) in self.storages.iter().enumerate() {
+            if let Some(place) = Self::place_of(s, cx) {
+                if self.chosen == Some(i) {
+                    chosen = places.len();
+                }
+                places.push(place);
+            }
+        }
+        (places, chosen)
     }
 
     pub fn explorer(&self) -> &Entity<Explorer> {
         &self.explorer
     }
 
+    /// The storage kept as `s`, if this build has its kind; none if not, and it
+    /// stays on the list for a build that has.
+    fn place_of(s: &KeptStorage, cx: &App) -> Option<Place> {
+        match &s.place {
+            KeptPlace::Local(path) => Some(Place::local(s.name.clone(), path)),
+            KeptPlace::Other { kind, id, values } => {
+                let k = kind_named(kind, cx)?;
+                Some(Place {
+                    name: s.name.clone(),
+                    tag: k.tag(),
+                    storage: k.open(id, values, None),
+                })
+            }
+        }
+    }
+
     /// Browses the storage at `i`, if there is one.
     pub fn choose(&mut self, i: usize, cx: &mut Context<Self>) {
-        let place = self.storages.get(i).map(|s| Place {
-            name: s.name.clone(),
-            storage: Arc::new(LocalFolder::new(&s.path)),
-        });
+        let place = self.storages.get(i).and_then(|s| Self::place_of(s, cx));
         self.chosen = place.is_some().then_some(i);
         self.explorer.update(cx, |e, cx| e.show_place(place, cx));
         cx.notify();
@@ -118,12 +150,16 @@ impl StoragesPage {
 
     /// Adds the folder at `path` as a storage, and browses it.
     pub fn add(&mut self, path: PathBuf, cx: &mut Context<Self>) {
-        let at = match self.storages.iter().position(|s| s.path == path) {
+        let at = match self
+            .storages
+            .iter()
+            .position(|s| s.place == KeptPlace::Local(path.clone()))
+        {
             Some(at) => at,
             None => {
                 self.storages.push(KeptStorage {
                     name: named(&path),
-                    path,
+                    place: KeptPlace::Local(path),
                 });
                 self.keep(cx);
                 self.storages.len() - 1
@@ -137,13 +173,55 @@ impl StoragesPage {
         if i >= self.storages.len() {
             return;
         }
-        self.storages.remove(i);
+        let gone = self.storages.remove(i);
+        if let KeptPlace::Other { kind, id, .. } = &gone.place
+            && let Some(k) = kind_named(kind, cx)
+        {
+            k.forget_secrets(id);
+        }
         self.keep(cx);
         self.choose(0, cx);
     }
 
+    /// Adds a storage of a kind this build has, and browses it. Its secrets are
+    /// kept first: if they cannot be, it is not added, and that is said.
+    pub fn add_other(
+        &mut self,
+        kind: &str,
+        name: String,
+        values: Values,
+        secrets: &Values,
+        cx: &mut Context<Self>,
+    ) -> std::io::Result<()> {
+        let id = format!(
+            "{:x}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map_or(0, |d| d.as_nanos())
+        );
+        if let Some(k) = kind_named(kind, cx) {
+            k.keep_secrets(&id, secrets)?;
+        }
+        self.storages.push(KeptStorage {
+            name,
+            place: KeptPlace::Other {
+                kind: kind.to_owned(),
+                id,
+                values,
+            },
+        });
+        self.keep(cx);
+        self.choose(self.storages.len() - 1, cx);
+        Ok(())
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn remove_last(&mut self, cx: &mut Context<Self>) {
+        self.remove(self.storages.len().saturating_sub(1), cx);
+    }
+
     /// Asks which folder to add.
-    fn pick_folder(&mut self, cx: &mut Context<Self>) {
+    pub fn pick_folder(&mut self, cx: &mut Context<Self>) {
         let picked = cx.prompt_for_paths(PathPromptOptions {
             files: false,
             directories: true,
@@ -164,6 +242,21 @@ impl StoragesPage {
         let c = colors();
         let rows = self.storages.iter().enumerate().map(|(i, s)| {
             let on = self.chosen == Some(i);
+            let (tag, tile_tint, where_it_is) = match &s.place {
+                KeptPlace::Local(path) => (
+                    crate::explorer::LOCAL_TAG,
+                    c.plain_tag,
+                    path.display().to_string(),
+                ),
+                KeptPlace::Other { kind, values, .. } => match kind_named(kind, cx) {
+                    Some(k) => (k.tag(), c.blue_tag, k.describe(values)),
+                    None => (
+                        "?",
+                        c.plain_tag,
+                        tr!("This copy of packwing cannot open it."),
+                    ),
+                },
+            };
             div()
                 .id(("storage", i))
                 .flex()
@@ -185,10 +278,10 @@ impl StoragesPage {
                     }),
                 )
                 .child(
-                    tile(40., 14., c.plain_tag)
+                    tile(40., 14., tile_tint)
                         .text_size(px(11.))
                         .font_weight(FontWeight::BOLD)
-                        .child(LOCAL_TAG),
+                        .child(tag),
                 )
                 .child(
                     div()
@@ -206,7 +299,7 @@ impl StoragesPage {
                                 .truncate()
                                 .text_size(px(12.))
                                 .text_color(rgb(c.muted))
-                                .child(s.path.display().to_string()),
+                                .child(where_it_is),
                         ),
                 )
         });
@@ -235,7 +328,13 @@ impl StoragesPage {
                 button("add-storage", tr!("Add storage"), Fill::Tonal, Size::Small)
                     .mt(px(8.))
                     .child(icon("plus", 16., c.on_tonal))
-                    .on_click(cx.listener(|this, _, _, cx| this.pick_folder(cx))),
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        if extensions(cx).storage_kinds.is_empty() {
+                            this.pick_folder(cx);
+                        } else {
+                            cx.emit(AddStorageAsked);
+                        }
+                    })),
             )
     }
 
@@ -381,17 +480,25 @@ impl StoragesPage {
         } else {
             tr!("View")
         };
-        let mut actions = div().flex().flex_col().gap(px(8.)).child(
-            button("info-open", open_label, Fill::Accent, Size::Small)
-                .on_click(on(|e, i, cx| e.open(i, cx))),
-        );
-        if is_archive(item) {
+        let local = explorer.is_local();
+        let mut actions =
+            div()
+                .flex()
+                .flex_col()
+                .gap(px(8.))
+                .when(local || !is_archive(item), |d| {
+                    d.child(
+                        button("info-open", open_label, Fill::Accent, Size::Small)
+                            .on_click(on(|e, i, cx| e.open(i, cx))),
+                    )
+                });
+        if is_archive(item) && local {
             actions = actions.child(
                 button("info-extract", tr!("Extract…"), Fill::Tonal, Size::Small)
                     .on_click(on(|e, i, cx| e.extract(i, cx))),
             );
         }
-        if !item.dir && !is_archive(item) {
+        if !item.dir && !is_archive(item) && local {
             actions = actions.child(
                 button(
                     "info-edit",

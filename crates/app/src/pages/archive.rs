@@ -185,7 +185,7 @@ impl ArchivePage {
         if format.is_none() && entry.kind != Kind::Text {
             return;
         }
-        let Some(source) = a.path.clone() else {
+        let Some(source) = a.source.clone() else {
             return;
         };
         if entry.size > MOST_PREVIEWED {
@@ -227,6 +227,15 @@ impl ArchivePage {
             });
         });
         self.previewing = Some((cancel, task));
+    }
+
+    /// Why the file named could not be opened, if it could not, for tests.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn shown_failed(&self) -> Option<String> {
+        match &self.shown {
+            Shown::Failed { why, .. } => Some(why.clone()),
+            _ => None,
+        }
     }
 
     /// The text the preview shows, and whether it is still reading, for tests.
@@ -427,6 +436,19 @@ impl ArchivePage {
                                 c.on_tonal,
                             ))
                             .children(a.encryption.clone().map(|e| chip(e, c.surface, c.on_tonal)))
+                            .children(a.source.as_ref().and_then(|s| s.fetched()).map(
+                                |(fetched, whole)| {
+                                    chip(
+                                        tr!(
+                                            "Read {fetched} of {whole}",
+                                            fetched = size(fetched),
+                                            whole = size(whole)
+                                        ),
+                                        c.accent,
+                                        c.on_accent,
+                                    )
+                                },
+                            ))
                             // The samples show the checks' verdict; an
                             // archive read is checked as it is extracted.
                             .when(a.listing.is_none(), |d| d.child(safe)),
@@ -445,7 +467,9 @@ impl ArchivePage {
                     // A 7z or tar archive has to be written whole again, and
                     // packwing does not do that yet.
                     .when(
-                        a.listing.as_ref().is_none_or(|l| packwing_core::can_add(l)),
+                        a.listing
+                            .as_ref()
+                            .is_none_or(|l| packwing_core::can_add(l) && a.path.is_some()),
                         |d| {
                             d.child(
                                 button("add-files", tr!("Add files"), Fill::Raised, Size::Large)

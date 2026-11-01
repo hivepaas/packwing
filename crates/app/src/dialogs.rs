@@ -3,6 +3,7 @@
 //! chose through [`DialogEvent`]; the workspace opens and closes them.
 
 mod add;
+mod add_storage;
 mod chosen;
 mod create;
 mod delete_items;
@@ -15,6 +16,7 @@ mod transfer;
 mod view_file;
 
 pub use add::AddDialog;
+pub use add_storage::AddStorageDialog;
 pub use create::CreateDialog;
 pub(crate) use create::{Format, LEVELS, Level, level_name};
 pub use delete_items::DeleteDialog;
@@ -30,7 +32,9 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 use gpui::{Div, FontWeight, MouseButton, SharedString, Stateful, div, prelude::*, px, rgb};
-use packwing_core::{Asked, ExtractOptions, Keys, NewArchive, OnExisting, Transfer, Transferred};
+use packwing_core::{
+    Asked, ExtractOptions, Keys, NewArchive, OnExisting, Source, Transfer, Transferred,
+};
 
 use crate::colors::{Tint, colors};
 use crate::widgets::{float_shadow, icon, logo, tile};
@@ -109,7 +113,7 @@ pub struct Job {
     pub bytes: u64,
     /// The archives it reads, one after another, and where each one's files
     /// go (none for a test). Empty for a job that does not run.
-    pub work: Vec<(PathBuf, Option<PathBuf>)>,
+    pub work: Vec<(Source, Option<PathBuf>)>,
     /// What opens the archive: the passphrase and password it was opened
     /// with, or one typed in Extract.
     pub keys: Keys,

@@ -922,7 +922,8 @@ pub fn add(
 /// Whether the archive at `path` is one that can be changed: a ZIP archive of
 /// one file, under no layers.
 fn can_change(archive: &Path, keys: &Keys) -> Result<bool, Error> {
-    let opened = opener(archive, keys).open()?;
+    let source = crate::Source::from(archive);
+    let opened = opener(&source, keys).open()?;
     Ok(opened.container() == Container::Zip
         && opened.layers().is_empty()
         && volume_paths(archive).len() == 1)

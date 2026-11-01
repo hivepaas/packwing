@@ -7,6 +7,10 @@ rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
 
+[lib]
+name = "packwing_app"
+path = "src/lib.rs"
+
 [[bin]]
 name = "packwing"
 path = "src/main.rs"
@@ -26,6 +30,8 @@ gpui.workspace = true
 gpui_platform.workspace = true
 # Reading, extracting and testing archives, through hivepack.
 packwing-core.workspace = true
+# Storages across the network: S3, WebDAV and SFTP.
+packwing-remote.workspace = true
 # The interface's words, in the user's language.
 packwing-i18n.workspace = true
 # The system's right-click menu: packwing's items in it (src/right_click.rs).

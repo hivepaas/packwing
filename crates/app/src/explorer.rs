@@ -21,7 +21,8 @@ use gpui::{
     deferred, div, prelude::*, px, rgb, uniform_list,
 };
 use packwing_core::{
-    Cancel, Counted, Item, Lister, Storage, bad_name, count, folded_query, name_holds,
+    Cancel, Counted, Item, Lister, Source, Storage, Stored, bad_name, count, folded_query,
+    name_holds,
 };
 use packwing_i18n::{tr, tr_n};
 
@@ -44,10 +45,10 @@ const ROW: f32 = 48.;
 
 /// What the explorer needs someone else to do.
 pub enum ExplorerEvent {
-    /// Open the archive at this path.
-    OpenArchive(PathBuf),
-    /// Open the archive at this path, and offer to extract it.
-    Extract(PathBuf),
+    /// Open this archive.
+    OpenArchive(Source),
+    /// Open this archive, and offer to extract it.
+    Extract(Source),
     /// Make a new archive of these.
     Compress(Vec<PathBuf>),
     /// Show this file, by its name in the folder.
@@ -62,7 +63,29 @@ pub enum ExplorerEvent {
 #[derive(Clone)]
 pub struct Place {
     pub name: String,
+    /// The letters on its tile.
+    pub tag: &'static str,
     pub storage: Arc<dyn Storage>,
+}
+
+impl Place {
+    /// A folder on this computer.
+    pub fn local(name: String, path: &std::path::Path) -> Place {
+        Place {
+            name,
+            tag: LOCAL_TAG,
+            storage: Arc::new(packwing_core::LocalFolder::new(path)),
+        }
+    }
+
+    /// The tile's tint: folders on this computer are plain.
+    pub fn tint(&self, c: &crate::colors::Palette) -> crate::colors::Tint {
+        if self.tag == LOCAL_TAG {
+            c.plain_tag
+        } else {
+            c.blue_tag
+        }
+    }
 }
 
 /// A column the items sort by.
@@ -442,6 +465,14 @@ impl Explorer {
         self.path_of(name)
     }
 
+    /// Whether the storage shown is on this computer: other programs and the
+    /// archive jobs work only on what is.
+    pub fn is_local(&self) -> bool {
+        self.place
+            .as_ref()
+            .is_some_and(|p| p.storage.local_path(&[]).is_some())
+    }
+
     /// Where `name` is on this computer, if it is.
     pub fn local_path_of(&self, name: &str) -> Option<PathBuf> {
         self.place.as_ref()?.storage.local_path(&self.path_of(name))
@@ -453,6 +484,16 @@ impl Explorer {
             .as_ref()
             .map(|p| p.storage.show_path(&self.path_of(name)))
             .unwrap_or_default()
+    }
+
+    /// `item` as an archive to read: its file here, or by ranges from the storage.
+    fn source_of(&self, item: &Item) -> Option<Source> {
+        let place = self.place.as_ref()?;
+        let path = self.path_of(&item.name);
+        Some(match place.storage.local_path(&path) {
+            Some(file) => Source::File(file),
+            None => Source::Stored(Stored::new(place.storage.clone(), path, item.size)),
+        })
     }
 
     /// A click on the row at `i`.
@@ -502,8 +543,8 @@ impl Explorer {
             let path = self.path_of(&item.name);
             self.open_folder(path, cx);
         } else if is_archive(item) {
-            if let Some(path) = self.local_path_of(&item.name) {
-                cx.emit(ExplorerEvent::OpenArchive(path));
+            if let Some(source) = self.source_of(item) {
+                cx.emit(ExplorerEvent::OpenArchive(source));
             }
         } else {
             cx.emit(ExplorerEvent::View(item.clone()));
@@ -511,8 +552,8 @@ impl Explorer {
     }
 
     pub fn extract(&mut self, item: &Item, cx: &mut Context<Self>) {
-        if let Some(path) = self.local_path_of(&item.name) {
-            cx.emit(ExplorerEvent::Extract(path));
+        if let Some(source) = self.source_of(item) {
+            cx.emit(ExplorerEvent::Extract(source));
         }
     }
 
@@ -1303,6 +1344,7 @@ impl Explorer {
                         this.open(&open, cx);
                     })),
                 );
+                let local = self.is_local();
                 if archive {
                     menu = menu.child(item("menu-extract", tr!("Extract…"), "", false).on_click(
                         cx.listener(move |this, _, _, cx| {
@@ -1311,7 +1353,7 @@ impl Explorer {
                         }),
                     ));
                 }
-                if !one.dir && !archive {
+                if !one.dir && !archive && local {
                     menu = menu.child(item("menu-edit", Self::edit_label(cx), "", false).on_click(
                         cx.listener(move |this, _, _, cx| {
                             this.menu = None;
@@ -1330,49 +1372,49 @@ impl Explorer {
                     }
                 }
                 let path = self.shown_path_of(&one.name);
-                menu = menu
-                    .child(item("menu-compress", tr!("Compress…"), "", false).on_click(
+                if local {
+                    menu = menu.child(item("menu-compress", tr!("Compress…"), "", false).on_click(
                         cx.listener(|this, _, _, cx| {
                             this.menu = None;
                             this.compress(cx);
                         }),
-                    ))
-                    .child(line())
-                    .child(
-                        item("menu-copy-to", tr!("Copy to…"), "", false)
-                            .on_click(cx.listener(|this, _, _, cx| this.ask_transfer(false, cx))),
-                    )
-                    .child(
-                        item("menu-move-to", tr!("Move to…"), "", false)
-                            .on_click(cx.listener(|this, _, _, cx| this.ask_transfer(true, cx))),
-                    )
-                    .child(line())
-                    .child(
-                        item("menu-rename", tr!("Rename"), "F2", false).on_click(cx.listener(
-                            |this, _, window, cx| {
+                    ));
+                }
+                menu =
+                    menu.child(line())
+                        .child(
+                            item("menu-copy-to", tr!("Copy to…"), "", false).on_click(
+                                cx.listener(|this, _, _, cx| this.ask_transfer(false, cx)),
+                            ),
+                        )
+                        .child(
+                            item("menu-move-to", tr!("Move to…"), "", false).on_click(
+                                cx.listener(|this, _, _, cx| this.ask_transfer(true, cx)),
+                            ),
+                        )
+                        .child(line())
+                        .child(item("menu-rename", tr!("Rename"), "F2", false).on_click(
+                            cx.listener(|this, _, window, cx| {
                                 this.menu = None;
                                 this.start_rename(window, cx);
-                            },
-                        )),
-                    )
-                    .child(
-                        item("menu-delete", tr!("Delete"), "Del", true).on_click(cx.listener(
-                            |this, _, _, cx| {
+                            }),
+                        ))
+                        .child(item("menu-delete", tr!("Delete"), "Del", true).on_click(
+                            cx.listener(|this, _, _, cx| {
                                 this.menu = None;
                                 this.ask_delete(cx);
-                            },
-                        )),
-                    )
-                    .child(line())
-                    .child(
-                        item("menu-copy-path", tr!("Copy path"), "", false).on_click(cx.listener(
-                            move |this, _, _, cx| {
-                                this.menu = None;
-                                cx.write_to_clipboard(ClipboardItem::new_string(path.clone()));
-                                cx.notify();
-                            },
-                        )),
-                    );
+                            }),
+                        ))
+                        .child(line())
+                        .child(
+                            item("menu-copy-path", tr!("Copy path"), "", false).on_click(
+                                cx.listener(move |this, _, _, cx| {
+                                    this.menu = None;
+                                    cx.write_to_clipboard(ClipboardItem::new_string(path.clone()));
+                                    cx.notify();
+                                }),
+                            ),
+                        );
             }
             (MenuFor::Selected, many) => {
                 menu = menu

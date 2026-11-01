@@ -17,6 +17,7 @@ pub fn project() -> Archive {
         name: PROJECT_NAME.into(),
         location: PROJECT_LOCATION.into(),
         path: None,
+        source: None,
         packed: PROJECT_PACKED,
         unpacked: 1_240_000_000,
         files: 1284,
