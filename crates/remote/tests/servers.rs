@@ -549,7 +549,7 @@ fn a_new_archive_goes_straight_where_it_can_and_reads_back() {
                 &|| through.store(true, std::sync::atomic::Ordering::Relaxed),
             )
             .unwrap_or_else(|e| panic!("{kind} {name}: {e}"));
-            let expected = !(kind == "sftp" || (kind == "s3" && format == Kind::TarZst));
+            let expected = !(kind == "sftp" || (kind == "s3" && format != Kind::SevenZip));
             assert_eq!(through.into_inner(), expected, "{kind} {name}");
             let size = storage.stat(&[], name).expect(kind).expect(kind).size;
             let source = Source::Stored(Stored::new(storage.clone(), vec![name.into()], size));

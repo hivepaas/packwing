@@ -711,7 +711,7 @@ impl CreateDialog {
                 )
             } else if storage.sends_as_read() {
                 tr!(
-                    "{ext} is made in this computer’s temporary folder first, then uploaded, so it needs room there. A tar format goes straight to this storage.",
+                    "{ext} is made in this computer’s temporary folder first, then uploaded, so it needs room there. .zip and tar formats go straight to this storage.",
                     ext = format.ext()
                 )
             } else {
