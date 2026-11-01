@@ -1,10 +1,15 @@
 //! Against servers, each skipped without its address:
 //!
-//! - `S3_TEST_ENDPOINT=http://127.0.0.1:18333`, with a bucket `test` that may be
-//!   written to with no signature, as a local SeaweedFS allows;
-//! - `WEBDAV_TEST_ENDPOINT=http://127.0.0.1:18335`, with no password;
+//! - `S3_TEST_ENDPOINT=http://127.0.0.1:18333`, with a bucket `test`, and
+//!   `S3_TEST_ACCESS_KEY` and `S3_TEST_SECRET_KEY`, or none if it may be written to
+//!   with no signature, as a local SeaweedFS allows;
+//! - `WEBDAV_TEST_ENDPOINT=http://127.0.0.1:18335`, and `WEBDAV_TEST_USER` and
+//!   `WEBDAV_TEST_PASSWORD`, or none if it asks for no password;
 //! - `SFTP_TEST_HOST=tester@127.0.0.1:2222`, with `SFTP_TEST_KEY` the key file and
-//!   `SFTP_TEST_KNOWN_HOSTS` a known_hosts that trusts it.
+//!   `SFTP_TEST_KNOWN_HOSTS` a known_hosts that trusts it, or `SFTP_TEST_PASSWORD`
+//!   in place of the key.
+//!
+//! `make s3-start`, `make webdav-start` and `make sftp-start` run them in Docker.
 //!
 //! `cargo test -p packwing-remote -- --test-threads=4`
 
@@ -25,15 +30,20 @@ fn storages(test: &str) -> Vec<(&'static str, Box<dyn Storage>)> {
             endpoint,
             bucket: "test".into(),
             prefix: format!("{}/{test}", std::process::id()),
+            access_key: std::env::var("S3_TEST_ACCESS_KEY").unwrap_or_default(),
+            secret_key: std::env::var("S3_TEST_SECRET_KEY").unwrap_or_default(),
             ..S3Settings::default()
         };
         there.push(("s3", Box::new(s3(settings, None))));
     }
     if let Ok(address) = std::env::var("WEBDAV_TEST_ENDPOINT") {
+        let user = std::env::var("WEBDAV_TEST_USER").unwrap_or_default();
+        let password = std::env::var("WEBDAV_TEST_PASSWORD").unwrap_or_default();
         let top = webdav(
             WebDavSettings {
                 address: address.clone(),
-                ..WebDavSettings::default()
+                user: user.clone(),
+                password: password.clone(),
             },
             None,
         );
@@ -42,7 +52,8 @@ fn storages(test: &str) -> Vec<(&'static str, Box<dyn Storage>)> {
         let _ = top.make_folder(&[], &folder);
         let settings = WebDavSettings {
             address: format!("{}/{folder}", address.trim_end_matches('/')),
-            ..WebDavSettings::default()
+            user,
+            password,
         };
         there.push(("webdav", Box::new(webdav(settings, None))));
     }
@@ -50,7 +61,7 @@ fn storages(test: &str) -> Vec<(&'static str, Box<dyn Storage>)> {
         let settings = |start: String| SftpSettings {
             host: host.clone(),
             start,
-            password: String::new(),
+            password: std::env::var("SFTP_TEST_PASSWORD").unwrap_or_default(),
             key_file: std::env::var_os("SFTP_TEST_KEY").map(Into::into),
             known_hosts: std::env::var_os("SFTP_TEST_KNOWN_HOSTS").map(Into::into),
         };
