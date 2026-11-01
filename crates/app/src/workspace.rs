@@ -16,9 +16,9 @@ use crate::chrome;
 use crate::colors::{self, colors};
 use crate::demo;
 use crate::dialogs::{
-    AddDialog, CreateDialog, Creating, DeleteDialog, DialogEvent, EditDialog, ExtractDialog, Job,
-    OpenFileDialog, PasswordDialog, PasswordEvent, ProgressDialog, TransferDialog, Verb,
-    ViewDialog, asked_for,
+    AddDialog, AddStorageDialog, CreateDialog, Creating, DeleteDialog, DialogEvent, EditDialog,
+    ExtractDialog, Job, OpenFileDialog, PasswordDialog, PasswordEvent, ProgressDialog,
+    TransferDialog, Verb, ViewDialog, asked_for,
 };
 use crate::explorer::ExplorerEvent;
 use crate::model::{Archive, Kind, Selection, stem};
@@ -26,7 +26,7 @@ use crate::pages::archive::{ArchiveEvent, ArchivePage, Shown};
 use crate::pages::onboarding::{Done, Onboarding};
 use crate::pages::recent::{OpenRecent, RecentPage, Row};
 use crate::pages::settings::{Appearance, AppearanceChosen, SettingsPage};
-use crate::pages::storages::StoragesPage;
+use crate::pages::storages::{AddStorageAsked, StoragesPage};
 use crate::placement::{self, WindowPlace};
 use crate::prefs;
 use crate::right_click::{Action, Request, RightClickMenu};
@@ -223,6 +223,15 @@ impl Workspace {
                         let view = cx.new(|cx| DeleteDialog::new(names, explorer, cx));
                         this.show(view, true, window, cx);
                     }
+                },
+            ),
+            cx.subscribe_in(
+                &storages,
+                window,
+                |this, page, _: &AddStorageAsked, window, cx| {
+                    let page = page.clone();
+                    let view = cx.new(|cx| AddStorageDialog::new(page, window, cx));
+                    this.show(view, true, window, cx);
                 },
             ),
             cx.subscribe_in(&recent, window, |this, _, e: &OpenRecent, window, cx| {
@@ -481,6 +490,19 @@ impl Workspace {
         self.open_progress(job, window, cx);
     }
 
+    /// Add storage, as a build with more kinds than a folder asks it.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn open_add_storage(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let page = self.storages.clone();
+        let view = cx.new(|cx| AddStorageDialog::new(page, window, cx));
+        self.show(view, true, window, cx);
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn storages_page(&self) -> Entity<StoragesPage> {
+        self.storages.clone()
+    }
+
     #[cfg(all(test, feature = "shots"))]
     pub fn explorer(&self, cx: &gpui::App) -> Entity<crate::explorer::Explorer> {
         self.storages.read(cx).explorer().clone()
@@ -677,7 +699,7 @@ impl Workspace {
             explorer.folder().to_vec(),
             explorer.selection().into_iter().map(|i| i.name).collect(),
         );
-        let (places, chosen) = page.places();
+        let (places, chosen) = page.places(cx);
         let view =
             cx.new(|cx| TransferDialog::new(from, folder, names, moving, places, chosen, cx));
         self.show(view, true, window, cx);

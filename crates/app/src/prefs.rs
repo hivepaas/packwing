@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use gpui::{App, Global};
-use packwing_core::{ExtractOptions, Level};
+use packwing_core::{ExtractOptions, Level, Values};
 
 use crate::dialogs::Format;
 use crate::pages::settings::Appearance;
@@ -34,11 +34,37 @@ pub struct Opened {
     pub at: i64,
 }
 
-/// A folder on this computer in the list of storages.
+/// Where a storage in the list is.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum KeptPlace {
+    /// A folder on this computer.
+    Local(PathBuf),
+    /// One of a kind this build adds, its secrets kept under `id`.
+    Other {
+        kind: String,
+        id: String,
+        values: Values,
+    },
+}
+
+/// A storage in the list.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct KeptStorage {
     pub name: String,
-    pub path: PathBuf,
+    pub place: KeptPlace,
+}
+
+/// `text` on one line of the file, with no tab in it.
+fn escaped(text: &str) -> String {
+    text.replace('%', "%25")
+        .replace('\t', "%09")
+        .replace('\n', "%0A")
+}
+
+fn unescaped(text: &str) -> String {
+    text.replace("%0A", "\n")
+        .replace("%09", "\t")
+        .replace("%25", "%")
 }
 
 /// Where Extract starts.
@@ -219,15 +245,34 @@ impl Prefs {
                 "storages_kept" => p.storages_kept = on(value, p.storages_kept),
                 "show_hidden" => p.show_hidden = on(value, p.show_hidden),
                 "editor" => p.editor = Some(value.to_owned()).filter(|v| !v.trim().is_empty()),
-                // A local folder: its name, a tab, and its path.
+                // A local folder: its name, a tab, and its path. Another kind: its
+                // kind, then tabs between its name, its id and its settings.
                 "storage" => {
                     if let Some(rest) = value.strip_prefix("local ")
                         && let Some((name, path)) = rest.split_once('\t')
                     {
                         p.storages.push(KeptStorage {
                             name: name.to_owned(),
-                            path: PathBuf::from(path),
+                            place: KeptPlace::Local(PathBuf::from(path)),
                         });
+                    } else if let Some(rest) = value.strip_prefix("other ") {
+                        let mut parts = rest.split('\t');
+                        if let (Some(kind), Some(name), Some(id)) =
+                            (parts.next(), parts.next(), parts.next())
+                        {
+                            let values = parts
+                                .filter_map(|v| v.split_once('='))
+                                .map(|(k, v)| (unescaped(k), unescaped(v)))
+                                .collect();
+                            p.storages.push(KeptStorage {
+                                name: unescaped(name),
+                                place: KeptPlace::Other {
+                                    kind: kind.to_owned(),
+                                    id: id.to_owned(),
+                                    values,
+                                },
+                            });
+                        }
                     }
                 }
                 _ => {}
@@ -281,12 +326,28 @@ impl Prefs {
                 .replace('\n', " "),
         ));
         for s in &self.storages {
-            if let Some(path) = s.path.to_str().filter(|p| !p.contains('\n')) {
-                let name = s.name.replace(['\n', '\t'], " ");
-                text.push_str(&format!("storage=local {name}\t{path}\n"));
+            let name = s.name.replace(['\n', '\t'], " ");
+            match &s.place {
+                KeptPlace::Local(path) => {
+                    if let Some(path) = path.to_str().filter(|p| !p.contains('\n')) {
+                        text.push_str(&format!("storage=local {name}\t{path}\n"));
+                    }
+                }
+                KeptPlace::Other { kind, id, values } => {
+                    text.push_str(&format!("storage=other {kind}\t{}\t{id}", escaped(&name)));
+                    for (k, v) in values {
+                        text.push_str(&format!("\t{}={}", escaped(k), escaped(v)));
+                    }
+                    text.push('\n');
+                }
             }
         }
         text
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn text_for_test(&self) -> String {
+        self.text()
     }
 
     /// Writes them beside the file, then over it: a crash leaves the old one.
@@ -364,11 +425,20 @@ mod tests {
         };
         p.storages.push(KeptStorage {
             name: "Tài liệu\tcũ".to_owned(),
-            path: PathBuf::from("/home/me/Tài liệu cũ"),
+            place: KeptPlace::Local(PathBuf::from("/home/me/Tài liệu cũ")),
+        });
+        p.storages.push(KeptStorage {
+            name: "Sao lưu".to_owned(),
+            place: KeptPlace::Other {
+                kind: "s3".to_owned(),
+                id: "abc".to_owned(),
+                values: [("bucket".to_owned(), "a=b%\tc".to_owned())].into(),
+            },
         });
         let back = Prefs::parse(&p.text());
         assert_eq!(back.storages[0].name, "Tài liệu cũ");
-        assert_eq!(back.storages[0].path, p.storages[0].path);
+        assert_eq!(back.storages[0].place, p.storages[0].place);
+        assert_eq!(back.storages[1], p.storages[1]);
         assert!(back.storages_kept && back.show_hidden);
         assert_eq!(back.editor.as_deref(), Some("code -n"));
         assert!(!Prefs::parse("").storages_kept);

@@ -44,7 +44,8 @@ pub use job::{
 };
 pub use listing::{Child, Entry, Found, Listing, list};
 pub use storage::{
-    Counted, Item, Lister, LocalFolder, Storage, bad_name, by_name, count, folded_query, name_holds,
+    Counted, Field, Item, Lister, LocalFolder, Storage, StorageKind, Values, bad_name, by_name,
+    count, folded_query, name_holds,
 };
 pub use transfer::{Transfer, Transferred, transfer};
 

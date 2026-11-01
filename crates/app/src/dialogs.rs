@@ -3,6 +3,7 @@
 //! chose through [`DialogEvent`]; the workspace opens and closes them.
 
 mod add;
+mod add_storage;
 mod chosen;
 mod create;
 mod delete_items;
@@ -15,6 +16,7 @@ mod transfer;
 mod view_file;
 
 pub use add::AddDialog;
+pub use add_storage::AddStorageDialog;
 pub use create::CreateDialog;
 pub(crate) use create::{Format, LEVELS, Level, level_name};
 pub use delete_items::DeleteDialog;
