@@ -34,6 +34,7 @@ hivepack-xz = { git = "https://github.com/hivepaas/hivepack-rs", rev = "241ee067
 hivepack-zip = { git = "https://github.com/hivepaas/hivepack-rs", rev = "241ee0673ec359b174e6026bddcd6e8faeb4b8d6" }
 hivepack-zstd = { git = "https://github.com/hivepaas/hivepack-rs", rev = "241ee0673ec359b174e6026bddcd6e8faeb4b8d6" }
 packwing-core = { path = "crates/core" }
+packwing-i18n = { path = "crates/i18n" }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
