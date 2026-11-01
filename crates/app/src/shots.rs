@@ -1158,3 +1158,69 @@ fn a_click_takes_a_row_out_and_the_eye_closes_the_list() {
         paths[1..]
     );
 }
+
+/// The wheel over a list that has more to show moves that list alone; anywhere
+/// else in the dialog, it moves the dialog.
+#[test]
+fn the_wheel_moves_only_what_is_under_the_pointer() {
+    use gpui::{
+        Modifiers, MouseMoveEvent, PlatformInput, ScrollDelta, ScrollWheelEvent, TouchPhase, point,
+    };
+    let text = Arc::new(gpui_wgpu::CosmicTextSystem::new(crate::FONT));
+    let mut cx = HeadlessAppContext::with_platform(text, Arc::new(crate::Assets), || {
+        gpui_platform::current_headless_renderer()
+    });
+    cx.update(crate::load_fonts);
+    let window = cx
+        .open_window(size(px(1280.), px(800.)), |window, cx| {
+            let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
+            cx.new(|cx| Workspace::new(false, false, menu, window, cx))
+        })
+        .expect("cannot open a window");
+    let dialog = window
+        .update(&mut cx, |ws, window, cx| {
+            ws.show_sample(cx);
+            ws.open_create_many(window, cx)
+        })
+        .expect("cannot set the screen up");
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    let wheel = |cx: &mut HeadlessAppContext, at: gpui::Point<gpui::Pixels>| {
+        let move_there = PlatformInput::MouseMove(MouseMoveEvent {
+            position: at,
+            pressed_button: None,
+            modifiers: Modifiers::default(),
+        });
+        let turn = PlatformInput::ScrollWheel(ScrollWheelEvent {
+            position: at,
+            delta: ScrollDelta::Pixels(point(px(0.), px(-60.))),
+            modifiers: Modifiers::default(),
+            touch_phase: TouchPhase::Moved,
+        });
+        for event in [move_there, turn] {
+            cx.update_window(window.into(), |_, window, cx| {
+                window.dispatch_event(event, cx);
+            })
+            .expect("cannot send the event");
+            cx.run_until_parked();
+            cx.capture_screenshot(window.into())
+                .expect("cannot draw the window");
+        }
+    };
+    assert_eq!(
+        dialog.read_with(&cx, |d, _| d.scrolled()),
+        (px(0.), px(0.)),
+        "where it starts"
+    );
+    // Over the list, as `create-chosen-light.png` draws it.
+    wheel(&mut cx, point(px(640.), px(300.)));
+    let (list, body) = dialog.read_with(&cx, |d, _| d.scrolled());
+    assert!(list < px(0.), "the list moved");
+    assert_eq!(body, px(0.), "the dialog held still");
+    // Over "Save in", below it.
+    wheel(&mut cx, point(px(640.), px(540.)));
+    let (after, body) = dialog.read_with(&cx, |d, _| d.scrolled());
+    assert_eq!(after, list, "the list held still");
+    assert!(body < px(0.), "the dialog moved");
+}

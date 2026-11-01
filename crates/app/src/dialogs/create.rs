@@ -7,7 +7,8 @@ use std::path::{Path, PathBuf};
 
 use gpui::{
     App, Context, Entity, EventEmitter, ExternalPaths, FontWeight, PathPromptOptions, Render,
-    Subscription, Task, Window, div, prelude::*, px, relative, rgb,
+    ScrollHandle, Subscription, Task, UniformListScrollHandle, Window, div, prelude::*, px,
+    relative, rgb,
 };
 use packwing_core::{Kind, NewArchive};
 
@@ -179,6 +180,9 @@ pub struct CreateDialog {
     selection: Selection,
     /// The list of what goes in is open.
     list_shown: bool,
+    list_scroll: UniformListScrollHandle,
+    /// Where the dialog's body has scrolled to.
+    body_scroll: ScrollHandle,
     /// Where the archive goes.
     folder: Option<PathBuf>,
     /// The name it was given last: while the field still says it, more
@@ -210,6 +214,10 @@ impl Choosing for CreateDialog {
 
     fn list_shown(&self) -> bool {
         self.list_shown
+    }
+
+    fn list_scroll(&self) -> &UniformListScrollHandle {
+        &self.list_scroll
     }
 
     fn show_list(&mut self, shown: bool) {
@@ -263,6 +271,8 @@ impl CreateDialog {
             folder: selection.folder(),
             selection,
             list_shown: false,
+            list_scroll: UniformListScrollHandle::new(),
+            body_scroll: ScrollHandle::new(),
             suggested,
             _counting: None,
             name,
@@ -308,6 +318,15 @@ impl CreateDialog {
     #[cfg(all(test, feature = "shots"))]
     pub fn list_is_open(&self) -> bool {
         self.list_shown
+    }
+
+    /// How far the list and the dialog's body have scrolled, for tests.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn scrolled(&self) -> (gpui::Pixels, gpui::Pixels) {
+        (
+            self.list_scroll.0.borrow().base_handle.offset().y,
+            self.body_scroll.offset().y,
+        )
     }
 
     #[cfg(all(test, feature = "shots"))]
@@ -854,6 +873,7 @@ impl Render for CreateDialog {
             .child(
                 div()
                     .id("create-body")
+                    .track_scroll(&self.body_scroll)
                     .flex_1()
                     .min_h_0()
                     .overflow_y_scroll()
