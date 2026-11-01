@@ -1151,3 +1151,51 @@ fn stopping_a_rar_job_stops_it() {
         Err(Error::Cancelled)
     ));
 }
+
+#[test]
+fn a_search_finds_names_at_any_depth_whatever_their_case_and_accents() {
+    let entry = |path: &str, dir, size| packwing_core::Entry {
+        path: path.split('/').map(str::to_owned).collect(),
+        dir,
+        size,
+        modified: None,
+    };
+    let listing = packwing_core::Listing {
+        name: "a.zip".into(),
+        folder: PathBuf::new(),
+        packed: 0,
+        unpacked: 0,
+        files: 0,
+        layers: Vec::new(),
+        container: Container::Zip,
+        encryption: None,
+        entries: vec![
+            entry("Báo cáo/quý 1/Tổng hợp.xlsx", false, 10),
+            // As macOS writes it: the accents apart.
+            entry("Bao\u{301} ca\u{301}o nháp.txt", false, 5),
+            entry("Đơn hàng.pdf", false, 1),
+            entry("khác/báo cáo.doc", false, 2),
+            entry("rỗng/", true, 0),
+        ],
+    };
+    let paths =
+        |q: &str| -> Vec<String> { listing.search(q).iter().map(|f| f.path.join("/")).collect() };
+    assert_eq!(
+        paths("bao cao"),
+        [
+            "Báo cáo",
+            "Bao\u{301} ca\u{301}o nháp.txt",
+            "khác/báo cáo.doc"
+        ]
+    );
+    assert_eq!(paths("BÁO CÁO"), paths("bao cao"));
+    assert_eq!(paths("don hang"), ["Đơn hàng.pdf"]);
+    assert_eq!(paths("tong"), ["Báo cáo/quý 1/Tổng hợp.xlsx"]);
+    assert_eq!(paths("quy"), ["Báo cáo/quý 1"]);
+    assert!(paths("  ").is_empty());
+    assert!(paths("không có").is_empty());
+    // A folder has what it holds counted, and says it is one.
+    let folder = &listing.search("bao cao")[0];
+    assert!(folder.child.dir);
+    assert_eq!((folder.child.files, folder.child.size), (1, 10));
+}

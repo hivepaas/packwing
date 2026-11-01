@@ -79,7 +79,7 @@ impl Entry {
         tag_of(&self.name, self.kind)
     }
 
-    fn of(child: &Child) -> Entry {
+    pub fn of(child: &Child) -> Entry {
         Entry {
             name: child.name.clone(),
             kind: Kind::of(&child.name, child.dir),

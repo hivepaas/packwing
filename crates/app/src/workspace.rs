@@ -624,6 +624,12 @@ impl Workspace {
         }
     }
 
+    /// Searches the archive open, as the screenshots draw it.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn search_archive(&mut self, query: &str, cx: &mut Context<Self>) {
+        self.archive.update(cx, |p, cx| p.search_for(query, cx));
+    }
+
     /// The Recent page as the screenshots draw it.
     #[cfg(all(test, feature = "shots"))]
     pub fn show_recent_samples(&mut self, cx: &mut Context<Self>) {

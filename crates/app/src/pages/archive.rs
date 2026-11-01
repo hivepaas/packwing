@@ -1,6 +1,8 @@
-//! The open archive: a search over it, its header with what it is and what
+//! The open archive: a search over all of it, its header with what it is and what
 //! to do with it, the folder's files, and the one chosen. Before one is
 //! open, or while it is read, or when it cannot be, the page says so.
+
+use packwing_core::Found;
 
 use gpui::{
     Context, Div, Entity, EventEmitter, FontWeight, Render, Subscription, Window, div, prelude::*,
@@ -22,6 +24,9 @@ pub enum ArchiveEvent {
     Open,
 }
 
+/// The most a search lists: more is not read, and takes long to draw.
+const MOST_FOUND: usize = 500;
+
 /// What the page shows.
 #[derive(Clone, Debug)]
 pub enum Shown {
@@ -42,6 +47,9 @@ pub struct ArchivePage {
     search: Entity<TextInput>,
     /// The entry chosen, by its index in the folder's.
     chosen: Option<usize>,
+    /// What the search found: all of it, as it was typed, in an archive with
+    /// a listing. A sample's search looks in its one folder.
+    found: Vec<Found>,
     _typing: Subscription,
 }
 
@@ -50,11 +58,20 @@ impl EventEmitter<ArchiveEvent> for ArchivePage {}
 impl ArchivePage {
     pub fn new(cx: &mut Context<Self>) -> Self {
         let search = cx.new(|cx| TextInput::new("Search inside this archive", cx));
-        let typing = cx.subscribe(&search, |_, _, _: &Changed, cx| cx.notify());
+        let typing = cx.subscribe(&search, |this: &mut Self, field, _: &Changed, cx| {
+            let query = field.read(cx).text().to_owned();
+            this.found = this
+                .archive()
+                .and_then(|a| a.listing.as_ref())
+                .map(|listing| listing.search(&query))
+                .unwrap_or_default();
+            cx.notify();
+        });
         ArchivePage {
             shown: Shown::Nothing,
             search,
             chosen: None,
+            found: Vec::new(),
             _typing: typing,
         }
     }
@@ -66,6 +83,7 @@ impl ArchivePage {
             _ => None,
         };
         self.shown = shown;
+        self.found.clear();
         self.search.update(cx, |s, cx| s.set_text("", 0..0, cx));
         cx.notify();
     }
@@ -87,16 +105,51 @@ impl ArchivePage {
         }
     }
 
-    /// The entries of the folder whose names hold what is typed in the
-    /// search.
-    fn shown(&self, a: &Archive, cx: &Context<Self>) -> Vec<(usize, Entry)> {
+    /// Shows what a search found where it is: a folder opened, a file chosen in
+    /// its folder. The search is over.
+    fn reveal(&mut self, path: &[String], dir: bool, cx: &mut Context<Self>) {
+        let Some((name, parent)) = path.split_last() else {
+            return;
+        };
+        self.search.update(cx, |s, cx| s.set_text("", 0..0, cx));
+        if dir {
+            self.enter(path.to_vec(), cx);
+            return;
+        }
+        self.enter(parent.to_vec(), cx);
+        self.chosen = self
+            .archive()
+            .and_then(|a| a.entries.iter().position(|e| &e.name == name));
+        cx.notify();
+    }
+
+    /// What to list: the folder's entries; with something typed, what the
+    /// search found, each with where it is.
+    fn shown(&self, a: &Archive, cx: &Context<Self>) -> Vec<(usize, Entry, Option<Vec<String>>)> {
         let query = self.search.read(cx).text().trim().to_lowercase();
+        if !query.is_empty() && a.listing.is_some() {
+            return self
+                .found
+                .iter()
+                .take(MOST_FOUND)
+                .enumerate()
+                .map(|(i, f)| (i, Entry::of(&f.child), Some(f.path.clone())))
+                .collect();
+        }
         a.entries
             .iter()
             .cloned()
             .enumerate()
             .filter(|(_, e)| query.is_empty() || e.name.to_lowercase().contains(&query))
+            .map(|(i, e)| (i, e, None))
             .collect()
+    }
+
+    /// Types `query` in the search, as the screenshots do.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn search_for(&mut self, query: &str, cx: &mut Context<Self>) {
+        self.search
+            .update(cx, |s, cx| s.set_text(query, query.len()..query.len(), cx));
     }
 
     fn search_bar(&self) -> impl IntoElement {
@@ -213,8 +266,19 @@ impl ArchivePage {
         let crumb = self.breadcrumb(a, cx);
         let shown = self.shown(a, cx);
         let query = self.search.read(cx).text().trim().to_string();
-        let rows = shown.into_iter().map(|(i, e)| {
-            let on = self.chosen == Some(i);
+        let more = self.found.len().saturating_sub(MOST_FOUND);
+        let searching = !query.is_empty() && a.listing.is_some();
+        let rows = shown.into_iter().map(|(i, e, found)| {
+            let on = !searching && self.chosen == Some(i);
+            let under = found.as_ref().map(|path| {
+                let folders = &path[..path.len().saturating_sub(1)];
+                if folders.is_empty() {
+                    a.name.clone()
+                } else {
+                    folders.join(" › ")
+                }
+            });
+            let dir = e.kind == Kind::Folder;
             let tint = e.kind.tint(&c);
             let inside = (e.kind == Kind::Folder).then(|| {
                 let mut folder = a.folder.clone();
@@ -234,15 +298,19 @@ impl ArchivePage {
                 .when(on, |d| d.bg(rgb(c.chosen)))
                 .when(!on, |d| d.hover(|s| s.bg(rgb(c.hover))))
                 // A click chooses; a double click opens a folder.
-                .on_click(
-                    cx.listener(move |this, e: &gpui::ClickEvent, _, cx| match &inside {
+                .on_click(cx.listener(move |this, e: &gpui::ClickEvent, _, cx| {
+                    if let Some(path) = &found {
+                        this.reveal(path, dir, cx);
+                        return;
+                    }
+                    match &inside {
                         Some(folder) if e.click_count() >= 2 => this.enter(folder.clone(), cx),
                         _ => {
                             this.chosen = Some(i);
                             cx.notify();
                         }
-                    }),
-                )
+                    }
+                }))
                 .child(
                     tile(40., 14., tint)
                         .text_size(px(11.))
@@ -260,7 +328,15 @@ impl ArchivePage {
                         } else {
                             FontWeight::MEDIUM
                         })
-                        .child(e.name.clone()),
+                        .child(e.name.clone())
+                        .children(under.map(|under| {
+                            div()
+                                .truncate()
+                                .text_size(px(13.))
+                                .font_weight(FontWeight::NORMAL)
+                                .text_color(rgb(c.muted))
+                                .child(under)
+                        })),
                 )
                 .child(
                     div()
@@ -294,7 +370,21 @@ impl ArchivePage {
                                 .py(px(12.))
                                 .text_size(px(14.))
                                 .text_color(rgb(c.muted))
-                                .child(format!("Nothing in this folder matches “{query}”.")),
+                                .child(if searching {
+                                    format!("Nothing in this archive matches “{query}”.")
+                                } else {
+                                    format!("Nothing in this folder matches “{query}”.")
+                                }),
+                        )
+                    })
+                    .when(searching && more > 0, |d| {
+                        d.child(
+                            div()
+                                .px(px(14.))
+                                .py(px(12.))
+                                .text_size(px(14.))
+                                .text_color(rgb(c.muted))
+                                .child(format!("And {more} more. Type more to narrow it down.")),
                         )
                     }),
             )

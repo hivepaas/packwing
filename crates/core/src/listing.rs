@@ -11,6 +11,8 @@ use hivepack_open::{Container, Layer, Opener};
 use hivepack_tar::{Reader, TYPE_DIR, TYPE_X_GLOBAL_HEADER};
 use hivepack_udf::{Udf, VType};
 use hivepack_zip::{Archive, Flags, OpenFlags, Volumes, em, volume_paths};
+use unicode_normalization::UnicodeNormalization;
+use unicode_normalization::char::is_combining_mark;
 
 use crate::joined::{Joined, joined_size};
 use crate::rar;
@@ -53,6 +55,24 @@ pub struct Child {
     pub modified: Option<i64>,
 }
 
+/// What a search of an archive found.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Found {
+    /// Where it is, a component at a time, its own name last.
+    pub path: Vec<String>,
+    pub child: Child,
+}
+
+/// `text` as a search compares it: lower case, without accents, however they
+/// are written. Vietnamese's `đ`, which no accent makes, goes as `d`.
+fn folded(text: &str) -> String {
+    text.nfd()
+        .filter(|c| !is_combining_mark(*c))
+        .flat_map(char::to_lowercase)
+        .map(|c| if c == 'đ' { 'd' } else { c })
+        .collect()
+}
+
 /// An archive, read.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Listing {
@@ -73,6 +93,44 @@ pub struct Listing {
 }
 
 impl Listing {
+    /// What in it, at any depth, has `query` in its name, whatever the case and
+    /// accents: folders it only implies by its paths too, each with what it
+    /// holds counted. Its folders first, then its files, each by path.
+    pub fn search(&self, query: &str) -> Vec<Found> {
+        let query = folded(query.trim());
+        if query.is_empty() {
+            return Vec::new();
+        }
+        let mut found: BTreeMap<(bool, Vec<String>), Found> = BTreeMap::new();
+        for e in &self.entries {
+            for depth in 1..=e.path.len() {
+                let name = &e.path[depth - 1];
+                let dir = e.dir || depth < e.path.len();
+                if !folded(name).contains(&query) {
+                    continue;
+                }
+                let path = &e.path[..depth];
+                let key = path.iter().map(|c| c.to_lowercase()).collect();
+                let hit = found.entry((!dir, key)).or_insert_with(|| Found {
+                    path: path.to_vec(),
+                    child: Child {
+                        name: name.clone(),
+                        dir,
+                        size: 0,
+                        files: 0,
+                        modified: None,
+                    },
+                });
+                if !e.dir {
+                    hit.child.size += e.size;
+                    hit.child.files += 1;
+                }
+                hit.child.modified = hit.child.modified.max(e.modified);
+            }
+        }
+        found.into_values().collect()
+    }
+
     /// What `folder` holds: its folders, then its files, each by name.
     pub fn children(&self, folder: &[String]) -> Vec<Child> {
         let mut found: BTreeMap<(bool, String, String), Child> = BTreeMap::new();
