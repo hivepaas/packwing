@@ -4,9 +4,9 @@
 use std::path::{Path, PathBuf};
 
 use gpui::{
-    AnyView, Context, Entity, EventEmitter, FocusHandle, Focusable, FontWeight, KeyDownEvent,
-    PathPromptOptions, Render, Subscription, Window, WindowAppearance, div, prelude::*, px, rgb,
-    rgba,
+    AnyView, Context, Entity, EventEmitter, ExternalPaths, FocusHandle, Focusable, FontWeight,
+    KeyDownEvent, PathPromptOptions, Render, Subscription, Window, WindowAppearance, div,
+    prelude::*, px, rgb, rgba,
 };
 use packwing_core::{Asked, Keys, NewArchive};
 
@@ -114,6 +114,37 @@ fn looks_dark(window: &Window) -> bool {
         window.appearance(),
         WindowAppearance::Dark | WindowAppearance::VibrantDark
     )
+}
+
+/// What files dropped on the window are for.
+#[derive(Debug, PartialEq, Eq)]
+enum Dropped {
+    /// To add to the archive open.
+    AddTo,
+    /// An archive, to open.
+    Open(PathBuf),
+    /// To make a new archive of.
+    New,
+}
+
+/// `takes_more`: an archive that can be added to is open, and they go in it, an
+/// archive too, as the dialog says so before anything happens.
+fn what_a_drop_means(paths: &[PathBuf], takes_more: bool) -> Dropped {
+    if takes_more {
+        return Dropped::AddTo;
+    }
+    match paths {
+        [one]
+            if !one.is_dir()
+                && Kind::of(
+                    &one.file_name().unwrap_or_default().to_string_lossy(),
+                    false,
+                ) == Kind::Archive =>
+        {
+            Dropped::Open(one.clone())
+        }
+        _ => Dropped::New,
+    }
 }
 
 impl Workspace {
@@ -694,6 +725,48 @@ impl Workspace {
         self.show_page(Page::Recent, cx);
     }
 
+    /// Whether a dialog is open, for tests.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn dialog_open(&self) -> bool {
+        self.dialog.is_some()
+    }
+
+    /// What New archive holds, if it is the dialog open, for tests.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn create_dialog_paths(&self, cx: &gpui::App) -> Vec<PathBuf> {
+        self.dialog
+            .as_ref()
+            .and_then(|d| d.view.clone().downcast::<CreateDialog>().ok())
+            .map(|view| view.read(cx).selection_paths())
+            .unwrap_or_default()
+    }
+
+    /// Files were dropped on the window, with no dialog there to take them.
+    pub fn dropped(&mut self, paths: Vec<PathBuf>, window: &mut Window, cx: &mut Context<Self>) {
+        if self.dialog.is_some() || self.welcome.is_some() {
+            return;
+        }
+        let takes_more = self.page == Page::Archive
+            && self
+                .archive
+                .read(cx)
+                .archive()
+                .and_then(|a| a.listing.as_ref())
+                .is_some_and(|l| packwing_core::can_add(l));
+        match what_a_drop_means(&paths, takes_more) {
+            Dropped::AddTo => {
+                let dialog = self.archive.read(cx).archive().and_then(AddDialog::new);
+                if let Some(dialog) = dialog {
+                    let view = cx.new(|_| dialog);
+                    view.update(cx, |d, cx| d.add(paths, cx));
+                    self.show(view, true, window, cx);
+                }
+            }
+            Dropped::Open(path) => self.open_archive(path, false, window, cx),
+            Dropped::New => self.open_create(paths, window, cx),
+        }
+    }
+
     /// Asks what to add to the archive open; the samples have no file to add to.
     pub fn add_files(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let dialog = self.archive.read(cx).archive().and_then(AddDialog::new);
@@ -881,10 +954,37 @@ impl Render for Workspace {
             .size_full()
             .track_focus(&self.focus)
             .on_key_down(cx.listener(Self::on_key))
+            .drag_over::<ExternalPaths>(|style, _, _, _| style.opacity(0.85))
+            .on_drop(cx.listener(|this, dropped: &ExternalPaths, window, cx| {
+                this.dropped(dropped.paths().to_vec(), window, cx)
+            }))
             .font_family(crate::FONT)
             .text_size(px(15.))
             .text_color(rgb(c.text))
             .child(framed)
             .when_some(dialog, |d, view| d.child(self.overlay(view, window)))
+    }
+}
+
+#[cfg(test)]
+mod drop_tests {
+    use super::*;
+
+    #[test]
+    fn a_drop_goes_where_it_makes_sense() {
+        let path = |p: &str| vec![PathBuf::from(p)];
+        assert_eq!(
+            what_a_drop_means(&path("/a/b.zip"), false),
+            Dropped::Open(PathBuf::from("/a/b.zip"))
+        );
+        assert_eq!(
+            what_a_drop_means(&path("/a/b.TAR.ZST"), false),
+            Dropped::Open(PathBuf::from("/a/b.TAR.ZST"))
+        );
+        assert_eq!(what_a_drop_means(&path("/a/b.zip"), true), Dropped::AddTo);
+        assert_eq!(what_a_drop_means(&path("/a/b.txt"), true), Dropped::AddTo);
+        assert_eq!(what_a_drop_means(&path("/a/b.txt"), false), Dropped::New);
+        let two = [PathBuf::from("/a/b.zip"), PathBuf::from("/a/c.zip")];
+        assert_eq!(what_a_drop_means(&two, false), Dropped::New);
     }
 }

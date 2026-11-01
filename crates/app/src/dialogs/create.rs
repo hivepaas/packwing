@@ -5,8 +5,8 @@
 use std::path::PathBuf;
 
 use gpui::{
-    App, Context, Entity, EventEmitter, FontWeight, PathPromptOptions, Render, Subscription, Task,
-    Window, div, prelude::*, px, relative, rgb,
+    App, Context, Entity, EventEmitter, ExternalPaths, FontWeight, PathPromptOptions, Render,
+    Subscription, Task, Window, div, prelude::*, px, relative, rgb,
 };
 use packwing_core::{Kind, NewArchive};
 
@@ -254,6 +254,11 @@ impl CreateDialog {
             .update(cx, |t, cx| t.set_text(part, part.len()..part.len(), cx));
         self.protect = true;
         cx.notify();
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn selection_paths(&self) -> Vec<PathBuf> {
+        self.selection.paths.clone()
     }
 
     #[cfg(all(test, feature = "shots"))]
@@ -787,6 +792,10 @@ impl Render for CreateDialog {
         let close = icon_button("close", "x", 44.)
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         super::card()
+            .id("create-dialog")
+            .on_drop(cx.listener(|this, dropped: &ExternalPaths, _, cx| {
+                this.add(dropped.paths().to_vec(), cx)
+            }))
             .p(px(0.))
             .gap(px(0.))
             .overflow_hidden()
