@@ -14,7 +14,7 @@ use crate::input::TextInput;
 use crate::model::{Archive, Kind, counted, size};
 use crate::widgets::{
     Fill, Select, SelectLook, Size, Tone, button, chip, icon, icon_button, legend, link, note,
-    option_card, titled, tonal_tint,
+    option_card, segment, segments, titled, tonal_tint,
 };
 
 /// Where the files go.
@@ -39,6 +39,9 @@ pub const ENCODINGS: [&str; 5] = [
 
 pub struct ExtractDialog {
     archive: Archive,
+    picked: Vec<Vec<String>>,
+    /// Only what is picked goes, not all of it.
+    only_picked: bool,
     dest: Dest,
     password: Entity<TextInput>,
     /// The password is shown as typed.
@@ -49,8 +52,12 @@ pub struct ExtractDialog {
 impl EventEmitter<DialogEvent> for ExtractDialog {}
 
 impl ExtractDialog {
-    pub fn new(archive: Archive, cx: &mut Context<Self>) -> Self {
+    /// `picked`: what is chosen in the archive, by path in it, which goes
+    /// rather than all of it unless the user says otherwise.
+    pub fn new(archive: Archive, picked: Vec<Vec<String>>, cx: &mut Context<Self>) -> Self {
         ExtractDialog {
+            only_picked: !picked.is_empty(),
+            picked,
             archive,
             dest: if crate::prefs::prefs(cx).new_folder {
                 Dest::NewFolder
@@ -130,12 +137,44 @@ impl ExtractDialog {
             // over it.
             job.keys = a.keys.clone();
             job.how = crate::prefs::prefs(cx).extract_options();
+            if self.only_picked {
+                job.picked = self.picked.clone();
+            }
             let typed = self.password.read(cx).text();
             if !typed.is_empty() {
                 job.keys.password = Some(typed.as_bytes().to_vec());
             }
         }
         cx.emit(DialogEvent::Start(job));
+    }
+
+    /// All of it, or what is chosen in it.
+    fn what(&self, cx: &mut Context<Self>) -> impl IntoElement {
+        let picked = if self.picked.len() == 1 {
+            self.picked[0].last().cloned().unwrap_or_default()
+        } else {
+            format!("{} selected", self.picked.len())
+        };
+        let all = format!("All {}", counted(self.archive.files, "file", "files"));
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(6.))
+            .child(legend("What should it extract?"))
+            .child(segments([
+                segment("only-picked", picked, self.only_picked).on_click(cx.listener(
+                    |this, _, _, cx| {
+                        this.only_picked = true;
+                        cx.notify();
+                    },
+                )),
+                segment("all-of-it", all, !self.only_picked).on_click(cx.listener(
+                    |this, _, _, cx| {
+                        this.only_picked = false;
+                        cx.notify();
+                    },
+                )),
+            ]))
     }
 
     fn destinations(&self, cx: &mut Context<Self>) -> impl IntoElement {
@@ -345,6 +384,7 @@ impl Render for ExtractDialog {
                 detail,
                 Some(close),
             ))
+            .when(!self.picked.is_empty(), |d| d.child(self.what(cx)))
             .child(self.destinations(cx))
             // An archive opened with its password needs no more; one whose
             // files only are encrypted is asked for it here.

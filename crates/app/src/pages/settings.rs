@@ -85,8 +85,9 @@ impl SettingsPage {
             cx.new(extracting::Extracting::new).into(),
             cx.new(compressing::Compressing::new).into(),
             {
-                let keep_mark = crate::prefs::prefs(cx).keep_mark;
-                cx.new(|_| security::Security::new(managed, keep_mark))
+                let kept = crate::prefs::prefs(cx);
+                let (mark, ask) = (kept.keep_mark, kept.ask_before_open);
+                cx.new(|_| security::Security::new(managed, mark, ask))
                     .into()
             },
             cx.new(|cx| right_click::RightClick::new(menu, cx)).into(),

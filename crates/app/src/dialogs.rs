@@ -5,6 +5,7 @@
 mod add;
 mod create;
 mod extract;
+mod open_file;
 mod password;
 mod progress;
 
@@ -12,6 +13,7 @@ pub use add::AddDialog;
 pub use create::CreateDialog;
 pub(crate) use create::{Format, LEVELS, Level};
 pub use extract::{ENCODINGS, ExtractDialog};
+pub use open_file::OpenFileDialog;
 pub use password::{PasswordDialog, PasswordEvent, asked_for};
 pub use progress::ProgressDialog;
 
@@ -29,6 +31,8 @@ pub enum Verb {
     Extract,
     Create,
     Add,
+    /// A file of an archive, copied out and opened.
+    Open,
     Test,
 }
 
@@ -70,6 +74,9 @@ pub struct Job {
     /// What opens the archive: the passphrase and password it was opened
     /// with, or one typed in Extract.
     pub keys: Keys,
+    /// What it extracts of the one archive, by path in it: all of it if empty.
+    /// For [`Verb::Open`], the one file.
+    pub picked: Vec<Vec<String>>,
     /// How it extracts, if that is what it does.
     pub how: ExtractOptions,
     /// The new archive it makes, if that is what it does.
@@ -95,6 +102,7 @@ impl Job {
             bytes,
             work: Vec::new(),
             keys: Keys::default(),
+            picked: Vec::new(),
             how: ExtractOptions::default(),
             create: None,
             add: None,

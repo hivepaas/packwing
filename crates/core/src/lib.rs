@@ -32,7 +32,10 @@ use crate::joined::Joined;
 pub use create::{Kind, Level, Measured, NewArchive, add, can_add, create, measure};
 pub use hivepack_extract::{Cancel, Progress, Summary};
 pub use hivepack_open::{Container, Layer};
-pub use job::{Control, ExtractOptions, extract, extract_with, test};
+pub use job::{
+    Control, ExtractOptions, clean_opened_files, extract, extract_selected, extract_to_open,
+    extract_with, test,
+};
 pub use listing::{Child, Entry, Found, Listing, list};
 
 /// The largest scrypt work factor accepted: 2^20, 1 GiB and about a second.

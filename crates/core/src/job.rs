@@ -3,12 +3,13 @@
 
 use std::fs::OpenOptions;
 use std::io::{self, Read, Seek, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::AtomicU64;
+use std::time::Duration;
 
 use hivepack_extract::{
-    Cancel, Links, Options, Origin, Progress, ProgressFn, RarProblem, Summary, extract_7z,
+    Cancel, Links, Options, Origin, Progress, ProgressFn, RarProblem, Select, Summary, extract_7z,
     extract_cpio, extract_iso, extract_rar, extract_tar, extract_udf, extract_xar, extract_zip,
 };
 use hivepack_open::{Container, Opened};
@@ -101,6 +102,154 @@ pub fn extract_with(
     how: &ExtractOptions,
     control: &Control,
 ) -> Result<Summary, Error> {
+    extract_picked(path, destination, keys, how, None, control)
+}
+
+/// Extracts only `picked` of the archive at `path`, files or folders given by
+/// their paths in it, each with what is under it, straight into `destination`:
+/// `docs/a/b.txt` comes out as `b.txt`. They are written in a folder of their
+/// own inside it first, and moved out once all of them are, so a job that fails
+/// or is stopped leaves nothing. One already there stops it first, unless it is
+/// to be replaced; a folder takes what is new in it.
+pub fn extract_selected(
+    path: &Path,
+    destination: &Path,
+    picked: &[Vec<String>],
+    keys: &Keys,
+    how: &ExtractOptions,
+    control: &Control,
+) -> Result<Summary, Error> {
+    if !how.overwrite {
+        for name in picked.iter().filter_map(|p| p.last()) {
+            if destination.join(name).symlink_metadata().is_ok() {
+                return Err(Error::Failed(format!("{name} is already in the folder.")));
+            }
+        }
+    }
+    std::fs::create_dir_all(destination)?;
+    let scratch = fresh_folder(destination, ".packwing-extracting")?;
+    let chosen: Vec<Vec<String>> = picked.to_vec();
+    let select: Select =
+        Arc::new(move |entry: &[String]| chosen.iter().any(|p| entry.starts_with(p)));
+    let result =
+        extract_picked(path, &scratch, keys, how, Some(select), control).and_then(|done| {
+            for entry in picked {
+                let Some(name) = entry.last() else { continue };
+                let from = entry.iter().fold(scratch.clone(), |at, c| at.join(c));
+                move_into(&from, &destination.join(name))?;
+            }
+            Ok(done)
+        });
+    let _ = std::fs::remove_dir_all(&scratch);
+    result
+}
+
+/// A new folder in `parent`, readable by its owner only, whose name starts
+/// with `stem`.
+fn fresh_folder(parent: &Path, stem: &str) -> Result<PathBuf, Error> {
+    for n in 0..10_000 {
+        let path = parent.join(format!("{stem}-{n}"));
+        let mut builder = std::fs::DirBuilder::new();
+        #[cfg(unix)]
+        std::os::unix::fs::DirBuilderExt::mode(&mut builder, 0o700);
+        match builder.create(&path) {
+            Ok(()) => return Ok(path),
+            Err(e) if e.kind() == io::ErrorKind::AlreadyExists => {}
+            Err(e) => return Err(e.into()),
+        }
+    }
+    Err(Error::Failed(format!(
+        "Could not make a folder in {}.",
+        parent.display()
+    )))
+}
+
+/// `from` as `to`: over a file, and into a folder, what is in it.
+fn move_into(from: &Path, to: &Path) -> Result<(), Error> {
+    let from_kind = from.symlink_metadata()?.file_type();
+    match to.symlink_metadata() {
+        Err(_) => {}
+        Ok(there) if from_kind.is_dir() && there.is_dir() => {
+            for entry in std::fs::read_dir(from)? {
+                let entry = entry?;
+                move_into(&entry.path(), &to.join(entry.file_name()))?;
+            }
+            return Ok(());
+        }
+        Ok(there) if there.is_dir() => {
+            return Err(Error::Failed(format!(
+                "{} is a folder, and a file would replace it.",
+                to.display()
+            )));
+        }
+        Ok(_) => std::fs::remove_file(to)?,
+    }
+    std::fs::rename(from, to)?;
+    Ok(())
+}
+
+/// The folder files opened from archives go in, under the system's temporary one.
+fn opened_folder() -> PathBuf {
+    std::env::temp_dir().join("packwing-opened")
+}
+
+/// How long a copy opened from an archive is kept: what opened it may still
+/// have it for a while after packwing has gone.
+const OPENED_FOR: Duration = Duration::from_secs(24 * 60 * 60);
+
+/// Removes the copies opened from archives that are over a day old.
+pub fn clean_opened_files() {
+    let Ok(folders) = std::fs::read_dir(opened_folder()) else {
+        return;
+    };
+    for folder in folders.flatten() {
+        let old = folder
+            .metadata()
+            .and_then(|m| m.modified())
+            .ok()
+            .and_then(|t| t.elapsed().ok())
+            .is_some_and(|age| age > OPENED_FOR);
+        if old {
+            let _ = std::fs::remove_dir_all(folder.path());
+        }
+    }
+}
+
+/// A copy of the entry at `entry` of the archive at `path`, to open: in a new
+/// folder of the temporary one, readable by its owner only, with the archive's
+/// mark of where it came from, whatever Settings says.
+pub fn extract_to_open(
+    path: &Path,
+    entry: &[String],
+    keys: &Keys,
+    control: &Control,
+) -> Result<PathBuf, Error> {
+    let name = entry.last().ok_or(Error::NotAnArchive)?.clone();
+    let root = opened_folder();
+    let mut builder = std::fs::DirBuilder::new();
+    builder.recursive(true);
+    #[cfg(unix)]
+    std::os::unix::fs::DirBuilderExt::mode(&mut builder, 0o700);
+    builder.create(&root)?;
+    let folder = fresh_folder(&root, "open")?;
+    let how = ExtractOptions::default();
+    match extract_selected(path, &folder, &[entry.to_vec()], keys, &how, control) {
+        Ok(_) => Ok(folder.join(name)),
+        Err(e) => {
+            let _ = std::fs::remove_dir_all(&folder);
+            Err(e)
+        }
+    }
+}
+
+fn extract_picked(
+    path: &Path,
+    destination: &Path,
+    keys: &Keys,
+    how: &ExtractOptions,
+    select: Option<Select>,
+    control: &Control,
+) -> Result<Summary, Error> {
     let mut options = Options::default();
     options.password = keys.password.clone();
     options.progress = control.progress.clone();
@@ -115,6 +264,7 @@ pub fn extract_with(
     let limit = how.limit.unwrap_or(u64::MAX);
     options.limits.max_entry_size = limit;
     options.limits.max_total_size = limit;
+    options.select = select;
     options.links = if cfg!(windows) {
         Links::AsFile
     } else {
