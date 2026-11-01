@@ -21,6 +21,7 @@ mod input;
 mod model;
 mod open_with;
 mod pages;
+mod placement;
 mod prefs;
 mod right_click;
 mod widgets;
@@ -32,8 +33,8 @@ mod shots;
 use std::borrow::Cow;
 
 use gpui::{
-    App, AppContext as _, Bounds, Focusable as _, TitlebarOptions, WindowBounds, WindowDecorations,
-    WindowOptions, px, size,
+    App, AppContext as _, Focusable as _, TitlebarOptions, WindowDecorations, WindowOptions, px,
+    size,
 };
 
 use right_click::{Action, Request, RightClickMenu};
@@ -160,6 +161,7 @@ fn main() {
             load_fonts(cx);
             let kept = prefs::Prefs::load();
             packwing_i18n::set_language(kept.language.as_deref());
+            let window_bounds = placement::initial(kept.window, cx);
             cx.set_global(kept);
             packwing_core::clean_opened_files();
             // GNOME's Wayland compositor draws no window frame, so Linux gets
@@ -167,12 +169,8 @@ fn main() {
             // frame but hide its title bar, and the app draws its own.
             let client_side = cfg!(any(target_os = "linux", target_os = "freebsd"));
             let options = WindowOptions {
-                window_bounds: Some(WindowBounds::Windowed(Bounds::centered(
-                    None,
-                    size(px(1280.), px(800.)),
-                    cx,
-                ))),
-                window_min_size: Some(size(px(900.), px(600.))),
+                window_bounds: Some(window_bounds),
+                window_min_size: Some(size(px(placement::MIN_SIZE.0), px(placement::MIN_SIZE.1))),
                 window_decorations: client_side.then_some(WindowDecorations::Client),
                 titlebar: (!client_side).then(|| TitlebarOptions {
                     title: Some("packwing".into()),
@@ -187,6 +185,7 @@ fn main() {
             let opened = cx.open_window(options, |window, cx| {
                 let ws = cx.new(|cx| {
                     let mut ws = workspace::Workspace::new(first_run, managed, menu, window, cx);
+                    ws.track_bounds(window, cx);
                     if let Some(r) = request {
                         ws.start(r, window, cx);
                     }
