@@ -6,7 +6,7 @@ use gpui::{Context, Entity, Render, Subscription, Window, div, prelude::*, px, r
 use super::{group, heading, rows, section, setting};
 use crate::colors::colors;
 use crate::dialogs::ENCODINGS;
-use crate::prefs::{LIMITS, change, prefs};
+use crate::prefs::{ExtractTo, LIMITS, change, prefs};
 use crate::widgets::{Chosen, Select, SelectLook, option_card, switch, titled};
 
 /// What hivepack can do with a file that is there, the first what it does
@@ -14,8 +14,7 @@ use crate::widgets::{Chosen, Select, SelectLook, option_card, switch, titled};
 const EXISTING: [&str; 2] = ["Stop and say so", "Replace it"];
 
 pub struct Extracting {
-    /// Into a new folder named after the archive, rather than beside it.
-    new_folder: bool,
+    extract_to: ExtractTo,
     existing: Entity<Select>,
     names: Entity<Select>,
     limit: Entity<Select>,
@@ -42,7 +41,7 @@ impl Extracting {
             }),
         ];
         Extracting {
-            new_folder: kept.new_folder,
+            extract_to: kept.extract_to,
             existing,
             names: cx.new(|_| Select::new(&ENCODINGS, 0, SelectLook::Pill)),
             limit,
@@ -56,21 +55,20 @@ impl Extracting {
 impl Render for Extracting {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
-        let place =
-            |id: &'static str, new_folder: bool, title: &'static str, detail: &'static str| {
-                let on = self.new_folder == new_folder;
-                option_card(id, on)
-                    .px(px(14.))
-                    .py(px(12.))
-                    .rounded(px(18.))
-                    .when(!on, |d| d.bg(rgb(c.surface)))
-                    .on_click(cx.listener(move |this, _, _, cx| {
-                        this.new_folder = new_folder;
-                        change(cx, |p| p.new_folder = new_folder);
-                        cx.notify();
-                    }))
-                    .child(titled(title, detail, on))
-            };
+        let place = |id: &'static str, to: ExtractTo, title: &'static str, detail: &'static str| {
+            let on = self.extract_to == to;
+            option_card(id, on)
+                .px(px(14.))
+                .py(px(12.))
+                .rounded(px(18.))
+                .when(!on, |d| d.bg(rgb(c.surface)))
+                .on_click(cx.listener(move |this, _, _, cx| {
+                    this.extract_to = to;
+                    change(cx, |p| p.extract_to = to);
+                    cx.notify();
+                }))
+                .child(titled(title, detail, on))
+        };
         section()
             .child(
                 group()
@@ -81,17 +79,23 @@ impl Render for Extracting {
                     .child(
                         div()
                             .grid()
-                            .grid_cols(2)
+                            .grid_cols(3)
                             .gap(px(8.))
                             .child(place(
+                                "smart",
+                                ExtractTo::Smart,
+                                "Smart",
+                                "One item right here, more in a new folder",
+                            ))
+                            .child(place(
                                 "into-new-folder",
-                                true,
+                                ExtractTo::NewFolder,
                                 "A new folder next to it",
                                 "Named after the archive",
                             ))
                             .child(place(
                                 "beside",
-                                false,
+                                ExtractTo::Here,
                                 "Next to the archive",
                                 "Straight into its folder",
                             )),

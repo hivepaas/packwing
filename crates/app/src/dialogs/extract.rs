@@ -12,6 +12,7 @@ use super::{DialogEvent, Job, Verb, card, footer, header};
 use crate::colors::colors;
 use crate::input::TextInput;
 use crate::model::{Archive, Kind, counted, size};
+use crate::prefs::ExtractTo;
 use crate::widgets::{
     Fill, Select, SelectLook, Size, Tone, button, chip, icon, icon_button, legend, link, note,
     option_card, segment, segments, titled, tonal_tint,
@@ -20,6 +21,8 @@ use crate::widgets::{
 /// Where the files go.
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum Dest {
+    /// Right here if one thing goes, else a new folder.
+    Smart,
     /// A new folder beside the archive, named after it.
     NewFolder,
     /// The archive's own folder.
@@ -59,10 +62,10 @@ impl ExtractDialog {
             only_picked: !picked.is_empty(),
             picked,
             archive,
-            dest: if crate::prefs::prefs(cx).new_folder {
-                Dest::NewFolder
-            } else {
-                Dest::Here
+            dest: match crate::prefs::prefs(cx).extract_to {
+                ExtractTo::Smart => Dest::Smart,
+                ExtractTo::NewFolder => Dest::NewFolder,
+                ExtractTo::Here => Dest::Here,
             },
             password: cx.new(|cx| TextInput::new("The archive’s password", cx).masked()),
             shown: false,
@@ -75,8 +78,58 @@ impl ExtractDialog {
         format!("{} › {}", self.archive.location, self.archive.stem())
     }
 
-    fn destination(&self) -> SharedString {
+    /// What goes, by the names it will have at the top of where it goes.
+    fn going(&self) -> Vec<String> {
+        if self.only_picked {
+            self.picked
+                .iter()
+                .filter_map(|path| path.last().cloned())
+                .collect()
+        } else {
+            self.archive.top_names()
+        }
+    }
+
+    /// What [`Dest::Smart`] comes to.
+    fn smart(&self) -> Dest {
+        if self.going().len() == 1 {
+            Dest::Here
+        } else {
+            Dest::NewFolder
+        }
+    }
+
+    /// The choice, with Smart's made.
+    fn resolved(&self) -> Dest {
         match &self.dest {
+            Dest::Smart => self.smart(),
+            dest => dest.clone(),
+        }
+    }
+
+    /// Smart's line: where the files go, and why.
+    fn smart_detail(&self) -> String {
+        let going = self.going();
+        match going.as_slice() {
+            [one] => {
+                let kind = match self.archive.top_is_folder(one) {
+                    true => "one folder",
+                    false => "one file",
+                };
+                format!("{} › {one} · {kind}, so right here", self.archive.location)
+            }
+            many => format!(
+                "{} · {}, so in a new folder",
+                self.new_folder(),
+                counted(many.len() as u64, "item", "items")
+            ),
+        }
+    }
+
+    fn destination(&self) -> SharedString {
+        match &self.resolved() {
+            // `resolved` leaves none.
+            Dest::Smart => SharedString::default(),
             Dest::NewFolder => self.new_folder().into(),
             Dest::Here => self.archive.location.clone().into(),
             Dest::Folder(f) => f
@@ -89,7 +142,8 @@ impl ExtractDialog {
     /// picked.
     fn destination_path(&self) -> Option<PathBuf> {
         let folder = self.archive.path.as_ref()?.parent()?.to_path_buf();
-        match &self.dest {
+        match &self.resolved() {
+            Dest::Smart => None,
             Dest::NewFolder => Some(folder.join(self.archive.stem())),
             Dest::Here => Some(folder),
             Dest::Folder(f) => f.clone(),
@@ -139,6 +193,12 @@ impl ExtractDialog {
             job.how = crate::prefs::prefs(cx).extract_options();
             if self.only_picked {
                 job.picked = self.picked.clone();
+            } else if self.dest == Dest::Smart
+                && self.resolved() == Dest::Here
+                && a.has_macos_files()
+            {
+                // What macOS left would land beside the one thing here.
+                job.picked = self.going().into_iter().map(|name| vec![name]).collect();
             }
             let typed = self.password.read(cx).text();
             if !typed.is_empty() {
@@ -180,32 +240,32 @@ impl ExtractDialog {
     fn destinations(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
         let on = |d: &Dest| std::mem::discriminant(d) == std::mem::discriminant(&self.dest);
-        let new_folder = on(&Dest::NewFolder);
-        let recommended = option_card("dest-new", new_folder)
+        let smart = on(&Dest::Smart);
+        let recommended = option_card("dest-smart", smart)
             .on_click(cx.listener(|this, _, _, cx| {
-                this.dest = Dest::NewFolder;
+                this.dest = Dest::Smart;
                 cx.notify();
             }))
             .child(
-                titled(
-                    "New folder next to the archive",
-                    self.new_folder(),
-                    new_folder,
-                )
-                .flex_1()
-                .min_w_0(),
+                titled("Smart", self.smart_detail(), smart)
+                    .flex_1()
+                    .min_w_0(),
             )
             .child(chip(
                 "Recommended",
                 c.surface,
-                if new_folder { c.on_tonal } else { c.text },
+                if smart { c.on_tonal } else { c.text },
             ));
-        let here = on(&Dest::Here);
-        let picked = match &self.dest {
-            Dest::Folder(Some(f)) => Some(SharedString::from(f.display().to_string())),
-            _ => None,
+        let title = |text: &'static str, on: bool| {
+            div()
+                .text_size(px(15.))
+                .when(on, |d| d.font_weight(FontWeight::BOLD))
+                .child(text)
         };
+        let new_folder = on(&Dest::NewFolder);
+        let here = on(&Dest::Here);
         let folder = on(&Dest::Folder(None));
+        let chosen = matches!(&self.dest, Dest::Folder(Some(_)));
         div()
             .flex()
             .flex_col()
@@ -215,36 +275,49 @@ impl ExtractDialog {
             .child(
                 div()
                     .grid()
-                    .grid_cols(2)
+                    .grid_cols(3)
                     .min_w_0()
                     .gap(px(8.))
+                    .child(
+                        option_card("dest-new", new_folder)
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.dest = Dest::NewFolder;
+                                cx.notify();
+                            }))
+                            .child(title("New folder", new_folder)),
+                    )
                     .child(
                         option_card("dest-here", here)
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.dest = Dest::Here;
                                 cx.notify();
                             }))
-                            .child(
-                                div()
-                                    .text_size(px(15.))
-                                    .when(here, |d| d.font_weight(FontWeight::BOLD))
-                                    .child("Right here"),
-                            ),
+                            .child(title("Right here", here)),
                     )
                     .child(
                         option_card("dest-folder", folder)
                             .on_click(cx.listener(|this, _, _, cx| this.choose_folder(cx)))
-                            .map(|d| match picked {
-                                Some(path) => d.child(titled("Chosen folder", path, folder)),
-                                None => d.child(
-                                    div()
-                                        .text_size(px(15.))
-                                        .when(folder, |d| d.font_weight(FontWeight::BOLD))
-                                        .child("Choose a folder…"),
-                                ),
-                            }),
+                            .child(title(
+                                if chosen {
+                                    "Another folder"
+                                } else {
+                                    "Choose…"
+                                },
+                                folder,
+                            )),
                     ),
             )
+            // Smart's card says where already.
+            .when(!smart, |d| {
+                d.child(
+                    div()
+                        .px(px(4.))
+                        .text_size(px(13.))
+                        .text_color(rgb(c.muted))
+                        .truncate()
+                        .child(format!("Goes to {}", self.destination())),
+                )
+            })
     }
 
     fn password(&self, cx: &mut Context<Self>) -> impl IntoElement {
@@ -409,5 +482,19 @@ impl Render for ExtractDialog {
                             .on_click(cx.listener(|this, _, _, cx| this.start(cx))),
                     ),
             )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::model::left_by_macos;
+
+    #[test]
+    fn what_macos_leaves() {
+        assert!(left_by_macos("__MACOSX"));
+        assert!(left_by_macos(".DS_Store"));
+        assert!(left_by_macos("._report.pdf"));
+        assert!(!left_by_macos("report.pdf"));
+        assert!(!left_by_macos(".config"));
     }
 }
