@@ -334,6 +334,8 @@ pub fn segments(items: impl IntoIterator<Item = Stateful<Div>>) -> Div {
 pub enum Tone {
     /// Worth knowing before going on.
     Warn,
+    /// It went well.
+    Good,
 }
 
 /// A short note in a tinted box.
@@ -341,6 +343,7 @@ pub fn note(tone: Tone) -> Div {
     let c = colors();
     let (ground, ink) = match tone {
         Tone::Warn => (c.warn_bg, c.warn_text),
+        Tone::Good => (c.tonal, c.on_tonal),
     };
     div()
         .px(px(12.))

@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 52] = [
+const SCREENS: [(&str, SetUp, bool); 53] = [
     (
         "storages-add",
         |ws, window, cx| {
@@ -392,6 +392,21 @@ const SCREENS: [(&str, SetUp, bool); 52] = [
         |ws, window, cx| {
             let again = packwing_core::Error::WrongPassphrase.to_string();
             ws.show_ask(packwing_core::Asked::Passphrase, Some(again), window, cx)
+        },
+        false,
+    ),
+    (
+        "test-passed",
+        |ws, window, cx| {
+            let job = crate::dialogs::Job::shown(
+                crate::dialogs::Verb::Test,
+                "site-backup-2026-10.tar.zst".into(),
+                None,
+                1284,
+                131_000_000,
+            );
+            ws.open_progress(job, window, cx)
+                .update(cx, |p, cx| p.set_passed(1284, 131_000_000, cx));
         },
         false,
     ),
@@ -1323,6 +1338,55 @@ fn a_new_archive_goes_to_a_storage_chosen_and_is_shown_there() {
     );
     assert_eq!(page, Page::Storages);
     assert!(names.contains(&name), "{names:?}");
+}
+
+/// Runs a test of `archive` through to its end, in a window.
+fn tested(archive: PathBuf) -> (Option<(u64, u64)>, Option<String>) {
+    let (mut cx, window, _) = explorer_on(out_dir());
+    let dialog = window
+        .update(&mut cx, |ws, window, cx| {
+            let mut job = crate::dialogs::Job::shown(
+                crate::dialogs::Verb::Test,
+                "the archive".into(),
+                None,
+                0,
+                0,
+            );
+            job.work = vec![(archive.clone().into(), None)];
+            ws.open_progress(job, window, cx)
+        })
+        .expect("the window");
+    for _ in 0..200 {
+        cx.run_until_parked();
+        let ended = dialog.read_with(&cx, |d, _| d.passed().is_some() || d.failed().is_some());
+        if ended {
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(25));
+    }
+    dialog.read_with(&cx, |d, _| (d.passed(), d.failed().map(str::to_owned)))
+}
+
+#[test]
+fn a_test_says_how_it_went_whichever_way() {
+    let dir = folder_of("tested", 0);
+    let sound = dir.join("sound.zip");
+    let bytes = zip_of(&[("a.txt", b"hello"), ("b.txt", b"world!")]);
+    std::fs::write(&sound, &bytes).expect("cannot write");
+    let (passed, failed) = tested(sound);
+    assert_eq!(passed, Some((2, 11)), "{failed:?}");
+    // What the first file holds, changed: its checksum no longer agrees.
+    let mut broken_bytes = bytes;
+    let at = broken_bytes
+        .windows(5)
+        .position(|w| w == b"hello")
+        .expect("stored as it is");
+    broken_bytes[at] = b'j';
+    let broken = dir.join("broken.zip");
+    std::fs::write(&broken, broken_bytes).expect("cannot write");
+    let (passed, failed) = tested(broken);
+    assert_eq!(passed, None);
+    assert!(failed.is_some());
 }
 
 #[test]
