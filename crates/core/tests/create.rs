@@ -1877,3 +1877,135 @@ fn seven_zip_goes_through_a_temporary_file_where_it_cannot_go_back() {
     );
     assert_eq!(files_in(&there), ["a.7z"]);
 }
+
+/// A tool of this name finds `path` sound, if it is on this machine.
+fn tool_agrees(tool: &str, path: &Path) {
+    let run = Command::new(tool).arg("-t").arg(path).output();
+    if let Ok(out) = run {
+        assert!(
+            out.status.success(),
+            "{tool}: {}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+    }
+}
+
+#[test]
+fn the_new_tar_kinds_read_back() {
+    let (what, there, _) = up_scratch("new-tars");
+    for (kind, name, tool) in [
+        (Kind::Tar, "a.tar", None),
+        (Kind::TarBz2, "a.tar.bz2", Some("bzip2")),
+        (Kind::TarLz4, "a.tar.lz4", Some("lz4")),
+    ] {
+        for level in [Level::Lowest, Level::Medium, Level::Highest] {
+            let how = NewArchive {
+                kind,
+                level,
+                ..NewArchive::default()
+            };
+            let made = create(
+                std::slice::from_ref(&what),
+                &there.join(name),
+                &how,
+                &Control::default(),
+            )
+            .unwrap();
+            if let Some(tool) = tool {
+                tool_agrees(tool, &made);
+            }
+            let out = there.join(format!("out-{name}-{level:?}"));
+            extract(&made, &out, &Keys::default(), &Control::default()).unwrap();
+            assert_eq!(
+                fs::read(out.join("what/noise.bin")).unwrap(),
+                fs::read(what.join("noise.bin")).unwrap(),
+                "{name}"
+            );
+            fs::remove_file(&made).unwrap();
+        }
+    }
+}
+
+#[test]
+fn one_file_compressed_by_itself_comes_back_under_its_name() {
+    let (what, there, _) = up_scratch("one-file");
+    let file = what.join("dump.sql");
+    let body = b"insert into t values (1);\n".repeat(50_000);
+    fs::write(&file, &body).unwrap();
+    for (kind, name, tool) in [
+        (Kind::Gz, "dump.sql.gz", "gzip"),
+        (Kind::Xz, "dump.sql.xz", "xz"),
+        (Kind::Zst, "dump.sql.zst", "zstd"),
+        (Kind::Bz2, "dump.sql.bz2", "bzip2"),
+        (Kind::Lz4, "dump.sql.lz4", "lz4"),
+    ] {
+        let how = NewArchive {
+            kind,
+            ..NewArchive::default()
+        };
+        let made = create(
+            std::slice::from_ref(&file),
+            &there.join(name),
+            &how,
+            &Control::default(),
+        )
+        .unwrap();
+        tool_agrees(tool, &made);
+        assert!(
+            fs::metadata(&made).unwrap().len() < body.len() as u64 / 10,
+            "{name}"
+        );
+        let out = there.join(format!("out-{name}"));
+        extract(&made, &out, &Keys::default(), &Control::default()).unwrap();
+        assert_eq!(fs::read(out.join("dump.sql")).unwrap(), body, "{name}");
+    }
+}
+
+#[test]
+fn a_folder_or_two_files_do_not_go_in_a_format_for_one_file() {
+    let (what, there, _) = up_scratch("not-one-file");
+    let how = NewArchive {
+        kind: Kind::Zst,
+        ..NewArchive::default()
+    };
+    let e = create(
+        std::slice::from_ref(&what),
+        &there.join("a.zst"),
+        &how,
+        &Control::default(),
+    );
+    assert!(e.is_err());
+    assert!(files_in(&there).is_empty(), "{:?}", files_in(&there));
+}
+
+#[test]
+fn one_file_goes_straight_as_it_is_compressed() {
+    let (what, there, mut across) = up_scratch("one-file-straight");
+    across.sends_as_read = true;
+    let file = what.join("noise.bin");
+    let how = straight(Kind::Zst);
+    let through = std::sync::atomic::AtomicBool::new(false);
+    create_on(
+        std::slice::from_ref(&file),
+        &across,
+        &[],
+        "noise.bin.zst",
+        &how,
+        &Control::default(),
+        &|| through.store(true, Ordering::Relaxed),
+    )
+    .unwrap();
+    assert!(!through.into_inner());
+    let out = there.join("out");
+    extract(
+        there.join("noise.bin.zst"),
+        &out,
+        &Keys::default(),
+        &Control::default(),
+    )
+    .unwrap();
+    assert_eq!(
+        fs::metadata(out.join("noise.bin")).unwrap().len(),
+        3_000_000
+    );
+}

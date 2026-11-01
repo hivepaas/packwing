@@ -1434,6 +1434,64 @@ fn browse_goes_where_it_is_told_and_remembers_it() {
 }
 
 #[test]
+fn one_file_offers_more_formats_and_keeps_all_its_name() {
+    use crate::dialogs::Format;
+    let dir = folder_of("one-format", 2);
+    let file = dir.join("dump.sql");
+    std::fs::write(&file, "insert").expect("cannot write");
+    let (mut cx, window, _) = explorer_on(out_dir());
+    let dialog = window
+        .update(&mut cx, |ws, window, cx| {
+            ws.open_create_of(vec![file.clone()], window, cx)
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    window
+        .update(&mut cx, |_, _, cx| {
+            dialog.update(cx, |d, cx| {
+                assert_eq!(d.name_typed(cx), "dump");
+                d.choose_format(Format::Zst, cx);
+            })
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    window
+        .update(&mut cx, |_, _, cx| {
+            dialog.update(cx, |d, cx| {
+                assert_eq!(d.format_chosen(cx), Format::Zst);
+                assert_eq!(d.name_typed(cx), "dump.sql");
+            })
+        })
+        .expect("the window");
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window")
+        .save(out_dir().join("create-one-file.png"))
+        .expect("cannot save the picture");
+    window
+        .update(&mut cx, |_, _, cx| {
+            dialog.update(cx, |d, cx| d.open_formats(cx))
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window")
+        .save(out_dir().join("create-formats.png"))
+        .expect("cannot save the picture");
+    // Another file: it is no longer one, and the format gives way.
+    window
+        .update(&mut cx, |_, _, cx| {
+            dialog.update(cx, |d, cx| d.add(vec![dir.clone()], cx))
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    window
+        .update(&mut cx, |_, _, cx| {
+            dialog.update(cx, |d, cx| assert!(!d.format_chosen(cx).one_file()))
+        })
+        .expect("the window");
+}
+
+#[test]
 fn a_kind_a_build_adds_is_browsed_without_a_local_path() {
     let dir = folder_of("far", 2);
     std::fs::write(dir.join("backup.zip"), "not one").expect("cannot write");

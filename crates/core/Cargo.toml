@@ -14,12 +14,14 @@ packwing-i18n.workspace = true
 getrandom = "0.4"
 hivepack-7z.workspace = true
 hivepack-age.workspace = true
+hivepack-bzip2.workspace = true
 hivepack-cpio.workspace = true
 hivepack-deflate.workspace = true
 # With RAR, under UnRAR's license: see GPL-ADDITIONAL-PERMISSION.md.
 hivepack-extract = { workspace = true, features = ["rar"] }
 hivepack-iso.workspace = true
-# Only to turn on its `unsafe-fast`: hivepack-open and hivepack-extract use it.
+# `.lz4` files and `.tar.lz4` archives, and its `unsafe-fast`, which hivepack-open
+# and hivepack-extract use too.
 hivepack-lz4.workspace = true
 hivepack-open.workspace = true
 hivepack-rar.workspace = true

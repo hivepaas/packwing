@@ -31,18 +31,48 @@ use crate::widgets::{
 pub(crate) enum Format {
     Zip,
     SevenZip,
+    TarZst,
     TarGz,
     TarXz,
-    TarZst,
+    TarBz2,
+    TarLz4,
+    Tar,
+    Gz,
+    Zst,
+    Xz,
+    Bz2,
+    Lz4,
 }
 
 impl Format {
-    pub const ALL: [Format; 5] = [
+    /// Those for any files, most used first.
+    pub const ALL: [Format; 8] = [
         Format::Zip,
         Format::SevenZip,
+        Format::TarZst,
         Format::TarGz,
         Format::TarXz,
+        Format::TarBz2,
+        Format::TarLz4,
+        Format::Tar,
+    ];
+
+    /// Those for any files, then those for one file by itself: an option's index
+    /// is its place here, whichever are offered.
+    pub const WITH_ONE_FILE: [Format; 13] = [
+        Format::Zip,
+        Format::SevenZip,
         Format::TarZst,
+        Format::TarGz,
+        Format::TarXz,
+        Format::TarBz2,
+        Format::TarLz4,
+        Format::Tar,
+        Format::Gz,
+        Format::Zst,
+        Format::Xz,
+        Format::Bz2,
+        Format::Lz4,
     ];
 
     /// What follows the archive's name, and what a [`Select`] of formats lists.
@@ -50,15 +80,28 @@ impl Format {
         match self {
             Format::Zip => ".zip",
             Format::SevenZip => ".7z",
+            Format::Tar => ".tar",
             Format::TarGz => ".tar.gz",
             Format::TarXz => ".tar.xz",
             Format::TarZst => ".tar.zst",
+            Format::TarBz2 => ".tar.bz2",
+            Format::TarLz4 => ".tar.lz4",
+            Format::Gz => ".gz",
+            Format::Zst => ".zst",
+            Format::Xz => ".xz",
+            Format::Bz2 => ".bz2",
+            Format::Lz4 => ".lz4",
         }
     }
 
     /// The format of a [`Select`]'s option.
     pub fn of_option(i: usize) -> Format {
-        Format::ALL.get(i).copied().unwrap_or(Format::Zip)
+        Format::WITH_ONE_FILE.get(i).copied().unwrap_or(Format::Zip)
+    }
+
+    /// Whether it holds one file by itself.
+    pub fn one_file(self) -> bool {
+        self.kind().one_file()
     }
 
     /// Where its archives may not open without an archiver app, said under
@@ -70,13 +113,21 @@ impl Format {
                 "Windows 11 and Linux open 7z on their own; macOS, phones and older Windows \
                  may need an archiver app. To share with anyone, pick .zip."
             )),
-            Format::TarGz | Format::TarXz => Some(tr!(
+            Format::Tar | Format::TarGz | Format::TarXz | Format::TarBz2 => Some(tr!(
                 "Linux, macOS and Windows 11 open it on their own; phones and older Windows \
                  may need an archiver app. To share with anyone, pick .zip."
             )),
             Format::TarZst => Some(tr!(
                 "Linux and Windows 11 open it on their own; macOS, phones and older Windows \
                  may need an archiver app. To share with anyone, pick .zip."
+            )),
+            Format::TarLz4 => Some(tr!(
+                "Most computers need an archiver app or the lz4 tool to open it. To share with \
+                 anyone, pick .zip."
+            )),
+            Format::Gz | Format::Zst | Format::Xz | Format::Bz2 | Format::Lz4 => Some(tr!(
+                "It holds this one file. Command-line tools open it; Windows and macOS may need \
+                 an archiver app. To share with anyone, pick .zip."
             )),
         }
     }
@@ -86,16 +137,34 @@ impl Format {
         match self {
             Format::Zip => Kind::Zip,
             Format::SevenZip => Kind::SevenZip,
+            Format::Tar => Kind::Tar,
             Format::TarGz => Kind::TarGz,
             Format::TarXz => Kind::TarXz,
             Format::TarZst => Kind::TarZst,
+            Format::TarBz2 => Kind::TarBz2,
+            Format::TarLz4 => Kind::TarLz4,
+            Format::Gz => Kind::Gz,
+            Format::Zst => Kind::Zst,
+            Format::Xz => Kind::Xz,
+            Format::Bz2 => Kind::Bz2,
+            Format::Lz4 => Kind::Lz4,
         }
     }
 
-    /// Whether its archives can have a password: tar has none.
+    /// Whether its archives can have a password: tar and one file by itself have none.
     pub fn can_protect(self) -> bool {
         matches!(self, Format::Zip | Format::SevenZip)
     }
+}
+
+/// The formats a [`Select`] offers: with those for one file by itself, if `one_file`.
+fn format_options(one_file: bool) -> Vec<&'static str> {
+    let formats: &[Format] = if one_file {
+        &Format::WITH_ONE_FILE
+    } else {
+        &Format::ALL
+    };
+    formats.iter().map(|f| f.ext()).collect()
 }
 
 /// The levels, by the names they are kept under.
@@ -267,8 +336,13 @@ impl CreateDialog {
             field.set_text(&suggested, suggested.len()..suggested.len(), cx);
             field
         });
-        let format =
-            cx.new(|_| Select::new(&Format::ALL.map(Format::ext), chosen, SelectLook::Pill));
+        let format = cx.new(|_| {
+            Select::new(
+                &format_options(selection.one_file()),
+                chosen,
+                SelectLook::Pill,
+            )
+        });
         let split = cx.new(|_| Select::new(&splits(), 0, SelectLook::Pill));
         let part = cx.new(|cx| TextInput::new(tr!("Size"), cx));
         let unit = cx.new(|_| Select::new(&UNITS.map(|(u, _)| u), 0, SelectLook::Pill));
@@ -276,7 +350,10 @@ impl CreateDialog {
         // What is drawn follows what is typed and chosen: the extension, the
         // notes, the password's strength.
         let follow = vec![
-            cx.subscribe(&format, |_, _, _: &Chosen, cx| cx.notify()),
+            cx.subscribe(&format, |this: &mut Self, _, _: &Chosen, cx| {
+                this.follow_name(cx);
+                cx.notify();
+            }),
             cx.subscribe(&split, |_, _, _: &Chosen, cx| cx.notify()),
             cx.subscribe(&part, |_, _, _: &Changed, cx| cx.notify()),
             cx.subscribe(&unit, |_, _, _: &Chosen, cx| cx.notify()),
@@ -326,13 +403,34 @@ impl CreateDialog {
     /// typed in (`part`, maybe nothing yet), with a password asked for.
     #[cfg(all(test, feature = "shots"))]
     pub fn fill(&mut self, format: Format, part: &str, cx: &mut Context<Self>) {
-        let i = Format::ALL.iter().position(|f| *f == format).unwrap_or(0);
-        self.format.update(cx, |s, cx| s.choose(i, cx));
+        self.choose_format(format, cx);
         self.split.update(cx, |s, cx| s.choose(CUSTOM, cx));
         self.part
             .update(cx, |t, cx| t.set_text(part, part.len()..part.len(), cx));
         self.protect = true;
         cx.notify();
+    }
+
+    /// Chooses `format`, as pressing it would.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn choose_format(&mut self, format: Format, cx: &mut Context<Self>) {
+        let i = Format::WITH_ONE_FILE
+            .iter()
+            .position(|f| *f == format)
+            .unwrap_or(0);
+        self.format.update(cx, |s, cx| s.choose(i, cx));
+    }
+
+    /// Opens the menu of formats, for tests.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn open_formats(&mut self, cx: &mut Context<Self>) {
+        self.format.update(cx, |s, cx| s.open_menu(cx));
+    }
+
+    /// The name typed, for tests.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn name_typed(&self, cx: &App) -> String {
+        self.name.read(cx).text().to_owned()
     }
 
     #[cfg(all(test, feature = "shots"))]
@@ -404,10 +502,32 @@ impl CreateDialog {
         self.changed_what_goes_in(cx);
     }
 
-    /// Follows what goes in: the name, until one is typed, and the count.
-    fn changed_what_goes_in(&mut self, cx: &mut Context<Self>) {
+    /// Offers the formats that fit what goes in. One for a single file that no longer
+    /// fits gives way to the one new archives start with.
+    fn follow_formats(&mut self, cx: &mut Context<Self>) {
+        let one_file = self.selection.one_file();
+        let format = self.format(cx);
+        let format = if format.one_file() && !one_file {
+            crate::prefs::prefs(cx).format
+        } else {
+            format
+        };
+        let chosen = Format::WITH_ONE_FILE
+            .iter()
+            .position(|f| *f == format)
+            .unwrap_or(0);
+        self.format.update(cx, |s, cx| {
+            s.set_options(&format_options(one_file), chosen, cx)
+        });
+    }
+
+    /// Follows what goes in and the format: the name, until one is typed. A file by
+    /// itself keeps all its name, as `dump.sql.zst`.
+    fn follow_name(&mut self, cx: &mut Context<Self>) {
         let suggested = if self.selection.paths.is_empty() {
             String::new()
+        } else if self.format(cx).one_file() {
+            self.selection.whole_name()
         } else {
             self.selection.suggested_name()
         };
@@ -417,6 +537,12 @@ impl CreateDialog {
             });
             self.suggested = suggested;
         }
+    }
+
+    /// Follows what goes in: the formats, the name and the count.
+    fn changed_what_goes_in(&mut self, cx: &mut Context<Self>) {
+        self.follow_formats(cx);
+        self.follow_name(cx);
         let paths = self.selection.paths.clone();
         let counting = cx
             .background_executor()
@@ -1028,7 +1154,7 @@ impl CreateDialog {
             })
             .when(!format.can_protect(), |d| {
                 d.child(note(Tone::Warn).child(
-                    tr!("tar archives can’t have a password. Pick .zip or .7z to protect it."),
+                    tr!("Only .zip and .7z can have a password. Pick one of them to protect it."),
                 ))
             })
     }
@@ -1173,21 +1299,33 @@ mod tests {
 
     #[test]
     fn every_format_but_zip_says_where_it_may_not_open() {
-        for f in Format::ALL {
+        for f in Format::WITH_ONE_FILE {
             assert_eq!(f.caveat().is_none(), f == Format::Zip, "{f:?}");
         }
     }
 
     #[test]
-    fn tar_archives_take_no_password() {
-        for f in Format::ALL {
-            assert_eq!(f.can_protect(), !f.ext().starts_with(".tar"), "{f:?}");
+    fn only_zip_and_7z_take_a_password() {
+        for f in Format::WITH_ONE_FILE {
+            assert_eq!(
+                f.can_protect(),
+                matches!(f, Format::Zip | Format::SevenZip),
+                "{f:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn those_for_any_files_come_first_and_are_not_for_one_file() {
+        assert_eq!(Format::WITH_ONE_FILE[..Format::ALL.len()], Format::ALL);
+        for (i, f) in Format::WITH_ONE_FILE.into_iter().enumerate() {
+            assert_eq!(f.one_file(), i >= Format::ALL.len(), "{f:?}");
         }
     }
 
     #[test]
     fn each_option_is_its_format() {
-        for (i, f) in Format::ALL.into_iter().enumerate() {
+        for (i, f) in Format::WITH_ONE_FILE.into_iter().enumerate() {
             assert_eq!(Format::of_option(i), f);
         }
     }

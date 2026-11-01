@@ -1,5 +1,6 @@
 //! Making an archive of files and folders: ZIP through hivepack-zip, 7z
-//! through hivepack-7z, and tar through hivepack-tar under gzip, xz or zstd.
+//! through hivepack-7z, and tar through hivepack-tar, under gzip, xz, zstd, bzip2
+//! or LZ4 or none; or one file compressed by itself.
 //! It is written beside what is there, never over it, and taken away again
 //! if it fails or is stopped. Links are kept as links, on Unix; what is not a
 //! file, a folder or a link (a pipe, a socket, a device) is left out, as
@@ -41,9 +42,28 @@ pub enum Kind {
     #[default]
     Zip,
     SevenZip,
+    Tar,
     TarGz,
     TarXz,
     TarZst,
+    TarBz2,
+    TarLz4,
+    /// One file compressed by itself, with no archive around it.
+    Gz,
+    Xz,
+    Zst,
+    Bz2,
+    Lz4,
+}
+
+impl Kind {
+    /// Whether it holds one file, with no archive around it.
+    pub fn one_file(self) -> bool {
+        matches!(
+            self,
+            Kind::Gz | Kind::Xz | Kind::Zst | Kind::Bz2 | Kind::Lz4
+        )
+    }
 }
 
 /// How hard the files are squeezed: higher makes a smaller archive, which
@@ -83,6 +103,25 @@ impl Level {
 
     /// The level zstd is asked for: 19 is as far as the `zstd` tool goes
     /// without `--ultra`, whose archives take far more memory to open.
+    /// bzip2's block size, in 100 KB: most of what it can find is within one.
+    fn bzip2(self) -> i32 {
+        match self {
+            Level::Lowest => 1,
+            Level::Low => 5,
+            Level::Medium | Level::High | Level::Highest => 9,
+        }
+    }
+
+    /// LZ4's level: its fast way up to the middle, as speed is why it is chosen.
+    fn lz4(self) -> i32 {
+        match self {
+            Level::Lowest => -1,
+            Level::Low | Level::Medium => 1,
+            Level::High => 9,
+            Level::Highest => 12,
+        }
+    }
+
     fn zstd(self) -> i32 {
         match self {
             Level::Lowest => 1,
@@ -516,9 +555,7 @@ fn write_archive<W: Write + Seek>(
     match new.kind {
         Kind::Zip => write_zip(items, new, tally, out),
         Kind::SevenZip => write_7z(items, new, tally, out),
-        Kind::TarGz | Kind::TarXz | Kind::TarZst => {
-            write_tar(items, tally, Squeezed::new(new, out)?)
-        }
+        _ => write_squeezed(items, new, tally, out),
     }
 }
 
@@ -554,6 +591,33 @@ fn new_zip(
     }
     add_items(&mut za, items, new.level, new.password.is_some(), tally)?;
     Ok(za)
+}
+
+/// Writes a tar archive of `items`, or the one file that is, to `out`, compressed as
+/// `new` says.
+fn write_squeezed<W: Write>(
+    items: Vec<Item>,
+    new: &NewArchive,
+    tally: &Tally,
+    out: W,
+) -> Result<(), Error> {
+    let mut out = Squeezed::new(new, out)?;
+    if !new.kind.one_file() {
+        return write_tar(items, tally, out);
+    }
+    let [item] = items.as_slice() else {
+        return Err(Error::Failed(tr!(
+            "This format holds one file, and no more."
+        )));
+    };
+    if !item.metadata.file_type().is_file() {
+        return Err(Error::Failed(tr!(
+            "This format holds one file, and no more."
+        )));
+    }
+    pump(item, &mut out, tally, &mut vec![0; PIECE])?;
+    out.finish()?;
+    Ok(())
 }
 
 /// `items` in the ZIP archive `za`, to be read when it closes.
@@ -751,9 +815,14 @@ const XZ_MEMORY: u64 = 4 << 30;
 
 /// What compresses a tar archive.
 enum Coder {
+    /// Written as it is.
+    Plain,
     Gzip(Box<Deflate>),
     Xz(Box<Stream>),
     Zstd(Box<hivepack_zstd::CCtx>),
+    Bzip2(Box<hivepack_bzip2::Compress>),
+    /// What it makes waits in its `Vec`. None once it has ended.
+    Lz4(Option<Box<hivepack_lz4::Encoder<Vec<u8>>>>),
 }
 
 /// A stream compressed into `out`, whose end [`Squeezed::finish`] writes.
@@ -772,7 +841,22 @@ impl<W: Write> Squeezed<W> {
     fn new(new: &NewArchive, out: W) -> Result<Squeezed<W>, Error> {
         let failed = |e: String| Error::Failed(tr!("Could not start compressing: {e}", e = e));
         let coder = match new.kind {
-            Kind::TarXz => {
+            Kind::Tar => Coder::Plain,
+            Kind::TarBz2 | Kind::Bz2 => Coder::Bzip2(Box::new(
+                hivepack_bzip2::Compress::new(new.level.bzip2(), 0)
+                    .map_err(|e| failed(e.to_string()))?,
+            )),
+            Kind::TarLz4 | Kind::Lz4 => {
+                let prefs = hivepack_lz4::frame::Preferences {
+                    compression_level: new.level.lz4(),
+                    ..Default::default()
+                };
+                Coder::Lz4(Some(Box::new(
+                    hivepack_lz4::Encoder::new(Vec::new(), Some(&prefs))
+                        .map_err(|e| failed(e.to_string()))?,
+                )))
+            }
+            Kind::TarXz | Kind::Xz => {
                 let mut options = MtOptions {
                     threads: threads(),
                     preset: new.level.xz(),
@@ -786,7 +870,7 @@ impl<W: Write> Squeezed<W> {
                     Stream::stream_encoder_mt(&options).map_err(|e| failed(e.to_string()))?,
                 ))
             }
-            Kind::TarZst => {
+            Kind::TarZst | Kind::Zst => {
                 let mut cctx = hivepack_zstd::CCtx::new();
                 for parameter in [
                     hivepack_zstd::CParameter::CompressionLevel(new.level.zstd()),
@@ -819,9 +903,46 @@ impl<W: Write> Squeezed<W> {
     /// Compresses `input`, and with `finish`, ends the stream.
     fn code(&mut self, input: &[u8], finish: bool) -> io::Result<()> {
         let failed = |e: String| io::Error::other(tr!("Could not compress: {e}", e = e));
+        match &mut self.coder {
+            Coder::Plain => return self.out.write_all(input),
+            Coder::Lz4(encoder) => {
+                let waiting = match encoder {
+                    Some(going) => {
+                        going.write_all(input)?;
+                        if finish {
+                            match encoder.take() {
+                                Some(ending) => ending.finish()?,
+                                None => Vec::new(),
+                            }
+                        } else {
+                            std::mem::take(going.get_mut())
+                        }
+                    }
+                    None => Vec::new(),
+                };
+                return self.out.write_all(&waiting);
+            }
+            _ => {}
+        }
         let mut at = 0;
         loop {
             let (made, done) = match &mut self.coder {
+                Coder::Plain | Coder::Lz4(_) => return Ok(()),
+                Coder::Bzip2(stream) => {
+                    use hivepack_bzip2::{Action, InBuffer, OutBuffer, Status};
+                    if !finish && input.is_empty() {
+                        return Ok(());
+                    }
+                    let mut output = OutBuffer::new(&mut self.buf);
+                    let mut from = InBuffer::new(&input[at..]);
+                    let action = if finish { Action::Finish } else { Action::Run };
+                    let status = stream
+                        .compress(&mut output, &mut from, action)
+                        .map_err(|e| failed(e.to_string()))?;
+                    at += from.pos;
+                    let done = status == Status::StreamEnd || (!finish && at == input.len());
+                    (output.pos, done)
+                }
                 Coder::Gzip(stream) => {
                     use hivepack_deflate::{InBuffer, OutBuffer, Status};
                     let mut output = OutBuffer::new(&mut self.buf);
@@ -1505,7 +1626,7 @@ fn straight(
             Kind::Zip => new_zip(items, new, &tally)
                 .and_then(|mut za| Ok(za.close_to_stream(out)?))
                 .and_then(zip_closed),
-            _ => Squeezed::new(new, out).and_then(|out| write_tar(items, &tally, out)),
+            _ => write_squeezed(items, new, &tally, out),
         };
         let written = why(written, &tally);
         if let Err(e) = &written {
