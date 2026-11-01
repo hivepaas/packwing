@@ -17,8 +17,8 @@ use std::io::Read;
 use std::sync::Arc;
 
 use packwing_core::{
-    Control, Item, Keys, LocalFolder, NewArchive, OnExisting, Source, Storage, Stored, Transfer,
-    create, create_on, extract_selected, list, read_entry, transfer,
+    Cancel, Control, Item, Keys, Kind, LocalFolder, NewArchive, OnExisting, Source, Storage,
+    Stored, Transfer, create, create_on, extract_selected, list, read_entry, transfer,
 };
 use packwing_remote::{S3Settings, SftpSettings, WebDavSettings, s3, sftp, webdav};
 
@@ -500,6 +500,110 @@ fn a_new_archive_goes_up_and_reads_back() {
         let body =
             read_entry(&source, &["what.txt".to_owned()], &keys, 1 << 20, &none()).expect(kind);
         assert_eq!(body.len(), 600_000, "{kind}");
+    }
+    let _ = std::fs::remove_dir_all(&here);
+}
+
+/// A file of `bytes` that does not compress.
+fn noise(path: &std::path::Path, bytes: usize) {
+    let mut noise = vec![0u8; bytes];
+    let mut x = 88172645463325252u64;
+    for b in noise.iter_mut() {
+        x ^= x << 13;
+        x ^= x >> 7;
+        x ^= x << 17;
+        *b = x as u8;
+    }
+    std::fs::write(path, noise).expect("a file");
+}
+
+/// Larger than a part, so that it goes up in several.
+const STRAIGHT_BYTES: usize = 40 << 20;
+
+#[test]
+fn a_new_archive_goes_straight_where_it_can_and_reads_back() {
+    let here = std::env::temp_dir().join(format!("packwing-straight-{}", std::process::id()));
+    std::fs::create_dir_all(&here).expect("a folder");
+    let what = here.join("what.bin");
+    noise(&what, STRAIGHT_BYTES);
+    for (kind, s) in storages("straight") {
+        let storage: Arc<dyn Storage> = Arc::from(s);
+        for (format, name) in [
+            (Kind::TarZst, "new.tar.zst"),
+            (Kind::Zip, "new.zip"),
+            (Kind::SevenZip, "new.7z"),
+        ] {
+            let how = NewArchive {
+                kind: format,
+                stream_above: Some(0),
+                ..NewArchive::default()
+            };
+            let through = std::sync::atomic::AtomicBool::new(false);
+            create_on(
+                std::slice::from_ref(&what),
+                storage.as_ref(),
+                &[],
+                name,
+                &how,
+                &none(),
+                &|| through.store(true, std::sync::atomic::Ordering::Relaxed),
+            )
+            .unwrap_or_else(|e| panic!("{kind} {name}: {e}"));
+            let expected = !(kind == "sftp" || (kind == "s3" && format == Kind::TarZst));
+            assert_eq!(through.into_inner(), expected, "{kind} {name}");
+            let size = storage.stat(&[], name).expect(kind).expect(kind).size;
+            let source = Source::Stored(Stored::new(storage.clone(), vec![name.into()], size));
+            let body = read_entry(
+                &source,
+                &["what.bin".to_owned()],
+                &Keys::default(),
+                (STRAIGHT_BYTES + 1) as u64,
+                &none(),
+            )
+            .unwrap_or_else(|e| panic!("{kind} {name}: {e}"));
+            assert_eq!(body.len(), STRAIGHT_BYTES, "{kind} {name}");
+        }
+    }
+    let _ = std::fs::remove_dir_all(&here);
+}
+
+#[test]
+fn stopped_on_its_way_straight_it_leaves_nothing_on_the_server() {
+    let here = std::env::temp_dir().join(format!("packwing-stop-{}", std::process::id()));
+    std::fs::create_dir_all(&here).expect("a folder");
+    let what = here.join("what.bin");
+    noise(&what, STRAIGHT_BYTES);
+    for (kind, s) in storages("straight-stopped") {
+        let cancel = Cancel::new();
+        let told = cancel.clone();
+        let control = Control {
+            progress: Some(Arc::new(move |p: &packwing_core::Progress| {
+                if p.bytes > 20 << 20 {
+                    told.cancel();
+                }
+            })),
+            cancel: Some(cancel),
+        };
+        let how = NewArchive {
+            kind: Kind::TarZst,
+            stream_above: Some(0),
+            ..NewArchive::default()
+        };
+        let e = create_on(
+            std::slice::from_ref(&what),
+            s.as_ref(),
+            &[],
+            "new.tar.zst",
+            &how,
+            &control,
+            &|| {},
+        );
+        assert!(
+            matches!(e, Err(packwing_core::Error::Cancelled)),
+            "{kind}: {e:?}"
+        );
+        let names: Vec<String> = all(s.as_ref(), &[]).into_iter().map(|i| i.name).collect();
+        assert!(names.is_empty(), "{kind}: {names:?}");
     }
     let _ = std::fs::remove_dir_all(&here);
 }

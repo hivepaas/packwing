@@ -16,7 +16,8 @@ use std::fmt;
 use std::fs::{self, File, Metadata, OpenOptions};
 use std::io::{self, Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::mpsc::{Receiver, SyncSender, sync_channel};
 use std::sync::{Arc, Mutex, PoisonError};
 use std::time::UNIX_EPOCH;
 
@@ -109,6 +110,36 @@ pub struct NewArchive {
     /// Cuts it into `name.zip.001`, `name.zip.002`, … of this many bytes, as
     /// 7-Zip does.
     pub part_size: Option<u64>,
+    /// Bound for a storage across a network, it goes straight there if its files
+    /// come to more than this many bytes and the storage can take it that way. It
+    /// goes through a temporary file otherwise, and if this is none.
+    pub stream_above: Option<u64>,
+}
+
+/// How a new archive reaches a storage.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Route {
+    /// Made where it goes, in a folder on this computer.
+    Here,
+    /// Made in a temporary file, then uploaded.
+    Temporary,
+    /// Written to the storage as it is made.
+    Straight,
+}
+
+/// How a new archive of `bytes` of files reaches `folder` of `to`.
+pub fn route(to: &dyn Storage, folder: &[String], new: &NewArchive, bytes: u64) -> Route {
+    if to.local_path(folder).is_some() {
+        return Route::Here;
+    }
+    // A tar archive only goes forwards. A ZIP or 7z one goes back to what it wrote,
+    // and parts are files of their own, which are not worth the trouble yet.
+    let forwards = matches!(new.kind, Kind::TarGz | Kind::TarXz | Kind::TarZst);
+    let can = new.part_size.is_none() && (to.writes_anywhere() || (forwards && to.sends_as_read()));
+    match new.stream_above {
+        Some(above) if can && bytes > above => Route::Straight,
+        _ => Route::Temporary,
+    }
 }
 
 impl fmt::Debug for NewArchive {
@@ -118,6 +149,7 @@ impl fmt::Debug for NewArchive {
             .field("level", &self.level)
             .field("password", &self.password.is_some())
             .field("hide_names", &self.hide_names)
+            .field("stream_above", &self.stream_above)
             .field("skip_mac_files", &self.skip_mac_files)
             .field("part_size", &self.part_size)
             .finish()
@@ -1208,6 +1240,20 @@ fn chosen_items(
     Ok(items)
 }
 
+/// What counts how far making an archive of `items` has come, told where it starts.
+fn tally_of(items: &[Item], control: &Control) -> Arc<Tally> {
+    let mut progress = Progress::default();
+    let counted = measured(items);
+    progress.total_entries = counted.files;
+    progress.total_bytes = counted.bytes;
+    control.report(&progress);
+    Arc::new(Tally {
+        control: control.clone(),
+        progress: Mutex::new(progress),
+        failed: Mutex::new(None),
+    })
+}
+
 /// [`create`], its `items` found.
 fn create_of(
     items: Vec<Item>,
@@ -1218,16 +1264,7 @@ fn create_of(
     if items.is_empty() {
         return Err(Error::Failed(tr!("Nothing to compress.")));
     }
-    let mut progress = Progress::default();
-    let counted = measured(&items);
-    progress.total_entries = counted.files;
-    progress.total_bytes = counted.bytes;
-    let tally = Arc::new(Tally {
-        control: control.clone(),
-        progress: Mutex::new(progress),
-        failed: Mutex::new(None),
-    });
-    control.report(&progress);
+    let tally = tally_of(&items, control);
     match new.part_size {
         Some(size) if size > 0 => {
             let (base, mut parts) = free_name(wanted, |base| {
@@ -1326,12 +1363,157 @@ fn free_name_on(
     Ok(free.to_string_lossy().into_owned())
 }
 
+/// Most of what is written to [`Piped`] waits for the upload in this many pieces, of
+/// [`PIPED_PIECE`] each: how far compressing runs ahead of it.
+const PIPED_PIECES: usize = 8;
+const PIPED_PIECE: usize = 1 << 20;
+
+/// What a tar archive is written to, on its way to [`PipeReader`].
+struct Piped {
+    to: SyncSender<io::Result<Vec<u8>>>,
+    piece: Vec<u8>,
+    /// The upload has stopped reading.
+    broken: Arc<AtomicBool>,
+}
+
+impl Piped {
+    fn send(&mut self) -> io::Result<()> {
+        let piece = std::mem::replace(&mut self.piece, Vec::with_capacity(PIPED_PIECE));
+        if self.to.send(Ok(piece)).is_err() {
+            self.broken.store(true, Ordering::Relaxed);
+            return Err(io::ErrorKind::BrokenPipe.into());
+        }
+        Ok(())
+    }
+}
+
+impl Write for Piped {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        let n = buf.len().min(PIPED_PIECE - self.piece.len());
+        self.piece.extend_from_slice(&buf[..n]);
+        if self.piece.len() == PIPED_PIECE {
+            self.send()?;
+        }
+        Ok(n)
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        Ok(())
+    }
+}
+
+impl Drop for Piped {
+    /// The rest. An upload that has stopped says why itself.
+    fn drop(&mut self) {
+        if !self.piece.is_empty() {
+            let _ = self.send();
+        }
+    }
+}
+
+/// What the upload reads, as it is written to [`Piped`].
+struct PipeReader {
+    from: Receiver<io::Result<Vec<u8>>>,
+    piece: Vec<u8>,
+    taken: usize,
+}
+
+impl Read for PipeReader {
+    fn read(&mut self, out: &mut [u8]) -> io::Result<usize> {
+        if self.taken == self.piece.len() {
+            match self.from.recv() {
+                Ok(piece) => self.piece = piece?,
+                // All of it was written.
+                Err(_) => return Ok(0),
+            }
+            self.taken = 0;
+        }
+        let n = out.len().min(self.piece.len() - self.taken);
+        out[..n].copy_from_slice(&self.piece[self.taken..self.taken + n]);
+        self.taken += n;
+        Ok(n)
+    }
+}
+
+/// Writes an archive of `items` straight to `path` of `to`, as [`route`] says it can.
+fn straight(
+    items: Vec<Item>,
+    bytes: u64,
+    to: &dyn Storage,
+    path: &[String],
+    name: &str,
+    new: &NewArchive,
+    control: &Control,
+) -> Result<(), Error> {
+    let upload_failed = |e: io::Error| Error::Failed(e.to_string());
+    let like = StoredItem {
+        name: name.to_owned(),
+        dir: false,
+        link: false,
+        hidden: false,
+        // At most, about: what it is told to expect, with each entry's headers.
+        size: room_needed(bytes).saturating_add(items.len() as u64 * 1536),
+        modified: std::time::SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .ok()
+            .map(|d| d.as_secs() as i64),
+        mode: None,
+    };
+    let tally = tally_of(&items, control);
+    if to.writes_anywhere() {
+        let mut file = to.new_file(path, &like).map_err(upload_failed)?;
+        let written = write_archive(items, new, &tally, &mut file).and_then(|()| {
+            file.flush()?;
+            Ok(())
+        });
+        why(written, &tally)?;
+        file.finish().map_err(upload_failed)?;
+        return Ok(());
+    }
+    let (sender, from) = sync_channel(PIPED_PIECES);
+    let broken = Arc::new(AtomicBool::new(false));
+    let tell = sender.clone();
+    std::thread::scope(|scope| {
+        let sending = scope.spawn(|| {
+            let mut reader = PipeReader {
+                from,
+                piece: Vec::new(),
+                taken: 0,
+            };
+            to.put(path, &mut reader, &like, false)
+        });
+        let out = Piped {
+            to: sender,
+            piece: Vec::with_capacity(PIPED_PIECE),
+            broken: broken.clone(),
+        };
+        let written = Squeezed::new(new, out).and_then(|out| write_tar(items, &tally, out));
+        let written = why(written, &tally);
+        if let Err(e) = &written {
+            // Stops the upload, so that nothing appears.
+            let _ = tell.send(Err(io::Error::other(e.to_string())));
+        }
+        drop(tell);
+        let sent = sending
+            .join()
+            .unwrap_or_else(|_| Err(io::Error::other(tr!("The upload stopped."))));
+        match (written, sent) {
+            // The upload stopped first: the writing only ran out of road.
+            (Err(_), Err(e)) if broken.load(Ordering::Relaxed) => Err(upload_failed(e)),
+            (Err(e), _) => Err(e),
+            (Ok(()), Err(e)) => Err(upload_failed(e)),
+            (Ok(()), Ok(_)) => Ok(()),
+        }
+    })
+}
+
 /// Makes an archive of `paths` in `folder` of `to`, as [`create`] does in a folder
 /// here, named `name` or the first name after it that is free. In a folder on this
-/// computer it is made where it goes, and that place is given. Anywhere else it is
-/// made in a temporary folder first, if there is room for it, then uploaded and
-/// taken away; `uploading` is called as that starts, and the progress starts again
-/// with what is to go up. Failed or stopped, nothing is left in either place.
+/// computer it is made where it goes, and that place is given. Anywhere else, as
+/// [`route`] says: written straight there, or made in a temporary folder first, if
+/// there is room for it, then uploaded and taken away. `uploading` is called as that
+/// starts, and the progress starts again with what is to go up. Failed or stopped,
+/// nothing is left in either place.
 pub fn create_on(
     paths: &[PathBuf],
     to: &dyn Storage,
@@ -1351,10 +1533,20 @@ pub fn create_on(
     // Asked before anything is compressed: what stops it soon stops it first.
     let name = free_name_on(to, folder, name, new.part_size.is_some())?;
     let items = chosen_items(paths, new, control)?;
+    let bytes = measured(&items).bytes;
+    if route(to, folder, new, bytes) == Route::Straight {
+        if items.is_empty() {
+            return Err(Error::Failed(tr!("Nothing to compress.")));
+        }
+        let mut path = folder.to_vec();
+        path.push(name.clone());
+        straight(items, bytes, to, &path, &name, new, control)?;
+        return Ok(None);
+    }
     let scratch = Scratch(opened_subfolder()?);
     // Not told, it is found out by trying.
     if let Ok(free) = fs4::available_space(&scratch.0)
-        && let Some(e) = no_room(room_needed(measured(&items).bytes), free, &scratch.0)
+        && let Some(e) = no_room(room_needed(bytes), free, &scratch.0)
     {
         return Err(e);
     }
