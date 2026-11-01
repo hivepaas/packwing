@@ -3,6 +3,7 @@
 //! about.
 
 use gpui::{Context, EventEmitter, Render, SharedString, Window, div, prelude::*, px, rgb};
+use packwing_i18n::tr;
 
 use super::{DialogEvent, Job, footer, header};
 use crate::colors::colors;
@@ -39,7 +40,7 @@ impl Render for OpenFileDialog {
             .child(header(
                 "extract",
                 tonal_tint(),
-                format!("Open {}?", self.name),
+                tr!("Open {name}?", name = self.name),
                 self.job.name.clone(),
                 Some(close),
             ))
@@ -47,16 +48,16 @@ impl Render for OpenFileDialog {
                 div()
                     .text_size(px(14.))
                     .text_color(rgb(c.muted))
-                    .child("packwing puts a copy in a temporary folder and opens that. Changes to it do not go back in the archive."),
+                    .child(tr!("packwing puts a copy in a temporary folder and opens that. Changes to it do not go back in the archive.")),
             )
             .when(self.program, |d| {
                 d.child(note(Tone::Warn).child(
-                    "This is a program: opening it runs it. Only do so if you trust where the archive came from.",
+                    tr!("This is a program: opening it runs it. Only do so if you trust where the archive came from."),
                 ))
             })
             .when(!self.program, |d| {
                 d.child(
-                    check_row("dont-ask", self.dont_ask, "Don’t ask again").on_click(cx.listener(
+                    check_row("dont-ask", self.dont_ask, tr!("Don’t ask again")).on_click(cx.listener(
                         |this, _, _, cx| {
                             this.dont_ask = !this.dont_ask;
                             cx.notify();
@@ -68,13 +69,13 @@ impl Render for OpenFileDialog {
                 footer()
                     .justify_end()
                     .child(
-                        button("cancel", "Cancel", Fill::Text, Size::Medium)
+                        button("cancel", tr!("Cancel"), Fill::Text, Size::Medium)
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close))),
                     )
                     .child(
                         button(
                             "open",
-                            if self.program { "Run it" } else { "Open" },
+                            if self.program { tr!("Run it") } else { tr!("Open") },
                             Fill::Accent,
                             Size::Medium,
                         )

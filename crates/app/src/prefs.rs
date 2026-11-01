@@ -64,6 +64,8 @@ impl ExtractTo {
 pub struct Prefs {
     /// Where they are kept: none while they are only for this run, as in tests.
     file: Option<PathBuf>,
+    /// A language's tag, or none for the system's.
+    pub language: Option<String>,
     pub appearance: Appearance,
     pub format: Format,
     pub level: Level,
@@ -87,6 +89,7 @@ impl Default for Prefs {
     fn default() -> Prefs {
         Prefs {
             file: None,
+            language: None,
             appearance: Appearance::System,
             format: Format::Zip,
             level: Level::Medium,
@@ -142,6 +145,7 @@ impl Prefs {
                 continue;
             };
             match key {
+                "language" => p.language = Some(value.to_owned()).filter(|v| !v.is_empty()),
                 "appearance" => {
                     p.appearance = match value {
                         "light" => Appearance::Light,
@@ -207,6 +211,10 @@ impl Prefs {
             .map_or("Medium", |(_, name)| name);
         let limit = LIMITS.get(self.limit).map_or(LIMITS[1].0, |(name, _)| name);
         let mut text = format!(
+            "language={}\n",
+            self.language.as_deref().unwrap_or_default()
+        );
+        text += &format!(
             "appearance={appearance}\nformat={}\nlevel={level}\nhide_names={}\n\
              skip_mac_files={}\nextract_to={}\noverwrite={}\nlimit={limit}\nkeep_mark={}\n\
              ask_before_open={}\n",
@@ -294,6 +302,7 @@ mod tests {
     #[test]
     fn what_is_kept_comes_back() {
         let mut p = Prefs {
+            language: Some("en".to_owned()),
             appearance: Appearance::Dark,
             format: Format::TarZst,
             level: Level::Highest,

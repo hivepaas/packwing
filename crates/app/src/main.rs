@@ -158,7 +158,9 @@ fn main() {
         .with_assets(Assets)
         .run(move |cx: &mut App| {
             load_fonts(cx);
-            cx.set_global(prefs::Prefs::load());
+            let kept = prefs::Prefs::load();
+            packwing_i18n::set_language(kept.language.as_deref());
+            cx.set_global(kept);
             packwing_core::clean_opened_files();
             // GNOME's Wayland compositor draws no window frame, so Linux gets
             // client-side decorations. macOS and Windows keep the system's
@@ -211,6 +213,54 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    /// Words on the screen go through `tr!`, or a new language would miss them.
+    /// This looks where they are most often written; `scripts/i18n.py` finds the
+    /// rest once they are there.
+    #[test]
+    fn what_the_window_says_can_be_translated() {
+        fn walk(folder: &std::path::Path, found: &mut Vec<std::path::PathBuf>) {
+            for entry in std::fs::read_dir(folder).expect("the sources") {
+                let path = entry.expect("an entry").path();
+                if path.is_dir() {
+                    walk(&path, found);
+                } else if path.extension().is_some_and(|e| e == "rs") {
+                    found.push(path);
+                }
+            }
+        }
+        let mut sources = Vec::new();
+        let src = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
+        walk(&src, &mut sources);
+        let said = [
+            ".child(\"",
+            "legend(\"",
+            "label(\"",
+            "title(\"",
+            "setting(\"",
+        ];
+        for path in sources {
+            let name = path.file_name().map(|n| n.to_string_lossy().into_owned());
+            if matches!(name.as_deref(), Some("shots.rs" | "demo.rs" | "main.rs")) {
+                continue;
+            }
+            let text = std::fs::read_to_string(&path).expect("a source");
+            for (i, line) in text.lines().enumerate() {
+                for start in said {
+                    if let Some(at) = line.find(start) {
+                        let rest = &line[at + start.len()..];
+                        assert!(
+                            !rest.starts_with(|c: char| c.is_alphabetic())
+                                || rest.starts_with("packwing\""),
+                            "{}:{}: {line}",
+                            path.display(),
+                            i + 1
+                        );
+                    }
+                }
+            }
+        }
+    }
+
     use super::*;
 
     #[test]

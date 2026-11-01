@@ -12,7 +12,7 @@ mod progress;
 
 pub use add::AddDialog;
 pub use create::CreateDialog;
-pub(crate) use create::{Format, LEVELS, Level};
+pub(crate) use create::{Format, LEVELS, Level, level_name};
 pub use edit::EditDialog;
 pub use extract::ExtractDialog;
 pub use open_file::OpenFileDialog;

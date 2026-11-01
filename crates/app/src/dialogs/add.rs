@@ -2,6 +2,7 @@
 //! in, the one it shows. Files and folders are asked for apart, as a system's
 //! picker on Linux and Windows gives one or the other.
 
+use packwing_i18n::{tr, tr_n};
 use std::path::PathBuf;
 
 use gpui::{
@@ -12,17 +13,19 @@ use packwing_core::{Keys, OnExisting};
 
 use super::{Adding, DialogEvent, Job, Verb, footer, header};
 use crate::colors::colors;
-use crate::model::{Archive, Selection, counted, size};
+use crate::model::{Archive, Selection, count, size};
 use crate::widgets::{
     Fill, Select, SelectLook, Size, Tone, button, icon_button, legend, note, tonal_tint,
 };
 
 /// What a file of the same name in the archive can come to.
-const ON_EXISTING: [(&str, OnExisting); 3] = [
-    ("Stop and say so", OnExisting::Stop),
-    ("Replace it", OnExisting::Replace),
-    ("Skip it", OnExisting::Skip),
-];
+fn on_existing() -> [(String, OnExisting); 3] {
+    [
+        (tr!("Stop and say so"), OnExisting::Stop),
+        (tr!("Replace it"), OnExisting::Replace),
+        (tr!("Skip it"), OnExisting::Skip),
+    ]
+}
 
 pub struct AddDialog {
     /// The archive's file.
@@ -45,7 +48,7 @@ impl AddDialog {
     /// For `archive`, or `None` if it has no file: the samples.
     pub fn new(archive: &Archive, cx: &mut App) -> Option<AddDialog> {
         let on_existing =
-            cx.new(|_| Select::new(&ON_EXISTING.map(|(name, _)| name), 0, SelectLook::Pill));
+            cx.new(|_| Select::new(&on_existing().map(|(name, _)| name), 0, SelectLook::Pill));
         Some(AddDialog {
             archive: archive.path.clone()?,
             name: archive.name.clone().into(),
@@ -63,7 +66,7 @@ impl AddDialog {
     #[cfg(all(test, feature = "shots"))]
     pub fn sample(archive: &Archive, cx: &mut App) -> AddDialog {
         let on_existing =
-            cx.new(|_| Select::new(&ON_EXISTING.map(|(name, _)| name), 0, SelectLook::Pill));
+            cx.new(|_| Select::new(&on_existing().map(|(name, _)| name), 0, SelectLook::Pill));
         AddDialog {
             archive: PathBuf::from("/home/you/Documents/sample.zip"),
             name: archive.name.clone().into(),
@@ -105,7 +108,7 @@ impl AddDialog {
             files: !folders,
             directories: folders,
             multiple: true,
-            prompt: Some("Add".into()),
+            prompt: Some(tr!("Add").into()),
         });
         cx.spawn(async move |this, cx| {
             if let Ok(Ok(Some(paths))) = picked.await {
@@ -133,7 +136,7 @@ impl AddDialog {
             paths: self.selection.paths.clone(),
             archive: self.archive.clone(),
             folder: self.folder.clone(),
-            on_existing: ON_EXISTING[self.on_existing.read(cx).chosen().min(2)].1,
+            on_existing: on_existing()[self.on_existing.read(cx).chosen().min(2)].1,
         });
         cx.emit(DialogEvent::Start(job));
     }
@@ -141,7 +144,7 @@ impl AddDialog {
     /// The folder they go in, as the page shows it.
     fn goes_in(&self) -> String {
         if self.folder.is_empty() {
-            format!("The top of {}", self.name)
+            tr!("The top of {name}", name = self.name)
         } else {
             self.folder.join(" › ")
         }
@@ -153,11 +156,25 @@ impl Render for AddDialog {
         let c = colors();
         let s = &self.selection;
         let detail = if s.paths.is_empty() {
-            "Choose what to add".to_owned()
+            tr!("Choose what to add").to_owned()
         } else if s.files == 0 {
-            counted(s.paths.len() as u64, "item", "items")
+            tr_n!(
+                s.paths.len() as u64,
+                "{count} item",
+                "{count} items",
+                count = count(s.paths.len() as u64)
+            )
         } else {
-            format!("{} · {}", counted(s.files, "file", "files"), size(s.bytes))
+            format!(
+                "{} · {}",
+                tr_n!(
+                    s.files,
+                    "{count} file",
+                    "{count} files",
+                    count = count(s.files)
+                ),
+                size(s.bytes)
+            )
         };
         let names: Vec<String> = s
             .paths
@@ -168,11 +185,15 @@ impl Render for AddDialog {
             .collect();
         let more = s.paths.len().saturating_sub(names.len());
         let line = match (names.is_empty(), more) {
-            (true, _) => "Nothing chosen yet".to_owned(),
+            (true, _) => tr!("Nothing chosen yet").to_owned(),
             (false, 0) => names.join(", "),
-            (false, more) => format!("{} and {more} more", names.join(", ")),
+            (false, more) => tr!(
+                "{join} and {more} more",
+                join = names.join(", "),
+                more = more
+            ),
         };
-        let row = |label: &'static str, text: String| {
+        let row = |label: String, text: String| {
             div().flex_1().min_w_0().child(legend(label)).child(
                 div()
                     .truncate()
@@ -191,7 +212,7 @@ impl Render for AddDialog {
             .child(header(
                 "logo",
                 tonal_tint(),
-                format!("Add to {}", self.name),
+                tr!("Add to {name}", name = self.name),
                 detail,
                 Some(close),
             ))
@@ -200,20 +221,27 @@ impl Render for AddDialog {
                     .flex()
                     .items_center()
                     .gap(px(8.))
-                    .child(row("What goes in", line))
+                    .child(row(tr!("What goes in"), line))
                     .child(
-                        button("add-files", "Add files…", Fill::Outline, Size::Small)
+                        button("add-files", tr!("Add files…"), Fill::Outline, Size::Small)
                             .on_click(cx.listener(|this, _, _, cx| this.pick(false, cx))),
                     )
                     .child(
-                        button("add-folder", "Add a folder…", Fill::Outline, Size::Small)
-                            .on_click(cx.listener(|this, _, _, cx| this.pick(true, cx))),
+                        button(
+                            "add-folder",
+                            tr!("Add a folder…"),
+                            Fill::Outline,
+                            Size::Small,
+                        )
+                        .on_click(cx.listener(|this, _, _, cx| this.pick(true, cx))),
                     ),
             )
             .when(s.paths.is_empty() && self.checked, |d| {
-                d.child(note(Tone::Warn).child("Add the files or a folder to put in the archive."))
+                d.child(
+                    note(Tone::Warn).child(tr!("Add the files or a folder to put in the archive.")),
+                )
             })
-            .child(div().flex().child(row("Goes in", self.goes_in())))
+            .child(div().flex().child(row(tr!("Goes in"), self.goes_in())))
             .child(
                 div()
                     .flex()
@@ -222,27 +250,24 @@ impl Render for AddDialog {
                     .child(
                         div()
                             .flex_1()
-                            .child(legend("If a file of that name is there")),
+                            .child(legend(tr!("If a file of that name is there"))),
                     )
                     .child(self.on_existing.clone()),
             )
             .when(self.encrypted, |d| {
-                d.child(
-                    div()
-                        .text_size(px(13.))
-                        .text_color(rgb(c.muted))
-                        .child("The new files are encrypted with the archive’s password."),
-                )
+                d.child(div().text_size(px(13.)).text_color(rgb(c.muted)).child(tr!(
+                    "The new files are encrypted with the archive’s password."
+                )))
             })
             .child(
                 footer()
                     .justify_end()
                     .child(
-                        button("cancel", "Cancel", Fill::Text, Size::Medium)
+                        button("cancel", tr!("Cancel"), Fill::Text, Size::Medium)
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close))),
                     )
                     .child(
-                        button("add", "Add", Fill::Accent, Size::Medium)
+                        button("add", tr!("Add"), Fill::Accent, Size::Medium)
                             .px(px(28.))
                             .on_click(cx.listener(|this, _, _, cx| this.start(cx))),
                     ),

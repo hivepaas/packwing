@@ -395,11 +395,11 @@ pub struct Chosen;
 impl EventEmitter<Chosen> for Select {}
 
 impl Select {
-    pub fn new(options: &[&str], chosen: usize, look: SelectLook) -> Self {
+    pub fn new(options: &[impl AsRef<str>], chosen: usize, look: SelectLook) -> Self {
         Select {
             options: options
                 .iter()
-                .map(|o| SharedString::from(o.to_string()))
+                .map(|o| SharedString::from(o.as_ref().to_owned()))
                 .collect(),
             chosen: chosen.min(options.len().saturating_sub(1)),
             open: false,

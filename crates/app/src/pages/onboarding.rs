@@ -2,6 +2,7 @@
 //! each with a switch.
 
 use gpui::{Context, EventEmitter, FontWeight, Render, Window, div, prelude::*, px, relative, rgb};
+use packwing_i18n::tr;
 
 use super::{panel, title};
 use crate::colors::{Tint, colors};
@@ -14,8 +15,8 @@ pub struct Done {
 }
 
 struct Step {
-    label: &'static str,
-    detail: &'static str,
+    label: String,
+    detail: String,
     on: bool,
 }
 
@@ -31,8 +32,8 @@ impl Onboarding {
             steps: vec![
                 // The first: Get started says whether it is on.
                 Step {
-                    label: "Add to the right-click menu",
-                    detail: "Extract or compress from any folder.",
+                    label: tr!("Add to the right-click menu"),
+                    detail: tr!("Extract or compress from any folder."),
                     on: true,
                 },
             ],
@@ -55,11 +56,16 @@ impl Render for Onboarding {
             .bg(rgb(c.tonal))
             .text_color(rgb(c.on_tonal))
             .child(tile(72., 24., accent_tint()).child(logo(36., accent_tint())))
-            .child(title("Welcome to packwing", 34.).line_height(relative(1.15)))
-            .child(div().text_size(px(17.)).line_height(relative(1.5)).child(
-                "Open any archive, make smaller files to share, and stay safe from \
-                         harmful downloads.",
-            ))
+            .child(title(tr!("Welcome to packwing"), 34.).line_height(relative(1.15)))
+            .child(
+                div()
+                    .text_size(px(17.))
+                    .line_height(relative(1.5))
+                    .child(tr!(
+                        "Open any archive, make smaller files to share, and stay safe from \
+                         harmful downloads."
+                    )),
+            )
             .child(div().flex_1());
         let steps = self.steps.iter().enumerate().map(|(i, s)| {
             let tint = if s.on {
@@ -98,14 +104,14 @@ impl Render for Onboarding {
                             div()
                                 .text_size(px(16.))
                                 .font_weight(FontWeight::SEMIBOLD)
-                                .child(s.label),
+                                .child(s.label.clone()),
                         )
                         .child(
                             div()
                                 .text_size(px(14.))
                                 .line_height(relative(1.45))
                                 .text_color(rgb(c.muted))
-                                .child(s.detail),
+                                .child(s.detail.clone()),
                         ),
                 )
                 .child(
@@ -126,7 +132,7 @@ impl Render for Onboarding {
             .flex_col()
             .gap(px(14.))
             .p(px(32.))
-            .child(title("Set things up", 22.).pb(px(4.)))
+            .child(title(tr!("Set things up"), 22.).pb(px(4.)))
             .children(steps)
             .child(div().flex_1())
             .child(
@@ -139,10 +145,10 @@ impl Render for Onboarding {
                             .flex_1()
                             .text_size(px(13.))
                             .text_color(rgb(c.muted))
-                            .child("You can change these later in Settings."),
+                            .child(tr!("You can change these later in Settings.")),
                     )
                     .child(
-                        button("get-started", "Get started", Fill::Accent, Size::Large)
+                        button("get-started", tr!("Get started"), Fill::Accent, Size::Large)
                             .px(px(32.))
                             .on_click(cx.listener(|this, _, _, cx| {
                                 cx.emit(Done {

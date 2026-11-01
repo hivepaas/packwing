@@ -14,6 +14,7 @@ use gpui::{
     AnyView, Context, Div, Entity, EventEmitter, FontWeight, IntoElement, Render, SharedString,
     Subscription, Window, div, prelude::*, px, rgb,
 };
+use packwing_i18n::tr;
 
 use super::{panel, title};
 use crate::colors::colors;
@@ -41,14 +42,14 @@ impl Section {
         Section::About,
     ];
 
-    fn name(self) -> &'static str {
+    fn name(self) -> String {
         match self {
-            Section::General => "General",
-            Section::Extracting => "Extracting",
-            Section::Compressing => "Compressing",
-            Section::Security => "Security",
-            Section::RightClick => "Right-click menu",
-            Section::About => "About",
+            Section::General => tr!("General"),
+            Section::Extracting => tr!("Extracting"),
+            Section::Compressing => tr!("Compressing"),
+            Section::Security => tr!("Security"),
+            Section::RightClick => tr!("Right-click menu"),
+            Section::About => tr!("About"),
         }
     }
 }
@@ -139,7 +140,7 @@ impl SettingsPage {
             .gap(px(4.))
             .px(px(8.))
             .py(px(12.))
-            .child(title("Settings", 24.).px(px(16.)).pb(px(16.)))
+            .child(title(tr!("Settings"), 24.).px(px(16.)).pb(px(16.)))
             .children(items)
     }
 }

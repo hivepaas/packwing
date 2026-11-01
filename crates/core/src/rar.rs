@@ -2,6 +2,7 @@
 //! It is under UnRAR's license; packwing's own license allows that
 //! (`GPL-ADDITIONAL-PERMISSION.md`).
 
+use packwing_i18n::tr;
 use std::fs::{self, File};
 use std::io;
 use std::path::Path;
@@ -78,9 +79,7 @@ pub(crate) fn entries<R: ReadAt>(
             break;
         }
         if extract.missing_volume {
-            return Err(Error::Failed(
-                "A volume of this archive is not there.".into(),
-            ));
+            return Err(Error::Failed(tr!("A volume of this archive is not there.")));
         }
     }
     // Headers that do not decrypt read as none, which is no empty archive.
@@ -127,12 +126,13 @@ pub(crate) fn test<R: ReadAt>(
             return Err(Error::WrongPassword);
         }
         if extract.broken_file {
-            return Err(Error::Failed(format!("{named}: its data is damaged.")));
+            return Err(Error::Failed(tr!(
+                "{named}: its data is damaged.",
+                named = named
+            )));
         }
         if extract.missing_volume {
-            return Err(Error::Failed(
-                "A volume of this archive is not there.".into(),
-            ));
+            return Err(Error::Failed(tr!("A volume of this archive is not there.")));
         }
         if is_file {
             summary.files += 1;
@@ -156,9 +156,9 @@ fn failed(code: ExitCode, keys: &Keys) -> Error {
     match code {
         ExitCode::BadPassword => Error::WrongPassword,
         ExitCode::Crc if keys.password.is_some() => Error::WrongPassword,
-        code => Error::Failed(format!(
-            "The archive is damaged: UnRAR would exit with {}.",
-            code.number()
+        code => Error::Failed(tr!(
+            "The archive is damaged: UnRAR would exit with {number}.",
+            number = code.number()
         )),
     }
 }

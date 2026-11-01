@@ -10,6 +10,7 @@
 //! Each item runs packwing with its option and the paths chosen,
 //! `packwing --extract-here a.zip b.zip`: a [`Request`].
 
+use packwing_i18n::tr;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
@@ -69,18 +70,18 @@ impl Action {
     /// its own Extract, Extract to… and Compress…. In packwing's submenu,
     /// the submenu says it. One label for every archive: the menu cannot
     /// name the one chosen.
-    pub fn label(self, submenu: bool) -> &'static str {
+    pub fn label(self, submenu: bool) -> String {
         match (self, submenu) {
-            (Action::ExtractHere, false) => "Extract here with packwing",
-            (Action::ExtractHere, true) => "Extract here",
-            (Action::ExtractToFolder, _) => "Extract to new folder",
-            (Action::Extract, false) => "Extract with packwing…",
-            (Action::Extract, true) => "Extract…",
-            (Action::Open, false) => "Open with packwing",
-            (Action::Open, true) => "Open",
-            (Action::CompressZip, _) => "Compress to ZIP",
-            (Action::Compress, false) => "Compress with packwing…",
-            (Action::Compress, true) => "Compress…",
+            (Action::ExtractHere, false) => tr!("Extract here with packwing"),
+            (Action::ExtractHere, true) => tr!("Extract here"),
+            (Action::ExtractToFolder, _) => tr!("Extract to new folder"),
+            (Action::Extract, false) => tr!("Extract with packwing…"),
+            (Action::Extract, true) => tr!("Extract…"),
+            (Action::Open, false) => tr!("Open with packwing"),
+            (Action::Open, true) => tr!("Open"),
+            (Action::CompressZip, _) => tr!("Compress to ZIP"),
+            (Action::Compress, false) => tr!("Compress with packwing…"),
+            (Action::Compress, true) => tr!("Compress…"),
         }
     }
 
@@ -303,7 +304,8 @@ impl RightClickMenu {
             match std::env::current_exe() {
                 Ok(program) => self.choice.menu(&program),
                 Err(e) => {
-                    self.status = Status::Failed(format!("packwing cannot find its program: {e}"));
+                    self.status =
+                        Status::Failed(tr!("packwing cannot find its program: {e}", e = e));
                     return;
                 }
             }

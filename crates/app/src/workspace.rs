@@ -1,6 +1,7 @@
 //! The main window: the menu down its left side and the page chosen in it,
 //! the first run's welcome in their place, and a dialog over them all.
 
+use packwing_i18n::tr;
 use std::path::{Path, PathBuf};
 
 use gpui::{
@@ -464,14 +465,14 @@ impl Workspace {
                     }
                     (PasswordEvent::Cancelled, Then::Read { .. }) => {
                         let why = match ask.asked {
-                            Asked::Passphrase => "This file is encrypted with a passphrase.",
-                            Asked::Password => "This archive needs its password.",
-                            Asked::KeyFile => "This file is encrypted to a key.",
-                            Asked::KeyPassphrase => "This key file needs its passphrase.",
+                            Asked::Passphrase => tr!("This file is encrypted with a passphrase."),
+                            Asked::Password => tr!("This archive needs its password."),
+                            Asked::KeyFile => tr!("This file is encrypted to a key."),
+                            Asked::KeyPassphrase => tr!("This key file needs its passphrase."),
                         };
                         let shown = Shown::Failed {
                             name: name.clone(),
-                            why: why.into(),
+                            why,
                         };
                         this.archive.update(cx, |p, cx| p.show(shown, cx));
                     }
@@ -496,7 +497,7 @@ impl Workspace {
             files: true,
             directories: false,
             multiple: false,
-            prompt: Some("Open".into()),
+            prompt: Some(tr!("Open").into()),
         });
         cx.spawn_in(window, async move |this, cx| {
             if let Ok(Ok(Some(paths))) = picked.await
@@ -634,12 +635,12 @@ impl Workspace {
                 let archive = if one {
                     name(first)
                 } else {
-                    format!("{} archives", r.paths.len())
+                    tr!("{paths} archives", paths = r.paths.len())
                 };
                 let to = match r.action {
                     Action::ExtractHere => folder.display().to_string(),
                     _ if one => folder.join(stem(&archive)).display().to_string(),
-                    _ => format!("{}, a folder for each", folder.display()),
+                    _ => tr!("{folder}, a folder for each", folder = folder.display()),
                 };
                 // Each archive's files go beside it, or in a folder of their
                 // own there.
@@ -806,7 +807,7 @@ impl Workspace {
     /// The menu down the window's left side.
     fn menu(&self, top: f32, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
-        let item = |id: &'static str, icon_name: &'static str, label: &'static str, on: bool| {
+        let item = |id: &'static str, icon_name: &'static str, label: String, on: bool| {
             let ink = if on { c.on_tonal } else { c.muted };
             div()
                 .id(id)
@@ -854,23 +855,30 @@ impl Workspace {
                     .child(logo(24., accent_tint())),
             )
             .child(
-                item("nav-archive", "archive", "Archive", page == Page::Archive)
-                    .on_click(cx.listener(|this, _, _, cx| this.show_page(Page::Archive, cx))),
+                item(
+                    "nav-archive",
+                    "archive",
+                    tr!("Archive"),
+                    page == Page::Archive,
+                )
+                .on_click(cx.listener(|this, _, _, cx| this.show_page(Page::Archive, cx))),
             )
             .child(
-                item("nav-recent", "recent", "Recent", page == Page::Recent)
+                item("nav-recent", "recent", tr!("Recent"), page == Page::Recent)
                     .on_click(cx.listener(|this, _, _, cx| this.show_page(Page::Recent, cx))),
             )
-            .child(item("nav-new", "plus", "New", false).on_click(cx.listener(
-                |this, _, window, cx| {
-                    this.open_create(Vec::new(), window, cx);
-                },
-            )))
+            .child(
+                item("nav-new", "plus", tr!("New"), false).on_click(cx.listener(
+                    |this, _, window, cx| {
+                        this.open_create(Vec::new(), window, cx);
+                    },
+                )),
+            )
             .child(
                 item(
                     "nav-settings",
                     "sliders",
-                    "Settings",
+                    tr!("Settings"),
                     page == Page::Settings,
                 )
                 .on_click(cx.listener(|this, _, _, cx| this.show_page(Page::Settings, cx))),

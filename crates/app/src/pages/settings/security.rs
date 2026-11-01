@@ -3,6 +3,7 @@
 //! in the policy file, and only the rest can be changed.
 
 use gpui::{Context, FontWeight, Render, SharedString, Window, div, prelude::*, px, relative, rgb};
+use packwing_i18n::tr;
 
 use super::{rows, section, setting};
 use crate::colors::{Tint, colors};
@@ -22,13 +23,17 @@ const MONO_FONTS: [&str; 8] = [
     "Ubuntu Mono",
 ];
 
-/// Those packwing acts on so far, and keeps.
-const ASK_OPEN: &str = "Ask before opening files without extracting";
-const KEEP_MARK: &str = "Keep the “downloaded from the Internet” mark";
+/// What a switch sets.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Sets {
+    KeepMark,
+    AskOpen,
+}
 
 struct Toggle {
-    label: &'static str,
-    detail: &'static str,
+    sets: Sets,
+    label: String,
+    detail: String,
     on: bool,
 }
 
@@ -44,15 +49,21 @@ impl Security {
     pub fn new(managed: Option<Managed>, keep_mark: bool, ask_open: bool) -> Self {
         let mut toggles = vec![
             Toggle {
-                label: KEEP_MARK,
-                detail: "The system warns before running files that came from a downloaded \
-                         archive",
+                sets: Sets::KeepMark,
+                label: tr!("Keep the “downloaded from the Internet” mark"),
+                detail: tr!(
+                    "The system warns before running files that came from a downloaded \
+                         archive"
+                ),
                 on: keep_mark,
             },
             Toggle {
-                label: ASK_OPEN,
-                detail: "Opening a file inside an archive puts a copy in a temporary folder. \
-                         A program always asks.",
+                sets: Sets::AskOpen,
+                label: tr!("Ask before opening files without extracting"),
+                detail: tr!(
+                    "Opening a file inside an archive puts a copy in a temporary folder. \
+                         A program always asks."
+                ),
                 on: ask_open,
             },
         ];
@@ -60,7 +71,7 @@ impl Security {
             // The others are the organization's to set.
             toggles.drain(..toggles.len() - 1);
             if let Some(t) = toggles.last_mut() {
-                t.detail = "You can change this one";
+                t.detail = tr!("You can change this one");
             }
         }
         Security {
@@ -102,12 +113,16 @@ impl Security {
                         div()
                             .text_size(px(15.))
                             .font_weight(FontWeight::BOLD)
-                            .child("Some settings are managed by your organization"),
+                            .child(tr!("Some settings are managed by your organization")),
                     )
-                    .child(format!("{} · Questions? {}", m.by, m.contact)),
+                    .child(tr!(
+                        "{by} · Questions? {contact}",
+                        by = m.by,
+                        contact = m.contact
+                    )),
             )
             .child(
-                button("policies", "View policies", Fill::Raised, Size::Small)
+                button("policies", tr!("View policies"), Fill::Raised, Size::Small)
                     .text_color(rgb(c.warn_text)),
             )
     }
@@ -161,15 +176,15 @@ impl Render for Security {
             .clone();
         let open = self.toggles.iter().enumerate().map(|(i, t)| {
             setting(
-                t.label,
-                t.detail,
+                t.label.clone(),
+                t.detail.clone(),
                 switch(("security", i), t.on).on_click(cx.listener(move |this, _, _, cx| {
                     this.toggles[i].on = !this.toggles[i].on;
-                    if this.toggles[i].label == KEEP_MARK {
+                    if this.toggles[i].sets == Sets::KeepMark {
                         let on = this.toggles[i].on;
                         crate::prefs::change(cx, |p| p.keep_mark = on);
                     }
-                    if this.toggles[i].label == ASK_OPEN {
+                    if this.toggles[i].sets == Sets::AskOpen {
                         let on = this.toggles[i].on;
                         crate::prefs::change(cx, |p| p.ask_before_open = on);
                     }
@@ -201,17 +216,17 @@ impl Render for Security {
                     .gap_y(px(6.))
                     .text_size(px(13.))
                     .text_color(rgb(c.muted))
-                    .child(format!(
-                        "Version {} · {} channel",
-                        env!("CARGO_PKG_VERSION"),
-                        m.channel
+                    .child(tr!(
+                        "Version {env} · {channel} channel",
+                        env = env!("CARGO_PKG_VERSION"),
+                        channel = m.channel
                     ))
-                    .child(format!(
-                        "Enterprise license: {} · {} seats",
-                        m.organization,
-                        count(m.seats)
+                    .child(tr!(
+                        "Enterprise license: {organization} · {count} seats",
+                        organization = m.organization,
+                        count = count(m.seats)
                     ))
-                    .child("Crypto module: FIPS 140-3"),
+                    .child(tr!("Crypto module: FIPS 140-3")),
             )
     }
 }

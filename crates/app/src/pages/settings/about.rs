@@ -1,6 +1,7 @@
 //! About: what packwing is, its version, and its license.
 
 use gpui::{Context, FontWeight, Render, Window, div, prelude::*, px, relative, rgb};
+use packwing_i18n::tr;
 
 use super::{group, rows, section, setting};
 use crate::colors::colors;
@@ -14,7 +15,7 @@ pub struct About;
 impl Render for About {
     fn render(&mut self, _: &mut Window, _: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
-        let link = |id: &'static str, name: &'static str, url: &'static str| {
+        let link = |id: &'static str, name: String, url: &'static str| {
             button(id, name, Fill::Outline, Size::Small).on_click(move |_, _, cx| cx.open_url(url))
         };
         section()
@@ -41,26 +42,26 @@ impl Render for About {
                                 div()
                                     .text_size(px(14.))
                                     .text_color(rgb(c.muted))
-                                    .child(format!("Version {}", env!("CARGO_PKG_VERSION"))),
+                                    .child(tr!("Version {env}", env = env!("CARGO_PKG_VERSION"))),
                             )
                             .child(
                                 div()
                                     .pt(px(6.))
                                     .text_size(px(15.))
-                                    .child("A file archiver that opens archives safely."),
+                                    .child(tr!("A file archiver that opens archives safely.")),
                             ),
                     ),
             )
             .child(rows([
                 setting(
-                    "Free software",
-                    "Under the GNU General Public License, version 3 or later",
-                    link("license", "View license", LICENSE),
+                    tr!("Free software"),
+                    tr!("Under the GNU General Public License, version 3 or later"),
+                    link("license", tr!("View license"), LICENSE),
                 ),
                 setting(
-                    "Made by HivePaaS",
-                    "On hivepack, our library for reading and writing archives",
-                    link("source", "Source code", SOURCE),
+                    tr!("Made by HivePaaS"),
+                    tr!("On hivepack, our library for reading and writing archives"),
+                    link("source", tr!("Source code"), SOURCE),
                 ),
             ]))
     }

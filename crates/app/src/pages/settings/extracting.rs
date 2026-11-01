@@ -2,6 +2,7 @@
 //! how big an archive may unpack.
 
 use gpui::{Context, Entity, Render, Subscription, Window, div, prelude::*, px, rgb};
+use packwing_i18n::tr;
 
 use super::{group, heading, rows, section, setting};
 use crate::colors::colors;
@@ -10,7 +11,9 @@ use crate::widgets::{Chosen, Select, SelectLook, option_card, titled};
 
 /// What hivepack can do with a file that is there, the first what it does
 /// unless told.
-const EXISTING: [&str; 2] = ["Stop and say so", "Replace it"];
+fn existing() -> [String; 2] {
+    [tr!("Stop and say so"), tr!("Replace it")]
+}
 
 pub struct Extracting {
     extract_to: ExtractTo,
@@ -23,9 +26,17 @@ impl Extracting {
     pub fn new(cx: &mut Context<Self>) -> Self {
         let kept = prefs(cx);
         let existing =
-            cx.new(|_| Select::new(&EXISTING, usize::from(kept.overwrite), SelectLook::Pill));
-        let limit =
-            cx.new(|_| Select::new(&LIMITS.map(|(name, _)| name), kept.limit, SelectLook::Pill));
+            cx.new(|_| Select::new(&existing(), usize::from(kept.overwrite), SelectLook::Pill));
+        let limit = cx.new(|_| {
+            Select::new(
+                &LIMITS.map(|(name, limit)| match limit {
+                    Some(_) => name.to_owned(),
+                    None => tr!("No limit"),
+                }),
+                kept.limit,
+                SelectLook::Pill,
+            )
+        });
         let chosen = vec![
             cx.subscribe(&existing, |_, select, _: &Chosen, cx| {
                 let overwrite = select.read(cx).chosen() == 1;
@@ -48,7 +59,7 @@ impl Extracting {
 impl Render for Extracting {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
-        let place = |id: &'static str, to: ExtractTo, title: &'static str, detail: &'static str| {
+        let place = |id: &'static str, to: ExtractTo, title: String, detail: String| {
             let on = self.extract_to == to;
             option_card(id, on)
                 .px(px(14.))
@@ -66,8 +77,8 @@ impl Render for Extracting {
             .child(
                 group()
                     .child(heading(
-                        "Where the files go",
-                        "Where Extract starts: you can pick another there.",
+                        tr!("Where the files go"),
+                        tr!("Where Extract starts: you can pick another there."),
                     ))
                     .child(
                         div()
@@ -77,32 +88,32 @@ impl Render for Extracting {
                             .child(place(
                                 "smart",
                                 ExtractTo::Smart,
-                                "Smart",
-                                "One item right here, more in a new folder",
+                                tr!("Smart"),
+                                tr!("One item right here, more in a new folder"),
                             ))
                             .child(place(
                                 "into-new-folder",
                                 ExtractTo::NewFolder,
-                                "A new folder next to it",
-                                "Named after the archive",
+                                tr!("A new folder next to it"),
+                                tr!("Named after the archive"),
                             ))
                             .child(place(
                                 "beside",
                                 ExtractTo::Here,
-                                "Next to the archive",
-                                "Straight into its folder",
+                                tr!("Next to the archive"),
+                                tr!("Straight into its folder"),
                             )),
                     ),
             )
             .child(rows([
                 setting(
-                    "When a file is already there",
-                    "A file of the same name in the folder the files go to",
+                    tr!("When a file is already there"),
+                    tr!("A file of the same name in the folder the files go to"),
                     self.existing.clone(),
                 ),
                 setting(
-                    "Largest an archive may unpack to",
-                    "Stops archive bombs: small files that unpack to fill the disk",
+                    tr!("Largest an archive may unpack to"),
+                    tr!("Stops archive bombs: small files that unpack to fill the disk"),
                     self.limit.clone(),
                 ),
             ]))

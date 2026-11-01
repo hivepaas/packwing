@@ -7,6 +7,7 @@
 //! is shown: a file that needs a password says so.
 
 use packwing_core::Found;
+use packwing_i18n::{tr, tr_n};
 
 use std::collections::BTreeSet;
 
@@ -21,7 +22,7 @@ use packwing_core::{Cancel, Control, Error, image_fits, read_entry};
 use super::panel;
 use crate::colors::colors;
 use crate::input::{Changed, TextInput};
-use crate::model::{Archive, Entry, Kind, counted, size, text_preview};
+use crate::model::{Archive, Entry, Kind, count, size, text_preview};
 use crate::widgets::{Fill, Size, Tone, button, chip, icon, note, tile, tonal_tint};
 
 /// What the user asked of the archive.
@@ -55,7 +56,7 @@ enum Preview {
     Picture(Arc<Image>),
     Text(String),
     /// Why it cannot be shown.
-    Not(&'static str),
+    Not(String),
 }
 
 /// What a picture of this name is, for those GPUI decodes. SVG is left out: it
@@ -112,7 +113,7 @@ impl EventEmitter<ArchiveEvent> for ArchivePage {}
 
 impl ArchivePage {
     pub fn new(cx: &mut Context<Self>) -> Self {
-        let search = cx.new(|cx| TextInput::new("Search inside this archive", cx));
+        let search = cx.new(|cx| TextInput::new(tr!("Search inside this archive"), cx));
         let typing = cx.subscribe(&search, |this: &mut Self, field, _: &Changed, cx| {
             let query = field.read(cx).text().to_owned();
             this.found = this
@@ -188,7 +189,7 @@ impl ArchivePage {
             return;
         };
         if entry.size > MOST_PREVIEWED {
-            self.preview = Preview::Not("Too big to show here");
+            self.preview = Preview::Not(tr!("Too big to show here"));
             return;
         }
         let mut path = a.folder.clone();
@@ -205,15 +206,15 @@ impl ArchivePage {
                     Some(format) if image_fits(&bytes) => {
                         Preview::Picture(Arc::new(Image::from_bytes(format, bytes)))
                     }
-                    Some(_) => Preview::Not("Too big to show here"),
+                    Some(_) => Preview::Not(tr!("Too big to show here")),
                     None => text_preview(&bytes, MOST_TEXT)
-                        .map_or(Preview::Not("Not text it can show"), Preview::Text),
+                        .map_or(Preview::Not(tr!("Not text it can show")), Preview::Text),
                 },
                 Err(Error::Cancelled) => Preview::Nothing,
                 Err(Error::Locked { .. } | Error::WrongPassword) => {
-                    Preview::Not("It needs the password to show it")
+                    Preview::Not(tr!("It needs the password to show it"))
                 }
-                Err(_) => Preview::Not("It could not be read"),
+                Err(_) => Preview::Not(tr!("It could not be read")),
             }
         });
         self.preview = Preview::Reading;
@@ -377,7 +378,7 @@ impl ArchivePage {
             .text_size(px(13.))
             .font_weight(FontWeight::SEMIBOLD)
             .child(icon("check", 14., c.on_accent))
-            .child("Safe to extract");
+            .child(tr!("Safe to extract"));
         div()
             .flex()
             .flex_shrink_0()
@@ -416,7 +417,12 @@ impl ArchivePage {
                                 c.on_tonal,
                             ))
                             .child(chip(
-                                counted(a.files, "file", "files"),
+                                tr_n!(
+                                    a.files,
+                                    "{count} file",
+                                    "{count} files",
+                                    count = count(a.files)
+                                ),
                                 c.surface,
                                 c.on_tonal,
                             ))
@@ -432,7 +438,7 @@ impl ArchivePage {
                     .flex_wrap()
                     .gap(px(10.))
                     .child(
-                        button("extract", "Extract", Fill::Accent, Size::Large)
+                        button("extract", tr!("Extract"), Fill::Accent, Size::Large)
                             .px(px(28.))
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Extract))),
                     )
@@ -442,7 +448,7 @@ impl ArchivePage {
                         a.listing.as_ref().is_none_or(|l| packwing_core::can_add(l)),
                         |d| {
                             d.child(
-                                button("add-files", "Add files", Fill::Raised, Size::Large)
+                                button("add-files", tr!("Add files"), Fill::Raised, Size::Large)
                                     .on_click(
                                         cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::AddFiles)),
                                     ),
@@ -450,7 +456,7 @@ impl ArchivePage {
                         },
                     )
                     .child(
-                        button("test", "Test", Fill::Raised, Size::Large)
+                        button("test", tr!("Test"), Fill::Raised, Size::Large)
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Test))),
                     ),
             )
@@ -573,13 +579,13 @@ impl ArchivePage {
                     .child(div().flex_1().min_w_0().child(crumb))
                     .when(changeable && one, |d| {
                         d.child(
-                            button("rename", "Rename", Fill::Outline, Size::Small)
+                            button("rename", tr!("Rename"), Fill::Outline, Size::Small)
                                 .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Rename))),
                         )
                     })
                     .when(changeable, |d| {
                         d.child(
-                            button("delete", "Delete", Fill::Outline, Size::Small)
+                            button("delete", tr!("Delete"), Fill::Outline, Size::Small)
                                 .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Delete))),
                         )
                     }),
@@ -600,9 +606,9 @@ impl ArchivePage {
                                 .text_size(px(14.))
                                 .text_color(rgb(c.muted))
                                 .child(if searching {
-                                    format!("Nothing in this archive matches “{query}”.")
+                                    tr!("Nothing in this archive matches “{query}”.", query = query)
                                 } else {
-                                    format!("Nothing in this folder matches “{query}”.")
+                                    tr!("Nothing in this folder matches “{query}”.", query = query)
                                 }),
                         )
                     })
@@ -613,7 +619,10 @@ impl ArchivePage {
                                 .py(px(12.))
                                 .text_size(px(14.))
                                 .text_color(rgb(c.muted))
-                                .child(format!("And {more} more. Type more to narrow it down.")),
+                                .child(tr!(
+                                    "And {more} more. Type more to narrow it down.",
+                                    more = more
+                                )),
                         )
                     }),
             )
@@ -679,11 +688,11 @@ impl ArchivePage {
     fn empty(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
         let (title, line, offer) = match &self.shown {
-            Shown::Opening(name) => (name.clone(), "Reading what’s inside…".to_owned(), false),
+            Shown::Opening(name) => (name.clone(), tr!("Reading what’s inside…").to_owned(), false),
             Shown::Failed { name, why } => (name.clone(), why.clone(), true),
             _ => (
-                "Open an archive".to_owned(),
-                "ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…"
+                tr!("Open an archive").to_owned(),
+                tr!("ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…")
                     .to_owned(),
                 true,
             ),
@@ -723,9 +732,9 @@ impl ArchivePage {
                     button(
                         "open-archive",
                         if failed {
-                            "Open another…"
+                            tr!("Open another…")
                         } else {
-                            "Open an archive…"
+                            tr!("Open an archive…")
                         },
                         Fill::Accent,
                         Size::Large,
@@ -762,7 +771,7 @@ impl ArchivePage {
                             div()
                                 .text_size(px(13.))
                                 .text_color(rgb(c.muted))
-                                .child("It could not be shown")
+                                .child(tr!("It could not be shown"))
                                 .into_any_element()
                         }),
                 ),
@@ -779,14 +788,14 @@ impl ArchivePage {
                     div()
                         .text_size(px(13.))
                         .text_color(rgb(c.muted))
-                        .child("Reading…"),
+                        .child(tr!("Reading…")),
                 ),
                 (Some(_), Preview::Not(why)) => d.child(
                     div()
                         .px(px(16.))
                         .text_size(px(13.))
                         .text_color(rgb(c.muted))
-                        .child(*why),
+                        .child(why.clone()),
                 ),
                 (Some(e), _) if e.kind == Kind::Image => d.child(icon("image", 40., c.muted)),
                 (Some(e), _) => d.child(
@@ -799,7 +808,7 @@ impl ArchivePage {
                     div()
                         .text_size(px(13.))
                         .text_color(rgb(c.muted))
-                        .child("Choose a file to see it here"),
+                        .child(tr!("Choose a file to see it here")),
                 ),
             });
         panel()
@@ -839,11 +848,7 @@ impl ArchivePage {
                         .px(px(14.))
                         .py(px(12.))
                         .rounded(px(18.))
-                        .child(format!(
-                            "{} in this folder will keep {} Internet mark when extracted.",
-                            counted(marked, "executable", "executables"),
-                            if marked == 1 { "its" } else { "their" }
-                        )),
+                        .child(tr!("{counted} in this folder will keep {their} Internet mark when extracted.", counted = tr_n!(marked, "{count} executable", "{count} executables", count = count(marked)), their = if marked == 1 { "its" } else { "their" })),
                 )
             })
     }

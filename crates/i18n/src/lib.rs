@@ -33,40 +33,24 @@ struct Current {
 
 static CURRENT: RwLock<Option<Arc<Current>>> = RwLock::new(None);
 
-/// A value a message says: a name, a path, a number.
+/// A value a message says: anything that can be shown, or the count of a
+/// [`tr_n!`], by which a language picks its form.
+#[derive(Clone)]
 pub enum Arg {
     Text(String),
     Number(f64),
 }
 
-macro_rules! text_arg {
-    ($($t:ty),*) => {$(
-        impl From<$t> for Arg {
-            fn from(v: $t) -> Self {
-                Arg::Text(v.to_string())
-            }
-        }
-    )*};
+/// `value` as [`tr!`] says it.
+pub fn arg(value: impl std::fmt::Display) -> Arg {
+    Arg::Text(value.to_string())
 }
-text_arg!(&str, String, &String, char);
-
-macro_rules! number_arg {
-    ($($t:ty),*) => {$(
-        impl From<$t> for Arg {
-            fn from(v: $t) -> Self {
-                Arg::Number(v as f64)
-            }
-        }
-    )*};
-}
-number_arg!(i32, i64, u8, u16, u32, u64, usize, f32, f64);
 
 impl std::fmt::Display for Arg {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Arg::Text(s) => f.write_str(s),
-            Arg::Number(n) if n.fract() == 0.0 && n.abs() < 1e15 => write!(f, "{}", *n as i64),
-            Arg::Number(n) => write!(f, "{n}"),
+            Arg::Number(n) => write!(f, "{}", *n as i64),
         }
     }
 }
@@ -79,7 +63,7 @@ macro_rules! tr {
         $crate::tr($text, &[])
     };
     ($text:literal, $($name:ident = $value:expr),+ $(,)?) => {
-        $crate::tr($text, &[$((stringify!($name), $crate::Arg::from($value))),+])
+        $crate::tr($text, &[$((stringify!($name), $crate::arg(&$value))),+])
     };
 }
 
@@ -96,7 +80,7 @@ macro_rules! tr_n {
             $n as i64,
             $one,
             $other,
-            &[$((stringify!($name), $crate::Arg::from($value))),+],
+            &[$((stringify!($name), $crate::arg(&$value))),+],
         )
     };
 }
@@ -195,15 +179,7 @@ pub fn tr(english: &str, args: &[(&str, Arg)]) -> String {
 /// [`tr_n!`]'s work.
 pub fn tr_n(n: i64, one: &str, other: &str, args: &[(&str, Arg)]) -> String {
     let mut all: Vec<(&str, Arg)> = vec![("n", Arg::Number(n as f64))];
-    all.extend(args.iter().map(|(k, v)| {
-        (
-            *k,
-            match v {
-                Arg::Text(s) => Arg::Text(s.clone()),
-                Arg::Number(n) => Arg::Number(*n),
-            },
-        )
-    }));
+    all.extend(args.iter().cloned());
     let id = id_of(&format!("{one}\n{other}"));
     match translated(&id, &all) {
         Some(t) => t,
