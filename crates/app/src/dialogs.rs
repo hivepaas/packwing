@@ -14,7 +14,7 @@ pub use add::AddDialog;
 pub use create::CreateDialog;
 pub(crate) use create::{Format, LEVELS, Level};
 pub use edit::EditDialog;
-pub use extract::{ENCODINGS, ExtractDialog};
+pub use extract::ExtractDialog;
 pub use open_file::OpenFileDialog;
 pub use password::{PasswordDialog, PasswordEvent, asked_for};
 pub use progress::ProgressDialog;

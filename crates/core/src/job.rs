@@ -9,8 +9,9 @@ use std::sync::atomic::AtomicU64;
 use std::time::Duration;
 
 use hivepack_extract::{
-    Cancel, Links, Options, Origin, Progress, ProgressFn, RarProblem, Select, Summary, extract_7z,
-    extract_cpio, extract_iso, extract_rar, extract_tar, extract_udf, extract_xar, extract_zip,
+    Cancel, Links, NameDecoder, Options, Origin, Progress, ProgressFn, RarProblem, Select, Summary,
+    extract_7z, extract_cpio, extract_iso, extract_rar, extract_tar, extract_udf, extract_xar,
+    extract_zip,
 };
 use hivepack_open::{Container, Opened};
 use hivepack_tar::Reader;
@@ -303,6 +304,9 @@ fn extract_picked(
     options.limits.max_entry_size = limit;
     options.limits.max_total_size = limit;
     options.select = select;
+    // A name in an old encoding is no reason to stop: the file comes out, its
+    // name perhaps wrong. What the name then says is checked all the same.
+    options.decode_names = Some(NameDecoder::lossy());
     options.links = if cfg!(windows) {
         Links::AsFile
     } else {

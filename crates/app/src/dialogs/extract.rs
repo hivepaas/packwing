@@ -31,15 +31,6 @@ enum Dest {
     Folder(Option<PathBuf>),
 }
 
-/// How file names in the archive may be written, when it does not say.
-pub const ENCODINGS: [&str; 5] = [
-    "Auto · UTF-8",
-    "Vietnamese · Windows-1258",
-    "Japanese · Shift_JIS",
-    "Chinese · GBK",
-    "Western · CP437",
-];
-
 pub struct ExtractDialog {
     archive: Archive,
     picked: Vec<Vec<String>>,

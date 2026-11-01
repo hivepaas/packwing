@@ -1,11 +1,10 @@
-//! Extracting: where the files go, what happens to a file already there, how
-//! old archives' names are read, and how big an archive may unpack.
+//! Extracting: where the files go, what happens to a file already there, and
+//! how big an archive may unpack.
 
 use gpui::{Context, Entity, Render, Subscription, Window, div, prelude::*, px, rgb};
 
 use super::{group, heading, rows, section, setting};
 use crate::colors::colors;
-use crate::dialogs::ENCODINGS;
 use crate::prefs::{ExtractTo, LIMITS, change, prefs};
 use crate::widgets::{Chosen, Select, SelectLook, option_card, switch, titled};
 
@@ -16,7 +15,6 @@ const EXISTING: [&str; 2] = ["Stop and say so", "Replace it"];
 pub struct Extracting {
     extract_to: ExtractTo,
     existing: Entity<Select>,
-    names: Entity<Select>,
     limit: Entity<Select>,
     keep_folders: bool,
     keep_dates: bool,
@@ -43,7 +41,6 @@ impl Extracting {
         Extracting {
             extract_to: kept.extract_to,
             existing,
-            names: cx.new(|_| Select::new(&ENCODINGS, 0, SelectLook::Pill)),
             limit,
             _chosen: chosen,
             keep_folders: true,
@@ -106,11 +103,6 @@ impl Render for Extracting {
                     "When a file is already there",
                     "A file of the same name in the folder the files go to",
                     self.existing.clone(),
-                ),
-                setting(
-                    "File names in older archives",
-                    "When an archive doesn’t say how its names are written",
-                    self.names.clone(),
                 ),
                 setting(
                     "Largest an archive may unpack to",
