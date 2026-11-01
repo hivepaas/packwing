@@ -54,6 +54,16 @@ pub struct KeptStorage {
     pub place: KeptPlace,
 }
 
+/// The setting of a storage that asks that it is the user before it opens.
+/// With its kind's settings in the file, where a file without it means no.
+pub const ASKS_FIRST: &str = "asks_first";
+
+impl KeptStorage {
+    pub fn asks_first(&self) -> bool {
+        matches!(&self.place, KeptPlace::Other { values, .. } if values.contains_key(ASKS_FIRST))
+    }
+}
+
 /// `text` on one line of the file, with no tab in it.
 fn escaped(text: &str) -> String {
     text.replace('%', "%25")
@@ -432,6 +442,35 @@ pub fn change(cx: &mut App, f: impl FnOnce(&mut Prefs)) {
 #[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_storage_that_asks_first_comes_back_asking() {
+        let other = |values: Values| KeptStorage {
+            name: "Far".into(),
+            place: KeptPlace::Other {
+                kind: "s3".into(),
+                id: "1".into(),
+                values,
+            },
+        };
+        let p = Prefs {
+            storages: vec![
+                other(Values::from([(ASKS_FIRST.to_owned(), "yes".to_owned())])),
+                other(Values::new()),
+            ],
+            ..Prefs::default()
+        };
+        let back = Prefs::parse(&p.text());
+        assert!(back.storages[0].asks_first());
+        assert!(!back.storages[1].asks_first());
+        assert!(
+            !KeptStorage {
+                name: "Here".into(),
+                place: KeptPlace::Local("/here".into()),
+            }
+            .asks_first()
+        );
+    }
 
     #[test]
     fn storages_and_the_editor_come_back() {

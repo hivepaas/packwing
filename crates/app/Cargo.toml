@@ -40,8 +40,15 @@ packwing-i18n.workspace = true
 context-menu = "0.2"
 unicode-segmentation = "1"
 
+# Asking that it is the user, for a storage that asks it (src/confirm.rs).
+[target.'cfg(any(target_os = "macos", windows))'.dependencies]
+robius-authentication = "0.3"
+
 # The screenshots' text system and PNG writer; `image` is the version GPUI uses.
+# PAM, to check the login password, without bindgen or the system's headers.
 [target.'cfg(target_os = "linux")'.dependencies]
+nonstick = "0.1"
+nix = { version = "0.31", default-features = false, features = ["user"] }
 gpui_wgpu = { package = "gpui-pre-wgpu", version = "=0.3.9", optional = true }
 image = { version = "0.25", default-features = false, features = ["png"], optional = true }
 

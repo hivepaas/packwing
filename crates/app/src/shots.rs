@@ -21,7 +21,37 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 54] = [
+const SCREENS: [(&str, SetUp, bool); 57] = [
+    (
+        "storages-edit",
+        |ws, window, cx| {
+            cx.set_global(fake_extensions());
+            add_far(ws, "Far one", std::path::Path::new("/far"), true, cx);
+            let page = ws.storages_page();
+            let last = page.read(cx).count() - 1;
+            ws.edit_storage(last, window, cx);
+        },
+        false,
+    ),
+    (
+        "storages-edit-local",
+        |ws, window, cx| {
+            ws.show_storage(sample_storage(), cx);
+            let page = ws.storages_page();
+            let last = page.read(cx).count() - 1;
+            ws.edit_storage(last, window, cx);
+        },
+        false,
+    ),
+    (
+        "storages-locked",
+        |ws, _, cx| {
+            cx.set_global(fake_extensions());
+            ws.show_storage(sample_storage(), cx);
+            add_far(ws, "Far one", std::path::Path::new("/far"), true, cx);
+        },
+        false,
+    ),
     (
         "storages-add",
         |ws, window, cx| {
@@ -1237,6 +1267,17 @@ impl packwing_core::StorageKind for FarKind {
         let folder = values.get("folder").cloned().unwrap_or_default();
         Arc::new(Far(packwing_core::LocalFolder::new(folder)))
     }
+    fn kept_secrets(&self, id: &str) -> std::io::Result<packwing_core::Values> {
+        Ok(self
+            .0
+            .lock()
+            .expect("the list")
+            .iter()
+            .rev()
+            .find(|(i, _)| i == id)
+            .map(|(_, secrets)| secrets.clone())
+            .unwrap_or_default())
+    }
     fn keep_secrets(&self, id: &str, secrets: &packwing_core::Values) -> std::io::Result<()> {
         self.0
             .lock()
@@ -1247,6 +1288,229 @@ impl packwing_core::StorageKind for FarKind {
     fn forget_secrets(&self, id: &str) {
         self.0.lock().expect("the list").retain(|(i, _)| i != id);
     }
+}
+
+/// Adds a far storage of `folder`, chosen, that asks first if told to.
+fn add_far(
+    ws: &mut Workspace,
+    name: &str,
+    folder: &std::path::Path,
+    asks: bool,
+    cx: &mut Context<Workspace>,
+) {
+    let mut values: packwing_core::Values =
+        [("folder".to_owned(), folder.display().to_string())].into();
+    if asks {
+        values.insert(crate::prefs::ASKS_FIRST.to_owned(), "yes".to_owned());
+    }
+    let secrets = [("token".to_owned(), "kept".to_owned())].into();
+    ws.storages_page().update(cx, |p, cx| {
+        p.add_other("far", name.into(), values, &secrets, cx)
+            .expect("added");
+    });
+}
+
+/// Says yes to one password, and counts how it was asked.
+struct Confirms(&'static str);
+
+impl crate::confirm::Confirmer for Confirms {
+    fn how(&self) -> Option<crate::confirm::How> {
+        Some(crate::confirm::How::Password)
+    }
+    fn ask(&self, _: &str, _: &str) -> Result<bool, String> {
+        Err("it is typed here".into())
+    }
+    fn check_password(&self, password: &str) -> Result<bool, String> {
+        Ok(password == self.0)
+    }
+}
+
+#[test]
+fn a_storage_that_asks_first_shows_nothing_until_it_has() {
+    let far = folder_of("far-asks", 2);
+    let (mut cx, window, explorer) = explorer_on(out_dir());
+    let page = window
+        .update(&mut cx, |ws, _, cx| {
+            cx.set_global(fake_extensions());
+            cx.set_global(crate::confirm::ConfirmWith(Arc::new(Confirms("right"))));
+            add_far(ws, "Far one", &far, true, cx);
+            ws.storages_page()
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    let shut = |cx: &mut HeadlessAppContext| {
+        window
+            .update(cx, |_, _, cx| {
+                let p = page.read(cx);
+                let offered = p.places(cx).0.iter().any(|s| s.name == "Far one");
+                (
+                    p.is_chosen_locked(),
+                    offered,
+                    explorer.read(cx).place().is_some(),
+                )
+            })
+            .expect("the window")
+    };
+    assert_eq!(shut(&mut cx), (true, false, false));
+
+    let say = |cx: &mut HeadlessAppContext, typed: &'static str| {
+        window
+            .update(cx, |_, _, cx| {
+                page.update(cx, |p, cx| p.type_password(typed, cx))
+            })
+            .expect("the window");
+        cx.run_until_parked();
+    };
+    say(&mut cx, "wrong");
+    assert_eq!(shut(&mut cx), (true, false, false));
+    say(&mut cx, "");
+    assert_eq!(shut(&mut cx), (true, false, false));
+    say(&mut cx, "right");
+    assert_eq!(shut(&mut cx), (false, true, true));
+
+    // Used, it stays open; left, it shuts, and shows nothing again.
+    let left = window
+        .update(&mut cx, |_, _, cx| {
+            page.update(cx, |p, cx| p.leave_for_long(cx))
+        })
+        .expect("the window");
+    assert!(left);
+    cx.run_until_parked();
+    assert_eq!(shut(&mut cx), (true, false, false));
+}
+
+#[test]
+fn a_storage_that_asks_first_asks_before_it_is_removed_or_edited() {
+    let far = folder_of("far-asks-remove", 0);
+    let (mut cx, window, _explorer) = explorer_on(out_dir());
+    let page = window
+        .update(&mut cx, |ws, _, cx| {
+            cx.set_global(fake_extensions());
+            cx.set_global(crate::confirm::ConfirmWith(Arc::new(Confirms("right"))));
+            add_far(ws, "Far one", &far, true, cx);
+            ws.storages_page()
+        })
+        .expect("the window");
+    let count = |cx: &mut HeadlessAppContext| {
+        window
+            .update(cx, |_, _, cx| page.read(cx).count())
+            .expect("the window")
+    };
+    let before = count(&mut cx);
+    window
+        .update(&mut cx, |_, window, cx| {
+            page.update(cx, |p, cx| p.press_remove(before - 1, window, cx))
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    assert_eq!(count(&mut cx), before, "still there, until it has asked");
+    window
+        .update(&mut cx, |_, _, cx| {
+            page.update(cx, |p, cx| p.type_password("right", cx))
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    assert_eq!(count(&mut cx), before - 1, "gone once it has");
+}
+
+#[test]
+fn editing_a_storage_keeps_it_and_changes_what_was_changed() {
+    let far = folder_of("far-edit", 0);
+    let other = folder_of("far-edit-other", 1);
+    let (mut cx, window, explorer) = explorer_on(out_dir());
+    let (page, dialog) = window
+        .update(&mut cx, |ws, window, cx| {
+            cx.set_global(fake_extensions());
+            add_far(ws, "Far one", &far, false, cx);
+            let page = ws.storages_page();
+            let last = page.read(cx).count() - 1;
+            let dialog = cx.new(|cx| {
+                crate::dialogs::AddStorageDialog::editing(page.clone(), last, window, cx)
+            });
+            (page, dialog)
+        })
+        .expect("the window");
+    let other_text = other.display().to_string();
+    window
+        .update(&mut cx, |_, _, cx| {
+            dialog.update(cx, |d, cx| {
+                // It starts with what it has, its secret too.
+                assert_eq!(d.field_text("folder", cx), far.display().to_string());
+                assert_eq!(d.field_text("token", cx), "kept");
+                d.set_field("folder", &other_text, cx);
+                d.set_name("Far renamed", cx);
+                d.press_asks_first(cx);
+                d.press_save(cx);
+            })
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    window
+        .update(&mut cx, |_, _, cx| {
+            let p = page.read(cx);
+            let s = p.storage(p.count() - 1).expect("still there");
+            assert_eq!(s.name, "Far renamed");
+            assert!(s.asks_first());
+            let crate::prefs::KeptPlace::Other { id, values, .. } = &s.place else {
+                panic!("still of its kind");
+            };
+            assert_eq!(values.get("folder"), Some(&other_text));
+            let kinds = fake_kind_secrets(cx, id);
+            assert_eq!(kinds.get("token").map(String::as_str), Some("kept"));
+            assert!(p.is_chosen_locked());
+            assert!(explorer.read(cx).place().is_none());
+        })
+        .expect("the window");
+}
+
+fn fake_kind_secrets(cx: &gpui::App, id: &str) -> packwing_core::Values {
+    cx.global::<crate::Extensions>().storage_kinds[0]
+        .kept_secrets(id)
+        .expect("kept")
+}
+
+#[test]
+fn a_local_storage_is_not_moved_to_a_folder_that_is_not_there() {
+    let here = folder_of("edit-local", 0);
+    let moved = folder_of("edit-local-moved", 0);
+    let (mut cx, window, _explorer) = explorer_on(here.clone());
+    let (page, dialog) = window
+        .update(&mut cx, |ws, window, cx| {
+            let page = ws.storages_page();
+            let last = page.read(cx).count() - 1;
+            let dialog = cx.new(|cx| {
+                crate::dialogs::AddStorageDialog::editing(page.clone(), last, window, cx)
+            });
+            (page, dialog)
+        })
+        .expect("the window");
+    let place = |cx: &mut HeadlessAppContext| {
+        window
+            .update(cx, |_, _, cx| {
+                let p = page.read(cx);
+                p.storage(p.count() - 1).expect("there").place.clone()
+            })
+            .expect("the window")
+    };
+    window
+        .update(&mut cx, |_, _, cx| {
+            dialog.update(cx, |d, cx| {
+                d.set_folder("/not/here/at/all", cx);
+                d.press_save(cx);
+            })
+        })
+        .expect("the window");
+    assert_eq!(place(&mut cx), crate::prefs::KeptPlace::Local(here));
+    let moved_text = moved.display().to_string();
+    window
+        .update(&mut cx, |_, _, cx| {
+            dialog.update(cx, |d, cx| {
+                d.set_folder(&moved_text, cx);
+                d.press_save(cx);
+            })
+        })
+        .expect("the window");
+    assert_eq!(place(&mut cx), crate::prefs::KeptPlace::Local(moved));
 }
 
 fn fake_extensions() -> crate::Extensions {

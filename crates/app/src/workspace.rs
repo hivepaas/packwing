@@ -27,7 +27,7 @@ use crate::pages::browse::BrowsePage;
 use crate::pages::onboarding::{Done, Onboarding};
 use crate::pages::recent::{OpenRecent, RecentPage, Row};
 use crate::pages::settings::{Appearance, AppearanceChosen, SettingsPage};
-use crate::pages::storages::{AddStorageAsked, StoragesPage};
+use crate::pages::storages::{AddStorageAsked, EditStorageAsked, StoragesPage};
 use crate::placement::{self, WindowPlace};
 use crate::prefs;
 use crate::right_click::{Action, Request, RightClickMenu};
@@ -212,6 +212,13 @@ impl Workspace {
                     let page = page.clone();
                     let view = cx.new(|cx| AddStorageDialog::new(page, window, cx));
                     this.show(view, true, window, cx);
+                },
+            ),
+            cx.subscribe_in(
+                &storages,
+                window,
+                |this, page, e: &EditStorageAsked, window, cx| {
+                    this.open_edit_storage(page.clone(), e.0, window, cx);
                 },
             ),
             cx.subscribe_in(&recent, window, |this, _, e: &OpenRecent, window, cx| {
@@ -525,6 +532,23 @@ impl Workspace {
         let mut job = Job::shown(verb, "test".into(), None, 0, 0);
         job.transfer = Some(crate::dialogs::Transferring(t, Default::default()));
         self.open_progress(job, window, cx);
+    }
+
+    /// Edit, for the storage at `at` in the list.
+    fn open_edit_storage(
+        &mut self,
+        page: Entity<StoragesPage>,
+        at: usize,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let view = cx.new(|cx| AddStorageDialog::editing(page, at, window, cx));
+        self.show(view, true, window, cx);
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn edit_storage(&mut self, at: usize, window: &mut Window, cx: &mut Context<Self>) {
+        self.open_edit_storage(self.storages.clone(), at, window, cx);
     }
 
     /// Add storage, as a build with more kinds than a folder asks it.

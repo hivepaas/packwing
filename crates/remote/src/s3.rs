@@ -131,6 +131,10 @@ impl StorageKind for S3Kind {
         secrets::keep(id, secrets)
     }
 
+    fn kept_secrets(&self, id: &str) -> io::Result<Values> {
+        secrets::kept(id, &["secret_key"])
+    }
+
     fn forget_secrets(&self, id: &str) {
         secrets::forget(id, &["secret_key"]);
     }
