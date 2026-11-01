@@ -1,6 +1,6 @@
 [package]
 name = "packwing-remote"
-description = "Storages across the network for packwing: S3 and WebDAV, through OpenDAL"
+description = "Storages across the network for packwing: S3, WebDAV and SFTP"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -13,6 +13,8 @@ packwing-i18n.workspace = true
 futures = "0.3"
 # The system's keychain, for a storage's secrets.
 keyring = "4"
+# SSH as shellwing speaks it: ssh_config, the agent, jump hosts.
+shellwing-ssh = { git = "https://github.com/hivepaas/shellwing", rev = "7032701a11e7038cb4f9248e69c934fc6ebfe58a" }
 opendal = { version = "0.59", features = ["services-s3", "services-webdav"] }
 tokio = { version = "1", features = ["rt-multi-thread", "time"] }
 

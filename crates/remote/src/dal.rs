@@ -23,7 +23,7 @@ const PART: usize = 16 << 20;
 /// How many items a listing asks for at a time.
 const LIST_PAGE: usize = 1000;
 
-fn runtime() -> &'static Runtime {
+pub(crate) fn runtime() -> &'static Runtime {
     static RUNTIME: OnceLock<Runtime> = OnceLock::new();
     RUNTIME.get_or_init(|| {
         tokio::runtime::Builder::new_multi_thread()
@@ -349,6 +349,15 @@ impl Storage for Dal {
         let end = most.min(size);
         let got = runtime()
             .block_on(async move { op.read_with(&key).range(0..end).await })
+            .map_err(said)?;
+        Ok(got.to_vec())
+    }
+
+    fn read_at(&self, path: &[String], offset: u64, len: usize) -> io::Result<Vec<u8>> {
+        let op = self.op()?.clone();
+        let key = self.key(path)?;
+        let got = runtime()
+            .block_on(async move { op.read_with(&key).range(offset..offset + len as u64).await })
             .map_err(said)?;
         Ok(got.to_vec())
     }
