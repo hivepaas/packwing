@@ -1,5 +1,5 @@
-//! Extract: where the files go, the password, how the names are read, and
-//! what the safety checks found.
+//! Extract: where the files go, the password, and what the safety checks
+//! found.
 
 use std::path::PathBuf;
 
@@ -11,11 +11,11 @@ use gpui::{
 use super::{DialogEvent, Job, Verb, card, footer, header};
 use crate::colors::colors;
 use crate::input::TextInput;
-use crate::model::{Archive, Kind, counted, size};
+use crate::model::{Archive, counted, size};
 use crate::prefs::ExtractTo;
 use crate::widgets::{
-    Fill, Select, SelectLook, Size, Tone, button, chip, icon, icon_button, legend, link, note,
-    option_card, segment, segments, titled, tonal_tint,
+    Fill, Size, Tone, button, chip, icon, icon_button, legend, link, note, option_card, segment,
+    segments, titled, tonal_tint,
 };
 
 /// Where the files go.
@@ -49,7 +49,6 @@ pub struct ExtractDialog {
     password: Entity<TextInput>,
     /// The password is shown as typed.
     shown: bool,
-    names: Entity<Select>,
 }
 
 impl EventEmitter<DialogEvent> for ExtractDialog {}
@@ -69,7 +68,6 @@ impl ExtractDialog {
             },
             password: cx.new(|cx| TextInput::new("The archive’s password", cx).masked()),
             shown: false,
-            names: cx.new(|_| Select::new(&ENCODINGS, 0, SelectLook::Pill)),
         }
     }
 
@@ -359,45 +357,6 @@ impl ExtractDialog {
             )
     }
 
-    fn names(&self) -> impl IntoElement {
-        let c = colors();
-        // A file's name with marks the encodings disagree on, so a wrong
-        // guess shows.
-        let sample = self
-            .archive
-            .entries
-            .iter()
-            .find(|e| e.kind != Kind::Folder && !e.name.is_ascii())
-            .map_or(String::new(), |e| e.name.clone());
-        div()
-            .flex()
-            .items_center()
-            .gap(px(12.))
-            .px(px(16.))
-            .py(px(12.))
-            .rounded(px(20.))
-            .bg(rgb(c.well))
-            .child(
-                div()
-                    .flex_1()
-                    .min_w_0()
-                    .child(
-                        div()
-                            .text_size(px(13.))
-                            .text_color(rgb(c.muted))
-                            .child("Do the file names look right?"),
-                    )
-                    .child(
-                        div()
-                            .text_size(px(15.))
-                            .font_weight(FontWeight::SEMIBOLD)
-                            .truncate()
-                            .child(sample),
-                    ),
-            )
-            .child(self.names.clone())
-    }
-
     fn safety(&self) -> impl IntoElement {
         let c = colors();
         // The checks: no path leaves the folder, no link points out of it,
@@ -466,7 +425,6 @@ impl Render for ExtractDialog {
             .when(a.encryption.is_some() && a.keys.password.is_none(), |d| {
                 d.child(self.password(cx))
             })
-            .child(self.names())
             .child(self.safety())
             .child(
                 footer()
