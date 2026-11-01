@@ -6,7 +6,7 @@
 //! sample) counts up at a made-up speed, so the screen can be
 //! seen moving, and closes itself at the end.
 
-use packwing_i18n::tr;
+use packwing_i18n::{tr, tr_n};
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex, PoisonError};
@@ -35,6 +35,8 @@ struct Running {
     progress: Arc<Mutex<Progress>>,
     cancel: Cancel,
     started: Instant,
+    /// The files and bytes a test has read.
+    tested: Arc<Mutex<(u64, u64)>>,
     _work: Task<()>,
 }
 
@@ -49,6 +51,8 @@ pub struct ProgressDialog {
     running: Option<Running>,
     /// Why it stopped, if it failed.
     failed: Option<String>,
+    /// The files and bytes read, if it was a test and all of them were sound.
+    passed: Option<(u64, u64)>,
     _ticking: Task<()>,
 }
 
@@ -79,6 +83,7 @@ impl ProgressDialog {
             uploading: false,
             running,
             failed: None,
+            passed: None,
             _ticking: ticking,
         }
     }
@@ -95,6 +100,8 @@ impl ProgressDialog {
             })),
             cancel: Some(cancel.clone()),
         };
+        let tested = Arc::new(Mutex::new((0, 0)));
+        let tested_in_task = tested.clone();
         let (keys, how, picked) = (job.keys.clone(), job.how, job.picked.clone());
         let (verb, work, create, add) = (
             job.verb,
@@ -162,7 +169,12 @@ impl ProgressDialog {
                         packwing_core::extract_with(source, to, &keys, &how, &control)?;
                     }
                     _ => {
-                        packwing_core::test(source, &keys, &control)?;
+                        let read = packwing_core::test(source, &keys, &control)?;
+                        let mut tested = tested_in_task
+                            .lock()
+                            .unwrap_or_else(PoisonError::into_inner);
+                        tested.0 += read.files;
+                        tested.1 += read.bytes;
                     }
                 }
             }
@@ -176,6 +188,7 @@ impl ProgressDialog {
             progress,
             cancel,
             started: Instant::now(),
+            tested,
             _work: work,
         }
     }
@@ -206,6 +219,14 @@ impl ProgressDialog {
             Ok(Some(copy)) if self.job.verb == Verb::Open => {
                 cx.open_with_system(&copy);
                 cx.emit(DialogEvent::Close);
+            }
+            // A test is done for what it says: it stays to say it.
+            Ok(_) if self.job.verb == Verb::Test => {
+                self.passed = self
+                    .running
+                    .as_ref()
+                    .map(|r| *r.tested.lock().unwrap_or_else(PoisonError::into_inner));
+                cx.notify();
             }
             Ok(made) if let Some(on) = self.saving_on().cloned() => {
                 let show = self.open_folder && made.is_none();
@@ -268,6 +289,25 @@ impl ProgressDialog {
         cx.notify();
     }
 
+    /// Shows the test as passed, having read these.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn set_passed(&mut self, files: u64, bytes: u64, cx: &mut Context<Self>) {
+        self.passed = Some((files, bytes));
+        cx.notify();
+    }
+
+    /// The files and bytes read, if it was a test that passed.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn passed(&self) -> Option<(u64, u64)> {
+        self.passed
+    }
+
+    /// Why it failed, if it did.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn failed(&self) -> Option<&str> {
+        self.failed.as_deref()
+    }
+
     /// What the job has reported, if it runs.
     fn reported(&self) -> Option<Progress> {
         let r = self.running.as_ref()?;
@@ -319,7 +359,7 @@ impl ProgressDialog {
     /// One step: of the made-up job, or a look at the real one. True when
     /// the dialog has no more to count.
     fn tick(&mut self, cx: &mut Context<Self>) -> bool {
-        if self.failed.is_some() {
+        if self.failed.is_some() || self.passed.is_some() {
             return true;
         }
         if !self.uploading
@@ -422,6 +462,31 @@ impl Render for ProgressDialog {
             Verb::Test => "shield",
             Verb::Copy | Verb::Move => "storages",
         };
+        if let Some((files, bytes)) = self.passed {
+            return card()
+                .gap(px(22.))
+                .child(header(
+                    icon_name,
+                    tonal_tint(),
+                    tr!("The test passed"),
+                    j.name.clone(),
+                    None,
+                ))
+                .child(note(Tone::Good).child(tr_n!(
+                    files,
+                    "{count} file read through, {size}, with no errors.",
+                    "{count} files read through, {size}, with no errors.",
+                    count = count(files),
+                    size = size(bytes)
+                )))
+                .child(
+                    footer().child(div().flex_1()).child(
+                        button("close", tr!("Close"), Fill::Accent, Size::Medium)
+                            .px(px(28.))
+                            .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close))),
+                    ),
+                );
+        }
         let header = header(icon_name, tonal_tint(), self.title(), detail, None);
         if let Some(why) = &self.failed {
             return card()

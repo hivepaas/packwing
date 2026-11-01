@@ -179,6 +179,12 @@ t3045da16 = About { $secs } seconds left
 tf727815c = About a minute left
 tbd7a3305 = About { $div_ceil } minutes left
 t0d56ec7c = { $name } · checking that every file reads
+tdf0ce240 = The test passed
+tc1421590 =
+    { $n ->
+        [one] { $count } file read through, { $size }, with no errors.
+       *[other] { $count } files read through, { $size }, with no errors.
+    }
 tcd86acc3 = Close
 t27f1ab7d = { $count } of { $count2 } files · { $size } of { $size2 }
 tf0f1017b = Open the folder when it’s done
