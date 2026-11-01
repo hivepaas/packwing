@@ -10,7 +10,7 @@
 //! back, and only then put in its place: if anything goes wrong, it is as it
 //! was.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::fs::{self, File, Metadata, OpenOptions};
 use std::io::{self, Read, Seek, SeekFrom, Write};
@@ -873,11 +873,18 @@ pub fn can_add(listing: &Listing) -> bool {
         && volume_paths(&listing.folder.join(&listing.name)).len() == 1
 }
 
-/// Adds `paths`, each with what is under it, to the ZIP archive at `archive`,
-/// in its folder `folder`. A name it holds already stops it, as what to do
-/// with that is the user's to say. In an archive with encrypted files, the new
-/// ones are encrypted too, with its password. If this fails or is stopped, the
-/// archive is as it was.
+/// What to do with a file whose name an archive holds already.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum OnExisting {
+    /// Stop, with nothing changed.
+    #[default]
+    Stop,
+    Replace,
+    /// Leave the one in the archive.
+    Skip,
+}
+
+/// [`add_with`], stopping at a name the archive holds.
 pub fn add(
     paths: &[PathBuf],
     archive: &Path,
@@ -885,12 +892,161 @@ pub fn add(
     keys: &Keys,
     control: &Control,
 ) -> Result<(), Error> {
+    add_with(paths, archive, folder, OnExisting::Stop, keys, control)
+}
+
+/// Whether the archive at `path` is one that can be changed: a ZIP archive of
+/// one file, under no layers.
+fn can_change(archive: &Path, keys: &Keys) -> Result<bool, Error> {
     let opened = opener(archive, keys).open()?;
-    let whole = opened.container() == Container::Zip
+    Ok(opened.container() == Container::Zip
         && opened.layers().is_empty()
-        && volume_paths(archive).len() == 1;
-    drop(opened);
-    if !whole {
+        && volume_paths(archive).len() == 1)
+}
+
+/// Writes `za`, with its changes, beside the archive at `archive`, reads it back
+/// to see it holds `expected` entries, and puts it in the archive's place. If
+/// anything fails, the archive is as it was.
+fn replace_with<R: ReadAt>(
+    mut za: Archive<R>,
+    archive: &Path,
+    expected: u64,
+    control_result: impl FnOnce(Result<(), Error>) -> Result<(), Error>,
+) -> Result<(), Error> {
+    let name = archive.file_name().unwrap_or_default().to_string_lossy();
+    let beside = archive.with_file_name(format!(".{name}.adding"));
+    let (written_to, mut file) = free_name(&beside, |path| {
+        OpenOptions::new().write(true).create_new(true).open(path)
+    })?;
+    let written = match za.close_to(&mut file) {
+        Ok(Closed::Written) => Ok(()),
+        Ok(Closed::Unchanged | Closed::Removed) => Err(Error::Failed("Nothing changed.".into())),
+        Err(e) => Err(Error::from(e)),
+    }
+    .and_then(|()| {
+        file.sync_all()?;
+        drop(file);
+        let back = Archive::open(File::open(&written_to)?, OpenFlags::CHECKCONS)?;
+        if back.get_num_entries(Flags::NONE) != expected {
+            return Err(Error::Failed("The archive did not come out whole.".into()));
+        }
+        drop(back);
+        // Its own file goes before the new one takes its place, as Windows wants.
+        drop(za);
+        fs::set_permissions(&written_to, fs::metadata(archive)?.permissions())?;
+        fs::rename(&written_to, archive)?;
+        Ok(())
+    });
+    if let Err(e) = control_result(written) {
+        let _ = fs::remove_file(&written_to);
+        return Err(e);
+    }
+    Ok(())
+}
+
+/// The entries of `za` by their paths, a component at a time, with their indexes.
+fn entries_of<R: ReadAt>(za: &Archive<R>) -> Result<Vec<(u64, Vec<String>, bool)>, Error> {
+    let mut entries = Vec::new();
+    for i in 0..za.get_num_entries(Flags::NONE) {
+        let stat = za.stat_index(i, Flags::NONE)?;
+        let name = String::from_utf8_lossy(stat.name.unwrap_or_default()).into_owned();
+        let path = crate::listing::components(&name);
+        entries.push((i, path, name.ends_with('/')));
+    }
+    Ok(entries)
+}
+
+/// Deletes `picked` from the ZIP archive at `archive`, files or folders by their
+/// paths in it, each with what is under it. All of it cannot go: an archive of
+/// nothing is not one.
+pub fn delete(archive: &Path, picked: &[Vec<String>], keys: &Keys) -> Result<(), Error> {
+    if !can_change(archive, keys)? {
+        return Err(Error::Failed(
+            "packwing can change only a ZIP archive that is one file.".into(),
+        ));
+    }
+    let mut za = Archive::open(File::open(archive)?, OpenFlags::CHECKCONS)?;
+    let entries = entries_of(&za)?;
+    let gone: Vec<u64> = entries
+        .iter()
+        .filter(|(_, path, _)| picked.iter().any(|p| path.starts_with(p)))
+        .map(|(i, _, _)| *i)
+        .collect();
+    if gone.is_empty() {
+        return Err(Error::Failed("That is not in the archive.".into()));
+    }
+    if gone.len() == entries.len() {
+        return Err(Error::Failed(
+            "That is all the archive holds. Delete the archive itself instead.".into(),
+        ));
+    }
+    for i in &gone {
+        za.delete(*i)?;
+    }
+    replace_with(za, archive, (entries.len() - gone.len()) as u64, |r| r)
+}
+
+/// Renames the file or folder at `from` in the ZIP archive at `archive` to `to`,
+/// in the same folder. A name there already stops it.
+pub fn rename(archive: &Path, from: &[String], to: &str, keys: &Keys) -> Result<(), Error> {
+    if !can_change(archive, keys)? {
+        return Err(Error::Failed(
+            "packwing can change only a ZIP archive that is one file.".into(),
+        ));
+    }
+    if to.is_empty() || to.contains(['/', '\\']) || to == "." || to == ".." {
+        return Err(Error::Failed(format!("“{to}” cannot be a name.")));
+    }
+    let Some((_, parent)) = from.split_last() else {
+        return Err(Error::Failed("That is not in the archive.".into()));
+    };
+    let mut target = parent.to_vec();
+    target.push(to.to_owned());
+    if target == from {
+        return Ok(());
+    }
+    let mut za = Archive::open(File::open(archive)?, OpenFlags::CHECKCONS)?;
+    let entries = entries_of(&za)?;
+    if entries.iter().any(|(_, path, _)| path.starts_with(&target)) {
+        return Err(Error::Failed(format!(
+            "“{to}” is already in that folder. Nothing was changed."
+        )));
+    }
+    let mut renamed = 0;
+    for (i, path, dir) in &entries {
+        if let Some(rest) = path.strip_prefix(from) {
+            let mut new_name = target.join("/");
+            for part in rest {
+                new_name.push('/');
+                new_name.push_str(part);
+            }
+            if *dir {
+                new_name.push('/');
+            }
+            za.file_rename(*i, new_name.as_bytes(), Flags::ENC_UTF_8)?;
+            renamed += 1;
+        }
+    }
+    if renamed == 0 {
+        return Err(Error::Failed("That is not in the archive.".into()));
+    }
+    replace_with(za, archive, entries.len() as u64, |r| r)
+}
+
+/// Adds `paths`, each with what is under it, to the ZIP archive at `archive`,
+/// in its folder `folder`. A file whose name it holds goes as `on_existing` says;
+/// a file where it holds a folder, or the other way, always stops it. In an
+/// archive with encrypted files, the new ones are encrypted too, with its
+/// password. If this fails or is stopped, the archive is as it was.
+pub fn add_with(
+    paths: &[PathBuf],
+    archive: &Path,
+    folder: &[String],
+    on_existing: OnExisting,
+    keys: &Keys,
+    control: &Control,
+) -> Result<(), Error> {
+    if !can_change(archive, keys)? {
         return Err(Error::Failed(
             "packwing can add files only to a ZIP archive that is one file.".into(),
         ));
@@ -909,7 +1065,7 @@ pub fn add(
     }
 
     let mut za = Archive::open(File::open(archive)?, OpenFlags::CHECKCONS)?;
-    let (mut files, mut dirs) = (HashSet::new(), HashSet::new());
+    let (mut files, mut dirs) = (HashMap::new(), HashSet::new());
     let mut encrypted = None;
     for i in 0..za.get_num_entries(Flags::NONE) {
         let stat = za.stat_index(i, Flags::NONE)?;
@@ -918,7 +1074,7 @@ pub fn add(
             if stat.encryption_method != em::NONE {
                 encrypted = encrypted.or(Some(i));
             }
-            files.insert(name.clone());
+            files.insert(name.clone(), i);
         }
         // Its folders, which it may hold only by implication.
         let mut end = 0;
@@ -928,13 +1084,25 @@ pub fn add(
         }
     }
     let mut new = Vec::new();
+    let mut replaced = Vec::new();
     for item in items {
         let bare = item.name.trim_end_matches('/');
         let folder = item.metadata.is_dir();
-        if files.contains(bare) || (!folder && dirs.contains(bare)) {
-            return Err(Error::Failed(format!(
+        let taken = || {
+            Err(Error::Failed(format!(
                 "“{bare}” is already in the archive. Nothing was changed."
-            )));
+            )))
+        };
+        // A file where there is a folder, or the other way, is never replaced.
+        if (folder && files.contains_key(bare)) || (!folder && dirs.contains(bare)) {
+            return taken();
+        }
+        if let Some(index) = files.get(bare) {
+            match on_existing {
+                OnExisting::Stop => return taken(),
+                OnExisting::Skip => continue,
+                OnExisting::Replace => replaced.push(*index),
+            }
         }
         if !(folder && dirs.contains(bare)) {
             new.push(item);
@@ -968,37 +1136,14 @@ pub fn add(
     });
     control.report(&progress);
 
-    let expected = za.get_num_entries(Flags::NONE) + new.len() as u64;
-    let name = archive.file_name().unwrap_or_default().to_string_lossy();
-    let beside = archive.with_file_name(format!(".{name}.adding"));
-    let (written_to, mut file) = free_name(&beside, |path| {
-        OpenOptions::new().write(true).create_new(true).open(path)
-    })?;
-    let written = add_items(&mut za, new, Level::default(), encrypted.is_some(), &tally)
-        .and_then(|()| match za.close_to(&mut file)? {
-            Closed::Written => Ok(()),
-            Closed::Unchanged | Closed::Removed => Err(Error::Failed("Nothing was added.".into())),
-        })
-        .and_then(|()| {
-            file.sync_all()?;
-            drop(file);
-            let back = Archive::open(File::open(&written_to)?, OpenFlags::CHECKCONS)?;
-            if back.get_num_entries(Flags::NONE) != expected {
-                return Err(Error::Failed("The archive did not come out whole.".into()));
-            }
-            drop(back);
-            // Its own file goes before the new one takes its place, as
-            // Windows wants.
-            drop(za);
-            fs::set_permissions(&written_to, fs::metadata(archive)?.permissions())?;
-            fs::rename(&written_to, archive)?;
-            Ok(())
-        });
-    if let Err(e) = why(written, &tally) {
-        let _ = fs::remove_file(&written_to);
-        return Err(e);
+    let expected = za.get_num_entries(Flags::NONE) + new.len() as u64 - replaced.len() as u64;
+    for index in replaced {
+        za.delete(index)?;
     }
-    Ok(())
+    if let Err(e) = add_items(&mut za, new, Level::default(), encrypted.is_some(), &tally) {
+        return why(Err(e), &tally);
+    }
+    replace_with(za, archive, expected, |written| why(written, &tally))
 }
 
 /// Makes an archive of `paths`, each with what is under it, named after

@@ -4,6 +4,7 @@
 
 mod add;
 mod create;
+mod edit;
 mod extract;
 mod open_file;
 mod password;
@@ -12,6 +13,7 @@ mod progress;
 pub use add::AddDialog;
 pub use create::CreateDialog;
 pub(crate) use create::{Format, LEVELS, Level};
+pub use edit::EditDialog;
 pub use extract::{ENCODINGS, ExtractDialog};
 pub use open_file::OpenFileDialog;
 pub use password::{PasswordDialog, PasswordEvent, asked_for};
@@ -20,7 +22,7 @@ pub use progress::ProgressDialog;
 use std::path::PathBuf;
 
 use gpui::{Div, FontWeight, MouseButton, SharedString, Stateful, div, prelude::*, px, rgb};
-use packwing_core::{Asked, ExtractOptions, Keys, NewArchive};
+use packwing_core::{Asked, ExtractOptions, Keys, NewArchive, OnExisting};
 
 use crate::colors::{Tint, colors};
 use crate::widgets::{float_shadow, icon, logo, tile};
@@ -31,6 +33,8 @@ pub enum Verb {
     Extract,
     Create,
     Add,
+    /// What an archive holds deleted or renamed.
+    Edit,
     /// A file of an archive, copied out and opened.
     Open,
     Test,
@@ -43,6 +47,14 @@ pub struct Adding {
     pub archive: PathBuf,
     /// The folder of it they go in.
     pub folder: Vec<String>,
+    pub on_existing: OnExisting,
+}
+
+/// A change to what an archive holds, by paths in it.
+#[derive(Clone, Debug, PartialEq)]
+pub enum Editing {
+    Delete(Vec<Vec<String>>),
+    Rename { from: Vec<String>, to: String },
 }
 
 /// A new archive to make, through packwing-core.
@@ -83,6 +95,8 @@ pub struct Job {
     pub create: Option<Creating>,
     /// The files it adds, if that is what it does.
     pub add: Option<Adding>,
+    /// The archive it changes, the folder shown in it, and how.
+    pub edit: Option<(PathBuf, Vec<String>, Editing)>,
 }
 
 impl Job {
@@ -106,6 +120,7 @@ impl Job {
             how: ExtractOptions::default(),
             create: None,
             add: None,
+            edit: None,
         }
     }
 }

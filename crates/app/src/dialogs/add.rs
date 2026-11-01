@@ -5,15 +5,24 @@
 use std::path::PathBuf;
 
 use gpui::{
-    Context, EventEmitter, ExternalPaths, PathPromptOptions, Render, SharedString, Task, Window,
-    div, prelude::*, px, rgb,
+    App, AppContext as _, Context, Entity, EventEmitter, ExternalPaths, PathPromptOptions, Render,
+    SharedString, Task, Window, div, prelude::*, px, rgb,
 };
-use packwing_core::Keys;
+use packwing_core::{Keys, OnExisting};
 
 use super::{Adding, DialogEvent, Job, Verb, footer, header};
 use crate::colors::colors;
 use crate::model::{Archive, Selection, counted, size};
-use crate::widgets::{Fill, Size, Tone, button, icon_button, legend, note, tonal_tint};
+use crate::widgets::{
+    Fill, Select, SelectLook, Size, Tone, button, icon_button, legend, note, tonal_tint,
+};
+
+/// What a file of the same name in the archive can come to.
+const ON_EXISTING: [(&str, OnExisting); 3] = [
+    ("Stop and say so", OnExisting::Stop),
+    ("Replace it", OnExisting::Replace),
+    ("Skip it", OnExisting::Skip),
+];
 
 pub struct AddDialog {
     /// The archive's file.
@@ -25,6 +34,7 @@ pub struct AddDialog {
     encrypted: bool,
     selection: Selection,
     _counting: Option<Task<()>>,
+    on_existing: Entity<Select>,
     /// Add was pressed with nothing chosen: a note says so.
     checked: bool,
 }
@@ -33,7 +43,9 @@ impl EventEmitter<DialogEvent> for AddDialog {}
 
 impl AddDialog {
     /// For `archive`, or `None` if it has no file: the samples.
-    pub fn new(archive: &Archive) -> Option<AddDialog> {
+    pub fn new(archive: &Archive, cx: &mut App) -> Option<AddDialog> {
+        let on_existing =
+            cx.new(|_| Select::new(&ON_EXISTING.map(|(name, _)| name), 0, SelectLook::Pill));
         Some(AddDialog {
             archive: archive.path.clone()?,
             name: archive.name.clone().into(),
@@ -42,13 +54,16 @@ impl AddDialog {
             encrypted: archive.encryption.is_some(),
             selection: Selection::default(),
             _counting: None,
+            on_existing,
             checked: false,
         })
     }
 
     /// For the screenshots: the sample's name, with what they choose.
     #[cfg(all(test, feature = "shots"))]
-    pub fn sample(archive: &Archive) -> AddDialog {
+    pub fn sample(archive: &Archive, cx: &mut App) -> AddDialog {
+        let on_existing =
+            cx.new(|_| Select::new(&ON_EXISTING.map(|(name, _)| name), 0, SelectLook::Pill));
         AddDialog {
             archive: PathBuf::from("/home/you/Documents/sample.zip"),
             name: archive.name.clone().into(),
@@ -57,6 +72,7 @@ impl AddDialog {
             encrypted: true,
             selection: crate::demo::selection(),
             _counting: None,
+            on_existing,
             checked: false,
         }
     }
@@ -117,6 +133,7 @@ impl AddDialog {
             paths: self.selection.paths.clone(),
             archive: self.archive.clone(),
             folder: self.folder.clone(),
+            on_existing: ON_EXISTING[self.on_existing.read(cx).chosen().min(2)].1,
         });
         cx.emit(DialogEvent::Start(job));
     }
@@ -197,6 +214,18 @@ impl Render for AddDialog {
                 d.child(note(Tone::Warn).child("Add the files or a folder to put in the archive."))
             })
             .child(div().flex().child(row("Goes in", self.goes_in())))
+            .child(
+                div()
+                    .flex()
+                    .items_center()
+                    .gap(px(12.))
+                    .child(
+                        div()
+                            .flex_1()
+                            .child(legend("If a file of that name is there")),
+                    )
+                    .child(self.on_existing.clone()),
+            )
             .when(self.encrypted, |d| {
                 d.child(
                     div()

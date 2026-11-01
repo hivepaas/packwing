@@ -14,7 +14,7 @@ use crate::chrome;
 use crate::colors::{self, colors};
 use crate::demo;
 use crate::dialogs::{
-    AddDialog, CreateDialog, Creating, DialogEvent, ExtractDialog, Job, OpenFileDialog,
+    AddDialog, CreateDialog, Creating, DialogEvent, EditDialog, ExtractDialog, Job, OpenFileDialog,
     PasswordDialog, PasswordEvent, ProgressDialog, Verb, asked_for,
 };
 use crate::model::{Archive, Kind, Selection, stem};
@@ -177,6 +177,8 @@ impl Workspace {
                     ArchiveEvent::AddFiles => this.add_files(window, cx),
                     ArchiveEvent::Test => this.test_archive(window, cx),
                     ArchiveEvent::Open => this.choose_archive(window, cx),
+                    ArchiveEvent::Delete => this.open_edit(false, window, cx),
+                    ArchiveEvent::Rename => this.open_edit(true, window, cx),
                     ArchiveEvent::OpenEntry(entry) => this.open_entry(entry.clone(), window, cx),
                 },
             ),
@@ -517,6 +519,21 @@ impl Workspace {
         self.show(view, true, window, cx);
     }
 
+    /// Asks how to change what is selected in the archive open.
+    pub fn open_edit(&mut self, rename: bool, window: &mut Window, cx: &mut Context<Self>) {
+        let page = self.archive.read(cx);
+        let picked = page.picked();
+        let Some(a) = page.archive().cloned() else {
+            return;
+        };
+        let Some(path) = a.path else {
+            return;
+        };
+        let about = (path, a.name, a.folder, a.keys);
+        let view = cx.new(|cx| EditDialog::new(about, picked, rename, window, cx));
+        self.show(view, true, window, cx);
+    }
+
     /// Opens a file of the archive open, a copy of it: asked first, as
     /// Settings says, and always for a program.
     pub fn open_entry(&mut self, entry: Vec<String>, window: &mut Window, cx: &mut Context<Self>) {
@@ -569,7 +586,8 @@ impl Workspace {
     /// Add files, holding the screenshots' sample.
     #[cfg(all(test, feature = "shots"))]
     pub fn open_add_sample(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let dialog = self.archive.read(cx).archive().map(AddDialog::sample);
+        let archive = self.archive.read(cx).archive().cloned();
+        let dialog = archive.map(|a| AddDialog::sample(&a, cx));
         if let Some(dialog) = dialog {
             let view = cx.new(|_| dialog);
             self.show(view, true, window, cx);
@@ -755,7 +773,8 @@ impl Workspace {
                 .is_some_and(|l| packwing_core::can_add(l));
         match what_a_drop_means(&paths, takes_more) {
             Dropped::AddTo => {
-                let dialog = self.archive.read(cx).archive().and_then(AddDialog::new);
+                let archive = self.archive.read(cx).archive().cloned();
+                let dialog = archive.and_then(|a| AddDialog::new(&a, cx));
                 if let Some(dialog) = dialog {
                     let view = cx.new(|_| dialog);
                     view.update(cx, |d, cx| d.add(paths, cx));
@@ -769,7 +788,8 @@ impl Workspace {
 
     /// Asks what to add to the archive open; the samples have no file to add to.
     pub fn add_files(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let dialog = self.archive.read(cx).archive().and_then(AddDialog::new);
+        let archive = self.archive.read(cx).archive().cloned();
+        let dialog = archive.and_then(|a| AddDialog::new(&a, cx));
         if let Some(dialog) = dialog {
             let view = cx.new(|_| dialog);
             self.show(view, true, window, cx);
