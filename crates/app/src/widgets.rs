@@ -263,6 +263,7 @@ pub fn option_card(id: impl Into<ElementId>, on: bool) -> Stateful<Div> {
     div()
         .id(id)
         .flex()
+        .min_w_0()
         .items_center()
         .gap(px(14.))
         .px(px(16.))
@@ -295,6 +296,7 @@ pub fn titled(title: impl Into<SharedString>, detail: impl Into<SharedString>, o
         .child(
             div()
                 .text_size(px(13.))
+                .truncate()
                 .when(!on, |d| d.text_color(rgb(colors().muted)))
                 .child(detail.into()),
         )
@@ -310,7 +312,9 @@ pub fn segment(
     div()
         .id(id)
         .flex_1()
+        .min_w_0()
         .h(px(36.))
+        .px(px(12.))
         .flex()
         .items_center()
         .justify_center()
@@ -324,7 +328,7 @@ pub fn segment(
         .cursor_pointer()
         .when(on, |d| d.bg(rgb(c.surface)))
         .when(!on, |d| d.hover(|s| s.bg(rgb(c.well_hover))))
-        .child(label.into())
+        .child(div().min_w_0().truncate().child(label.into()))
 }
 
 /// The track a row of [`segment`]s sits in.

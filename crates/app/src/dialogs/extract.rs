@@ -192,7 +192,8 @@ impl ExtractDialog {
                     self.new_folder(),
                     new_folder,
                 )
-                .flex_1(),
+                .flex_1()
+                .min_w_0(),
             )
             .child(chip(
                 "Recommended",
@@ -215,6 +216,7 @@ impl ExtractDialog {
                 div()
                     .grid()
                     .grid_cols(2)
+                    .min_w_0()
                     .gap(px(8.))
                     .child(
                         option_card("dest-here", here)

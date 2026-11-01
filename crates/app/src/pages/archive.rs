@@ -393,7 +393,7 @@ impl ArchivePage {
             .child(
                 div()
                     .flex_1()
-                    .min_w(px(320.))
+                    .min_w_0()
                     .flex()
                     .flex_col()
                     .gap(px(10.))
@@ -402,6 +402,7 @@ impl ArchivePage {
                             .text_size(px(28.))
                             .font_weight(FontWeight::BOLD)
                             .line_height(relative(1.2))
+                            .truncate()
                             .child(a.name.clone()),
                     )
                     .child(
@@ -634,6 +635,7 @@ impl ArchivePage {
         div()
             .flex()
             .flex_wrap()
+            .min_w_0()
             .items_center()
             .gap_x(px(6.))
             .px(px(14.))
@@ -645,12 +647,16 @@ impl ArchivePage {
                 let here = i == last;
                 div()
                     .flex()
+                    .min_w_0()
+                    .max_w_full()
                     .items_center()
                     .gap_x(px(6.))
                     .when(i > 0, |d| d.child("›"))
                     .child(
                         div()
                             .id(("step", i))
+                            .min_w_0()
+                            .truncate()
                             .when(here, |d| d.font_weight(FontWeight::SEMIBOLD))
                             .when(navigable && !here, |d| {
                                 d.cursor_pointer()
@@ -735,8 +741,12 @@ impl ArchivePage {
         let c = colors();
         let entry = self.chosen.and_then(|i| a.entries.get(i).cloned());
         let marked = a.marked.len() as u64;
+        // What it shows takes the height there is; a tag needs little.
+        let showing =
+            entry.is_some() && matches!(self.preview, Preview::Picture(_) | Preview::Text(_));
         let picture = div()
-            .h(px(200.))
+            .when(showing, |d| d.flex_1().min_h(px(200.)))
+            .when(!showing, |d| d.h(px(200.)))
             .rounded(px(20.))
             .bg(rgb(c.field))
             .flex()
@@ -793,8 +803,12 @@ impl ArchivePage {
                 ),
             });
         panel()
-            .w(px(300.))
+            // A quarter of the row, as the window grows.
+            .w(relative(0.25))
+            .min_w(px(300.))
             .flex_shrink_0()
+            .when(showing, |d| d.h_full())
+            .max_h_full()
             .flex()
             .flex_col()
             .gap(px(14.))
@@ -802,10 +816,13 @@ impl ArchivePage {
             .child(picture)
             .children(entry.map(|e| {
                 div()
+                    .flex_shrink_0()
+                    .min_w_0()
                     .child(
                         div()
                             .text_size(px(16.))
                             .font_weight(FontWeight::SEMIBOLD)
+                            .truncate()
                             .child(e.name),
                     )
                     .child(div().text_size(px(13.)).text_color(rgb(c.muted)).child(
