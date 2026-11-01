@@ -36,6 +36,23 @@ To see every screen, light and dark, without opening the app (Linux, with a Vulk
 cargo test -p packwing --features shots shots   # writes target/shots/*.png
 ```
 
+To try storages with no account anywhere, Docker runs throwaway servers, reached from this computer only. Stopping one throws away what it holds.
+
+```sh
+make s3-start       # endpoint http://127.0.0.1:18333, bucket test, access key packwing, secret key packwing
+make webdav-start   # address http://127.0.0.1:18335, user packwing, password packwing
+make sftp-start     # host tester@127.0.0.1:18322, password packwing
+S3_TEST_ENDPOINT=http://127.0.0.1:18333 S3_TEST_ACCESS_KEY=packwing S3_TEST_SECRET_KEY=packwing \
+  WEBDAV_TEST_ENDPOINT=http://127.0.0.1:18335 WEBDAV_TEST_USER=packwing WEBDAV_TEST_PASSWORD=packwing \
+  SFTP_TEST_HOST=tester@127.0.0.1:18322 SFTP_TEST_KEY=$PWD/target/test-sftp/key \
+  SFTP_TEST_KNOWN_HOSTS=$PWD/target/test-sftp/known_hosts make test
+make s3-stop
+make webdav-stop
+make sftp-stop
+```
+
+packwing refuses a host not in `~/.ssh/known_hosts`, so `make sftp-start` adds the server's line there for its port, and `make sftp-stop` takes it out.
+
 ## 📦 Packaging
 
 On Debian and Ubuntu, `scripts/package_linux.sh` packs a release build into `dist/packwing_<version>_<arch>.deb`: the program, its launcher and icon, and context-menu-rs's native Nautilus extension, downloaded from its release and checked against the SHA-256 pinned in the script. Nautilus loads extensions only from a folder of the system's, which a package can write and a user cannot, so it is what puts packwing's items in Nautilus's own menu rather than its Scripts submenu.
