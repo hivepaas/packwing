@@ -26,6 +26,8 @@ x11 = ["gpui_platform/x11"]
 shots = ["gpui_platform/test-support", "dep:gpui_wgpu", "dep:image"]
 
 [dependencies]
+# Where this system keeps the home, Desktop and Downloads folders.
+dirs = "5"
 gpui.workspace = true
 gpui_platform.workspace = true
 # Reading, extracting and testing archives, through hivepack.

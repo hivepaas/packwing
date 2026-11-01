@@ -23,6 +23,7 @@ use crate::dialogs::{
 use crate::explorer::ExplorerEvent;
 use crate::model::{Archive, Kind, Selection, stem};
 use crate::pages::archive::{ArchiveEvent, ArchivePage, Shown};
+use crate::pages::browse::BrowsePage;
 use crate::pages::onboarding::{Done, Onboarding};
 use crate::pages::recent::{OpenRecent, RecentPage, Row};
 use crate::pages::settings::{Appearance, AppearanceChosen, SettingsPage};
@@ -37,7 +38,7 @@ use crate::widgets::{accent_tint, icon, logo, tile};
 pub enum Page {
     Archive,
     Storages,
-    Recent,
+    Browse,
     Settings,
 }
 
@@ -95,6 +96,7 @@ pub struct Workspace {
     page: Page,
     archive: Entity<ArchivePage>,
     storages: Entity<StoragesPage>,
+    browse: Entity<BrowsePage>,
     recent: Entity<RecentPage>,
     settings: Entity<SettingsPage>,
     /// packwing's items in the system's right-click menu.
@@ -174,6 +176,11 @@ impl Workspace {
         let storages = cx.new(StoragesPage::new);
         let explorer = storages.read(cx).explorer().clone();
         let recent = cx.new(|_| RecentPage::new(kept.recent.iter().map(Row::of).collect()));
+        let browse = cx.new({
+            let recent = recent.clone();
+            move |cx| BrowsePage::new(recent, cx)
+        });
+        let browse_explorer = browse.read(cx).explorer().clone();
         let settings = cx.new(|cx| {
             SettingsPage::new(
                 appearance,
@@ -196,32 +203,8 @@ impl Workspace {
                     ArchiveEvent::OpenEntry(entry) => this.open_entry(entry.clone(), window, cx),
                 },
             ),
-            cx.subscribe_in(
-                &explorer,
-                window,
-                |this, explorer, e: &ExplorerEvent, window, cx| match e {
-                    ExplorerEvent::OpenArchive(source) => {
-                        this.read_archive(source.clone(), Keys::default(), false, window, cx)
-                    }
-                    ExplorerEvent::Extract(source) => {
-                        this.read_archive(source.clone(), Keys::default(), true, window, cx)
-                    }
-                    ExplorerEvent::Compress(paths) => this.open_create(paths.clone(), window, cx),
-                    ExplorerEvent::View(item) => {
-                        let (item, explorer) = (item.clone(), explorer.clone());
-                        let view = cx.new(|cx| ViewDialog::new(item, explorer, cx));
-                        this.show(view, true, window, cx);
-                    }
-                    ExplorerEvent::Transfer { moving } => {
-                        this.open_transfer(*moving, window, cx);
-                    }
-                    ExplorerEvent::AskDelete(names) => {
-                        let (names, explorer) = (names.clone(), explorer.clone());
-                        let view = cx.new(|cx| DeleteDialog::new(names, explorer, cx));
-                        this.show(view, true, window, cx);
-                    }
-                },
-            ),
+            cx.subscribe_in(&explorer, window, Self::explorer_event),
+            cx.subscribe_in(&browse_explorer, window, Self::explorer_event),
             cx.subscribe_in(
                 &storages,
                 window,
@@ -251,6 +234,7 @@ impl Workspace {
             page: Page::Archive,
             archive,
             storages,
+            browse,
             recent,
             settings,
             right_click,
@@ -357,6 +341,55 @@ impl Workspace {
         cx.notify();
     }
 
+    /// What an explorer of a page asked for.
+    fn explorer_event(
+        this: &mut Self,
+        explorer: &Entity<crate::explorer::Explorer>,
+        e: &ExplorerEvent,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        match e {
+            ExplorerEvent::OpenArchive(source) => {
+                this.read_archive(source.clone(), Keys::default(), false, window, cx)
+            }
+            ExplorerEvent::Extract(source) => {
+                this.read_archive(source.clone(), Keys::default(), true, window, cx)
+            }
+            ExplorerEvent::Compress(paths) => this.open_create(paths.clone(), window, cx),
+            ExplorerEvent::View(item) => {
+                let (item, explorer) = (item.clone(), explorer.clone());
+                let view = cx.new(|cx| ViewDialog::new(item, explorer, cx));
+                this.show(view, true, window, cx);
+            }
+            ExplorerEvent::Transfer { moving } => {
+                this.open_transfer(explorer, *moving, window, cx);
+            }
+            ExplorerEvent::AskDelete(names) => {
+                let (names, explorer) = (names.clone(), explorer.clone());
+                let view = cx.new(|cx| DeleteDialog::new(names, explorer, cx));
+                this.show(view, true, window, cx);
+            }
+        }
+    }
+
+    /// Reads the folders shown again, as a job may have changed them.
+    fn refresh_explorers(&mut self, cx: &mut Context<Self>) {
+        let storages = self.storages.read(cx).explorer().clone();
+        let browse = self.browse.read(cx).explorer().clone();
+        for explorer in [storages, browse] {
+            explorer.update(cx, |e, cx| e.refresh(cx));
+        }
+    }
+
+    /// The explorer of the page shown; of Storages on any page without one.
+    fn shown_explorer(&self, cx: &gpui::App) -> Entity<crate::explorer::Explorer> {
+        match self.page {
+            Page::Browse => self.browse.read(cx).explorer().clone(),
+            _ => self.storages.read(cx).explorer().clone(),
+        }
+    }
+
     /// Opens `view` over the window, until it says it is done.
     fn show<V: Render + EventEmitter<DialogEvent>>(
         &mut self,
@@ -391,14 +424,8 @@ impl Workspace {
                         ));
                     }
                     let said = (!said.is_empty()).then(|| said.join(" "));
-                    this.storages
-                        .read(cx)
-                        .explorer()
-                        .clone()
-                        .update(cx, |e, cx| {
-                            e.refresh(cx);
-                            e.say(said, cx);
-                        });
+                    this.refresh_explorers(cx);
+                    this.shown_explorer(cx).update(cx, |e, cx| e.say(said, cx));
                 }
                 DialogEvent::Stored {
                     place,
@@ -410,13 +437,8 @@ impl Workspace {
                         this.show_page(Page::Storages, cx);
                         this.storages
                             .update(cx, |p, cx| p.show(place, folder.clone(), cx));
-                    } else {
-                        this.storages
-                            .read(cx)
-                            .explorer()
-                            .clone()
-                            .update(cx, |e, cx| e.refresh(cx));
                     }
+                    this.refresh_explorers(cx);
                 }
                 DialogEvent::Added(path, folder, keys) => {
                     this.close_dialog(cx);
@@ -712,17 +734,27 @@ impl Workspace {
     }
 
     /// Asks where to copy or move what is chosen in the storage shown.
-    fn open_transfer(&mut self, moving: bool, window: &mut Window, cx: &mut Context<Self>) {
-        let page = self.storages.read(cx);
-        let explorer = page.explorer().read(cx);
-        let Some(from) = explorer.place().cloned() else {
+    fn open_transfer(
+        &mut self,
+        explorer: &Entity<crate::explorer::Explorer>,
+        moving: bool,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let shown = explorer.read(cx);
+        let Some(from) = shown.place().cloned() else {
             return;
         };
         let (folder, names): (Vec<String>, Vec<String>) = (
-            explorer.folder().to_vec(),
-            explorer.selection().into_iter().map(|i| i.name).collect(),
+            shown.folder().to_vec(),
+            shown.selection().into_iter().map(|i| i.name).collect(),
         );
-        let (places, chosen) = page.places(cx);
+        let (mut places, mut chosen) = self.storages.read(cx).places(cx);
+        // Browse is not a storage: it starts from itself, with the storages after it.
+        if explorer == self.browse.read(cx).explorer() {
+            places.insert(0, from.clone());
+            chosen = 0;
+        }
         let view =
             cx.new(|cx| TransferDialog::new(from, folder, names, moving, places, chosen, cx));
         self.show(view, true, window, cx);
@@ -973,6 +1005,20 @@ impl Workspace {
         self.archive.update(cx, |p, cx| p.search_for(query, cx));
     }
 
+    /// Browse, showing what was opened before.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn show_recent_tab(&mut self, cx: &mut Context<Self>) {
+        self.browse.update(cx, |b, cx| {
+            b.show_tab(crate::pages::browse::Tab::Recent, cx)
+        });
+        self.show_page(Page::Browse, cx);
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn browse_page(&self) -> Entity<BrowsePage> {
+        self.browse.clone()
+    }
+
     /// The Recent page as the screenshots draw it.
     #[cfg(all(test, feature = "shots"))]
     pub fn show_recent_samples(&mut self, cx: &mut Context<Self>) {
@@ -986,7 +1032,7 @@ impl Workspace {
             })
             .collect();
         self.recent.update(cx, |p, cx| p.show(rows, cx));
-        self.show_page(Page::Recent, cx);
+        self.show_recent_tab(cx);
     }
 
     /// Whether a dialog is open, for tests.
@@ -1119,8 +1165,8 @@ impl Workspace {
                 .on_click(cx.listener(|this, _, _, cx| this.show_page(Page::Storages, cx))),
             )
             .child(
-                item("nav-recent", "recent", tr!("Recent"), page == Page::Recent)
-                    .on_click(cx.listener(|this, _, _, cx| this.show_page(Page::Recent, cx))),
+                item("nav-browse", "folder", tr!("Browse"), page == Page::Browse)
+                    .on_click(cx.listener(|this, _, _, cx| this.show_page(Page::Browse, cx))),
             )
             .child(
                 item("nav-new", "plus", tr!("New"), false).on_click(cx.listener(
@@ -1196,7 +1242,7 @@ impl Render for Workspace {
                 let page: AnyView = match self.page {
                     Page::Archive => self.archive.clone().into(),
                     Page::Storages => self.storages.clone().into(),
-                    Page::Recent => self.recent.clone().into(),
+                    Page::Browse => self.browse.clone().into(),
                     Page::Settings => self.settings.clone().into(),
                 };
                 div()
