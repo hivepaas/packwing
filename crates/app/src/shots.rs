@@ -21,7 +21,15 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 50] = [
+const SCREENS: [(&str, SetUp, bool); 51] = [
+    (
+        "storages-add",
+        |ws, window, cx| {
+            cx.set_global(fake_extensions());
+            ws.open_add_storage(window, cx);
+        },
+        false,
+    ),
     (
         "storages-copy",
         |ws, _, cx| {
@@ -1111,4 +1119,159 @@ fn a_large_window_gives_the_info_a_quarter() {
     image
         .save(out_dir().join("storages-wide-light.png"))
         .expect("cannot save the picture");
+}
+
+/// A folder that says it is not on this computer, as a storage across a network.
+struct Far(packwing_core::LocalFolder);
+
+impl packwing_core::Storage for Far {
+    fn list(&self, f: &[String]) -> std::io::Result<Box<dyn packwing_core::Lister>> {
+        self.0.list(f)
+    }
+    fn read(&self, p: &[String], most: u64) -> std::io::Result<Vec<u8>> {
+        self.0.read(p, most)
+    }
+    fn stat(&self, f: &[String], n: &str) -> std::io::Result<Option<packwing_core::Item>> {
+        self.0.stat(f, n)
+    }
+    fn open(&self, p: &[String]) -> std::io::Result<Box<dyn std::io::Read + Send>> {
+        self.0.open(p)
+    }
+    fn put(
+        &self,
+        p: &[String],
+        from: &mut dyn std::io::Read,
+        like: &packwing_core::Item,
+        replace: bool,
+    ) -> std::io::Result<u64> {
+        self.0.put(p, from, like, replace)
+    }
+    fn remove(&self, p: &[String]) -> std::io::Result<()> {
+        self.0.remove(p)
+    }
+    fn make_folder(&self, f: &[String], n: &str) -> std::io::Result<()> {
+        self.0.make_folder(f, n)
+    }
+    fn rename(&self, f: &[String], a: &str, b: &str) -> std::io::Result<()> {
+        self.0.rename(f, a, b)
+    }
+    fn delete(&self, f: &[String], n: &[String]) -> std::io::Result<()> {
+        self.0.delete(f, n)
+    }
+    fn has_trash(&self) -> bool {
+        false
+    }
+    fn local_path(&self, _: &[String]) -> Option<PathBuf> {
+        None
+    }
+    fn show_path(&self, p: &[String]) -> String {
+        format!("far://{}", p.join("/"))
+    }
+}
+
+/// A kind of storage, as a paid build adds them: its setting `folder` is the
+/// folder it is, and its secret goes where the test can see it.
+struct FarKind(Arc<std::sync::Mutex<Vec<(String, packwing_core::Values)>>>);
+
+impl packwing_core::StorageKind for FarKind {
+    fn id(&self) -> &'static str {
+        "far"
+    }
+    fn tag(&self) -> &'static str {
+        "FAR"
+    }
+    fn name(&self) -> String {
+        "Far bucket".into()
+    }
+    fn fields(&self) -> Vec<packwing_core::Field> {
+        let field = |key, label: &str, secret| packwing_core::Field {
+            key,
+            label: label.into(),
+            hint: String::new(),
+            secret,
+        };
+        vec![
+            field("folder", "Folder", false),
+            field("token", "Token", true),
+        ]
+    }
+    fn describe(&self, values: &packwing_core::Values) -> String {
+        format!("Far · {}", values.get("folder").map_or("", String::as_str))
+    }
+    fn open(
+        &self,
+        _: &str,
+        values: &packwing_core::Values,
+        _: Option<&packwing_core::Values>,
+    ) -> Arc<dyn packwing_core::Storage> {
+        let folder = values.get("folder").cloned().unwrap_or_default();
+        Arc::new(Far(packwing_core::LocalFolder::new(folder)))
+    }
+    fn keep_secrets(&self, id: &str, secrets: &packwing_core::Values) -> std::io::Result<()> {
+        self.0
+            .lock()
+            .expect("the list")
+            .push((id.to_owned(), secrets.clone()));
+        Ok(())
+    }
+    fn forget_secrets(&self, id: &str) {
+        self.0.lock().expect("the list").retain(|(i, _)| i != id);
+    }
+}
+
+fn fake_extensions() -> crate::Extensions {
+    crate::Extensions {
+        storage_kinds: vec![Arc::new(FarKind(Default::default()))],
+    }
+}
+
+#[test]
+fn a_kind_a_build_adds_is_browsed_without_a_local_path() {
+    let dir = folder_of("far", 2);
+    std::fs::write(dir.join("backup.zip"), "not one").expect("cannot write");
+    let (mut cx, window, explorer) = explorer_on(out_dir());
+    let kept = Arc::new(std::sync::Mutex::new(Vec::new()));
+    let kind = FarKind(kept.clone());
+    let values: packwing_core::Values = [("folder".to_owned(), dir.display().to_string())].into();
+    let secrets: packwing_core::Values = [("token".to_owned(), "hush".to_owned())].into();
+    window
+        .update(&mut cx, |ws, _, cx| {
+            cx.set_global(crate::Extensions {
+                storage_kinds: vec![Arc::new(kind)],
+            });
+            ws.storages_page().update(cx, |p, cx| {
+                p.add_other("far", "Far one".into(), values, &secrets, cx)
+                    .expect("added");
+            });
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    assert_eq!(kept.lock().expect("the list")[0].1["token"], "hush");
+    // Listed like any other, and what needs a local path says so.
+    let names = explorer.read_with(&cx, |e, _| e.shown_names());
+    assert!(names.contains(&"backup.zip".to_owned()), "{names:?}");
+    window
+        .update(&mut cx, |_, _, cx| {
+            explorer.update(cx, |e, cx| {
+                assert!(!e.is_local());
+                e.choose("backup.zip", cx);
+                let item = e.selection().remove(0);
+                e.open(&item, cx);
+                assert!(e.problem().is_some());
+            })
+        })
+        .expect("the window");
+    // Secrets do not go with the settings.
+    let text = window
+        .update(&mut cx, |_, _, cx| crate::prefs::prefs(cx).text_for_test())
+        .expect("the window");
+    assert!(text.contains("storage=other far\tFar one"), "{text}");
+    assert!(!text.contains("hush"), "{text}");
+    // Taken off the list, its secrets go.
+    window
+        .update(&mut cx, |ws, _, cx| {
+            ws.storages_page().update(cx, |p, cx| p.remove_last(cx));
+        })
+        .expect("the window");
+    assert!(kept.lock().expect("the list").is_empty());
 }

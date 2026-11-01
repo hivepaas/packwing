@@ -9,6 +9,7 @@ use std::cmp::Ordering;
 use std::fs;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use std::time::{Duration, UNIX_EPOCH};
 
 use packwing_i18n::tr;
@@ -90,6 +91,47 @@ pub trait Storage: Send + Sync {
 
     /// `path` as the user would write it.
     fn show_path(&self, path: &[String]) -> String;
+}
+
+/// A setting of a storage, by its key.
+pub type Values = std::collections::BTreeMap<String, String>;
+
+/// Something asked for when a storage is added.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Field {
+    pub key: &'static str,
+    pub label: String,
+    /// What the empty field says.
+    pub hint: String,
+    /// Kept in the system's keychain, not with the settings, and not shown.
+    pub secret: bool,
+}
+
+/// A kind of storage a build of packwing can add, besides a folder on this
+/// computer. Each storage of a kind has an id, under which its secrets are kept.
+pub trait StorageKind: Send + Sync {
+    /// Its name in the settings file.
+    fn id(&self) -> &'static str;
+
+    /// The letters on its tile.
+    fn tag(&self) -> &'static str;
+
+    /// What the user calls this kind.
+    fn name(&self) -> String;
+
+    fn fields(&self) -> Vec<Field>;
+
+    /// Under its name in the list: where it is.
+    fn describe(&self, values: &Values) -> String;
+
+    /// The storage with these settings. It touches neither the network nor the
+    /// keychain until first used, so that a list of them opens at once; with
+    /// `typed`, the secrets are those and not the kept ones.
+    fn open(&self, id: &str, values: &Values, typed: Option<&Values>) -> Arc<dyn Storage>;
+
+    fn keep_secrets(&self, id: &str, secrets: &Values) -> io::Result<()>;
+
+    fn forget_secrets(&self, id: &str);
 }
 
 /// Why `name` cannot be an item's name, if it cannot. A name is one step: it

@@ -11,7 +11,7 @@ use std::sync::{Arc, Mutex};
 
 use super::{DialogEvent, Job, Transferring, Verb, footer, header};
 use crate::colors::colors;
-use crate::explorer::{Explorer, LOCAL_TAG, Place};
+use crate::explorer::{Explorer, Place};
 use crate::widgets::{
     Fill, Select, SelectLook, Size, button, icon_button, legend, segment, segments, tile,
     tonal_tint,
@@ -159,11 +159,11 @@ impl Render for TransferDialog {
                 .when(!on, |d| d.hover(|s| s.bg(rgb(c.well_hover))))
                 .on_click(cx.listener(move |this, _, _, cx| this.pick_place(i, cx)))
                 .child(
-                    tile(34., 10., c.plain_tag)
+                    tile(34., 10., place.tint(&c))
                         .h(px(30.))
                         .text_size(px(10.))
                         .font_weight(FontWeight::BOLD)
-                        .child(LOCAL_TAG),
+                        .child(place.tag),
                 )
                 .child(
                     div()
@@ -176,6 +176,8 @@ impl Render for TransferDialog {
                 )
         });
         let same = self.is_where_they_are(cx);
+        let there = self.picker.read(cx).is_local();
+        let through = !there || self.from.storage.local_path(&[]).is_none();
         let action = if self.moving {
             tr!("Move here")
         } else {
@@ -236,6 +238,8 @@ impl Render for TransferDialog {
                     .text_color(rgb(c.muted))
                     .child(if same {
                         tr!("They are in this folder already. Choose another.")
+                    } else if through {
+                        tr!("All of it passes through this computer, and your provider may charge for what is read from it. Each moved original goes once its copy has been read back and matches.")
                     } else if self.moving {
                         tr!("Each original goes once its copy has been read back and matches.")
                     } else {
