@@ -525,3 +525,14 @@ fn without_layers(name: &str, layers: &[Layer]) -> String {
     }
     stem.to_owned()
 }
+
+#[cfg(test)]
+mod build {
+    /// hivepack's `unsafe-fast` is on in all that has it, as the workspace asks.
+    #[test]
+    fn the_fast_builds_are_on() {
+        assert!(hivepack_deflate::UNSAFE_FAST);
+        assert!(hivepack_lz4::UNSAFE_FAST);
+        assert!(hivepack_zstd::UNSAFE_FAST);
+    }
+}

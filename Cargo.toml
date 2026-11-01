@@ -19,20 +19,25 @@ gpui_platform = { package = "gpui-pre-platform", version = "=0.3.9", default-fea
 
 # hivepack, packwing's archive library: not on crates.io yet, so from its
 # repository at one commit. Every crate comes from the same one.
-hivepack-7z = { git = "https://github.com/hivepaas/hivepack-rs", rev = "241ee0673ec359b174e6026bddcd6e8faeb4b8d6" }
-hivepack-age = { git = "https://github.com/hivepaas/hivepack-rs", rev = "241ee0673ec359b174e6026bddcd6e8faeb4b8d6" }
-hivepack-cpio = { git = "https://github.com/hivepaas/hivepack-rs", rev = "241ee0673ec359b174e6026bddcd6e8faeb4b8d6" }
-hivepack-deflate = { git = "https://github.com/hivepaas/hivepack-rs", rev = "241ee0673ec359b174e6026bddcd6e8faeb4b8d6" }
-hivepack-extract = { git = "https://github.com/hivepaas/hivepack-rs", rev = "241ee0673ec359b174e6026bddcd6e8faeb4b8d6" }
-hivepack-iso = { git = "https://github.com/hivepaas/hivepack-rs", rev = "241ee0673ec359b174e6026bddcd6e8faeb4b8d6" }
-hivepack-open = { git = "https://github.com/hivepaas/hivepack-rs", rev = "241ee0673ec359b174e6026bddcd6e8faeb4b8d6" }
-hivepack-rar = { git = "https://github.com/hivepaas/hivepack-rs", rev = "241ee0673ec359b174e6026bddcd6e8faeb4b8d6" }
-hivepack-tar = { git = "https://github.com/hivepaas/hivepack-rs", rev = "241ee0673ec359b174e6026bddcd6e8faeb4b8d6" }
-hivepack-udf = { git = "https://github.com/hivepaas/hivepack-rs", rev = "241ee0673ec359b174e6026bddcd6e8faeb4b8d6" }
-hivepack-xar = { git = "https://github.com/hivepaas/hivepack-rs", rev = "241ee0673ec359b174e6026bddcd6e8faeb4b8d6" }
-hivepack-xz = { git = "https://github.com/hivepaas/hivepack-rs", rev = "241ee0673ec359b174e6026bddcd6e8faeb4b8d6" }
-hivepack-zip = { git = "https://github.com/hivepaas/hivepack-rs", rev = "241ee0673ec359b174e6026bddcd6e8faeb4b8d6" }
-hivepack-zstd = { git = "https://github.com/hivepaas/hivepack-rs", rev = "241ee0673ec359b174e6026bddcd6e8faeb4b8d6" }
+#
+# With `unsafe-fast` where a crate has it, which hivepack leaves off by default:
+# the processor's CRC-32, AES, SHA and ChaCha20 instructions, and the unchecked
+# fast loops of zstd and LZ4. What each does is in hivepack's docs/unsafe.md.
+hivepack-7z = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e", features = ["unsafe-fast"] }
+hivepack-age = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e", features = ["unsafe-fast"] }
+hivepack-cpio = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e" }
+hivepack-deflate = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e", features = ["unsafe-fast"] }
+hivepack-extract = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e" }
+hivepack-iso = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e" }
+hivepack-lz4 = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e", features = ["unsafe-fast"] }
+hivepack-open = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e" }
+hivepack-rar = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e" }
+hivepack-tar = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e" }
+hivepack-udf = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e" }
+hivepack-xar = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e" }
+hivepack-xz = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e" }
+hivepack-zip = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e", features = ["unsafe-fast"] }
+hivepack-zstd = { git = "https://github.com/hivepaas/hivepack-rs", rev = "1f88d329594cd5cdb1d86e956c3346c06b52de0e", features = ["unsafe-fast"] }
 packwing-core = { path = "crates/core" }
 
 [workspace.lints.rust]

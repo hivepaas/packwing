@@ -2526,7 +2526,7 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 [[package]]
 name = "hivepack-7z"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=241ee0673ec359b174e6026bddcd6e8faeb4b8d6#241ee0673ec359b174e6026bddcd6e8faeb4b8d6"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=1f88d329594cd5cdb1d86e956c3346c06b52de0e#1f88d329594cd5cdb1d86e956c3346c06b52de0e"
 dependencies = [
  "hivepack-bzip2",
  "hivepack-crypto",
@@ -2538,7 +2538,7 @@ dependencies = [
 [[package]]
 name = "hivepack-age"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=241ee0673ec359b174e6026bddcd6e8faeb4b8d6#241ee0673ec359b174e6026bddcd6e8faeb4b8d6"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=1f88d329594cd5cdb1d86e956c3346c06b52de0e#1f88d329594cd5cdb1d86e956c3346c06b52de0e"
 dependencies = [
  "hivepack-crypto",
 ]
@@ -2546,27 +2546,27 @@ dependencies = [
 [[package]]
 name = "hivepack-bzip2"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=241ee0673ec359b174e6026bddcd6e8faeb4b8d6#241ee0673ec359b174e6026bddcd6e8faeb4b8d6"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=1f88d329594cd5cdb1d86e956c3346c06b52de0e#1f88d329594cd5cdb1d86e956c3346c06b52de0e"
 
 [[package]]
 name = "hivepack-cpio"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=241ee0673ec359b174e6026bddcd6e8faeb4b8d6#241ee0673ec359b174e6026bddcd6e8faeb4b8d6"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=1f88d329594cd5cdb1d86e956c3346c06b52de0e#1f88d329594cd5cdb1d86e956c3346c06b52de0e"
 
 [[package]]
 name = "hivepack-crypto"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=241ee0673ec359b174e6026bddcd6e8faeb4b8d6#241ee0673ec359b174e6026bddcd6e8faeb4b8d6"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=1f88d329594cd5cdb1d86e956c3346c06b52de0e#1f88d329594cd5cdb1d86e956c3346c06b52de0e"
 
 [[package]]
 name = "hivepack-deflate"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=241ee0673ec359b174e6026bddcd6e8faeb4b8d6#241ee0673ec359b174e6026bddcd6e8faeb4b8d6"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=1f88d329594cd5cdb1d86e956c3346c06b52de0e#1f88d329594cd5cdb1d86e956c3346c06b52de0e"
 
 [[package]]
 name = "hivepack-extract"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=241ee0673ec359b174e6026bddcd6e8faeb4b8d6#241ee0673ec359b174e6026bddcd6e8faeb4b8d6"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=1f88d329594cd5cdb1d86e956c3346c06b52de0e#1f88d329594cd5cdb1d86e956c3346c06b52de0e"
 dependencies = [
  "cap-fs-ext",
  "cap-std",
@@ -2585,7 +2585,7 @@ dependencies = [
 [[package]]
 name = "hivepack-iso"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=241ee0673ec359b174e6026bddcd6e8faeb4b8d6#241ee0673ec359b174e6026bddcd6e8faeb4b8d6"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=1f88d329594cd5cdb1d86e956c3346c06b52de0e#1f88d329594cd5cdb1d86e956c3346c06b52de0e"
 dependencies = [
  "hivepack-deflate",
 ]
@@ -2593,12 +2593,12 @@ dependencies = [
 [[package]]
 name = "hivepack-lz4"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=241ee0673ec359b174e6026bddcd6e8faeb4b8d6#241ee0673ec359b174e6026bddcd6e8faeb4b8d6"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=1f88d329594cd5cdb1d86e956c3346c06b52de0e#1f88d329594cd5cdb1d86e956c3346c06b52de0e"
 
 [[package]]
 name = "hivepack-open"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=241ee0673ec359b174e6026bddcd6e8faeb4b8d6#241ee0673ec359b174e6026bddcd6e8faeb4b8d6"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=1f88d329594cd5cdb1d86e956c3346c06b52de0e#1f88d329594cd5cdb1d86e956c3346c06b52de0e"
 dependencies = [
  "hivepack-age",
  "hivepack-bzip2",
@@ -2612,7 +2612,7 @@ dependencies = [
 [[package]]
 name = "hivepack-rar"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=241ee0673ec359b174e6026bddcd6e8faeb4b8d6#241ee0673ec359b174e6026bddcd6e8faeb4b8d6"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=1f88d329594cd5cdb1d86e956c3346c06b52de0e#1f88d329594cd5cdb1d86e956c3346c06b52de0e"
 dependencies = [
  "hivepack-crypto",
  "hivepack-deflate",
@@ -2621,17 +2621,17 @@ dependencies = [
 [[package]]
 name = "hivepack-tar"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=241ee0673ec359b174e6026bddcd6e8faeb4b8d6#241ee0673ec359b174e6026bddcd6e8faeb4b8d6"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=1f88d329594cd5cdb1d86e956c3346c06b52de0e#1f88d329594cd5cdb1d86e956c3346c06b52de0e"
 
 [[package]]
 name = "hivepack-udf"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=241ee0673ec359b174e6026bddcd6e8faeb4b8d6#241ee0673ec359b174e6026bddcd6e8faeb4b8d6"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=1f88d329594cd5cdb1d86e956c3346c06b52de0e#1f88d329594cd5cdb1d86e956c3346c06b52de0e"
 
 [[package]]
 name = "hivepack-xar"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=241ee0673ec359b174e6026bddcd6e8faeb4b8d6#241ee0673ec359b174e6026bddcd6e8faeb4b8d6"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=1f88d329594cd5cdb1d86e956c3346c06b52de0e#1f88d329594cd5cdb1d86e956c3346c06b52de0e"
 dependencies = [
  "hivepack-bzip2",
  "hivepack-crypto",
@@ -2642,12 +2642,12 @@ dependencies = [
 [[package]]
 name = "hivepack-xz"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=241ee0673ec359b174e6026bddcd6e8faeb4b8d6#241ee0673ec359b174e6026bddcd6e8faeb4b8d6"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=1f88d329594cd5cdb1d86e956c3346c06b52de0e#1f88d329594cd5cdb1d86e956c3346c06b52de0e"
 
 [[package]]
 name = "hivepack-zip"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=241ee0673ec359b174e6026bddcd6e8faeb4b8d6#241ee0673ec359b174e6026bddcd6e8faeb4b8d6"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=1f88d329594cd5cdb1d86e956c3346c06b52de0e#1f88d329594cd5cdb1d86e956c3346c06b52de0e"
 dependencies = [
  "hivepack-bzip2",
  "hivepack-crypto",
@@ -2659,7 +2659,7 @@ dependencies = [
 [[package]]
 name = "hivepack-zstd"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=241ee0673ec359b174e6026bddcd6e8faeb4b8d6#241ee0673ec359b174e6026bddcd6e8faeb4b8d6"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=1f88d329594cd5cdb1d86e956c3346c06b52de0e#1f88d329594cd5cdb1d86e956c3346c06b52de0e"
 
 [[package]]
 name = "hkdf"
@@ -3945,6 +3945,7 @@ dependencies = [
  "hivepack-deflate",
  "hivepack-extract",
  "hivepack-iso",
+ "hivepack-lz4",
  "hivepack-open",
  "hivepack-rar",
  "hivepack-tar",
