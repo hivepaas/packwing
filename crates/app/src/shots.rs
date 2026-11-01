@@ -588,3 +588,65 @@ fn a_click_on_a_file_shows_it_in_the_preview() {
     assert_eq!(picked, [vec!["ghi chú.txt".to_owned()]]);
     let _ = std::fs::remove_dir_all(&folder);
 }
+
+/// Files dragged over the window and let go at `at`.
+fn drop_files(
+    cx: &mut HeadlessAppContext,
+    window: gpui::WindowHandle<Workspace>,
+    at: gpui::Point<gpui::Pixels>,
+    paths: Vec<PathBuf>,
+) {
+    use gpui::{ExternalPaths, FileDropEvent, PlatformInput};
+    let events = [
+        FileDropEvent::Entered {
+            position: at,
+            paths: ExternalPaths(paths.into_iter().collect()),
+        },
+        FileDropEvent::Pending { position: at },
+        FileDropEvent::Submit { position: at },
+    ];
+    for event in events {
+        // Not through the workspace: it takes the drop, and is not to be held.
+        cx.update_window(window.into(), |_, window, cx| {
+            window.dispatch_event(PlatformInput::FileDrop(event), cx);
+        })
+        .expect("cannot send the event");
+        cx.run_until_parked();
+        cx.capture_screenshot(window.into())
+            .expect("cannot draw the window");
+    }
+}
+
+/// A file dropped on the window makes a new archive of it, and more dropped on
+/// that dialog go in it.
+#[test]
+fn a_drop_on_the_window_starts_a_new_archive_and_the_dialog_takes_more() {
+    let text = Arc::new(gpui_wgpu::CosmicTextSystem::new(crate::FONT));
+    let mut cx = HeadlessAppContext::with_platform(text, Arc::new(crate::Assets), || {
+        gpui_platform::current_headless_renderer()
+    });
+    cx.update(crate::load_fonts);
+    let window = cx
+        .open_window(size(px(1280.), px(800.)), |window, cx| {
+            let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
+            cx.new(|cx| Workspace::new(false, false, menu, window, cx))
+        })
+        .expect("cannot open a window");
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    let centre = gpui::point(px(640.), px(400.));
+    drop_files(&mut cx, window, centre, vec![PathBuf::from("/tmp/a.txt")]);
+    let opened = window
+        .update(&mut cx, |ws, _, _| ws.dialog_open())
+        .expect("no window");
+    assert!(opened, "the drop opened no dialog");
+    drop_files(&mut cx, window, centre, vec![PathBuf::from("/tmp/b.txt")]);
+    let held = window
+        .update(&mut cx, |ws, _, cx| ws.create_dialog_paths(cx))
+        .expect("no window");
+    assert_eq!(
+        held,
+        [PathBuf::from("/tmp/a.txt"), PathBuf::from("/tmp/b.txt")]
+    );
+}

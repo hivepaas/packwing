@@ -5,8 +5,8 @@
 use std::path::PathBuf;
 
 use gpui::{
-    Context, EventEmitter, PathPromptOptions, Render, SharedString, Task, Window, div, prelude::*,
-    px, rgb,
+    Context, EventEmitter, ExternalPaths, PathPromptOptions, Render, SharedString, Task, Window,
+    div, prelude::*, px, rgb,
 };
 use packwing_core::Keys;
 
@@ -167,6 +167,10 @@ impl Render for AddDialog {
         let close = icon_button("close", "x", 44.)
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         super::card()
+            .id("add-dialog")
+            .on_drop(cx.listener(|this, dropped: &ExternalPaths, _, cx| {
+                this.add(dropped.paths().to_vec(), cx)
+            }))
             .child(header(
                 "logo",
                 tonal_tint(),
