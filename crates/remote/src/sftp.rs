@@ -5,12 +5,14 @@
 //! Everything blocks, as `Storage` asks. A connection is made when first needed,
 //! and again after one is lost.
 
-use std::io::{self, Read};
+use std::io::{self, Read, Seek, SeekFrom, Write};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
-use packwing_core::{Field, Item, Lister, Storage, StorageKind, Values, bad_name, by_name};
+use packwing_core::{
+    Field, Item, Lister, Storage, StorageKind, StoredFile, Values, bad_name, by_name,
+};
 use packwing_i18n::tr;
 use shellwing_ssh::sftp::{Entry, Kind, join};
 use shellwing_ssh::{
@@ -225,6 +227,121 @@ fn part_name(to: &str) -> String {
     join(&dir, &format!(".packwing-part-{}-{n}", std::process::id()))
 }
 
+/// The part file written gets `like`'s details, and goes to its name.
+fn settle(sftp: &Sftp, part: &str, to: &str, like: &Item, there: bool) -> io::Result<()> {
+    let modified = like.modified.and_then(|s| u32::try_from(s).ok());
+    let mode = like.mode.map(|m| m & 0o777);
+    if modified.is_some() || mode.is_some() {
+        runtime()
+            .block_on(sftp.set_details(part, mode, modified))
+            .map_err(said)?;
+    }
+    // SFTP's rename does not write over a file: what is there moves aside first,
+    // and comes back if the rename fails.
+    let aside = format!("{part}.old");
+    if there {
+        runtime().block_on(sftp.rename(to, &aside)).map_err(said)?;
+    }
+    if let Err(e) = runtime().block_on(sftp.rename(part, to)) {
+        if there {
+            let _ = runtime().block_on(sftp.rename(&aside, to));
+        }
+        return Err(said(e));
+    }
+    if there {
+        let _ = runtime().block_on(sftp.remove_file(&aside));
+    }
+    Ok(())
+}
+
+/// How much is held before it is written: a write waits for the server's answer.
+const FILE_BUFFER: usize = 256 << 10;
+
+/// A new file on the server, under a part file's name till it is finished.
+struct SftpFile {
+    file: RemoteFile,
+    buffer: Vec<u8>,
+    part: String,
+    to: String,
+    like: Item,
+    length: u64,
+    position: u64,
+    settled: bool,
+    open: Arc<Open>,
+}
+
+impl SftpFile {
+    fn write_out(&mut self) -> io::Result<()> {
+        if !self.buffer.is_empty() {
+            runtime().block_on(self.file.write_all(&self.buffer))?;
+            self.buffer.clear();
+        }
+        Ok(())
+    }
+}
+
+impl Write for SftpFile {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        if self.buffer.len() + buf.len() > FILE_BUFFER {
+            self.write_out()?;
+        }
+        if buf.len() >= FILE_BUFFER {
+            runtime().block_on(self.file.write_all(buf))?;
+        } else {
+            self.buffer.extend_from_slice(buf);
+        }
+        self.position += buf.len() as u64;
+        self.length = self.length.max(self.position);
+        Ok(buf.len())
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        self.write_out()
+    }
+}
+
+impl Seek for SftpFile {
+    fn seek(&mut self, to: SeekFrom) -> io::Result<u64> {
+        let position = match to {
+            SeekFrom::Start(p) => Some(p),
+            SeekFrom::Current(d) => self.position.checked_add_signed(d),
+            SeekFrom::End(d) => self.length.checked_add_signed(d),
+        }
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "seek before 0"))?;
+        // Telling where it is, as a writer often asks, costs nothing.
+        if position != self.position {
+            self.write_out()?;
+            runtime().block_on(self.file.seek(SeekFrom::Start(position)))?;
+            self.position = position;
+        }
+        Ok(position)
+    }
+}
+
+impl StoredFile for SftpFile {
+    fn finish(mut self: Box<Self>) -> io::Result<u64> {
+        self.write_out()?;
+        runtime().block_on(self.file.shutdown())?;
+        settle(
+            self.open.connection.sftp(),
+            &self.part,
+            &self.to,
+            &self.like,
+            false,
+        )?;
+        self.settled = true;
+        Ok(self.length)
+    }
+}
+
+impl Drop for SftpFile {
+    fn drop(&mut self) {
+        if !self.settled {
+            let _ = runtime().block_on(self.open.connection.sftp().remove_file(&self.part));
+        }
+    }
+}
+
 impl Storage for SftpStorage {
     fn list(&self, folder: &[String]) -> io::Result<Box<dyn Lister>> {
         Self::checked(folder)?;
@@ -325,34 +442,44 @@ impl Storage for SftpStorage {
                 written += n as u64;
             }
             runtime().block_on(file.shutdown())?;
-            let modified = like.modified.and_then(|s| u32::try_from(s).ok());
-            let mode = like.mode.map(|m| m & 0o777);
-            if modified.is_some() || mode.is_some() {
-                runtime()
-                    .block_on(sftp.set_details(&part, mode, modified))
-                    .map_err(said)?;
-            }
-            // SFTP's rename does not write over a file: what is there moves
-            // aside first, and comes back if the rename fails.
-            let aside = format!("{part}.old");
-            if there {
-                runtime().block_on(sftp.rename(&to, &aside)).map_err(said)?;
-            }
-            if let Err(e) = runtime().block_on(sftp.rename(&part, &to)) {
-                if there {
-                    let _ = runtime().block_on(sftp.rename(&aside, &to));
-                }
-                return Err(said(e));
-            }
-            if there {
-                let _ = runtime().block_on(sftp.remove_file(&aside));
-            }
+            settle(sftp, &part, &to, like, there)?;
             Ok(written)
         })();
         if sent.is_err() {
             let _ = runtime().block_on(sftp.remove_file(&part));
         }
         sent
+    }
+
+    fn sends_as_read(&self) -> bool {
+        true
+    }
+
+    fn writes_anywhere(&self) -> bool {
+        true
+    }
+
+    fn new_file(&self, path: &[String], like: &Item) -> io::Result<Box<dyn StoredFile>> {
+        Self::checked(path)?;
+        let open = self.connected()?;
+        let sftp = open.connection.sftp();
+        let to = Self::at(&open.top, path)?;
+        if runtime().block_on(sftp.lstat(&to)).map_err(said)?.is_some() {
+            return Err(taken());
+        }
+        let part = part_name(&to);
+        let file = runtime().block_on(sftp.writer(&part)).map_err(said)?;
+        Ok(Box::new(SftpFile {
+            file,
+            buffer: Vec::with_capacity(FILE_BUFFER),
+            part,
+            to,
+            like: like.clone(),
+            length: 0,
+            position: 0,
+            settled: false,
+            open,
+        }))
     }
 
     fn remove(&self, path: &[String]) -> io::Result<()> {

@@ -1284,6 +1284,21 @@ fn a_new_archive_goes_to_a_storage_chosen_and_is_shown_there() {
         .expect("cannot save the picture");
     window
         .update(&mut cx, |_, _, cx| {
+            dialog.update(cx, |d, cx| d.set_counted(2_000_000_000, cx))
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window")
+        .save(out_dir().join("create-on-storage-large.png"))
+        .expect("cannot save the picture");
+    window
+        .update(&mut cx, |_, _, cx| {
+            dialog.update(cx, |d, cx| d.set_counted(2, cx))
+        })
+        .expect("the window");
+    window
+        .update(&mut cx, |_, _, cx| {
             dialog.update(cx, |d, cx| d.press_create(cx))
         })
         .expect("the window");

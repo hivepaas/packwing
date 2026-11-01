@@ -34,8 +34,8 @@ use hivepack_open::Opener;
 use crate::source::SourceReader;
 
 pub use create::{
-    Kind, Level, Measured, NewArchive, OnExisting, add, add_with, can_add, create, create_on,
-    delete, measure, rename,
+    Kind, Level, Measured, NewArchive, OnExisting, Route, add, add_with, can_add, create,
+    create_on, delete, measure, rename, route,
 };
 pub use hivepack_extract::{Cancel, Progress, Summary};
 pub use hivepack_open::{Container, Layer};
@@ -46,8 +46,8 @@ pub use job::{
 pub use listing::{Child, Entry, Found, Listing, list};
 pub use source::{Source, Stored};
 pub use storage::{
-    Counted, Field, Item, Lister, LocalFolder, Storage, StorageKind, Values, bad_name, by_name,
-    count, folded_query, name_holds,
+    Counted, Field, Item, Lister, LocalFolder, Storage, StorageKind, StoredFile, Values, bad_name,
+    by_name, count, folded_query, name_holds,
 };
 pub use transfer::{Transfer, Transferred, transfer};
 

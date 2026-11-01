@@ -12,9 +12,9 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use packwing_core::{
     Cancel, Control, Error, ExtractOptions, Item, Keys, Kind, Level, Lister, LocalFolder,
-    NewArchive, OnExisting, Progress, Storage, add, add_with, can_add, create, create_on, delete,
-    extract, extract_selected, extract_to_open, extract_with, image_fits, list, measure,
-    read_entry, rename, test,
+    NewArchive, OnExisting, Progress, Route, Storage, StoredFile, add, add_with, can_add, create,
+    create_on, delete, extract, extract_selected, extract_to_open, extract_with, image_fits, list,
+    measure, read_entry, rename, route, test,
 };
 
 /// A folder of a test's own, gone when it ends.
@@ -1408,6 +1408,47 @@ fn only_a_zip_archive_of_one_file_is_changed() {
 struct Across {
     folder: LocalFolder,
     refuse: Option<&'static str>,
+    sends_as_read: bool,
+    writes_anywhere: bool,
+}
+
+/// A file on [`Across`]: under a part name in its folder till it is finished.
+struct AcrossFile {
+    file: fs::File,
+    part: PathBuf,
+    to: PathBuf,
+    finished: bool,
+}
+
+impl io::Write for AcrossFile {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        self.file.write(buf)
+    }
+    fn flush(&mut self) -> io::Result<()> {
+        self.file.flush()
+    }
+}
+
+impl io::Seek for AcrossFile {
+    fn seek(&mut self, to: io::SeekFrom) -> io::Result<u64> {
+        self.file.seek(to)
+    }
+}
+
+impl StoredFile for AcrossFile {
+    fn finish(mut self: Box<Self>) -> io::Result<u64> {
+        fs::rename(&self.part, &self.to)?;
+        self.finished = true;
+        Ok(self.file.metadata()?.len())
+    }
+}
+
+impl Drop for AcrossFile {
+    fn drop(&mut self) {
+        if !self.finished {
+            let _ = fs::remove_file(&self.part);
+        }
+    }
 }
 
 impl Storage for Across {
@@ -1459,6 +1500,23 @@ impl Storage for Across {
     fn show_path(&self, path: &[String]) -> String {
         path.join("/")
     }
+    fn sends_as_read(&self) -> bool {
+        self.sends_as_read
+    }
+    fn writes_anywhere(&self) -> bool {
+        self.writes_anywhere
+    }
+    fn new_file(&self, path: &[String], _: &Item) -> io::Result<Box<dyn StoredFile>> {
+        let to = self.folder.local_path(path).expect("a folder here");
+        let part = to.with_extension("part");
+        let file = fs::File::create_new(&part)?;
+        Ok(Box::new(AcrossFile {
+            file,
+            part,
+            to,
+            finished: false,
+        }))
+    }
 }
 
 /// A folder to make an archive of, and an empty one as the storage.
@@ -1479,6 +1537,8 @@ fn up_scratch(name: &str) -> (PathBuf, PathBuf, Across) {
     let across = Across {
         folder: LocalFolder::new(&there),
         refuse: None,
+        sends_as_read: false,
+        writes_anywhere: false,
     };
     (what, there, across)
 }
@@ -1619,4 +1679,156 @@ fn stopped_while_it_looks_through_the_files_nothing_is_left() {
     );
     assert!(matches!(e, Err(Error::Cancelled)), "{e:?}");
     assert!(files_in(&there).is_empty());
+}
+
+fn straight(kind: Kind) -> NewArchive {
+    NewArchive {
+        kind,
+        stream_above: Some(0),
+        ..NewArchive::default()
+    }
+}
+
+/// `create_on` with `how`, and whether it went through a temporary file.
+fn up(
+    what: &Path,
+    across: &Across,
+    name: &str,
+    how: &NewArchive,
+    control: &Control,
+) -> Result<bool, Error> {
+    let through = std::sync::atomic::AtomicBool::new(false);
+    create_on(
+        &[what.to_path_buf()],
+        across,
+        &[],
+        name,
+        how,
+        control,
+        &|| through.store(true, Ordering::Relaxed),
+    )?;
+    Ok(through.into_inner())
+}
+
+#[test]
+fn the_route_follows_the_storage_the_format_and_the_size() {
+    let (_, there, mut across) = up_scratch("route");
+    let tar = |above| NewArchive {
+        kind: Kind::TarZst,
+        stream_above: above,
+        ..NewArchive::default()
+    };
+    let zip = NewArchive {
+        stream_above: Some(100),
+        ..NewArchive::default()
+    };
+    let parts = NewArchive {
+        part_size: Some(1_000_000),
+        ..tar(Some(100))
+    };
+    // A folder here takes anything where it is.
+    assert_eq!(
+        route(&LocalFolder::new(&there), &[], &zip, 1000),
+        Route::Here
+    );
+    // A storage that holds a file first takes nothing straight.
+    assert_eq!(route(&across, &[], &tar(Some(100)), 1000), Route::Temporary);
+    across.sends_as_read = true;
+    assert_eq!(route(&across, &[], &tar(Some(100)), 1000), Route::Straight);
+    assert_eq!(route(&across, &[], &tar(Some(100)), 100), Route::Temporary);
+    assert_eq!(route(&across, &[], &tar(None), 1000), Route::Temporary);
+    assert_eq!(route(&across, &[], &zip, 1000), Route::Temporary);
+    assert_eq!(route(&across, &[], &parts, 1000), Route::Temporary);
+    across.writes_anywhere = true;
+    assert_eq!(route(&across, &[], &zip, 1000), Route::Straight);
+    assert_eq!(route(&across, &[], &parts, 1000), Route::Temporary);
+}
+
+#[test]
+fn a_tar_archive_goes_straight_as_it_is_written_and_reads_back() {
+    let (what, there, mut across) = up_scratch("piped");
+    across.sends_as_read = true;
+    for (kind, name) in [
+        (Kind::TarGz, "a.tar.gz"),
+        (Kind::TarXz, "a.tar.xz"),
+        (Kind::TarZst, "a.tar.zst"),
+    ] {
+        let through = up(&what, &across, name, &straight(kind), &Control::default()).unwrap();
+        assert!(!through, "{name}");
+        let out = there.join(format!("out-{name}"));
+        extract(
+            there.join(name),
+            &out,
+            &Keys::default(),
+            &Control::default(),
+        )
+        .unwrap();
+        assert_eq!(
+            fs::metadata(out.join("what/noise.bin")).unwrap().len(),
+            3_000_000
+        );
+    }
+}
+
+#[test]
+fn a_zip_or_7z_archive_goes_straight_where_it_can_write_anywhere() {
+    let (what, there, mut across) = up_scratch("anywhere");
+    across.writes_anywhere = true;
+    for (kind, name) in [(Kind::Zip, "a.zip"), (Kind::SevenZip, "a.7z")] {
+        let through = up(&what, &across, name, &straight(kind), &Control::default()).unwrap();
+        assert!(!through, "{name}");
+        let out = there.join(format!("out-{name}"));
+        extract(
+            there.join(name),
+            &out,
+            &Keys::default(),
+            &Control::default(),
+        )
+        .unwrap();
+        assert_eq!(
+            fs::metadata(out.join("what/noise.bin")).unwrap().len(),
+            3_000_000
+        );
+    }
+}
+
+#[test]
+fn an_upload_refused_part_way_says_so_and_leaves_nothing() {
+    let (what, there, mut across) = up_scratch("refused");
+    across.sends_as_read = true;
+    across.refuse = Some("a.tar.gz");
+    let e = up(
+        &what,
+        &across,
+        "a.tar.gz",
+        &straight(Kind::TarGz),
+        &Control::default(),
+    );
+    let said = e.expect_err("refused").to_string();
+    assert!(said.contains("refused"), "{said}");
+    assert!(files_in(&there).is_empty(), "{:?}", files_in(&there));
+}
+
+#[test]
+fn stopped_on_its_way_straight_nothing_is_left() {
+    let (what, there, mut across) = up_scratch("stopped-straight");
+    let cancel = Cancel::new();
+    let told = cancel.clone();
+    let control = Control {
+        progress: Some(Arc::new(move |p: &Progress| {
+            if p.bytes > 0 {
+                told.cancel();
+            }
+        })),
+        cancel: Some(cancel),
+    };
+    across.sends_as_read = true;
+    let e = up(&what, &across, "a.tar.gz", &straight(Kind::TarGz), &control);
+    assert!(matches!(e, Err(Error::Cancelled)), "{e:?}");
+    assert!(files_in(&there).is_empty(), "{:?}", files_in(&there));
+    across.sends_as_read = false;
+    across.writes_anywhere = true;
+    let e = up(&what, &across, "a.zip", &straight(Kind::Zip), &control);
+    assert!(matches!(e, Err(Error::Cancelled)), "{e:?}");
+    assert!(files_in(&there).is_empty(), "{:?}", files_in(&there));
 }

@@ -7,7 +7,7 @@
 
 use std::cmp::Ordering;
 use std::fs;
-use std::io::{self, Read, Seek};
+use std::io::{self, Read, Seek, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, UNIX_EPOCH};
@@ -33,6 +33,12 @@ pub struct Item {
     pub modified: Option<i64>,
     /// Its Unix permissions, if it has any.
     pub mode: Option<u32>,
+}
+
+/// A file on a storage being written: see [`Storage::new_file`].
+pub trait StoredFile: Write + Seek + Send {
+    /// Gives it its name, and says how long it is.
+    fn finish(self: Box<Self>) -> io::Result<u64>;
 }
 
 /// A folder's items, handed out a page at a time.
@@ -71,6 +77,30 @@ pub trait Storage: Send + Sync {
         like: &Item,
         replace: bool,
     ) -> io::Result<u64>;
+
+    /// Whether [`Storage::put`] sends a file as it is read, whatever its size, and
+    /// does not hold it all first. `like`'s size is then an estimate at most.
+    fn sends_as_read(&self) -> bool {
+        false
+    }
+
+    /// Whether [`Storage::new_file`] can make a file.
+    fn writes_anywhere(&self) -> bool {
+        false
+    }
+
+    /// A new file at `path`, written at any position as it is made. It appears under
+    /// its name only when finished; dropped, it is gone. Not for a storage that does
+    /// not write anywhere.
+    fn new_file(&self, path: &[String], like: &Item) -> io::Result<Box<dyn StoredFile>> {
+        let _ = (path, like);
+        Err(io::ErrorKind::Unsupported.into())
+    }
+
+    /// The largest file it can take, if it has a limit.
+    fn most_file(&self) -> Option<u64> {
+        None
+    }
 
     /// Removes the file or empty folder at `path` for good. For what has been
     /// moved: [`Storage::delete`] is for what the user deletes.

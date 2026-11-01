@@ -18,8 +18,11 @@ use tokio::runtime::Runtime;
 
 /// How much is asked for at once when reading a file through.
 const READ_RANGE: u64 = 8 << 20;
-/// How much is sent at a time.
+/// How much is sent at a time, at the least.
 const PART: usize = 16 << 20;
+/// How many parts a file may be sent in: S3 takes 10,000, and an estimate of its
+/// size can be short.
+const MOST_PARTS: u64 = 9_000;
 /// How many items a listing asks for at a time.
 const LIST_PAGE: usize = 1000;
 
@@ -222,6 +225,12 @@ impl Lister for DalLister {
     }
 }
 
+/// How much of a file of about `size` bytes to send at a time.
+fn part_for(size: u64) -> usize {
+    let part = size.div_ceil(MOST_PARTS).max(PART as u64);
+    usize::try_from(part).unwrap_or(PART)
+}
+
 /// A file read through, a range at a time.
 struct RangeReader {
     op: Operator,
@@ -265,7 +274,7 @@ impl Dal {
 
     /// Sends `from` to `key`, in parts where that is possible. Stopped or failed,
     /// what was sent goes, and nothing appears.
-    fn send(&self, op: &Operator, key: &str, from: &mut dyn Read) -> io::Result<u64> {
+    fn send(&self, op: &Operator, key: &str, from: &mut dyn Read, size: u64) -> io::Result<u64> {
         // Sent whole: held in memory first, so that a failed read sends nothing.
         if let Some(most) = self.most_held {
             let mut whole = Vec::new();
@@ -279,15 +288,16 @@ impl Dal {
                 .map_err(said)
                 .map(|_| written);
         }
+        let part = part_for(size);
         let mut writer = runtime()
-            .block_on(async { op.writer_with(key).chunk(PART).await })
+            .block_on(async { op.writer_with(key).chunk(part).await })
             .map_err(said)?;
         let mut written = 0;
-        let mut buffer = vec![0; PART];
+        let mut buffer = vec![0; part];
         let copied = loop {
             let mut filled = 0;
             let mut failed = None;
-            while filled < PART {
+            while filled < part {
                 match from.read(&mut buffer[filled..]) {
                     Ok(0) => break,
                     Ok(n) => filled += n,
@@ -305,8 +315,8 @@ impl Dal {
                 break Ok(());
             }
             written += filled as u64;
-            let part = buffer[..filled].to_vec();
-            if let Err(e) = runtime().block_on(async { writer.write(part).await }) {
+            let piece = buffer[..filled].to_vec();
+            if let Err(e) = runtime().block_on(async { writer.write(piece).await }) {
                 break Err(said(e));
             }
         };
@@ -421,7 +431,15 @@ impl Storage for Dal {
                 return Err(taken());
             }
         }
-        self.send(&op, &key, from)
+        self.send(&op, &key, from, like.size)
+    }
+
+    fn sends_as_read(&self) -> bool {
+        self.most_held.is_none()
+    }
+
+    fn most_file(&self) -> Option<u64> {
+        self.most_held
     }
 
     fn remove(&self, path: &[String]) -> io::Result<()> {
@@ -511,5 +529,18 @@ impl Storage for Dal {
     fn show_path(&self, path: &[String]) -> String {
         let key = self.key(path).unwrap_or_default();
         format!("{}{key}", self.shown)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_big_file_goes_in_parts_big_enough_for_the_limit_on_them() {
+        assert_eq!(part_for(0), PART);
+        assert_eq!(part_for(100 << 30), PART);
+        assert!(part_for(1 << 40) as u64 * 10_000 >= 1 << 40);
+        assert!(part_for(5 << 40) as u64 * 10_000 >= 5 << 40);
     }
 }

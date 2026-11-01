@@ -11,7 +11,7 @@ use gpui::{
     ScrollHandle, Stateful, Subscription, Task, UniformListScrollHandle, Window, div, prelude::*,
     px, relative, rgb,
 };
-use packwing_core::{Kind, NewArchive};
+use packwing_core::{Kind, NewArchive, Route};
 
 pub(crate) use packwing_core::Level;
 
@@ -365,6 +365,13 @@ impl CreateDialog {
         self.format(cx)
     }
 
+    /// What the files come to, as if they had been counted, for tests.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn set_counted(&mut self, bytes: u64, cx: &mut Context<Self>) {
+        self.selection.bytes = bytes;
+        cx.notify();
+    }
+
     /// Whether it is choosing a storage, for tests.
     #[cfg(all(test, feature = "shots"))]
     pub fn is_picking(&self) -> bool {
@@ -599,6 +606,7 @@ impl CreateDialog {
                 hide_names: self.hide_names,
                 skip_mac_files: crate::prefs::prefs(cx).skip_mac_files,
                 part_size: self.parts(cx),
+                stream_above: Some(crate::prefs::prefs(cx).stream_above),
             },
         });
         cx.emit(DialogEvent::Start(job));
@@ -636,11 +644,7 @@ impl CreateDialog {
                 .as_ref()
                 .map_or_else(|| tr!("Beside the files"), |f| f.display().to_string()),
         };
-        // Across a network, it does not go straight there yet.
-        let through = self
-            .on
-            .as_ref()
-            .is_some_and(|(place, folder)| place.storage.local_path(folder).is_none());
+        let about_storage = self.about_storage(cx);
         div()
             .flex()
             .flex_col()
@@ -669,15 +673,62 @@ impl CreateDialog {
                             .on_click(cx.listener(|this, _, _, cx| this.pick_folder(cx))),
                     )
                     .child(
-                        button("change-storage", tr!("Storage…"), Fill::Outline, Size::Small)
-                            .on_click(cx.listener(|this, _, _, cx| this.pick_storage(cx))),
+                        button(
+                            "change-storage",
+                            tr!("Storage…"),
+                            Fill::Outline,
+                            Size::Small,
+                        )
+                        .on_click(cx.listener(|this, _, _, cx| this.pick_storage(cx))),
                     ),
             )
-            .when(through, |d| {
-                d.child(div().text_size(px(13.)).text_color(rgb(c.muted)).child(tr!(
+            .children(about_storage)
+    }
+
+    /// What going to the storage chosen means for this archive, if it matters:
+    /// more than it takes to go straight there, or more than it can take at all.
+    fn about_storage(&self, cx: &App) -> Vec<gpui::Div> {
+        let Some((place, folder)) = &self.on else {
+            return Vec::new();
+        };
+        let bytes = self.selection.bytes;
+        let prefs = crate::prefs::prefs(cx);
+        let format = self.format(cx);
+        let how = NewArchive {
+            kind: format.kind(),
+            part_size: self.parts(cx),
+            stream_above: Some(prefs.stream_above),
+            ..NewArchive::default()
+        };
+        let storage = place.storage.as_ref();
+        let mut said = Vec::new();
+        if bytes > prefs.stream_above
+            && packwing_core::route(storage, folder, &how, bytes) == Route::Temporary
+        {
+            let text = if how.part_size.is_some() {
+                tr!(
+                    "Parts are made in this computer’s temporary folder first, then uploaded, so they need room there."
+                )
+            } else if storage.sends_as_read() {
+                tr!(
+                    "{ext} is made in this computer’s temporary folder first, then uploaded, so it needs room there. A tar format goes straight to this storage.",
+                    ext = format.ext()
+                )
+            } else {
+                tr!(
                     "It is made in this computer’s temporary folder first, then uploaded, so it needs room there."
-                )))
-            })
+                )
+            };
+            said.push(note(Tone::Warn).child(text));
+        }
+        if let Some(most) = storage.most_file().filter(|most| bytes > *most) {
+            said.push(note(Tone::Warn).child(tr!(
+                "{place} takes files of up to {most}. An archive larger than that fails when it starts to upload.",
+                place = place.name.clone(),
+                most = size(most)
+            )));
+        }
+        said
     }
 
     /// The storages and their folders, in place of the form, as a list that scrolls

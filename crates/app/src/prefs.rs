@@ -107,6 +107,9 @@ pub struct Prefs {
     pub level: Level,
     pub hide_names: bool,
     pub skip_mac_files: bool,
+    /// In bytes: files that come to more go straight to a storage that can take
+    /// them that way, and the rest through a temporary file.
+    pub stream_above: u64,
     /// Where Extract starts.
     pub extract_to: ExtractTo,
     pub overwrite: bool,
@@ -139,6 +142,7 @@ impl Default for Prefs {
             level: Level::Medium,
             hide_names: true,
             skip_mac_files: true,
+            stream_above: 500_000_000,
             extract_to: ExtractTo::Smart,
             overwrite: false,
             limit: 1,
@@ -217,6 +221,7 @@ impl Prefs {
                 }
                 "hide_names" => p.hide_names = on(value, p.hide_names),
                 "skip_mac_files" => p.skip_mac_files = on(value, p.skip_mac_files),
+                "stream_above" => p.stream_above = value.parse().unwrap_or(p.stream_above),
                 "extract_to" => p.extract_to = ExtractTo::named(value).unwrap_or(p.extract_to),
                 // What it was before there was Smart: a new folder was the
                 // default then, as Smart is now.
@@ -301,11 +306,12 @@ impl Prefs {
         }
         text += &format!(
             "appearance={appearance}\nformat={}\nlevel={level}\nhide_names={}\n\
-             skip_mac_files={}\nextract_to={}\noverwrite={}\nlimit={limit}\nkeep_mark={}\n\
+             skip_mac_files={}\nstream_above={}\nextract_to={}\noverwrite={}\nlimit={limit}\nkeep_mark={}\n\
              ask_before_open={}\n",
             self.format.ext(),
             self.hide_names,
             self.skip_mac_files,
+            self.stream_above,
             self.extract_to.name(),
             self.overwrite,
             self.keep_mark,
@@ -461,6 +467,7 @@ mod tests {
             level: Level::Highest,
             hide_names: false,
             skip_mac_files: false,
+            stream_above: 1_000_000_000,
             extract_to: ExtractTo::Here,
             overwrite: true,
             limit: 3,
