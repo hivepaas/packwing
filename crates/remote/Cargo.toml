@@ -14,7 +14,7 @@ futures = "0.3"
 # The system's keychain, for a storage's secrets.
 keyring = "4"
 # SSH as shellwing speaks it: ssh_config, the agent, jump hosts.
-shellwing-ssh = { git = "https://github.com/hivepaas/shellwing", rev = "443182f52885310109f2f5825804ebe800634d3e" }
+shellwing-ssh = { git = "https://github.com/hivepaas/shellwing", rev = "7032701a11e7038cb4f9248e69c934fc6ebfe58a" }
 opendal = { version = "0.59", features = ["services-s3", "services-webdav"] }
 tokio = { version = "1", features = ["rt-multi-thread", "time"] }
 

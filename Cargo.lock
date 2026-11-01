@@ -6950,7 +6950,7 @@ dependencies = [
 [[package]]
 name = "shellwing-spawn"
 version = "0.2.1"
-source = "git+https://github.com/hivepaas/shellwing?rev=443182f52885310109f2f5825804ebe800634d3e#443182f52885310109f2f5825804ebe800634d3e"
+source = "git+https://github.com/hivepaas/shellwing?rev=7032701a11e7038cb4f9248e69c934fc6ebfe58a#7032701a11e7038cb4f9248e69c934fc6ebfe58a"
 dependencies = [
  "nix",
 ]
@@ -6958,7 +6958,7 @@ dependencies = [
 [[package]]
 name = "shellwing-ssh"
 version = "0.2.1"
-source = "git+https://github.com/hivepaas/shellwing?rev=443182f52885310109f2f5825804ebe800634d3e#443182f52885310109f2f5825804ebe800634d3e"
+source = "git+https://github.com/hivepaas/shellwing?rev=7032701a11e7038cb4f9248e69c934fc6ebfe58a#7032701a11e7038cb4f9248e69c934fc6ebfe58a"
 dependencies = [
  "data-encoding",
  "hmac 0.13.0",
