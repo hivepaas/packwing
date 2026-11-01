@@ -180,6 +180,30 @@ impl Archive {
     }
 }
 
+/// The start of a text file as a preview shows it: `None` if it is not text.
+/// Cut off in the middle of a character is still text; a NUL is not.
+pub fn text_preview(bytes: &[u8], most: usize) -> Option<String> {
+    let cut = &bytes[..bytes.len().min(most)];
+    let cut = cut.strip_prefix(b"\xef\xbb\xbf").unwrap_or(cut);
+    let text = match std::str::from_utf8(cut) {
+        Ok(text) => text,
+        // Within a character's length of where it was cut.
+        Err(e) if bytes.len() > most && e.valid_up_to() + 4 > cut.len() => {
+            std::str::from_utf8(&cut[..e.valid_up_to()]).ok()?
+        }
+        Err(_) => return None,
+    };
+    if text.contains('\0') {
+        return None;
+    }
+    let shown = text
+        .replace("\r\n", "\n")
+        .chars()
+        .filter(|c| !c.is_control() || matches!(c, '\n' | '\t'))
+        .collect();
+    Some(shown)
+}
+
 /// The day of `secs` since 1970, in UTC: `2026-10-15`.
 pub fn date(secs: i64) -> String {
     // Howard Hinnant's civil_from_days.
@@ -350,6 +374,21 @@ mod tests {
         assert_eq!(stem("initramfs.cpio.zst"), "initramfs");
         assert_eq!(stem("notes.txt"), "notes.txt");
         assert_eq!(stem(".tar"), ".tar");
+    }
+
+    #[test]
+    #[allow(clippy::unwrap_used)]
+    fn only_text_previews_as_text() {
+        assert_eq!(
+            text_preview("xin chào\r\n".as_bytes(), 100).unwrap(),
+            "xin chào\n"
+        );
+        assert_eq!(text_preview(b"\xef\xbb\xbfa", 100).unwrap(), "a");
+        assert_eq!(text_preview(b"a\x1b[31mb", 100).unwrap(), "a[31mb");
+        // Cut in the middle of `à`.
+        assert_eq!(text_preview("chà".as_bytes(), 3).unwrap(), "ch");
+        assert_eq!(text_preview(b"a\0b", 100), None);
+        assert_eq!(text_preview(b"\xff\xfe\x00", 100), None);
     }
 
     #[test]

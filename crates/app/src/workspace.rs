@@ -654,6 +654,24 @@ impl Workspace {
         self.archive.update(cx, |p, cx| p.select_for_shot(at, cx));
     }
 
+    /// The page of the archive, for tests.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn archive_page(&self) -> Entity<ArchivePage> {
+        self.archive.clone()
+    }
+
+    /// Fills the preview of the archive open, as the screenshots draw it.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn preview_in_archive(
+        &mut self,
+        picture: Option<Vec<u8>>,
+        text: &str,
+        cx: &mut Context<Self>,
+    ) {
+        self.archive
+            .update(cx, |p, cx| p.preview_for_shot(picture, text, cx));
+    }
+
     /// Searches the archive open, as the screenshots draw it.
     #[cfg(all(test, feature = "shots"))]
     pub fn search_archive(&mut self, query: &str, cx: &mut Context<Self>) {

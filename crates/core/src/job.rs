@@ -225,13 +225,7 @@ pub fn extract_to_open(
     control: &Control,
 ) -> Result<PathBuf, Error> {
     let name = entry.last().ok_or(Error::NotAnArchive)?.clone();
-    let root = opened_folder();
-    let mut builder = std::fs::DirBuilder::new();
-    builder.recursive(true);
-    #[cfg(unix)]
-    std::os::unix::fs::DirBuilderExt::mode(&mut builder, 0o700);
-    builder.create(&root)?;
-    let folder = fresh_folder(&root, "open")?;
+    let folder = opened_subfolder()?;
     let how = ExtractOptions::default();
     match extract_selected(path, &folder, &[entry.to_vec()], keys, &how, control) {
         Ok(_) => Ok(folder.join(name)),
@@ -240,6 +234,50 @@ pub fn extract_to_open(
             Err(e)
         }
     }
+}
+
+/// The most pixels a picture may have to be shown: decoded, one of these takes
+/// 400 MB, and a small file can say it has far more.
+const MOST_PIXELS: u64 = 100_000_000;
+
+/// Whether the picture in `bytes` says a size that is safe to decode.
+pub fn image_fits(bytes: &[u8]) -> bool {
+    imagesize::blob_size(bytes)
+        .is_ok_and(|size| (size.width as u64).saturating_mul(size.height as u64) <= MOST_PIXELS)
+}
+
+/// What the entry at `entry` of the archive at `path` holds, if that is `most`
+/// bytes or less. It passes through a folder of the temporary one that its
+/// owner only can read, and is gone from there when this returns.
+pub fn read_entry(
+    path: &Path,
+    entry: &[String],
+    keys: &Keys,
+    most: u64,
+    control: &Control,
+) -> Result<Vec<u8>, Error> {
+    let how = ExtractOptions {
+        limit: Some(most),
+        keep_mark: false,
+        ..ExtractOptions::default()
+    };
+    let name = entry.last().ok_or(Error::NotAnArchive)?;
+    let folder = opened_subfolder()?;
+    let read = extract_selected(path, &folder, &[entry.to_vec()], keys, &how, control)
+        .and_then(|_| Ok(std::fs::read(folder.join(name))?));
+    let _ = std::fs::remove_dir_all(&folder);
+    read
+}
+
+/// A new folder for a copy of an entry, under the temporary one.
+fn opened_subfolder() -> Result<PathBuf, Error> {
+    let root = opened_folder();
+    let mut builder = std::fs::DirBuilder::new();
+    builder.recursive(true);
+    #[cfg(unix)]
+    std::os::unix::fs::DirBuilderExt::mode(&mut builder, 0o700);
+    builder.create(&root)?;
+    fresh_folder(&root, "open")
 }
 
 fn extract_picked(

@@ -11,7 +11,8 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use packwing_core::{
     Cancel, Control, Error, ExtractOptions, Keys, Kind, Level, NewArchive, Progress, add, can_add,
-    create, extract, extract_selected, extract_to_open, extract_with, list, measure, test,
+    create, extract, extract_selected, extract_to_open, extract_with, image_fits, list, measure,
+    read_entry, test,
 };
 
 /// A folder of a test's own, gone when it ends.
@@ -1213,4 +1214,59 @@ fn a_file_to_open_is_a_copy_in_a_folder_of_its_own() {
     }
     let _ = fs::remove_dir_all(copy.parent().unwrap());
     let _ = fs::remove_dir_all(again.parent().unwrap());
+}
+
+#[test]
+fn an_entry_can_be_read_up_to_a_limit_and_leaves_nothing() {
+    let s = Scratch::new("read-entry");
+    let made = to_add_to(&s, None);
+    let keys = Keys::default();
+    let control = Control::default();
+    let note = path_of("Báo cáo/ghi chú.txt");
+    assert_eq!(
+        read_entry(&made, &note, &keys, 1 << 20, &control).unwrap(),
+        "xin chào\n".as_bytes()
+    );
+    let large = path_of("Báo cáo/Hình ảnh/lớn.bin");
+    assert!(read_entry(&made, &large, &keys, 1_000_000, &control).is_err());
+    assert_eq!(
+        read_entry(&made, &large, &keys, 4_000_000, &control).unwrap(),
+        big()
+    );
+    let locked = to_add_to_named(&s, "b.zip", "mật khẩu");
+    assert!(matches!(
+        read_entry(&locked, &note, &keys, 1 << 20, &control),
+        Err(Error::Locked { .. })
+    ));
+}
+
+/// A ZIP archive of `Báo cáo/` with a password, named `name`.
+fn to_add_to_named(s: &Scratch, name: &str, password: &str) -> PathBuf {
+    let new = NewArchive {
+        password: Some(password.as_bytes().to_vec()),
+        ..NewArchive::default()
+    };
+    create(
+        &[s.path("Báo cáo")],
+        &s.path(name),
+        &new,
+        &Control::default(),
+    )
+    .unwrap()
+}
+
+/// A PNG's first bytes, which say its size.
+fn png_of_size(width: u32, height: u32) -> Vec<u8> {
+    let mut png = b"\x89PNG\r\n\x1a\n\0\0\0\x0dIHDR".to_vec();
+    png.extend(width.to_be_bytes());
+    png.extend(height.to_be_bytes());
+    png.extend([8, 6, 0, 0, 0, 0, 0, 0, 0]);
+    png
+}
+
+#[test]
+fn a_picture_that_says_it_is_huge_is_not_decoded() {
+    assert!(image_fits(&png_of_size(4_000, 3_000)));
+    assert!(!image_fits(&png_of_size(50_000, 50_000)));
+    assert!(!image_fits(b"not a picture"));
 }

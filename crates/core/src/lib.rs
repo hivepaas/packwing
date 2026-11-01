@@ -34,7 +34,7 @@ pub use hivepack_extract::{Cancel, Progress, Summary};
 pub use hivepack_open::{Container, Layer};
 pub use job::{
     Control, ExtractOptions, clean_opened_files, extract, extract_selected, extract_to_open,
-    extract_with, test,
+    extract_with, image_fits, read_entry, test,
 };
 pub use listing::{Child, Entry, Found, Listing, list};
 
