@@ -184,6 +184,32 @@ pub fn selection() -> crate::model::Selection {
         paths: vec!["/home/you/Documents/Báo cáo quý 3".into()],
         files: 6,
         bytes: 1_800_000_000,
+        ..Default::default()
+    }
+}
+
+/// More chosen than the list of them shows at once.
+pub fn many_chosen() -> crate::model::Selection {
+    let names = [
+        "Báo cáo quý 3",
+        "Hợp đồng thi công – bản ký.docx",
+        "Phối cảnh mặt tiền.jpg",
+        "Dự toán chi phí.xlsx",
+        "Ghi chú họp ngày 14-10.txt",
+        "setup_tool.exe",
+        "Bản vẽ mặt bằng tầng 1.pdf",
+        "Ảnh hiện trạng",
+        "backup-2026-10.tar.zst",
+    ];
+    let paths: Vec<std::path::PathBuf> = names
+        .iter()
+        .map(|n| std::path::Path::new("/home/you/Documents").join(n))
+        .collect();
+    crate::model::Selection {
+        folders: [paths[0].clone(), paths[7].clone()].into_iter().collect(),
+        paths,
+        files: 412,
+        bytes: 1_800_000_000,
     }
 }
 

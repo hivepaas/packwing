@@ -3,7 +3,7 @@
 //! and a password.
 
 use packwing_i18n::{tr, tr_n};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use gpui::{
     App, Context, Entity, EventEmitter, ExternalPaths, FontWeight, PathPromptOptions, Render,
@@ -13,6 +13,7 @@ use packwing_core::{Kind, NewArchive};
 
 pub(crate) use packwing_core::Level;
 
+use super::chosen::{self, Choosing};
 use super::{Creating, DialogEvent, Job, Verb, footer, header};
 use crate::colors::colors;
 use crate::input::{Changed, TextInput};
@@ -176,6 +177,8 @@ fn strength(password: &str) -> Strength {
 
 pub struct CreateDialog {
     selection: Selection,
+    /// The list of what goes in is open.
+    list_shown: bool,
     /// Where the archive goes.
     folder: Option<PathBuf>,
     /// The name it was given last: while the field still says it, more
@@ -199,6 +202,30 @@ pub struct CreateDialog {
 }
 
 impl EventEmitter<DialogEvent> for CreateDialog {}
+
+impl Choosing for CreateDialog {
+    fn selection(&self) -> &Selection {
+        &self.selection
+    }
+
+    fn list_shown(&self) -> bool {
+        self.list_shown
+    }
+
+    fn show_list(&mut self, shown: bool) {
+        self.list_shown = shown;
+    }
+
+    fn pick(&mut self, folders: bool, cx: &mut Context<Self>) {
+        self.pick_paths(folders, cx);
+    }
+
+    fn remove(&mut self, path: &Path, cx: &mut Context<Self>) {
+        self.selection.remove(path);
+        self.list_shown &= !self.selection.paths.is_empty();
+        self.changed_what_goes_in(cx);
+    }
+}
 
 impl CreateDialog {
     pub fn new(selection: Selection, cx: &mut Context<Self>) -> Self {
@@ -235,6 +262,7 @@ impl CreateDialog {
         CreateDialog {
             folder: selection.folder(),
             selection,
+            list_shown: false,
             suggested,
             _counting: None,
             name,
@@ -272,6 +300,17 @@ impl CreateDialog {
     }
 
     #[cfg(all(test, feature = "shots"))]
+    pub fn open_list(&mut self, cx: &mut Context<Self>) {
+        self.list_shown = true;
+        cx.notify();
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn list_is_open(&self) -> bool {
+        self.list_shown
+    }
+
+    #[cfg(all(test, feature = "shots"))]
     pub fn selection_paths(&self) -> Vec<PathBuf> {
         self.selection.paths.clone()
     }
@@ -288,15 +327,20 @@ impl CreateDialog {
 
     /// Adds `paths` to what goes in the archive, and counts what is in them.
     pub fn add(&mut self, paths: Vec<PathBuf>, cx: &mut Context<Self>) {
-        for path in paths {
-            if !self.selection.paths.contains(&path) {
-                self.selection.paths.push(path);
-            }
-        }
+        self.selection.add(paths);
         if self.folder.is_none() {
             self.folder = self.selection.folder();
         }
-        let suggested = self.selection.suggested_name();
+        self.changed_what_goes_in(cx);
+    }
+
+    /// Follows what goes in: the name, until one is typed, and the count.
+    fn changed_what_goes_in(&mut self, cx: &mut Context<Self>) {
+        let suggested = if self.selection.paths.is_empty() {
+            String::new()
+        } else {
+            self.selection.suggested_name()
+        };
         if self.name.read(cx).text() == self.suggested {
             self.name.update(cx, |f, cx| {
                 f.set_text(&suggested, suggested.len()..suggested.len(), cx)
@@ -320,7 +364,7 @@ impl CreateDialog {
     }
 
     /// Asks for files, or for a folder, to add.
-    fn pick(&mut self, folders: bool, cx: &mut Context<Self>) {
+    fn pick_paths(&mut self, folders: bool, cx: &mut Context<Self>) {
         let picked = cx.prompt_for_paths(PathPromptOptions {
             files: !folders,
             directories: folders,
@@ -457,71 +501,33 @@ impl CreateDialog {
     /// What goes in the archive, and where it goes.
     fn contents(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
-        let chosen = &self.selection.paths;
-        let names: Vec<String> = chosen
-            .iter()
-            .take(3)
-            .filter_map(|p| p.file_name())
-            .map(|n| n.to_string_lossy().into_owned())
-            .collect();
-        let more = chosen.len().saturating_sub(names.len());
-        let line = match (names.is_empty(), more) {
-            (true, _) => tr!("Nothing chosen yet").to_owned(),
-            (false, 0) => names.join(", "),
-            (false, more) => tr!(
-                "{join} and {more} more",
-                join = names.join(", "),
-                more = more
-            ),
-        };
-        let row = |label: String, text: String| {
-            div().flex_1().min_w_0().child(legend(label)).child(
-                div()
-                    .truncate()
-                    .text_size(px(13.))
-                    .text_color(rgb(c.muted))
-                    .child(text),
-            )
-        };
-        let folder = self.folder.as_ref().map_or_else(
-            || tr!("Beside the files").to_owned(),
-            |f| f.display().to_string(),
-        );
+        let folder = self
+            .folder
+            .as_ref()
+            .map_or_else(|| tr!("Beside the files"), |f| f.display().to_string());
         div()
             .flex()
             .flex_col()
             .gap(px(10.))
+            .child(chosen::section(self, self.checked, cx))
             .child(
                 div()
                     .flex()
                     .items_center()
                     .gap(px(8.))
-                    .child(row(tr!("What goes in"), line))
                     .child(
-                        button("add-files", tr!("Add files…"), Fill::Outline, Size::Small)
-                            .on_click(cx.listener(|this, _, _, cx| this.pick(false, cx))),
+                        div()
+                            .flex_1()
+                            .min_w_0()
+                            .child(legend(tr!("Save in")))
+                            .child(
+                                div()
+                                    .truncate()
+                                    .text_size(px(13.))
+                                    .text_color(rgb(c.muted))
+                                    .child(folder),
+                            ),
                     )
-                    .child(
-                        button(
-                            "add-folder",
-                            tr!("Add a folder…"),
-                            Fill::Outline,
-                            Size::Small,
-                        )
-                        .on_click(cx.listener(|this, _, _, cx| this.pick(true, cx))),
-                    ),
-            )
-            .when(chosen.is_empty() && self.checked, |d| {
-                d.child(
-                    note(Tone::Warn).child(tr!("Add the files or a folder to put in the archive.")),
-                )
-            })
-            .child(
-                div()
-                    .flex()
-                    .items_center()
-                    .gap(px(8.))
-                    .child(row(tr!("Save in"), folder))
                     .child(
                         button("change-folder", tr!("Change…"), Fill::Outline, Size::Small)
                             .on_click(cx.listener(|this, _, _, cx| this.pick_folder(cx))),
@@ -831,6 +837,7 @@ impl Render for CreateDialog {
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         super::card()
             .id("create-dialog")
+            .drag_over::<ExternalPaths>(|style, _, _, _| style.bg(rgb(colors().tonal)))
             .on_drop(cx.listener(|this, dropped: &ExternalPaths, _, cx| {
                 this.add(dropped.paths().to_vec(), cx)
             }))
