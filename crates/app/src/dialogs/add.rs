@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 
 use gpui::{
     App, AppContext as _, Context, Entity, EventEmitter, ExternalPaths, PathPromptOptions, Render,
-    SharedString, Task, Window, div, prelude::*, px, rgb,
+    SharedString, Task, UniformListScrollHandle, Window, div, prelude::*, px, rgb,
 };
 use packwing_core::{Keys, OnExisting};
 
@@ -37,6 +37,7 @@ pub struct AddDialog {
     selection: Selection,
     /// The list of what goes in is open.
     list_shown: bool,
+    list_scroll: UniformListScrollHandle,
     _counting: Option<Task<()>>,
     on_existing: Entity<Select>,
     /// Add was pressed with nothing chosen: a note says so.
@@ -52,6 +53,10 @@ impl Choosing for AddDialog {
 
     fn list_shown(&self) -> bool {
         self.list_shown
+    }
+
+    fn list_scroll(&self) -> &UniformListScrollHandle {
+        &self.list_scroll
     }
 
     fn show_list(&mut self, shown: bool) {
@@ -82,6 +87,7 @@ impl AddDialog {
             encrypted: archive.encryption.is_some(),
             selection: Selection::default(),
             list_shown: false,
+            list_scroll: UniformListScrollHandle::new(),
             _counting: None,
             on_existing,
             checked: false,
@@ -101,6 +107,7 @@ impl AddDialog {
             encrypted: true,
             selection: crate::demo::selection(),
             list_shown: false,
+            list_scroll: UniformListScrollHandle::new(),
             _counting: None,
             on_existing,
             checked: false,

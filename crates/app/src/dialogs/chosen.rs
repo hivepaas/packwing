@@ -4,7 +4,7 @@
 
 use std::path::Path;
 
-use gpui::{Context, FontWeight, div, prelude::*, px, rgb, uniform_list};
+use gpui::{Context, FontWeight, UniformListScrollHandle, div, prelude::*, px, rgb, uniform_list};
 use packwing_i18n::tr;
 
 use crate::colors::colors;
@@ -19,6 +19,8 @@ const MOST_ROWS: usize = 7;
 pub trait Choosing: Sized + 'static {
     fn selection(&self) -> &Selection;
     fn list_shown(&self) -> bool;
+    /// Where the list has scrolled to.
+    fn list_scroll(&self) -> &UniformListScrollHandle;
     fn show_list(&mut self, shown: bool);
     /// Asks the system for files, or for folders.
     fn pick(&mut self, folders: bool, cx: &mut Context<Self>);
@@ -152,17 +154,29 @@ pub fn section<V: Choosing>(this: &V, checked: bool, cx: &mut Context<V>) -> imp
     };
     let rows = count.min(MOST_ROWS) as f32;
     let list = (this.list_shown() && count > 0).then(|| {
-        div().p(px(4.)).rounded(px(16.)).bg(rgb(c.well)).child(
-            uniform_list(
-                "chosen-list",
-                count,
-                cx.processor(|this: &mut V, range: std::ops::Range<usize>, _, cx| {
-                    range.filter_map(|at| row(this, at, cx)).collect::<Vec<_>>()
-                }),
+        div()
+            .id("chosen-frame")
+            .p(px(4.))
+            .rounded(px(16.))
+            .bg(rgb(c.well))
+            // Every scrolling area under the pointer takes the wheel. One that
+            // has more to show keeps it, so the dialog holds still under it; a
+            // short one has no use for it, and the dialog gets it.
+            .when(count > MOST_ROWS, |d| {
+                d.on_scroll_wheel(|_, _, cx| cx.stop_propagation())
+            })
+            .child(
+                uniform_list(
+                    "chosen-list",
+                    count,
+                    cx.processor(|this: &mut V, range: std::ops::Range<usize>, _, cx| {
+                        range.filter_map(|at| row(this, at, cx)).collect::<Vec<_>>()
+                    }),
+                )
+                .track_scroll(this.list_scroll())
+                .w_full()
+                .h(px(rows * ROW)),
             )
-            .w_full()
-            .h(px(rows * ROW)),
-        )
     });
     div()
         .flex()
