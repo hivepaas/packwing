@@ -19,6 +19,8 @@ hivepack-deflate.workspace = true
 # With RAR, under UnRAR's license: see GPL-ADDITIONAL-PERMISSION.md.
 hivepack-extract = { workspace = true, features = ["rar"] }
 hivepack-iso.workspace = true
+# Only to turn on its `unsafe-fast`: hivepack-open and hivepack-extract use it.
+hivepack-lz4.workspace = true
 hivepack-open.workspace = true
 hivepack-rar.workspace = true
 hivepack-tar.workspace = true
