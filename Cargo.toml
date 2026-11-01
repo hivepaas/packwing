@@ -25,6 +25,7 @@ gpui_platform = { package = "gpui-pre-platform", version = "=0.3.9", default-fea
 # fast loops of zstd and LZ4. What each does is in hivepack's docs/unsafe.md.
 hivepack-7z = { git = "https://github.com/hivepaas/hivepack-rs", rev = "b65af399fd77b8b2089a02925ac8190fbea32078", features = ["unsafe-fast"] }
 hivepack-age = { git = "https://github.com/hivepaas/hivepack-rs", rev = "b65af399fd77b8b2089a02925ac8190fbea32078", features = ["unsafe-fast"] }
+hivepack-bzip2 = { git = "https://github.com/hivepaas/hivepack-rs", rev = "b65af399fd77b8b2089a02925ac8190fbea32078" }
 hivepack-cpio = { git = "https://github.com/hivepaas/hivepack-rs", rev = "b65af399fd77b8b2089a02925ac8190fbea32078" }
 hivepack-deflate = { git = "https://github.com/hivepaas/hivepack-rs", rev = "b65af399fd77b8b2089a02925ac8190fbea32078", features = ["unsafe-fast"] }
 hivepack-extract = { git = "https://github.com/hivepaas/hivepack-rs", rev = "b65af399fd77b8b2089a02925ac8190fbea32078" }

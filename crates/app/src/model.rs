@@ -357,6 +357,20 @@ impl Selection {
 
     /// What a new archive is called unless it is told otherwise: after what
     /// it holds, or with several, after their folder.
+    /// Whether it is one file, not a folder or a link.
+    pub fn one_file(&self) -> bool {
+        matches!(self.paths.as_slice(), [one] if std::fs::symlink_metadata(one).is_ok_and(|m| m.is_file()))
+    }
+
+    /// The name of what it holds, all of it: for a file compressed by itself.
+    pub fn whole_name(&self) -> String {
+        self.paths
+            .first()
+            .and_then(|p| p.file_name())
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or_else(|| tr!("Archive"))
+    }
+
     pub fn suggested_name(&self) -> String {
         let of = |p: &Path, whole: bool| {
             let name = if whole { p.file_name() } else { p.file_stem() };

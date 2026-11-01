@@ -410,9 +410,30 @@ impl Select {
         }
     }
 
+    /// Has `options` from now on, and chooses the one at `chosen`.
+    pub fn set_options(
+        &mut self,
+        options: &[impl AsRef<str>],
+        chosen: usize,
+        cx: &mut Context<Self>,
+    ) {
+        self.options = options
+            .iter()
+            .map(|o| SharedString::from(o.as_ref().to_owned()))
+            .collect();
+        self.chosen = chosen.min(options.len().saturating_sub(1));
+        cx.notify();
+    }
+
     /// The index of the option chosen.
     pub fn chosen(&self) -> usize {
         self.chosen
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn open_menu(&mut self, cx: &mut Context<Self>) {
+        self.open = true;
+        cx.notify();
     }
 
     #[cfg(all(test, feature = "shots"))]
@@ -433,6 +454,7 @@ impl Select {
             let on = i == self.chosen;
             div()
                 .id(("option", i))
+                .flex_shrink_0()
                 .h(px(40.))
                 .px(px(12.))
                 .flex()
@@ -458,6 +480,9 @@ impl Select {
             // the menu before the press's release chooses the option.
             .occlude()
             .min_w(px(220.))
+            // More than this scroll.
+            .max_h(px(372.))
+            .overflow_y_scroll()
             .p(px(6.))
             .flex()
             .flex_col()
