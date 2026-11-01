@@ -15,6 +15,8 @@ mod joined;
 mod listing;
 mod rar;
 mod spool;
+mod storage;
+mod transfer;
 mod volume;
 
 use packwing_i18n::tr;
@@ -41,6 +43,10 @@ pub use job::{
     extract_with, image_fits, read_entry, test,
 };
 pub use listing::{Child, Entry, Found, Listing, list};
+pub use storage::{
+    Counted, Item, Lister, LocalFolder, Storage, bad_name, by_name, count, folded_query, name_holds,
+};
+pub use transfer::{Transfer, Transferred, transfer};
 
 /// The largest scrypt work factor accepted: 2^20, 1 GiB and about a second.
 /// age encrypts with 2^18; hivepack's default, 2^22, takes 4 GiB, which a

@@ -34,6 +34,13 @@ pub struct Opened {
     pub at: i64,
 }
 
+/// A folder on this computer in the list of storages.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct KeptStorage {
+    pub name: String,
+    pub path: PathBuf,
+}
+
 /// Where Extract starts.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ExtractTo {
@@ -84,6 +91,13 @@ pub struct Prefs {
     pub ask_before_open: bool,
     /// The latest first.
     pub recent: Vec<Opened>,
+    /// The storages; before the user changes them, `storages_kept` is off and
+    /// the page starts with the home folder.
+    pub storages: Vec<KeptStorage>,
+    pub storages_kept: bool,
+    pub show_hidden: bool,
+    /// The command that starts the text editor, or none for the system's.
+    pub editor: Option<String>,
 }
 
 impl Global for Prefs {}
@@ -105,6 +119,10 @@ impl Default for Prefs {
             keep_mark: true,
             ask_before_open: true,
             recent: Vec::new(),
+            storages: Vec::new(),
+            storages_kept: false,
+            show_hidden: false,
+            editor: None,
         }
     }
 }
@@ -198,6 +216,20 @@ impl Prefs {
                         });
                     }
                 }
+                "storages_kept" => p.storages_kept = on(value, p.storages_kept),
+                "show_hidden" => p.show_hidden = on(value, p.show_hidden),
+                "editor" => p.editor = Some(value.to_owned()).filter(|v| !v.trim().is_empty()),
+                // A local folder: its name, a tab, and its path.
+                "storage" => {
+                    if let Some(rest) = value.strip_prefix("local ")
+                        && let Some((name, path)) = rest.split_once('\t')
+                    {
+                        p.storages.push(KeptStorage {
+                            name: name.to_owned(),
+                            path: PathBuf::from(path),
+                        });
+                    }
+                }
                 _ => {}
             }
         }
@@ -237,6 +269,21 @@ impl Prefs {
         for opened in &self.recent {
             if let Some(path) = opened.path.to_str().filter(|p| !p.contains('\n')) {
                 text.push_str(&format!("recent={} {path}\n", opened.at));
+            }
+        }
+        text.push_str(&format!(
+            "storages_kept={}\nshow_hidden={}\neditor={}\n",
+            self.storages_kept,
+            self.show_hidden,
+            self.editor
+                .as_deref()
+                .unwrap_or_default()
+                .replace('\n', " "),
+        ));
+        for s in &self.storages {
+            if let Some(path) = s.path.to_str().filter(|p| !p.contains('\n')) {
+                let name = s.name.replace(['\n', '\t'], " ");
+                text.push_str(&format!("storage=local {name}\t{path}\n"));
             }
         }
         text
@@ -306,6 +353,27 @@ pub fn change(cx: &mut App, f: impl FnOnce(&mut Prefs)) {
 #[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn storages_and_the_editor_come_back() {
+        let mut p = Prefs {
+            storages_kept: true,
+            show_hidden: true,
+            editor: Some("code -n".to_owned()),
+            ..Prefs::default()
+        };
+        p.storages.push(KeptStorage {
+            name: "Tài liệu\tcũ".to_owned(),
+            path: PathBuf::from("/home/me/Tài liệu cũ"),
+        });
+        let back = Prefs::parse(&p.text());
+        assert_eq!(back.storages[0].name, "Tài liệu cũ");
+        assert_eq!(back.storages[0].path, p.storages[0].path);
+        assert!(back.storages_kept && back.show_hidden);
+        assert_eq!(back.editor.as_deref(), Some("code -n"));
+        assert!(!Prefs::parse("").storages_kept);
+        assert_eq!(Prefs::parse("editor=\n").editor, None);
+    }
 
     #[test]
     fn what_is_kept_comes_back() {

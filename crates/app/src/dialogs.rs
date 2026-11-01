@@ -4,25 +4,32 @@
 
 mod add;
 mod create;
+mod delete_items;
 mod edit;
 mod extract;
 mod open_file;
 mod password;
 mod progress;
+mod transfer;
+mod view_file;
 
 pub use add::AddDialog;
 pub use create::CreateDialog;
 pub(crate) use create::{Format, LEVELS, Level, level_name};
+pub use delete_items::DeleteDialog;
 pub use edit::EditDialog;
 pub use extract::ExtractDialog;
 pub use open_file::OpenFileDialog;
 pub use password::{PasswordDialog, PasswordEvent, asked_for};
 pub use progress::ProgressDialog;
+pub use transfer::TransferDialog;
+pub use view_file::ViewDialog;
 
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 
 use gpui::{Div, FontWeight, MouseButton, SharedString, Stateful, div, prelude::*, px, rgb};
-use packwing_core::{Asked, ExtractOptions, Keys, NewArchive, OnExisting};
+use packwing_core::{Asked, ExtractOptions, Keys, NewArchive, OnExisting, Transfer, Transferred};
 
 use crate::colors::{Tint, colors};
 use crate::widgets::{float_shadow, icon, logo, tile};
@@ -38,6 +45,25 @@ pub enum Verb {
     /// A file of an archive, copied out and opened.
     Open,
     Test,
+    /// Items of a storage copied or moved.
+    Copy,
+    Move,
+}
+
+/// Items to copy or move, and how it went once it is over.
+#[derive(Clone)]
+pub struct Transferring(pub Transfer, pub Arc<Mutex<Transferred>>);
+
+impl PartialEq for Transferring {
+    fn eq(&self, other: &Transferring) -> bool {
+        Arc::ptr_eq(&self.1, &other.1)
+    }
+}
+
+impl std::fmt::Debug for Transferring {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Transferring({:?})", self.0.names)
+    }
 }
 
 /// Files to add to an archive, through packwing-core.
@@ -97,6 +123,8 @@ pub struct Job {
     pub add: Option<Adding>,
     /// The archive it changes, the folder shown in it, and how.
     pub edit: Option<(PathBuf, Vec<String>, Editing)>,
+    /// The items it copies or moves, if that is what it does.
+    pub transfer: Option<Transferring>,
 }
 
 impl Job {
@@ -121,6 +149,7 @@ impl Job {
             create: None,
             add: None,
             edit: None,
+            transfer: None,
         }
     }
 }
@@ -136,6 +165,8 @@ pub enum DialogEvent {
     /// Files went in the archive at this path, in this folder: it is read
     /// again, with these keys.
     Added(PathBuf, Vec<String>, Keys),
+    /// Items of a storage were copied or moved, and how it went.
+    Transferred(Transferred),
 }
 
 /// The card a dialog is drawn on.

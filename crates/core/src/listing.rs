@@ -65,7 +65,7 @@ pub struct Found {
 
 /// `text` as a search compares it: lower case, without accents, however they
 /// are written. Vietnamese's `đ`, which no accent makes, goes as `d`.
-fn folded(text: &str) -> String {
+pub(crate) fn folded(text: &str) -> String {
     text.nfd()
         .filter(|c| !is_combining_mark(*c))
         .flat_map(char::to_lowercase)
