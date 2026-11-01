@@ -13,6 +13,7 @@ use packwing_core::{ExtractOptions, Level};
 
 use crate::dialogs::Format;
 use crate::pages::settings::Appearance;
+use crate::placement::WindowPlace;
 
 /// How many archives Recent remembers.
 const RECENT: usize = 30;
@@ -66,6 +67,8 @@ pub struct Prefs {
     file: Option<PathBuf>,
     /// A language's tag, or none for the system's.
     pub language: Option<String>,
+    /// How the window was last left; none before it has been.
+    pub window: Option<WindowPlace>,
     pub appearance: Appearance,
     pub format: Format,
     pub level: Level,
@@ -90,6 +93,7 @@ impl Default for Prefs {
         Prefs {
             file: None,
             language: None,
+            window: None,
             appearance: Appearance::System,
             format: Format::Zip,
             level: Level::Medium,
@@ -146,6 +150,7 @@ impl Prefs {
             };
             match key {
                 "language" => p.language = Some(value.to_owned()).filter(|v| !v.is_empty()),
+                "window" => p.window = WindowPlace::parse(value),
                 "appearance" => {
                     p.appearance = match value {
                         "light" => Appearance::Light,
@@ -214,6 +219,9 @@ impl Prefs {
             "language={}\n",
             self.language.as_deref().unwrap_or_default()
         );
+        if let Some(window) = self.window {
+            text += &format!("window={}\n", window.to_text());
+        }
         text += &format!(
             "appearance={appearance}\nformat={}\nlevel={level}\nhide_names={}\n\
              skip_mac_files={}\nextract_to={}\noverwrite={}\nlimit={limit}\nkeep_mark={}\n\
@@ -303,6 +311,13 @@ mod tests {
     fn what_is_kept_comes_back() {
         let mut p = Prefs {
             language: Some("en".to_owned()),
+            window: Some(WindowPlace {
+                x: 10,
+                y: 20,
+                width: 1400,
+                height: 900,
+                mode: crate::placement::WindowMode::Maximized,
+            }),
             appearance: Appearance::Dark,
             format: Format::TarZst,
             level: Level::Highest,

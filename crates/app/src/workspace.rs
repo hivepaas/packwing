@@ -3,6 +3,7 @@
 
 use packwing_i18n::tr;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 use gpui::{
     AnyView, Context, Entity, EventEmitter, ExternalPaths, FocusHandle, Focusable, FontWeight,
@@ -23,6 +24,7 @@ use crate::pages::archive::{ArchiveEvent, ArchivePage, Shown};
 use crate::pages::onboarding::{Done, Onboarding};
 use crate::pages::recent::{OpenRecent, RecentPage, Row};
 use crate::pages::settings::{Appearance, AppearanceChosen, SettingsPage};
+use crate::placement::{self, WindowPlace};
 use crate::prefs;
 use crate::right_click::{Action, Request, RightClickMenu};
 use crate::widgets::{accent_tint, icon, logo, tile};
@@ -105,6 +107,9 @@ pub struct Workspace {
     folder_after_reading: Option<Vec<String>>,
     dialog: Option<Open>,
     appearance: Appearance,
+    /// The window's place, waiting to be kept, and which change it is.
+    unsaved_place: Option<WindowPlace>,
+    place_change: u64,
     /// The system's own appearance is dark.
     system_dark: bool,
     _subscriptions: Vec<Subscription>,
@@ -147,6 +152,10 @@ fn what_a_drop_means(paths: &[PathBuf], takes_more: bool) -> Dropped {
         _ => Dropped::New,
     }
 }
+
+/// How long after the window last changed its place is kept: it changes all the
+/// way through a drag.
+const SAVE_BOUNDS: Duration = Duration::from_millis(400);
 
 impl Workspace {
     /// `managed`: run as an organization would, with its policies.
@@ -208,6 +217,8 @@ impl Workspace {
             welcome: None,
             reading: None,
             folder_after_reading: None,
+            unsaved_place: None,
+            place_change: 0,
             dialog: None,
             appearance,
             system_dark: looks_dark(window),
@@ -229,6 +240,41 @@ impl Workspace {
         colors::set_dark(dark);
         window.refresh();
         cx.notify();
+    }
+
+    /// Keeps the window's size and place for the next start: shortly after they
+    /// change, and when the window closes.
+    pub fn track_bounds(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.place_changed(window, cx);
+        cx.observe_window_bounds(window, Self::place_changed)
+            .detach();
+        cx.on_release(|ws, cx| ws.save_place(cx)).detach();
+        cx.on_app_quit(|ws, cx| {
+            ws.save_place(cx);
+            std::future::ready(())
+        })
+        .detach();
+    }
+
+    fn place_changed(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.unsaved_place = Some(placement::place(window.window_bounds()));
+        self.place_change += 1;
+        let change = self.place_change;
+        cx.spawn(async move |this, cx| {
+            cx.background_executor().timer(SAVE_BOUNDS).await;
+            let _ = this.update(cx, |ws, cx| {
+                if ws.place_change == change {
+                    ws.save_place(cx);
+                }
+            });
+        })
+        .detach();
+    }
+
+    fn save_place(&mut self, cx: &mut gpui::App) {
+        if let Some(place) = self.unsaved_place.take() {
+            prefs::change(cx, |p| p.window = Some(place));
+        }
     }
 
     pub fn set_appearance(&mut self, a: Appearance, window: &mut Window, cx: &mut Context<Self>) {
