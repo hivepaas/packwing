@@ -2,7 +2,9 @@
 //!
 //! - `S3_TEST_ENDPOINT=http://127.0.0.1:18333`, with a bucket `test` that may be
 //!   written to with no signature, as a local SeaweedFS allows;
-//! - `WEBDAV_TEST_ENDPOINT=http://127.0.0.1:18335`, with no password.
+//! - `WEBDAV_TEST_ENDPOINT=http://127.0.0.1:18335`, with no password;
+//! - `SFTP_TEST_HOST=tester@127.0.0.1:2222`, with `SFTP_TEST_KEY` the key file and
+//!   `SFTP_TEST_KNOWN_HOSTS` a known_hosts that trusts it.
 //!
 //! `cargo test -p packwing-remote -- --test-threads=4`
 
@@ -10,11 +12,11 @@ use std::io::Read;
 use std::sync::Arc;
 
 use packwing_core::{Control, Item, LocalFolder, OnExisting, Storage, Transfer, transfer};
-use packwing_remote::{Dal, S3Settings, WebDavSettings, s3, webdav};
+use packwing_remote::{S3Settings, SftpSettings, WebDavSettings, s3, sftp, webdav};
 
 /// A folder for one test on each server there is.
-fn storages(test: &str) -> Vec<(&'static str, Dal)> {
-    let mut there = Vec::new();
+fn storages(test: &str) -> Vec<(&'static str, Box<dyn Storage>)> {
+    let mut there: Vec<(&'static str, Box<dyn Storage>)> = Vec::new();
     if let Ok(endpoint) = std::env::var("S3_TEST_ENDPOINT") {
         let settings = S3Settings {
             endpoint,
@@ -22,7 +24,7 @@ fn storages(test: &str) -> Vec<(&'static str, Dal)> {
             prefix: format!("{}/{test}", std::process::id()),
             ..S3Settings::default()
         };
-        there.push(("s3", s3(settings, None)));
+        there.push(("s3", Box::new(s3(settings, None))));
     }
     if let Ok(address) = std::env::var("WEBDAV_TEST_ENDPOINT") {
         let top = webdav(
@@ -39,7 +41,21 @@ fn storages(test: &str) -> Vec<(&'static str, Dal)> {
             address: format!("{}/{folder}", address.trim_end_matches('/')),
             ..WebDavSettings::default()
         };
-        there.push(("webdav", webdav(settings, None)));
+        there.push(("webdav", Box::new(webdav(settings, None))));
+    }
+    if let Ok(host) = std::env::var("SFTP_TEST_HOST") {
+        let settings = |start: String| SftpSettings {
+            host: host.clone(),
+            start,
+            password: String::new(),
+            key_file: std::env::var_os("SFTP_TEST_KEY").map(Into::into),
+            known_hosts: std::env::var_os("SFTP_TEST_KNOWN_HOSTS").map(Into::into),
+        };
+        let folder = format!("packwing-{}-{test}", std::process::id());
+        sftp(settings(String::new()), None)
+            .make_folder(&[], &folder)
+            .expect("a folder for the test");
+        there.push(("sftp", Box::new(sftp(settings(folder), None))));
     }
     there
 }
@@ -56,13 +72,17 @@ fn like(name: &str) -> Item {
     }
 }
 
-fn put(s: &Dal, path: &[&str], body: &[u8]) {
+fn put(s: &dyn Storage, path: &[&str], body: &[u8]) {
     let path: Vec<String> = path.iter().map(|p| (*p).to_owned()).collect();
+    // Its folders first, as a transfer makes them: one is there, or that fails.
+    for depth in 0..path.len() - 1 {
+        let _ = s.make_folder(&path[..depth], &path[depth]);
+    }
     s.put(&path, &mut &body[..], &like("x"), false)
         .expect("put");
 }
 
-fn all(s: &Dal, folder: &[String]) -> Vec<Item> {
+fn all(s: &dyn Storage, folder: &[String]) -> Vec<Item> {
     let mut lister = s.list(folder).expect("list");
     let mut items = Vec::new();
     while !lister.done() {
@@ -82,12 +102,12 @@ fn none() -> Control {
 fn folders_are_prefixes_and_pages_end() {
     for (server, s) in storages("list") {
         let _ = server;
-        put(&s, &["b.txt"], b"bb");
-        put(&s, &["a.txt"], b"a");
-        put(&s, &["sub", "deep", "c.txt"], b"ccc");
+        put(s.as_ref(), &["b.txt"], b"bb");
+        put(s.as_ref(), &["a.txt"], b"a");
+        put(s.as_ref(), &["sub", "deep", "c.txt"], b"ccc");
         s.make_folder(&[], "empty").expect("make");
         assert!(s.make_folder(&[], "empty").is_err());
-        let items = all(&s, &[]);
+        let items = all(s.as_ref(), &[]);
         let names: Vec<(&str, bool)> = items.iter().map(|i| (i.name.as_str(), i.dir)).collect();
         assert!(names.contains(&("sub", true)), "{names:?}");
         assert!(names.contains(&("empty", true)), "{names:?}");
@@ -96,8 +116,8 @@ fn folders_are_prefixes_and_pages_end() {
         let a = items.iter().find(|i| i.name == "b.txt").expect("b");
         assert_eq!(a.size, 2);
         assert!(a.modified.is_some());
-        assert!(all(&s, &["empty".into()]).is_empty());
-        let deep = all(&s, &["sub".into()]);
+        assert!(all(s.as_ref(), &["empty".into()]).is_empty());
+        let deep = all(s.as_ref(), &["sub".into()]);
         assert_eq!(deep.len(), 1);
         assert!(deep[0].dir);
     }
@@ -108,7 +128,7 @@ fn a_thousand_and_more_come_in_pages() {
     for (server, s) in storages("many") {
         let _ = server;
         for i in 0..1205 {
-            put(&s, &[&format!("f{i:05}.txt")], b"x");
+            put(s.as_ref(), &[&format!("f{i:05}.txt")], b"x");
         }
         let mut lister = s.list(&[]).expect("list");
         assert_eq!(lister.next(1000).expect("page").len(), 1000);
@@ -123,8 +143,8 @@ fn stat_read_and_open_agree() {
     for (server, s) in storages("read") {
         let _ = server;
         let big: Vec<u8> = (0..(9u32 << 20)).map(|i| (i % 251) as u8).collect();
-        put(&s, &["big.bin"], &big);
-        put(&s, &["d", "x"], b"x");
+        put(s.as_ref(), &["big.bin"], &big);
+        put(s.as_ref(), &["d", "x"], b"x");
         let item = s.stat(&[], "big.bin").expect("stat").expect("there");
         assert_eq!(item.size, big.len() as u64);
         assert!(!item.dir);
@@ -144,16 +164,23 @@ fn stat_read_and_open_agree() {
 fn renaming_and_deleting() {
     for (server, s) in storages("rename") {
         let _ = server;
-        put(&s, &["a"], b"a");
-        put(&s, &["b"], b"b");
+        put(s.as_ref(), &["a"], b"a");
+        put(s.as_ref(), &["b"], b"b");
         assert!(s.rename(&[], "a", "b").is_err());
         assert_eq!(s.read(&["b".into()], 9).expect("read"), b"b");
         s.rename(&[], "a", "c").expect("rename");
         assert!(s.stat(&[], "a").expect("stat").is_none());
         assert_eq!(s.read(&["c".into()], 9).expect("read"), b"a");
-        put(&s, &["d", "e", "f"], b"f");
-        put(&s, &["d", "g"], b"g");
-        assert!(s.rename(&[], "d", "z").is_err());
+        put(s.as_ref(), &["d", "e", "f"], b"f");
+        put(s.as_ref(), &["d", "g"], b"g");
+        let renamed = s.rename(&[], "d", "z");
+        // A server renames a folder itself; the others do not.
+        if server == "sftp" {
+            renamed.expect("a folder renamed");
+            s.rename(&[], "z", "d").expect("and back");
+        } else {
+            assert!(renamed.is_err());
+        }
         s.delete(&[], &["d".into(), "b".into()]).expect("delete");
         // Every object under it goes. SeaweedFS goes on listing an emptied folder as a
         // prefix, as AWS would not, so the objects are what is asked after.
@@ -172,7 +199,7 @@ fn renaming_and_deleting() {
 fn a_taken_name_is_not_written_over_unless_asked() {
     for (server, s) in storages("taken") {
         let _ = server;
-        put(&s, &["a"], b"old");
+        put(s.as_ref(), &["a"], b"old");
         let path = ["a".to_owned()];
         assert!(s.put(&path, &mut &b"new"[..], &like("a"), false).is_err());
         assert_eq!(s.read(&path, 9).expect("read"), b"old");
@@ -228,7 +255,7 @@ fn moving_between_a_folder_and_a_bucket() {
         std::fs::create_dir_all(dir.join("down")).expect("mkdir");
         std::fs::write(dir.join("up/d/one"), "11111").expect("write");
         std::fs::write(dir.join("up/two"), vec![9u8; 20 << 20]).expect("write");
-        let bucket: Arc<dyn Storage> = Arc::new(s);
+        let bucket: Arc<dyn Storage> = Arc::from(s);
         let t = |from: Arc<dyn Storage>, to: Arc<dyn Storage>, names: &[&str], moving| Transfer {
             from,
             from_folder: Vec::new(),
@@ -283,4 +310,85 @@ fn secrets_are_kept_and_forgotten() {
         packwing_remote::secret(&id, "secret_key").expect("read"),
         ""
     );
+}
+
+#[test]
+fn an_unknown_host_is_refused_and_says_so() {
+    let (Ok(host), Some(key)) = (
+        std::env::var("SFTP_TEST_HOST"),
+        std::env::var_os("SFTP_TEST_KEY"),
+    ) else {
+        return;
+    };
+    let hosts = std::env::temp_dir().join(format!("packwing-no-hosts-{}", std::process::id()));
+    std::fs::write(&hosts, "").expect("write");
+    let s = sftp(
+        SftpSettings {
+            host,
+            start: String::new(),
+            password: String::new(),
+            key_file: Some(key.into()),
+            known_hosts: Some(hosts.clone()),
+        },
+        None,
+    );
+    let e = s.list(&[]).map(|_| ()).expect_err("not known");
+    let _ = std::fs::remove_file(hosts);
+    println!("said: {e}");
+    assert!(!e.to_string().is_empty());
+}
+
+#[test]
+fn a_link_is_told_from_what_it_points_at() {
+    let (Ok(host), Ok(key), Ok(hosts)) = (
+        std::env::var("SFTP_TEST_HOST"),
+        std::env::var("SFTP_TEST_KEY"),
+        std::env::var("SFTP_TEST_KNOWN_HOSTS"),
+    ) else {
+        return;
+    };
+    let s = sftp(
+        SftpSettings {
+            host: host.clone(),
+            start: String::new(),
+            password: String::new(),
+            key_file: Some(key.clone().into()),
+            known_hosts: Some(hosts.clone().into()),
+        },
+        None,
+    );
+    let (user_host, port) = host.rsplit_once(':').expect("a port");
+    let folder = format!("packwing-{}-links", std::process::id());
+    s.make_folder(&[], &folder).expect("a folder");
+    s.make_folder(std::slice::from_ref(&folder), "real")
+        .expect("a folder");
+    let made = std::process::Command::new("ssh")
+        .args([
+            "-F",
+            "none",
+            "-i",
+            &key,
+            "-p",
+            port,
+            "-o",
+            "IdentitiesOnly=yes",
+        ])
+        .args(["-o", "StrictHostKeyChecking=yes"])
+        .args(["-o", &format!("UserKnownHostsFile={hosts}")])
+        .args([user_host, &format!("ln -s real {folder}/to-real")])
+        .stdin(std::process::Stdio::null())
+        .status()
+        .expect("ssh");
+    assert!(made.success());
+    let f = std::slice::from_ref(&folder);
+    let link = s.stat(f, "to-real").expect("stat").expect("there");
+    assert!(link.link && link.dir);
+    let listed = all(&s, f);
+    let link = listed.iter().find(|i| i.name == "to-real").expect("listed");
+    assert!(link.link && link.dir);
+    let real = listed.iter().find(|i| i.name == "real").expect("listed");
+    assert!(!real.link && real.dir);
+    // Deleting the link leaves what it points at.
+    s.delete(f, &["to-real".to_owned()]).expect("delete");
+    assert!(s.stat(f, "real").expect("stat").is_some());
 }

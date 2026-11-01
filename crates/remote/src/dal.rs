@@ -23,7 +23,7 @@ const PART: usize = 16 << 20;
 /// How many items a listing asks for at a time.
 const LIST_PAGE: usize = 1000;
 
-fn runtime() -> &'static Runtime {
+pub(crate) fn runtime() -> &'static Runtime {
     static RUNTIME: OnceLock<Runtime> = OnceLock::new();
     RUNTIME.get_or_init(|| {
         tokio::runtime::Builder::new_multi_thread()
