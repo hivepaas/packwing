@@ -652,6 +652,11 @@ fn installed(program: &str) -> bool {
 
 #[test]
 fn tar_reads_the_tar_archives_with_their_names() {
+    // Windows' tar (bsdtar) skips a PAX name it cannot put in the system's code page, as
+    // with `ớ` under 1252, whoever made the archive: GNU tar's and Python's too.
+    if cfg!(windows) {
+        return;
+    }
     let s = Scratch::new("tar-tool");
     let root = s.tree();
     if !installed("tar") {
