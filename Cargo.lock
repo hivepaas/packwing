@@ -3207,7 +3207,7 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 [[package]]
 name = "hivepack-7z"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
 dependencies = [
  "hivepack-bzip2",
  "hivepack-crypto",
@@ -3219,7 +3219,7 @@ dependencies = [
 [[package]]
 name = "hivepack-age"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
 dependencies = [
  "hivepack-crypto",
 ]
@@ -3227,26 +3227,28 @@ dependencies = [
 [[package]]
 name = "hivepack-bzip2"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
 
 [[package]]
 name = "hivepack-cpio"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
 
 [[package]]
 name = "hivepack-crypto"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
 dependencies = [
  "aes 0.9.3",
  "blake2s_simd",
  "chacha20poly1305",
  "curve25519-dalek",
+ "ed25519-dalek",
  "hkdf 0.13.0",
  "hmac 0.13.0",
  "hpke",
  "md-5 0.11.0",
+ "ml-dsa",
  "pbkdf2 0.13.0",
  "rand_core 0.10.1",
  "scrypt",
@@ -3258,12 +3260,12 @@ dependencies = [
 [[package]]
 name = "hivepack-deflate"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
 
 [[package]]
 name = "hivepack-extract"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
 dependencies = [
  "cap-fs-ext",
  "cap-std",
@@ -3282,7 +3284,7 @@ dependencies = [
 [[package]]
 name = "hivepack-iso"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
 dependencies = [
  "hivepack-deflate",
 ]
@@ -3290,12 +3292,12 @@ dependencies = [
 [[package]]
 name = "hivepack-lz4"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
 
 [[package]]
 name = "hivepack-open"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
 dependencies = [
  "hivepack-age",
  "hivepack-bzip2",
@@ -3309,7 +3311,7 @@ dependencies = [
 [[package]]
 name = "hivepack-rar"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
 dependencies = [
  "hivepack-crypto",
  "hivepack-deflate",
@@ -3318,17 +3320,17 @@ dependencies = [
 [[package]]
 name = "hivepack-tar"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
 
 [[package]]
 name = "hivepack-udf"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
 
 [[package]]
 name = "hivepack-xar"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
 dependencies = [
  "hivepack-bzip2",
  "hivepack-crypto",
@@ -3339,12 +3341,12 @@ dependencies = [
 [[package]]
 name = "hivepack-xz"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
 
 [[package]]
 name = "hivepack-zip"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
 dependencies = [
  "hivepack-bzip2",
  "hivepack-crypto",
@@ -3356,7 +3358,7 @@ dependencies = [
 [[package]]
 name = "hivepack-zstd"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
 
 [[package]]
 name = "hkdf"
@@ -4398,6 +4400,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "ml-dsa"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6f6d49c3f3f0e10e18ca975ffda66f8da0ec36521c1d911adcbc521bf0743f5c"
+dependencies = [
+ "crypto-common 0.2.2",
+ "ctutils",
+ "hybrid-array",
+ "module-lattice",
+ "pkcs8",
+ "shake",
+ "signature",
+ "zeroize",
+]
+
+[[package]]
 name = "ml-kem"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5304,6 +5322,7 @@ dependencies = [
  "packwing-policy",
  "trash",
  "unicode-normalization",
+ "xattr",
 ]
 
 [[package]]
@@ -8738,7 +8757,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.48.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -9427,6 +9446,16 @@ dependencies = [
  "curve25519-dalek",
  "rand_core 0.10.1",
  "zeroize",
+]
+
+[[package]]
+name = "xattr"
+version = "1.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "963d6fab92d5504b971dc8bd90ca743c2575e590bc8071ea5bc571598667ae08"
+dependencies = [
+ "libc",
+ "rustix",
 ]
 
 [[package]]

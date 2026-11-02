@@ -278,6 +278,7 @@ fn moving_between_a_folder_and_a_bucket() {
             to_folder: Vec::new(),
             moving,
             on_existing: OnExisting::Stop,
+            keep_mark: true,
         };
         let up: Arc<dyn Storage> = Arc::new(LocalFolder::new(dir.join("up")));
         let down: Arc<dyn Storage> = Arc::new(LocalFolder::new(dir.join("down")));

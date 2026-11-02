@@ -10,7 +10,7 @@ use std::sync::atomic::AtomicU64;
 use std::time::Duration;
 
 use hivepack_extract::{
-    Cancel, Links, NameDecoder, Options, Origin, Progress, ProgressFn, RarProblem, Select, Summary,
+    Cancel, Links, NameDecoder, Options, Progress, ProgressFn, RarProblem, Select, Summary,
     extract_7z, extract_cpio, extract_iso, extract_rar, extract_tar, extract_udf, extract_xar,
     extract_zip,
 };
@@ -305,11 +305,7 @@ fn extract_picked(
     options.password = keys.password.clone();
     options.progress = control.progress.clone();
     options.cancel = control.cancel.clone();
-    // A file on a storage has no mark to keep.
-    options.origin = match source.path() {
-        Some(path) if packwing_policy::current().keeps_mark(how.keep_mark) => Origin::of(path)?,
-        _ => None,
-    };
+    options.origin = crate::mark::for_extracting(source, how.keep_mark)?;
     options.overwrite = how.overwrite;
     options.limits.max_entries = MAX_ENTRIES;
     let limit = how.limit.unwrap_or(u64::MAX);

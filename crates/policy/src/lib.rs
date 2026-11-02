@@ -22,6 +22,7 @@ mod unix;
 mod windows;
 
 pub const PROPAGATE_MOTW: &str = "PropagateMotW";
+pub const MARK_STORAGE_FILES: &str = "MarkStorageFiles";
 pub const REQUIRE_ENCRYPTION: &str = "RequireEncryption";
 pub const ALLOWED_ENCRYPTION_METHODS: &str = "AllowedEncryptionMethods";
 pub const MIN_PASSWORD_LENGTH: &str = "MinPasswordLength";
@@ -29,8 +30,9 @@ pub const ORGANIZATION_NAME: &str = "ManagedByOrganizationName";
 pub const ORGANIZATION_URL: &str = "ManagedByURL";
 
 /// Every policy there is, as the systems' readers look for them.
-pub const KEYS: [&str; 6] = [
+pub const KEYS: [&str; 7] = [
     PROPAGATE_MOTW,
+    MARK_STORAGE_FILES,
     REQUIRE_ENCRYPTION,
     ALLOWED_ENCRYPTION_METHODS,
     MIN_PASSWORD_LENGTH,
@@ -185,6 +187,7 @@ pub struct Policy {
     failure: Option<String>,
     unknown: Vec<String>,
     pub propagate_mark: Setting<bool>,
+    pub mark_storage_files: Setting<bool>,
     pub require_encryption: Setting<bool>,
     pub allowed_methods: Setting<Vec<Method>>,
     pub min_password_length: Setting<u32>,
@@ -205,6 +208,7 @@ impl Policy {
         };
         Policy {
             propagate_mark: Setting::of(value(PROPAGATE_MOTW), read_bool),
+            mark_storage_files: Setting::of(value(MARK_STORAGE_FILES), read_bool),
             require_encryption: Setting::of(value(REQUIRE_ENCRYPTION), read_bool),
             allowed_methods: Setting::of(value(ALLOWED_ENCRYPTION_METHODS), read_methods),
             min_password_length: Setting::of(value(MIN_PASSWORD_LENGTH), read_length),
@@ -253,6 +257,12 @@ impl Policy {
     /// Whether the user's own switch for the mark has no say.
     pub fn locks_mark(&self) -> bool {
         self.failure.is_some() || self.propagate_mark != Setting::Unset
+    }
+
+    /// Whether a file from a storage across a network counts as from the Internet. It
+    /// does, unless the organization trusts its storages and says so clearly.
+    pub fn marks_storage_files(&self) -> bool {
+        self.failure.is_some() || self.mark_storage_files != Setting::Set(false)
     }
 
     /// Whether new archives have to be encrypted, as far as can be read.
@@ -329,6 +339,12 @@ impl Policy {
     pub fn rows(&self) -> Vec<Row> {
         let mut rows = Vec::new();
         row(&mut rows, PROPAGATE_MOTW, &self.propagate_mark, on_off);
+        row(
+            &mut rows,
+            MARK_STORAGE_FILES,
+            &self.mark_storage_files,
+            on_off,
+        );
         row(
             &mut rows,
             REQUIRE_ENCRYPTION,
@@ -542,6 +558,17 @@ mod tests {
         assert!(p.keeps_mark(false));
         assert!(p.locks_mark());
         assert!(p.rows()[0].problem.is_some());
+    }
+
+    #[test]
+    fn files_from_storages_count_as_from_the_internet_unless_said_otherwise() {
+        assert!(policy(&[]).marks_storage_files());
+        let on = policy(&[(MARK_STORAGE_FILES, Value::Bool(true))]);
+        assert!(on.marks_storage_files());
+        let off = policy(&[(MARK_STORAGE_FILES, Value::Bool(false))]);
+        assert!(!off.marks_storage_files());
+        let wrong = policy(&[(MARK_STORAGE_FILES, Value::Text("no".into()))]);
+        assert!(wrong.marks_storage_files());
     }
 
     #[test]

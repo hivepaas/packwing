@@ -27,6 +27,8 @@ pub struct Transfer {
     pub to_folder: Vec<String>,
     pub moving: bool,
     pub on_existing: OnExisting,
+    /// Whether a file arriving on this computer gets its mark of where it came from.
+    pub keep_mark: bool,
 }
 
 /// How a transfer went.
@@ -261,6 +263,9 @@ pub fn transfer(t: &Transfer, control: &Control) -> Result<Transferred, Error> {
                 Err(_) if control.check().is_err() => return Err(Error::Cancelled),
                 Err(e) => return Err(failed(e)),
             }
+            if let Some(arrived) = t.to.local_path(&to) {
+                crate::mark::on_a_copy(t.from.as_ref(), &from, &arrived, t.keep_mark)?;
+            }
             if t.moving {
                 if checksum(t.to.as_ref(), &to, control)? != crc {
                     return Err(failed(tr!(
@@ -368,6 +373,7 @@ mod tests {
                 to_folder: Vec::new(),
                 moving,
                 on_existing,
+                keep_mark: true,
             }
         }
     }
