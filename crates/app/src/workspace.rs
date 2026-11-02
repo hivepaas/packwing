@@ -19,7 +19,7 @@ use crate::demo;
 use crate::dialogs::{
     AddDialog, AddStorageDialog, CreateDialog, Creating, DeleteDialog, DialogEvent, EditDialog,
     ExtractDialog, Job, OpenFileDialog, PasswordDialog, PasswordEvent, ProgressDialog, Saving,
-    TransferDialog, Verb, ViewDialog, asked_for,
+    SignDialog, TransferDialog, Verb, ViewDialog, asked_for,
 };
 use crate::explorer::ExplorerEvent;
 use crate::model::{Archive, Kind, Selection, stem};
@@ -30,7 +30,7 @@ use crate::pages::recent::{OpenRecent, RecentPage, Row};
 use crate::pages::settings::{Appearance, AppearanceChosen, SettingsPage};
 use crate::pages::storages::{AddStorageAsked, EditStorageAsked, StoragesPage};
 use crate::placement::{self, WindowPlace};
-use crate::prefs;
+use crate::prefs::{self, TrustedKey};
 use crate::right_click::{Action, Request, RightClickMenu};
 use crate::widgets::{accent_tint, icon, logo, tile};
 
@@ -117,6 +117,8 @@ pub struct Workspace {
     place_change: u64,
     /// The system's own appearance is dark.
     system_dark: bool,
+    /// The keys trusted when signatures were last looked at: Settings may change them.
+    trusted_seen: Vec<TrustedKey>,
     _subscriptions: Vec<Subscription>,
 }
 
@@ -189,6 +191,7 @@ impl Workspace {
                     ArchiveEvent::Extract => this.open_extract(window, cx),
                     ArchiveEvent::AddFiles => this.add_files(window, cx),
                     ArchiveEvent::Test => this.test_archive(window, cx),
+                    ArchiveEvent::Sign => this.open_sign_archive(window, cx),
                     ArchiveEvent::Open => this.choose_archive(window, cx),
                     ArchiveEvent::Delete => this.open_edit(false, window, cx),
                     ArchiveEvent::Rename => this.open_edit(true, window, cx),
@@ -245,6 +248,7 @@ impl Workspace {
             dialog: None,
             appearance,
             system_dark: looks_dark(window),
+            trusted_seen: kept.trusted_keys.clone(),
             _subscriptions: subscriptions,
         };
         if first_run {
@@ -309,7 +313,62 @@ impl Workspace {
 
     pub fn show_page(&mut self, page: Page, cx: &mut Context<Self>) {
         self.page = page;
+        let trusted = prefs::prefs(cx).trusted_keys;
+        if trusted != self.trusted_seen {
+            self.trusted_seen = trusted;
+            self.look_at_signatures_again(cx);
+        }
         cx.notify();
+    }
+
+    /// What was said of signatures may not hold: a file was signed, or the keys
+    /// trusted changed.
+    fn look_at_signatures_again(&mut self, cx: &mut Context<Self>) {
+        self.archive.update(cx, |p, cx| p.look_at_signature(cx));
+        let storages = self.storages.read(cx).explorer().clone();
+        let browse = self.browse.read(cx).explorer().clone();
+        for explorer in [storages, browse] {
+            explorer.update(cx, |e, cx| e.forget_signature(cx));
+        }
+    }
+
+    /// Asks how to sign the file `name` of the storage shown, for tests.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn open_sign_of(
+        &mut self,
+        name: &str,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Entity<SignDialog> {
+        let explorer = self.storages.read(cx).explorer().read(cx);
+        let storage = explorer
+            .place()
+            .expect("a storage is shown")
+            .storage
+            .clone();
+        let path = explorer.path_of_name(name);
+        let view = cx.new(|cx| SignDialog::new(storage, path, window, cx));
+        self.show(view.clone(), true, window, cx);
+        view
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn refresh_explorers_for_test(&mut self, cx: &mut Context<Self>) {
+        self.refresh_explorers(cx);
+    }
+
+    /// Asks how to sign the file of the archive open.
+    fn open_sign_archive(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let place = self
+            .archive
+            .read(cx)
+            .archive()
+            .and_then(|a| a.source.as_ref())
+            .and_then(|s| s.place());
+        if let Some((storage, path)) = place {
+            let view = cx.new(|cx| SignDialog::new(storage, path, window, cx));
+            self.show(view, true, window, cx);
+        }
     }
 
     #[cfg(all(test, feature = "shots"))]
@@ -363,6 +422,14 @@ impl Workspace {
             }
             ExplorerEvent::Transfer { moving } => {
                 this.open_transfer(explorer, *moving, window, cx);
+            }
+            ExplorerEvent::Sign(name) => {
+                let shown = explorer.read(cx);
+                if let Some(place) = shown.place() {
+                    let (storage, path) = (place.storage.clone(), shown.path_of_name(name));
+                    let view = cx.new(|cx| SignDialog::new(storage, path, window, cx));
+                    this.show(view, true, window, cx);
+                }
             }
             ExplorerEvent::AskDelete(names) => {
                 let (names, explorer) = (names.clone(), explorer.clone());
@@ -425,6 +492,12 @@ impl Workspace {
                     let said = (!said.is_empty()).then(|| said.join(" "));
                     this.refresh_explorers(cx);
                     this.shown_explorer(cx).update(cx, |e, cx| e.say(said, cx));
+                }
+                DialogEvent::Signed => {
+                    this.close_dialog(cx);
+                    this.trusted_seen = prefs::prefs(cx).trusted_keys;
+                    this.look_at_signatures_again(cx);
+                    this.refresh_explorers(cx);
                 }
                 DialogEvent::Stored {
                     place,

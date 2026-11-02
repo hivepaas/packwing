@@ -121,7 +121,7 @@ impl PasswordDialog {
 /// takes 16 MiB, and a file chosen by mistake may be any size.
 const KEY_FILE_LIMIT: u64 = 16 << 20;
 
-fn read_key_file(path: &Path) -> Result<Vec<u8>, String> {
+pub(super) fn read_key_file(path: &Path) -> Result<Vec<u8>, String> {
     let why = |e: io::Error| tr!("Could not read {path}: {e}.", path = path.display(), e = e);
     let mut contents = Vec::new();
     File::open(path)

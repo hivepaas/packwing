@@ -87,6 +87,11 @@ impl Plan {
     pub fn may_add_remote_storage(self, kept: usize) -> bool {
         self != Plan::Free || kept < FREE_REMOTE_STORAGES
     }
+
+    /// Whether files can be signed. Checking a signature takes no plan.
+    pub fn may_sign(self) -> bool {
+        self != Plan::Free
+    }
 }
 
 /// A key that verified.
@@ -414,5 +419,12 @@ mod tests {
         assert!(!Plan::Free.may_add_remote_storage(5));
         assert!(Plan::Pro.may_add_remote_storage(100));
         assert!(Plan::Enterprise.may_add_remote_storage(100));
+    }
+
+    #[test]
+    fn signing_takes_a_paid_plan() {
+        assert!(!Plan::Free.may_sign());
+        assert!(Plan::Pro.may_sign());
+        assert!(Plan::Enterprise.may_sign());
     }
 }

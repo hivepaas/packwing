@@ -11,6 +11,7 @@ use packwing_i18n::tr;
 
 use crate::create::OnExisting;
 use crate::job::Control;
+use crate::sign::{is_signature_name, signature_name};
 use crate::storage::{Item, Storage};
 use crate::{Error, Progress};
 
@@ -195,9 +196,31 @@ fn say(control: &Control, progress: &Progress) {
     }
 }
 
-/// Moves or copies `t`'s items. With [`OnExisting::Stop`], a name taken stops it
-/// before anything is changed. A folder that is there takes what goes in it.
+/// `t`, with the signature of each file in it going along: left behind, the file
+/// would quietly stop being signed.
+fn with_signatures(t: &Transfer, control: &Control) -> Result<Transfer, Error> {
+    let mut names = t.names.clone();
+    for name in &t.names {
+        control.check()?;
+        let signature = signature_name(name);
+        if is_signature_name(name) || names.contains(&signature) {
+            continue;
+        }
+        let is_file = |item: Option<Item>| item.is_some_and(|item| !item.dir && !item.link);
+        if is_file(t.from.stat(&t.from_folder, name).map_err(failed)?)
+            && is_file(t.from.stat(&t.from_folder, &signature).map_err(failed)?)
+        {
+            names.push(signature);
+        }
+    }
+    Ok(Transfer { names, ..t.clone() })
+}
+
+/// Moves or copies `t`'s items, each file's signature with it. With
+/// [`OnExisting::Stop`], a name taken stops it before anything is changed. A folder
+/// that is there takes what goes in it.
 pub fn transfer(t: &Transfer, control: &Control) -> Result<Transferred, Error> {
+    let t = &with_signatures(t, control)?;
     check_places(t)?;
     let mut done = Transferred::default();
     if t.moving && move_whole(t, control, &mut done)? {
@@ -547,6 +570,32 @@ mod tests {
         let e = transfer(&s.t(&["d"], false, OnExisting::Stop), &control).expect_err("stopped");
         assert!(matches!(e, Error::Cancelled), "{e}");
         assert!(parts(&s.0).is_empty(), "{:?}", parts(&s.0));
+    }
+
+    #[test]
+    fn a_files_signature_goes_with_it() {
+        let s = Scratch::new("signature");
+        fs::write(s.0.join("a/top.sig"), "signed").expect("write");
+        fs::write(s.0.join("a/d.sig"), "not of a file").expect("write");
+        let copied = transfer(&s.t(&["top", "d"], false, OnExisting::Stop), &none()).expect("copy");
+        assert_eq!(copied.files, 4);
+        assert_eq!(fs::read(s.0.join("b/top.sig")).expect("read"), b"signed");
+        assert!(!s.0.join("b/d.sig").exists());
+        fs::remove_file(s.0.join("b/top")).expect("remove");
+        fs::remove_file(s.0.join("b/top.sig")).expect("remove");
+        transfer(&s.t(&["top"], true, OnExisting::Stop), &none()).expect("move");
+        assert!(!s.0.join("a/top").exists() && !s.0.join("a/top.sig").exists());
+        assert_eq!(fs::read(s.0.join("b/top.sig")).expect("read"), b"signed");
+    }
+
+    #[test]
+    fn a_signature_taken_there_stops_the_copy_before_anything_changes() {
+        let s = Scratch::new("signature-taken");
+        fs::write(s.0.join("a/top.sig"), "signed").expect("write");
+        fs::write(s.0.join("b/top.sig"), "older").expect("write");
+        let e = transfer(&s.t(&["top"], false, OnExisting::Stop), &none()).expect_err("taken");
+        assert!(e.to_string().contains("top.sig"), "{e}");
+        assert!(!s.0.join("b/top").exists());
     }
 
     #[cfg(unix)]

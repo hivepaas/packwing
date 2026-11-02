@@ -19,7 +19,9 @@ An organization can fix some of this for everyone, through Group Policy, a confi
 
 ## 💳 Plans
 
-packwing is free software, and Free does everything but keep more than one storage across a network (S3, WebDAV, SFTP); folders on this computer are not limited. Pro has no limit. Enterprise has none either, with one key an organization gives to all its computers through a policy, and an agreement behind it. A key is checked on the computer, with no account and nothing sent anywhere, and no plan changes what policies or security features do. The check asks people to pay; as the license allows, anyone can build packwing without it.
+A file is signed from the `…` button of the Archive page, or `Sign…` on a file in Browse or Storages, with an SSH Ed25519 key or a new key of Ed25519 and ML-DSA-65 together. The signature goes beside it as `name.sig`, in the format of `ssh-keygen -Y sign`, so that an SSH key's signature can be checked without packwing; a hybrid key's only packwing and hivepack check. A signature says who signed a file only by a key in Settings › Security, and a key you sign with goes there: any other says nothing, whatever it matches. A signature on this computer is checked as the file is shown, and one on a storage across a network when asked, as it reads all of the file. A signature goes along when its file is copied or moved. Parts of a file cut in several are not signed.
+
+packwing is free software, and Free does everything but sign files and keep more than one storage across a network (S3, WebDAV, SFTP); folders on this computer are not limited, and any signature can be checked. Pro signs, and has no limit. Enterprise has none either, with one key an organization gives to all its computers through a policy, and an agreement behind it. A key is checked on the computer, with no account and nothing sent anywhere, and no plan changes what policies do or what packwing checks. The check asks people to pay; as the license allows, anyone can build packwing without it.
 
 ## 🛠️ Building
 

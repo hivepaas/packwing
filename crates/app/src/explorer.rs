@@ -21,8 +21,8 @@ use gpui::{
     deferred, div, prelude::*, px, rgb, uniform_list,
 };
 use packwing_core::{
-    Cancel, Counted, Item, Lister, Source, Storage, Stored, bad_name, count, folded_query,
-    name_holds,
+    Cancel, Counted, Item, Lister, Signed, Source, Storage, Stored, bad_name, count, folded_query,
+    is_signature_name, name_holds, signature_name,
 };
 use packwing_i18n::{tr, tr_n};
 
@@ -31,6 +31,7 @@ use crate::editors;
 use crate::input::{Changed, TextInput};
 use crate::model::{Kind, date, tag_of};
 use crate::prefs;
+use crate::signatures::{self, Looking};
 use crate::widgets::{Fill, Size, button, float_shadow, icon, icon_button, tile};
 
 /// How many items are asked for at a time.
@@ -57,6 +58,8 @@ pub enum ExplorerEvent {
     AskDelete(Vec<String>),
     /// Ask where to copy or move what is chosen.
     Transfer { moving: bool },
+    /// Ask how to sign this file, by its name in the folder.
+    Sign(String),
 }
 
 /// A storage, by what the user calls it.
@@ -131,6 +134,14 @@ struct Count {
     _task: Task<()>,
 }
 
+/// What is known of the signature of the one file chosen.
+struct SignatureOf {
+    name: String,
+    /// None while it is looked at.
+    signed: Option<Signed>,
+    _looking: Option<Looking>,
+}
+
 /// A count as the info panel shows it.
 pub struct CountShown {
     pub counted: Counted,
@@ -168,6 +179,7 @@ pub struct Explorer {
     /// What went wrong with the last thing asked.
     problem: Option<String>,
     count: Option<Count>,
+    signature: Option<SignatureOf>,
     _typing: Subscription,
 }
 
@@ -194,6 +206,11 @@ pub fn runs_when_opened(item: &Item) -> bool {
     Kind::of(&item.name, false) == Kind::Program
         || ALSO.contains(&ext.as_str())
         || item.mode.is_some_and(|m| m & 0o111 != 0)
+}
+
+/// Whether `item` is a file that can have a signature of its own.
+pub fn can_be_signed(item: &Item) -> bool {
+    !item.dir && !item.link && !is_signature_name(&item.name)
 }
 
 /// Whether `item` is opened as an archive, going by its name.
@@ -234,6 +251,7 @@ impl Explorer {
             name_field,
             problem: None,
             count: None,
+            signature: None,
             _typing: typing,
         }
     }
@@ -263,6 +281,100 @@ impl Explorer {
             self.menu = None;
             cx.emit(ExplorerEvent::Transfer { moving });
         }
+    }
+
+    /// Asks for the one file chosen to be signed.
+    pub fn ask_sign(&mut self, cx: &mut Context<Self>) {
+        if let [one] = self.selection().as_slice()
+            && can_be_signed(one)
+        {
+            self.menu = None;
+            cx.emit(ExplorerEvent::Sign(one.name.clone()));
+        }
+    }
+
+    /// What the signature of the file `name` says so far: an outer none if it is
+    /// not known of that file, an inner none while it is looked at.
+    pub fn signature_of(&self, name: &str) -> Option<Option<&Signed>> {
+        self.signature
+            .as_ref()
+            .filter(|s| s.name == name)
+            .map(|s| s.signed.as_ref())
+    }
+
+    /// Looks at the signature of the file chosen again, as it or the keys trusted
+    /// may have changed.
+    pub fn forget_signature(&mut self, cx: &mut Context<Self>) {
+        self.signature = None;
+        cx.notify();
+    }
+
+    /// Reads all of the file chosen to check its signature: it is not done by itself
+    /// across a network.
+    pub fn check_signature(&mut self, cx: &mut Context<Self>) {
+        if let Some(name) = self.signature.as_ref().map(|s| s.name.clone()) {
+            self.look_at_signature(name, true, cx);
+        }
+    }
+
+    /// Keeps up with what is chosen: called as the list is drawn, as what is chosen
+    /// changes in many places.
+    fn follow_signature(&mut self, cx: &mut Context<Self>) {
+        if self.picking {
+            return;
+        }
+        let wanted = match self.selected.iter().next() {
+            Some(name) if self.selected.len() == 1 => self
+                .items
+                .iter()
+                .find(|i| &i.name == name)
+                .filter(|i| can_be_signed(i))
+                .map(|i| i.name.clone()),
+            _ => None,
+        };
+        match wanted {
+            None => self.signature = None,
+            Some(name) if self.signature.as_ref().is_none_or(|s| s.name != name) => {
+                self.look_at_signature(name, self.is_local(), cx);
+            }
+            Some(_) => {}
+        }
+    }
+
+    fn look_at_signature(&mut self, name: String, read_all: bool, cx: &mut Context<Self>) {
+        let Some(place) = self.place.clone() else {
+            return;
+        };
+        let beside = signature_name(&name);
+        // What is listed says, with no need to ask a storage across a network.
+        if !self.more && !self.items.iter().any(|i| i.name == beside) {
+            self.signature = Some(SignatureOf {
+                name,
+                signed: Some(Signed::No),
+                _looking: None,
+            });
+            return;
+        }
+        let of = name.clone();
+        let looking = signatures::start(
+            place.storage,
+            self.path_of(&name),
+            read_all,
+            cx,
+            move |this: &mut Explorer, signed, cx| {
+                if let Some(s) = this.signature.as_mut().filter(|s| s.name == of) {
+                    s.signed = Some(signed);
+                    s._looking = None;
+                    cx.notify();
+                }
+            },
+        );
+        self.signature = Some(SignatureOf {
+            name,
+            signed: None,
+            _looking: Some(looking),
+        });
+        cx.notify();
     }
 
     pub fn new_folder(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -338,6 +450,8 @@ impl Explorer {
                         let names: BTreeSet<&str> =
                             this.items.iter().map(|i| i.name.as_str()).collect();
                         this.selected.retain(|n| names.contains(n.as_str()));
+                        // It may have been signed, or changed, since.
+                        this.signature = None;
                         this.state = State::Idle;
                         this.rebuild();
                     }
@@ -1392,6 +1506,12 @@ impl Explorer {
                                 cx.listener(|this, _, _, cx| this.ask_transfer(true, cx)),
                             ),
                         )
+                        .when(can_be_signed(one), |d| {
+                            d.child(
+                                item("menu-sign", tr!("Sign…"), "", false)
+                                    .on_click(cx.listener(|this, _, _, cx| this.ask_sign(cx))),
+                            )
+                        })
                         .child(line())
                         .child(item("menu-rename", tr!("Rename"), "F2", false).on_click(
                             cx.listener(|this, _, window, cx| {
@@ -1574,6 +1694,7 @@ fn take(lister: &mut dyn Lister, want: usize) -> std::io::Result<Vec<Item>> {
 
 impl Render for Explorer {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        self.follow_signature(cx);
         let c = colors();
         let typing_new = self.naming == Some(Naming::NewFolder);
         let rows = usize::from(typing_new) + self.shown.len() + usize::from(self.more);
