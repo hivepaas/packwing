@@ -12,9 +12,9 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use packwing_core::{
     Cancel, Control, Error, ExtractOptions, Item, Keys, Kind, Level, Lister, LocalFolder,
-    NewArchive, OnExisting, Progress, Route, Storage, StoredFile, add, add_with, can_add, create,
-    create_on, delete, extract, extract_selected, extract_to_open, extract_with, image_fits, list,
-    measure, read_entry, rename, route, test,
+    NewArchive, OnExisting, Progress, Route, Source, Storage, StoredFile, add, add_with,
+    age_key_problem, age_keys_in, can_add, create, create_on, delete, extract, extract_selected,
+    extract_to_open, extract_with, image_fits, list, measure, read_entry, rename, route, test,
 };
 
 /// A folder of a test's own, gone when it ends.
@@ -519,7 +519,7 @@ fn a_7z_password_locks_the_files_and_can_hide_the_names() {
 }
 
 #[test]
-fn a_tar_archive_refuses_a_password_rather_than_dropping_it() {
+fn a_tar_archive_with_a_password_is_encrypted_rather_than_dropping_it() {
     let s = Scratch::new("tar-password");
     let file = s.path("a.txt");
     fs::write(&file, "a").unwrap();
@@ -530,16 +530,18 @@ fn a_tar_archive_refuses_a_password_rather_than_dropping_it() {
             ..NewArchive::default()
         };
         let path = s.path(&format!("a.{extension}"));
+        let made = create(
+            std::slice::from_ref(&file),
+            &path,
+            &new,
+            &Control::default(),
+        )
+        .unwrap();
         assert!(
-            create(
-                std::slice::from_ref(&file),
-                &path,
-                &new,
-                &Control::default()
-            )
-            .is_err()
+            fs::read(made)
+                .unwrap()
+                .starts_with(b"age-encryption.org/v1")
         );
-        assert!(!path.exists());
     }
 }
 
@@ -2008,4 +2010,201 @@ fn one_file_goes_straight_as_it_is_compressed() {
         fs::metadata(out.join("noise.bin")).unwrap().len(),
         3_000_000
     );
+}
+
+/// A key made by `age-keygen` for this test, and its public half.
+const AGE_KEY: &str = "AGE-SECRET-KEY-17PWZMFQ7LGDHF4VS2U5FVRVTGDN747AW6RW8Q9QZKNKV5WNJ7QASFAFKUD";
+const AGE_PUBLIC: &str = "age1ml7zyg7w7uqg5qrlunupaygdcckn0vun4xwvlpx2cdmwn7vqdugqhzawyg";
+
+/// What `age` makes of `path`, with these arguments, if it is on this machine.
+fn age_decrypts(args: &[&str], path: &Path) -> Option<Vec<u8>> {
+    let out = Command::new("age")
+        .arg("--decrypt")
+        .args(args)
+        .arg(path)
+        .output()
+        .ok()?;
+    assert!(
+        out.status.success(),
+        "age: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    Some(out.stdout)
+}
+
+#[test]
+fn a_tar_archive_encrypted_to_a_passphrase_reads_back_with_it_alone() {
+    let (what, there, _) = up_scratch("age-passphrase");
+    let how = NewArchive {
+        kind: Kind::TarZst,
+        password: Some(b"correct horse".to_vec()),
+        ..NewArchive::default()
+    };
+    let made = create(
+        std::slice::from_ref(&what),
+        &there.join("a.tar.zst.age"),
+        &how,
+        &Control::default(),
+    )
+    .unwrap();
+    // Its names cannot be read without it.
+    assert!(list(Source::from(made.clone()), &Keys::default()).is_err());
+    let keys = Keys {
+        passphrase: Some(b"correct horse".to_vec()),
+        ..Keys::default()
+    };
+    let out = there.join("out");
+    extract(&made, &out, &keys, &Control::default()).unwrap();
+    assert_eq!(
+        fs::read(out.join("what/noise.bin")).unwrap(),
+        fs::read(what.join("noise.bin")).unwrap()
+    );
+    let wrong = Keys {
+        passphrase: Some(b"wrong".to_vec()),
+        ..Keys::default()
+    };
+    assert!(extract(&made, &there.join("no"), &wrong, &Control::default()).is_err());
+}
+
+#[test]
+fn encrypted_to_keys_it_opens_with_the_private_key_and_age_agrees() {
+    let (what, there, _) = up_scratch("age-keys");
+    let file = what.join("dump.sql");
+    let body = b"insert into t values (1);\n".repeat(10_000);
+    fs::write(&file, &body).unwrap();
+    let how = NewArchive {
+        kind: Kind::Gz,
+        age_keys: vec![AGE_PUBLIC.to_owned()],
+        ..NewArchive::default()
+    };
+    let made = create(
+        std::slice::from_ref(&file),
+        &there.join("dump.sql.gz.age"),
+        &how,
+        &Control::default(),
+    )
+    .unwrap();
+    let keys = Keys {
+        key_file: Some(AGE_KEY.as_bytes().to_vec()),
+        ..Keys::default()
+    };
+    let out = there.join("out");
+    extract(&made, &out, &keys, &Control::default()).unwrap();
+    assert_eq!(fs::read(out.join("dump.sql")).unwrap(), body);
+    assert!(
+        extract(
+            &made,
+            &there.join("no"),
+            &Keys::default(),
+            &Control::default()
+        )
+        .is_err()
+    );
+    let key_file = there.join("key.txt");
+    fs::write(&key_file, AGE_KEY).unwrap();
+    let identity = key_file.to_string_lossy().into_owned();
+    if let Some(gz) = age_decrypts(&["-i", &identity], &made) {
+        // gzip's magic: age gave back what was compressed.
+        assert_eq!(&gz[..2], &[0x1f, 0x8b]);
+    }
+}
+
+#[test]
+fn it_goes_straight_encrypted_and_nothing_is_left_when_it_fails() {
+    let (what, there, mut across) = up_scratch("age-straight");
+    across.sends_as_read = true;
+    let how = NewArchive {
+        kind: Kind::TarZst,
+        stream_above: Some(0),
+        age_keys: vec![AGE_PUBLIC.to_owned()],
+        ..NewArchive::default()
+    };
+    assert!(!up(&what, &across, "a.tar.zst.age", &how, &Control::default()).unwrap());
+    let keys = Keys {
+        key_file: Some(AGE_KEY.as_bytes().to_vec()),
+        ..Keys::default()
+    };
+    let out = there.join("out");
+    extract(
+        there.join("a.tar.zst.age"),
+        &out,
+        &keys,
+        &Control::default(),
+    )
+    .unwrap();
+    assert_eq!(
+        fs::metadata(out.join("what/noise.bin")).unwrap().len(),
+        3_000_000
+    );
+    fs::remove_dir_all(&out).unwrap();
+    fs::remove_file(there.join("a.tar.zst.age")).unwrap();
+    across.refuse = Some("b.tar.zst.age");
+    assert!(up(&what, &across, "b.tar.zst.age", &how, &Control::default()).is_err());
+    assert!(files_in(&there).is_empty(), "{:?}", files_in(&there));
+}
+
+#[test]
+fn a_name_taken_moves_on_before_what_says_it_is_encrypted() {
+    let (what, there, _) = up_scratch("age-name");
+    let how = NewArchive {
+        kind: Kind::TarGz,
+        password: Some(b"p".to_vec()),
+        ..NewArchive::default()
+    };
+    for _ in 0..2 {
+        create(
+            std::slice::from_ref(&what),
+            &there.join("a.tar.gz.age"),
+            &how,
+            &Control::default(),
+        )
+        .unwrap();
+    }
+    assert_eq!(files_in(&there), ["a (2).tar.gz.age", "a.tar.gz.age"]);
+}
+
+#[test]
+fn what_age_cannot_do_is_refused_before_anything_is_made() {
+    let (what, there, _) = up_scratch("age-refused");
+    for how in [
+        NewArchive {
+            kind: Kind::Tar,
+            age_keys: vec!["not a key".to_owned()],
+            ..NewArchive::default()
+        },
+        NewArchive {
+            kind: Kind::Tar,
+            password: Some(b"p".to_vec()),
+            age_keys: vec![AGE_PUBLIC.to_owned()],
+            ..NewArchive::default()
+        },
+        NewArchive {
+            kind: Kind::Zip,
+            age_keys: vec![AGE_PUBLIC.to_owned()],
+            ..NewArchive::default()
+        },
+    ] {
+        let e = create(
+            std::slice::from_ref(&what),
+            &there.join("a"),
+            &how,
+            &Control::default(),
+        );
+        assert!(e.is_err(), "{how:?}");
+        assert!(files_in(&there).is_empty());
+    }
+}
+
+#[test]
+fn keys_are_read_from_a_file_as_age_reads_them() {
+    assert!(age_key_problem(AGE_PUBLIC).is_none());
+    assert!(age_key_problem("nonsense").is_some());
+    let file = format!("# mine\n\n{AGE_PUBLIC}\n");
+    assert_eq!(
+        age_keys_in(file.as_bytes()).unwrap(),
+        (vec![AGE_PUBLIC.to_owned()], 0)
+    );
+    assert!(age_keys_in(b"# nothing here\n").is_err());
+    // A private key has no place there.
+    assert!(age_keys_in(AGE_KEY.as_bytes()).is_err());
 }

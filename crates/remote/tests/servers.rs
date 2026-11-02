@@ -607,3 +607,54 @@ fn stopped_on_its_way_straight_it_leaves_nothing_on_the_server() {
     }
     let _ = std::fs::remove_dir_all(&here);
 }
+
+#[test]
+fn an_encrypted_archive_goes_up_and_reads_back_with_its_passphrase() {
+    let here = std::env::temp_dir().join(format!("packwing-age-{}", std::process::id()));
+    std::fs::create_dir_all(&here).expect("a folder");
+    let what = here.join("what.bin");
+    noise(&what, STRAIGHT_BYTES);
+    for (kind, s) in storages("age") {
+        let storage: Arc<dyn Storage> = Arc::from(s);
+        let how = NewArchive {
+            kind: Kind::TarZst,
+            password: Some(b"correct horse".to_vec()),
+            stream_above: Some(0),
+            ..NewArchive::default()
+        };
+        create_on(
+            std::slice::from_ref(&what),
+            storage.as_ref(),
+            &[],
+            "new.tar.zst.age",
+            &how,
+            &none(),
+            &|| {},
+        )
+        .unwrap_or_else(|e| panic!("{kind}: {e}"));
+        let size = storage
+            .stat(&[], "new.tar.zst.age")
+            .expect(kind)
+            .expect(kind)
+            .size;
+        let source = Source::Stored(Stored::new(
+            storage.clone(),
+            vec!["new.tar.zst.age".into()],
+            size,
+        ));
+        let keys = Keys {
+            passphrase: Some(b"correct horse".to_vec()),
+            ..Keys::default()
+        };
+        let body = read_entry(
+            &source,
+            &["what.bin".to_owned()],
+            &keys,
+            (STRAIGHT_BYTES + 1) as u64,
+            &none(),
+        )
+        .unwrap_or_else(|e| panic!("{kind}: {e}"));
+        assert_eq!(body.len(), STRAIGHT_BYTES, "{kind}");
+    }
+    let _ = std::fs::remove_dir_all(&here);
+}

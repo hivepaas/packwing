@@ -1756,6 +1756,90 @@ fn one_file_offers_more_formats_and_keeps_all_its_name() {
 }
 
 #[test]
+fn a_file_encrypted_to_a_key_is_saved_with_age_at_the_end_of_its_name() {
+    use crate::dialogs::Format;
+    let dir = folder_of("age-key", 0);
+    let file = dir.join("dump.sql");
+    std::fs::write(&file, "insert").expect("cannot write");
+    let far = folder_of("age-far", 0);
+    let (mut cx, window, _) = explorer_on(out_dir());
+    let values: packwing_core::Values = [("folder".to_owned(), far.display().to_string())].into();
+    window
+        .update(&mut cx, |ws, _, cx| {
+            cx.set_global(fake_extensions());
+            ws.storages_page().update(cx, |p, cx| {
+                p.add_other("far", "Far one".into(), values, &Default::default(), cx)
+                    .expect("added");
+            });
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    let dialog = window
+        .update(&mut cx, |ws, window, cx| {
+            let (places, _) = ws.storages_page().read(cx).places(cx);
+            let far_one = places
+                .iter()
+                .position(|p| p.name == "Far one")
+                .expect("on the list");
+            let dialog = ws.open_create_of(vec![file.clone()], window, cx);
+            dialog.update(cx, |d, cx| {
+                d.press_storage(far_one, cx);
+                d.press_save_here(cx);
+            });
+            dialog
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    window
+        .update(&mut cx, |_, _, cx| {
+            dialog.update(cx, |d, cx| {
+                d.choose_format(Format::Zst, cx);
+                d.encrypt_to_key(
+                    "age1ml7zyg7w7uqg5qrlunupaygdcckn0vun4xwvlpx2cdmwn7vqdugqhzawyg",
+                    cx,
+                );
+            })
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    window
+        .update(&mut cx, |_, _, cx| {
+            dialog.update(cx, |d, cx| d.scroll_to_end(cx))
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    cx.run_until_parked();
+    window
+        .update(&mut cx, |_, _, cx| cx.refresh_windows())
+        .expect("the window");
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window")
+        .save(out_dir().join("create-age-key.png"))
+        .expect("cannot save the picture");
+    window
+        .update(&mut cx, |_, _, cx| {
+            dialog.update(cx, |d, cx| d.press_create(cx))
+        })
+        .expect("the window");
+    let made = far.join("dump.sql.zst.age");
+    for _ in 0..200 {
+        cx.run_until_parked();
+        if made.exists() {
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(25));
+    }
+    cx.run_until_parked();
+    assert!(made.is_file(), "not there");
+    assert!(
+        std::fs::read(&made)
+            .expect("read")
+            .starts_with(b"age-encryption.org/v1")
+    );
+}
+
+#[test]
 fn a_kind_a_build_adds_is_browsed_without_a_local_path() {
     let dir = folder_of("far", 2);
     std::fs::write(dir.join("backup.zip"), "not one").expect("cannot write");
