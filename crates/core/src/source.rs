@@ -61,6 +61,11 @@ impl Stored {
         self.size
     }
 
+    /// Its storage, and its path there.
+    pub(crate) fn place(&self) -> (Arc<dyn Storage>, Vec<String>) {
+        (self.storage.clone(), self.path.clone())
+    }
+
     /// `first..=last`, those not kept fetched in one read, with what reads in
     /// order may want next.
     fn blocks(&self, first: u64, last: u64) -> io::Result<Vec<Arc<Vec<u8>>>> {

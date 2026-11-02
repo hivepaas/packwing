@@ -13,6 +13,7 @@ mod open_file;
 mod password;
 mod places;
 mod progress;
+mod sign;
 mod transfer;
 mod view_file;
 
@@ -26,6 +27,7 @@ pub use extract::ExtractDialog;
 pub use open_file::OpenFileDialog;
 pub use password::{PasswordDialog, PasswordEvent, asked_for};
 pub use progress::ProgressDialog;
+pub use sign::SignDialog;
 pub use transfer::TransferDialog;
 pub use view_file::ViewDialog;
 
@@ -35,7 +37,8 @@ use std::sync::{Arc, Mutex};
 
 use gpui::{Div, FontWeight, MouseButton, SharedString, Stateful, div, prelude::*, px, rgb};
 use packwing_core::{
-    Asked, ExtractOptions, Keys, NewArchive, OnExisting, Source, Transfer, Transferred,
+    Asked, ExtractOptions, Keys, NewArchive, OnExisting, SigningKey, Source, Storage, Transfer,
+    Transferred,
 };
 
 use crate::colors::{Tint, colors};
@@ -56,6 +59,8 @@ pub enum Verb {
     /// Items of a storage copied or moved.
     Copy,
     Move,
+    /// A file signed.
+    Sign,
 }
 
 /// Items to copy or move, and how it went once it is over.
@@ -71,6 +76,22 @@ impl PartialEq for Transferring {
 impl std::fmt::Debug for Transferring {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Transferring({:?})", self.0.names)
+    }
+}
+
+/// A file to sign: its storage, its path there, and the key.
+#[derive(Clone)]
+pub struct Signing(pub Arc<dyn Storage>, pub Vec<String>, pub SigningKey);
+
+impl PartialEq for Signing {
+    fn eq(&self, other: &Signing) -> bool {
+        Arc::ptr_eq(&self.0, &other.0) && self.1 == other.1 && self.2 == other.2
+    }
+}
+
+impl std::fmt::Debug for Signing {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Signing({:?} with {:?})", self.1, self.2)
     }
 }
 
@@ -162,6 +183,8 @@ pub struct Job {
     pub edit: Option<(PathBuf, Vec<String>, Editing)>,
     /// The items it copies or moves, if that is what it does.
     pub transfer: Option<Transferring>,
+    /// The file it signs, if that is what it does.
+    pub sign: Option<Signing>,
 }
 
 impl Job {
@@ -187,6 +210,7 @@ impl Job {
             add: None,
             edit: None,
             transfer: None,
+            sign: None,
         }
     }
 }
@@ -204,6 +228,8 @@ pub enum DialogEvent {
     Added(PathBuf, Vec<String>, Keys),
     /// Items of a storage were copied or moved, and how it went.
     Transferred(Transferred),
+    /// A file was signed.
+    Signed,
     /// A new archive went in this folder of this storage: shown, if `show`.
     Stored {
         place: Place,

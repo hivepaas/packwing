@@ -42,8 +42,8 @@ impl LicenseSection {
 fn gives(plan: Plan) -> String {
     match plan {
         Plan::Free => tr!(
-            "Every feature, and {count} storage across a network. Folders on this computer are \
-             not limited.",
+            "Every feature but signing files, and {count} storage across a network. Folders on \
+             this computer are not limited, and any signature can be checked.",
             count = FREE_REMOTE_STORAGES
         ),
         Plan::Pro => tr!("Every feature, and any number of storages."),

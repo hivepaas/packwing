@@ -27,6 +27,8 @@ hivepack-iso.workspace = true
 hivepack-lz4.workspace = true
 hivepack-open.workspace = true
 hivepack-rar.workspace = true
+# Files signed with SSH and hybrid keys.
+hivepack-sign.workspace = true
 hivepack-tar.workspace = true
 hivepack-udf.workspace = true
 hivepack-xar.workspace = true

@@ -14,22 +14,28 @@ use std::collections::BTreeSet;
 use std::sync::Arc;
 
 use gpui::{
-    Context, Div, Entity, EventEmitter, FontWeight, Image, ImageFormat, ObjectFit, Render,
-    StyledImage, Subscription, Task, Window, div, img, prelude::*, px, relative, rgb,
+    ClickEvent, Context, Div, Entity, EventEmitter, FontWeight, Image, ImageFormat, MouseButton,
+    ObjectFit, Pixels, Point, Render, StyledImage, Subscription, Task, Window, anchored, deferred,
+    div, img, prelude::*, px, relative, rgb,
 };
-use packwing_core::{Cancel, Control, Error, image_fits, read_entry};
+use packwing_core::{Cancel, Control, Error, Signed, image_fits, read_entry};
 
 use super::panel;
 use crate::colors::colors;
 use crate::input::{Changed, TextInput};
 use crate::model::{Archive, Entry, Kind, count, size, text_preview};
-use crate::widgets::{Fill, Size, Tone, button, chip, icon, note, tile, tonal_tint};
+use crate::signatures::{self, Looking, Standing};
+use crate::widgets::{
+    Fill, Size, Tone, button, chip, float_shadow, icon, icon_button, note, tile, tonal_tint,
+};
 
 /// What the user asked of the archive.
 pub enum ArchiveEvent {
     Extract,
     AddFiles,
     Test,
+    /// Sign its file.
+    Sign,
     /// Choose an archive to open.
     Open,
     /// Delete what is selected, or rename the one selected.
@@ -106,6 +112,11 @@ pub struct ArchivePage {
     /// What the search found: all of it, as it was typed, in an archive with
     /// a listing. A sample's search looks in its one folder.
     found: Vec<Found>,
+    /// What its signature says, none while it is looked at or for a sample.
+    signature: Option<Signed>,
+    looking: Option<Looking>,
+    /// Where the `…` menu is open.
+    more_at: Option<Point<Pixels>>,
     _typing: Subscription,
 }
 
@@ -131,6 +142,9 @@ impl ArchivePage {
             preview: Preview::Nothing,
             previewing: None,
             found: Vec::new(),
+            signature: None,
+            looking: None,
+            more_at: None,
             _typing: typing,
         }
     }
@@ -146,7 +160,54 @@ impl ArchivePage {
         self.selected.clear();
         self.found.clear();
         self.search.update(cx, |s, cx| s.set_text("", 0..0, cx));
+        self.more_at = None;
+        self.look_at_signature(cx);
         cx.notify();
+    }
+
+    /// Looks at the signature of the archive open: all of the file if it is on this
+    /// computer, and across a network only when asked.
+    pub fn look_at_signature(&mut self, cx: &mut Context<Self>) {
+        let local = self
+            .archive()
+            .and_then(|a| a.source.as_ref())
+            .is_some_and(|s| s.path().is_some());
+        self.read_signature(local, cx);
+    }
+
+    fn read_signature(&mut self, read_all: bool, cx: &mut Context<Self>) {
+        self.signature = None;
+        self.looking = None;
+        let Some((storage, path)) = self
+            .archive()
+            .and_then(|a| a.source.as_ref())
+            .and_then(|s| s.place())
+        else {
+            return;
+        };
+        self.looking = Some(signatures::start(
+            storage,
+            path,
+            read_all,
+            cx,
+            |this: &mut Self, signed, cx| {
+                this.signature = Some(signed);
+                this.looking = None;
+                cx.notify();
+            },
+        ));
+        cx.notify();
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn open_more_for_shot(&mut self, at: Point<Pixels>, cx: &mut Context<Self>) {
+        self.more_at = Some(at);
+        cx.notify();
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn signature_for_test(&self) -> Option<Signed> {
+        self.signature.clone()
     }
 
     /// The entries selected in the folder shown, by their paths in the archive.
@@ -374,6 +435,7 @@ impl ArchivePage {
 
     fn header(&self, a: &Archive, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
+        let signature = self.signature_chip(cx);
         let safe = div()
             .flex()
             .flex_shrink_0()
@@ -451,7 +513,8 @@ impl ArchivePage {
                             ))
                             // The samples show the checks' verdict; an
                             // archive read is checked as it is extracted.
-                            .when(a.listing.is_none(), |d| d.child(safe)),
+                            .when(a.listing.is_none(), |d| d.child(safe))
+                            .children(signature),
                     ),
             )
             .child(
@@ -482,8 +545,91 @@ impl ArchivePage {
                     .child(
                         button("test", tr!("Test"), Fill::Raised, Size::Large)
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Test))),
+                    )
+                    .child(
+                        icon_button("archive-more", "more", 52.)
+                            .bg(rgb(c.surface))
+                            .on_click(cx.listener(|this, e: &ClickEvent, _, cx| {
+                                this.more_at = Some(e.position());
+                                cx.notify();
+                            })),
                     ),
             )
+    }
+
+    /// What the header says of the signature, if there is anything to say.
+    fn signature_chip(&self, cx: &mut Context<Self>) -> Option<impl IntoElement + use<>> {
+        let c = colors();
+        if self.looking.is_some() {
+            return Some(div().id("signature").child(chip(
+                signatures::looking_words(),
+                c.surface,
+                c.on_tonal,
+            )));
+        }
+        let signed = self.signature.as_ref()?;
+        let (words, standing): (String, Standing) = signatures::said(signed, cx)?;
+        let (ground, ink) = standing.colors();
+        let not_checked = matches!(signed, Signed::NotChecked { .. });
+        Some(
+            div()
+                .id("signature")
+                .child(chip(words, ground, ink))
+                .when(not_checked, |d| {
+                    d.cursor_pointer()
+                        .on_click(cx.listener(|this, _, _, cx| this.read_signature(true, cx)))
+                }),
+        )
+    }
+
+    /// The `…` menu: what is used less, so that the header's buttons stay few.
+    fn more_menu(&self, at: Point<Pixels>, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let c = colors();
+        deferred(
+            anchored()
+                .position(at)
+                .snap_to_window_with_margin(px(8.))
+                .child(
+                    div()
+                        .id("archive-menu")
+                        .occlude()
+                        .min_w(px(180.))
+                        .p(px(6.))
+                        .flex()
+                        .flex_col()
+                        .rounded(px(16.))
+                        .bg(rgb(c.surface))
+                        .border_1()
+                        .border_color(rgb(c.outline))
+                        .shadow(float_shadow(8., 24.))
+                        .text_size(px(14.))
+                        .text_color(rgb(c.text))
+                        .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+                        .on_mouse_down_out(cx.listener(|this, _, _, cx| {
+                            this.more_at = None;
+                            cx.notify();
+                        }))
+                        .child(
+                            div()
+                                .id("menu-sign")
+                                .h(px(40.))
+                                .px(px(12.))
+                                .flex()
+                                .items_center()
+                                .rounded(px(12.))
+                                .cursor_pointer()
+                                .whitespace_nowrap()
+                                .hover(|s| s.bg(rgb(c.hover)))
+                                .child(tr!("Sign…"))
+                                .on_click(cx.listener(|this, _, _, cx| {
+                                    this.more_at = None;
+                                    cx.emit(ArchiveEvent::Sign);
+                                    cx.notify();
+                                })),
+                        ),
+                ),
+        )
+        .with_priority(1)
     }
 
     fn contents(&self, a: &Archive, cx: &mut Context<Self>) -> impl IntoElement {
@@ -884,8 +1030,10 @@ impl Render for ArchivePage {
         let Some(a) = self.archive() else {
             return page.child(self.empty(cx));
         };
+        let more = self.more_at.map(|at| self.more_menu(at, cx));
         page.child(self.search_bar())
             .child(self.header(a, cx))
+            .children(more)
             .child(
                 div()
                     .flex_1()

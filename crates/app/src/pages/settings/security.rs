@@ -1,7 +1,10 @@
 //! Security: what packwing checks and keeps when it extracts. What an organization
 //! fixed is shown locked, with its name in the policy, and only the rest can be changed.
 
-use gpui::{Context, FontWeight, Render, SharedString, Window, div, prelude::*, px, relative, rgb};
+use gpui::{
+    Context, Entity, FontWeight, PathPromptOptions, Render, SharedString, Window, div, prelude::*,
+    px, relative, rgb,
+};
 use packwing_i18n::tr;
 use packwing_policy::{
     ALLOWED_ENCRYPTION_METHODS, LICENSE_KEY, MARK_STORAGE_FILES, MIN_PASSWORD_LENGTH,
@@ -10,7 +13,9 @@ use packwing_policy::{
 
 use super::{rows, section, setting};
 use crate::colors::{Tint, colors};
-use crate::widgets::{Fill, Size, button, icon, switch, tile};
+use crate::input::TextInput;
+use crate::prefs;
+use crate::widgets::{Fill, Size, Tone, button, icon, legend, note, switch, tile};
 
 /// Monospace fonts for the policies' names, the first one installed.
 const MONO_FONTS: [&str; 8] = [
@@ -43,6 +48,15 @@ pub struct Security {
     mono: Option<SharedString>,
     /// The settings the user may change, unless a policy fixed them.
     toggles: Vec<Toggle>,
+    /// Where a public key is pasted, and why the last one was not taken.
+    new_key: Entity<TextInput>,
+    key_problem: Option<String>,
+}
+
+/// What a public key's line calls it: what follows the key, if anything does.
+fn comment_of(line: &str) -> String {
+    let mut words = line.trim().splitn(3, char::is_whitespace);
+    words.nth(2).unwrap_or_default().trim().to_owned()
 }
 
 /// A policy as the user reads it: what it is about, and what it does.
@@ -81,7 +95,7 @@ fn told(key: &str) -> (String, String) {
 }
 
 impl Security {
-    pub fn new(keep_mark: bool, ask_open: bool) -> Self {
+    pub fn new(keep_mark: bool, ask_open: bool, cx: &mut Context<Self>) -> Self {
         let toggles = vec![
             Toggle {
                 sets: Sets::KeepMark,
@@ -105,7 +119,147 @@ impl Security {
         Security {
             mono: None,
             toggles,
+            new_key: cx.new(|cx| TextInput::new(tr!("Paste a public key"), cx)),
+            key_problem: None,
         }
+    }
+
+    /// Trusts the key in `text`, a line of a `.pub` file.
+    fn trust(&mut self, text: &str, cx: &mut Context<Self>) {
+        match packwing_core::read_public_key(text) {
+            Ok(key) => {
+                let name = comment_of(text.lines().next().unwrap_or_default());
+                prefs::change(cx, |p| p.trust(name, &key));
+                self.key_problem = None;
+                self.new_key.update(cx, |k, cx| k.set_text("", 0..0, cx));
+            }
+            Err(why) => {
+                self.key_problem = Some(tr!(
+                    "This is not a public key packwing can check with: {why}.",
+                    why = why
+                ));
+            }
+        }
+        cx.notify();
+    }
+
+    /// Asks for a `.pub` file, and trusts its key.
+    fn pick_key(&mut self, cx: &mut Context<Self>) {
+        let picked = cx.prompt_for_paths(PathPromptOptions {
+            files: true,
+            directories: false,
+            multiple: false,
+            prompt: Some(tr!("Choose").into()),
+        });
+        cx.spawn(async move |this, cx| {
+            let Ok(Ok(Some(mut paths))) = picked.await else {
+                return;
+            };
+            let Some(path) = paths.pop() else { return };
+            let read = cx
+                .background_executor()
+                .spawn(async move {
+                    std::fs::File::open(&path).and_then(|f| {
+                        let mut text = String::new();
+                        std::io::Read::read_to_string(
+                            &mut std::io::Read::take(f, 64 << 10),
+                            &mut text,
+                        )?;
+                        Ok(text)
+                    })
+                })
+                .await;
+            let _ = this.update(cx, |this, cx| match read {
+                Ok(text) => this.trust(&text, cx),
+                Err(e) => {
+                    this.key_problem = Some(e.to_string());
+                    cx.notify();
+                }
+            });
+        })
+        .detach();
+    }
+
+    /// The keys whose signatures are taken as proof, on every plan.
+    fn trusted_keys(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let c = colors();
+        let kept = prefs::prefs(cx).trusted_keys;
+        let listed = kept.into_iter().enumerate().map(|(i, key)| {
+            let told = packwing_core::read_public_key(&key.line).map_or_else(
+                |_| tr!("This line cannot be read, so the key is not used"),
+                |public| format!("{} · {}", public.key_type(), public.fingerprint()),
+            );
+            setting(
+                key.name,
+                told,
+                button(
+                    ("trusted-remove", i),
+                    tr!("Remove"),
+                    Fill::Outline,
+                    Size::Small,
+                )
+                .on_click(cx.listener(move |_, _, _, cx| {
+                    prefs::change(cx, |p| {
+                        if i < p.trusted_keys.len() {
+                            p.trusted_keys.remove(i);
+                        }
+                    });
+                    cx.notify();
+                })),
+            )
+        });
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(8.))
+            .child(legend(tr!("Keys you trust")))
+            .child(div().text_size(px(13.)).text_color(rgb(c.muted)).child(tr!(
+                "A signature by one of these says who signed a file. One by any other key \
+                     proves nothing, whatever it matches."
+            )))
+            .child(rows(listed))
+            .child(
+                div()
+                    .flex()
+                    .flex_wrap()
+                    .items_center()
+                    .gap(px(8.))
+                    .child(
+                        div()
+                            .flex()
+                            .flex_1()
+                            .min_w(px(240.))
+                            .items_center()
+                            .h(px(40.))
+                            .px(px(14.))
+                            .rounded(px(14.))
+                            .bg(rgb(c.field))
+                            .text_size(px(14.))
+                            .child(self.new_key.clone()),
+                    )
+                    .child(
+                        button("trusted-add", tr!("Add"), Fill::Tonal, Size::Small).on_click(
+                            cx.listener(|this, _, _, cx| {
+                                let text = this.new_key.read(cx).text().to_owned();
+                                this.trust(&text, cx);
+                            }),
+                        ),
+                    )
+                    .child(
+                        button(
+                            "trusted-pick",
+                            tr!("Choose a file…"),
+                            Fill::Outline,
+                            Size::Small,
+                        )
+                        .on_click(cx.listener(|this, _, _, cx| this.pick_key(cx))),
+                    ),
+            )
+            .children(
+                self.key_problem
+                    .clone()
+                    .map(|why| note(Tone::Warn).child(why)),
+            )
     }
 
     fn banner(policy: &Policy) -> impl IntoElement {
@@ -223,6 +377,7 @@ impl Render for Security {
             .clone();
         let policy = crate::managed::policy(cx).clone();
         let locks_mark = policy.locks_mark();
+        let trusted = self.trusted_keys(cx);
         let open = self
             .toggles
             .iter()
@@ -247,7 +402,7 @@ impl Render for Security {
                 )
             });
         if !policy.is_managed() {
-            return section().child(rows(open));
+            return section().gap(px(20.)).child(rows(open)).child(trusted);
         }
         let shown = policy.rows();
         let fixed = shown
@@ -265,5 +420,6 @@ impl Render for Security {
             .gap(px(16.))
             .child(Self::banner(&policy))
             .child(rows(fixed.chain(open)))
+            .child(trusted)
     }
 }
