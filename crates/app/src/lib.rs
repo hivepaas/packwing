@@ -17,6 +17,7 @@ mod dialogs;
 mod editors;
 mod explorer;
 mod input;
+mod licensing;
 mod managed;
 mod model;
 mod open_with;
@@ -188,6 +189,7 @@ pub fn run(extensions: Extensions) {
             packwing_i18n::set_language(kept.language.as_deref());
             let window_bounds = placement::initial(kept.window, cx);
             cx.set_global(kept);
+            cx.set_global(licensing::Licensed::load());
             packwing_core::clean_opened_files();
             // GNOME's Wayland compositor draws no window frame, so Linux gets
             // client-side decorations. macOS and Windows keep the system's

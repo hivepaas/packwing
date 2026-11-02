@@ -5,6 +5,7 @@ mod about;
 mod compressing;
 mod extracting;
 mod general;
+mod license;
 mod right_click;
 mod security;
 
@@ -28,16 +29,18 @@ pub enum Section {
     Compressing,
     Security,
     RightClick,
+    License,
     About,
 }
 
 impl Section {
-    const ALL: [Section; 6] = [
+    const ALL: [Section; 7] = [
         Section::General,
         Section::Extracting,
         Section::Compressing,
         Section::Security,
         Section::RightClick,
+        Section::License,
         Section::About,
     ];
 
@@ -48,6 +51,7 @@ impl Section {
             Section::Compressing => tr!("Compressing"),
             Section::Security => tr!("Security"),
             Section::RightClick => tr!("Right-click menu"),
+            Section::License => tr!("License"),
             Section::About => tr!("About"),
         }
     }
@@ -83,6 +87,7 @@ impl SettingsPage {
                 cx.new(|_| security::Security::new(mark, ask)).into()
             },
             cx.new(|cx| right_click::RightClick::new(menu, cx)).into(),
+            cx.new(license::LicenseSection::new).into(),
             cx.new(|_| about::About).into(),
         ];
         SettingsPage {

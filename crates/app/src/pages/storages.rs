@@ -461,6 +461,14 @@ impl StoragesPage {
         Ok(())
     }
 
+    /// How many are across a network.
+    pub fn remote_count(&self) -> usize {
+        self.storages
+            .iter()
+            .filter(|s| !matches!(s.place, KeptPlace::Local(_)))
+            .count()
+    }
+
     #[cfg(all(test, feature = "shots"))]
     pub fn count(&self) -> usize {
         self.storages.len()
