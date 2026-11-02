@@ -18,7 +18,6 @@ use packwing_i18n::tr;
 
 use super::{panel, title};
 use crate::colors::colors;
-use crate::demo::Managed;
 use crate::right_click::RightClickMenu;
 
 /// The sections, in the menu's order.
@@ -65,10 +64,8 @@ pub struct SettingsPage {
 impl EventEmitter<AppearanceChosen> for SettingsPage {}
 
 impl SettingsPage {
-    /// `managed`: the organization's policies, when it runs packwing.
     pub fn new(
         appearance: Appearance,
-        managed: Option<Managed>,
         menu: Entity<RightClickMenu>,
         cx: &mut Context<Self>,
     ) -> Self {
@@ -83,8 +80,7 @@ impl SettingsPage {
             {
                 let kept = crate::prefs::prefs(cx);
                 let (mark, ask) = (kept.keep_mark, kept.ask_before_open);
-                cx.new(|_| security::Security::new(managed, mark, ask))
-                    .into()
+                cx.new(|_| security::Security::new(mark, ask)).into()
             },
             cx.new(|cx| right_click::RightClick::new(menu, cx)).into(),
             cx.new(|_| about::About).into(),

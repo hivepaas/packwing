@@ -14,6 +14,7 @@ use packwing_core::{Asked, Keys, NewArchive, Source};
 
 use crate::chrome;
 use crate::colors::{self, colors};
+#[cfg(all(test, feature = "shots"))]
 use crate::demo;
 use crate::dialogs::{
     AddDialog, AddStorageDialog, CreateDialog, Creating, DeleteDialog, DialogEvent, EditDialog,
@@ -162,10 +163,8 @@ fn what_a_drop_means(paths: &[PathBuf], takes_more: bool) -> Dropped {
 const SAVE_BOUNDS: Duration = Duration::from_millis(400);
 
 impl Workspace {
-    /// `managed`: run as an organization would, with its policies.
     pub fn new(
         first_run: bool,
-        managed: bool,
         right_click: Entity<RightClickMenu>,
         window: &mut Window,
         cx: &mut Context<Self>,
@@ -181,14 +180,7 @@ impl Workspace {
             move |cx| BrowsePage::new(recent, cx)
         });
         let browse_explorer = browse.read(cx).explorer().clone();
-        let settings = cx.new(|cx| {
-            SettingsPage::new(
-                appearance,
-                managed.then_some(demo::MANAGED),
-                right_click.clone(),
-                cx,
-            )
-        });
+        let settings = cx.new(|cx| SettingsPage::new(appearance, right_click.clone(), cx));
         let subscriptions = vec![
             cx.subscribe_in(
                 &archive,
