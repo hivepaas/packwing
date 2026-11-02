@@ -21,7 +21,7 @@ request of its own, with what the new clippy finds fixed.
 
 ## Words on the screen
 
-Say them through `tr!("Open")`, `tr!("Could not read {path}", path = p)` or `tr_n!(n, "{n} file", "{n} files")`, so that they can be translated, and run `scripts/i18n.py update` to bring `crates/i18n/locales/en.ftl` up to date; `scripts/i18n.py check` says if it is out of step. packwing speaks English so far. A language takes a line in each of `LANGUAGES` and `CATALOGS` in `crates/i18n/src/lib.rs`, and its `locales/<tag>.ftl`: `scripts/i18n.py todo <tag>` lists what is left to translate.
+Say them through `tr!("Open")`, `tr!("Could not read {path}", path = p)` or `tr_n!(n, "{n} file", "{n} files")`, so that they can be translated, and run `scripts/i18n.py update` to bring `crates/i18n/locales/en.ftl` up to date; `scripts/i18n.py check` says if it is out of step. packwing speaks 15 languages. New words stay English in each until they are translated: `scripts/i18n.py todo <tag>` lists what is left, and `scripts/i18n.py apply <tag> <file>` takes the translations. A language takes a line in each of `LANGUAGES` and `CATALOGS` in `crates/i18n/src/lib.rs`, and its `locales/<tag>.ftl`. To see what one does to the layout: `SHOTS_LANGUAGE=<tag> cargo test -p packwing --no-default-features --features wayland,shots shots::shots`, which draws to `target/shots/<tag>`.
 
 ## Licensing your contribution
 

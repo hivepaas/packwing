@@ -59,6 +59,31 @@ impl gpui::Global for Extensions {}
 /// with fontTools' `varLib.instancer --static --update-name-table`.
 pub const FONT: &str = "Nunito";
 
+/// The system's fonts for Chinese, Japanese and Korean, which Nunito has none of, the
+/// language's own first, as a character shared between them is drawn differently in each.
+/// Those not installed are passed over.
+fn cjk_fonts() -> Vec<String> {
+    let japanese = ["Hiragino Sans", "Yu Gothic UI", "Noto Sans CJK JP"];
+    let korean = ["Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans CJK KR"];
+    let simplified = ["PingFang SC", "Microsoft YaHei UI", "Noto Sans CJK SC"];
+    let traditional = ["PingFang TC", "Microsoft JhengHei UI", "Noto Sans CJK TC"];
+    let order = match packwing_i18n::language() {
+        "ko" => [korean, japanese, simplified, traditional],
+        "zh" => [simplified, traditional, japanese, korean],
+        "zh-Hant" => [traditional, simplified, japanese, korean],
+        _ => [japanese, simplified, traditional, korean],
+    };
+    order.iter().flatten().map(|f| (*f).to_owned()).collect()
+}
+
+/// The window's font: [`FONT`], and for what it lacks [`cjk_fonts`].
+pub fn ui_font() -> gpui::Font {
+    gpui::Font {
+        fallbacks: Some(gpui::FontFallbacks::from_fonts(cjk_fonts())),
+        ..gpui::font(FONT)
+    }
+}
+
 const FONTS: [&[u8]; 4] = [
     include_bytes!("../assets/fonts/Nunito-Regular.ttf"),
     include_bytes!("../assets/fonts/Nunito-Medium.ttf"),

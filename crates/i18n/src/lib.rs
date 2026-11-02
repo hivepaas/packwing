@@ -8,9 +8,8 @@
 //! comment above each (`scripts/i18n.py` writes and checks them). What has no
 //! translation yet, and all of English, is shown as written in the code.
 //!
-//! packwing speaks only English so far. A language is added by one line in
-//! each of [`LANGUAGES`] and `CATALOGS`, and its `locales/<tag>.ftl`: nothing
-//! else changes.
+//! A language is added by one line in each of [`LANGUAGES`] and `CATALOGS`,
+//! and its `locales/<tag>.ftl`: nothing else changes.
 
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -19,11 +18,43 @@ use fluent_bundle::concurrent::FluentBundle;
 use fluent_bundle::{FluentArgs, FluentResource, FluentValue};
 
 /// The languages there are, by tag, each named in itself.
-pub const LANGUAGES: &[(&str, &str)] = &[("en", "English")];
+pub const LANGUAGES: &[(&str, &str)] = &[
+    ("en", "English"),
+    ("de", "Deutsch"),
+    ("es", "Español"),
+    ("fr", "Français"),
+    ("id", "Bahasa Indonesia"),
+    ("it", "Italiano"),
+    ("pt", "Português (Brasil)"),
+    ("tr", "Türkçe"),
+    ("vi", "Tiếng Việt"),
+    ("ru", "Русский"),
+    ("uk", "Українська"),
+    ("ja", "日本語"),
+    ("ko", "한국어"),
+    ("zh", "简体中文"),
+    ("zh-Hant", "繁體中文"),
+];
 
-/// The translations, by language tag (English is the code's own):
-/// `("vi", include_str!("../locales/vi.ftl"))`.
-const CATALOGS: &[(&str, &str)] = &[];
+/// The translations, by language tag (English is the code's own). `pt` is
+/// Brazil's Portuguese, `zh` simplified Chinese, `zh-Hant` traditional
+/// Chinese in Taiwan's words.
+const CATALOGS: &[(&str, &str)] = &[
+    ("de", include_str!("../locales/de.ftl")),
+    ("es", include_str!("../locales/es.ftl")),
+    ("fr", include_str!("../locales/fr.ftl")),
+    ("id", include_str!("../locales/id.ftl")),
+    ("it", include_str!("../locales/it.ftl")),
+    ("ja", include_str!("../locales/ja.ftl")),
+    ("ko", include_str!("../locales/ko.ftl")),
+    ("pt", include_str!("../locales/pt.ftl")),
+    ("ru", include_str!("../locales/ru.ftl")),
+    ("tr", include_str!("../locales/tr.ftl")),
+    ("uk", include_str!("../locales/uk.ftl")),
+    ("vi", include_str!("../locales/vi.ftl")),
+    ("zh", include_str!("../locales/zh.ftl")),
+    ("zh-Hant", include_str!("../locales/zh-Hant.ftl")),
+];
 
 /// The language in use, and its translations.
 struct Current {
@@ -256,6 +287,61 @@ mod tests {
     }
 
     #[test]
+    fn every_catalog_reads_whole_and_says_its_values() {
+        for (tag, source) in CATALOGS {
+            if let Err((_, errors)) = FluentResource::try_new(source.to_string()) {
+                panic!("{tag}.ftl: {errors:?}");
+            }
+        }
+        let _turn = ONE_AT_A_TIME.lock();
+        // Every language says what it is given, whatever the count, with nothing left
+        // of Fluent's own.
+        for (tag, _) in CATALOGS {
+            set_language(Some(tag));
+            for n in [1, 2, 5, 21] {
+                let said = tr_n!(n, "{n} key from {name}", "{n} keys from {name}", name = "x");
+                assert!(
+                    said.contains(&n.to_string()) && said.contains('x'),
+                    "{tag}: {said}"
+                );
+                assert!(!said.contains(['$', '{', '}']), "{tag}: {said}");
+            }
+            assert_ne!(tr!("Add to {name}", name = "x"), "Add to x", "{tag}");
+        }
+        // Russian's forms, by the count.
+        set_language(Some("ru"));
+        let keys = |n: i64| tr_n!(n, "{n} key from {name}", "{n} keys from {name}", name = "x");
+        assert_ne!(keys(1), keys(3));
+        assert_ne!(keys(3), keys(5));
+        assert_eq!(keys(21), keys(1).replace('1', "21"));
+        set_language(Some("en"));
+    }
+
+    #[test]
+    fn chinese_is_traditional_by_its_script_or_region() {
+        for tag in [
+            "zh-Hant",
+            "zh-Hant-TW",
+            "zh-TW",
+            "zh_TW.UTF-8",
+            "zh-HK",
+            "zh-MO",
+        ] {
+            assert_eq!(supported(tag), Some("zh-Hant"), "{tag}");
+        }
+        for tag in [
+            "zh",
+            "zh-CN",
+            "zh-Hans",
+            "zh-Hans-HK",
+            "zh_SG",
+            "zh_CN.UTF-8",
+        ] {
+            assert_eq!(supported(tag), Some("zh"), "{tag}");
+        }
+    }
+
+    #[test]
     fn a_translation_is_found_by_its_english() {
         let _turn = ONE_AT_A_TIME.lock();
         let source = format!(
@@ -278,27 +364,6 @@ mod tests {
         );
         assert_eq!(tr_n!(3, "{n} host", "{n} hosts"), "3 máy chủ");
         assert_eq!(tr!("Not translated yet"), "Not translated yet");
-        set_language(Some("en"));
-    }
-
-    #[test]
-    fn every_catalog_reads_whole_and_says_its_values() {
-        for (tag, source) in CATALOGS {
-            if let Err((_, errors)) = FluentResource::try_new(source.to_string()) {
-                panic!("{tag}.ftl: {errors:?}");
-            }
-        }
-        let _turn = ONE_AT_A_TIME.lock();
-        // Every language says every message whole: no `{` left of Fluent's.
-        for (tag, _) in LANGUAGES {
-            set_language(Some(tag));
-            for n in [1, 2, 5] {
-                let said = tr_n!(n, "{n} host", "{n} hosts");
-                assert!(said.contains(&n.to_string()), "{tag}: {said}");
-            }
-            let said = tr!("Sync: {e}", e = "x");
-            assert!(said.contains('x') && !said.contains('$'), "{tag}: {said}");
-        }
         set_language(Some("en"));
     }
 

@@ -1278,19 +1278,20 @@ impl Workspace {
                         .when(!on, |d| d.group_hover(id, |s| s.bg(rgb(c.field))))
                         .child(icon(icon_name, 20., ink)),
                 )
-                .child(label)
+                .child(div().text_center().child(label))
         };
         let page = self.page;
         // Where the system draws the title bar, the badge has no place: a dot says it.
         let dot = !chrome::draws_title_bar(window) && self.updates.read(cx).badge().is_some();
         div()
-            .w(px(88.))
+            // As wide as the longest word of a label in any language: it does not break.
+            .w(px(100.))
             .flex_shrink_0()
             .flex()
             .flex_col()
             .items_center()
             .gap(px(10.))
-            .px(px(12.))
+            .px(px(4.))
             .pt(px(top))
             .pb(px(20.))
             .child(
@@ -1454,7 +1455,7 @@ impl Render for Workspace {
             .on_drop(cx.listener(|this, dropped: &ExternalPaths, window, cx| {
                 this.dropped(dropped.paths().to_vec(), window, cx)
             }))
-            .font_family(crate::FONT)
+            .font(crate::ui_font())
             .text_size(px(15.))
             .text_color(rgb(c.text))
             .child(framed)

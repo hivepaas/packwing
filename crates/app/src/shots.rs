@@ -604,9 +604,20 @@ fn out_dir() -> PathBuf {
     dir.canonicalize().expect("cannot find target/shots")
 }
 
+/// Every screen, in `SHOTS_LANGUAGE` if it names one, then to `target/shots/<it>`:
+/// for looking at what a language does to the layout, with this test alone.
 #[test]
 fn shots() {
-    let dir = out_dir();
+    let language = std::env::var("SHOTS_LANGUAGE").ok();
+    let dir = match &language {
+        Some(tag) => {
+            packwing_i18n::set_language(Some(tag));
+            let dir = out_dir().join(tag);
+            std::fs::create_dir_all(&dir).expect("cannot make its folder");
+            dir
+        }
+        None => out_dir(),
+    };
     for (name, set_up) in SCREENS {
         for dark in [false, true] {
             let text = Arc::new(gpui_wgpu::CosmicTextSystem::new(crate::FONT));
