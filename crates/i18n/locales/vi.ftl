@@ -1,0 +1,1916 @@
+# packwing in Vietnamese. Each message is found by its English, the
+# comment above it; scripts/i18n.py keeps this file in step with the code.
+
+# Appearance: {name}. Click for {name2}.
+t17634ee0 = Giao diện: { $name }. Bấm để chuyển sang { $name2 }.
+
+# Stop and say so
+tdc8b782b = Dừng và báo lỗi
+
+# Replace it
+t1e17fc0c = Thay luôn
+
+# Skip it
+tad9909cb = Bỏ qua
+
+# Add
+t9dc3aa14 = Thêm
+
+# The top of {name}
+t369f9d4d = Trên cùng của { $name }
+
+# Choose what to add
+t48b969a8 = Chọn thứ cần thêm
+
+# {count} item | {count} items
+t534e422e =
+    { $n ->
+       *[other] { $count } mục
+    }
+
+# {count} file | {count} files
+tde674bd8 =
+    { $n ->
+       *[other] { $count } tệp
+    }
+
+# Add to {name}
+t0d53ac5e = Thêm vào { $name }
+
+# Goes in
+t36e95c22 = Đặt vào
+
+# If a file of that name is there
+t34c69cec = Nếu đã có tệp trùng tên
+
+# This archive is signed. With more in it, it will no longer match its signature, until it is signed again.
+t55ed1cfd = Tệp nén này đã được ký. Thêm tệp vào thì nó sẽ không còn khớp chữ ký cho đến khi được ký lại.
+
+# The new files are encrypted with the archive’s password.
+t52b1d223 = Các tệp mới được mã hoá bằng mật khẩu của tệp nén.
+
+# Cancel
+t35afca3b = Huỷ
+
+# Name
+t0fe07306 = Tên
+
+# Folder
+t06357afd = Thư mục
+
+# Its secrets could not be read: {why}
+t2af0c8ab = Không đọc được các bí mật của nó: { $why }
+
+# That folder is not on this computer.
+ta4073fff = Thư mục đó không có trên máy tính này.
+
+# Its secrets could not be kept: {why}
+ta213827f = Không lưu giữ được các bí mật của nó: { $why }
+
+# Local folder
+te075bcbc = Thư mục trên máy
+
+# Trying it…
+t214cdad5 = Đang thử…
+
+# It answers.
+t3bd5bc9f = Có phản hồi.
+
+# It did not answer: {why}
+t0ac8fa44 = Không có phản hồi: { $why }
+
+# Edit storage
+t7bae68d0 = Sửa nơi lưu trữ
+
+# Add a storage
+t4fe8f806 = Thêm nơi lưu trữ
+
+# Secrets go in the system’s keychain, not with the settings.
+t3f9544ac = Các bí mật được lưu trong chuỗi khoá của hệ thống, không nằm cùng cài đặt.
+
+# Its files stay where they are.
+t4e4acf9a = Các tệp của nó vẫn ở nguyên chỗ cũ.
+
+# Ask for this computer’s password to open it
+t7a7d61e9 = Hỏi mật khẩu của máy tính này để mở
+
+# For a computer left unlocked: what unlocks this computer opens it, and it asks again after 5 minutes left unused.
+t1b5ad6b1 = Dành cho máy tính hay để mở khoá: cái mở khoá máy tính này cũng mở được nó, và nó hỏi lại sau 5 phút không dùng.
+
+# packwing Free keeps one storage across a network. A Pro or Enterprise license lifts this: Settings › License. Folders on this computer are not limited.
+t89f1bf95 = packwing Free chỉ giữ một nơi lưu trữ qua mạng. Giấy phép Pro hoặc Enterprise bỏ giới hạn này: Cài đặt › Giấy phép. Thư mục trên máy tính này không bị giới hạn.
+
+# Test connection
+te0f3b6b7 = Thử kết nối
+
+# Save
+t4d2d5d68 = Lưu
+
+# Nothing chosen yet
+tcf390b0a = Chưa chọn gì
+
+# {join} and {more} more
+t8399ef70 = { $join } và { $more } mục nữa
+
+# Hide what goes in
+t5a420780 = Ẩn phần sẽ thêm
+
+# Show what goes in
+t9a20eb53 = Hiện phần sẽ thêm
+
+# Take it out
+t90a93ec7 = Lấy ra
+
+# Drop them to add them
+t6a4aedbe = Thả vào để thêm
+
+# What goes in
+t3b7c797a = Sẽ thêm
+
+# + Files
+tba8a1e71 = + Tệp
+
+# + Folder
+tcef8b0ce = + Thư mục
+
+# Add the files or a folder to put in the archive.
+t2e5c8c3e = Thêm tệp hoặc thư mục để đưa vào tệp nén.
+
+# Windows 11 and Linux open 7z on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
+tf7f64b21 = Windows 11 và Linux tự mở được 7z; macOS, điện thoại và Windows cũ có thể cần ứng dụng giải nén. Để chia sẻ cho mọi người, hãy chọn .zip.
+
+# Linux, macOS and Windows 11 open it on their own; phones and older Windows may need an archiver app. To share with anyone, pick .zip.
+t051031b1 = Linux, macOS và Windows 11 tự mở được; điện thoại và Windows cũ có thể cần ứng dụng giải nén. Để chia sẻ cho mọi người, hãy chọn .zip.
+
+# Linux and Windows 11 open it on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
+tc2c29183 = Linux và Windows 11 tự mở được; macOS, điện thoại và Windows cũ có thể cần ứng dụng giải nén. Để chia sẻ cho mọi người, hãy chọn .zip.
+
+# Most computers need an archiver app or the lz4 tool to open it. To share with anyone, pick .zip.
+te9afe1c2 = Hầu hết máy tính cần ứng dụng giải nén hoặc công cụ lz4 để mở. Để chia sẻ cho mọi người, hãy chọn .zip.
+
+# It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
+t16463509 = Nó chỉ chứa một tệp. Công cụ dòng lệnh mở được; Windows và macOS có thể cần ứng dụng giải nén. Để chia sẻ cho mọi người, hãy chọn .zip.
+
+# Lowest
+t5d7dbfdb = Thấp nhất
+
+# Low
+tb1dd9521 = Thấp
+
+# Medium
+t09be5f96 = Vừa
+
+# High
+tbe0a061d = Cao
+
+# Highest
+t9487b22f = Cao nhất
+
+# Don’t split
+t56ee6829 = Không chia nhỏ
+
+# 25 MB (email)
+tc6ba1c9c = 25 MB (email)
+
+# 4 GB (USB stick)
+tfc6b3ea5 = 4 GB (USB)
+
+# Custom size…
+t0fcf9e2d = Cỡ tuỳ chỉnh…
+
+# Size
+ta6478e7c = Cỡ chữ
+
+# Password
+t2cc30838 = Mật khẩu
+
+# age1…, age1pq1… or ssh-ed25519 …
+t76cb89a8 = age1…, age1pq1… hoặc ssh-ed25519 …
+
+# Save here
+ta1f147a6 = Lưu tại đây
+
+# Use these keys
+t1a01e439 = Dùng các khoá này
+
+# {name} compression
+te2db10f6 = Nén { $name }
+
+# Parts of 25 MB
+ta999efe2 = Phần 25 MB
+
+# Parts of 4 GB
+t760df467 = Phần 4 GB
+
+# Parts of {size}
+tdd286479 = Phần { $size }
+
+# Parts of a size to type
+tafd4b17d = Phần có cỡ tự nhập
+
+# Public key
+t9981f45f = Khoá công khai
+
+# Beside the files
+t757989af = Cạnh các tệp
+
+# Save in
+tf2d34837 = Lưu vào
+
+# Folder…
+tc8abcd43 = Thư mục…
+
+# Storage…
+td0d8c806 = Nơi lưu trữ…
+
+# Parts are made in this computer’s temporary folder first, then uploaded, so they need room there.
+tdc045fbd = Các phần được tạo trong thư mục tạm của máy tính này trước rồi mới tải lên, nên cần đủ chỗ trống ở đó.
+
+# {ext} is made in this computer’s temporary folder first, then uploaded, so it needs room there. .zip and tar formats go straight to this storage.
+tb6b5d19b = { $ext } được tạo trong thư mục tạm của máy tính này trước rồi mới tải lên, nên cần đủ chỗ trống ở đó. Định dạng .zip và tar được ghi thẳng vào nơi lưu trữ này.
+
+# It is made in this computer’s temporary folder first, then uploaded, so it needs room there.
+ted6f948e = Nó được tạo trong thư mục tạm của máy tính này trước rồi mới tải lên, nên cần đủ chỗ trống ở đó.
+
+# {place} takes files of up to {most}. An archive larger than that fails when it starts to upload.
+t91729834 = { $place } nhận tệp tối đa { $most }. Tệp nén lớn hơn sẽ lỗi khi bắt đầu tải lên.
+
+# Choose a storage, and a folder in it
+td7627e48 = Chọn một nơi lưu trữ và một thư mục trong đó
+
+# New folder
+t1926d127 = Thư mục mới
+
+# Give it a name, without / or \ in it.
+ta598b15b = Đặt tên, không có / hoặc \ trong đó.
+
+# Hide advanced
+tae2a96e9 = Ẩn nâng cao
+
+# Advanced options
+t701d5ed9 = Tuỳ chọn nâng cao
+
+# Compression level
+td386c9ef = Mức nén
+
+# Higher makes a smaller archive, which takes longer to make, not to open.
+t273a832f = Mức cao hơn cho tệp nén nhỏ hơn, tạo lâu hơn nhưng mở không chậm hơn.
+
+# Split into parts
+tca4436bd = Chia thành nhiều phần
+
+# Each part
+t642c444d = Mỗi phần
+
+# Parts open in 7-Zip and archivers like it, not in the tools built into Windows and macOS.
+t2fd629a2 = Các phần mở được bằng 7-Zip và các ứng dụng giải nén tương tự, không mở được bằng công cụ có sẵn của Windows và macOS.
+
+# A part takes a size of 1 MB or more, such as 100 MB.
+t804e2099 = Mỗi phần cần cỡ từ 1 MB trở lên, ví dụ 100 MB.
+
+# Encrypt with age
+t22784ad9 = Mã hoá bằng age
+
+# Protect with a password
+tae8d8740 = Bảo vệ bằng mật khẩu
+
+# Suggest
+ta6e44ce5 = Gợi ý
+
+# Keep this somewhere safe: without it, this archive can never be opened.
+t8eb937cf = Hãy cất ở nơi an toàn: không có nó thì không bao giờ mở lại được tệp nén này.
+
+# Type a password, or turn this off.
+t62b19318 = Nhập mật khẩu, hoặc tắt mục này.
+
+# Hide file names too
+t2198d77b = Ẩn cả tên tệp
+
+# With a password, the built-in Windows and macOS tools can’t open this ZIP. The recipient needs an archiver app. File names also stay visible; pick .7z to hide them.
+t659d3827 = Có mật khẩu thì công cụ có sẵn của Windows và macOS không mở được ZIP này; người nhận cần ứng dụng giải nén. Tên tệp cũng vẫn hiện; hãy chọn .7z để ẩn chúng.
+
+# Saved as {name}. The names inside are encrypted too. Windows and macOS may need the age tool or an archiver app to open it.
+tdc4a7daf = Đã lưu thành { $name }. Các tên bên trong cũng được mã hoá. Windows và macOS có thể cần công cụ age hoặc ứng dụng giải nén để mở.
+
+# {n} key from {name} | {n} keys from {name}
+t575a1a6c =
+    { $n ->
+       *[other] { $n } khoá từ { $name }
+    }
+
+# Remove
+t21a5901d = Gỡ
+
+# {n} key in it was left out, of a kind age does not encrypt to. | {n} keys in it were left out, of a kind age does not encrypt to.
+tbb501800 =
+    { $n ->
+       *[other] { $n } khoá trong đó bị bỏ qua vì thuộc loại mà age không mã hoá cho được.
+    }
+
+# From a file…
+t40d7c944 = Từ tệp…
+
+# Type a public key, or choose a file of them.
+tcb028b06 = Nhập khoá công khai, hoặc chọn tệp chứa chúng.
+
+# A post-quantum key: to open this, the age tool must be version 1.3 or newer.
+ta856ab34 = Đây là khoá hậu lượng tử: để mở, công cụ age phải từ phiên bản 1.3 trở lên.
+
+# Only the private key that goes with it opens this, and nothing can if that key is lost.
+t39644118 = Chỉ khoá riêng tương ứng mới mở được, và nếu mất khoá đó thì không gì mở được.
+
+# Weak
+t6de87ae9 = Yếu
+
+# Fair
+t82fa0d53 = Khá
+
+# Strong
+t0dad409a = Mạnh
+
+# Choose what to put in it
+t5461cfa6 = Chọn thứ cần đưa vào
+
+# New archive
+tf352befb = Tệp nén mới
+
+# Create
+t990de47d = Tạo
+
+# {n} item | {n} items
+tfff7fd6c =
+    { $n ->
+       *[other] { $n } mục
+    }
+
+# Move {what} to the Trash?
+tdf5a8d53 = Chuyển { $what } vào Thùng rác?
+
+# Delete {what}?
+ta297d6c5 = Xoá { $what }?
+
+# It can be put back from the system’s Trash.
+te5e137a1 = Có thể khôi phục từ Thùng rác của hệ thống.
+
+# This cannot be undone from packwing.
+t3947dab4 = Không thể hoàn tác việc này từ packwing.
+
+# and {n} more | and {n} more
+t6f358d35 =
+    { $n ->
+       *[other] và { $n } mục nữa
+    }
+
+# Move to Trash
+ta036661b = Chuyển vào Thùng rác
+
+# Delete
+t5797ea6a = Xoá
+
+# {many} items
+t49912bd4 = { $many } mục
+
+# Rename {what}
+t83401013 = Đổi tên { $what }
+
+# New name
+taf4cad88 = Tên mới
+
+# It goes from the archive for good, folders with all they hold. This can’t be undone.
+t33cb3e89 = Sẽ bị xoá hẳn khỏi tệp nén, thư mục thì xoá cùng mọi thứ bên trong. Không thể hoàn tác.
+
+# This archive is signed. After this change it will no longer match its signature, until it is signed again.
+t8f575534 = Tệp nén này đã được ký. Sau thay đổi này nó sẽ không còn khớp chữ ký cho đến khi được ký lại.
+
+# Rename
+tc80631f3 = Đổi tên
+
+# The archive’s password
+t8a168799 = Mật khẩu của tệp nén
+
+# one folder
+td571ce35 = một thư mục
+
+# one file
+t95c9ec7b = một tệp
+
+# {location} › {one} · {kind}, so right here
+t63f6caf1 = { $location } › { $one } · { $kind }, nên giải nén ngay tại đây
+
+# {new_folder} · {counted}, so in a new folder
+t2380eff7 = { $new_folder } · { $counted }, nên giải nén vào thư mục mới
+
+# Extract here
+t354232ec = Giải nén tại đây
+
+# {picked} selected
+t9addc37e = Đã chọn { $picked }
+
+# All {counted}
+t649feaf8 = Toàn bộ { $counted }
+
+# What should it extract?
+td12e23bf = Giải nén những gì?
+
+# Smart
+t54535972 = Thông minh
+
+# Recommended
+t7865024c = Nên dùng
+
+# Where should the files go?
+td35f540c = Các tệp sẽ để ở đâu?
+
+# Right here
+t900a8a39 = Ngay tại đây
+
+# Another folder
+t9f128ba8 = Thư mục khác
+
+# Choose…
+t58daae9c = Chọn…
+
+# Goes to {destination}
+t8195aed2 = Đến { $destination }
+
+# Checked as it goes
+tb6c9570b = Kiểm tra trong khi giải nén
+
+# · Nothing leaves the folder or passes the size limit
+t11424797 = · Không có gì ra khỏi thư mục hay vượt giới hạn dung lượng
+
+# {name} came from the Internet. It will stay marked, so you’ll be asked before it runs.
+t60cb2adf = { $name } được tải từ Internet. Dấu này sẽ được giữ lại, nên bạn sẽ được hỏi trước khi chạy.
+
+# Extract archive
+t834ba3c0 = Giải nén tệp nén
+
+# Extract
+t30518e1e = Giải nén
+
+# Open {name}?
+tcfe84c2f = Mở { $name }?
+
+# packwing puts a copy in a temporary folder and opens that. Changes to it do not go back in the archive.
+t5b9fc10b = packwing đặt một bản sao vào thư mục tạm và mở bản đó. Thay đổi trên đó không được ghi ngược vào tệp nén.
+
+# This is a program: opening it runs it. Only do so if you trust where the archive came from.
+tdc4d48bd = Đây là một chương trình: mở ra là chạy nó. Chỉ làm vậy nếu bạn tin nguồn của tệp nén.
+
+# Don’t ask again
+t00c5d168 = Không hỏi lại
+
+# Run it
+t72430853 = Chạy
+
+# Open
+t538b10e9 = Mở
+
+# Choose
+t73c66160 = Chọn
+
+# This is not a key file packwing can use: {why}.
+tcf6986a7 = Đây không phải tệp khoá mà packwing dùng được: { $why }.
+
+# Could not read {path}: {e}.
+t1dc6961f = Không đọc được { $path }: { $e }.
+
+# The passphrase
+t1e921d00 = Cụm mật khẩu
+
+# The key file’s passphrase
+t4051f4d7 = Cụm mật khẩu của tệp khoá
+
+# Enter the passphrase
+tbd0672da = Nhập cụm mật khẩu
+
+# Passphrase
+t191a2dc5 = Cụm mật khẩu
+
+# This file is encrypted with age. packwing keeps the passphrase only while the archive is open, and never writes it down.
+t663ac047 = Tệp này được mã hoá bằng age. packwing chỉ giữ cụm mật khẩu khi tệp nén còn mở, và không bao giờ ghi lại.
+
+# Enter the password
+t513ea7ab = Nhập mật khẩu
+
+# This archive is encrypted. packwing keeps its password only while the archive is open, and never writes it down.
+t0f356f7c = Tệp nén này được mã hoá. packwing chỉ giữ mật khẩu khi tệp nén còn mở, và không bao giờ ghi lại.
+
+# Choose the key file
+t3c521a4e = Chọn tệp khoá
+
+# Key file
+t6ed7c612 = Tệp khoá
+
+# This file is encrypted with age to a key: an age key file or an SSH key. packwing keeps what it reads from it only while the archive is open, and never writes it down.
+tcda9a50a = Tệp này được age mã hoá cho một khoá: tệp khoá age hoặc khoá SSH. packwing chỉ giữ những gì đọc được từ đó khi tệp nén còn mở, và không bao giờ ghi lại.
+
+# Enter the key file’s passphrase
+t808b85c5 = Nhập cụm mật khẩu của tệp khoá
+
+# The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
+t2a39d1e8 = Bản thân tệp khoá cũng được bảo vệ. packwing chỉ giữ cụm mật khẩu của nó khi tệp nén còn mở, và không bao giờ ghi lại.
+
+# Extracting…
+t94279f82 = Đang giải nén…
+
+# Uploading…
+tc75fe478 = Đang tải lên…
+
+# Creating…
+t01fcd896 = Đang tạo…
+
+# Adding…
+t2060c750 = Đang thêm…
+
+# Changing the archive…
+t186fbef5 = Đang sửa tệp nén…
+
+# Opening…
+tc40f2321 = Đang mở…
+
+# Testing…
+t19d1cb65 = Đang kiểm tra…
+
+# Copying…
+t02dd17e0 = Đang sao chép…
+
+# Moving…
+t890f7ed1 = Đang di chuyển…
+
+# Signing…
+t7b8f8780 = Đang ký…
+
+# Couldn’t sign
+t4489f97c = Không ký được
+
+# Couldn’t copy
+t613e4e9c = Không sao chép được
+
+# Couldn’t move
+t9796adec = Không di chuyển được
+
+# Couldn’t extract
+tacd22c56 = Không giải nén được
+
+# Couldn’t create the archive
+t9d0e01bc = Không tạo được tệp nén
+
+# Couldn’t add the files
+tfbd989b0 = Không thêm được tệp
+
+# Couldn’t change the archive
+tcdc4a49c = Không sửa được tệp nén
+
+# Couldn’t open the file
+t041198a4 = Không mở được tệp
+
+# The test failed
+tfcd070a5 = Kiểm tra không đạt
+
+# Paused
+tde281feb = Tạm dừng
+
+# Starting…
+t73727cef = Đang bắt đầu…
+
+# Almost done
+ta550a6a9 = Sắp xong
+
+# About {secs} seconds left
+t3045da16 = Còn khoảng { $secs } giây
+
+# About a minute left
+tf727815c = Còn khoảng một phút
+
+# About {div_ceil} minutes left
+tbd7a3305 = Còn khoảng { $div_ceil } phút
+
+# {name} · checking that every file reads
+t0d56ec7c = { $name } · đang kiểm tra mọi tệp đều đọc được
+
+# The test passed
+tdf0ce240 = Kiểm tra đạt
+
+# {count} file read through, {size}, with no errors. | {count} files read through, {size}, with no errors.
+tc1421590 =
+    { $n ->
+       *[other] Đã đọc hết { $count } tệp, { $size }, không có lỗi.
+    }
+
+# Close
+tcd86acc3 = Đóng
+
+# {count} of {count2} files · {size} of {size2}
+t27f1ab7d = { $count } / { $count2 } tệp · { $size } / { $size2 }
+
+# Open the folder when it’s done
+tf0f1017b = Mở thư mục khi xong
+
+# Run in background
+tb800c0ef = Chạy nền
+
+# Resume
+t454d1d8a = Tiếp tục
+
+# Pause
+t44f9bf2d = Tạm dừng
+
+# A passphrase for the new key
+tf5593f05 = Cụm mật khẩu cho khoá mới
+
+# The same passphrase again
+tad5c08e6 = Nhập lại cụm mật khẩu
+
+# Signing takes a Pro or Enterprise license: Settings › License. Checking signatures is free, on every plan.
+t29db17cb = Ký cần giấy phép Pro hoặc Enterprise: Cài đặt › Giấy phép. Kiểm tra chữ ký thì miễn phí ở mọi gói.
+
+# This is one part of a file cut in several. A signature covers one file, and would seem to cover them all, so packwing does not sign parts.
+t020be41a = Đây là một phần của tệp được cắt thành nhiều phần. Chữ ký chỉ áp dụng cho một tệp và có vẻ như bao trùm tất cả, nên packwing không ký các phần.
+
+# That passphrase does not open this key.
+tc5357c97 = Cụm mật khẩu đó không mở được khoá này.
+
+# This is not a key packwing can sign with: {why}.
+t662c29f9 = Đây không phải khoá mà packwing ký được: { $why }.
+
+# The two passphrases are not the same.
+t335fe90b = Hai cụm mật khẩu không giống nhau.
+
+# Keep the key here
+t9306dafe = Giữ khoá ở đây
+
+# No key chosen
+te58c13f5 = Chưa chọn khoá
+
+# Key
+tcd1ac90c = Khoá
+
+# New key…
+t9e1134da = Khoá mới…
+
+# Again
+t58fb56ef = Nhập lại
+
+# A new key holds Ed25519 and ML-DSA-65 together, so that a signature stands even if one of them falls. Only packwing and hivepack check these: for ssh-keygen, sign with an SSH Ed25519 key. There is no way back into a key whose passphrase is lost.
+tbdc850a3 = Khoá mới chứa cả Ed25519 và ML-DSA-65, để chữ ký vẫn đứng vững dù một trong hai bị phá. Chỉ packwing và hivepack kiểm tra được loại này: để dùng với ssh-keygen, hãy ký bằng khoá SSH Ed25519. Nếu mất cụm mật khẩu của khoá thì không có cách nào lấy lại.
+
+# The signature goes beside it as {signature}, in place of one that is there. All of the file passes through this computer, and your provider may charge for what is read from it.
+t5e187bdd = Chữ ký được đặt cạnh nó với tên { $signature }, thay cho chữ ký đang có. Toàn bộ tệp sẽ đi qua máy tính này, và nhà cung cấp có thể tính phí cho phần dữ liệu đọc ra.
+
+# The signature goes beside it as {signature}, in place of one that is there.
+t6035bc3f = Chữ ký được đặt cạnh nó với tên { $signature }, thay cho chữ ký đang có.
+
+# Sign {name}
+ted250f31 = Ký { $name }
+
+# Anyone can check it, with the key’s public half
+t04ecc8be = Ai cũng kiểm tra được, bằng nửa công khai của khoá
+
+# Make the key…
+t6bba28d5 = Tạo khoá…
+
+# Sign
+t8f6340c4 = Ký
+
+# Move {what}
+tc168ca56 = Di chuyển { $what }
+
+# Copy {what}
+teda01f26 = Sao chép { $what }
+
+# Move here
+t1aaf57aa = Chuyển vào đây
+
+# Copy here
+t85f0245a = Sao chép vào đây
+
+# Copy
+t658f3664 = Sao chép
+
+# Move
+t7f2c2a34 = Di chuyển
+
+# If a name is taken
+tc99c037f = Nếu trùng tên
+
+# They are in this folder already. Choose another.
+t5318c14e = Chúng đã có trong thư mục này. Hãy chọn thư mục khác.
+
+# All of it passes through this computer, and your provider may charge for what is read from it. Each moved original goes once its copy has been read back and matches.
+t51019905 = Toàn bộ dữ liệu sẽ đi qua máy tính này, và nhà cung cấp có thể tính phí cho phần dữ liệu đọc ra. Mỗi bản gốc chỉ bị xoá sau khi bản sao đã được đọc lại và khớp.
+
+# Each original goes once its copy has been read back and matches.
+t8ecbab4e = Mỗi bản gốc chỉ bị xoá sau khi bản sao đã được đọc lại và khớp.
+
+# The originals stay where they are.
+t5937f050 = Các bản gốc vẫn ở nguyên chỗ cũ.
+
+# Too big to show here
+t1b339d35 = Quá lớn để hiện ở đây
+
+# packwing can’t show this kind of file
+tb909bf3c = packwing không hiện được loại tệp này
+
+# It could not be read
+tb7927177 = Không đọc được
+
+# It could not be read: {why}
+t26005fe3 = Không đọc được: { $why }
+
+# Reading…
+t6aad8485 = Đang đọc…
+
+# It could not be shown
+tb60fb288 = Không hiện được
+
+# Open with default app
+t5ef80ec5 = Mở bằng ứng dụng mặc định
+
+# no editor command
+tbf2a5d3a = chưa có lệnh mở trình soạn thảo
+
+# no text editor found
+t6256b3da = không tìm thấy trình soạn thảo văn bản
+
+# Search this folder
+t2c814039 = Tìm trong thư mục này
+
+# This folder could not be read: {why}
+t2c6017b2 = Không đọc được thư mục này: { $why }
+
+# Could not load more: {why}
+t466e87c4 = Không tải thêm được: { $why }
+
+# Could not delete: {why}
+te5951d38 = Không xoá được: { $why }
+
+# the text editor
+t91cdab0c = trình soạn thảo văn bản
+
+# Cannot start {who}: {why}
+t8deb160a = Không mở được { $who }: { $why }
+
+# Edit in text editor
+td8d39fb8 = Sửa bằng trình soạn thảo
+
+# Edit in {editor}
+te44cd57b = Sửa bằng { $editor }
+
+# Modified
+tdd13a6b2 = Ngày sửa
+
+# Loading…
+tc4e2f181 = Đang tải…
+
+# Only what is loaded was searched.
+t39c5f536 = Chỉ tìm trong phần đã tải.
+
+# Search the whole folder
+t41f9a787 = Tìm trong cả thư mục
+
+# Load {n} more
+t30bed46a = Tải thêm { $n }
+
+# Refresh
+t0815aad4 = Làm mới
+
+# Hide hidden files
+t3375c9c0 = Ẩn tệp ẩn
+
+# Show hidden files
+tf18c7057 = Hiện tệp ẩn
+
+# View
+t5e4baa18 = Xem
+
+# Extract…
+t4a09490e = Giải nén…
+
+# Compress…
+t690f9553 = Nén…
+
+# Copy to…
+t543cf15b = Sao chép đến…
+
+# Move to…
+t7a32320b = Di chuyển đến…
+
+# Sign…
+td6d61b10 = Ký…
+
+# Copy path
+tf165cb2b = Sao chép đường dẫn
+
+# Compress {n} item… | Compress {n} items…
+tad1b72f6 =
+    { $n ->
+       *[other] Nén { $n } mục…
+    }
+
+# {n} loaded, more in this folder
+t29a52578 = Đã tải { $n }, còn thêm trong thư mục này
+
+# Sorted among those loaded
+t037d01ae = Chỉ sắp xếp trong phần đã tải
+
+# {n} selected
+tebda8468 = Đã chọn { $n }
+
+# Try again
+t213e90fa = Thử lại
+
+# Nothing here matches that.
+t0f9a8a58 = Không có gì khớp.
+
+# Add a storage to browse it.
+t0b82c83a = Thêm nơi lưu trữ để duyệt.
+
+# No folders here.
+tc7731c8f = Không có thư mục nào ở đây.
+
+# This folder is empty.
+td9e47db6 = Thư mục này trống.
+
+# This system has no folder for settings.
+tfd0ff0a1 = Hệ thống này không có thư mục cho cài đặt.
+
+# Archive
+t73690b65 = Tệp nén
+
+# Search inside this archive
+tb35c0c27 = Tìm trong tệp nén này
+
+# Not text it can show
+ta413eca5 = Không phải văn bản để hiện
+
+# It needs the password to show it
+t81f5dbce = Cần mật khẩu để hiện
+
+# Safe to extract
+t3c93bb70 = An toàn để giải nén
+
+# Read {fetched} of {whole}
+t613dd932 = Đã đọc { $fetched } / { $whole }
+
+# Add files
+tdd45c7bb = Thêm tệp
+
+# Test
+t2ffcbe05 = Kiểm tra
+
+# Nothing in this archive matches “{query}”.
+t36c3e2f5 = Không có gì trong tệp nén này khớp với “{ $query }”.
+
+# Nothing in this folder matches “{query}”.
+teecdfa3d = Không có gì trong thư mục này khớp với “{ $query }”.
+
+# And {more} more. Type more to narrow it down.
+t843253d0 = Và { $more } mục nữa. Gõ thêm để thu hẹp.
+
+# Reading what’s inside…
+t1bbda9f5 = Đang đọc nội dung bên trong…
+
+# Open an archive
+t8382bd3e = Mở tệp nén
+
+# ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
+t4a498ac8 = Tệp nén ZIP, 7z và tar, ảnh đĩa và gói cài đặt, nén hoặc mã hoá bằng age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
+
+# Open another…
+tff74a552 = Mở tệp khác…
+
+# Open an archive…
+t2cf2a8ee = Mở tệp nén…
+
+# Choose a file to see it here
+t37854216 = Chọn một tệp để xem ở đây
+
+# {count} executable in this folder will keep its Internet mark when extracted. | {count} executables in this folder will keep their Internet mark when extracted.
+td7688f56 =
+    { $n ->
+       *[other] { $count } tệp thực thi trong thư mục này sẽ giữ dấu Internet khi được giải nén.
+    }
+
+# This computer
+tfa0d176a = Máy tính này
+
+# Home
+t52f50eae = Thư mục nhà
+
+# Desktop
+t64215c53 = Màn hình nền
+
+# Downloads
+t539307de = Tải xuống
+
+# Browse
+t0eac1f07 = Duyệt
+
+# Recent
+t50e888fe = Gần đây
+
+# Choose a file to see its information here
+t50aac02b = Chọn một tệp để xem thông tin ở đây
+
+# {n} selected | {n} selected
+tbb5a2d5f =
+    { $n ->
+       *[other] Đã chọn { $n }
+    }
+
+# Files in them come to {size}
+t0cca93f1 = Các tệp trong đó có tổng cộng { $size }
+
+# Delete…
+t2fed07aa = Xoá…
+
+# Link to a folder
+t4b408baf = Liên kết đến thư mục
+
+# Link
+t8e08e589 = Liên kết
+
+# {tag} file
+ta56bbbe9 = Tệp { $tag }
+
+# {files}, {folders}
+t72e46dc5 = { $files }, { $folders }
+
+# {n} file | {n} files
+teee8d81a =
+    { $n ->
+       *[other] { $n } tệp
+    }
+
+# {n} folder | {n} folders
+te89ea942 =
+    { $n ->
+       *[other] { $n } thư mục
+    }
+
+# {size} so far
+tc87daf59 = Đến nay { $size }
+
+# Kind
+t3ff50c63 = Loại
+
+# Holds
+tffe19c31 = Chứa
+
+# Permissions
+t8700fd83 = Quyền
+
+# Path
+teb66e456 = Đường dẫn
+
+# Signature
+tc049050d = Chữ ký
+
+# Count size and files
+t0f23db17 = Đếm dung lượng và số tệp
+
+# {n} folder in it could not be read. | {n} folders in it could not be read.
+t6d165412 =
+    { $n ->
+       *[other] Không đọc được { $n } thư mục trong đó.
+    }
+
+# Check the signature
+t9d44730e = Kiểm tra chữ ký
+
+# Add to the right-click menu
+t116d3868 = Thêm vào menu chuột phải
+
+# Extract or compress from any folder.
+t20864983 = Giải nén hoặc nén từ mọi thư mục.
+
+# Welcome to packwing
+tb38a86a6 = Chào mừng đến với packwing
+
+# Open any archive, make smaller files to share, and stay safe from harmful downloads.
+t0265387b = Mở mọi tệp nén, tạo tệp nhỏ hơn để chia sẻ, và an toàn trước các bản tải về độc hại.
+
+# Set things up
+t63f9c1cd = Thiết lập
+
+# You can change these later in Settings.
+t95f41ffb = Bạn có thể đổi sau trong Cài đặt.
+
+# Get started
+te83ca5ee = Bắt đầu
+
+# {location} · not there any more
+t7d0c09c7 = { $location } · không còn ở đó
+
+# The archives you open will show here.
+tc0cc82d5 = Các tệp nén bạn mở sẽ hiện ở đây.
+
+# Copied
+t8dc21305 = Đã sao chép
+
+# Copy version info
+t3d37483c = Sao chép thông tin phiên bản
+
+# Version {version} · {os} {arch}
+t6bead5ae = Phiên bản { $version } · { $os } { $arch }
+
+# A file archiver that opens archives safely.
+t3c244df9 = Ứng dụng nén và giải nén tệp, mở tệp nén một cách an toàn.
+
+# Updates
+t483075a5 = Cập nhật
+
+# This is a beta: you are told of newer betas, and of the release that follows them.
+t1d6a96bc = Đây là bản beta: bạn sẽ được báo khi có beta mới hơn, và khi có bản chính thức tiếp theo.
+
+# This is a release: you are told of newer releases, not of betas.
+t9d2d8250 = Đây là bản chính thức: bạn chỉ được báo khi có bản chính thức mới hơn, không báo bản beta.
+
+# Check now
+t4f0e0677 = Kiểm tra ngay
+
+# Look for updates once a day
+tcc27ace1 = Kiểm tra cập nhật mỗi ngày một lần
+
+# It reads the list of releases from GitHub, and believes it only when its signatures verify. Nothing is downloaded or installed without you.
+t258cdfd9 = App đọc danh sách bản phát hành từ GitHub, và chỉ tin khi chữ ký của nó hợp lệ. Không có gì được tải xuống hay cài đặt nếu bạn không đồng ý.
+
+# Skip this version
+t2c33d756 = Bỏ qua phiên bản này
+
+# This build has no release keys, so it cannot tell of updates.
+t378182cb = Bản build này không có khoá phát hành, nên không thể báo khi có bản cập nhật.
+
+# packwing {version} is ready
+tf02650f8 = packwing { $version } đã sẵn sàng
+
+# It is installed when you quit, or now with Restart.
+t6fecac86 = Bản mới được cài khi bạn thoát app, hoặc ngay bây giờ bằng Khởi động lại.
+
+# Restart now
+t54001a7c = Khởi động lại ngay
+
+# packwing {version}
+t20bb8a0d = packwing { $version }
+
+# Looking for a newer version…
+tf1905fe9 = Đang tìm phiên bản mới hơn…
+
+# Release notes
+tc52ab62f = Ghi chú phát hành
+
+# packwing {version} is out
+t36a30d8b = packwing { $version } đã phát hành
+
+# Run these in a terminal. They check the download against the signed list of releases, and sudo asks for your password.
+t98b9753c = Chạy các lệnh này trong terminal. Chúng kiểm tra bản tải về theo danh sách phát hành đã ký, và sudo sẽ hỏi mật khẩu của bạn.
+
+# {by} updates it: {command}
+tdf2cab9c = { $by } sẽ cập nhật nó: { $command }
+
+# {by} updates it.
+t84b27295 = { $by } sẽ cập nhật nó.
+
+# It is downloaded and checked, then installed when you quit.
+tb46c0678 = Bản mới được tải xuống và kiểm tra, rồi cài khi bạn thoát app.
+
+# Download it, and install it in place of this one.
+t39312eae = Tải về và cài đè lên bản này.
+
+# The download failed: {why}
+t5e96c075 = Tải xuống thất bại: { $why }
+
+# Download and install
+t1a99173f = Tải xuống và cài đặt
+
+# Download
+t6964bb19 = Tải xuống
+
+# The last look failed: {why}
+td122a092 = Lần kiểm tra trước bị lỗi: { $why }
+
+# Up to date (looked {when}).
+t4665ef60 = Đang là bản mới nhất (kiểm tra { $when }).
+
+# Not looked yet.
+t5a3ba058 = Chưa kiểm tra lần nào.
+
+# Free software
+t731220a4 = Phần mềm tự do
+
+# Under the GNU General Public License, version 3 or later
+t4e98bf3c = Theo Giấy phép Công cộng GNU, phiên bản 3 trở lên
+
+# View license
+tfc21d38b = Xem giấy phép
+
+# Made by HivePaaS
+t10c7007a = Do HivePaaS tạo ra
+
+# On hivepack, our library for reading and writing archives
+tfae09b61 = Dựa trên hivepack, thư viện đọc và ghi tệp nén của chúng tôi
+
+# Source code
+tf6a49f4d = Mã nguồn
+
+# Something wrong?
+t610dfb6f = Có gì không ổn?
+
+# Tell us, with the version above
+ta3e29034 = Báo cho chúng tôi, kèm phiên bản ở trên
+
+# Report a problem
+t7b1728e7 = Báo lỗi
+
+# What changed
+te8345543 = Có gì thay đổi
+
+# Every release, and what is new in it
+t8e6f2052 = Mọi bản phát hành và điểm mới trong đó
+
+# © {year} HivePaaS. The packwing name and logo are trademarks of HivePaaS.
+t11d91ba2 = © { $year } HivePaaS. Tên và logo packwing là nhãn hiệu của HivePaaS.
+
+# More from HivePaaS
+tb25cf729 = Thêm từ HivePaaS
+
+# Free and open source, like packwing.
+tc1ece130 = Miễn phí và mã nguồn mở, như packwing.
+
+# A fast, native SSH client for Linux, macOS and Windows.
+t0f4c758a = Ứng dụng SSH nhanh, chạy native cho Linux, macOS và Windows.
+
+# SSH and SFTP
+t0f8af34d = SSH và SFTP
+
+# Follows your ssh_config
+tc1c4446d = Theo ssh_config của bạn
+
+# A real terminal
+tae9bcfa8 = Terminal thật sự
+
+# GPL-3.0-or-later
+t8622a5c1 = GPL-3.0-or-later
+
+# Visit shellwing.app
+t1d2ed540 = Xem shellwing.app
+
+# A self-hosted platform for your apps, built on Docker Swarm: an open-source alternative to Heroku, Render and Coolify.
+tc9d13419 = Nền tảng tự lưu trữ cho các ứng dụng của bạn, xây trên Docker Swarm: lựa chọn mã nguồn mở thay cho Heroku, Render và Coolify.
+
+# 300+ one-click apps
+t6a770b0a = 300+ ứng dụng cài một chạm
+
+# Deploy on push
+tb0bfc3e9 = Deploy khi push
+
+# Pull request previews
+t4e4180fc = Bản xem trước cho pull request
+
+# Automatic TLS
+t9e9776ed = TLS tự động
+
+# Live logs and metrics
+tebe3a172 = Log và metrics trực tiếp
+
+# Apache-2.0
+t0274f036 = Apache-2.0
+
+# Visit hivepaas.com
+t0632975a = Xem hivepaas.com
+
+# Always
+tad4bbd04 = Luôn luôn
+
+# Format of new archives
+t3b50d238 = Định dạng của tệp nén mới
+
+# New archive starts with it; you can pick another there.
+t7b361b55 = Tệp nén mới bắt đầu với định dạng này; bạn có thể chọn định dạng khác ở đó.
+
+# Higher makes smaller archives, which take longer to make, not to open.
+t9184e778 = Mức cao hơn cho tệp nén nhỏ hơn, tạo lâu hơn nhưng mở không chậm hơn.
+
+# Write straight to a storage above
+ta4975128 = Ghi thẳng vào nơi lưu trữ ở trên
+
+# Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
+t2b8f2459 = Tệp lớn không chiếm chỗ trên máy tính này, nhưng mất kết nối thì phải nén lại. S3 nhận tar và ZIP theo cách này, SFTP nhận cả mọi định dạng khác.
+
+# Leave out Mac-only files
+t27eec14f = Bỏ các tệp chỉ dành cho Mac
+
+# .DS_Store, __MACOSX and resource forks, clutter anywhere but a Mac
+t3bdd25aa = .DS_Store, __MACOSX và resource fork: chỉ gây rác khi ra ngoài máy Mac
+
+# Hide file names behind the password
+t93ff7715 = Ẩn tên tệp sau mật khẩu
+
+# For 7z: nobody sees what is inside without it
+t0f5354d7 = Với 7z: không có mật khẩu thì không ai thấy bên trong có gì
+
+# No limit
+t6de7f47d = Không giới hạn
+
+# Where the files go
+t77e60aba = Nơi đặt các tệp
+
+# Where Extract starts: you can pick another there.
+t4b73082f = Nơi Giải nén bắt đầu: bạn có thể chọn nơi khác ở đó.
+
+# One item right here, more in a new folder
+ta5a4d31d = Một mục thì để ngay tại đây, nhiều hơn thì vào thư mục mới
+
+# A new folder next to it
+t2095cbe9 = Một thư mục mới bên cạnh
+
+# Named after the archive
+tb991d4c1 = Đặt theo tên tệp nén
+
+# Next to the archive
+t4691c928 = Cạnh tệp nén
+
+# Straight into its folder
+t99d1df43 = Thẳng vào thư mục của nó
+
+# When a file is already there
+tca514dda = Khi đã có tệp đó
+
+# A file of the same name in the folder the files go to
+t296ad686 = Tệp trùng tên trong thư mục nhận các tệp
+
+# Largest an archive may unpack to
+t5957c426 = Dung lượng tối đa tệp nén được giải ra
+
+# Stops archive bombs: small files that unpack to fill the disk
+t87a41242 = Chặn bom nén: các tệp nhỏ giải ra lấp đầy ổ đĩa
+
+# Light
+t8ad2f8cf = Sáng
+
+# Dark
+t45570065 = Tối
+
+# System
+t8f3184bc = Hệ thống
+
+# Same as system ({language})
+t5bd525d3 = Theo hệ thống ({ $language })
+
+# The system’s
+t1d68c60b = Của hệ thống
+
+# Custom…
+ta391dade = Tuỳ chỉnh…
+
+# e.g. code -n, or /path/to/editor --flag
+t455dc834 = ví dụ code -n, hoặc /đường/dẫn/trình-soạn-thảo --flag
+
+# Show packwing in the right-click menu
+t5d0d23cc = Hiện packwing trong menu chuột phải
+
+# Extract and compress from any folder
+t94a46acb = Giải nén và nén từ mọi thư mục
+
+# Language
+t9a73db9b = Ngôn ngữ
+
+# Appearance
+t31018b9f = Giao diện
+
+# Text editor
+t1ca82aab = Trình soạn thảo văn bản
+
+# What Edit opens a file of a storage in
+t62506ced = Dùng để mở tệp trong nơi lưu trữ khi chọn Sửa
+
+# The file’s path is added at the end.
+teba749d4 = Đường dẫn tệp được thêm vào cuối.
+
+# Paste your license key
+t3c4da5cf = Dán khoá giấy phép của bạn
+
+# Every feature but signing files, and {count} storage across a network. Folders on this computer are not limited, and any signature can be checked.
+tf9725115 = Đủ mọi tính năng trừ ký tệp, và { $count } nơi lưu trữ qua mạng. Thư mục trên máy tính này không bị giới hạn, và kiểm tra được mọi chữ ký.
+
+# Every feature, and any number of storages.
+tc3e75ecf = Đủ mọi tính năng, số nơi lưu trữ không giới hạn.
+
+# Every feature, and any number of storages, for your organization.
+t69b29f66 = Đủ mọi tính năng, số nơi lưu trữ không giới hạn, cho tổ chức của bạn.
+
+# Plan
+t1eab5e32 = Gói
+
+# Issued to
+t44ef5cad = Cấp cho
+
+# Who this license is for
+td514fb0d = Giấy phép này dành cho ai
+
+# Seats
+t8f706321 = Số chỗ
+
+# What your organization’s agreement covers
+t60b0c6c9 = Phạm vi thoả thuận của tổ chức bạn
+
+# Trial, until {date}
+t9ffc2b63 = Dùng thử, đến { $date }
+
+# Until {date}
+t4d9bac91 = Đến { $date }
+
+# Ended {date}. It keeps working for {days} days more.
+t7b9eb499 = Đã hết hạn { $date }. Vẫn dùng được thêm { $days } ngày.
+
+# Ended {date}
+tfccb9305 = Đã hết hạn { $date }
+
+# Valid
+td2661011 = Hợp lệ
+
+# Past this, packwing is Free. Nothing is taken away but adding storages.
+td7098137 = Quá mức này, packwing là Free. Chỉ không thêm được nơi lưu trữ, không mất gì khác.
+
+# Your organization manages this license.
+te42a0ee6 = Tổ chức của bạn quản lý giấy phép này.
+
+# Activate
+t3b8f0190 = Kích hoạt
+
+# A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
+t9e6ecd3d = Khoá được kiểm tra ngay trên máy tính này. Không có gì được gửi đi đâu, và không giấy phép nào thay đổi chính sách của tổ chức bạn.
+
+# They show when you right-click files, folders and archives.
+te216d656 = Chúng hiện khi bạn bấm chuột phải vào tệp, thư mục và tệp nén.
+
+# packwing is not in the menu now: these go in when it is.
+t3ddc5e66 = Hiện packwing không có trong menu: các mục này sẽ được thêm khi có.
+
+# Changing the menu…
+tc7f1a2f0 = Đang đổi menu…
+
+# Good to know
+t8d7b3a90 = Nên biết
+
+# The menu could not be changed: {why}
+t9fac5c06 = Không đổi được menu: { $why }
+
+# Items in the menu
+t67537dc4 = Các mục trong menu
+
+# Put them in a submenu
+te3449a65 = Đặt trong menu con
+
+# One packwing item, with these under it
+tb5fdc584 = Một mục packwing, các mục này nằm bên dưới
+
+# Keep the “downloaded from the Internet” mark
+tfe574fa2 = Giữ dấu “tải từ Internet”
+
+# The system warns before running files that came from a downloaded archive
+t9fbe84c0 = Hệ thống cảnh báo trước khi chạy tệp đến từ tệp nén tải về
+
+# This system has no such mark, so this changes nothing here
+t314d60c1 = Hệ thống này không có dấu như vậy, nên mục này không đổi gì ở đây
+
+# License
+t38e70ee4 = Giấy phép
+
+# Your organization’s, in Settings › License
+tff7c594e = Của tổ chức bạn, trong Cài đặt › Giấy phép
+
+# Treat files from storages as from the Internet
+t0af8d466 = Coi tệp từ nơi lưu trữ như tải từ Internet
+
+# What comes from S3, WebDAV and SFTP gets the mark too
+tf02df9d4 = Những gì đến từ S3, WebDAV và SFTP cũng nhận dấu này
+
+# Require encryption for new archives
+t0c3e1337 = Bắt buộc mã hoá tệp nén mới
+
+# Applies to archives made and files added here, not to other apps
+tc889f3a2 = Áp dụng cho tệp nén tạo ở đây và tệp thêm vào đây, không áp dụng cho ứng dụng khác
+
+# Kinds of encryption allowed
+t1b8b2116 = Các kiểu mã hoá được phép
+
+# New archives can be encrypted only these ways
+t71dcd29c = Tệp nén mới chỉ được mã hoá theo các cách này
+
+# Minimum password length
+tb7d64a44 = Độ dài mật khẩu tối thiểu
+
+# In characters, for every new archive with a password
+tca6d6982 = Tính theo ký tự, cho mọi tệp nén mới có mật khẩu
+
+# packwing has no policy of this name.
+t7e03649c = packwing không có chính sách nào tên này.
+
+# Ask before opening files without extracting
+t76d5d951 = Hỏi trước khi mở tệp mà không giải nén
+
+# Opening a file inside an archive puts a copy in a temporary folder. A program always asks.
+t9173caaa = Mở một tệp trong tệp nén là đặt một bản sao vào thư mục tạm. Chương trình thì luôn bị hỏi.
+
+# Paste a public key
+t0bf72f73 = Dán một khoá công khai
+
+# This is not a public key packwing can check with: {why}.
+td57933b9 = Đây không phải khoá công khai mà packwing kiểm tra được: { $why }.
+
+# This line cannot be read, so the key is not used
+t90e7dd7b = Không đọc được dòng này, nên khoá không được dùng
+
+# Keys you trust
+ted99ced8 = Các khoá bạn tin cậy
+
+# A signature by one of these says who signed a file. One by any other key proves nothing, whatever it matches.
+td25843b8 = Chữ ký của một trong các khoá này cho biết ai đã ký tệp. Chữ ký của khoá khác không chứng minh gì, dù khớp đến đâu.
+
+# Choose a file…
+t28a576c9 = Chọn tệp…
+
+# Its policies cannot be read, so what they guard refuses: {why}
+t7b4eb9c1 = Không đọc được chính sách của nó, nên những gì nó bảo vệ bị từ chối: { $why }
+
+# Some settings are managed by your organization
+t7db7e7ec = Một số cài đặt do tổ chức của bạn quản lý
+
+# Get help
+t4a1ed54a = Nhận trợ giúp
+
+# Not understood
+t068eea1b = Không hiểu
+
+# On
+t60e47df0 = Bật
+
+# Off
+t0dc6b4aa = Tắt
+
+# General
+t5561fd0b = Chung
+
+# Extracting
+tc82af3f2 = Giải nén
+
+# Compressing
+t6d183c73 = Nén
+
+# Security
+tc2fe21db = Bảo mật
+
+# Right-click menu
+t1287ae97 = Menu chuột phải
+
+# About
+t58e096de = Giới thiệu
+
+# Settings
+t4b058728 = Cài đặt
+
+# This computer has no way to ask that it is you.
+t0c1b4d43 = Máy tính này không có cách nào để xác nhận đó là bạn.
+
+# open a storage
+t780455bf = mở một nơi lưu trữ
+
+# Open a storage in packwing
+tf861e014 = Mở một nơi lưu trữ trong packwing
+
+# That was not it. It stays locked.
+tbb2a9838 = Không đúng. Nó vẫn khoá.
+
+# The system could not ask: {why}
+td6905afe = Hệ thống không hỏi được: { $why }
+
+# This copy of packwing cannot open it.
+tfb56d8cf = Bản packwing này không mở được nó.
+
+# Storages
+tc776c52f = Nơi lưu trữ
+
+# Add storage
+te858d6b5 = Thêm nơi lưu trữ
+
+# Type the password you log in to this computer with to open it.
+tb544cd9b = Nhập mật khẩu bạn dùng để đăng nhập máy tính này để mở.
+
+# Show this computer it is you to open it.
+tfb4c635b = Xác nhận với máy tính này đó là bạn để mở.
+
+# Checking…
+t87f62cb7 = Đang kiểm tra…
+
+# It asks again after 5 minutes left unused.
+t69c22a3b = Nó hỏi lại sau 5 phút không dùng.
+
+# Edit…
+t8e7efcd7 = Sửa…
+
+# Remove from this list
+t8c7c7c57 = Gỡ khỏi danh sách này
+
+# Extract here with packwing
+tc5e54e4a = Giải nén tại đây bằng packwing
+
+# Extract to new folder
+tda62691f = Giải nén vào thư mục mới
+
+# Extract with packwing…
+tda9255a0 = Giải nén bằng packwing…
+
+# Open with packwing
+teb657427 = Mở bằng packwing
+
+# Compress to ZIP
+t344b1175 = Nén thành ZIP
+
+# Compress with packwing…
+t9ec9b77d = Nén bằng packwing…
+
+# packwing cannot find its program: {e}
+t1934ce08 = packwing không tìm thấy chương trình của nó: { $e }
+
+# Signed by {signer}
+t8eb35b10 = Ký bởi { $signer }
+
+# Signed by {signer}, not checked yet
+t88b7186a = Ký bởi { $signer }, chưa kiểm tra
+
+# Signed by a key you do not trust: {fingerprint}
+tec0df1c3 = Ký bởi một khoá bạn không tin cậy: { $fingerprint }
+
+# It does not match its signature
+tb7d0e1ed = Không khớp chữ ký của nó
+
+# Its signature cannot be read
+tadf2a401 = Không đọc được chữ ký của nó
+
+# Its signature could not be checked
+t69cbbb51 = Không kiểm tra được chữ ký của nó
+
+# Checking its signature…
+tda8c2e03 = Đang kiểm tra chữ ký…
+
+# the system's package manager
+t11465c20 = trình quản lý gói của hệ thống
+
+# the App Store
+ta8cbd72e = App Store
+
+# the Microsoft Store
+t1df799a1 = Microsoft Store
+
+# Downloading… {got} of {total}
+taee668c2 = Đang tải xuống… { $got } / { $total }
+
+# Downloading… {got}
+t4873b921 = Đang tải xuống… { $got }
+
+# just now
+ta715ef0f = vừa xong
+
+# {n} minute ago | {n} minutes ago
+t6c7302d6 = { $n } phút trước
+
+# {n} hour ago | {n} hours ago
+t137b052e = { $n } giờ trước
+
+# {n} day ago | {n} days ago
+tb9fa7744 = { $n } ngày trước
+
+# No folder to download to.
+t2bfc1370 = Không có thư mục để tải xuống.
+
+# Update available
+t676409df = Có bản cập nhật
+
+# Restart to update
+tbbbbda26 = Khởi động lại để cập nhật
+
+# {n} file was skipped, as its name was taken. | {n} files were skipped, as their names were taken.
+t843cf8f1 =
+    { $n ->
+       *[other] Đã bỏ qua { $n } tệp vì tên đã có.
+    }
+
+# {n} link stayed where it was. | {n} links stayed where they were.
+tbdeb1b33 =
+    { $n ->
+       *[other] { $n } liên kết được giữ nguyên chỗ cũ.
+    }
+
+# This file is encrypted with a passphrase.
+t23ab4fa0 = Tệp này được mã hoá bằng cụm mật khẩu.
+
+# This archive needs its password.
+td46b69a1 = Tệp nén này cần mật khẩu.
+
+# This file is encrypted to a key.
+tbd048b4e = Tệp này được mã hoá cho một khoá.
+
+# This key file needs its passphrase.
+t81f4c775 = Tệp khoá này cần cụm mật khẩu.
+
+# {paths} archives
+t27f3b860 = { $paths } tệp nén
+
+# {folder}, a folder for each
+t75e7db7c = { $folder }, mỗi tệp nén một thư mục
+
+# New
+t8b242db1 = Mới
+
+# Could not read {path}: {e}
+tad0120eb = Không đọc được { $path }: { $e }
+
+# {path} has no name.
+tbd0e16dc = { $path } không có tên.
+
+# The name of {path} is not valid Unicode, so it cannot go in an archive.
+t2588efb5 = Tên của { $path } không phải Unicode hợp lệ, nên không đưa vào tệp nén được.
+
+# Could not write {path}: {e}
+t8dd055c6 = Không ghi được { $path }: { $e }
+
+# {wanted} and the names after it are taken.
+t40554bf6 = { $wanted } và các tên sau nó đã có.
+
+# Nothing to compress.
+t47339885 = Không có gì để nén.
+
+# Could not encrypt: {e}
+t485d71ab = Không mã hoá được: { $e }
+
+# Only tar and single files take age keys.
+tc1754be6 = Chỉ tar và tệp đơn mới dùng được khoá age.
+
+# age encrypts to a passphrase or to keys, not to both.
+t83582c17 = age mã hoá bằng cụm mật khẩu hoặc bằng khoá, không dùng cả hai.
+
+# Post-quantum keys can’t be used with other keys: the others would leave the file open to a quantum computer.
+t500313af = Khoá hậu lượng tử không dùng chung được với khoá khác: các khoá kia sẽ để tệp bị máy tính lượng tử mở ra.
+
+# There are no keys in this file to encrypt to.
+tc2809b2c = Tệp này không có khoá nào để mã hoá cho.
+
+# This format holds one file, and no more.
+t75c197d9 = Định dạng này chỉ chứa một tệp, không hơn.
+
+# {path} got shorter while it was being read.
+t2e221d1f = { $path } ngắn lại trong khi đang đọc.
+
+# A password has to be valid Unicode.
+t5ef729bc = Mật khẩu phải là Unicode hợp lệ.
+
+# {path} is too big.
+te9ab879e = { $path } quá lớn.
+
+# Could not start compressing: {e}
+tc4faa70c = Không bắt đầu nén được: { $e }
+
+# Could not compress: {e}
+tf6ff23f2 = Không nén được: { $e }
+
+# {path} is a link, which is kept only on Unix.
+t030316d9 = { $path } là liên kết, chỉ được giữ trên Unix.
+
+# Nothing changed.
+tedfc294c = Không có gì thay đổi.
+
+# The archive did not come out whole.
+t2f015c79 = Tệp nén tạo ra không đầy đủ.
+
+# packwing can change only a ZIP archive that is one file.
+t48628036 = packwing chỉ sửa được tệp nén ZIP nếu nó là một tệp.
+
+# That is not in the archive.
+t7530c419 = Mục đó không có trong tệp nén.
+
+# That is all the archive holds. Delete the archive itself instead.
+t495f94b1 = Đó là tất cả những gì tệp nén chứa. Hãy xoá chính tệp nén.
+
+# “{to}” cannot be a name.
+td53e55bf = “{ $to }” không dùng làm tên được.
+
+# “{to}” is already in that folder. Nothing was changed.
+t5516dd83 = “{ $to }” đã có trong thư mục đó. Không có gì thay đổi.
+
+# packwing can add files only to a ZIP archive that is one file.
+t11a330d3 = packwing chỉ thêm tệp vào được tệp nén ZIP nếu nó là một tệp.
+
+# An archive can’t go inside itself.
+tff43ce74 = Tệp nén không thể nằm trong chính nó.
+
+# “{bare}” is already in the archive. Nothing was changed.
+t2c3e91c4 = “{ $bare }” đã có trong tệp nén. Không có gì thay đổi.
+
+# Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
+tdb9326d3 = Trước khi tải lên, tệp nén này được tạo trong { $folder }, có thể cần tới { $need }. Ở đó chỉ còn trống { $free }.
+
+# The upload stopped.
+t528232e6 = Việc tải lên đã dừng.
+
+# {name} is already in the folder.
+tbe7fab8a = { $name } đã có trong thư mục.
+
+# Could not make a folder in {parent}.
+tec7ca3a9 = Không tạo được thư mục trong { $parent }.
+
+# {to} is a folder, and a file would replace it.
+tf606b3b3 = { $to } là một thư mục, và một tệp sẽ thay thế nó.
+
+# {name} is already in the folder
+t5af584a0 = { $name } đã có trong thư mục
+
+# This file is not an archive packwing can open.
+t660f149b = Tệp này không phải tệp nén mà packwing mở được.
+
+# The password is wrong, or the archive is damaged.
+ta4d3227d = Mật khẩu sai, hoặc tệp nén bị hỏng.
+
+# The passphrase is wrong.
+t7826c649 = Cụm mật khẩu sai.
+
+# The key file’s passphrase is wrong.
+t8ad75e3a = Cụm mật khẩu của tệp khoá sai.
+
+# This file is encrypted to a key packwing does not have.
+te162af76 = Tệp này được mã hoá cho một khoá mà packwing không có.
+
+# Cancelled.
+t27c010d6 = Đã huỷ.
+
+# the archive could not be read
+t2267c3b1 = không đọc được tệp nén
+
+# This can’t be extracted, as a file’s name can’t be used here: “{name}” ({why}).
+tcf18f6e9 = Không giải nén được, vì tên của một tệp không dùng được ở đây: “{ $name }” ({ $why }).
+
+# {n} byte | {n} bytes
+te8f231ba =
+    { $n ->
+       *[other] { $n } byte
+    }
+
+# A volume of this archive is not there.
+t3803103c = Thiếu một phần của tệp nén này.
+
+# {named}: its data is damaged.
+t066227f9 = { $named }: dữ liệu bị hỏng.
+
+# The archive is damaged: UnRAR would exit with {number}.
+t7923a417 = Tệp nén bị hỏng: UnRAR sẽ thoát với mã { $number }.
+
+# There is no public key here.
+t9fd24078 = Ở đây không có khoá công khai.
+
+# Could not make the key: {e}
+t73610ecc = Không tạo được khoá: { $e }
+
+# There is no file to sign.
+tc95e3a9c = Không có tệp để ký.
+
+# {name} is not there any more.
+t07c1f2bc = { $name } không còn ở đó.
+
+# The name is empty.
+t1a9d8e4e = Tên trống.
+
+# That name is kept for the system.
+t74c8683a = Tên đó được hệ thống giữ riêng.
+
+# A name cannot hold / or other special characters.
+t4c0596ec = Tên không được chứa / hoặc ký tự đặc biệt khác.
+
+# On Windows a name cannot end with a dot or a space.
+tf16ba7f1 = Trên Windows, tên không được kết thúc bằng dấu chấm hoặc dấu cách.
+
+# That name is taken in this folder.
+t43a2bce1 = Tên đó đã có trong thư mục này.
+
+# {name} is already there.
+tb5e7b134 = { $name } đã có ở đó.
+
+# {name} cannot go inside itself.
+t99f437a6 = { $name } không thể nằm trong chính nó.
+
+# Stopped.
+t15558940 = Đã dừng.
+
+# {name} is a file in one place and a folder in the other.
+t02a45af5 = { $name } là tệp ở một bên nhưng là thư mục ở bên kia.
+
+# The copy of {name} does not match. The original was kept.
+t779a64f3 = Bản sao của { $name } không khớp. Bản gốc được giữ lại.
+
+# This is not a valid packwing license key.
+td5ae978f = Đây không phải khoá giấy phép packwing hợp lệ.
+
+# Your organization’s policy for this cannot be read, so packwing won’t do it. Ask your IT department.
+t3c605280 = Không đọc được chính sách của tổ chức bạn cho việc này, nên packwing sẽ không làm. Hãy hỏi bộ phận IT.
+
+# Your organization requires new archives to be encrypted.
+t83acf110 = Tổ chức của bạn yêu cầu tệp nén mới phải được mã hoá.
+
+# Your organization does not allow this kind of encryption: {method}.
+te8eb49bf = Tổ chức của bạn không cho phép kiểu mã hoá này: { $method }.
+
+# Your organization requires a password of at least {least} characters.
+t2d21b125 = Tổ chức của bạn yêu cầu mật khẩu dài ít nhất { $least } ký tự.
+
+# That password is too easy to guess, and your organization requires a better one.
+t7020f9d1 = Mật khẩu đó quá dễ đoán, mà tổ chức của bạn yêu cầu mật khẩu tốt hơn.
+
+# Expected true or false, not {other}.
+tcadcff7a = Cần true hoặc false, không phải { $other }.
+
+# Expected a number from 1 to {most}, not {other}.
+tda498fad = Cần một số từ 1 đến { $most }, không phải { $other }.
+
+# Expected some text, not {other}.
+t9386ce3b = Cần một đoạn văn bản, không phải { $other }.
+
+# Expected an address starting with https://, not {other}.
+t93bfd19e = Cần một địa chỉ bắt đầu bằng https://, không phải { $other }.
+
+# Expected a list, not {other}.
+tc945cc93 = Cần một danh sách, không phải { $other }.
+
+# No kind of encryption is called {name}.
+tfddb7ba6 = Không có kiểu mã hoá nào tên { $name }.
+
+# The list names no kind of encryption.
+t5f8076f5 = Danh sách không nêu kiểu mã hoá nào.
+
+# The file is too big to be a list of policies.
+taf68e582 = Tệp quá lớn để là danh sách chính sách.
+
+# The file has to hold one JSON object.
+tf483aa65 = Tệp phải chứa đúng một đối tượng JSON.
+
+# {path} has to belong to root.
+tfc77ea2b = { $path } phải thuộc về root.
+
+# {path} can be changed by others than root.
+t0d4a4498 = { $path } có thể bị người khác ngoài root sửa.
+
+# This storage takes files of at most {size} for now, as each is held in memory while it is sent.
+t6485842e = Hiện nơi lưu trữ này chỉ nhận tệp tối đa { $size }, vì mỗi tệp được giữ trong bộ nhớ khi gửi đi.
+
+# This storage cannot rename a folder at once, as everything under it would be copied. Use Move to….
+ta87a5d75 = Nơi lưu trữ này không đổi tên thư mục ngay được, vì mọi thứ dưới nó sẽ bị sao chép. Hãy dùng Di chuyển đến….
+
+# S3 bucket
+tc5e013b3 = S3 bucket
+
+# Bucket
+te34e3557 = Bucket
+
+# Region
+t492e789d = Vùng
+
+# Endpoint
+t27e7d69c = Endpoint
+
+# Empty for AWS, or https://…
+td3a94af8 = Để trống cho AWS, hoặc https://…
+
+# Start in
+t5eb91ea6 = Bắt đầu ở
+
+# A prefix, if not the whole bucket
+t75255a6c = Tiền tố, nếu không dùng cả bucket
+
+# Access key ID
+tf9408d75 = Access key ID
+
+# Secret access key
+te1c3d3a2 = Secret access key
+
+# SFTP
+t62703ae8 = SFTP
+
+# Host or ssh_config name
+t7b943498 = Máy chủ hoặc tên trong ssh_config
+
+# Empty for the home folder
+t67b5f42b = Để trống để dùng thư mục nhà
+
+# Empty to use the SSH agent and keys
+tf10e6293 = Để trống để dùng SSH agent và các khoá
+
+# WebDAV folder
+tb2401428 = Thư mục WebDAV
+
+# Address
+t700560f3 = Địa chỉ
+
+# User
+te0a63e12 = Người dùng
+
+# Password or app token
+t1c18cb9b = Mật khẩu hoặc token ứng dụng

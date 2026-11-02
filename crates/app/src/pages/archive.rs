@@ -1018,7 +1018,12 @@ impl ArchivePage {
                         .px(px(14.))
                         .py(px(12.))
                         .rounded(px(18.))
-                        .child(tr!("{counted} in this folder will keep {their} Internet mark when extracted.", counted = tr_n!(marked, "{count} executable", "{count} executables", count = count(marked)), their = if marked == 1 { "its" } else { "their" })),
+                        .child(tr_n!(
+                            marked,
+                            "{count} executable in this folder will keep its Internet mark when extracted.",
+                            "{count} executables in this folder will keep their Internet mark when extracted.",
+                            count = count(marked)
+                        )),
                 )
             })
     }

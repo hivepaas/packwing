@@ -117,7 +117,7 @@ impl Render for Compressing {
             .child(rows([
                 setting(
                     tr!("Leave out Mac-only files"),
-                    ".DS_Store, __MACOSX and resource forks, clutter anywhere but a Mac",
+                    tr!(".DS_Store, __MACOSX and resource forks, clutter anywhere but a Mac"),
                     toggle("skip-mac-files", self.skip_mac_files, |s| {
                         s.skip_mac_files = !s.skip_mac_files
                     }),

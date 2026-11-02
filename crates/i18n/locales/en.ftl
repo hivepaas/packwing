@@ -320,11 +320,10 @@ t4a498ac8 = ZIP, 7z and tar archives, disc images and packages, compressed or en
 tff74a552 = Open another…
 t2cf2a8ee = Open an archive…
 t37854216 = Choose a file to see it here
-ta8ada385 = { $counted } in this folder will keep { $their } Internet mark when extracted.
-t8608cb1c =
+td7688f56 =
     { $n ->
-        [one] { $count } executable
-       *[other] { $count } executables
+        [one] { $count } executable in this folder will keep its Internet mark when extracted.
+       *[other] { $count } executables in this folder will keep their Internet mark when extracted.
     }
 tfa0d176a = This computer
 t52f50eae = Home
@@ -441,6 +440,7 @@ t9184e778 = Higher makes smaller archives, which take longer to make, not to ope
 ta4975128 = Write straight to a storage above
 t2b8f2459 = Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t27eec14f = Leave out Mac-only files
+t3bdd25aa = .DS_Store, __MACOSX and resource forks, clutter anywhere but a Mac
 t93ff7715 = Hide file names behind the password
 t0f5354d7 = For 7z: nobody sees what is inside without it
 t6de7f47d = No limit
