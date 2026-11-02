@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 58] = [
+const SCREENS: [(&str, SetUp); 61] = [
     ("storages-edit", |ws, window, cx| {
         cx.set_global(fake_extensions());
         add_far(ws, "Far one", std::path::Path::new("/far"), true, cx);
@@ -171,6 +171,22 @@ const SCREENS: [(&str, SetUp); 58] = [
     ("create-required", |ws, window, cx| {
         cx.set_global(sample_policy());
         ws.open_create(vec!["/home/you/Documents".into()], window, cx);
+    }),
+    ("storages-add-over-the-limit", |ws, window, cx| {
+        cx.set_global(fake_extensions());
+        add_far(ws, "Far one", std::path::Path::new("/far"), false, cx);
+        ws.open_add_storage(window, cx);
+    }),
+    ("settings-license", |ws, _, cx| {
+        ws.show_settings(Section::License, cx);
+    }),
+    ("settings-license-enterprise", |ws, _, cx| {
+        cx.set_global(crate::licensing::Licensed {
+            license: packwing_license::read(include_str!("../../license/testdata/enterprise.key"))
+                .ok(),
+            ..Default::default()
+        });
+        ws.show_settings(Section::License, cx);
     }),
     ("settings-security", |ws, _, cx| {
         ws.show_settings(Section::Security, cx)

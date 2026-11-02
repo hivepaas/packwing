@@ -4,8 +4,8 @@
 use gpui::{Context, FontWeight, Render, SharedString, Window, div, prelude::*, px, relative, rgb};
 use packwing_i18n::tr;
 use packwing_policy::{
-    ALLOWED_ENCRYPTION_METHODS, MIN_PASSWORD_LENGTH, ORGANIZATION_NAME, ORGANIZATION_URL,
-    PROPAGATE_MOTW, Policy, REQUIRE_ENCRYPTION, Row, Setting,
+    ALLOWED_ENCRYPTION_METHODS, LICENSE_KEY, MIN_PASSWORD_LENGTH, ORGANIZATION_NAME,
+    ORGANIZATION_URL, PROPAGATE_MOTW, Policy, REQUIRE_ENCRYPTION, Row, Setting,
 };
 
 use super::{rows, section, setting};
@@ -55,6 +55,10 @@ fn told(key: &str) -> (String, String) {
             } else {
                 tr!("This system has no such mark, so this changes nothing here")
             },
+        ),
+        LICENSE_KEY => (
+            tr!("License"),
+            tr!("Your organization’s, in Settings › License"),
         ),
         REQUIRE_ENCRYPTION => (
             tr!("Require encryption for new archives"),

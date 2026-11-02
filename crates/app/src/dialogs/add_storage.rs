@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use gpui::{
-    Context, Entity, EventEmitter, Focusable as _, FontWeight, Render, Task, Window, div,
+    App, Context, Entity, EventEmitter, Focusable as _, FontWeight, Render, Task, Window, div,
     prelude::*, px, rgb,
 };
 use packwing_core::{Field, StorageKind, Values};
@@ -134,6 +134,14 @@ impl AddStorageDialog {
             }
         }
         dialog
+    }
+
+    /// Whether the plan has no room for what is being added. One already there can be
+    /// changed whatever the plan, and is never taken away.
+    fn over_the_limit(&self, cx: &App) -> bool {
+        self.editing.is_none()
+            && self.chosen.is_some()
+            && !crate::licensing::plan(cx).may_add_remote_storage(self.page.read(cx).remote_count())
     }
 
     fn choose(&mut self, kind: Option<usize>, cx: &mut Context<Self>) {
@@ -265,7 +273,7 @@ impl AddStorageDialog {
         let Some(kind) = self.chosen.and_then(|k| self.kinds.get(k)).cloned() else {
             return;
         };
-        if self.secrets_unread {
+        if self.secrets_unread || self.over_the_limit(cx) {
             return;
         }
         let (values, secrets) = self.typed(cx);
@@ -461,6 +469,13 @@ impl Render for AddStorageDialog {
                     .child(said)
             }))
             .children(self.problem.clone().map(|why| note(Tone::Warn).child(why)))
+            .when(self.over_the_limit(cx), |d| {
+                d.child(note(Tone::Warn).child(tr!(
+                    "packwing Free keeps one storage across a network. A Pro or Enterprise \
+                     license lifts this: Settings › License. Folders on this computer are not \
+                     limited."
+                )))
+            })
             .child(
                 footer()
                     .when(remote, |d| {

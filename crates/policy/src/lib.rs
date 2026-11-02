@@ -25,11 +25,13 @@ pub const PROPAGATE_MOTW: &str = "PropagateMotW";
 pub const REQUIRE_ENCRYPTION: &str = "RequireEncryption";
 pub const ALLOWED_ENCRYPTION_METHODS: &str = "AllowedEncryptionMethods";
 pub const MIN_PASSWORD_LENGTH: &str = "MinPasswordLength";
+pub const LICENSE_KEY: &str = "LicenseKey";
 pub const ORGANIZATION_NAME: &str = "ManagedByOrganizationName";
 pub const ORGANIZATION_URL: &str = "ManagedByURL";
 
 /// Every policy there is, as the systems' readers look for them.
-pub const KEYS: [&str; 6] = [
+pub const KEYS: [&str; 7] = [
+    LICENSE_KEY,
     PROPAGATE_MOTW,
     REQUIRE_ENCRYPTION,
     ALLOWED_ENCRYPTION_METHODS,
@@ -188,6 +190,8 @@ pub struct Policy {
     pub require_encryption: Setting<bool>,
     pub allowed_methods: Setting<Vec<Method>>,
     pub min_password_length: Setting<u32>,
+    /// The organization's license key, for packwing-license to read.
+    pub license_key: Setting<String>,
     pub organization: Setting<String>,
     pub url: Setting<String>,
 }
@@ -208,6 +212,7 @@ impl Policy {
             require_encryption: Setting::of(value(REQUIRE_ENCRYPTION), read_bool),
             allowed_methods: Setting::of(value(ALLOWED_ENCRYPTION_METHODS), read_methods),
             min_password_length: Setting::of(value(MIN_PASSWORD_LENGTH), read_length),
+            license_key: Setting::of(value(LICENSE_KEY), read_text),
             organization: Setting::of(value(ORGANIZATION_NAME), read_text),
             url: Setting::of(value(ORGANIZATION_URL), read_url),
             unknown: found
@@ -347,6 +352,10 @@ impl Policy {
             &self.min_password_length,
             u32::to_string,
         );
+        // Not shown: it holds the holder's name and email.
+        row(&mut rows, LICENSE_KEY, &self.license_key, |_| {
+            "(set)".to_owned()
+        });
         row(
             &mut rows,
             ORGANIZATION_NAME,
@@ -689,6 +698,14 @@ mod tests {
             Value::Text("https://it.example.com".into()),
         )]);
         assert_eq!(good.url, Setting::Set("https://it.example.com".into()));
+    }
+
+    #[test]
+    fn a_license_key_is_never_shown() {
+        let p = policy(&[(LICENSE_KEY, Value::Text("secret-key-text".into()))]);
+        assert_eq!(p.license_key, Setting::Set("secret-key-text".into()));
+        assert!(!p.report().contains("secret-key-text"));
+        assert_eq!(p.rows()[0].value, "(set)");
     }
 
     #[test]

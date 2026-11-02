@@ -4398,6 +4398,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "ml-dsa"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6f6d49c3f3f0e10e18ca975ffda66f8da0ec36521c1d911adcbc521bf0743f5c"
+dependencies = [
+ "crypto-common 0.2.2",
+ "ctutils",
+ "hybrid-array",
+ "module-lattice",
+ "pkcs8",
+ "shake",
+ "signature",
+]
+
+[[package]]
 name = "ml-kem"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5271,9 +5286,11 @@ dependencies = [
  "nonstick",
  "packwing-core",
  "packwing-i18n",
+ "packwing-license",
  "packwing-policy",
  "packwing-remote",
  "robius-authentication",
+ "time",
  "unicode-segmentation",
 ]
 
@@ -5313,6 +5330,20 @@ dependencies = [
  "fluent-bundle",
  "sys-locale",
  "unic-langid",
+]
+
+[[package]]
+name = "packwing-license"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "curve25519-dalek",
+ "ml-dsa",
+ "packwing-i18n",
+ "serde",
+ "serde_json",
+ "sha2 0.11.1",
+ "time",
 ]
 
 [[package]]
@@ -7717,6 +7748,7 @@ dependencies = [
  "powerfmt",
  "serde_core",
  "time-core",
+ "time-macros",
 ]
 
 [[package]]
@@ -7724,6 +7756,16 @@ name = "time-core"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9e1c906769ad99c88eaa54e728060edef082f8e358ff32030cb7c7d315e81109"
+
+[[package]]
+name = "time-macros"
+version = "0.2.32"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7e689342a48d2ea927c87ea50cabf8594854bf940e9310208848d680d668ed85"
+dependencies = [
+ "num-conv",
+ "time-core",
+]
 
 [[package]]
 name = "tiny-keccak"
@@ -8738,7 +8780,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.48.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]

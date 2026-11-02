@@ -170,6 +170,11 @@ impl Default for Prefs {
     }
 }
 
+/// packwing's folder in the system's folder for settings.
+pub fn folder() -> Option<PathBuf> {
+    default_file()?.parent().map(PathBuf::from)
+}
+
 /// The system's folder for a program's settings, and packwing's file in it.
 fn default_file() -> Option<PathBuf> {
     let env = |name: &str| {

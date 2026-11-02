@@ -32,6 +32,8 @@ gpui.workspace = true
 gpui_platform.workspace = true
 # Reading, extracting and testing archives, through hivepack.
 packwing-core.workspace = true
+# What a license key says.
+packwing-license.workspace = true
 # What an organization has fixed.
 packwing-policy.workspace = true
 # Storages across the network: S3, WebDAV and SFTP.
@@ -40,6 +42,8 @@ packwing-remote.workspace = true
 packwing-i18n.workspace = true
 # The system's right-click menu: packwing's items in it (src/right_click.rs).
 context-menu = "0.2"
+# The date a license ends.
+time = { version = "0.3", default-features = false, features = ["std"] }
 unicode-segmentation = "1"
 
 # Asking that it is the user, for a storage that asks it (src/confirm.rs).

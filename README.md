@@ -17,6 +17,10 @@ S3 buckets, WebDAV folders and servers over SFTP are storages too, added from Ad
 
 An organization can fix some of this for everyone, through Group Policy, a configuration profile or a file in `/etc`: keeping the Internet mark, requiring encryption, which kinds, and how long a password has to be. [docs/policies.md](docs/policies.md) is for its administrators. `packwing --policies` says what is set.
 
+## 💳 Plans
+
+packwing is free software, and Free does everything but keep more than one storage across a network (S3, WebDAV, SFTP); folders on this computer are not limited. Pro has no limit. Enterprise has none either, with one key an organization gives to all its computers through a policy, and an agreement behind it. A key is checked on the computer, with no account and nothing sent anywhere, and no plan changes what policies or security features do. The check asks people to pay; as the license allows, anyone can build packwing without it.
+
 ## 🛠️ Building
 
 packwing is a [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui) app, built with the Rust version in `rust-toolchain.toml` (rustup installs it by itself):

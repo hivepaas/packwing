@@ -42,6 +42,7 @@ hivepack-zstd = { git = "https://github.com/hivepaas/hivepack-rs", rev = "680451
 packwing-core = { path = "crates/core" }
 packwing-remote = { path = "crates/remote" }
 packwing-i18n = { path = "crates/i18n" }
+packwing-license = { path = "crates/license" }
 packwing-policy = { path = "crates/policy" }
 
 [workspace.lints.rust]
