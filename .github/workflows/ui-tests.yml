@@ -74,8 +74,10 @@ jobs:
 
       # What the system's own marks and paths do, which only these systems can tell.
       - name: Core tests
-        run: cargo test -p packwing-core -p packwing-policy -p packwing-license
+        run: cargo test --no-fail-fast -p packwing-core -p packwing-policy -p packwing-license
 
+      # Whatever the core's tests said: both are worth seeing in one run.
       - name: UI scenarios
+        if: success() || failure()
         shell: bash
         run: cargo test -p packwing --features ui-tests "ui_tests::${{ inputs.filter }}"
