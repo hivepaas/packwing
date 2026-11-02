@@ -12,14 +12,15 @@ mod security;
 pub use general::{Appearance, AppearanceChosen};
 
 use gpui::{
-    AnyView, Context, Div, Entity, EventEmitter, FontWeight, IntoElement, Render, SharedString,
-    Subscription, Window, div, prelude::*, px, rgb,
+    AnyView, Context, Div, Entity, EventEmitter, FontWeight, IntoElement, Render, ScrollHandle,
+    SharedString, Subscription, Window, div, point, prelude::*, px, rgb,
 };
 use packwing_i18n::tr;
 
 use super::{panel, title};
 use crate::colors::colors;
 use crate::right_click::RightClickMenu;
+use crate::updates::Updates;
 
 /// The sections, in the menu's order.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -62,6 +63,8 @@ pub struct SettingsPage {
     general: Entity<general::General>,
     /// Each section's view, in [`Section::ALL`]'s order.
     views: Vec<AnyView>,
+    /// How far the open section is scrolled.
+    scroll: ScrollHandle,
     _appearance: Subscription,
 }
 
@@ -71,6 +74,7 @@ impl SettingsPage {
     pub fn new(
         appearance: Appearance,
         menu: Entity<RightClickMenu>,
+        updates: Entity<Updates>,
         cx: &mut Context<Self>,
     ) -> Self {
         let general = cx.new(|cx| general::General::new(appearance, menu.clone(), cx));
@@ -88,12 +92,13 @@ impl SettingsPage {
             },
             cx.new(|cx| right_click::RightClick::new(menu, cx)).into(),
             cx.new(license::LicenseSection::new).into(),
-            cx.new(|_| about::About).into(),
+            cx.new(|cx| about::About::new(updates, cx)).into(),
         ];
         SettingsPage {
             section: Section::General,
             general,
             views,
+            scroll: ScrollHandle::new(),
             _appearance: appearance,
         }
     }
@@ -101,6 +106,24 @@ impl SettingsPage {
     pub fn show_section(&mut self, section: Section, cx: &mut Context<Self>) {
         self.section = section;
         cx.notify();
+    }
+
+    /// Scrolls down, for a picture of what is further down.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn scroll_for_test(&mut self, by: f32, cx: &mut Context<Self>) {
+        self.scroll.set_offset(point(px(0.), px(-by)));
+        cx.notify();
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn section(&self) -> Section {
+        self.section
+    }
+
+    /// Shows About from its top, where its Updates group is.
+    pub fn show_updates(&mut self, cx: &mut Context<Self>) {
+        self.scroll.set_offset(point(px(0.), px(0.)));
+        self.show_section(Section::About, cx);
     }
 
     /// Shows `a` as chosen, when it was chosen elsewhere.
@@ -165,6 +188,7 @@ impl Render for SettingsPage {
                     .min_w_0()
                     .max_h_full()
                     .overflow_y_scroll()
+                    .track_scroll(&self.scroll)
                     .flex()
                     .flex_col()
                     .gap(px(14.))

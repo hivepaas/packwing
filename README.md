@@ -15,6 +15,8 @@ S3 buckets, WebDAV folders and servers over SFTP are storages too, added from Ad
 - **Formats:** ZIP (split archives too), RAR (reading), tar and `.tar.zst`.
 - **Safe extraction by default:** nothing is written outside the destination folder or through links, and archive bombs stop at a size limit.
 
+packwing looks once a day for a newer version, in a list on GitHub that it believes only when its signatures verify, and a badge on the title bar leads to Settings › About; nothing is downloaded or installed unless asked, and the look can be turned off there. [docs/updates.md](docs/updates.md) says how it works.
+
 An organization can fix some of this for everyone, through Group Policy, a configuration profile or a file in `/etc`: keeping the Internet mark, requiring encryption, which kinds, and how long a password has to be. [docs/policies.md](docs/policies.md) is for its administrators. `packwing --policies` says what is set.
 
 ## 💳 Plans

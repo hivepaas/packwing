@@ -376,14 +376,64 @@ t95f41ffb = You can change these later in Settings.
 te83ca5ee = Get started
 t7d0c09c7 = { $location } · not there any more
 tc0cc82d5 = The archives you open will show here.
-t86de0290 = Version { $env }
+t8dc21305 = Copied
+t3d37483c = Copy version info
+t6bead5ae = Version { $version } · { $os } { $arch }
 t3c244df9 = A file archiver that opens archives safely.
+t483075a5 = Updates
+t1d6a96bc = This is a beta: you are told of newer betas, and of the release that follows them.
+t9d2d8250 = This is a release: you are told of newer releases, not of betas.
+t4f0e0677 = Check now
+tcc27ace1 = Look for updates once a day
+t258cdfd9 = It reads the list of releases from GitHub, and believes it only when its signatures verify. Nothing is downloaded or installed without you.
+t2c33d756 = Skip this version
+t378182cb = This build has no release keys, so it cannot tell of updates.
+tf02650f8 = packwing { $version } is ready
+t6fecac86 = It is installed when you quit, or now with Restart.
+t54001a7c = Restart now
+t20bb8a0d = packwing { $version }
+tf1905fe9 = Looking for a newer version…
+tc52ab62f = Release notes
+t36a30d8b = packwing { $version } is out
+t98b9753c = Run these in a terminal. They check the download against the signed list of releases, and sudo asks for your password.
+tdf2cab9c = { $by } updates it: { $command }
+t84b27295 = { $by } updates it.
+tb46c0678 = It is downloaded and checked, then installed when you quit.
+t39312eae = Download it, and install it in place of this one.
+t5e96c075 = The download failed: { $why }
+t1a99173f = Download and install
+t6964bb19 = Download
+td122a092 = The last look failed: { $why }
+t4665ef60 = Up to date (looked { $when }).
+t5a3ba058 = Not looked yet.
 t731220a4 = Free software
 t4e98bf3c = Under the GNU General Public License, version 3 or later
 tfc21d38b = View license
 t10c7007a = Made by HivePaaS
 tfae09b61 = On hivepack, our library for reading and writing archives
 tf6a49f4d = Source code
+t610dfb6f = Something wrong?
+ta3e29034 = Tell us, with the version above
+t7b1728e7 = Report a problem
+te8345543 = What changed
+t8e6f2052 = Every release, and what is new in it
+t11d91ba2 = © { $year } HivePaaS. The packwing name and logo are trademarks of HivePaaS.
+tb25cf729 = More from HivePaaS
+tc1ece130 = Free and open source, like packwing.
+t0f4c758a = A fast, native SSH client for Linux, macOS and Windows.
+t0f8af34d = SSH and SFTP
+tc1c4446d = Follows your ssh_config
+tae9bcfa8 = A real terminal
+t8622a5c1 = GPL-3.0-or-later
+t1d2ed540 = Visit shellwing.app
+tc9d13419 = A self-hosted platform for your apps, built on Docker Swarm: an open-source alternative to Heroku, Render and Coolify.
+t6a770b0a = 300+ one-click apps
+tb0bfc3e9 = Deploy on push
+t4e4180fc = Pull request previews
+t9e9776ed = Automatic TLS
+tebe3a172 = Live logs and metrics
+t0274f036 = Apache-2.0
+t0632975a = Visit hivepaas.com
 tad4bbd04 = Always
 t3b50d238 = Format of new archives
 t7b361b55 = New archive starts with it; you can pick another there.
@@ -508,6 +558,30 @@ tb7d0e1ed = It does not match its signature
 tadf2a401 = Its signature cannot be read
 t69cbbb51 = Its signature could not be checked
 tda8c2e03 = Checking its signature…
+t11465c20 = the system's package manager
+ta8cbd72e = the App Store
+t1df799a1 = the Microsoft Store
+taee668c2 = Downloading… { $got } of { $total }
+t4873b921 = Downloading… { $got }
+ta715ef0f = just now
+t6c7302d6 =
+    { $n ->
+        [one] { $n } minute ago
+       *[other] { $n } minutes ago
+    }
+t137b052e =
+    { $n ->
+        [one] { $n } hour ago
+       *[other] { $n } hours ago
+    }
+tb9fa7744 =
+    { $n ->
+        [one] { $n } day ago
+       *[other] { $n } days ago
+    }
+t2bfc1370 = No folder to download to.
+t676409df = Update available
+tbbbbda26 = Restart to update
 t843cf8f1 =
     { $n ->
         [one] { $n } file was skipped, as its name was taken.

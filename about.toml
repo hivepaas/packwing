@@ -38,7 +38,16 @@ accepted = ["GPL-3.0-or-later"]
 [packwing-i18n]
 accepted = ["GPL-3.0-or-later"]
 
+[packwing-license]
+accepted = ["GPL-3.0-or-later"]
+
+[packwing-policy]
+accepted = ["GPL-3.0-or-later"]
+
 [packwing-remote]
+accepted = ["GPL-3.0-or-later"]
+
+[packwing-update]
 accepted = ["GPL-3.0-or-later"]
 
 [shellwing-ssh]

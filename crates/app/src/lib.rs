@@ -26,6 +26,7 @@ mod placement;
 mod prefs;
 mod right_click;
 mod signatures;
+mod updates;
 mod widgets;
 mod workspace;
 
@@ -110,6 +111,7 @@ const ICONS: &[(&str, &[u8])] = icons![
     "recent",
     "refresh",
     "search",
+    "shellwing",
     "shield",
     "sliders",
     "storages",
@@ -215,6 +217,7 @@ pub fn run(extensions: Extensions) {
                 let ws = cx.new(|cx| {
                     let mut ws = workspace::Workspace::new(first_run, menu, window, cx);
                     ws.track_bounds(window, cx);
+                    ws.start_updates(cx);
                     if let Some(r) = request {
                         ws.start(r, window, cx);
                     }

@@ -1,0 +1,37 @@
+[package]
+name = "packwing-update"
+description = "Telling that a newer packwing is out, and installing it"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[features]
+# The app's tests point the updater at a list and keys of their own
+# (set_test_source); a build without it reads only LIST_URL and the keys built in.
+test-source = []
+
+[dependencies]
+base64 = "0.22"
+# Ed25519ctx and ML-DSA-65, as a license key's are checked.
+packwing-license.workspace = true
+# Starting the new version with no signals blocked.
+shellwing-spawn = { git = "https://github.com/hivepaas/shellwing", rev = "7032701a11e7038cb4f9248e69c934fc6ebfe58a" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = { version = "0.11", default-features = false }
+thiserror = "2"
+# Reading the list: reqwest on rustls with ring, as shellwing has them.
+reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
+tokio = { version = "1", features = ["rt", "time"] }
+# A macOS release is Packwing.app, tarred and gzipped.
+flate2 = "1"
+tar = { version = "0.4", default-features = false }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt"] }
+
+[lints]
+workspace = true

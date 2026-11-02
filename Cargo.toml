@@ -45,6 +45,7 @@ packwing-remote = { path = "crates/remote" }
 packwing-i18n = { path = "crates/i18n" }
 packwing-license = { path = "crates/license" }
 packwing-policy = { path = "crates/policy" }
+packwing-update = { path = "crates/update" }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

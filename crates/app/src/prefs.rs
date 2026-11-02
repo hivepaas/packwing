@@ -3,6 +3,7 @@
 //! go in it. A line it does not know, or cannot read, is left at its default,
 //! so that a file from another version still opens.
 
+use crate::updates::UpdateState;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
@@ -147,6 +148,8 @@ pub struct Prefs {
     pub browse_folder: Option<PathBuf>,
     /// The command that starts the text editor, or none for the system's.
     pub editor: Option<String>,
+    /// Whether to look for updates, and what the last look found.
+    pub update: UpdateState,
     /// The keys whose signatures are taken as proof.
     pub trusted_keys: Vec<TrustedKey>,
     /// The key file signed with last. Its contents never go in this file.
@@ -178,6 +181,7 @@ impl Default for Prefs {
             show_hidden: false,
             browse_folder: None,
             editor: None,
+            update: UpdateState::default(),
             trusted_keys: Vec::new(),
             signing_key: None,
         }
@@ -283,6 +287,20 @@ impl Prefs {
                 "show_hidden" => p.show_hidden = on(value, p.show_hidden),
                 "browse_folder" => p.browse_folder = Some(PathBuf::from(value)),
                 "editor" => p.editor = Some(value.to_owned()).filter(|v| !v.trim().is_empty()),
+                "update_check" => p.update.check = on(value, p.update.check),
+                "update_checked_at" => p.update.checked_at = value.parse().ok(),
+                "update_offered" => p.update.offered = Some(value.to_owned()),
+                "update_skipped" => p.update.skipped = Some(value.to_owned()),
+                "update_package" => {
+                    p.update.package = value
+                        .split_once('\t')
+                        .map(|(file, sha)| (file.to_owned(), sha.to_owned()));
+                }
+                "update_staged" => {
+                    p.update.staged = value
+                        .split_once('\t')
+                        .map(|(version, path)| (version.to_owned(), PathBuf::from(path)));
+                }
                 "signing_key" => p.signing_key = Some(PathBuf::from(value)),
                 // What it is called, a tab, and its public key's line.
                 "trusted_key" => {
@@ -381,6 +399,25 @@ impl Prefs {
             .filter(|f| !f.contains('\n'))
         {
             text.push_str(&format!("browse_folder={folder}\n"));
+        }
+        let u = &self.update;
+        text.push_str(&format!("update_check={}\n", u.check));
+        if let Some(at) = u.checked_at {
+            text.push_str(&format!("update_checked_at={at}\n"));
+        }
+        if let Some(offered) = &u.offered {
+            text.push_str(&format!("update_offered={offered}\n"));
+        }
+        if let Some(skipped) = &u.skipped {
+            text.push_str(&format!("update_skipped={skipped}\n"));
+        }
+        if let Some((file, sha)) = &u.package {
+            text.push_str(&format!("update_package={file}\t{sha}\n"));
+        }
+        if let Some((version, path)) = &u.staged
+            && let Some(path) = path.to_str().filter(|p| !p.contains('\n'))
+        {
+            text.push_str(&format!("update_staged={version}\t{path}\n"));
         }
         if let Some(key) = self
             .signing_key
@@ -518,6 +555,23 @@ pub fn change(cx: &mut App, f: impl FnOnce(&mut Prefs)) {
 #[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn what_a_look_for_updates_found_comes_back() {
+        let mut p = Prefs::default();
+        assert!(p.update.check);
+        p.update = UpdateState {
+            check: false,
+            checked_at: Some(1_800_000_000),
+            offered: Some("v0.3.0".into()),
+            skipped: Some("v0.2.0".into()),
+            package: Some(("packwing_0.3.0_amd64.deb".into(), "abc".into())),
+            staged: Some(("v0.3.0".into(), PathBuf::from("/home/me/.cache/a b/x"))),
+        };
+        assert_eq!(Prefs::parse(&p.text()).update, p.update);
+        // What older settings did not have is on by default.
+        assert!(Prefs::parse("language=en\n").update.check);
+    }
 
     #[test]
     fn a_storage_that_asks_first_comes_back_asking() {
