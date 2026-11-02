@@ -8,7 +8,7 @@
 //! a bill unpaid must not be a security incident. The code is free software, so this
 //! asks people to pay rather than stopping them: anyone can build it without the check.
 
-mod verify;
+pub mod verify;
 
 use base64::Engine;
 use base64::engine::general_purpose::{STANDARD, STANDARD_NO_PAD};

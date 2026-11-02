@@ -23,7 +23,7 @@ wayland = ["gpui_platform/wayland"]
 x11 = ["gpui_platform/x11"]
 # Draws every screen to a PNG, light and dark, without a display (src/shots.rs,
 # Linux only): `cargo test -p packwing --features shots shots`.
-shots = ["gpui_platform/test-support", "dep:gpui_wgpu", "dep:image"]
+shots = ["gpui_platform/test-support", "dep:gpui_wgpu", "dep:image", "packwing-update/test-source"]
 
 [dependencies]
 # Where this system keeps the home, Desktop and Downloads folders.
@@ -38,6 +38,8 @@ packwing-license.workspace = true
 packwing-policy.workspace = true
 # Storages across the network: S3, WebDAV and SFTP.
 packwing-remote.workspace = true
+# Telling that a newer packwing is out, and installing it.
+packwing-update.workspace = true
 # The interface's words, in the user's language.
 packwing-i18n.workspace = true
 # The system's right-click menu: packwing's items in it (src/right_click.rs).

@@ -24,8 +24,8 @@
 //! or maximised sides have neither margin nor border.
 
 use gpui::{
-    App, BoxShadow, Corners, CursorStyle, Decorations, Div, Edges, HitboxBehavior, Hsla,
-    MouseButton, Pixels, Point, ResizeEdge, Size, Stateful, Tiling, Window, WindowButton,
+    App, BoxShadow, Corners, CursorStyle, Decorations, Div, Edges, FontWeight, HitboxBehavior,
+    Hsla, MouseButton, Pixels, Point, ResizeEdge, Size, Stateful, Tiling, Window, WindowButton,
     WindowButtonLayout, WindowControlArea, canvas, div, point, prelude::*, px, rgb, rgba, svg,
     transparent_black,
 };
@@ -100,11 +100,22 @@ fn tiling(window: &Window) -> Tiling {
     }
 }
 
+// A headless window has no client-side decorations: this draws its title bar anyway,
+// for a picture of what goes on it. Per thread, so that other tests' pictures stay.
+#[cfg(all(test, feature = "shots"))]
+thread_local! {
+    pub static TITLE_BAR_FOR_TEST: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
 /// Whether the app draws the title bar: always on macOS and Windows (inside
 /// the system's frame), on Linux where it draws the whole frame (Wayland).
 /// Elsewhere (X11 without client-side decorations) the system's title bar
 /// stays and the app draws none.
 pub fn draws_title_bar(window: &Window) -> bool {
+    #[cfg(all(test, feature = "shots"))]
+    if TITLE_BAR_FOR_TEST.get() {
+        return true;
+    }
     cfg!(any(target_os = "macos", target_os = "windows"))
         || matches!(window.window_decorations(), Decorations::Client { .. })
 }
@@ -204,6 +215,31 @@ pub fn appearance_switch(now: Appearance) -> Stateful<Div> {
         .child(svg().path(icon).size(px(14.)).text_color(rgb(c.text)))
 }
 
+/// The title bar's word that a newer version is out, or ready to install: a click leads
+/// to where it can be got. It takes the press itself, as the appearance switch does.
+pub fn update_badge(said: String, tooltip: String) -> Stateful<Div> {
+    let c = colors();
+    div()
+        .id("update-badge")
+        .flex()
+        .flex_shrink_0()
+        .items_center()
+        .h(px(24.))
+        .px(px(10.))
+        .rounded_full()
+        .bg(rgb(c.accent))
+        .hover(|s| s.bg(rgb(c.accent_hover)))
+        .text_color(rgb(c.on_accent))
+        .text_size(px(12.))
+        .font_weight(FontWeight::SEMIBOLD)
+        .whitespace_nowrap()
+        .cursor_pointer()
+        .occlude()
+        .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+        .tooltip(tip(tooltip))
+        .child(said)
+}
+
 /// Flat full-height buttons, as Windows draws them. They do nothing on a
 /// click themselves: as window control areas, Windows sees its own caption
 /// buttons there and GPUI carries out the press.
@@ -254,11 +290,13 @@ fn windows_buttons(window: &Window) -> Div {
 
 /// The window frame around `content`, with a title bar in `bg` above it
 /// where the app draws one: the window's buttons and, beside them, the
-/// appearance `switch` ([`appearance_switch`]).
+/// appearance `switch` ([`appearance_switch`]) with the update `badge` if there is
+/// one ([`update_badge`]).
 pub fn window_chrome(
     content: Div,
     bg: Hsla,
     switch: Stateful<Div>,
+    badge: Option<Stateful<Div>>,
     window: &mut Window,
     cx: &App,
 ) -> Div {
@@ -272,7 +310,7 @@ pub fn window_chrome(
     let fullscreen = window.is_fullscreen();
     let (mac, windows) = (cfg!(target_os = "macos"), cfg!(target_os = "windows"));
     let row = || div().flex().items_center().h_full();
-    let mut switch = Some(switch);
+    let mut switch = Some(row().gap(px(8.)).children(badge).child(switch));
     // What each end of the bar holds: the window's buttons, and the switch
     // on their inner side.
     let (left, right) = if windows {

@@ -32,6 +32,7 @@ use crate::pages::storages::{AddStorageAsked, EditStorageAsked, StoragesPage};
 use crate::placement::{self, WindowPlace};
 use crate::prefs;
 use crate::right_click::{Action, Request, RightClickMenu};
+use crate::updates::{Badge, Updates};
 use crate::widgets::{accent_tint, icon, logo, tile};
 
 /// The pages the menu leads to.
@@ -100,6 +101,8 @@ pub struct Workspace {
     browse: Entity<BrowsePage>,
     recent: Entity<RecentPage>,
     settings: Entity<SettingsPage>,
+    /// Whether a newer version is out.
+    updates: Entity<Updates>,
     /// packwing's items in the system's right-click menu.
     right_click: Entity<RightClickMenu>,
     /// The first run's welcome, shown instead of the pages.
@@ -180,8 +183,11 @@ impl Workspace {
             move |cx| BrowsePage::new(recent, cx)
         });
         let browse_explorer = browse.read(cx).explorer().clone();
-        let settings = cx.new(|cx| SettingsPage::new(appearance, right_click.clone(), cx));
+        let updates = cx.new(Updates::new);
+        let settings =
+            cx.new(|cx| SettingsPage::new(appearance, right_click.clone(), updates.clone(), cx));
         let subscriptions = vec![
+            cx.observe(&updates, |_, _, cx| cx.notify()),
             cx.subscribe_in(
                 &archive,
                 window,
@@ -236,6 +242,7 @@ impl Workspace {
             browse,
             recent,
             settings,
+            updates,
             right_click,
             welcome: None,
             reading: None,
@@ -277,6 +284,55 @@ impl Workspace {
             std::future::ready(())
         })
         .detach();
+    }
+
+    /// The looks for a newer version, from now on.
+    pub fn start_updates(&mut self, cx: &mut Context<Self>) {
+        self.updates.update(cx, |u, cx| u.start(cx));
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn settings(&self) -> &Entity<SettingsPage> {
+        &self.settings
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn updates(&self) -> &Entity<Updates> {
+        &self.updates
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn settings_section(&self, cx: &gpui::App) -> crate::pages::settings::Section {
+        self.settings.read(cx).section()
+    }
+
+    #[cfg(all(test, feature = "shots"))]
+    pub fn page(&self) -> Page {
+        self.page
+    }
+
+    /// About's Updates: where the title bar's badge leads.
+    pub fn show_updates(&mut self, cx: &mut Context<Self>) {
+        self.settings.update(cx, |s, cx| s.show_updates(cx));
+        self.show_page(Page::Settings, cx);
+    }
+
+    /// The title bar's badge, if a newer version is out.
+    fn update_badge(&self, cx: &mut Context<Self>) -> Option<gpui::Stateful<gpui::Div>> {
+        let (said, tooltip) = match self.updates.read(cx).badge()? {
+            Badge::Out(v) => (
+                tr!("Update available"),
+                tr!("packwing {version} is out", version = v.to_string()),
+            ),
+            Badge::Ready(v) => (
+                tr!("Restart to update"),
+                tr!("packwing {version} is ready", version = v.to_string()),
+            ),
+        };
+        Some(
+            chrome::update_badge(said, tooltip)
+                .on_click(cx.listener(|this, _, _, cx| this.show_updates(cx))),
+        )
     }
 
     fn place_changed(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -1118,7 +1174,7 @@ impl Workspace {
     }
 
     /// The menu down the window's left side.
-    fn menu(&self, top: f32, cx: &mut Context<Self>) -> impl IntoElement {
+    fn menu(&self, top: f32, window: &Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
         let item = |id: &'static str, icon_name: &'static str, label: String, on: bool| {
             let ink = if on { c.on_tonal } else { c.muted };
@@ -1152,6 +1208,8 @@ impl Workspace {
                 .child(label)
         };
         let page = self.page;
+        // Where the system draws the title bar, the badge has no place: a dot says it.
+        let dot = !chrome::draws_title_bar(window) && self.updates.read(cx).badge().is_some();
         div()
             .w(px(88.))
             .flex_shrink_0()
@@ -1203,6 +1261,18 @@ impl Workspace {
                     tr!("Settings"),
                     page == Page::Settings,
                 )
+                .relative()
+                .when(dot, |d| {
+                    d.child(
+                        div()
+                            .absolute()
+                            .top(px(2.))
+                            .right(px(8.))
+                            .size(px(8.))
+                            .rounded_full()
+                            .bg(rgb(c.accent)),
+                    )
+                })
                 .on_click(cx.listener(|this, _, _, cx| this.show_page(Page::Settings, cx))),
             )
     }
@@ -1270,7 +1340,7 @@ impl Render for Workspace {
                     .flex_1()
                     .min_h_0()
                     .flex()
-                    .child(self.menu(top, cx))
+                    .child(self.menu(top, window, cx))
                     .child(
                         div()
                             .flex_1()
@@ -1291,10 +1361,12 @@ impl Render for Workspace {
                 this.set_appearance(next, window, cx);
             },
         ));
+        let badge = self.update_badge(cx);
         let framed = chrome::window_chrome(
             div().flex_1().min_h_0().flex().flex_col().child(body),
             rgb(c.page).into(),
             switch,
+            badge,
             window,
             cx,
         );

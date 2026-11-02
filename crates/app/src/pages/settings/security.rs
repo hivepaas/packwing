@@ -13,7 +13,7 @@ use crate::colors::{Tint, colors};
 use crate::widgets::{Fill, Size, button, icon, switch, tile};
 
 /// Monospace fonts for the policies' names, the first one installed.
-const MONO_FONTS: [&str; 8] = [
+pub(super) const MONO_FONTS: [&str; 8] = [
     "SF Mono",
     "Menlo",
     "Cascadia Mono",

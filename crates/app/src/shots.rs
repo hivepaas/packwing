@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 61] = [
+const SCREENS: [(&str, SetUp); 63] = [
     ("storages-edit", |ws, window, cx| {
         cx.set_global(fake_extensions());
         add_far(ws, "Far one", std::path::Path::new("/far"), true, cx);
@@ -220,6 +220,16 @@ const SCREENS: [(&str, SetUp); 61] = [
     }),
     ("settings-about", |ws, _, cx| {
         ws.show_settings(Section::About, cx)
+    }),
+    ("settings-about-update", |ws, _, cx| {
+        ws.updates()
+            .update(cx, |u, cx| u.offer_for_test("v99.0.0", None, cx));
+        ws.show_updates(cx);
+    }),
+    ("settings-about-more", |ws, _, cx| {
+        ws.show_settings(Section::About, cx);
+        ws.settings()
+            .update(cx, |s, cx| s.scroll_for_test(900., cx));
     }),
     ("first-run", |ws, window, cx| ws.show_welcome(window, cx)),
     ("extract", |ws, window, cx| ws.open_extract(window, cx)),
@@ -1747,6 +1757,163 @@ fn a_post_quantum_key_of_2000_characters_says_what_opens_it() {
         .expect("cannot draw the window")
         .save(out_dir().join("create-age-pq.png"))
         .expect("cannot save the picture");
+}
+
+/// Serves `body` with `status` on a port of its own, to whoever asks, for this test run.
+fn serve(status: &'static str, body: &'static str) -> String {
+    use std::io::{Read as _, Write as _};
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").expect("a port");
+    let url = format!(
+        "http://{}/release.signed.json",
+        listener.local_addr().expect("addr")
+    );
+    std::thread::spawn(move || {
+        for stream in listener.incoming().flatten() {
+            let mut stream = stream;
+            let mut asked = [0; 4096];
+            let _ = stream.read(&mut asked);
+            let _ = write!(
+                stream,
+                "HTTP/1.1 {status}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                body.len()
+            );
+        }
+    });
+    url
+}
+
+#[test]
+fn the_title_bar_has_its_badge_beside_the_appearance_switch() {
+    crate::chrome::TITLE_BAR_FOR_TEST.set(true);
+    let (mut cx, window, _) = explorer_on(out_dir());
+    for (name, ready) in [
+        ("title-bar-update-out", false),
+        ("title-bar-update-ready", true),
+    ] {
+        window
+            .update(&mut cx, |ws, _, cx| {
+                ws.updates().update(cx, |u, cx| {
+                    u.offer_for_test("v99.0.0", None, cx);
+                    if ready {
+                        u.ready_for_test(cx);
+                    }
+                })
+            })
+            .expect("the window");
+        cx.run_until_parked();
+        window
+            .update(&mut cx, |_, _, cx| cx.refresh_windows())
+            .expect("the window");
+        cx.run_until_parked();
+        cx.capture_screenshot(window.into())
+            .expect("cannot draw the window")
+            .save(out_dir().join(format!("{name}.png")))
+            .expect("cannot save the picture");
+    }
+}
+
+#[test]
+fn a_newer_version_shows_on_the_title_bar_and_leads_to_about() {
+    use crate::pages::settings::Section;
+    use crate::updates::Badge;
+    use packwing_update::{Install, Version};
+
+    const SIGNED: &str = include_str!("../../update/testdata/release.signed.json");
+    const KEYS: [(&str, &str); 2] = [
+        (
+            "test-ed",
+            include_str!("../../update/testdata/test-ed.pub.pem"),
+        ),
+        (
+            "test-ml",
+            include_str!("../../update/testdata/test-ml.pub.pem"),
+        ),
+    ];
+    let (mut cx, window, _) = explorer_on(out_dir());
+    let look = |cx: &mut HeadlessAppContext, url: &str, keys: &[(&str, &str)]| {
+        packwing_update::set_test_source(url, keys);
+        window
+            .update(cx, |ws, _, cx| ws.updates().update(cx, |u, cx| u.check(cx)))
+            .expect("the window");
+        for _ in 0..400 {
+            cx.run_until_parked();
+            let checking = window
+                .update(cx, |ws, _, cx| ws.updates().read(cx).checking())
+                .expect("the window");
+            if !checking {
+                return;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(25));
+        }
+        panic!("the look did not end");
+    };
+    let badge = |cx: &mut HeadlessAppContext| {
+        window
+            .update(cx, |ws, _, cx| ws.updates().read(cx).badge())
+            .expect("the window")
+    };
+    let problem = |cx: &mut HeadlessAppContext| {
+        window
+            .update(cx, |ws, _, cx| {
+                ws.updates().read(cx).problem().map(str::to_owned)
+            })
+            .expect("the window")
+    };
+
+    // No list yet, before the first release: up to date, and nothing shows.
+    look(&mut cx, &serve("404 Not Found", ""), &KEYS);
+    assert_eq!((badge(&mut cx), problem(&mut cx)), (None, None));
+    // A list signed by keys this app does not have is not believed.
+    let other = [("test-ed", KEYS[1].1), ("test-ml", KEYS[0].1)];
+    look(&mut cx, &serve("200 OK", SIGNED), &other);
+    assert_eq!(badge(&mut cx), None);
+    assert!(problem(&mut cx).is_some());
+
+    // A signed list: the release shows, and the click leads to About.
+    packwing_update::set_test_install(Install::Package);
+    look(&mut cx, &serve("200 OK", SIGNED), &KEYS);
+    assert_eq!(problem(&mut cx), None);
+    let offered = Version::parse("v99.0.0").expect("version");
+    assert_eq!(badge(&mut cx), Some(Badge::Out(offered)));
+    let steps = window
+        .update(&mut cx, |ws, _, cx| ws.updates().read(cx).steps())
+        .expect("the window")
+        .expect("the steps");
+    assert!(steps[1].ends_with("/v99.0.0/packwing_99.0.0_amd64.deb"));
+    assert!(steps[3].contains("sudo apt install"));
+    let at = window
+        .update(&mut cx, |ws, _, cx| {
+            ws.show_updates(cx);
+            (ws.page(), ws.settings_section(cx))
+        })
+        .expect("the window");
+    assert_eq!(at, (crate::workspace::Page::Settings, Section::About));
+    cx.run_until_parked();
+    window
+        .update(&mut cx, |_, _, cx| cx.refresh_windows())
+        .expect("the window");
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window")
+        .save(out_dir().join("about-update-steps.png"))
+        .expect("cannot save the picture");
+
+    // Skipped, it is not offered again; turned off, nor is the next.
+    window
+        .update(&mut cx, |ws, _, cx| {
+            ws.updates().update(cx, |u, cx| u.skip(cx))
+        })
+        .expect("the window");
+    assert_eq!(badge(&mut cx), None);
+    window
+        .update(&mut cx, |ws, _, cx| {
+            ws.updates().update(cx, |u, cx| {
+                u.offer_for_test("v100.0.0", None, cx);
+                u.set_checks(false, cx);
+            })
+        })
+        .expect("the window");
+    assert_eq!(badge(&mut cx), None);
 }
 
 #[test]
