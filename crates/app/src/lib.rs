@@ -1,12 +1,11 @@
 //! packwing: a file archiver that opens archives safely.
 //!
-//! Usage: `packwing [--first-run] [--managed] [--<item> PATH…]`. Archives
+//! Usage: `packwing [--first-run] [--<item> PATH…]`. Archives
 //! are read, extracted and tested through packwing-core and hivepack
 //! (`--open PATH` opens one), and made; the screenshots show made-up ones
 //! (`demo.rs`). What the user chooses is kept (`prefs.rs`). `--first-run`
-//! opens on the welcome; `--managed` runs as an organization would, with its
-//! policies. An item of the right-click menu runs packwing with its option
-//! and the paths chosen (`right_click.rs`).
+//! opens on the welcome. An item of the right-click menu runs packwing with its
+//! option and the paths chosen (`right_click.rs`).
 
 mod chrome;
 mod colors;
@@ -142,9 +141,8 @@ impl gpui::AssetSource for Assets {
 fn usage() -> String {
     let items: Vec<String> = Action::ALL.iter().map(|a| a.option()).collect();
     format!(
-        "usage: packwing [--first-run] [--managed] [--<item> PATH…]
+        "usage: packwing [--first-run] [--<item> PATH…]
   --first-run  open on the welcome, as on the first start
-  --managed    as an organization runs it: Settings › Security shows its policies
   --<item>     what an item of the right-click menu runs, with the paths chosen:
                {}",
         items.join(", ")
@@ -153,7 +151,7 @@ fn usage() -> String {
 
 /// Runs the app, with what this build adds to it.
 pub fn run(extensions: Extensions) {
-    let (mut first_run, mut managed, mut request) = (false, false, None);
+    let (mut first_run, mut request) = (false, None);
     let mut args = std::env::args_os().skip(1);
     while let Some(a) = args.next() {
         let text = a.to_string_lossy();
@@ -163,7 +161,6 @@ pub fn run(extensions: Extensions) {
                 return;
             }
             "--first-run" => first_run = true,
-            "--managed" => managed = true,
             option => match Request::parse(option, args.by_ref()) {
                 Some(r) => request = Some(r),
                 None => {
@@ -203,7 +200,7 @@ pub fn run(extensions: Extensions) {
             open_with::keep_current(cx);
             let opened = cx.open_window(options, |window, cx| {
                 let ws = cx.new(|cx| {
-                    let mut ws = workspace::Workspace::new(first_run, managed, menu, window, cx);
+                    let mut ws = workspace::Workspace::new(first_run, menu, window, cx);
                     ws.track_bounds(window, cx);
                     if let Some(r) = request {
                         ws.start(r, window, cx);

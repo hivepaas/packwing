@@ -410,18 +410,18 @@ mod tests {
             assert_eq!(Action::of_option(&a.option()), Some(a));
         }
         assert_eq!(Action::of_option("extract-here"), None);
-        assert_eq!(Action::of_option("--managed"), None);
+        assert_eq!(Action::of_option("--first-run"), None);
         assert_eq!(Action::of_option("--"), None);
     }
 
     #[test]
     fn a_request_takes_every_path_after_the_option() {
-        let rest = ["/home/u/a b.zip", "--managed", "-x.zip"].map(OsString::from);
+        let rest = ["/home/u/a b.zip", "--first-run", "-x.zip"].map(OsString::from);
         let r = Request::parse("--extract-here", rest).expect("an item's option");
         assert_eq!(r.action, Action::ExtractHere);
         assert_eq!(
             r.paths,
-            ["/home/u/a b.zip", "--managed", "-x.zip"].map(PathBuf::from)
+            ["/home/u/a b.zip", "--first-run", "-x.zip"].map(PathBuf::from)
         );
         assert_eq!(Request::parse("--first-run", []), None);
     }

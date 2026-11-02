@@ -20,450 +20,264 @@ use crate::workspace::{Page, Workspace};
 
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
-/// Each screen's name, how to get to it, and whether packwing runs managed.
-const SCREENS: [(&str, SetUp, bool); 57] = [
-    (
-        "storages-edit",
-        |ws, window, cx| {
-            cx.set_global(fake_extensions());
-            add_far(ws, "Far one", std::path::Path::new("/far"), true, cx);
-            let page = ws.storages_page();
-            let last = page.read(cx).count() - 1;
-            ws.edit_storage(last, window, cx);
-        },
-        false,
-    ),
-    (
-        "storages-edit-local",
-        |ws, window, cx| {
-            ws.show_storage(sample_storage(), cx);
-            let page = ws.storages_page();
-            let last = page.read(cx).count() - 1;
-            ws.edit_storage(last, window, cx);
-        },
-        false,
-    ),
-    (
-        "storages-locked",
-        |ws, _, cx| {
-            cx.set_global(fake_extensions());
-            ws.show_storage(sample_storage(), cx);
-            add_far(ws, "Far one", std::path::Path::new("/far"), true, cx);
-        },
-        false,
-    ),
-    (
-        "storages-add",
-        |ws, window, cx| {
-            cx.set_global(fake_extensions());
-            ws.open_add_storage(window, cx);
-        },
-        false,
-    ),
-    (
-        "storages-copy",
-        |ws, _, cx| {
-            storage_with(ws, "readme.txt", cx);
-            ws.explorer(cx)
-                .update(cx, |e, cx| e.ask_transfer(false, cx));
-        },
-        false,
-    ),
-    (
-        "storages",
-        |ws, _, cx| {
-            ws.show_storage(sample_storage(), cx);
-        },
-        false,
-    ),
-    (
-        "storages-chosen",
-        |ws, _, cx| storage_with(ws, "site-2026-10.zip", cx),
-        false,
-    ),
-    (
-        "storages-folder-info",
-        |ws, _, cx| storage_with(ws, "assets", cx),
-        false,
-    ),
-    (
-        "storages-menu",
-        |ws, _, cx| {
-            storage_with(ws, "readme.txt", cx);
-            ws.explorer(cx)
-                .update(cx, |e, cx| e.show_menu(640., 330., false, cx));
-        },
-        false,
-    ),
-    (
-        "storages-rename",
-        |ws, window, cx| {
-            storage_with(ws, "readme.txt", cx);
-            ws.explorer(cx)
-                .update(cx, |e, cx| e.type_rename(window, cx));
-        },
-        false,
-    ),
-    (
-        "storages-delete",
-        |ws, _, cx| {
-            storage_with(ws, "readme.txt", cx);
-            let explorer = ws.explorer(cx);
-            explorer.update(cx, |e, cx| e.ask_delete(cx));
-        },
-        false,
-    ),
-    (
-        "storages-view",
-        |ws, _, cx| {
-            storage_with(ws, "readme.txt", cx);
-            let explorer = ws.explorer(cx);
-            let item = explorer.read(cx).selection().remove(0);
-            explorer.update(cx, |e, cx| e.open(&item, cx));
-        },
-        false,
-    ),
-    (
-        "settings-editor",
-        |ws, _, cx| ws.show_settings(Section::General, cx),
-        false,
-    ),
-    ("archive", |_, _, _| {}, false),
-    (
-        "archive-opened",
-        |ws, window, cx| ws.open_archive(sample_tar(), false, window, cx),
-        false,
-    ),
-    (
-        "archive-search",
-        |ws, _, cx| {
-            ws.show_archive(read(), cx);
-            ws.search_archive("readme", cx);
-        },
-        false,
-    ),
-    (
-        "archive-selected",
-        |ws, _, cx| {
-            ws.show_archive(read(), cx);
-            ws.select_in_archive(&[1, 2], cx);
-        },
-        false,
-    ),
-    (
-        "extract-selected",
-        |ws, window, cx| {
-            ws.show_archive(read(), cx);
-            ws.select_in_archive(&[1, 2], cx);
-            ws.open_extract(window, cx);
-        },
-        false,
-    ),
-    (
-        "open-file",
-        |ws, window, cx| {
-            ws.show_archive(read(), cx);
-            let entry = ["site", "public", "index.html"].map(String::from).to_vec();
-            ws.open_entry(entry, window, cx);
-        },
-        false,
-    ),
-    (
-        "open-program",
-        |ws, window, cx| {
-            ws.show_archive(read(), cx);
-            let entry = ["site", "deploy.exe"].map(String::from).to_vec();
-            ws.open_entry(entry, window, cx);
-        },
-        false,
-    ),
-    (
-        "preview-picture",
-        |ws, _, cx| {
-            ws.show_archive(read(), cx);
-            ws.select_in_archive(&[1], cx);
-            ws.preview_in_archive(Some(sample_png()), "", cx);
-        },
-        false,
-    ),
-    (
-        "preview-text",
-        |ws, _, cx| {
-            ws.show_archive(read(), cx);
-            ws.select_in_archive(&[1], cx);
-            let text = "# Trang của công ty\n\nCách chạy:\n\n    ./deploy.sh --production\n\nHỏi ai nếu có lỗi? Xem docs/.\n";
-            ws.preview_in_archive(None, text, cx);
-        },
-        false,
-    ),
-    (
-        "rename",
-        |ws, window, cx| {
-            ws.show_archive(read(), cx);
-            ws.select_in_archive(&[1], cx);
-            ws.open_edit(true, window, cx);
-        },
-        false,
-    ),
-    (
-        "delete",
-        |ws, window, cx| {
-            ws.show_archive(read(), cx);
-            ws.select_in_archive(&[1, 2], cx);
-            ws.open_edit(false, window, cx);
-        },
-        false,
-    ),
-    (
-        "archive-long-name",
-        |ws, _, cx| ws.show_archive(read_named(LONG_NAME), cx),
-        false,
-    ),
-    (
-        "extract-long-name",
-        |ws, window, cx| {
-            ws.show_archive(read_named(LONG_NAME), cx);
-            ws.open_extract(window, cx);
-        },
-        false,
-    ),
-    (
-        "archive-none",
-        |ws, _, cx| ws.show_archive(Shown::Nothing, cx),
-        false,
-    ),
-    (
-        "archive-read",
-        |ws, _, cx| ws.show_archive(read(), cx),
-        false,
-    ),
-    (
-        "archive-failed",
-        |ws, _, cx| {
-            ws.show_archive(
-                Shown::Failed {
-                    name: "photo.jpg".into(),
-                    why: packwing_core::Error::NotAnArchive.to_string(),
-                },
-                cx,
-            )
-        },
-        false,
-    ),
-    (
-        "browse",
-        |ws, _, cx| {
-            let sample = sample_storage();
-            ws.browse_page().update(cx, |b, cx| b.go_to(&sample, cx));
-            ws.show_page(Page::Browse, cx);
-        },
-        false,
-    ),
-    ("recent", |ws, _, cx| ws.show_recent_samples(cx), false),
-    ("recent-empty", |ws, _, cx| ws.show_recent_tab(cx), false),
-    (
-        "settings",
-        |ws, _, cx| ws.show_page(Page::Settings, cx),
-        false,
-    ),
-    (
-        "settings-extracting",
-        |ws, _, cx| ws.show_settings(Section::Extracting, cx),
-        false,
-    ),
-    (
-        "settings-compressing",
-        |ws, _, cx| ws.show_settings(Section::Compressing, cx),
-        false,
-    ),
-    (
-        "settings-security",
-        |ws, _, cx| ws.show_settings(Section::Security, cx),
-        false,
-    ),
-    (
-        "settings-managed",
-        |ws, _, cx| ws.show_settings(Section::Security, cx),
-        true,
-    ),
-    (
-        "settings-right-click",
-        |ws, _, cx| ws.show_settings(Section::RightClick, cx),
-        false,
-    ),
-    (
-        "settings-right-click-notes",
-        |ws, _, cx| {
-            ws.show_settings(Section::RightClick, cx);
-            let notes = vec![
-                "Nautilus: the items are in its Scripts submenu, for any file chosen. With \
+/// Each screen's name, and how to get to it.
+const SCREENS: [(&str, SetUp); 56] = [
+    ("storages-edit", |ws, window, cx| {
+        cx.set_global(fake_extensions());
+        add_far(ws, "Far one", std::path::Path::new("/far"), true, cx);
+        let page = ws.storages_page();
+        let last = page.read(cx).count() - 1;
+        ws.edit_storage(last, window, cx);
+    }),
+    ("storages-edit-local", |ws, window, cx| {
+        ws.show_storage(sample_storage(), cx);
+        let page = ws.storages_page();
+        let last = page.read(cx).count() - 1;
+        ws.edit_storage(last, window, cx);
+    }),
+    ("storages-locked", |ws, _, cx| {
+        cx.set_global(fake_extensions());
+        ws.show_storage(sample_storage(), cx);
+        add_far(ws, "Far one", std::path::Path::new("/far"), true, cx);
+    }),
+    ("storages-add", |ws, window, cx| {
+        cx.set_global(fake_extensions());
+        ws.open_add_storage(window, cx);
+    }),
+    ("storages-copy", |ws, _, cx| {
+        storage_with(ws, "readme.txt", cx);
+        ws.explorer(cx)
+            .update(cx, |e, cx| e.ask_transfer(false, cx));
+    }),
+    ("storages", |ws, _, cx| {
+        ws.show_storage(sample_storage(), cx);
+    }),
+    ("storages-chosen", |ws, _, cx| {
+        storage_with(ws, "site-2026-10.zip", cx)
+    }),
+    ("storages-folder-info", |ws, _, cx| {
+        storage_with(ws, "assets", cx)
+    }),
+    ("storages-menu", |ws, _, cx| {
+        storage_with(ws, "readme.txt", cx);
+        ws.explorer(cx)
+            .update(cx, |e, cx| e.show_menu(640., 330., false, cx));
+    }),
+    ("storages-rename", |ws, window, cx| {
+        storage_with(ws, "readme.txt", cx);
+        ws.explorer(cx)
+            .update(cx, |e, cx| e.type_rename(window, cx));
+    }),
+    ("storages-delete", |ws, _, cx| {
+        storage_with(ws, "readme.txt", cx);
+        let explorer = ws.explorer(cx);
+        explorer.update(cx, |e, cx| e.ask_delete(cx));
+    }),
+    ("storages-view", |ws, _, cx| {
+        storage_with(ws, "readme.txt", cx);
+        let explorer = ws.explorer(cx);
+        let item = explorer.read(cx).selection().remove(0);
+        explorer.update(cx, |e, cx| e.open(&item, cx));
+    }),
+    ("settings-editor", |ws, _, cx| {
+        ws.show_settings(Section::General, cx)
+    }),
+    ("archive", |_, _, _| {}),
+    ("archive-opened", |ws, window, cx| {
+        ws.open_archive(sample_tar(), false, window, cx)
+    }),
+    ("archive-search", |ws, _, cx| {
+        ws.show_archive(read(), cx);
+        ws.search_archive("readme", cx);
+    }),
+    ("archive-selected", |ws, _, cx| {
+        ws.show_archive(read(), cx);
+        ws.select_in_archive(&[1, 2], cx);
+    }),
+    ("extract-selected", |ws, window, cx| {
+        ws.show_archive(read(), cx);
+        ws.select_in_archive(&[1, 2], cx);
+        ws.open_extract(window, cx);
+    }),
+    ("open-file", |ws, window, cx| {
+        ws.show_archive(read(), cx);
+        let entry = ["site", "public", "index.html"].map(String::from).to_vec();
+        ws.open_entry(entry, window, cx);
+    }),
+    ("open-program", |ws, window, cx| {
+        ws.show_archive(read(), cx);
+        let entry = ["site", "deploy.exe"].map(String::from).to_vec();
+        ws.open_entry(entry, window, cx);
+    }),
+    ("preview-picture", |ws, _, cx| {
+        ws.show_archive(read(), cx);
+        ws.select_in_archive(&[1], cx);
+        ws.preview_in_archive(Some(sample_png()), "", cx);
+    }),
+    ("preview-text", |ws, _, cx| {
+        ws.show_archive(read(), cx);
+        ws.select_in_archive(&[1], cx);
+        let text = "# Trang của công ty\n\nCách chạy:\n\n    ./deploy.sh --production\n\nHỏi ai nếu có lỗi? Xem docs/.\n";
+        ws.preview_in_archive(None, text, cx);
+    }),
+    ("rename", |ws, window, cx| {
+        ws.show_archive(read(), cx);
+        ws.select_in_archive(&[1], cx);
+        ws.open_edit(true, window, cx);
+    }),
+    ("delete", |ws, window, cx| {
+        ws.show_archive(read(), cx);
+        ws.select_in_archive(&[1, 2], cx);
+        ws.open_edit(false, window, cx);
+    }),
+    ("archive-long-name", |ws, _, cx| {
+        ws.show_archive(read_named(LONG_NAME), cx)
+    }),
+    ("extract-long-name", |ws, window, cx| {
+        ws.show_archive(read_named(LONG_NAME), cx);
+        ws.open_extract(window, cx);
+    }),
+    ("archive-none", |ws, _, cx| {
+        ws.show_archive(Shown::Nothing, cx)
+    }),
+    ("archive-read", |ws, _, cx| ws.show_archive(read(), cx)),
+    ("archive-failed", |ws, _, cx| {
+        ws.show_archive(
+            Shown::Failed {
+                name: "photo.jpg".into(),
+                why: packwing_core::Error::NotAnArchive.to_string(),
+            },
+            cx,
+        )
+    }),
+    ("browse", |ws, _, cx| {
+        let sample = sample_storage();
+        ws.browse_page().update(cx, |b, cx| b.go_to(&sample, cx));
+        ws.show_page(Page::Browse, cx);
+    }),
+    ("recent", |ws, _, cx| ws.show_recent_samples(cx)),
+    ("recent-empty", |ws, _, cx| ws.show_recent_tab(cx)),
+    ("settings", |ws, _, cx| ws.show_page(Page::Settings, cx)),
+    ("settings-extracting", |ws, _, cx| {
+        ws.show_settings(Section::Extracting, cx)
+    }),
+    ("settings-compressing", |ws, _, cx| {
+        ws.show_settings(Section::Compressing, cx)
+    }),
+    ("settings-security", |ws, _, cx| {
+        ws.show_settings(Section::Security, cx)
+    }),
+    ("settings-right-click", |ws, _, cx| {
+        ws.show_settings(Section::RightClick, cx)
+    }),
+    ("settings-right-click-notes", |ws, _, cx| {
+        ws.show_settings(Section::RightClick, cx);
+        let notes = vec![
+            "Nautilus: the items are in its Scripts submenu, for any file chosen. With \
                  nautilus-python installed (python3-nautilus, nautilus-python), or the app's \
                  package putting in the native extension, they show in the menu itself."
-                    .into(),
-                "Nemo: the items are not grouped in a submenu; Nemo's Actions layout can \
+                .into(),
+            "Nemo: the items are not grouped in a submenu; Nemo's Actions layout can \
                  group them."
-                    .into(),
-            ];
-            ws.right_click()
-                .update(cx, |m, cx| m.set_status(Status::Done(notes), cx));
-        },
-        false,
-    ),
-    (
-        "settings-right-click-off",
-        |ws, _, cx| {
-            ws.show_settings(Section::RightClick, cx);
-            ws.right_click().update(cx, |m, cx| {
-                m.show(false, cx);
-                m.set_status(
-                    Status::Failed("right-click menus are not supported here yet".into()),
-                    cx,
-                );
-            });
-        },
-        false,
-    ),
-    (
-        "settings-about",
-        |ws, _, cx| ws.show_settings(Section::About, cx),
-        false,
-    ),
-    (
-        "first-run",
-        |ws, window, cx| ws.show_welcome(window, cx),
-        false,
-    ),
-    (
-        "extract",
-        |ws, window, cx| ws.open_extract(window, cx),
-        false,
-    ),
-    (
-        "create",
-        |ws, window, cx| {
-            ws.open_create_sample(window, cx);
-        },
-        false,
-    ),
-    (
-        "add",
-        |ws, window, cx| ws.open_add_sample(window, cx),
-        false,
-    ),
-    (
-        "create-chosen",
-        |ws, window, cx| {
-            ws.open_create_many(window, cx);
-        },
-        false,
-    ),
-    (
-        "create-empty",
-        |ws, window, cx| ws.open_create(Vec::new(), window, cx),
-        false,
-    ),
-    (
-        "create-advanced",
-        |ws, window, cx| {
-            ws.open_create_sample(window, cx)
-                .update(cx, |d, cx| d.show_advanced(cx));
-        },
-        false,
-    ),
-    (
-        "create-7z",
-        |ws, window, cx| {
-            ws.open_create_sample(window, cx).update(cx, |d, cx| {
-                d.fill(crate::dialogs::Format::SevenZip, "100", cx)
-            });
-        },
-        false,
-    ),
-    (
-        "create-missing",
-        |ws, window, cx| {
-            ws.open_create_sample(window, cx).update(cx, |d, cx| {
-                d.fill(crate::dialogs::Format::SevenZip, "", cx);
-                d.press_create(cx);
-            });
-        },
-        false,
-    ),
-    (
-        "progress",
-        |ws, window, cx| {
-            let a = crate::demo::project();
-            let job = crate::dialogs::Job::shown(
-                crate::dialogs::Verb::Extract,
-                a.name.clone().into(),
-                Some(format!("{} › {}", a.location, a.stem()).into()),
-                a.files,
-                a.unpacked,
+                .into(),
+        ];
+        ws.right_click()
+            .update(cx, |m, cx| m.set_status(Status::Done(notes), cx));
+    }),
+    ("settings-right-click-off", |ws, _, cx| {
+        ws.show_settings(Section::RightClick, cx);
+        ws.right_click().update(cx, |m, cx| {
+            m.show(false, cx);
+            m.set_status(
+                Status::Failed("right-click menus are not supported here yet".into()),
+                cx,
             );
-            ws.open_progress(job, window, cx)
-                .update(cx, |p, cx| p.set_done(0.64, cx));
-        },
-        false,
-    ),
-    (
-        "key-file",
-        |ws, window, cx| ws.show_ask(packwing_core::Asked::KeyFile, None, window, cx),
-        false,
-    ),
-    (
-        "password",
-        |ws, window, cx| ws.show_ask(packwing_core::Asked::Password, None, window, cx),
-        false,
-    ),
+        });
+    }),
+    ("settings-about", |ws, _, cx| {
+        ws.show_settings(Section::About, cx)
+    }),
+    ("first-run", |ws, window, cx| ws.show_welcome(window, cx)),
+    ("extract", |ws, window, cx| ws.open_extract(window, cx)),
+    ("create", |ws, window, cx| {
+        ws.open_create_sample(window, cx);
+    }),
+    ("add", |ws, window, cx| ws.open_add_sample(window, cx)),
+    ("create-chosen", |ws, window, cx| {
+        ws.open_create_many(window, cx);
+    }),
+    ("create-empty", |ws, window, cx| {
+        ws.open_create(Vec::new(), window, cx)
+    }),
+    ("create-advanced", |ws, window, cx| {
+        ws.open_create_sample(window, cx)
+            .update(cx, |d, cx| d.show_advanced(cx));
+    }),
+    ("create-7z", |ws, window, cx| {
+        ws.open_create_sample(window, cx).update(cx, |d, cx| {
+            d.fill(crate::dialogs::Format::SevenZip, "100", cx)
+        });
+    }),
+    ("create-missing", |ws, window, cx| {
+        ws.open_create_sample(window, cx).update(cx, |d, cx| {
+            d.fill(crate::dialogs::Format::SevenZip, "", cx);
+            d.press_create(cx);
+        });
+    }),
+    ("progress", |ws, window, cx| {
+        let a = crate::demo::project();
+        let job = crate::dialogs::Job::shown(
+            crate::dialogs::Verb::Extract,
+            a.name.clone().into(),
+            Some(format!("{} › {}", a.location, a.stem()).into()),
+            a.files,
+            a.unpacked,
+        );
+        ws.open_progress(job, window, cx)
+            .update(cx, |p, cx| p.set_done(0.64, cx));
+    }),
+    ("key-file", |ws, window, cx| {
+        ws.show_ask(packwing_core::Asked::KeyFile, None, window, cx)
+    }),
+    ("password", |ws, window, cx| {
+        ws.show_ask(packwing_core::Asked::Password, None, window, cx)
+    }),
     (
         // An age file opened for real: its reading stops for the
         // passphrase, which is asked for.
         "passphrase-asked",
         |ws, window, cx| ws.open_archive(age_file(), false, window, cx),
-        false,
     ),
-    (
-        "passphrase-wrong",
-        |ws, window, cx| {
-            let again = packwing_core::Error::WrongPassphrase.to_string();
-            ws.show_ask(packwing_core::Asked::Passphrase, Some(again), window, cx)
-        },
-        false,
-    ),
-    (
-        "test-passed",
-        |ws, window, cx| {
-            let job = crate::dialogs::Job::shown(
-                crate::dialogs::Verb::Test,
-                "site-backup-2026-10.tar.zst".into(),
-                None,
-                1284,
-                131_000_000,
-            );
-            ws.open_progress(job, window, cx)
-                .update(cx, |p, cx| p.set_passed(1284, 131_000_000, cx));
-        },
-        false,
-    ),
-    (
-        "progress-failed",
-        |ws, window, cx| {
-            let job = crate::dialogs::Job::shown(
-                crate::dialogs::Verb::Extract,
-                "site-backup-2026-10.tar.zst".into(),
-                Some("Downloads › site-backup-2026-10".into()),
-                6,
-                131_000_000,
-            );
-            ws.open_progress(job, window, cx).update(cx, |p, cx| {
-                p.set_failed(
-                    "entry 3 (site/../evil.sh): the name climbs out of the folder".into(),
-                    cx,
-                )
-            });
-        },
-        false,
-    ),
+    ("passphrase-wrong", |ws, window, cx| {
+        let again = packwing_core::Error::WrongPassphrase.to_string();
+        ws.show_ask(packwing_core::Asked::Passphrase, Some(again), window, cx)
+    }),
+    ("test-passed", |ws, window, cx| {
+        let job = crate::dialogs::Job::shown(
+            crate::dialogs::Verb::Test,
+            "site-backup-2026-10.tar.zst".into(),
+            None,
+            1284,
+            131_000_000,
+        );
+        ws.open_progress(job, window, cx)
+            .update(cx, |p, cx| p.set_passed(1284, 131_000_000, cx));
+    }),
+    ("progress-failed", |ws, window, cx| {
+        let job = crate::dialogs::Job::shown(
+            crate::dialogs::Verb::Extract,
+            "site-backup-2026-10.tar.zst".into(),
+            Some("Downloads › site-backup-2026-10".into()),
+            6,
+            131_000_000,
+        );
+        ws.open_progress(job, window, cx).update(cx, |p, cx| {
+            p.set_failed(
+                "entry 3 (site/../evil.sh): the name climbs out of the folder".into(),
+                cx,
+            )
+        });
+    }),
 ];
 
 /// A folder for the Storages screens.
@@ -604,7 +418,7 @@ fn out_dir() -> PathBuf {
 #[test]
 fn shots() {
     let dir = out_dir();
-    for (name, set_up, managed) in SCREENS {
+    for (name, set_up) in SCREENS {
         for dark in [false, true] {
             let text = Arc::new(gpui_wgpu::CosmicTextSystem::new(crate::FONT));
             let mut cx = HeadlessAppContext::with_platform(text, Arc::new(crate::Assets), || {
@@ -616,7 +430,7 @@ fn shots() {
                     // Nothing is put in the system's menu.
                     let menu =
                         cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
-                    cx.new(|cx| Workspace::new(false, managed, menu, window, cx))
+                    cx.new(|cx| Workspace::new(false, menu, window, cx))
                 })
                 .expect("cannot open a window");
             window
@@ -698,7 +512,7 @@ fn a_menu_option_takes_a_click() {
     let window = cx
         .open_window(size(px(1280.), px(800.)), |window, cx| {
             let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
-            cx.new(|cx| Workspace::new(false, false, menu, window, cx))
+            cx.new(|cx| Workspace::new(false, menu, window, cx))
         })
         .expect("cannot open a window");
     let dialog = window
@@ -752,7 +566,7 @@ fn a_click_on_a_file_shows_it_in_the_preview() {
     let window = cx
         .open_window(size(px(1280.), px(800.)), |window, cx| {
             let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
-            cx.new(|cx| Workspace::new(false, false, menu, window, cx))
+            cx.new(|cx| Workspace::new(false, menu, window, cx))
         })
         .expect("cannot open a window");
     window
@@ -831,7 +645,7 @@ fn a_drop_on_the_window_starts_a_new_archive_and_the_dialog_takes_more() {
     let window = cx
         .open_window(size(px(1280.), px(800.)), |window, cx| {
             let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
-            cx.new(|cx| Workspace::new(false, false, menu, window, cx))
+            cx.new(|cx| Workspace::new(false, menu, window, cx))
         })
         .expect("cannot open a window");
     cx.run_until_parked();
@@ -864,7 +678,7 @@ fn a_large_window_gives_the_preview_more() {
     let window = cx
         .open_window(size(px(1920.), px(1080.)), |window, cx| {
             let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
-            cx.new(|cx| Workspace::new(false, false, menu, window, cx))
+            cx.new(|cx| Workspace::new(false, menu, window, cx))
         })
         .expect("cannot open a window");
     window
@@ -909,7 +723,7 @@ fn explorer_on(
     let window = cx
         .open_window(size(px(1280.), px(800.)), |window, cx| {
             let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
-            cx.new(|cx| Workspace::new(false, false, menu, window, cx))
+            cx.new(|cx| Workspace::new(false, menu, window, cx))
         })
         .expect("cannot open a window");
     let explorer = window
@@ -1161,7 +975,7 @@ fn a_large_window_gives_the_info_a_quarter() {
     let window = cx
         .open_window(size(px(1920.), px(1080.)), |window, cx| {
             let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
-            cx.new(|cx| Workspace::new(false, false, menu, window, cx))
+            cx.new(|cx| Workspace::new(false, menu, window, cx))
         })
         .expect("cannot open a window");
     window
@@ -1990,7 +1804,7 @@ fn a_click_takes_a_row_out_and_the_eye_closes_the_list() {
     let window = cx
         .open_window(size(px(1280.), px(800.)), |window, cx| {
             let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
-            cx.new(|cx| Workspace::new(false, false, menu, window, cx))
+            cx.new(|cx| Workspace::new(false, menu, window, cx))
         })
         .expect("cannot open a window");
     let dialog = window
@@ -2032,7 +1846,7 @@ fn the_wheel_moves_only_what_is_under_the_pointer() {
     let window = cx
         .open_window(size(px(1280.), px(800.)), |window, cx| {
             let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
-            cx.new(|cx| Workspace::new(false, false, menu, window, cx))
+            cx.new(|cx| Workspace::new(false, menu, window, cx))
         })
         .expect("cannot open a window");
     let dialog = window
