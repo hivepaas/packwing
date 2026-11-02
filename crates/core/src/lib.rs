@@ -13,6 +13,7 @@ mod create;
 mod job;
 mod joined;
 mod listing;
+mod mark;
 mod passphrase;
 mod rar;
 mod source;
@@ -24,7 +25,6 @@ mod volume;
 use packwing_i18n::{tr, tr_n};
 use std::fmt;
 use std::io;
-use std::path::Path;
 use std::sync::Arc;
 
 use hivepack_age::{
@@ -46,6 +46,7 @@ pub use job::{
     extract_with, image_fits, read_entry, test,
 };
 pub use listing::{Child, Entry, Found, Listing, list};
+pub use mark::came_from_internet;
 pub use passphrase::suggest_passphrase;
 pub use source::{Source, Stored};
 pub use storage::{
@@ -415,13 +416,6 @@ impl From<hivepack_udf::Error> for Error {
             e => Error::Failed(e.to_string()),
         }
     }
-}
-
-/// Whether the file at `path` came from the Internet, by the mark its
-/// system put on it (the Mark of the Web, macOS's quarantine): what is
-/// extracted from it keeps that mark.
-pub fn came_from_internet(path: &Path) -> bool {
-    hivepack_extract::Origin::of(path).is_ok_and(|o| o.is_some())
 }
 
 /// The file at `path`, to be opened through its layers as often as asked.

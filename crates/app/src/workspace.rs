@@ -519,6 +519,7 @@ impl Workspace {
             to_folder: Vec::new(),
             moving,
             on_existing: packwing_core::OnExisting::Stop,
+            keep_mark: prefs::prefs(cx).keep_mark,
         };
         let verb = if moving { Verb::Move } else { Verb::Copy };
         let mut job = Job::shown(verb, "test".into(), None, 0, 0);
@@ -606,7 +607,7 @@ impl Workspace {
         let (read, with) = (source.clone(), keys.clone());
         let task = cx.background_executor().spawn(async move {
             let listing = packwing_core::list(&read, &with);
-            let marked = read.path().is_some_and(packwing_core::came_from_internet);
+            let marked = packwing_core::came_from_internet(&read);
             listing.map(|l| (l, marked))
         });
         cx.spawn_in(window, async move |this, cx| {
