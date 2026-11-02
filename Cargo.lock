@@ -3328,6 +3328,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "hivepack-sign"
+version = "0.0.0"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
+dependencies = [
+ "hivepack-age",
+ "hivepack-crypto",
+]
+
+[[package]]
 name = "hivepack-tar"
 version = "0.0.0"
 source = "git+https://github.com/hivepaas/hivepack-rs?rev=8d2aea5a583ccade520efec999584c4a3f1d84d2#8d2aea5a583ccade520efec999584c4a3f1d84d2"
@@ -5324,6 +5333,7 @@ dependencies = [
  "hivepack-lz4",
  "hivepack-open",
  "hivepack-rar",
+ "hivepack-sign",
  "hivepack-tar",
  "hivepack-udf",
  "hivepack-xar",
@@ -7712,7 +7722,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.4.3",
+ "getrandom 0.3.4",
  "once_cell",
  "rustix",
  "windows-sys 0.61.2",
@@ -8824,7 +8834,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]

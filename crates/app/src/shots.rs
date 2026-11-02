@@ -21,7 +21,53 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 63] = [
+const SCREENS: [(&str, SetUp); 74] = [
+    ("archive-more", |ws, _, cx| {
+        ws.archive_page().update(cx, |p, cx| {
+            p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
+        });
+    }),
+    ("sign-free", |ws, window, cx| {
+        ws.show_storage(sample_storage(), cx);
+        ws.open_sign_of("readme.txt", window, cx);
+    }),
+    ("sign-part", |ws, window, cx| {
+        pro_license(cx);
+        let dir = sample_storage();
+        std::fs::write(dir.join("photos.7z.001"), "x").expect("cannot write");
+        ws.show_storage(dir, cx);
+        ws.open_sign_of("photos.7z.001", window, cx);
+    }),
+    ("sign-pro", |ws, window, cx| {
+        pro_license(cx);
+        ws.show_storage(sample_storage(), cx);
+        ws.open_sign_of("readme.txt", window, cx);
+    }),
+    ("sign-new-key", |ws, window, cx| {
+        pro_license(cx);
+        ws.show_storage(sample_storage(), cx);
+        ws.open_sign_of("readme.txt", window, cx)
+            .update(cx, |d, cx| d.ask_new_key_for_test(cx));
+    }),
+    ("storages-signed", |ws, _, cx| {
+        let dir = sample_storage();
+        sign_for_shot(&dir, "readme.txt", true, cx);
+        storage_with_folder(ws, dir, "readme.txt", cx);
+    }),
+    ("storages-signed-stranger", |ws, _, cx| {
+        let dir = sample_storage();
+        sign_for_shot(&dir, "readme.txt", false, cx);
+        storage_with_folder(ws, dir, "readme.txt", cx);
+    }),
+    ("archive-signed", |ws, window, cx| {
+        open_signed(ws, true, false, window, cx);
+    }),
+    ("archive-signed-stranger", |ws, window, cx| {
+        open_signed(ws, false, false, window, cx);
+    }),
+    ("archive-signed-changed", |ws, window, cx| {
+        open_signed(ws, true, true, window, cx);
+    }),
     ("storages-edit", |ws, window, cx| {
         cx.set_global(fake_extensions());
         add_far(ws, "Far one", std::path::Path::new("/far"), true, cx);
@@ -191,6 +237,22 @@ const SCREENS: [(&str, SetUp); 63] = [
     ("settings-security", |ws, _, cx| {
         ws.show_settings(Section::Security, cx)
     }),
+    ("settings-security-keys", |ws, _, cx| {
+        crate::prefs::change(cx, |p| {
+            p.trusted_keys = vec![
+                crate::prefs::TrustedKey {
+                    name: "An Nguyễn".into(),
+                    line: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJIhr5+zPZF9Kv0Y9Q1mXyXn1Mc3Q9sVZ3wVdN1m7Mqk"
+                        .into(),
+                },
+                crate::prefs::TrustedKey {
+                    name: "Broken".into(),
+                    line: "ssh-ed25519 nonsense".into(),
+                },
+            ];
+        });
+        ws.show_settings(Section::Security, cx)
+    }),
     ("settings-right-click", |ws, _, cx| {
         ws.show_settings(Section::RightClick, cx)
     }),
@@ -339,6 +401,74 @@ fn sample_storage() -> PathBuf {
     )
     .expect("cannot write");
     dir
+}
+
+/// A license that gives Pro, for its tests and screens.
+fn pro_license(cx: &mut gpui::App) {
+    cx.set_global(crate::licensing::Licensed {
+        license: packwing_license::read(include_str!("../../license/testdata/pro.key")).ok(),
+        ..Default::default()
+    });
+}
+
+/// A new key, in a folder of its own.
+fn test_key(name: &str) -> packwing_core::SigningKey {
+    let dir = out_dir().join(format!("key-{name}"));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).expect("cannot make a folder");
+    packwing_core::make_signing_key(&dir, b"a passphrase")
+        .expect("cannot make a key")
+        .0
+}
+
+/// Signs `name` in `dir`, by a key trusted or not.
+fn sign_for_shot(dir: &std::path::Path, name: &str, trusted: bool, cx: &mut gpui::App) {
+    let key = test_key("shot");
+    let control = packwing_core::Control {
+        progress: None,
+        cancel: None,
+    };
+    packwing_core::sign_file(
+        &packwing_core::LocalFolder::new(dir),
+        &[name.to_owned()],
+        &key,
+        &control,
+    )
+    .expect("cannot sign");
+    if trusted {
+        crate::prefs::change(cx, |p| p.trust("An Nguyễn".to_owned(), key.public()));
+    }
+}
+
+/// The sample archive opened beside its signature; `changed`, it has changed since.
+fn open_signed(
+    ws: &mut Workspace,
+    trusted: bool,
+    changed: bool,
+    window: &mut Window,
+    cx: &mut Context<Workspace>,
+) {
+    let dir = out_dir().join("signed-archive");
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).expect("cannot make a folder");
+    let archive = dir.join("site-backup.tar");
+    std::fs::copy(sample_tar(), &archive).expect("cannot copy");
+    sign_for_shot(&dir, "site-backup.tar", trusted, cx);
+    if changed {
+        let mut bytes = std::fs::read(&archive).expect("cannot read");
+        bytes.extend_from_slice(&[0; 512]);
+        std::fs::write(&archive, bytes).expect("cannot write");
+    }
+    ws.open_archive(archive, false, window, cx);
+}
+
+/// `dir` browsed, once listed, with `name` chosen.
+fn storage_with_folder(ws: &mut Workspace, dir: PathBuf, name: &str, cx: &mut Context<Workspace>) {
+    ws.show_storage(dir, cx);
+    ws.explorer(cx).update(cx, |e, cx| {
+        e.list_now(cx);
+        e.choose(name, cx);
+    });
 }
 
 /// The sample folder browsed, once listed, with `name` chosen.
@@ -2136,4 +2266,271 @@ fn zip_of(files: &[(&str, &[u8])]) -> Vec<u8> {
     let bytes = std::fs::read(made).expect("cannot read");
     let _ = std::fs::remove_dir_all(&dir);
     bytes
+}
+
+/// What is known of the signature of the file chosen.
+fn signature_shown(
+    cx: &HeadlessAppContext,
+    explorer: &gpui::Entity<crate::explorer::Explorer>,
+    name: &str,
+) -> Option<packwing_core::Signed> {
+    explorer.read_with(cx, |e, _| e.signature_of(name).flatten().cloned())
+}
+
+fn folder_with_file(test: &str) -> PathBuf {
+    let dir = out_dir().join(format!("sign-{test}"));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).expect("cannot make a folder");
+    std::fs::write(dir.join("đi.txt"), "x").expect("cannot write");
+    dir
+}
+
+#[test]
+fn pro_signs_a_file_and_the_panel_says_who() {
+    let dir = folder_with_file("pro");
+    let (mut cx, window, explorer) = explorer_on(dir.clone());
+    let key = test_key("pro");
+    let dialog = window
+        .update(&mut cx, |ws, window, cx| {
+            pro_license(cx);
+            explorer.update(cx, |e, cx| e.choose("đi.txt", cx));
+            ws.open_sign_of("đi.txt", window, cx)
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    dialog.update(&mut cx, |d, cx| d.use_key_for_test(key.clone(), cx));
+    dialog.update(&mut cx, |d, cx| d.start_for_test(cx));
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    cx.run_until_parked();
+    assert!(dir.join("đi.txt.sig").is_file());
+    window
+        .update(&mut cx, |ws, _, _| assert!(!ws.dialog_open()))
+        .expect("the window");
+    // Whoever signs trusts their own key, so it says they signed it.
+    assert_eq!(
+        signature_shown(&cx, &explorer, "đi.txt"),
+        Some(packwing_core::Signed::Good {
+            fingerprint: key.public().fingerprint()
+        })
+    );
+}
+
+#[test]
+fn free_cannot_sign_but_checks_what_is_signed() {
+    let dir = folder_with_file("free");
+    let (mut cx, window, explorer) = explorer_on(dir.clone());
+    let key = test_key("free");
+    let dialog = window
+        .update(&mut cx, |ws, window, cx| {
+            ws.open_sign_of("đi.txt", window, cx)
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    dialog.update(&mut cx, |d, cx| d.use_key_for_test(key.clone(), cx));
+    dialog.update(&mut cx, |d, cx| d.start_for_test(cx));
+    cx.run_until_parked();
+    assert!(!dir.join("đi.txt.sig").exists(), "Free signed");
+    // What another signed, with a key this user trusts, is checked all the same.
+    let control = packwing_core::Control {
+        progress: None,
+        cancel: None,
+    };
+    packwing_core::sign_file(
+        &packwing_core::LocalFolder::new(&dir),
+        &["đi.txt".to_owned()],
+        &key,
+        &control,
+    )
+    .expect("cannot sign");
+    window
+        .update(&mut cx, |ws, _, cx| {
+            crate::prefs::change(cx, |p| p.trust("An".to_owned(), key.public()));
+            ws.refresh_explorers_for_test(cx);
+            explorer.update(cx, |e, cx| e.choose("đi.txt", cx));
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    cx.run_until_parked();
+    assert!(matches!(
+        signature_shown(&cx, &explorer, "đi.txt"),
+        Some(packwing_core::Signed::Good { .. })
+    ));
+}
+
+#[test]
+fn a_key_no_longer_trusted_proves_nothing_once_back_on_the_page() {
+    let dir = folder_with_file("forgotten");
+    let (mut cx, window, explorer) = explorer_on(dir);
+    window
+        .update(&mut cx, |_, _, cx| {
+            let path = explorer.read(cx).local_path_of("đi.txt").expect("a path");
+            sign_for_shot(path.parent().expect("a folder"), "đi.txt", true, cx);
+        })
+        .expect("the window");
+    window
+        .update(&mut cx, |ws, _, cx| {
+            ws.refresh_explorers_for_test(cx);
+            explorer.update(cx, |e, cx| e.choose("đi.txt", cx));
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    cx.run_until_parked();
+    assert!(matches!(
+        signature_shown(&cx, &explorer, "đi.txt"),
+        Some(packwing_core::Signed::Good { .. })
+    ));
+    window
+        .update(&mut cx, |ws, _, cx| {
+            ws.show_page(Page::Settings, cx);
+            crate::prefs::change(cx, |p| p.trusted_keys.clear());
+            ws.show_page(Page::Storages, cx);
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    cx.run_until_parked();
+    assert!(matches!(
+        signature_shown(&cx, &explorer, "đi.txt"),
+        Some(packwing_core::Signed::Stranger { .. })
+    ));
+}
+
+#[test]
+fn an_archive_changed_after_signing_says_so() {
+    let text = Arc::new(gpui_wgpu::CosmicTextSystem::new(crate::FONT));
+    let mut cx = HeadlessAppContext::with_platform(text, Arc::new(crate::Assets), || {
+        gpui_platform::current_headless_renderer()
+    });
+    let window = cx
+        .open_window(size(px(1280.), px(800.)), |window, cx| {
+            let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
+            cx.new(|cx| Workspace::new(false, menu, window, cx))
+        })
+        .expect("cannot open a window");
+    window
+        .update(&mut cx, |ws, window, cx| {
+            open_signed(ws, true, true, window, cx)
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    cx.run_until_parked();
+    let shown = window
+        .update(&mut cx, |ws, _, cx| {
+            ws.archive_page().read(cx).signature_for_test()
+        })
+        .expect("the window");
+    assert!(
+        matches!(shown, Some(packwing_core::Signed::Mismatch { .. })),
+        "{shown:?}"
+    );
+}
+
+#[test]
+fn the_dots_offer_signing_and_a_click_on_it_asks_how() {
+    let text = Arc::new(gpui_wgpu::CosmicTextSystem::new(crate::FONT));
+    let mut cx = HeadlessAppContext::with_platform(text, Arc::new(crate::Assets), || {
+        gpui_platform::current_headless_renderer()
+    });
+    cx.update(crate::load_fonts);
+    let window = cx
+        .open_window(size(px(1280.), px(800.)), |window, cx| {
+            let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
+            cx.new(|cx| Workspace::new(false, menu, window, cx))
+        })
+        .expect("cannot open a window");
+    window
+        .update(&mut cx, |ws, window, cx| {
+            open_signed(ws, true, false, window, cx)
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    // The dots, as `archive-signed-light.png` draws them, then the menu under the
+    // pointer. Nothing asks until the menu's item is clicked.
+    let dots = gpui::point(px(1202.), px(152.));
+    click(&mut cx, window, dots);
+    window
+        .update(&mut cx, |ws, _, _| assert!(!ws.dialog_open()))
+        .expect("the window");
+    click(&mut cx, window, gpui::point(px(1222.), px(178.)));
+    window
+        .update(&mut cx, |ws, _, _| assert!(ws.dialog_open()))
+        .expect("the window");
+}
+
+#[test]
+fn a_file_across_a_network_is_checked_only_when_asked() {
+    let dir = folder_with_file("far-signed");
+    let (mut cx, window, explorer) = explorer_on(out_dir());
+    window
+        .update(&mut cx, |_, _, cx| {
+            sign_for_shot(&dir, "đi.txt", true, cx);
+            let place = crate::explorer::Place {
+                name: "Far".into(),
+                tag: "FAR",
+                storage: Arc::new(Far(packwing_core::LocalFolder::new(&dir))),
+            };
+            explorer.update(cx, |e, cx| e.show_place(Some(place), cx));
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    window
+        .update(&mut cx, |_, _, cx| {
+            explorer.update(cx, |e, cx| e.choose("đi.txt", cx))
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    cx.run_until_parked();
+    assert!(matches!(
+        signature_shown(&cx, &explorer, "đi.txt"),
+        Some(packwing_core::Signed::NotChecked { .. })
+    ));
+    window
+        .update(&mut cx, |_, _, cx| {
+            explorer.update(cx, |e, cx| e.check_signature(cx))
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    assert!(matches!(
+        signature_shown(&cx, &explorer, "đi.txt"),
+        Some(packwing_core::Signed::Good { .. })
+    ));
+}
+
+#[test]
+fn only_one_file_is_offered_for_signing() {
+    let dir = folder_with_file("offered");
+    std::fs::create_dir(dir.join("thư mục")).expect("cannot make a folder");
+    std::fs::write(dir.join("đi.txt.sig"), "x").expect("cannot write");
+    let (mut cx, window, explorer) = explorer_on(dir);
+    let asks = |cx: &mut HeadlessAppContext, name: &str| {
+        window
+            .update(cx, |ws, _, cx| {
+                explorer.update(cx, |e, cx| {
+                    e.choose(name, cx);
+                    e.ask_sign(cx);
+                });
+                let _ = ws;
+            })
+            .expect("the window");
+        cx.run_until_parked();
+        window
+            .update(cx, |ws, _, _| ws.dialog_open())
+            .expect("the window")
+    };
+    assert!(!asks(&mut cx, "thư mục"));
+    assert!(!asks(&mut cx, "đi.txt.sig"));
+    assert!(asks(&mut cx, "đi.txt"));
 }

@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use gpui::{App, Global};
-use packwing_core::{ExtractOptions, Level, Values};
+use packwing_core::{ExtractOptions, Level, PublicKey, Values, read_public_key};
 
 use crate::dialogs::Format;
 use crate::pages::settings::Appearance;
@@ -53,6 +53,14 @@ pub enum KeptPlace {
 pub struct KeptStorage {
     pub name: String,
     pub place: KeptPlace,
+}
+
+/// A key whose signatures the user trusts: what they call it, and its public key's
+/// line.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct TrustedKey {
+    pub name: String,
+    pub line: String,
 }
 
 /// The setting of a storage that asks that it is the user before it opens.
@@ -142,6 +150,10 @@ pub struct Prefs {
     pub editor: Option<String>,
     /// Whether to look for updates, and what the last look found.
     pub update: UpdateState,
+    /// The keys whose signatures are taken as proof.
+    pub trusted_keys: Vec<TrustedKey>,
+    /// The key file signed with last. Its contents never go in this file.
+    pub signing_key: Option<PathBuf>,
 }
 
 impl Global for Prefs {}
@@ -170,6 +182,8 @@ impl Default for Prefs {
             browse_folder: None,
             editor: None,
             update: UpdateState::default(),
+            trusted_keys: Vec::new(),
+            signing_key: None,
         }
     }
 }
@@ -287,6 +301,16 @@ impl Prefs {
                         .split_once('\t')
                         .map(|(version, path)| (version.to_owned(), PathBuf::from(path)));
                 }
+                "signing_key" => p.signing_key = Some(PathBuf::from(value)),
+                // What it is called, a tab, and its public key's line.
+                "trusted_key" => {
+                    if let Some((name, line)) = value.split_once('\t') {
+                        p.trusted_keys.push(TrustedKey {
+                            name: unescaped(name),
+                            line: line.to_owned(),
+                        });
+                    }
+                }
                 // A local folder: its name, a tab, and its path. Another kind: its
                 // kind, then tabs between its name, its id and its settings.
                 "storage" => {
@@ -395,6 +419,21 @@ impl Prefs {
         {
             text.push_str(&format!("update_staged={version}\t{path}\n"));
         }
+        if let Some(key) = self
+            .signing_key
+            .as_ref()
+            .and_then(|f| f.to_str())
+            .filter(|f| !f.contains('\n'))
+        {
+            text.push_str(&format!("signing_key={key}\n"));
+        }
+        for key in &self.trusted_keys {
+            text.push_str(&format!(
+                "trusted_key={}\t{}\n",
+                escaped(&key.name),
+                key.line
+            ));
+        }
         for s in &self.storages {
             let name = s.name.replace(['\n', '\t'], " ");
             match &s.place {
@@ -442,6 +481,38 @@ impl Prefs {
             },
         );
         self.recent.truncate(RECENT);
+    }
+
+    /// The keys trusted, those that read: one edited by hand may not.
+    pub fn trusted_public_keys(&self) -> Vec<PublicKey> {
+        self.trusted_keys
+            .iter()
+            .filter_map(|k| read_public_key(&k.line).ok())
+            .collect()
+    }
+
+    /// What the user calls the key trusted with this fingerprint.
+    pub fn trusted_key_name(&self, fingerprint: &str) -> Option<String> {
+        self.trusted_keys
+            .iter()
+            .find(|k| read_public_key(&k.line).is_ok_and(|key| key.fingerprint() == fingerprint))
+            .map(|k| k.name.clone())
+    }
+
+    /// Trusts `key`, under `name`, or its short fingerprint if that says nothing. One
+    /// trusted already keeps the name it has.
+    pub fn trust(&mut self, name: String, key: &PublicKey) {
+        let line = key.to_string();
+        if self.trusted_keys.iter().any(|k| k.line == line) {
+            return;
+        }
+        let name = name.replace('\n', " ");
+        let name = if name.trim().is_empty() {
+            key.fingerprint().chars().take(19).collect()
+        } else {
+            name
+        };
+        self.trusted_keys.push(TrustedKey { name, line });
     }
 
     /// How an archive is extracted, as Settings says.
@@ -585,6 +656,11 @@ mod tests {
             limit: 3,
             keep_mark: false,
             ask_before_open: false,
+            signing_key: Some(PathBuf::from("/home/me/khoá của tôi")),
+            trusted_keys: vec![TrustedKey {
+                name: "Tôi\tở nhà".to_owned(),
+                line: "ssh-ed25519 AAAA".to_owned(),
+            }],
             ..Prefs::default()
         };
         p.recent.push(Opened {
@@ -592,6 +668,27 @@ mod tests {
             at: 1_790_000_000,
         });
         assert_eq!(Prefs::parse(&p.text()), p);
+    }
+
+    #[test]
+    fn a_key_trusted_once_keeps_its_name_and_one_that_does_not_read_is_left_out() {
+        let dir = std::env::temp_dir().join(format!("packwing-trust-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        let (key, _) = packwing_core::make_signing_key(&dir, b"a passphrase").unwrap();
+        let _ = fs::remove_dir_all(&dir);
+        let mut p = Prefs::default();
+        p.trust("Mine".to_owned(), key.public());
+        p.trust("Another".to_owned(), key.public());
+        assert_eq!(p.trusted_keys.len(), 1);
+        assert_eq!(p.trusted_public_keys(), vec![key.public().clone()]);
+        let fingerprint = key.public().fingerprint();
+        assert_eq!(p.trusted_key_name(&fingerprint).as_deref(), Some("Mine"));
+        p.trusted_keys.push(TrustedKey {
+            name: "Broken".to_owned(),
+            line: "ssh-ed25519 nonsense".to_owned(),
+        });
+        assert_eq!(p.trusted_public_keys().len(), 1);
     }
 
     #[test]

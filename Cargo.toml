@@ -33,6 +33,7 @@ hivepack-iso = { git = "https://github.com/hivepaas/hivepack-rs", rev = "8d2aea5
 hivepack-lz4 = { git = "https://github.com/hivepaas/hivepack-rs", rev = "8d2aea5a583ccade520efec999584c4a3f1d84d2", features = ["unsafe-fast"] }
 hivepack-open = { git = "https://github.com/hivepaas/hivepack-rs", rev = "8d2aea5a583ccade520efec999584c4a3f1d84d2" }
 hivepack-rar = { git = "https://github.com/hivepaas/hivepack-rs", rev = "8d2aea5a583ccade520efec999584c4a3f1d84d2" }
+hivepack-sign = { git = "https://github.com/hivepaas/hivepack-rs", rev = "8d2aea5a583ccade520efec999584c4a3f1d84d2" }
 hivepack-tar = { git = "https://github.com/hivepaas/hivepack-rs", rev = "8d2aea5a583ccade520efec999584c4a3f1d84d2" }
 hivepack-udf = { git = "https://github.com/hivepaas/hivepack-rs", rev = "8d2aea5a583ccade520efec999584c4a3f1d84d2" }
 hivepack-xar = { git = "https://github.com/hivepaas/hivepack-rs", rev = "8d2aea5a583ccade520efec999584c4a3f1d84d2" }

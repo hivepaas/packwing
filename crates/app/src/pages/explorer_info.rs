@@ -2,13 +2,14 @@
 //! the panel beside it, on the pages that browse.
 
 use gpui::{App, Context, Div, Entity, FontWeight, Window, div, prelude::*, px, rgb};
-use packwing_core::Item;
+use packwing_core::{Item, Signed};
 use packwing_i18n::{tr, tr_n};
 
 use super::{panel, title};
 use crate::colors::colors;
-use crate::explorer::{Explorer, is_archive, runs_when_opened};
+use crate::explorer::{Explorer, can_be_signed, is_archive, runs_when_opened};
 use crate::model::{Kind, date, size, tag_of};
+use crate::signatures::{self, Standing};
 use crate::widgets::{Fill, Size, button, tile};
 
 fn transfers(explorer: &Entity<Explorer>) -> Div {
@@ -139,6 +140,24 @@ fn info_of(entity: &Entity<Explorer>, item: &Item, body: Div, cx: &App) -> Div {
         rows.push(row(tr!("Permissions"), permissions(mode)));
     }
     rows.push(row(tr!("Path"), explorer.shown_path_of(&item.name)));
+    let signature = explorer.signature_of(&item.name);
+    let looking = matches!(signature, Some(None));
+    let not_checked = matches!(signature, Some(Some(Signed::NotChecked { .. })));
+    let signature_said = match signature {
+        Some(Some(signed)) => signatures::said(signed, cx),
+        _ => None,
+    };
+    if looking {
+        rows.push(row(tr!("Signature"), signatures::looking_words()));
+    }
+    let signature_row = signature_said.map(|(words, standing)| {
+        let ink = match standing {
+            Standing::Good | Standing::Plain => c.text,
+            Standing::Warn | Standing::Bad => standing.colors().1,
+        };
+        row(tr!("Signature"), words).text_color(rgb(ink))
+    });
+    rows.extend(signature_row);
     let unread = count_rows.as_ref().map_or(0, |(_, _, unread)| *unread);
     let handle = entity.clone();
     let on = |f: fn(&mut Explorer, &Item, &mut Context<Explorer>)| {
@@ -238,7 +257,30 @@ fn info_of(entity: &Entity<Explorer>, item: &Item, body: Div, cx: &App) -> Div {
                 )),
         )
     })
-    .child(actions.child(transfers(entity)))
+    .child(
+        actions
+            .when(not_checked, |d| {
+                let handle = entity.clone();
+                d.child(
+                    button(
+                        "info-check-signature",
+                        tr!("Check the signature"),
+                        Fill::Tonal,
+                        Size::Small,
+                    )
+                    .on_click(move |_, _, cx| handle.update(cx, |e, cx| e.check_signature(cx))),
+                )
+            })
+            .child(transfers(entity))
+            // A row of its own: three would not fit the panel at its narrowest.
+            .when(can_be_signed(item), |d| {
+                let handle = entity.clone();
+                d.child(
+                    button("info-sign", tr!("Sign…"), Fill::Outline, Size::Small)
+                        .on_click(move |_, _, cx| handle.update(cx, |e, cx| e.ask_sign(cx))),
+                )
+            }),
+    )
 }
 
 /// Unix permissions as `ls` writes them.

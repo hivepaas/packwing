@@ -25,6 +25,7 @@ mod pages;
 mod placement;
 mod prefs;
 mod right_click;
+mod signatures;
 mod updates;
 mod widgets;
 mod workspace;
@@ -105,6 +106,7 @@ const ICONS: &[(&str, &[u8])] = icons![
     "lock",
     "logo",
     "logo-feather",
+    "more",
     "plus",
     "recent",
     "refresh",

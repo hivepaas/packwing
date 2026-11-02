@@ -20,6 +20,8 @@ pub struct EditDialog {
     folder: Vec<String>,
     keys: Keys,
     picked: Vec<Vec<String>>,
+    /// It has a signature, which the change makes untrue.
+    signed: bool,
     /// What a rename calls it: none when deleting.
     new_name: Option<Entity<TextInput>>,
     _typing: Option<gpui::Subscription>,
@@ -58,6 +60,7 @@ impl EditDialog {
             .as_ref()
             .map(|f| cx.subscribe(f, |_, _, _: &Changed, cx| cx.notify()));
         EditDialog {
+            signed: packwing_core::has_signature(&archive),
             archive,
             name,
             folder,
@@ -139,6 +142,12 @@ impl Render for EditDialog {
                 d.child(note(Tone::Warn).child(
                     tr!("It goes from the archive for good, folders with all they hold. This can’t be undone."),
                 ))
+            })
+            .when(self.signed, |d| {
+                d.child(note(Tone::Warn).child(tr!(
+                    "This archive is signed. After this change it will no longer match its \
+                     signature, until it is signed again."
+                )))
             })
             .child(
                 footer()

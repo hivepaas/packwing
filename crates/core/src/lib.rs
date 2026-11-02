@@ -16,6 +16,7 @@ mod listing;
 mod mark;
 mod passphrase;
 mod rar;
+mod sign;
 mod source;
 mod spool;
 mod storage;
@@ -48,6 +49,11 @@ pub use job::{
 pub use listing::{Child, Entry, Found, Listing, list};
 pub use mark::came_from_internet;
 pub use passphrase::suggest_passphrase;
+pub use sign::{
+    KeyRefused, PublicKey, Signed, SigningKey, check_signature, has_signature, is_part_name,
+    is_signature_name, look_at_signature, make_signing_key, read_public_key, read_signing_key,
+    sign_file, signature_name,
+};
 pub use source::{Source, Stored};
 pub use storage::{
     Counted, Field, Item, Lister, LocalFolder, Storage, StorageKind, StoredFile, Values, bad_name,

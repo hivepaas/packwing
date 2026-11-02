@@ -88,7 +88,7 @@ impl SettingsPage {
             {
                 let kept = crate::prefs::prefs(cx);
                 let (mark, ask) = (kept.keep_mark, kept.ask_before_open);
-                cx.new(|_| security::Security::new(mark, ask)).into()
+                cx.new(|cx| security::Security::new(mark, ask, cx)).into()
             },
             cx.new(|cx| right_click::RightClick::new(menu, cx)).into(),
             cx.new(license::LicenseSection::new).into(),

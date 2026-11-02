@@ -18,8 +18,8 @@ use gpui::{
 use packwing_core::{Cancel, Control, Error, Progress};
 
 use super::{
-    DialogEvent, Editing, Job, Saving, SavingOn, Transferring, Verb, asked_for, card, footer,
-    header,
+    DialogEvent, Editing, Job, Saving, SavingOn, Signing, Transferring, Verb, asked_for, card,
+    footer, header,
 };
 use crate::colors::colors;
 use crate::model::{count, size};
@@ -73,7 +73,8 @@ impl ProgressDialog {
             || job.create.is_some()
             || job.add.is_some()
             || job.edit.is_some()
-            || job.transfer.is_some())
+            || job.transfer.is_some()
+            || job.sign.is_some())
         .then(|| Self::run(&job, cx));
         ProgressDialog {
             job,
@@ -111,7 +112,12 @@ impl ProgressDialog {
         );
         let edit = job.edit.clone();
         let transfer = job.transfer.clone();
+        let sign = job.sign.clone();
         let task = cx.background_executor().spawn(async move {
+            if let Some(Signing(storage, path, key)) = sign {
+                packwing_core::sign_file(storage.as_ref(), &path, &key, &control)?;
+                return Ok(None);
+            }
             if let Some(Transferring(t, went)) = transfer {
                 let done = packwing_core::transfer(&t, &control)?;
                 *went.lock().unwrap_or_else(PoisonError::into_inner) = done;
@@ -216,6 +222,7 @@ impl ProgressDialog {
                     cx.emit(DialogEvent::Transferred(went));
                 }
             }
+            Ok(_) if self.job.sign.is_some() => cx.emit(DialogEvent::Signed),
             Ok(Some(copy)) if self.job.verb == Verb::Open => {
                 cx.open_with_system(&copy);
                 cx.emit(DialogEvent::Close);
@@ -415,6 +422,8 @@ impl ProgressDialog {
             (Verb::Test, false) => tr!("Testing…"),
             (Verb::Copy, false) => tr!("Copying…"),
             (Verb::Move, false) => tr!("Moving…"),
+            (Verb::Sign, false) => tr!("Signing…"),
+            (Verb::Sign, true) => tr!("Couldn’t sign"),
             (Verb::Copy, true) => tr!("Couldn’t copy"),
             (Verb::Move, true) => tr!("Couldn’t move"),
             (Verb::Extract, true) => tr!("Couldn’t extract"),
@@ -461,6 +470,7 @@ impl Render for ProgressDialog {
             Verb::Create | Verb::Add | Verb::Edit => "logo",
             Verb::Test => "shield",
             Verb::Copy | Verb::Move => "storages",
+            Verb::Sign => "shield",
         };
         if let Some((files, bytes)) = self.passed {
             return card()
@@ -594,7 +604,13 @@ impl Render for ProgressDialog {
             .when(
                 !matches!(
                     j.verb,
-                    Verb::Test | Verb::Add | Verb::Edit | Verb::Open | Verb::Copy | Verb::Move
+                    Verb::Test
+                        | Verb::Add
+                        | Verb::Edit
+                        | Verb::Open
+                        | Verb::Copy
+                        | Verb::Move
+                        | Verb::Sign
                 ),
                 |d| {
                     d.child(

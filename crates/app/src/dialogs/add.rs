@@ -15,7 +15,9 @@ use super::chosen::{self, Choosing};
 use super::{Adding, DialogEvent, Job, Verb, footer, header};
 use crate::colors::colors;
 use crate::model::{Archive, Selection, count, size};
-use crate::widgets::{Fill, Select, SelectLook, Size, button, icon_button, legend, tonal_tint};
+use crate::widgets::{
+    Fill, Select, SelectLook, Size, Tone, button, icon_button, legend, note, tonal_tint,
+};
 
 /// What a file of the same name in the archive can come to.
 fn on_existing() -> [(String, OnExisting); 3] {
@@ -27,6 +29,8 @@ fn on_existing() -> [(String, OnExisting); 3] {
 }
 
 pub struct AddDialog {
+    /// The archive has a signature, which adding to it makes untrue.
+    signed: bool,
     /// The archive's file.
     archive: PathBuf,
     name: SharedString,
@@ -80,6 +84,10 @@ impl AddDialog {
         let on_existing =
             cx.new(|_| Select::new(&on_existing().map(|(name, _)| name), 0, SelectLook::Pill));
         Some(AddDialog {
+            signed: archive
+                .path
+                .as_deref()
+                .is_some_and(packwing_core::has_signature),
             archive: archive.path.clone()?,
             name: archive.name.clone().into(),
             folder: archive.folder.clone(),
@@ -100,6 +108,7 @@ impl AddDialog {
         let on_existing =
             cx.new(|_| Select::new(&on_existing().map(|(name, _)| name), 0, SelectLook::Pill));
         AddDialog {
+            signed: false,
             archive: PathBuf::from("/home/you/Documents/sample.zip"),
             name: archive.name.clone().into(),
             folder: vec!["Thiết kế".into(), "Hồ sơ thi công".into()],
@@ -249,6 +258,12 @@ impl Render for AddDialog {
                     )
                     .child(self.on_existing.clone()),
             )
+            .when(self.signed, |d| {
+                d.child(note(Tone::Warn).child(tr!(
+                    "This archive is signed. With more in it, it will no longer match its \
+                     signature, until it is signed again."
+                )))
+            })
             .when(self.encrypted, |d| {
                 d.child(div().text_size(px(13.)).text_color(rgb(c.muted)).child(tr!(
                     "The new files are encrypted with the archive’s password."
