@@ -391,11 +391,12 @@ impl CreateDialog {
             name,
             format,
             level: kept.level,
-            advanced: false,
+            // What has to be typed is not hidden.
+            advanced: crate::managed::policy(cx).requires_encryption(),
             split,
             part,
             unit,
-            protect: false,
+            protect: crate::managed::policy(cx).requires_encryption(),
             password,
             to_keys: false,
             key,
@@ -785,6 +786,25 @@ impl CreateDialog {
         part && secret
     }
 
+    /// How encrypted the archive would be, for what a policy says of it.
+    fn encryption(&self, cx: &App) -> NewArchive {
+        let age_keys = self.age_keys(cx);
+        let password = self.protected() && age_keys.is_empty();
+        NewArchive {
+            kind: self.format(cx).kind(),
+            password: password.then(|| self.password.read(cx).text().as_bytes().to_vec()),
+            age_keys,
+            ..NewArchive::default()
+        }
+    }
+
+    /// Why the organization's policy stops this, as it stands.
+    fn refused(&self, cx: &App) -> Option<String> {
+        packwing_core::refused_by(crate::managed::policy(cx), &self.encryption(cx))
+            .err()
+            .map(|why| why.to_string())
+    }
+
     /// How big each part is, if it is split.
     fn parts(&self, cx: &App) -> Option<u64> {
         match self.split.read(cx).chosen() {
@@ -803,10 +823,11 @@ impl CreateDialog {
             || !chosen_place
             || !name_fits(&typed)
             || !self.advanced_ready(cx)
+            || self.refused(cx).is_some()
         {
             self.checked = true;
             // What is missing may be under Advanced, which may be hidden.
-            self.advanced |= !self.advanced_ready(cx);
+            self.advanced |= !self.advanced_ready(cx) || self.refused(cx).is_some();
             cx.notify();
             return;
         }
@@ -1217,6 +1238,8 @@ impl CreateDialog {
         let typed = self.password.read(cx).text().to_string();
         let strength = (!typed.is_empty()).then(|| strength(&typed));
         let saved_as = format!("{}{}.age", self.name.read(cx).text().trim(), format.ext());
+        let required = crate::managed::policy(cx).requires_encryption();
+        let refused = self.refused(cx);
         div()
             .flex()
             .flex_col()
@@ -1241,10 +1264,16 @@ impl CreateDialog {
                                 tr!("Protect with a password")
                             }),
                     )
-                    .child(switch("protect", on).on_click(cx.listener(|this, _, _, cx| {
-                        this.protect = !this.protect;
-                        cx.notify();
-                    }))),
+                    .child(if required {
+                        icon("lock", 18., c.muted).into_any_element()
+                    } else {
+                        switch("protect", on)
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.protect = !this.protect;
+                                cx.notify();
+                            }))
+                            .into_any_element()
+                    }),
             )
             .when(on && format.uses_age(), |d| {
                 d.child(segments([
@@ -1297,6 +1326,7 @@ impl CreateDialog {
                 })
             })
             .when(to_keys, |d| d.children(self.keys_part(cx)))
+            .when_some(refused, |d, why| d.child(note(Tone::Warn).child(why)))
             .when(on && format.uses_age(), |d| {
                 d.child(note(Tone::Warn).child(tr!(
                     "Saved as {name}. The names inside are encrypted too. Windows and macOS may need the age tool or an archiver app to open it.",

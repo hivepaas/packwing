@@ -13,6 +13,7 @@
 //! was.
 
 use packwing_i18n::tr;
+use packwing_policy::{Method, Policy, Refused};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::fs::{self, File, Metadata, OpenOptions};
@@ -162,6 +163,28 @@ pub struct NewArchive {
     /// come to more than this many bytes and the storage can take it that way. It
     /// goes through a temporary file otherwise, and if this is none.
     pub stream_above: Option<u64>,
+}
+
+/// Why `policy` stops `new` being made, if it does: what the window asks before
+/// it starts, and [`create`] and [`create_on`] whoever asks them.
+pub fn refused_by(policy: &Policy, new: &NewArchive) -> Result<(), Refused> {
+    let method = match (&new.password, new.kind) {
+        (Some(_), Kind::Zip) => Some(Method::ZipAes256),
+        (Some(_), Kind::SevenZip) => Some(Method::SevenZipAes256),
+        (Some(_), _) => Some(Method::AgePassphrase),
+        (None, _) if !new.age_keys.is_empty() => Some(Method::AgeKey),
+        (None, _) => None,
+    };
+    policy.check_method(method)?;
+    match &new.password {
+        Some(password) => policy.check_password(password),
+        None => Ok(()),
+    }
+}
+
+/// [`refused_by`] this computer's policy, as an error.
+fn obey_policy(new: &NewArchive) -> Result<(), Error> {
+    refused_by(packwing_policy::current(), new).map_err(|why| Error::Failed(why.to_string()))
 }
 
 /// How a new archive reaches a storage.
@@ -1394,6 +1417,15 @@ pub fn add_with(
             dirs.insert(name[..end - 1].to_owned());
         }
     }
+    let policy = packwing_policy::current();
+    let obeying = policy.check_adding(encrypted.is_some()).and_then(|()| {
+        // What is added to encrypted files is encrypted as they are.
+        match encrypted {
+            Some(_) => policy.check_method(Some(Method::ZipAes256)),
+            None => Ok(()),
+        }
+    });
+    obeying.map_err(|why| Error::Failed(why.to_string()))?;
     let mut new = Vec::new();
     let mut replaced = Vec::new();
     for item in items {
@@ -1469,6 +1501,7 @@ pub fn create(
     control: &Control,
 ) -> Result<PathBuf, Error> {
     // Refused before anything is read.
+    obey_policy(new)?;
     age_recipients(new)?;
     // Before the archive is made, so that it is not among them.
     create_of(chosen_items(paths, new, control)?, wanted, new, control)
@@ -1780,6 +1813,7 @@ pub fn create_on(
         return create(paths, &here.join(name), new, control).map(Some);
     }
     // Refused before anything is read.
+    obey_policy(new)?;
     age_recipients(new)?;
     let failed = |e: io::Error| Error::Failed(e.to_string());
     // Asked before anything is compressed: what stops it soon stops it first.

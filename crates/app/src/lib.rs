@@ -1,6 +1,6 @@
 //! packwing: a file archiver that opens archives safely.
 //!
-//! Usage: `packwing [--first-run] [--<item> PATH…]`. Archives
+//! Usage: `packwing [--first-run] [--policies] [--<item> PATH…]`. Archives
 //! are read, extracted and tested through packwing-core and hivepack
 //! (`--open PATH` opens one), and made; the screenshots show made-up ones
 //! (`demo.rs`). What the user chooses is kept (`prefs.rs`). `--first-run`
@@ -17,6 +17,7 @@ mod dialogs;
 mod editors;
 mod explorer;
 mod input;
+mod managed;
 mod model;
 mod open_with;
 mod pages;
@@ -141,8 +142,9 @@ impl gpui::AssetSource for Assets {
 fn usage() -> String {
     let items: Vec<String> = Action::ALL.iter().map(|a| a.option()).collect();
     format!(
-        "usage: packwing [--first-run] [--<item> PATH…]
+        "usage: packwing [--first-run] [--policies] [--<item> PATH…]
   --first-run  open on the welcome, as on the first start
+  --policies   say what an organization has fixed here, and any mistake in it, then stop
   --<item>     what an item of the right-click menu runs, with the paths chosen:
                {}",
         items.join(", ")
@@ -161,6 +163,13 @@ pub fn run(extensions: Extensions) {
                 return;
             }
             "--first-run" => first_run = true,
+            "--policies" => {
+                let policy = packwing_policy::current();
+                print!("{}", policy.report());
+                let wrong =
+                    policy.failure().is_some() || policy.rows().iter().any(|r| r.problem.is_some());
+                std::process::exit(i32::from(wrong));
+            }
             option => match Request::parse(option, args.by_ref()) {
                 Some(r) => request = Some(r),
                 None => {

@@ -32,6 +32,8 @@ gpui.workspace = true
 gpui_platform.workspace = true
 # Reading, extracting and testing archives, through hivepack.
 packwing-core.workspace = true
+# What an organization has fixed.
+packwing-policy.workspace = true
 # Storages across the network: S3, WebDAV and SFTP.
 packwing-remote.workspace = true
 # The interface's words, in the user's language.

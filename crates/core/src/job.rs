@@ -307,7 +307,7 @@ fn extract_picked(
     options.cancel = control.cancel.clone();
     // A file on a storage has no mark to keep.
     options.origin = match source.path() {
-        Some(path) if how.keep_mark => Origin::of(path)?,
+        Some(path) if packwing_policy::current().keeps_mark(how.keep_mark) => Origin::of(path)?,
         _ => None,
     };
     options.overwrite = how.overwrite;

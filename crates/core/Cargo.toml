@@ -10,6 +10,8 @@ publish.workspace = true
 [dependencies]
 # Its messages, in the user's language.
 packwing-i18n.workspace = true
+# What an organization has fixed.
+packwing-policy.workspace = true
 # The random bytes of WinZip AES and 7z's AES, on every system.
 getrandom = "0.4"
 hivepack-7z.workspace = true
