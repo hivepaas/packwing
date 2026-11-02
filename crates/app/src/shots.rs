@@ -1840,6 +1840,53 @@ fn a_file_encrypted_to_a_key_is_saved_with_age_at_the_end_of_its_name() {
 }
 
 #[test]
+fn a_post_quantum_key_of_2000_characters_says_what_opens_it() {
+    use crate::dialogs::Format;
+    let key = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../core/tests/data/test-age-pq.key"),
+    )
+    .expect("read");
+    let key = key
+        .lines()
+        .find_map(|line| line.strip_prefix("# public key: "))
+        .expect("a public key")
+        .to_owned();
+    let file = folder_of("age-pq", 0).join("dump.sql");
+    std::fs::write(&file, "insert").expect("cannot write");
+    let (mut cx, window, _) = explorer_on(out_dir());
+    let dialog = window
+        .update(&mut cx, |ws, window, cx| {
+            ws.open_create_of(vec![file.clone()], window, cx)
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    window
+        .update(&mut cx, |_, _, cx| {
+            dialog.update(cx, |d, cx| {
+                d.choose_format(Format::Zst, cx);
+                d.encrypt_to_key(&key, cx);
+            })
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    window
+        .update(&mut cx, |_, _, cx| {
+            dialog.update(cx, |d, cx| d.scroll_to_end(cx))
+        })
+        .expect("the window");
+    cx.run_until_parked();
+    cx.run_until_parked();
+    window
+        .update(&mut cx, |_, _, cx| cx.refresh_windows())
+        .expect("the window");
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window")
+        .save(out_dir().join("create-age-pq.png"))
+        .expect("cannot save the picture");
+}
+
+#[test]
 fn a_kind_a_build_adds_is_browsed_without_a_local_path() {
     let dir = folder_of("far", 2);
     std::fs::write(dir.join("backup.zip"), "not one").expect("cannot write");

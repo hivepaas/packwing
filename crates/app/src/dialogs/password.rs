@@ -325,6 +325,10 @@ mod tests {
             asked_for(&locked(&["X25519"]), &none),
             Some((Asked::KeyFile, false))
         );
+        assert_eq!(
+            asked_for(&locked(&["mlkem768x25519"]), &none),
+            Some((Asked::KeyFile, false))
+        );
         let with_key = none.with(Asked::KeyFile, b"key".to_vec());
         assert_eq!(
             asked_for(&locked(&["ssh-ed25519"]), &with_key),
@@ -337,7 +341,7 @@ mod tests {
         // Not asked: data that fails with no password typed, a kind of key
         // hivepack does not read, and what is not about keys at all.
         assert_eq!(asked_for(&Error::WrongPassword, &none), None);
-        assert_eq!(asked_for(&locked(&["mlkem768x25519"]), &none), None);
+        assert_eq!(asked_for(&locked(&["p256tag"]), &none), None);
         assert_eq!(asked_for(&Error::NotAnArchive, &none), None);
         assert_eq!(asked_for(&Error::Failed("damaged".into()), &typed), None);
     }

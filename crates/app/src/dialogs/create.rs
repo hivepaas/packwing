@@ -362,7 +362,7 @@ impl CreateDialog {
         let part = cx.new(|cx| TextInput::new(tr!("Size"), cx));
         let unit = cx.new(|_| Select::new(&UNITS.map(|(u, _)| u), 0, SelectLook::Pill));
         let password = cx.new(|cx| TextInput::new(tr!("Password"), cx).masked());
-        let key = cx.new(|cx| TextInput::new(tr!("age1… or ssh-ed25519 …"), cx));
+        let key = cx.new(|cx| TextInput::new(tr!("age1…, age1pq1… or ssh-ed25519 …"), cx));
         // What is drawn follows what is typed and chosen: the extension, the
         // notes, the password's strength.
         let follow = vec![
@@ -1390,6 +1390,19 @@ impl CreateDialog {
         }
         if let Some(why) = &self.keys_file_problem {
             part.push(note(Tone::Warn).child(why.clone()).into_any_element());
+        }
+        if self
+            .age_keys(cx)
+            .iter()
+            .any(|key| packwing_core::age_key_is_post_quantum(key))
+        {
+            part.push(
+                note(Tone::Warn)
+                    .child(tr!(
+                        "A post-quantum key: to open this, the age tool must be version 1.3 or newer."
+                    ))
+                    .into_any_element(),
+            );
         }
         part.push(
             note(Tone::Warn)
