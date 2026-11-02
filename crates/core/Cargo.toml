@@ -41,6 +41,10 @@ imagesize = "0.14"
 unicode-normalization = "0.1"
 fs4 = "1.1.0"
 
+# Quarantine on what is copied here from elsewhere.
+[target.'cfg(target_os = "macos")'.dependencies]
+xattr = "1"
+
 [dev-dependencies]
 # Encrypted ZIP archives, written by the tests.
 hivepack-zip.workspace = true

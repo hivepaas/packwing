@@ -111,6 +111,7 @@ impl TransferDialog {
                 to_folder,
                 moving: self.moving,
                 on_existing,
+                keep_mark: crate::prefs::prefs(cx).keep_mark,
             },
             Arc::new(Mutex::default()),
         ));

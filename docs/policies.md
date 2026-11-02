@@ -19,6 +19,7 @@ They bind packwing, not the person. An administrator of the computer can change 
 | Name | Kind | What it does |
 |---|---|---|
 | `PropagateMotW` | yes or no | Whether what is extracted from a file marked as downloaded keeps the mark (the Mark of the Web on Windows, quarantine on macOS). Replaces the user's switch. It is on by default, without a policy. Linux has no such mark, so there it does nothing. |
+| `MarkStorageFiles` | yes or no | Whether a file from a storage across a network (S3, WebDAV, SFTP) counts as from the Internet: what is extracted or copied from one gets the mark. It does without a policy. Turn it off for storages your organization trusts. `PropagateMotW` still decides whether marks are written at all. |
 | `RequireEncryption` | yes or no | New archives have to be encrypted, wherever they are made from: New archive, the right-click menu, dragging files in, and to a storage. Files cannot be added to a ZIP archive whose files are not encrypted. Deleting and renaming in one still work, as they bring nothing new in the clear. |
 | `AllowedEncryptionMethods` | list | The ways a new archive may be encrypted: `zip-aes256`, `7z-aes256`, `age-passphrase`, `age-key`. Others are refused. It says how, not whether: `RequireEncryption` says whether. |
 | `MinPasswordLength` | number, 1 to 1024 | The least length of a password or passphrase for a new archive, in characters. 15 is a good value: an archive's password can be guessed offline, as fast as the attacker's hardware goes. With this set, packwing also refuses the 10,000 most common passwords, one character repeated and plain runs such as `123456789012345`. It makes no rules about kinds of characters. It does not apply to age keys, nor to a password already on an archive. |
@@ -35,6 +36,7 @@ A list can also be written as one text with commas between the names, for tools 
 A mistake never loosens anything, as a typing error must not quietly take a lock off:
 
 - `PropagateMotW` that cannot be understood keeps the mark on, locked.
+- `MarkStorageFiles` that cannot be understood keeps marking.
 - `RequireEncryption` that cannot be understood refuses making any archive.
 - `AllowedEncryptionMethods` that cannot be understood, or names a method that does not exist, or names none, refuses encrypting.
 - `MinPasswordLength` that cannot be understood refuses passwords.
