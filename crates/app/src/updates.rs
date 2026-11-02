@@ -101,7 +101,7 @@ fn staging_dir() -> Option<PathBuf> {
 }
 
 fn install() -> Install {
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     if let Some(how) = packwing_update::test_install() {
         return how;
     }
@@ -452,14 +452,14 @@ impl Updates {
     }
 
     /// As if the offered release had been downloaded, for the pictures.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn ready_for_test(&mut self, cx: &mut Context<Self>) {
         self.stage = self.offered().map_or(Stage::Idle, Stage::Ready);
         cx.notify();
     }
 
     /// As if a look had just offered `version` with `package`, for the pictures.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn offer_for_test(
         &mut self,
         version: &str,

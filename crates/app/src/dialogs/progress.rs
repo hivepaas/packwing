@@ -80,7 +80,8 @@ impl ProgressDialog {
             job,
             done: 0.,
             paused: false,
-            open_folder: true,
+            // A scenario has no file manager to open.
+            open_folder: !cfg!(all(test, feature = "ui-tests")),
             uploading: false,
             running,
             failed: None,
@@ -283,34 +284,34 @@ impl ProgressDialog {
     }
 
     /// Puts the count at `done` (0 to 1), as if it got there.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn set_done(&mut self, done: f64, cx: &mut Context<Self>) {
         self.done = done.clamp(0., 1.);
         cx.notify();
     }
 
     /// Shows the job as failed, for `why`.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn set_failed(&mut self, why: String, cx: &mut Context<Self>) {
         self.failed = Some(why);
         cx.notify();
     }
 
     /// Shows the test as passed, having read these.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn set_passed(&mut self, files: u64, bytes: u64, cx: &mut Context<Self>) {
         self.passed = Some((files, bytes));
         cx.notify();
     }
 
     /// The files and bytes read, if it was a test that passed.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn passed(&self) -> Option<(u64, u64)> {
         self.passed
     }
 
     /// Why it failed, if it did.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn failed(&self) -> Option<&str> {
         self.failed.as_deref()
     }

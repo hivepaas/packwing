@@ -14,7 +14,7 @@ use packwing_core::{Asked, Keys, NewArchive, Source};
 
 use crate::chrome;
 use crate::colors::{self, colors};
-#[cfg(all(test, feature = "shots"))]
+#[cfg(all(test, feature = "test-hooks"))]
 use crate::demo;
 use crate::dialogs::{
     AddDialog, AddStorageDialog, CreateDialog, Creating, DeleteDialog, DialogEvent, EditDialog,
@@ -295,22 +295,22 @@ impl Workspace {
         self.updates.update(cx, |u, cx| u.start(cx));
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn settings(&self) -> &Entity<SettingsPage> {
         &self.settings
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn updates(&self) -> &Entity<Updates> {
         &self.updates
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn settings_section(&self, cx: &gpui::App) -> crate::pages::settings::Section {
         self.settings.read(cx).section()
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn page(&self) -> Page {
         self.page
     }
@@ -389,7 +389,7 @@ impl Workspace {
     }
 
     /// Asks how to sign the file `name` of the storage shown, for tests.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn open_sign_of(
         &mut self,
         name: &str,
@@ -408,7 +408,7 @@ impl Workspace {
         view
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn refresh_explorers_for_test(&mut self, cx: &mut Context<Self>) {
         self.refresh_explorers(cx);
     }
@@ -427,7 +427,7 @@ impl Workspace {
         }
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn show_settings(
         &mut self,
         section: crate::pages::settings::Section,
@@ -438,7 +438,7 @@ impl Workspace {
         self.show_page(Page::Settings, cx);
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn right_click(&self) -> &Entity<RightClickMenu> {
         &self.right_click
     }
@@ -597,7 +597,7 @@ impl Workspace {
 
     /// Asks for `asked`, as an archive that needs it does; with `again`,
     /// as after a wrong one.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn show_ask(
         &mut self,
         asked: Asked,
@@ -616,20 +616,20 @@ impl Workspace {
         self.ask(ask, again, window, cx);
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn show_archive(&mut self, shown: Shown, cx: &mut Context<Self>) {
         self.archive.update(cx, |p, cx| p.show(shown, cx));
     }
 
     /// The Storages page, browsing the folder at `path`.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn show_storage(&mut self, path: PathBuf, cx: &mut Context<Self>) {
         self.storages.update(cx, |p, cx| p.add(path, cx));
         self.show_page(Page::Storages, cx);
     }
 
     /// Copies or moves what is chosen to the storage at `to`, as its dialog would.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn start_transfer_to(
         &mut self,
         moving: bool,
@@ -668,36 +668,36 @@ impl Workspace {
         self.show(view, true, window, cx);
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn edit_storage(&mut self, at: usize, window: &mut Window, cx: &mut Context<Self>) {
         self.open_edit_storage(self.storages.clone(), at, window, cx);
     }
 
     /// Add storage, as a build with more kinds than a folder asks it.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn open_add_storage(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let page = self.storages.clone();
         let view = cx.new(|cx| AddStorageDialog::new(page, window, cx));
         self.show(view, true, window, cx);
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn page_shown(&self) -> Page {
         self.page
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn storages_page(&self) -> Entity<StoragesPage> {
         self.storages.clone()
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn explorer(&self, cx: &gpui::App) -> Entity<crate::explorer::Explorer> {
         self.storages.read(cx).explorer().clone()
     }
 
     /// Shows the sample archive, as the screenshots draw it.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn show_sample(&mut self, cx: &mut Context<Self>) {
         self.reading = None;
         self.archive.update(cx, |p, cx| {
@@ -984,7 +984,7 @@ impl Workspace {
     }
 
     /// New archive holding `paths`, for tests.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn open_create_of(
         &mut self,
         paths: Vec<PathBuf>,
@@ -995,7 +995,7 @@ impl Workspace {
     }
 
     /// Add files, holding the screenshots' sample.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn open_add_sample(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let archive = self.archive.read(cx).archive().cloned();
         let dialog = archive.map(|a| AddDialog::sample(&a, cx));
@@ -1006,7 +1006,7 @@ impl Workspace {
     }
 
     /// New archive, holding more than its list shows at once, the list open.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn open_create_many(
         &mut self,
         window: &mut Window,
@@ -1019,7 +1019,7 @@ impl Workspace {
     }
 
     /// New archive, holding the screenshots' sample.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn open_create_sample(
         &mut self,
         window: &mut Window,
@@ -1126,19 +1126,19 @@ impl Workspace {
     }
 
     /// Selects entries of the archive open, as the screenshots draw it.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn select_in_archive(&mut self, at: &[usize], cx: &mut Context<Self>) {
         self.archive.update(cx, |p, cx| p.select_for_shot(at, cx));
     }
 
     /// The page of the archive, for tests.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn archive_page(&self) -> Entity<ArchivePage> {
         self.archive.clone()
     }
 
     /// Fills the preview of the archive open, as the screenshots draw it.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn preview_in_archive(
         &mut self,
         picture: Option<Vec<u8>>,
@@ -1150,13 +1150,13 @@ impl Workspace {
     }
 
     /// Searches the archive open, as the screenshots draw it.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn search_archive(&mut self, query: &str, cx: &mut Context<Self>) {
         self.archive.update(cx, |p, cx| p.search_for(query, cx));
     }
 
     /// Browse, showing what was opened before.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn show_recent_tab(&mut self, cx: &mut Context<Self>) {
         self.browse.update(cx, |b, cx| {
             b.show_tab(crate::pages::browse::Tab::Recent, cx)
@@ -1164,13 +1164,13 @@ impl Workspace {
         self.show_page(Page::Browse, cx);
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn browse_page(&self) -> Entity<BrowsePage> {
         self.browse.clone()
     }
 
     /// The Recent page as the screenshots draw it.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn show_recent_samples(&mut self, cx: &mut Context<Self>) {
         let rows = demo::RECENT
             .iter()
@@ -1186,13 +1186,22 @@ impl Workspace {
     }
 
     /// Whether a dialog is open, for tests.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn dialog_open(&self) -> bool {
         self.dialog.is_some()
     }
 
+    /// Why the job in the dialog open failed, if it did, for tests.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn job_failed(&self, cx: &gpui::App) -> Option<String> {
+        self.dialog
+            .as_ref()
+            .and_then(|d| d.view.clone().downcast::<ProgressDialog>().ok())
+            .and_then(|view| view.read(cx).failed().map(str::to_owned))
+    }
+
     /// What New archive holds, if it is the dialog open, for tests.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn create_dialog_paths(&self, cx: &gpui::App) -> Vec<PathBuf> {
         self.dialog
             .as_ref()
@@ -1252,6 +1261,7 @@ impl Workspace {
         let item = |id: &'static str, icon_name: &'static str, label: String, on: bool| {
             let ink = if on { c.on_tonal } else { c.muted };
             div()
+                .debug_selector(|| id.to_owned())
                 .id(id)
                 .group(id)
                 .flex()

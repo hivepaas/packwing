@@ -105,7 +105,7 @@ pub const RECENT: &[Recent] = &[
 ];
 
 /// What New archive holds in the screenshots.
-#[cfg(all(test, feature = "shots"))]
+#[cfg(all(test, feature = "test-hooks"))]
 pub fn selection() -> crate::model::Selection {
     crate::model::Selection {
         paths: vec!["/home/you/Documents/Báo cáo quý 3".into()],

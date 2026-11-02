@@ -1167,7 +1167,12 @@ impl Element for TextElement {
 
 impl Render for TextInput {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let hint = match &self.placeholder {
+            Placeholder::Text(text) => text.to_string(),
+            Placeholder::Said(say) => say(),
+        };
         div()
+            .debug_selector(|| format!("field: {hint}"))
             .flex()
             .flex_1()
             .min_w_0()

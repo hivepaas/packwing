@@ -7,11 +7,14 @@
 //! opens on the welcome. An item of the right-click menu runs packwing with its
 //! option and the paths chosen (`right_click.rs`).
 
+// The hooks the screenshots look through are not all the scenarios'.
+#![cfg_attr(all(test, feature = "ui-tests"), allow(dead_code))]
+
 mod chrome;
 mod colors;
 mod confirm;
 // Most of it only the screenshots draw.
-#[cfg_attr(not(all(test, feature = "shots")), allow(dead_code))]
+#[cfg_attr(not(all(test, feature = "test-hooks")), allow(dead_code))]
 mod demo;
 mod dialogs;
 mod editors;
@@ -32,6 +35,8 @@ mod workspace;
 
 #[cfg(all(test, feature = "shots", target_os = "linux"))]
 mod shots;
+#[cfg(all(test, feature = "ui-tests"))]
+mod ui_tests;
 
 use std::borrow::Cow;
 use std::sync::Arc;

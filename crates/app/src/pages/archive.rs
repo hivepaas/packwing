@@ -199,13 +199,13 @@ impl ArchivePage {
         cx.notify();
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn open_more_for_shot(&mut self, at: Point<Pixels>, cx: &mut Context<Self>) {
         self.more_at = Some(at);
         cx.notify();
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn signature_for_test(&self) -> Option<Signed> {
         self.signature.clone()
     }
@@ -291,7 +291,7 @@ impl ArchivePage {
     }
 
     /// Why the file named could not be opened, if it could not, for tests.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn shown_failed(&self) -> Option<String> {
         match &self.shown {
             Shown::Failed { why, .. } => Some(why.clone()),
@@ -300,7 +300,7 @@ impl ArchivePage {
     }
 
     /// The text the preview shows, and whether it is still reading, for tests.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn previewed(&self) -> (Option<String>, bool) {
         match &self.preview {
             Preview::Text(text) => (Some(text.clone()), false),
@@ -310,7 +310,7 @@ impl ArchivePage {
     }
 
     /// Shows `preview`, as the screenshots draw it.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn preview_for_shot(
         &mut self,
         picture: Option<Vec<u8>>,
@@ -404,14 +404,14 @@ impl ArchivePage {
     }
 
     /// Selects the entries at `at`, as the screenshots do.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn select_for_shot(&mut self, at: &[usize], cx: &mut Context<Self>) {
         self.selected = at.iter().copied().collect();
         cx.notify();
     }
 
     /// Types `query` in the search, as the screenshots do.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn search_for(&mut self, query: &str, cx: &mut Context<Self>) {
         self.search
             .update(cx, |s, cx| s.set_text(query, query.len()..query.len(), cx));
@@ -662,6 +662,7 @@ impl ArchivePage {
                 folder
             });
             div()
+                .debug_selector(|| format!("entry-{i}"))
                 .id(("entry", i))
                 .flex()
                 .items_center()

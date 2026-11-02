@@ -109,13 +109,13 @@ impl SettingsPage {
     }
 
     /// Scrolls down, for a picture of what is further down.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn scroll_for_test(&mut self, by: f32, cx: &mut Context<Self>) {
         self.scroll.set_offset(point(px(0.), px(-by)));
         cx.notify();
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn section(&self) -> Section {
         self.section
     }
@@ -136,6 +136,7 @@ impl SettingsPage {
         let items = Section::ALL.into_iter().enumerate().map(|(i, s)| {
             let on = s == self.section;
             div()
+                .debug_selector(|| format!("section-{i}"))
                 .id(("section", i))
                 .flex()
                 .items_center()

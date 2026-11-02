@@ -243,7 +243,7 @@ impl RightClickMenu {
     }
 
     /// One that changes nothing on the system, for the screenshots.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn offline(shown: bool, choice: Choice, status: Status) -> Self {
         RightClickMenu {
             shown,
@@ -287,7 +287,7 @@ impl RightClickMenu {
         cx.notify();
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn set_status(&mut self, status: Status, cx: &mut Context<Self>) {
         self.status = status;
         cx.notify();

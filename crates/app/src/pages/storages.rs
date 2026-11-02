@@ -469,34 +469,34 @@ impl StoragesPage {
             .count()
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn count(&self) -> usize {
         self.storages.len()
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn leave_for_long(&mut self, cx: &mut Context<Self>) -> bool {
         self.last_used = Instant::now() - ASKS_AGAIN_AFTER;
         self.lock_if_left(cx)
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn type_password(&mut self, text: &str, cx: &mut Context<Self>) {
         self.password.update(cx, |p, cx| p.set_text(text, 0..0, cx));
         self.confirm(cx);
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn is_chosen_locked(&self) -> bool {
         self.chosen_locked().is_some()
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn press_remove(&mut self, i: usize, window: &mut Window, cx: &mut Context<Self>) {
         self.when_confirmed(i, Then::Remove(i), window, cx);
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn remove_last(&mut self, cx: &mut Context<Self>) {
         self.remove(self.storages.len().saturating_sub(1), cx);
     }
@@ -540,6 +540,7 @@ impl StoragesPage {
                 },
             };
             div()
+                .debug_selector(|| format!("storage-{i}"))
                 .id(("storage", i))
                 .flex()
                 .items_center()

@@ -454,7 +454,7 @@ impl Prefs {
         text
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn text_for_test(&self) -> String {
         self.text()
     }

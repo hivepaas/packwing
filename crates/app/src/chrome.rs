@@ -102,7 +102,7 @@ fn tiling(window: &Window) -> Tiling {
 
 // A headless window has no client-side decorations: this draws its title bar anyway,
 // for a picture of what goes on it. Per thread, so that other tests' pictures stay.
-#[cfg(all(test, feature = "shots"))]
+#[cfg(all(test, feature = "test-hooks"))]
 thread_local! {
     pub static TITLE_BAR_FOR_TEST: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
 }
@@ -112,7 +112,7 @@ thread_local! {
 /// Elsewhere (X11 without client-side decorations) the system's title bar
 /// stays and the app draws none.
 pub fn draws_title_bar(window: &Window) -> bool {
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     if TITLE_BAR_FOR_TEST.get() {
         return true;
     }

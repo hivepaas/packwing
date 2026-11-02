@@ -101,6 +101,8 @@ pub fn button(
     size: Size,
 ) -> Stateful<Div> {
     let c = colors();
+    let id = id.into();
+    let selector = id.to_string();
     let (h, text, pad) = match size {
         Size::Large => (52., 16., 22.),
         Size::Medium => (48., 15., 22.),
@@ -114,6 +116,7 @@ pub fn button(
         Fill::Text => (None, c.accent, c.hover),
     };
     div()
+        .debug_selector(|| selector)
         .id(id)
         .flex()
         .flex_shrink_0()
@@ -139,7 +142,10 @@ pub fn button(
 /// A round button with an icon alone, such as a dialog's close button.
 pub fn icon_button(id: impl Into<ElementId>, name: &str, size: f32) -> Stateful<Div> {
     let c = colors();
+    let id = id.into();
+    let selector = id.to_string();
     div()
+        .debug_selector(|| selector)
         .id(id)
         .size(px(size))
         .flex_shrink_0()
@@ -174,7 +180,10 @@ pub fn chip(text: impl Into<SharedString>, ground: u32, ink: u32) -> Div {
 /// An on/off switch.
 pub fn switch(id: impl Into<ElementId>, on: bool) -> Stateful<Div> {
     let c = colors();
+    let id = id.into();
+    let selector = id.to_string();
     div()
+        .debug_selector(|| selector)
         .id(id)
         .flex_shrink_0()
         .w(px(52.))
@@ -232,7 +241,10 @@ pub fn check_row(
     on: bool,
     label: impl Into<SharedString>,
 ) -> Stateful<Div> {
+    let id = id.into();
+    let selector = id.to_string();
     div()
+        .debug_selector(|| selector)
         .id(id)
         .flex()
         .items_center()
@@ -247,7 +259,10 @@ pub fn check_row(
 /// The caller adds what it says.
 pub fn option_card(id: impl Into<ElementId>, on: bool) -> Stateful<Div> {
     let c = colors();
+    let id = id.into();
+    let selector = id.to_string();
     div()
+        .debug_selector(|| selector)
         .id(id)
         .flex()
         .min_w_0()
@@ -296,7 +311,10 @@ pub fn segment(
     on: bool,
 ) -> Stateful<Div> {
     let c = colors();
+    let id = id.into();
+    let selector = id.to_string();
     div()
+        .debug_selector(|| selector)
         .id(id)
         .flex_1()
         .min_w_0()
@@ -430,13 +448,13 @@ impl Select {
         self.chosen
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn open_menu(&mut self, cx: &mut Context<Self>) {
         self.open = true;
         cx.notify();
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn choose(&mut self, i: usize, cx: &mut Context<Self>) {
         self.chosen = i.min(self.options.len().saturating_sub(1));
         cx.emit(Chosen);
@@ -453,6 +471,7 @@ impl Select {
         let items = self.options.iter().enumerate().map(|(i, o)| {
             let on = i == self.chosen;
             div()
+                .debug_selector(|| format!("option-{i}"))
                 .id(("option", i))
                 .flex_shrink_0()
                 .h(px(40.))

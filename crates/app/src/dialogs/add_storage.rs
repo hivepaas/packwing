@@ -207,7 +207,7 @@ impl AddStorageDialog {
         cx.notify();
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn field_text(&self, key: &str, cx: &gpui::App) -> String {
         self.fields
             .iter()
@@ -216,32 +216,32 @@ impl AddStorageDialog {
             .unwrap_or_default()
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn set_field(&mut self, key: &str, text: &str, cx: &mut Context<Self>) {
         if let Some((_, input)) = self.fields.iter().find(|(f, _)| f.key == key) {
             input.update(cx, |i, cx| i.set_text(text, 0..0, cx));
         }
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn set_name(&mut self, text: &str, cx: &mut Context<Self>) {
         self.name.update(cx, |i, cx| i.set_text(text, 0..0, cx));
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn set_folder(&mut self, text: &str, cx: &mut Context<Self>) {
         if let Some(folder) = &self.folder {
             folder.update(cx, |i, cx| i.set_text(text, 0..0, cx));
         }
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn press_asks_first(&mut self, cx: &mut Context<Self>) {
         self.asks_first = !self.asks_first;
         cx.notify();
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn press_save(&mut self, cx: &mut Context<Self>) {
         self.add(cx);
     }
@@ -331,6 +331,7 @@ impl Render for AddStorageDialog {
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         let card = |id: (&'static str, usize), tag: &'static str, name: String, on: bool| {
             div()
+                .debug_selector(|| format!("{}-{}", id.0, id.1))
                 .id(id)
                 .flex_1()
                 .flex()

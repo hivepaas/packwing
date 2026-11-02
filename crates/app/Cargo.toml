@@ -23,7 +23,12 @@ wayland = ["gpui_platform/wayland"]
 x11 = ["gpui_platform/x11"]
 # Draws every screen to a PNG, light and dark, without a display (src/shots.rs,
 # Linux only): `cargo test -p packwing --features shots shots`.
-shots = ["gpui_platform/test-support", "dep:gpui_wgpu", "dep:image", "packwing-update/test-source"]
+shots = ["gpui_platform/test-support", "dep:gpui_wgpu", "dep:image", "test-hooks"]
+# The UI scenarios (src/ui_tests): the real window, driven as a user does, with no
+# display. `make test-ui`, and on CI by hand and daily (.github/workflows/ui-tests.yml).
+ui-tests = ["gpui/test-support", "test-hooks"]
+# What the tests above look in through.
+test-hooks = ["packwing-update/test-source"]
 
 [dependencies]
 # Where this system keeps the home, Desktop and Downloads folders.
