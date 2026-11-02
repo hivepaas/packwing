@@ -836,8 +836,8 @@ impl ArchivePage {
                 ),
             });
         panel()
-            // A quarter of the row, as the window grows.
-            .w(relative(0.25))
+            // Near a third of the row, as the window grows.
+            .w(relative(0.3))
             .min_w(px(300.))
             .flex_shrink_0()
             .when(showing, |d| d.h_full())
