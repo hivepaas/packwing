@@ -120,6 +120,7 @@ pub enum Refused {
     NeedsEncryption,
     MethodNotAllowed(Method),
     PasswordTooShort(u32),
+    PasswordTooCommon,
 }
 
 impl fmt::Display for Refused {
@@ -140,8 +141,31 @@ impl fmt::Display for Refused {
                 "Your organization requires a password of at least {least} characters.",
                 least = least
             ),
+            Refused::PasswordTooCommon => {
+                tr!("That password is too easy to guess, and your organization requires a better one.")
+            }
         })
     }
+}
+
+/// The passwords people use most, lower-cased: SecLists' top 10,000 (MIT), README.md.
+const COMMON: &str = include_str!("common_passwords.txt");
+
+/// Whether `password` is among [`COMMON`], or one character over and over, or a
+/// run such as `123456789012345`, which length alone would let through.
+fn is_easily_guessed(password: &str) -> bool {
+    let lower = password.to_lowercase();
+    if COMMON.lines().any(|common| common == lower) {
+        return true;
+    }
+    let characters: Vec<u32> = lower.chars().map(u32::from).collect();
+    let digit_wraps = |a: u32, b: u32| (a, b) == ('9' as u32, '0' as u32);
+    let steps = |by: i64| {
+        characters.windows(2).all(|w| {
+            i64::from(w[1]) - i64::from(w[0]) == by || (by == 1 && digit_wraps(w[0], w[1]))
+        })
+    };
+    steps(0) || steps(1) || steps(-1)
 }
 
 /// A policy's line, for Settings and `packwing --policies`.
@@ -277,9 +301,11 @@ impl Policy {
             Setting::Unset => Ok(()),
             Setting::Bad(_) => Err(Refused::Unreadable),
             Setting::Set(least) => {
-                let length = String::from_utf8_lossy(password).chars().count();
-                if length < least as usize {
+                let password = String::from_utf8_lossy(password);
+                if password.chars().count() < least as usize {
                     Err(Refused::PasswordTooShort(least))
+                } else if is_easily_guessed(&password) {
+                    Err(Refused::PasswordTooCommon)
                 } else {
                     Ok(())
                 }
@@ -576,12 +602,37 @@ mod tests {
     #[test]
     fn a_password_is_counted_in_characters() {
         let p = policy(&[(MIN_PASSWORD_LENGTH, Value::Int(4))]);
-        assert_eq!(p.check_password("abcd".as_bytes()), Ok(()));
+        assert_eq!(p.check_password("wxqz".as_bytes()), Ok(()));
         assert_eq!(
             p.check_password("áàạ".as_bytes()),
             Err(Refused::PasswordTooShort(4))
         );
         assert_eq!(p.check_password("áàạã".as_bytes()), Ok(()));
+    }
+
+    #[test]
+    fn what_is_easily_guessed_is_refused_however_long() {
+        let p = policy(&[(MIN_PASSWORD_LENGTH, Value::Int(8))]);
+        for easy in [
+            "password",
+            "PassWord",
+            "aaaaaaaaaaaaaaaa",
+            "123456789012345",
+            "abcdefghijklmnop",
+            "987654321",
+        ] {
+            assert_eq!(
+                p.check_password(easy.as_bytes()),
+                Err(Refused::PasswordTooCommon),
+                "{easy}"
+            );
+        }
+        assert_eq!(p.check_password(b"correct horse battery"), Ok(()));
+    }
+
+    #[test]
+    fn with_no_length_set_nothing_is_said_about_passwords() {
+        assert_eq!(policy(&[]).check_password(b"password"), Ok(()));
     }
 
     #[test]
