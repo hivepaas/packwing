@@ -103,7 +103,7 @@ impl AddDialog {
     }
 
     /// For the screenshots: the sample's name, with what they choose.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn sample(archive: &Archive, cx: &mut App) -> AddDialog {
         let on_existing =
             cx.new(|_| Select::new(&on_existing().map(|(name, _)| name), 0, SelectLook::Pill));

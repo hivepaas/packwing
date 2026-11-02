@@ -19,6 +19,10 @@ weeks), or one sooner when a fix or a feature in it is needed, once it is two
 weeks old (its point release, if any, is out by then). Raise both in a pull
 request of its own, with what the new clippy finds fixed.
 
+## UI scenarios
+
+`crates/app/src/ui_tests` drives the real window as a user does, with clicks and typing, on real files, with no display: `make test-ui`, or `make test-ui FILTER=create::`. Each scenario runs in a process of its own with a scratch home, so none touches your settings or keychain. A click finds its element by the `.debug_selector(..)` the widgets give their ids. They run on Linux, macOS and Windows on CI, daily and by hand (Actions > UI tests); a pull request that changes them runs them too. To see one fail in detail: `cargo test -p packwing --features ui-tests --exact ui_tests::<path>::scenario --ignored --nocapture`, with `PACKWING_UI_TEST_DIR` set to a folder.
+
 ## Words on the screen
 
 Say them through `tr!("Open")`, `tr!("Could not read {path}", path = p)` or `tr_n!(n, "{n} file", "{n} files")`, so that they can be translated, and run `scripts/i18n.py update` to bring `crates/i18n/locales/en.ftl` up to date; `scripts/i18n.py check` says if it is out of step. packwing speaks 15 languages. New words stay English in each until they are translated: `scripts/i18n.py todo <tag>` lists what is left, and `scripts/i18n.py apply <tag> <file>` takes the translations. A language takes a line in each of `LANGUAGES` and `CATALOGS` in `crates/i18n/src/lib.rs`, and its `locales/<tag>.ftl`. To see what one does to the layout: `SHOTS_LANGUAGE=<tag> cargo test -p packwing --no-default-features --features wayland,shots shots::shots`, which draws to `target/shots/<tag>`.

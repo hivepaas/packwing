@@ -135,19 +135,19 @@ impl SignDialog {
     }
 
     /// Shows the new key's fields, as the screenshots draw them.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn ask_new_key_for_test(&mut self, cx: &mut Context<Self>) {
         self.making = true;
         cx.notify();
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn use_key_for_test(&mut self, key: SigningKey, cx: &mut Context<Self>) {
         self.key = Some(key);
         cx.notify();
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn start_for_test(&mut self, cx: &mut Context<Self>) {
         self.start(cx);
     }

@@ -143,6 +143,7 @@ fn pill(
 ) -> Stateful<Div> {
     let c = colors();
     div()
+        .debug_selector(|| id.to_owned())
         .id(id)
         .flex()
         .items_center()

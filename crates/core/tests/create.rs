@@ -111,7 +111,11 @@ fn unzip_reads_it_with_its_names() {
     };
     assert!(out.status.success(), "{out:?}");
     let said = String::from_utf8_lossy(&out.stdout);
-    assert!(said.contains("Báo cáo/Hình ảnh/lớn.bin"), "{said}");
+    // Apple's unzip reads the archive whole but prints a letter it has no charset for as
+    // `?`, whatever the archive says.
+    if !cfg!(target_os = "macos") {
+        assert!(said.contains("Báo cáo/Hình ảnh/lớn.bin"), "{said}");
+    }
 }
 
 #[test]
@@ -648,6 +652,11 @@ fn installed(program: &str) -> bool {
 
 #[test]
 fn tar_reads_the_tar_archives_with_their_names() {
+    // Windows' tar (bsdtar) skips a PAX name it cannot put in the system's code page, as
+    // with `ớ` under 1252, whoever made the archive: GNU tar's and Python's too.
+    if cfg!(windows) {
+        return;
+    }
     let s = Scratch::new("tar-tool");
     let root = s.tree();
     if !installed("tar") {

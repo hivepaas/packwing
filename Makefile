@@ -32,7 +32,7 @@ SFTP_UNTRUST := touch $(HOME)/.ssh/known_hosts; \
 	printf '%s\n' "$$lines" >$(HOME)/.ssh/known_hosts
 
 .DEFAULT_GOAL := help
-.PHONY: help debug release build build-debug test test-window lint fmt clean \
+.PHONY: help debug release build build-debug test test-window test-ui lint fmt clean \
 	s3-start s3-stop webdav-start webdav-stop sftp-start sftp-stop
 
 help: ## List the targets
@@ -56,9 +56,13 @@ test: ## Run every test, without the ones that draw the window
 test-window: ## Run every test, drawing every screen to target/shots with no display (Linux)
 	$(CARGO) test $(ALL),shots
 
+test-ui: ## Run the UI scenarios, with no display: the real window, driven as a user does
+	$(CARGO) test $(APP),ui-tests ui_tests::$(FILTER)
+
 lint: ## Check the format and run clippy
 	$(CARGO) fmt --all -- --check
 	$(CARGO) clippy $(ALL) --all-targets -- -D warnings
+	$(CARGO) clippy $(APP),ui-tests --all-targets -- -D warnings
 
 fmt: ## Format the code
 	$(CARGO) fmt --all

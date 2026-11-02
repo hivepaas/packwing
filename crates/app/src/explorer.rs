@@ -1610,7 +1610,7 @@ impl Explorer {
     }
 }
 
-#[cfg(all(test, feature = "shots"))]
+#[cfg(all(test, feature = "test-hooks"))]
 impl Explorer {
     /// The names shown, in order.
     pub fn shown_names(&self) -> Vec<String> {
@@ -1653,6 +1653,15 @@ impl Explorer {
         };
         self.menu = Some((gpui::point(px(x), px(y)), target));
         cx.notify();
+    }
+
+    /// The item shown under `name`.
+    pub fn selection_of(&self, name: &str) -> Item {
+        self.items
+            .iter()
+            .find(|i| i.name == name)
+            .cloned()
+            .expect("it is shown")
     }
 
     pub fn type_new_folder(&mut self, window: &mut Window, cx: &mut Context<Self>) {

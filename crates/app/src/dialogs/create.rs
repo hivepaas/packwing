@@ -418,7 +418,7 @@ impl CreateDialog {
         self
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn show_advanced(&mut self, cx: &mut Context<Self>) {
         self.advanced = true;
         cx.notify();
@@ -426,7 +426,7 @@ impl CreateDialog {
 
     /// Fills the dialog as a user might: `format`, split into parts of a size
     /// typed in (`part`, maybe nothing yet), with a password asked for.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn fill(&mut self, format: Format, part: &str, cx: &mut Context<Self>) {
         self.choose_format(format, cx);
         self.split.update(cx, |s, cx| s.choose(CUSTOM, cx));
@@ -437,7 +437,7 @@ impl CreateDialog {
     }
 
     /// Chooses `format`, as pressing it would.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn choose_format(&mut self, format: Format, cx: &mut Context<Self>) {
         let i = Format::WITH_ONE_FILE
             .iter()
@@ -447,20 +447,20 @@ impl CreateDialog {
     }
 
     /// Opens the menu of formats, for tests.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn open_formats(&mut self, cx: &mut Context<Self>) {
         self.format.update(cx, |s, cx| s.open_menu(cx));
     }
 
     /// Scrolls to the end of the dialog, for tests.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn scroll_to_end(&mut self, cx: &mut Context<Self>) {
         self.body_scroll.scroll_to_bottom();
         cx.notify();
     }
 
     /// Asks for encryption to `key`, typed, for tests.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn encrypt_to_key(&mut self, key: &str, cx: &mut Context<Self>) {
         self.protect = true;
         self.to_keys = true;
@@ -471,24 +471,24 @@ impl CreateDialog {
     }
 
     /// The name typed, for tests.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn name_typed(&self, cx: &App) -> String {
         self.name.read(cx).text().to_owned()
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn open_list(&mut self, cx: &mut Context<Self>) {
         self.list_shown = true;
         cx.notify();
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn list_is_open(&self) -> bool {
         self.list_shown
     }
 
     /// How far the list and the dialog's body have scrolled, for tests.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn scrolled(&self) -> (gpui::Pixels, gpui::Pixels) {
         (
             self.list_scroll.0.borrow().base_handle.offset().y,
@@ -496,42 +496,42 @@ impl CreateDialog {
         )
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn selection_paths(&self) -> Vec<PathBuf> {
         self.selection.paths.clone()
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn format_chosen(&self, cx: &App) -> Format {
         self.format(cx)
     }
 
     /// What the files come to, as if they had been counted, for tests.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn set_counted(&mut self, bytes: u64, cx: &mut Context<Self>) {
         self.selection.bytes = bytes;
         cx.notify();
     }
 
     /// Whether it is choosing a storage, for tests.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn is_picking(&self) -> bool {
         self.picking.is_some()
     }
 
     /// Chooses the storage at `i` and the folder it opens on, as pressing them would.
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn press_storage(&mut self, i: usize, cx: &mut Context<Self>) {
         self.pick_storage(cx);
         self.pick_place(i, cx);
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn press_save_here(&mut self, cx: &mut Context<Self>) {
         self.save_here(cx);
     }
 
-    #[cfg(all(test, feature = "shots"))]
+    #[cfg(all(test, feature = "test-hooks"))]
     pub fn press_create(&mut self, cx: &mut Context<Self>) {
         self.start(cx);
     }
@@ -1129,6 +1129,7 @@ impl CreateDialog {
             .gap(px(10.))
             .child(
                 div()
+                    .debug_selector(|| "advanced".to_owned())
                     .id("advanced")
                     .flex_shrink_0()
                     .px(px(4.))

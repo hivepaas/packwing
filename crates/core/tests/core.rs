@@ -864,6 +864,10 @@ fn an_age_file_says_it_needs_a_passphrase_and_opens_with_it() {
 fn encrypted_zip(password: &[u8]) -> Vec<u8> {
     use hivepack_zip::{Archive, BufferSource, Flags, OpenFlags, em};
     let mut za = Archive::open(&[][..], OpenFlags(0)).unwrap();
+    // As packwing does: hivepack-zip has none of its own on every system.
+    za.set_random_source(Some(std::sync::Arc::new(|buffer: &mut [u8]| {
+        getrandom::fill(buffer).map_err(std::io::Error::other)
+    })));
     for (name, data) in sample() {
         if name.ends_with('/') {
             za.dir_add(name.as_bytes(), Flags::NONE).unwrap();
