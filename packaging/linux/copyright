@@ -10,7 +10,9 @@ License: GPL-3.0-or-later
 Files: usr/bin/packwing
 Copyright: 2026 HivePaaS
  2014 The Nunito Project Authors (https://github.com/googlefonts/nunito)
-Comment: The program holds Nunito, the typeface its window is drawn in, and
+Comment: The program holds Nunito, the typeface its window is drawn in, the
+ EFF's large word list for passphrases (CC BY 3.0 US, https://www.eff.org/dice),
+ SecLists' common passwords (MIT, Copyright (c) 2018 Daniel Miessler), and
  the Rust crates it is built with, each under its own license (MIT,
  Apache-2.0, BSD, Unicode-3.0, Zlib, ISC, CC0-1.0, MPL-2.0, and UnRAR's for
  hivepack-rar, which reads RAR archives): their texts, and the crates under

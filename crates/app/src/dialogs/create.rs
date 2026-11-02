@@ -289,6 +289,8 @@ pub struct CreateDialog {
     part: Entity<TextInput>,
     unit: Entity<Select>,
     protect: bool,
+    /// Whether the field holds a passphrase made here, shown as it is.
+    passphrase_made: bool,
     password: Entity<TextInput>,
     /// With age: to keys, not to a password.
     to_keys: bool,
@@ -397,6 +399,7 @@ impl CreateDialog {
             part,
             unit,
             protect: crate::managed::policy(cx).requires_encryption(),
+            passphrase_made: false,
             password,
             to_keys: false,
             key,
@@ -784,6 +787,22 @@ impl CreateDialog {
             !self.protected() || !self.password.read(cx).text().is_empty()
         };
         part && secret
+    }
+
+    /// Puts a passphrase of random words in the field, for the user to read.
+    fn suggest(&mut self, cx: &mut Context<Self>) {
+        let least = crate::managed::policy(cx)
+            .least_password_length()
+            .unwrap_or(0);
+        let Ok(made) = packwing_core::suggest_passphrase(least as usize) else {
+            return;
+        };
+        self.password.update(cx, |field, cx| {
+            field.set_masked(false, cx);
+            field.set_text(&made, made.len()..made.len(), cx);
+        });
+        self.passphrase_made = true;
+        cx.notify();
     }
 
     /// How encrypted the archive would be, for what a policy says of it.
@@ -1301,8 +1320,17 @@ impl CreateDialog {
                         .rounded(px(14.))
                         .bg(rgb(c.surface))
                         .text_size(px(16.))
-                        .child(self.password.clone()),
+                        .child(div().flex_1().min_w_0().child(self.password.clone()))
+                        .child(
+                            button("suggest-password", tr!("Suggest"), Fill::Outline, Size::Small)
+                                .on_click(cx.listener(|this, _, _, cx| this.suggest(cx))),
+                        ),
                 )
+                .when(self.passphrase_made, |d| {
+                    d.child(note(Tone::Warn).child(tr!(
+                        "Keep this somewhere safe: without it, this archive can never be opened."
+                    )))
+                })
                 .when_some(strength, |d, s| d.child(strength_bar(s)))
                 .when(typed.is_empty() && self.checked, |d| {
                     d.child(note(Tone::Warn).child(tr!("Type a password, or turn this off.")))

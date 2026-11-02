@@ -13,6 +13,7 @@ mod create;
 mod job;
 mod joined;
 mod listing;
+mod passphrase;
 mod rar;
 mod source;
 mod spool;
@@ -45,6 +46,7 @@ pub use job::{
     extract_with, image_fits, read_entry, test,
 };
 pub use listing::{Child, Entry, Found, Listing, list};
+pub use passphrase::suggest_passphrase;
 pub use source::{Source, Stored};
 pub use storage::{
     Counted, Field, Item, Lister, LocalFolder, Storage, StorageKind, StoredFile, Values, bad_name,
