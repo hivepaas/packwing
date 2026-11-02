@@ -39,9 +39,18 @@ struct Trusted {
     mldsa65: (&'static str, &'static str),
 }
 
-/// The keys a release trusts. None yet: they are the public halves of what the owner holds
-/// outside any repository, and until they are here a release accepts no key.
-const RELEASE: Option<Trusted> = None;
+/// The keys a release trusts: those every product of the portal signs with, each under a
+/// context of its own. Copies of its `pkg/licensesig/prodkeys/shared`, byte for byte.
+const RELEASE: Trusted = Trusted {
+    ed25519: (
+        "lic-2026-ed",
+        include_str!("../keys/prod/lic-2026-ed.pub.pem"),
+    ),
+    mldsa65: (
+        "lic-2026-ml",
+        include_str!("../keys/prod/lic-2026-ml.pub.pem"),
+    ),
+};
 
 /// The development keys, whose private halves are public, so a release never trusts them.
 const DEVELOPMENT: Trusted = Trusted {
@@ -49,9 +58,9 @@ const DEVELOPMENT: Trusted = Trusted {
     mldsa65: ("dev-ml", include_str!("../keys/dev/dev-ml.pem")),
 };
 
-fn trusted() -> Option<Trusted> {
+fn trusted() -> Trusted {
     if cfg!(debug_assertions) {
-        Some(DEVELOPMENT)
+        DEVELOPMENT
     } else {
         RELEASE
     }
@@ -262,7 +271,7 @@ fn license_of(data: &[u8]) -> Option<License> {
 /// nothing of why not, as the text may hold a customer's email.
 pub fn read(text: &str) -> Result<License, String> {
     let wrong = || tr!("This is not a valid packwing license key.");
-    let trusted = trusted().ok_or_else(wrong)?;
+    let trusted = trusted();
     let envelope = envelope_of(text).ok_or_else(wrong)?;
     let data = opened(&envelope, &trusted).ok_or_else(wrong)?;
     license_of(&data).ok_or_else(wrong)
@@ -273,16 +282,20 @@ mod tests {
     use super::*;
 
     const PRO: &str = include_str!("../testdata/pro.key");
+    #[cfg(debug_assertions)]
     const ENTERPRISE: &str = include_str!("../testdata/enterprise.key");
+    #[cfg(debug_assertions)]
     const EXPIRED: &str = include_str!("../testdata/expired.key");
     const OTHER_PRODUCT: &str = include_str!("../testdata/other-product.key");
     const ONE_SIGNATURE: &str = include_str!("../testdata/one-signature.key");
     const UNKNOWN_PLAN: &str = include_str!("../testdata/unknown-plan.key");
 
+    #[cfg(debug_assertions)]
     fn at(text: &str) -> OffsetDateTime {
         OffsetDateTime::parse(text, &Rfc3339).expect("a time")
     }
 
+    #[cfg(debug_assertions)]
     #[test]
     fn a_key_from_the_portals_code_is_read() {
         let license = read(PRO).expect("it verifies");
@@ -295,6 +308,7 @@ mod tests {
         assert_eq!(license.seats, Some(250));
     }
 
+    #[cfg(debug_assertions)]
     #[test]
     fn a_key_wrapped_by_an_email_is_the_same_key() {
         let wrapped: String = PRO
@@ -322,6 +336,7 @@ mod tests {
     }
 
     /// An envelope of `PRO`'s with `change` done to it.
+    #[cfg(debug_assertions)]
     fn changed(change: impl Fn(&mut serde_json::Value)) -> String {
         let raw = STANDARD_NO_PAD
             .decode(PRO.trim().trim_end_matches('='))
@@ -331,6 +346,7 @@ mod tests {
         envelope.to_string()
     }
 
+    #[cfg(debug_assertions)]
     #[test]
     fn a_key_changed_is_refused() {
         // Its payload, with its hash made to match, so that only the signatures can tell.
@@ -356,6 +372,7 @@ mod tests {
         assert!(read(&changed(|_| {})).is_ok());
     }
 
+    #[cfg(debug_assertions)]
     #[test]
     fn a_license_past_its_end_works_through_its_grace_then_is_free() {
         let license = read(EXPIRED).expect("it verifies");
@@ -371,6 +388,23 @@ mod tests {
         assert_eq!(license.plan(at("2020-06-11T00:00:00Z")), Plan::Pro);
         assert_eq!(license.standing(at("2020-07-02T00:00:00Z")), Standing::Over);
         assert_eq!(license.plan(at("2020-07-02T00:00:00Z")), Plan::Free);
+    }
+
+    #[test]
+    fn a_release_trusts_its_own_keys_and_no_development_key() {
+        assert!(raw_key::<{ verify::ED25519_PUBLIC }>(RELEASE.ed25519.1, 12).is_some());
+        assert!(raw_key::<{ verify::MLDSA65_PUBLIC }>(RELEASE.mldsa65.1, 22).is_some());
+        assert!(!RELEASE.ed25519.0.starts_with("dev-") && !RELEASE.mldsa65.0.starts_with("dev-"));
+        let envelope = envelope_of(PRO).expect("an envelope");
+        assert!(opened(&envelope, &DEVELOPMENT).is_some());
+        assert!(opened(&envelope, &RELEASE).is_none());
+    }
+
+    /// `cargo test --release`: what a release build does with a development key.
+    #[cfg(not(debug_assertions))]
+    #[test]
+    fn a_release_build_refuses_a_development_key() {
+        assert!(read(PRO).is_err());
     }
 
     #[test]
