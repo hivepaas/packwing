@@ -1,0 +1,30 @@
+[package]
+name = "packwing-policy"
+description = "What an organization has fixed for packwing, read from the system"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+# Its messages, in the user's language.
+packwing-i18n.workspace = true
+# Linux's policy file.
+serde_json = "1"
+
+# Group Policy and Intune write to the registry.
+[target.'cfg(windows)'.dependencies]
+winreg = "0.56"
+
+# A profile's values reach an app through CFPreferences alone.
+[target.'cfg(target_os = "macos")'.dependencies]
+core-foundation = "0.10"
+
+# As the workspace's, but that src/macos.rs may call CFPreferences, which no crate wraps.
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+unwrap_used = "warn"
+dbg_macro = "deny"

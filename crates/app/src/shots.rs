@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 56] = [
+const SCREENS: [(&str, SetUp); 58] = [
     ("storages-edit", |ws, window, cx| {
         cx.set_global(fake_extensions());
         add_far(ws, "Far one", std::path::Path::new("/far"), true, cx);
@@ -163,6 +163,14 @@ const SCREENS: [(&str, SetUp); 56] = [
     }),
     ("settings-compressing", |ws, _, cx| {
         ws.show_settings(Section::Compressing, cx)
+    }),
+    ("settings-managed", |ws, _, cx| {
+        cx.set_global(sample_policy());
+        ws.show_settings(Section::Security, cx);
+    }),
+    ("create-required", |ws, window, cx| {
+        cx.set_global(sample_policy());
+        ws.open_create(vec!["/home/you/Documents".into()], window, cx);
     }),
     ("settings-security", |ws, _, cx| {
         ws.show_settings(Section::Security, cx)
@@ -395,6 +403,31 @@ fn read_named(name: &str) -> Shown {
     );
     a.show(vec!["site".into(), "public".into()]);
     Shown::Open(Box::new(a))
+}
+
+/// What an organization might fix, with one mistake in it.
+fn sample_policy() -> crate::managed::Shown {
+    use packwing_policy::{
+        ALLOWED_ENCRYPTION_METHODS, Found, MIN_PASSWORD_LENGTH, ORGANIZATION_NAME,
+        ORGANIZATION_URL, PROPAGATE_MOTW, Policy, REQUIRE_ENCRYPTION, Value,
+    };
+    let text = |t: &str| Value::Text(t.into());
+    crate::managed::Shown(Policy::of(Found {
+        origin: "the sample".into(),
+        values: vec![
+            (ORGANIZATION_NAME.into(), text("IT department, Example Co.")),
+            (ORGANIZATION_URL.into(), text("https://it.example.com")),
+            (PROPAGATE_MOTW.into(), Value::Bool(true)),
+            (REQUIRE_ENCRYPTION.into(), Value::Bool(true)),
+            (
+                ALLOWED_ENCRYPTION_METHODS.into(),
+                text("7z-aes256, age-key"),
+            ),
+            (MIN_PASSWORD_LENGTH.into(), Value::Int(15)),
+            ("BlockEverything".into(), Value::Bool(true)),
+        ],
+        failure: None,
+    }))
 }
 
 /// A small picture for the preview: a green and orange gradient.

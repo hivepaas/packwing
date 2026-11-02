@@ -956,6 +956,10 @@ impl Workspace {
             }
             Action::Extract => self.open_archive(first.clone(), true, window, cx),
             Action::Open => self.open_archive(first.clone(), false, window, cx),
+            // Encrypted, as it has to be, takes asking how.
+            Action::CompressZip if crate::managed::policy(cx).requires_encryption() => {
+                self.open_create(r.paths, window, cx)
+            }
             Action::CompressZip => {
                 let selection = Selection {
                     paths: r.paths.clone(),

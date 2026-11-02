@@ -5271,6 +5271,7 @@ dependencies = [
  "nonstick",
  "packwing-core",
  "packwing-i18n",
+ "packwing-policy",
  "packwing-remote",
  "robius-authentication",
  "unicode-segmentation",
@@ -5300,6 +5301,7 @@ dependencies = [
  "hivepack-zstd",
  "imagesize",
  "packwing-i18n",
+ "packwing-policy",
  "trash",
  "unicode-normalization",
 ]
@@ -5311,6 +5313,16 @@ dependencies = [
  "fluent-bundle",
  "sys-locale",
  "unic-langid",
+]
+
+[[package]]
+name = "packwing-policy"
+version = "0.1.0"
+dependencies = [
+ "core-foundation 0.10.1",
+ "packwing-i18n",
+ "serde_json",
+ "winreg",
 ]
 
 [[package]]

@@ -15,6 +15,8 @@ S3 buckets, WebDAV folders and servers over SFTP are storages too, added from Ad
 - **Formats:** ZIP (split archives too), RAR (reading), tar and `.tar.zst`.
 - **Safe extraction by default:** nothing is written outside the destination folder or through links, and archive bombs stop at a size limit.
 
+An organization can fix some of this for everyone, through Group Policy, a configuration profile or a file in `/etc`: keeping the Internet mark, requiring encryption, which kinds, and how long a password has to be. [docs/policies.md](docs/policies.md) is for its administrators. `packwing --policies` says what is set.
+
 ## 🛠️ Building
 
 packwing is a [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui) app, built with the Rust version in `rust-toolchain.toml` (rustup installs it by itself):
