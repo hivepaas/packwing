@@ -1,6 +1,7 @@
 //! Making an archive of files and folders: ZIP through hivepack-zip, 7z
 //! through hivepack-7z, and tar through hivepack-tar, under gzip, xz, zstd, bzip2
-//! or LZ4 or none; or one file compressed by itself.
+//! or LZ4 or none; or one file compressed by itself. Those two can be encrypted
+//! with age, to a passphrase or to keys.
 //! It is written beside what is there, never over it, and taken away again
 //! if it fails or is stopped. Links are kept as links, on Unix; what is not a
 //! file, a folder or a link (a pipe, a socket, a device) is left out, as
@@ -22,6 +23,9 @@ use std::sync::mpsc::{Receiver, SyncSender, sync_channel};
 use std::sync::{Arc, Mutex, PoisonError};
 use std::time::UNIX_EPOCH;
 
+use hivepack_age::{
+    BoxedRecipient, Recipient, ScryptRecipient, parse_recipient, parse_recipients_file,
+};
 use hivepack_deflate::{DEF_MEM_LEVEL, Deflate, Flush, Z_DEFAULT_STRATEGY};
 use hivepack_extract::Progress;
 use hivepack_open::Container;
@@ -139,8 +143,11 @@ pub struct NewArchive {
     pub kind: Kind,
     pub level: Level,
     /// Encrypts its files with AES-256: WinZip's in a ZIP archive, 7-Zip's in
-    /// a 7z one. A tar archive cannot have one.
+    /// a 7z one. Any other kind is encrypted whole with age, to this passphrase.
     pub password: Option<Vec<u8>>,
+    /// Encrypts it whole with age, to these keys: `age1…` or `ssh-ed25519 …`. Not for
+    /// a ZIP or 7z archive, and not with a password, as age has a passphrase alone.
+    pub age_keys: Vec<String>,
     /// Encrypts a 7z archive's names too, with its password.
     pub hide_names: bool,
     /// Leaves out what only a Mac uses, under the paths chosen: `.DS_Store`,
@@ -509,8 +516,13 @@ fn part_path(base: &Path, part: u64) -> PathBuf {
 /// A file's name, split before what names its kind: `a.tar` and `.gz` would
 /// make `a.tar (2).gz`.
 fn name_and_extension(name: &str) -> (&str, &str) {
-    let dot = name.rfind(".tar.").or_else(|| name.rfind('.'));
-    name.split_at(dot.filter(|d| *d > 0).unwrap_or(name.len()))
+    // `.age` follows what it encrypts: `a (2).tar.zst.age`, `b.sql (2).zst.age`.
+    let plain = name
+        .strip_suffix(".age")
+        .filter(|p| !p.is_empty())
+        .unwrap_or(name);
+    let dot = plain.rfind(".tar.").or_else(|| plain.rfind('.'));
+    name.split_at(dot.filter(|d| *d > 0).unwrap_or(plain.len()))
 }
 
 /// `wanted`, or if that is taken `name (2).zip`, `name (3).zip`, …, the
@@ -601,6 +613,82 @@ fn write_squeezed<W: Write>(
     tally: &Tally,
     out: W,
 ) -> Result<(), Error> {
+    let Some(recipients) = age_recipients(new)? else {
+        squeeze(items, new, tally, out)?;
+        return Ok(());
+    };
+    let recipients: Vec<&dyn Recipient> = recipients
+        .iter()
+        .map(|r| r.as_ref() as &dyn Recipient)
+        .collect();
+    let encrypted = hivepack_age::encrypt(out, &recipients, None)
+        .map_err(|e| Error::Failed(tr!("Could not encrypt: {e}", e = e.to_string())))?;
+    squeeze(items, new, tally, encrypted)?.finish()?;
+    Ok(())
+}
+
+/// What a new archive is encrypted to with age, if it is: none for ZIP and 7z, which
+/// have their own encryption.
+fn age_recipients(new: &NewArchive) -> Result<Option<Vec<BoxedRecipient>>, Error> {
+    let bad = |e: String| Error::Failed(tr!("Could not encrypt: {e}", e = e));
+    if matches!(new.kind, Kind::Zip | Kind::SevenZip) {
+        if !new.age_keys.is_empty() {
+            return Err(Error::Failed(tr!(
+                "Only tar and single files take age keys."
+            )));
+        }
+        return Ok(None);
+    }
+    match (&new.password, new.age_keys.as_slice()) {
+        (None, []) => Ok(None),
+        (Some(_), [_, ..]) => Err(Error::Failed(tr!(
+            "age encrypts to a passphrase or to keys, not to both."
+        ))),
+        (Some(password), []) => {
+            let recipient = ScryptRecipient::new(password).map_err(bad)?;
+            Ok(Some(vec![Box::new(recipient)]))
+        }
+        (None, keys) => keys
+            .iter()
+            .map(|key| parse_recipient(key).map_err(bad))
+            .collect::<Result<Vec<_>, _>>()
+            .map(Some),
+    }
+}
+
+/// Why `key` is not one to encrypt to with age, if it is not.
+pub fn age_key_problem(key: &str) -> Option<String> {
+    parse_recipient(key).err()
+}
+
+/// The keys in a file of them, as `age -R` reads it, and how many it left out, of a
+/// kind age does not encrypt to.
+pub fn age_keys_in(file: &[u8]) -> Result<(Vec<String>, usize), String> {
+    let read = parse_recipients_file(file)?;
+    let left_out: HashSet<usize> = read.skipped.iter().map(|k| k.line).collect();
+    let text = String::from_utf8_lossy(file);
+    let keys: Vec<String> = text
+        .lines()
+        .enumerate()
+        .filter(|(i, line)| {
+            !line.is_empty() && !line.starts_with('#') && !left_out.contains(&(i + 1))
+        })
+        .map(|(_, line)| line.to_owned())
+        .collect();
+    if keys.is_empty() {
+        return Err(tr!("There are no keys in this file to encrypt to."));
+    }
+    Ok((keys, left_out.len()))
+}
+
+/// Writes a tar archive of `items`, or the one file that is, to `out`, compressed as
+/// `new` says, and gives `out` back.
+fn squeeze<W: Write>(
+    items: Vec<Item>,
+    new: &NewArchive,
+    tally: &Tally,
+    out: W,
+) -> Result<W, Error> {
     let mut out = Squeezed::new(new, out)?;
     if !new.kind.one_file() {
         return write_tar(items, tally, out);
@@ -616,8 +704,7 @@ fn write_squeezed<W: Write>(
         )));
     }
     pump(item, &mut out, tally, &mut vec![0; PIECE])?;
-    out.finish()?;
-    Ok(())
+    Ok(out.finish()?)
 }
 
 /// `items` in the ZIP archive `za`, to be read when it closes.
@@ -768,7 +855,7 @@ fn write_7z<W: Write + Seek>(
     Ok(())
 }
 
-fn write_tar<W: Write>(items: Vec<Item>, tally: &Tally, out: Squeezed<W>) -> Result<(), Error> {
+fn write_tar<W: Write>(items: Vec<Item>, tally: &Tally, out: Squeezed<W>) -> Result<W, Error> {
     let mut tar = hivepack_tar::Writer::new(out);
     let mut buf = vec![0; PIECE];
     for item in &items {
@@ -802,8 +889,7 @@ fn write_tar<W: Write>(items: Vec<Item>, tally: &Tally, out: Squeezed<W>) -> Res
         }
     }
     tar.close()?;
-    tar.into_inner().finish()?;
-    Ok(())
+    Ok(tar.into_inner().finish()?)
 }
 
 /// How much is read of a file at a time, and made of what compresses.
@@ -1354,9 +1440,8 @@ pub fn create(
     new: &NewArchive,
     control: &Control,
 ) -> Result<PathBuf, Error> {
-    if new.password.is_some() && !matches!(new.kind, Kind::Zip | Kind::SevenZip) {
-        return Err(Error::Failed(tr!("A tar archive can’t have a password.")));
-    }
+    // Refused before anything is read.
+    age_recipients(new)?;
     // Before the archive is made, so that it is not among them.
     create_of(chosen_items(paths, new, control)?, wanted, new, control)
 }
@@ -1666,9 +1751,8 @@ pub fn create_on(
     if let Some(here) = to.local_path(folder) {
         return create(paths, &here.join(name), new, control).map(Some);
     }
-    if new.password.is_some() && !matches!(new.kind, Kind::Zip | Kind::SevenZip) {
-        return Err(Error::Failed(tr!("A tar archive can’t have a password.")));
-    }
+    // Refused before anything is read.
+    age_recipients(new)?;
     let failed = |e: io::Error| Error::Failed(e.to_string());
     // Asked before anything is compressed: what stops it soon stops it first.
     let name = free_name_on(to, folder, name, new.part_size.is_some())?;

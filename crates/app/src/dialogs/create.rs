@@ -151,9 +151,9 @@ impl Format {
         }
     }
 
-    /// Whether its archives can have a password: tar and one file by itself have none.
-    pub fn can_protect(self) -> bool {
-        matches!(self, Format::Zip | Format::SevenZip)
+    /// Whether it is protected with age, around it: ZIP and 7z have their own way.
+    pub fn uses_age(self) -> bool {
+        !matches!(self, Format::Zip | Format::SevenZip)
     }
 }
 
@@ -254,6 +254,13 @@ struct Picking {
     _picker_changed: Subscription,
 }
 
+/// Keys read from a file, for age to encrypt to.
+struct KeysFile {
+    name: String,
+    keys: Vec<String>,
+    left_out: usize,
+}
+
 pub struct CreateDialog {
     selection: Selection,
     /// The list of what goes in is open.
@@ -283,6 +290,14 @@ pub struct CreateDialog {
     unit: Entity<Select>,
     protect: bool,
     password: Entity<TextInput>,
+    /// With age: to keys, not to a password.
+    to_keys: bool,
+    /// The key typed for age to encrypt to.
+    key: Entity<TextInput>,
+    /// Or the keys of a file, what it is called and how many it left out.
+    keys_file: Option<KeysFile>,
+    /// Why the file chosen gave no keys.
+    keys_file_problem: Option<String>,
     hide_names: bool,
     /// Create was pressed with something missing: the notes say what.
     checked: bool,
@@ -347,6 +362,7 @@ impl CreateDialog {
         let part = cx.new(|cx| TextInput::new(tr!("Size"), cx));
         let unit = cx.new(|_| Select::new(&UNITS.map(|(u, _)| u), 0, SelectLook::Pill));
         let password = cx.new(|cx| TextInput::new(tr!("Password"), cx).masked());
+        let key = cx.new(|cx| TextInput::new(tr!("age1… or ssh-ed25519 …"), cx));
         // What is drawn follows what is typed and chosen: the extension, the
         // notes, the password's strength.
         let follow = vec![
@@ -358,6 +374,7 @@ impl CreateDialog {
             cx.subscribe(&part, |_, _, _: &Changed, cx| cx.notify()),
             cx.subscribe(&unit, |_, _, _: &Chosen, cx| cx.notify()),
             cx.subscribe(&password, |_, _, _: &Changed, cx| cx.notify()),
+            cx.subscribe(&key, |_, _, _: &Changed, cx| cx.notify()),
         ];
         CreateDialog {
             folder: selection.folder(),
@@ -380,6 +397,10 @@ impl CreateDialog {
             unit,
             protect: false,
             password,
+            to_keys: false,
+            key,
+            keys_file: None,
+            keys_file_problem: None,
             hide_names: kept.hide_names,
             checked: false,
             _follow: follow,
@@ -425,6 +446,24 @@ impl CreateDialog {
     #[cfg(all(test, feature = "shots"))]
     pub fn open_formats(&mut self, cx: &mut Context<Self>) {
         self.format.update(cx, |s, cx| s.open_menu(cx));
+    }
+
+    /// Scrolls to the end of the dialog, for tests.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn scroll_to_end(&mut self, cx: &mut Context<Self>) {
+        self.body_scroll.scroll_to_bottom();
+        cx.notify();
+    }
+
+    /// Asks for encryption to `key`, typed, for tests.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn encrypt_to_key(&mut self, key: &str, cx: &mut Context<Self>) {
+        self.protect = true;
+        self.to_keys = true;
+        self.advanced = true;
+        self.key
+            .update(cx, |t, cx| t.set_text(key, key.len()..key.len(), cx));
+        cx.notify();
     }
 
     /// The name typed, for tests.
@@ -659,17 +698,91 @@ impl CreateDialog {
         part_size(self.part.read(cx).text(), unit)
     }
 
-    /// Whether a password is set: asked for, and the format takes one.
-    fn protected(&self, cx: &App) -> bool {
-        self.protect && self.format(cx).can_protect()
+    /// Whether it is to be protected.
+    fn protected(&self) -> bool {
+        self.protect
+    }
+
+    /// Whether it is to be encrypted to keys with age.
+    fn encrypted_to_keys(&self, cx: &App) -> bool {
+        self.protect && self.to_keys && self.format(cx).uses_age()
+    }
+
+    /// The keys age is to encrypt to: those of the file, or the one typed if it is one.
+    fn age_keys(&self, cx: &App) -> Vec<String> {
+        if !self.encrypted_to_keys(cx) {
+            return Vec::new();
+        }
+        if let Some(file) = &self.keys_file {
+            return file.keys.clone();
+        }
+        let typed = self.key.read(cx).text().trim();
+        if packwing_core::age_key_problem(typed).is_none() {
+            vec![typed.to_owned()]
+        } else {
+            Vec::new()
+        }
+    }
+
+    /// Asks for a file of keys for age to encrypt to, and reads it.
+    fn pick_keys_file(&mut self, cx: &mut Context<Self>) {
+        let picked = cx.prompt_for_paths(PathPromptOptions {
+            files: true,
+            directories: false,
+            multiple: false,
+            prompt: Some(tr!("Use these keys").into()),
+        });
+        cx.spawn(async move |this, cx| {
+            let Ok(Ok(Some(mut paths))) = picked.await else {
+                return;
+            };
+            let Some(path) = paths.pop() else {
+                return;
+            };
+            let read = cx
+                .background_executor()
+                .spawn(async move {
+                    let bytes = std::fs::read(&path).map_err(|e| e.to_string())?;
+                    let name = path
+                        .file_name()
+                        .map_or_else(String::new, |n| n.to_string_lossy().into_owned());
+                    let (keys, left_out) = packwing_core::age_keys_in(&bytes)?;
+                    Ok::<_, String>(KeysFile {
+                        name,
+                        keys,
+                        left_out,
+                    })
+                })
+                .await;
+            let _ = this.update(cx, |this, cx| this.use_keys_file(read, cx));
+        })
+        .detach();
+    }
+
+    fn use_keys_file(&mut self, read: Result<KeysFile, String>, cx: &mut Context<Self>) {
+        match read {
+            Ok(file) => {
+                self.keys_file = Some(file);
+                self.keys_file_problem = None;
+            }
+            Err(why) => {
+                self.keys_file = None;
+                self.keys_file_problem = Some(why);
+            }
+        }
+        cx.notify();
     }
 
     /// Whatever Advanced asks for is there: a part's size when one is to be
-    /// typed, a password when one is asked for.
+    /// typed, a password or a key when one is asked for.
     fn advanced_ready(&self, cx: &App) -> bool {
         let part = !self.custom_split(cx) || self.part_size(cx).is_some();
-        let password = !self.protected(cx) || !self.password.read(cx).text().is_empty();
-        part && password
+        let secret = if self.encrypted_to_keys(cx) {
+            !self.age_keys(cx).is_empty()
+        } else {
+            !self.protected() || !self.password.read(cx).text().is_empty()
+        };
+        part && secret
     }
 
     /// How big each part is, if it is split.
@@ -697,8 +810,14 @@ impl CreateDialog {
             cx.notify();
             return;
         }
-        let name = format!("{typed}{}", format.ext());
-        let password = self.protected(cx);
+        let encrypted = self.protected() && format.uses_age();
+        let name = format!(
+            "{typed}{}{}",
+            format.ext(),
+            if encrypted { ".age" } else { "" }
+        );
+        let age_keys = self.age_keys(cx);
+        let password = self.protected() && age_keys.is_empty();
         let (shown, to) = match (&self.on, &self.folder) {
             (Some((place, folder)), _) => (
                 places::shown(&place.name, folder),
@@ -729,6 +848,7 @@ impl CreateDialog {
                 kind: format.kind(),
                 level: self.level,
                 password: password.then(|| self.password.read(cx).text().as_bytes().to_vec()),
+                age_keys,
                 hide_names: self.hide_names,
                 skip_mac_files: crate::prefs::prefs(cx).skip_mac_files,
                 part_size: self.parts(cx),
@@ -754,7 +874,9 @@ impl CreateDialog {
                 None => tr!("Parts of a size to type"),
             }),
         }
-        if self.protected(cx) {
+        if self.encrypted_to_keys(cx) {
+            said.push(tr!("Public key"));
+        } else if self.protected() {
             said.push(tr!("Password"));
         }
         said
@@ -1090,9 +1212,11 @@ impl CreateDialog {
     fn protection(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
         let format = self.format(cx);
-        let on = self.protected(cx);
+        let on = self.protected();
+        let to_keys = self.encrypted_to_keys(cx);
         let typed = self.password.read(cx).text().to_string();
         let strength = (!typed.is_empty()).then(|| strength(&typed));
+        let saved_as = format!("{}{}.age", self.name.read(cx).text().trim(), format.ext());
         div()
             .flex()
             .flex_col()
@@ -1111,14 +1235,34 @@ impl CreateDialog {
                             .flex_1()
                             .text_size(px(15.))
                             .font_weight(FontWeight::SEMIBOLD)
-                            .child(tr!("Protect with a password")),
+                            .child(if format.uses_age() {
+                                tr!("Encrypt with age")
+                            } else {
+                                tr!("Protect with a password")
+                            }),
                     )
                     .child(switch("protect", on).on_click(cx.listener(|this, _, _, cx| {
                         this.protect = !this.protect;
                         cx.notify();
                     }))),
             )
-            .when(on, |d| {
+            .when(on && format.uses_age(), |d| {
+                d.child(segments([
+                    segment("age-password", tr!("Password"), !self.to_keys).on_click(cx.listener(
+                        |this, _, _, cx| {
+                            this.to_keys = false;
+                            cx.notify();
+                        },
+                    )),
+                    segment("age-key", tr!("Public key"), self.to_keys).on_click(cx.listener(
+                        |this, _, _, cx| {
+                            this.to_keys = true;
+                            cx.notify();
+                        },
+                    )),
+                ]))
+            })
+            .when(on && !to_keys, |d| {
                 d.child(
                     div()
                         .flex()
@@ -1152,11 +1296,109 @@ impl CreateDialog {
                     ))
                 })
             })
-            .when(!format.can_protect(), |d| {
-                d.child(note(Tone::Warn).child(
-                    tr!("Only .zip and .7z can have a password. Pick one of them to protect it."),
-                ))
+            .when(to_keys, |d| d.children(self.keys_part(cx)))
+            .when(on && format.uses_age(), |d| {
+                d.child(note(Tone::Warn).child(tr!(
+                    "Saved as {name}. The names inside are encrypted too. Windows and macOS may need the age tool or an archiver app to open it.",
+                    name = saved_as
+                )))
             })
+    }
+
+    /// What is asked for encrypting to keys.
+    fn keys_part(&self, cx: &mut Context<Self>) -> Vec<gpui::AnyElement> {
+        let c = colors();
+        let mut part = Vec::new();
+        match &self.keys_file {
+            Some(file) => {
+                let said = tr_n!(
+                    file.keys.len() as u64,
+                    "{n} key from {name}",
+                    "{n} keys from {name}",
+                    name = file.name.clone()
+                );
+                part.push(
+                    div()
+                        .flex()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(
+                            div()
+                                .flex_1()
+                                .min_w_0()
+                                .truncate()
+                                .text_size(px(14.))
+                                .child(said),
+                        )
+                        .child(
+                            button("keys-clear", tr!("Remove"), Fill::Outline, Size::Small)
+                                .on_click(cx.listener(|this, _, _, cx| {
+                                    this.keys_file = None;
+                                    cx.notify();
+                                })),
+                        )
+                        .into_any_element(),
+                );
+                if file.left_out > 0 {
+                    part.push(
+                        note(Tone::Warn)
+                            .child(tr_n!(
+                                file.left_out as u64,
+                                "{n} key in it was left out, of a kind age does not encrypt to.",
+                                "{n} keys in it were left out, of a kind age does not encrypt to."
+                            ))
+                            .into_any_element(),
+                    );
+                }
+            }
+            None => {
+                part.push(
+                    div()
+                        .flex()
+                        .items_center()
+                        .gap(px(8.))
+                        .child(
+                            div()
+                                .flex()
+                                .flex_1()
+                                .min_w_0()
+                                .items_center()
+                                .h(px(48.))
+                                .px(px(16.))
+                                .rounded(px(14.))
+                                .bg(rgb(c.surface))
+                                .text_size(px(14.))
+                                .child(self.key.clone()),
+                        )
+                        .child(
+                            button("keys-file", tr!("From a file…"), Fill::Outline, Size::Small)
+                                .on_click(cx.listener(|this, _, _, cx| this.pick_keys_file(cx))),
+                        )
+                        .into_any_element(),
+                );
+                let typed = self.key.read(cx).text().trim().to_owned();
+                let problem = if typed.is_empty() {
+                    self.checked
+                        .then(|| tr!("Type a public key, or choose a file of them."))
+                } else {
+                    packwing_core::age_key_problem(&typed)
+                };
+                if let Some(problem) = problem {
+                    part.push(note(Tone::Warn).child(problem).into_any_element());
+                }
+            }
+        }
+        if let Some(why) = &self.keys_file_problem {
+            part.push(note(Tone::Warn).child(why.clone()).into_any_element());
+        }
+        part.push(
+            note(Tone::Warn)
+                .child(tr!(
+                    "Only the private key that goes with it opens this, and nothing can if that key is lost."
+                ))
+                .into_any_element(),
+        );
+        part
     }
 }
 
@@ -1305,11 +1547,11 @@ mod tests {
     }
 
     #[test]
-    fn only_zip_and_7z_take_a_password() {
+    fn all_but_zip_and_7z_are_protected_with_age() {
         for f in Format::WITH_ONE_FILE {
             assert_eq!(
-                f.can_protect(),
-                matches!(f, Format::Zip | Format::SevenZip),
+                f.uses_age(),
+                !matches!(f, Format::Zip | Format::SevenZip),
                 "{f:?}"
             );
         }

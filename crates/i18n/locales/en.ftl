@@ -66,12 +66,15 @@ tfc6b3ea5 = 4 GB (USB stick)
 t0fcf9e2d = Custom size…
 ta6478e7c = Size
 t2cc30838 = Password
+tdaf5f398 = age1… or ssh-ed25519 …
 ta1f147a6 = Save here
+t1a01e439 = Use these keys
 te2db10f6 = { $name } compression
 ta999efe2 = Parts of 25 MB
 t760df467 = Parts of 4 GB
 tdd286479 = Parts of { $size }
 tafd4b17d = Parts of a size to type
+t9981f45f = Public key
 t757989af = Beside the files
 tf2d34837 = Save in
 tc8abcd43 = Folder…
@@ -91,11 +94,26 @@ tca4436bd = Split into parts
 t642c444d = Each part
 t2fd629a2 = Parts open in 7-Zip and archivers like it, not in the tools built into Windows and macOS.
 t804e2099 = A part takes a size of 1 MB or more, such as 100 MB.
+t22784ad9 = Encrypt with age
 tae8d8740 = Protect with a password
 t62b19318 = Type a password, or turn this off.
 t2198d77b = Hide file names too
 t659d3827 = With a password, the built-in Windows and macOS tools can’t open this ZIP. The recipient needs an archiver app. File names also stay visible; pick .7z to hide them.
-tad3adf2f = Only .zip and .7z can have a password. Pick one of them to protect it.
+tdc4a7daf = Saved as { $name }. The names inside are encrypted too. Windows and macOS may need the age tool or an archiver app to open it.
+t575a1a6c =
+    { $n ->
+        [one] { $n } key from { $name }
+       *[other] { $n } keys from { $name }
+    }
+t21a5901d = Remove
+tbb501800 =
+    { $n ->
+        [one] { $n } key in it was left out, of a kind age does not encrypt to.
+       *[other] { $n } keys in it were left out, of a kind age does not encrypt to.
+    }
+t40d7c944 = From a file…
+tcb028b06 = Type a public key, or choose a file of them.
+t39644118 = Only the private key that goes with it opens this, and nothing can if that key is lost.
 t6de87ae9 = Weak
 t82fa0d53 = Fair
 t0dad409a = Strong
@@ -440,6 +458,10 @@ t2588efb5 = The name of { $path } is not valid Unicode, so it cannot go in an ar
 t8dd055c6 = Could not write { $path }: { $e }
 t40554bf6 = { $wanted } and the names after it are taken.
 t47339885 = Nothing to compress.
+t485d71ab = Could not encrypt: { $e }
+tc1754be6 = Only tar and single files take age keys.
+t83582c17 = age encrypts to a passphrase or to keys, not to both.
+tc2809b2c = There are no keys in this file to encrypt to.
 t75c197d9 = This format holds one file, and no more.
 t2e221d1f = { $path } got shorter while it was being read.
 t5ef729bc = A password has to be valid Unicode.
@@ -457,7 +479,6 @@ t5516dd83 = “{ $to }” is already in that folder. Nothing was changed.
 t11a330d3 = packwing can add files only to a ZIP archive that is one file.
 tff43ce74 = An archive can’t go inside itself.
 t2c3e91c4 = “{ $bare }” is already in the archive. Nothing was changed.
-tc0557734 = A tar archive can’t have a password.
 tdb9326d3 = Before it is uploaded, this archive is made in { $folder }, where it may take up to { $need }. Only { $free } is free there.
 t528232e6 = The upload stopped.
 tbe7fab8a = { $name } is already in the folder.
