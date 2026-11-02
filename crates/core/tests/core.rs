@@ -932,8 +932,12 @@ fn keys_ask_for_what_a_person_types() {
         Keys::asks_for(&needs(&["ssh-ed25519", "X25519"])),
         Some(Asked::KeyFile)
     );
+    assert_eq!(
+        Keys::asks_for(&needs(&["mlkem768x25519"])),
+        Some(Asked::KeyFile)
+    );
     // One hivepack does not read is not.
-    assert_eq!(Keys::asks_for(&needs(&["mlkem768x25519"])), None);
+    assert_eq!(Keys::asks_for(&needs(&["p256tag"])), None);
     // What is given keeps what was given before.
     let keys = Keys::default()
         .with(Asked::Passphrase, b"one".to_vec())
@@ -975,6 +979,7 @@ fn an_age_file_encrypted_to_a_key_asks_for_the_key_file() {
     let s = Scratch::new();
     for (file, key, stanza) in [
         ("x25519.tar.zst.age", "test-age.key", "X25519"),
+        ("pq.tar.zst.age", "test-age-pq.key", "mlkem768x25519"),
         ("ssh.tar.zst.age", "test-ssh.key", "ssh-ed25519"),
     ] {
         let path = keyed(&s, file);
@@ -990,6 +995,16 @@ fn an_age_file_encrypted_to_a_key_asks_for_the_key_file() {
     let path = keyed(&s, "x25519.tar.zst.age");
     assert!(matches!(
         list(&path, &with_key("test-ssh.key")),
+        Err(Error::Locked { .. })
+    ));
+    // Nor does a post-quantum key open a file of another, or the other way round.
+    assert!(matches!(
+        list(&path, &with_key("test-age-pq.key")),
+        Err(Error::Locked { .. })
+    ));
+    let path = keyed(&s, "pq.tar.zst.age");
+    assert!(matches!(
+        list(&path, &with_key("test-age.key")),
         Err(Error::Locked { .. })
     ));
 }
@@ -1023,6 +1038,7 @@ fn a_key_file_with_a_passphrase_asks_for_it() {
 fn what_is_no_key_file_says_so() {
     for key in [
         "test-age.key",
+        "test-age-pq.key",
         "test-age-locked.key",
         "test-ssh.key",
         "test-ssh-locked.key",

@@ -24,7 +24,8 @@ use std::sync::{Arc, Mutex, PoisonError};
 use std::time::UNIX_EPOCH;
 
 use hivepack_age::{
-    BoxedRecipient, Recipient, ScryptRecipient, parse_recipient, parse_recipients_file,
+    BoxedRecipient, RandomSource, Recipient, ScryptRecipient, parse_recipient,
+    parse_recipients_file,
 };
 use hivepack_deflate::{DEF_MEM_LEVEL, Deflate, Flush, Z_DEFAULT_STRATEGY};
 use hivepack_extract::Progress;
@@ -145,8 +146,9 @@ pub struct NewArchive {
     /// Encrypts its files with AES-256: WinZip's in a ZIP archive, 7-Zip's in
     /// a 7z one. Any other kind is encrypted whole with age, to this passphrase.
     pub password: Option<Vec<u8>>,
-    /// Encrypts it whole with age, to these keys: `age1…` or `ssh-ed25519 …`. Not for
-    /// a ZIP or 7z archive, and not with a password, as age has a passphrase alone.
+    /// Encrypts it whole with age, to these keys: `age1…`, `age1pq1…` or
+    /// `ssh-ed25519 …`, post-quantum ones or others but not both. Not for a ZIP or 7z
+    /// archive, and not with a password, as age has a passphrase alone.
     pub age_keys: Vec<String>,
     /// Encrypts a 7z archive's names too, with its password.
     pub hide_names: bool,
@@ -621,7 +623,10 @@ fn write_squeezed<W: Write>(
         .iter()
         .map(|r| r.as_ref() as &dyn Recipient)
         .collect();
-    let encrypted = hivepack_age::encrypt(out, &recipients, None)
+    // Random bytes given, as hivepack-age has its own source on Unix alone.
+    let random: RandomSource =
+        Arc::new(|buffer: &mut [u8]| getrandom::fill(buffer).map_err(io::Error::other));
+    let encrypted = hivepack_age::encrypt(out, &recipients, Some(&random))
         .map_err(|e| Error::Failed(tr!("Could not encrypt: {e}", e = e.to_string())))?;
     squeeze(items, new, tally, encrypted)?.finish()?;
     Ok(())
@@ -648,6 +653,7 @@ fn age_recipients(new: &NewArchive) -> Result<Option<Vec<BoxedRecipient>>, Error
             let recipient = ScryptRecipient::new(password).map_err(bad)?;
             Ok(Some(vec![Box::new(recipient)]))
         }
+        (None, keys) if age_keys_mixed(keys) => Err(bad(age_keys_mixed_problem())),
         (None, keys) => keys
             .iter()
             .map(|key| parse_recipient(key).map_err(bad))
@@ -659,6 +665,25 @@ fn age_recipients(new: &NewArchive) -> Result<Option<Vec<BoxedRecipient>>, Error
 /// Why `key` is not one to encrypt to with age, if it is not.
 pub fn age_key_problem(key: &str) -> Option<String> {
     parse_recipient(key).err()
+}
+
+/// Whether `key` is post-quantum: only its private key opens the file even with a
+/// quantum computer, and only age 1.3 and newer read it.
+pub fn age_key_is_post_quantum(key: &str) -> bool {
+    key.starts_with("age1pq1")
+}
+
+/// Whether these keys are post-quantum and others together, which age refuses: the
+/// others would leave the file open to a quantum computer.
+fn age_keys_mixed(keys: &[String]) -> bool {
+    keys.iter().any(|key| age_key_is_post_quantum(key))
+        && !keys.iter().all(|key| age_key_is_post_quantum(key))
+}
+
+fn age_keys_mixed_problem() -> String {
+    tr!(
+        "Post-quantum keys can’t be used with other keys: the others would leave the file open to a quantum computer."
+    )
 }
 
 /// The keys in a file of them, as `age -R` reads it, and how many it left out, of a
@@ -677,6 +702,9 @@ pub fn age_keys_in(file: &[u8]) -> Result<(Vec<String>, usize), String> {
         .collect();
     if keys.is_empty() {
         return Err(tr!("There are no keys in this file to encrypt to."));
+    }
+    if age_keys_mixed(&keys) {
+        return Err(age_keys_mixed_problem());
     }
     Ok((keys, left_out.len()))
 }

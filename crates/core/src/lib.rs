@@ -34,8 +34,8 @@ use hivepack_open::Opener;
 use crate::source::SourceReader;
 
 pub use create::{
-    Kind, Level, Measured, NewArchive, OnExisting, Route, add, add_with, age_key_problem,
-    age_keys_in, can_add, create, create_on, delete, measure, rename, route,
+    Kind, Level, Measured, NewArchive, OnExisting, Route, add, add_with, age_key_is_post_quantum,
+    age_key_problem, age_keys_in, can_add, create, create_on, delete, measure, rename, route,
 };
 pub use hivepack_extract::{Cancel, Progress, Summary};
 pub use hivepack_open::{Container, Layer};
@@ -103,7 +103,10 @@ impl Keys {
             Some(Asked::Passphrase)
         } else if needs.iter().any(|n| n == KEY_PASSPHRASE) {
             Some(Asked::KeyPassphrase)
-        } else if needs.iter().any(|n| n == "X25519" || n == "ssh-ed25519") {
+        } else if needs
+            .iter()
+            .any(|n| matches!(n.as_str(), "X25519" | "mlkem768x25519" | "ssh-ed25519"))
+        {
             Some(Asked::KeyFile)
         } else {
             None

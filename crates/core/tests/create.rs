@@ -13,8 +13,9 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use packwing_core::{
     Cancel, Control, Error, ExtractOptions, Item, Keys, Kind, Level, Lister, LocalFolder,
     NewArchive, OnExisting, Progress, Route, Source, Storage, StoredFile, add, add_with,
-    age_key_problem, age_keys_in, can_add, create, create_on, delete, extract, extract_selected,
-    extract_to_open, extract_with, image_fits, list, measure, read_entry, rename, route, test,
+    age_key_is_post_quantum, age_key_problem, age_keys_in, can_add, create, create_on, delete,
+    extract, extract_selected, extract_to_open, extract_with, image_fits, list, measure,
+    read_entry, rename, route, test,
 };
 
 /// A folder of a test's own, gone when it ends.
@@ -2016,6 +2017,19 @@ fn one_file_goes_straight_as_it_is_compressed() {
 const AGE_KEY: &str = "AGE-SECRET-KEY-17PWZMFQ7LGDHF4VS2U5FVRVTGDN747AW6RW8Q9QZKNKV5WNJ7QASFAFKUD";
 const AGE_PUBLIC: &str = "age1ml7zyg7w7uqg5qrlunupaygdcckn0vun4xwvlpx2cdmwn7vqdugqhzawyg";
 
+/// The file of a post-quantum key made by age v1.3.2 for the tests, and its public half.
+fn pq_key() -> (Vec<u8>, String) {
+    let file =
+        fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/test-age-pq.key")).unwrap();
+    let text = String::from_utf8_lossy(&file);
+    let public = text
+        .lines()
+        .find_map(|line| line.strip_prefix("# public key: "))
+        .unwrap()
+        .to_owned();
+    (file, public)
+}
+
 /// What `age` makes of `path`, with these arguments, if it is on this machine.
 fn age_decrypts(args: &[&str], path: &Path) -> Option<Vec<u8>> {
     let out = Command::new("age")
@@ -2161,6 +2175,80 @@ fn a_name_taken_moves_on_before_what_says_it_is_encrypted() {
         .unwrap();
     }
     assert_eq!(files_in(&there), ["a (2).tar.gz.age", "a.tar.gz.age"]);
+}
+
+#[test]
+fn encrypted_to_a_post_quantum_key_it_opens_with_that_key_and_age_agrees() {
+    let (what, there, _) = up_scratch("age-pq");
+    let file = what.join("dump.sql");
+    let body = b"insert into t values (1);\n".repeat(10_000);
+    fs::write(&file, &body).unwrap();
+    let (key_file, public) = pq_key();
+    assert!(age_key_problem(&public).is_none());
+    assert!(age_key_is_post_quantum(&public));
+    assert!(!age_key_is_post_quantum(AGE_PUBLIC));
+    let how = NewArchive {
+        kind: Kind::Gz,
+        age_keys: vec![public],
+        ..NewArchive::default()
+    };
+    let made = create(
+        std::slice::from_ref(&file),
+        &there.join("dump.sql.gz.age"),
+        &how,
+        &Control::default(),
+    )
+    .unwrap();
+    let text = fs::read(&made).unwrap();
+    assert!(text[..200].windows(14).any(|w| w == b"mlkem768x25519"));
+    let keys = Keys {
+        key_file: Some(key_file.clone()),
+        ..Keys::default()
+    };
+    let out = there.join("out");
+    extract(&made, &out, &keys, &Control::default()).unwrap();
+    assert_eq!(fs::read(out.join("dump.sql")).unwrap(), body);
+    // Another key does not open it.
+    let other = Keys {
+        key_file: Some(AGE_KEY.as_bytes().to_vec()),
+        ..Keys::default()
+    };
+    let no = there.join("no");
+    assert!(extract(&made, &no, &other, &Control::default()).is_err());
+    // age reads these keys from 1.3 on.
+    let knows_them = Command::new("age-keygen")
+        .arg("-pq")
+        .output()
+        .is_ok_and(|o| o.status.success());
+    if knows_them {
+        let path = there.join("key.txt");
+        fs::write(&path, &key_file).unwrap();
+        let identity = path.to_string_lossy().into_owned();
+        let gz = age_decrypts(&["-i", &identity], &made).unwrap();
+        assert_eq!(&gz[..2], &[0x1f, 0x8b]);
+    }
+}
+
+#[test]
+fn post_quantum_keys_do_not_go_with_others() {
+    let (what, there, _) = up_scratch("age-pq-mixed");
+    let (_, public) = pq_key();
+    let how = NewArchive {
+        kind: Kind::Tar,
+        age_keys: vec![public.clone(), AGE_PUBLIC.to_owned()],
+        ..NewArchive::default()
+    };
+    let e = create(
+        std::slice::from_ref(&what),
+        &there.join("a"),
+        &how,
+        &Control::default(),
+    );
+    assert!(e.is_err());
+    assert!(files_in(&there).is_empty());
+    assert!(age_keys_in(format!("{public}\n{AGE_PUBLIC}\n").as_bytes()).is_err());
+    let alone = format!("# mine\n{public}\n");
+    assert_eq!(age_keys_in(alone.as_bytes()).unwrap(), (vec![public], 0));
 }
 
 #[test]

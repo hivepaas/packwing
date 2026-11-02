@@ -103,7 +103,7 @@ license = "MIT"
 [[hivepack-crypto.clarify.files]]
 path = "LICENSE"
 license = "MIT"
-checksum = "4e110962027363e5507b7437ae428cc0ab82d9652202945e1cfb47b1dbc58eaf"
+checksum = "c90662eefc5c1a841dfe517b5416db8f6ea1da9ded5a4a7e3e3b1b39faa96722"
 
 [hivepack-deflate.clarify]
 license = "Zlib"

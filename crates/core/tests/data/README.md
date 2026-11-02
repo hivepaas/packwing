@@ -20,9 +20,10 @@ packwing-core's tests read them.
   work factor 10: hivepack-rs's `testdata/oracle/open.txt`, its first file
   (MIT, Copyright (c) 2026 HivePaaS).
 
-- `x25519.tar.zst.age`, `ssh.tar.zst.age`, `ssh-locked.tar.zst.age`: a tar
-  archive (`docs/notes.txt`) under zstd, encrypted by age to
-  `test-age.key`, `test-ssh.key` and `test-ssh-locked.key` (passphrase
+- `x25519.tar.zst.age`, `pq.tar.zst.age`, `ssh.tar.zst.age`,
+  `ssh-locked.tar.zst.age`: a tar archive (`docs/notes.txt`) under zstd,
+  encrypted by age to `test-age.key`, `test-age-pq.key` (`age-keygen -pq`, age
+  v1.3.2), `test-ssh.key` and `test-ssh-locked.key` (passphrase
   `khoá ssh`). `test-age-locked.key` is `test-age.key` under `age -p`
   (passphrase `khoá age`). These keys were made for these tests and open
   nothing else.

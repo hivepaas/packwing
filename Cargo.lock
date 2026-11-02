@@ -731,6 +731,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "blake2s_simd"
+version = "1.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2380c0236432f7b22a70229df30f218f5293870c056beb76f5ca068e3273a366"
+dependencies = [
+ "arrayvec",
+ "constant_time_eq",
+]
+
+[[package]]
 name = "block"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1034,6 +1044,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "chacha20poly1305"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b89e1c441e926b9c82a8d023f6e1b7ae0adcfaa7d621814e4d60789bac751cb"
+dependencies = [
+ "aead",
+ "chacha20",
+ "cipher 0.5.2",
+ "poly1305",
+ "zeroize",
+]
+
+[[package]]
 name = "chrono"
 version = "0.4.45"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1215,6 +1238,12 @@ dependencies = [
  "once_cell",
  "tiny-keccak",
 ]
+
+[[package]]
+name = "constant_time_eq"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d52eff69cd5e647efe296129160853a42795992097e8af39800e1060caeea9b"
 
 [[package]]
 name = "context-menu"
@@ -1706,6 +1735,7 @@ dependencies = [
  "const-oid",
  "crypto-common 0.2.2",
  "ctutils",
+ "zeroize",
 ]
 
 [[package]]
@@ -3177,7 +3207,7 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 [[package]]
 name = "hivepack-7z"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=df5b458a7955f470fb7575c5d75d14bc02a81f9c#df5b458a7955f470fb7575c5d75d14bc02a81f9c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
 dependencies = [
  "hivepack-bzip2",
  "hivepack-crypto",
@@ -3189,7 +3219,7 @@ dependencies = [
 [[package]]
 name = "hivepack-age"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=df5b458a7955f470fb7575c5d75d14bc02a81f9c#df5b458a7955f470fb7575c5d75d14bc02a81f9c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
 dependencies = [
  "hivepack-crypto",
 ]
@@ -3197,27 +3227,43 @@ dependencies = [
 [[package]]
 name = "hivepack-bzip2"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=df5b458a7955f470fb7575c5d75d14bc02a81f9c#df5b458a7955f470fb7575c5d75d14bc02a81f9c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
 
 [[package]]
 name = "hivepack-cpio"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=df5b458a7955f470fb7575c5d75d14bc02a81f9c#df5b458a7955f470fb7575c5d75d14bc02a81f9c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
 
 [[package]]
 name = "hivepack-crypto"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=df5b458a7955f470fb7575c5d75d14bc02a81f9c#df5b458a7955f470fb7575c5d75d14bc02a81f9c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
+dependencies = [
+ "aes 0.9.3",
+ "blake2s_simd",
+ "chacha20poly1305",
+ "curve25519-dalek",
+ "hkdf 0.13.0",
+ "hmac 0.13.0",
+ "hpke",
+ "md-5 0.11.0",
+ "pbkdf2 0.13.0",
+ "rand_core 0.10.1",
+ "scrypt",
+ "sha1",
+ "sha2 0.11.1",
+ "subtle",
+]
 
 [[package]]
 name = "hivepack-deflate"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=df5b458a7955f470fb7575c5d75d14bc02a81f9c#df5b458a7955f470fb7575c5d75d14bc02a81f9c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
 
 [[package]]
 name = "hivepack-extract"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=df5b458a7955f470fb7575c5d75d14bc02a81f9c#df5b458a7955f470fb7575c5d75d14bc02a81f9c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
 dependencies = [
  "cap-fs-ext",
  "cap-std",
@@ -3236,7 +3282,7 @@ dependencies = [
 [[package]]
 name = "hivepack-iso"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=df5b458a7955f470fb7575c5d75d14bc02a81f9c#df5b458a7955f470fb7575c5d75d14bc02a81f9c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
 dependencies = [
  "hivepack-deflate",
 ]
@@ -3244,12 +3290,12 @@ dependencies = [
 [[package]]
 name = "hivepack-lz4"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=df5b458a7955f470fb7575c5d75d14bc02a81f9c#df5b458a7955f470fb7575c5d75d14bc02a81f9c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
 
 [[package]]
 name = "hivepack-open"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=df5b458a7955f470fb7575c5d75d14bc02a81f9c#df5b458a7955f470fb7575c5d75d14bc02a81f9c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
 dependencies = [
  "hivepack-age",
  "hivepack-bzip2",
@@ -3263,7 +3309,7 @@ dependencies = [
 [[package]]
 name = "hivepack-rar"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=df5b458a7955f470fb7575c5d75d14bc02a81f9c#df5b458a7955f470fb7575c5d75d14bc02a81f9c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
 dependencies = [
  "hivepack-crypto",
  "hivepack-deflate",
@@ -3272,17 +3318,17 @@ dependencies = [
 [[package]]
 name = "hivepack-tar"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=df5b458a7955f470fb7575c5d75d14bc02a81f9c#df5b458a7955f470fb7575c5d75d14bc02a81f9c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
 
 [[package]]
 name = "hivepack-udf"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=df5b458a7955f470fb7575c5d75d14bc02a81f9c#df5b458a7955f470fb7575c5d75d14bc02a81f9c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
 
 [[package]]
 name = "hivepack-xar"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=df5b458a7955f470fb7575c5d75d14bc02a81f9c#df5b458a7955f470fb7575c5d75d14bc02a81f9c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
 dependencies = [
  "hivepack-bzip2",
  "hivepack-crypto",
@@ -3293,12 +3339,12 @@ dependencies = [
 [[package]]
 name = "hivepack-xz"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=df5b458a7955f470fb7575c5d75d14bc02a81f9c#df5b458a7955f470fb7575c5d75d14bc02a81f9c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
 
 [[package]]
 name = "hivepack-zip"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=df5b458a7955f470fb7575c5d75d14bc02a81f9c#df5b458a7955f470fb7575c5d75d14bc02a81f9c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
 dependencies = [
  "hivepack-bzip2",
  "hivepack-crypto",
@@ -3310,7 +3356,7 @@ dependencies = [
 [[package]]
 name = "hivepack-zstd"
 version = "0.0.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=df5b458a7955f470fb7575c5d75d14bc02a81f9c#df5b458a7955f470fb7575c5d75d14bc02a81f9c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=680451e6553039158394188bcf957d4b6c2fa30c#680451e6553039158394188bcf957d4b6c2fa30c"
 
 [[package]]
 name = "hkdf"
@@ -3346,6 +3392,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6303bc9732ae41b04cb554b844a762b4115a61bfaa81e3e83050991eeb56863f"
 dependencies = [
  "digest 0.11.3",
+]
+
+[[package]]
+name = "hpke"
+version = "0.15.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f512e325a1a71bf3273fb9b7fc9e5d96dac136fb4a95d0e6637001b12ea3e09"
+dependencies = [
+ "aead",
+ "chacha20poly1305",
+ "curve25519-dalek",
+ "hkdf 0.13.0",
+ "hybrid-array",
+ "ml-kem",
+ "rand_core 0.10.1",
+ "sha2 0.11.1",
+ "sha3",
+ "shake",
+ "subtle",
+ "turboshake",
+ "x-wing",
+ "x25519-dalek",
+ "zeroize",
 ]
 
 [[package]]
@@ -4341,6 +4410,7 @@ dependencies = [
  "rand_core 0.10.1",
  "sha3",
  "shake",
+ "zeroize",
 ]
 
 [[package]]
@@ -4352,6 +4422,7 @@ dependencies = [
  "ctutils",
  "hybrid-array",
  "num-traits",
+ "zeroize",
 ]
 
 [[package]]
@@ -7309,6 +7380,9 @@ name = "sponge-cursor"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3a0219bd7d979d58245a4f41f695e1ac9f8befdffadd7f61f1bae9e39abc6620"
+dependencies = [
+ "zeroize",
+]
 
 [[package]]
 name = "ssh-cipher"
@@ -7942,6 +8016,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d2df906b07856748fa3f6e0ad0cbaa047052d4a7dd609e231c4f72cee8c36f31"
 dependencies = [
  "core_maths",
+]
+
+[[package]]
+name = "turboshake"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f892c6904b0bd5a9241eac848347abcbbbd2b9f3892bad23ac3e6efab8d6f06a"
+dependencies = [
+ "digest 0.11.3",
+ "keccak",
+ "sponge-cursor",
 ]
 
 [[package]]
@@ -9278,6 +9363,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 
 [[package]]
+name = "x-wing"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01576e56599d01d75c5efcd5b30fa5de29e776f5a225e43fbf8c92c7302d4c8b"
+dependencies = [
+ "kem",
+ "ml-kem",
+ "sha3",
+ "shake",
+ "x25519-dalek",
+ "zeroize",
+]
+
+[[package]]
 name = "x11"
 version = "2.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9306,6 +9405,17 @@ name = "x11rb-protocol"
 version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ea6fc2961e4ef194dcbfe56bb845534d0dc8098940c7e5c012a258bfec6701bd"
+
+[[package]]
+name = "x25519-dalek"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e7e8131a03190127fb2263afc72b322ecadae46b6ff8c6f399ff5d02f5559af6"
+dependencies = [
+ "curve25519-dalek",
+ "rand_core 0.10.1",
+ "zeroize",
+]
 
 [[package]]
 name = "xcb"
