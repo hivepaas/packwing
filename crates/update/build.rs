@@ -4,7 +4,10 @@ use std::fmt::Write as _;
 use std::path::Path;
 
 fn main() {
-    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("keys");
+    // Read when it runs, not when it was built: a build script cargo kept from
+    // before the repository moved would look where it used to be.
+    let manifest = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR");
+    let dir = Path::new(&manifest).join("keys");
     println!("cargo:rerun-if-changed={}", dir.display());
     let mut keys: Vec<(String, String)> = std::fs::read_dir(&dir)
         .into_iter()
