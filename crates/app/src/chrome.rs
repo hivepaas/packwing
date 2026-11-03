@@ -150,12 +150,29 @@ fn switch_end(layout: &WindowButtonLayout) -> End {
     }
 }
 
+/// What says whether the window may close, as its close button or the system asks:
+/// none lets it.
+pub struct Closing(pub MayClose);
+
+/// Whether the window may close.
+pub type MayClose = std::rc::Rc<dyn Fn(&mut Window, &mut App) -> bool>;
+
+impl gpui::Global for Closing {}
+
+/// Closes the window, unless [`Closing`] keeps it open.
+pub fn close(window: &mut Window, cx: &mut App) {
+    let may = cx.try_global::<Closing>().map(|c| c.0.clone());
+    if may.is_none_or(|may| may(window, cx)) {
+        window.remove_window();
+    }
+}
+
 /// A round button with a symbolic icon, as GNOME draws the window's.
 fn gnome_button(b: WindowButton) -> Stateful<Div> {
-    let (icon, act): (&str, fn(&mut Window)) = match b {
-        WindowButton::Minimize => ("icons/minimize.svg", |w| w.minimize_window()),
-        WindowButton::Maximize => ("icons/maximize.svg", |w| w.zoom_window()),
-        WindowButton::Close => ("icons/close.svg", |w| w.remove_window()),
+    let (icon, act): (&str, fn(&mut Window, &mut App)) = match b {
+        WindowButton::Minimize => ("icons/minimize.svg", |w, _| w.minimize_window()),
+        WindowButton::Maximize => ("icons/maximize.svg", |w, _| w.zoom_window()),
+        WindowButton::Close => ("icons/close.svg", close),
     };
     div()
         .id(b.id())
@@ -167,7 +184,7 @@ fn gnome_button(b: WindowButton) -> Stateful<Div> {
         .bg(rgb(colors().button))
         .hover(|s| s.bg(rgb(colors().button_hover)))
         .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
-        .on_click(move |_, window, _| act(window))
+        .on_click(move |_, window, cx| act(window, cx))
         .child(
             svg()
                 .path(icon)

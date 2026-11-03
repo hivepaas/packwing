@@ -610,6 +610,9 @@ t808b85c5 = 輸入金鑰檔案的密碼片語
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = 這個金鑰檔案本身有密碼保護。packwing 只會在封存檔開啟期間保留其密碼片語，絕不會寫入儲存。
 
+# Waiting for other jobs…
+t16ec36d9 = 正在等待其他工作…
+
 # Extracting…
 t94279f82 = 正在解壓縮…
 
@@ -667,6 +670,9 @@ t041198a4 = 無法開啟檔案
 # The test failed
 tfcd070a5 = 測試失敗
 
+# Starts when one of the others ends
+tbe2a0509 = 其他工作之一結束後開始
+
 # Paused
 tde281feb = 已暫停
 
@@ -714,6 +720,24 @@ t454d1d8a = 繼續
 
 # Pause
 t44f9bf2d = 暫停
+
+# {n} job is still running | {n} jobs are still running
+tf2047916 =
+    { $n ->
+       *[other] 還有 { $n } 個工作正在執行
+    }
+
+# Closing packwing stops them
+t2e6491b3 = 關閉 packwing 會停止它們
+
+# What they have not finished stays unfinished: an archive being made is removed, and an extraction stays as far as it got.
+tf2a64f8b = 未完成的部分會保持未完成：正在建立的封存檔會被刪除，解壓縮會停在目前的進度。
+
+# Keep running
+t79c1b9c7 = 繼續執行
+
+# Stop them and quit
+tf2707857 = 停止並結束
 
 # Its files stay where they are. What packwing signs in to it with is taken out of the system’s keychain.
 td68bff45 = 其中的檔案維持原樣。packwing 用來登入它的憑證會從系統鑰匙圈中移除。

@@ -222,6 +222,7 @@ t6ed7c612 = Key file
 tcda9a50a = This file is encrypted with age to a key: an age key file or an SSH key. packwing keeps what it reads from it only while the archive is open, and never writes it down.
 t808b85c5 = Enter the key file’s passphrase
 t2a39d1e8 = The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
+t16ec36d9 = Waiting for other jobs…
 t94279f82 = Extracting…
 tc75fe478 = Uploading…
 t01fcd896 = Creating…
@@ -241,6 +242,7 @@ tfbd989b0 = Couldn’t add the files
 tcdc4a49c = Couldn’t change the archive
 t041198a4 = Couldn’t open the file
 tfcd070a5 = The test failed
+tbe2a0509 = Starts when one of the others ends
 tde281feb = Paused
 t73727cef = Starting…
 ta550a6a9 = Almost done
@@ -260,6 +262,15 @@ tf0f1017b = Open the folder when it’s done
 tb800c0ef = Run in background
 t454d1d8a = Resume
 t44f9bf2d = Pause
+tf2047916 =
+    { $n ->
+        [one] { $n } job is still running
+       *[other] { $n } jobs are still running
+    }
+t2e6491b3 = Closing packwing stops them
+tf2a64f8b = What they have not finished stays unfinished: an archive being made is removed, and an extraction stays as far as it got.
+t79c1b9c7 = Keep running
+tf2707857 = Stop them and quit
 td68bff45 = Its files stay where they are. What packwing signs in to it with is taken out of the system’s keychain.
 t4850aaa8 = The folder and its files stay where they are.
 t5dd9cfcf = Remove “{ $name }” from the list?

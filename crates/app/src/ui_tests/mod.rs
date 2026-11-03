@@ -161,6 +161,7 @@ impl Ui {
     /// What the program does as it starts: what was kept is read, and the window opens.
     pub fn start(&mut self) {
         self.cx.update(|cx| {
+            crate::set_identity(cx);
             cx.set_global(crate::Extensions {
                 storage_kinds: far::kinds(),
             });
@@ -175,6 +176,9 @@ impl Ui {
             Workspace::new(false, menu, window, cx)
         });
         self.window = Some(window);
+        // The user is in it, as in the program's.
+        gpui::AppContext::update_window(&mut self.cx, window.into(), |_, w, _| w.activate_window())
+            .expect("the window is open");
         self.cx.run_until_parked();
     }
 

@@ -610,6 +610,9 @@ t808b85c5 = 키 파일의 암호 문구 입력
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = 키 파일 자체가 보호되어 있습니다. packwing은 압축 파일을 열어 둔 동안에만 암호 문구를 보관하며 어디에도 기록하지 않습니다.
 
+# Waiting for other jobs…
+t16ec36d9 = 다른 작업을 기다리는 중…
+
 # Extracting…
 t94279f82 = 압축을 푸는 중…
 
@@ -667,6 +670,9 @@ t041198a4 = 파일을 열지 못했습니다
 # The test failed
 tfcd070a5 = 테스트에 실패했습니다
 
+# Starts when one of the others ends
+tbe2a0509 = 다른 작업 하나가 끝나면 시작합니다
+
 # Paused
 tde281feb = 일시 중지됨
 
@@ -714,6 +720,24 @@ t454d1d8a = 다시 시작
 
 # Pause
 t44f9bf2d = 일시 중지
+
+# {n} job is still running | {n} jobs are still running
+tf2047916 =
+    { $n ->
+       *[other] 작업 { $n }개가 아직 실행 중입니다
+    }
+
+# Closing packwing stops them
+t2e6491b3 = packwing을 닫으면 중지됩니다
+
+# What they have not finished stays unfinished: an archive being made is removed, and an extraction stays as far as it got.
+tf2a64f8b = 끝나지 않은 작업은 미완성으로 남습니다. 만들던 아카이브는 삭제되고, 압축 해제는 진행된 곳까지 남습니다.
+
+# Keep running
+t79c1b9c7 = 계속 실행
+
+# Stop them and quit
+tf2707857 = 중지하고 종료
 
 # Its files stay where they are. What packwing signs in to it with is taken out of the system’s keychain.
 td68bff45 = 파일은 그대로 남습니다. packwing이 로그인에 쓰는 정보는 시스템 키체인에서 삭제됩니다.

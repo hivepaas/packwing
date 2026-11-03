@@ -616,6 +616,9 @@ t808b85c5 = Passphrase der Schlüsseldatei eingeben
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Die Schlüsseldatei ist selbst geschützt. packwing behält ihre Passphrase nur, solange das Archiv geöffnet ist, und schreibt sie nie auf.
 
+# Waiting for other jobs…
+t16ec36d9 = Wartet auf andere Aufgaben…
+
 # Extracting…
 t94279f82 = Wird entpackt…
 
@@ -673,6 +676,9 @@ t041198a4 = Datei konnte nicht geöffnet werden
 # The test failed
 tfcd070a5 = Der Test ist fehlgeschlagen
 
+# Starts when one of the others ends
+tbe2a0509 = Startet, wenn eine der anderen fertig ist
+
 # Paused
 tde281feb = Pausiert
 
@@ -721,6 +727,25 @@ t454d1d8a = Fortsetzen
 
 # Pause
 t44f9bf2d = Pausieren
+
+# {n} job is still running | {n} jobs are still running
+tf2047916 =
+    { $n ->
+        [one] { $n } Aufgabe läuft noch
+       *[other] { $n } Aufgaben laufen noch
+    }
+
+# Closing packwing stops them
+t2e6491b3 = Wenn packwing schließt, stoppen sie
+
+# What they have not finished stays unfinished: an archive being made is removed, and an extraction stays as far as it got.
+tf2a64f8b = Was sie nicht fertig haben, bleibt unfertig: ein Archiv im Entstehen wird entfernt, und ein Entpacken bleibt, so weit es kam.
+
+# Keep running
+t79c1b9c7 = Weiterlaufen lassen
+
+# Stop them and quit
+tf2707857 = Stoppen und beenden
 
 # Its files stay where they are. What packwing signs in to it with is taken out of the system’s keychain.
 td68bff45 = Seine Dateien bleiben, wo sie sind. Womit packwing sich dort anmeldet, wird aus dem Schlüsselbund des Systems entfernt.

@@ -610,6 +610,9 @@ t808b85c5 = Masukkan frasa sandi berkas kunci
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Berkas kunci itu sendiri dilindungi. packwing menyimpan frasa sandinya hanya selama arsip terbuka, dan tidak pernah menuliskannya.
 
+# Waiting for other jobs…
+t16ec36d9 = Menunggu tugas lain…
+
 # Extracting…
 t94279f82 = Mengekstrak…
 
@@ -667,6 +670,9 @@ t041198a4 = Tidak dapat membuka berkas
 # The test failed
 tfcd070a5 = Pengujian gagal
 
+# Starts when one of the others ends
+tbe2a0509 = Mulai saat salah satu yang lain selesai
+
 # Paused
 tde281feb = Dijeda
 
@@ -714,6 +720,24 @@ t454d1d8a = Lanjutkan
 
 # Pause
 t44f9bf2d = Jeda
+
+# {n} job is still running | {n} jobs are still running
+tf2047916 =
+    { $n ->
+       *[other] { $n } tugas masih berjalan
+    }
+
+# Closing packwing stops them
+t2e6491b3 = Menutup packwing menghentikannya
+
+# What they have not finished stays unfinished: an archive being made is removed, and an extraction stays as far as it got.
+tf2a64f8b = Yang belum selesai tetap belum selesai: arsip yang sedang dibuat dihapus, dan ekstraksi berhenti sejauh yang sudah dicapai.
+
+# Keep running
+t79c1b9c7 = Biarkan berjalan
+
+# Stop them and quit
+tf2707857 = Hentikan dan keluar
 
 # Its files stay where they are. What packwing signs in to it with is taken out of the system’s keychain.
 td68bff45 = Berkasnya tetap di tempatnya. Apa yang dipakai packwing untuk masuk ke sana dihapus dari gantungan kunci sistem.

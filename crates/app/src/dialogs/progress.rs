@@ -45,6 +45,8 @@ struct Running {
 /// Where a job stands.
 #[derive(Clone, Debug, PartialEq)]
 pub enum State {
+    /// Waiting for one of the jobs that run to end: only so many run at once.
+    Queued,
     Running,
     /// It did what it was for. Where what it made is, if it is on this computer: a
     /// new archive, or the folder extracted to.
@@ -71,6 +73,8 @@ pub struct ProgressDialog {
     passed: Option<(u64, u64)>,
     /// It ended, not failing: done, and where what it made is, or stopped.
     ended: Option<State>,
+    /// It waits for its turn, and has not started.
+    queued: bool,
     _ticking: Task<()>,
 }
 
@@ -109,6 +113,7 @@ impl ProgressDialog {
             failed: None,
             passed: None,
             ended: None,
+            queued: false,
             _ticking: ticking,
         }
     }
@@ -117,6 +122,23 @@ impl ProgressDialog {
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn held(job: Job, cx: &mut Context<Self>) -> Self {
         Self::with(job, false, cx)
+    }
+
+    /// A job that waits for its turn: [`ProgressDialog::begin`] starts it.
+    pub fn queued(job: Job, cx: &mut Context<Self>) -> Self {
+        let mut dialog = Self::with(job, false, cx);
+        dialog.queued = true;
+        dialog
+    }
+
+    /// Starts a job that waited for its turn.
+    pub fn begin(&mut self, cx: &mut Context<Self>) {
+        if !self.queued {
+            return;
+        }
+        self.queued = false;
+        self.running = Some(Self::run(&self.job, cx));
+        cx.notify();
     }
 
     /// A job that does not start, for `why`: it says so, as one that failed.
@@ -134,14 +156,20 @@ impl ProgressDialog {
         if let Some((files, bytes)) = self.passed {
             return State::Passed(files, bytes);
         }
-        self.ended.clone().unwrap_or(State::Running)
+        if let Some(ended) = &self.ended {
+            return ended.clone();
+        }
+        if self.queued {
+            return State::Queued;
+        }
+        State::Running
     }
 
     /// Whether it can go on behind, without its dialog: one that runs, and does not
     /// change the archive open or open a file when it is done.
     pub fn can_go_behind(&self) -> bool {
-        self.running.is_some()
-            && self.state() == State::Running
+        (self.running.is_some() || self.queued)
+            && matches!(self.state(), State::Running | State::Queued)
             && matches!(
                 self.job.verb,
                 Verb::Extract | Verb::Create | Verb::Test | Verb::Copy | Verb::Move | Verb::Sign
@@ -348,6 +376,7 @@ impl ProgressDialog {
                 cx.notify();
             }
         }
+        cx.emit(DialogEvent::Ended);
     }
 
     /// Where what it made is, on this computer: the new archive, or the folder it
@@ -391,6 +420,7 @@ impl ProgressDialog {
             State::Failed(why) => self.failed = Some(why),
             State::Passed(files, bytes) => self.passed = Some((files, bytes)),
             State::Running => self.ended = None,
+            State::Queued => self.queued = true,
             ended => self.ended = Some(ended),
         }
         cx.notify();
@@ -469,6 +499,10 @@ impl ProgressDialog {
         if self.failed.is_some() || self.passed.is_some() || self.ended.is_some() {
             return true;
         }
+        // Nothing moves until its turn: it is no sample to count up.
+        if self.queued {
+            return false;
+        }
         if !self.uploading
             && self
                 .saving_on()
@@ -506,12 +540,23 @@ impl ProgressDialog {
     pub fn cancel(&mut self, cx: &mut Context<Self>) {
         match &self.running {
             // It stops at its next step, and closes the dialog then.
-            Some(r) if self.failed.is_none() => r.cancel.cancel(),
-            _ => cx.emit(DialogEvent::Close),
+            Some(r) if self.state() == State::Running => r.cancel.cancel(),
+            _ => {
+                // One that never ran, or waited for its turn, stops now.
+                if matches!(self.state(), State::Running | State::Queued) {
+                    self.queued = false;
+                    self.ended = Some(State::Cancelled);
+                    cx.notify();
+                }
+                cx.emit(DialogEvent::Close);
+            }
         }
     }
 
     pub fn title(&self) -> String {
+        if self.queued {
+            return tr!("Waiting for other jobs…");
+        }
         match (self.job.verb, self.failed.is_some()) {
             (Verb::Extract, false) => tr!("Extracting…"),
             (Verb::Create, false) if self.uploading => tr!("Uploading…"),
@@ -536,6 +581,9 @@ impl ProgressDialog {
     }
 
     pub fn left(&self) -> String {
+        if self.queued {
+            return tr!("Starts when one of the others ends");
+        }
         if self.paused {
             return tr!("Paused");
         }
@@ -623,7 +671,8 @@ impl Render for ProgressDialog {
                     ),
                 );
         }
-        let real = self.running.is_some();
+        // One waiting for its turn is a job that will run, not a sample.
+        let real = self.running.is_some() || self.queued;
         let (files, all_files, bytes, all_bytes) = self.counts();
         let percent = (self.done * 100.).floor() as u64;
         // The file it is on, made up from the count: only the samples have
@@ -685,7 +734,7 @@ impl Render for ProgressDialog {
                                 size = size(bytes),
                                 size2 = size(all_bytes)
                             ))
-                            .child(if self.paused || speed == 0 {
+                            .child(if self.paused || self.queued || speed == 0 {
                                 "—".to_string()
                             } else {
                                 format!("{}/s", size(speed))

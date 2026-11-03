@@ -628,6 +628,9 @@ t808b85c5 = Введите парольную фразу файла ключа
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Сам файл ключа защищён. packwing хранит его парольную фразу, только пока архив открыт, и нигде её не записывает.
 
+# Waiting for other jobs…
+t16ec36d9 = Ждёт другие задачи…
+
 # Extracting…
 t94279f82 = Извлечение…
 
@@ -685,6 +688,9 @@ t041198a4 = Не удалось открыть файл
 # The test failed
 tfcd070a5 = Проверка не пройдена
 
+# Starts when one of the others ends
+tbe2a0509 = Начнётся, когда завершится одна из других
+
 # Paused
 tde281feb = Приостановлено
 
@@ -735,6 +741,27 @@ t454d1d8a = Продолжить
 
 # Pause
 t44f9bf2d = Приостановить
+
+# {n} job is still running | {n} jobs are still running
+tf2047916 =
+    { $n ->
+        [one] Ещё выполняется { $n } задача
+        [few] Ещё выполняются { $n } задачи
+        [many] Ещё выполняются { $n } задач
+       *[other] Ещё выполняется { $n } задачи
+    }
+
+# Closing packwing stops them
+t2e6491b3 = Закрытие packwing остановит их
+
+# What they have not finished stays unfinished: an archive being made is removed, and an extraction stays as far as it got.
+tf2a64f8b = Незавершённое останется незавершённым: создаваемый архив будет удалён, а распаковка остановится там, где была.
+
+# Keep running
+t79c1b9c7 = Продолжить
+
+# Stop them and quit
+tf2707857 = Остановить и выйти
 
 # Its files stay where they are. What packwing signs in to it with is taken out of the system’s keychain.
 td68bff45 = Его файлы останутся на месте. То, чем packwing в него входит, будет удалено из связки ключей системы.

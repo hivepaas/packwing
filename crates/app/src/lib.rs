@@ -110,6 +110,12 @@ pub fn load_fonts(cx: &mut App) {
     }
 }
 
+/// What the system knows packwing by, before a window opens or a notification is
+/// shown: the package's identity on Windows (AppxManifest.xml), the name elsewhere.
+pub fn set_identity(cx: &App) {
+    cx.set_app_identity("HivePaaS.packwing", "packwing");
+}
+
 /// Icons drawn into the binary: the app has no other files.
 pub struct Assets;
 
@@ -239,6 +245,7 @@ pub fn run(extensions: Extensions) {
     gpui_platform::application()
         .with_assets(Assets)
         .run(move |cx: &mut App| {
+            set_identity(cx);
             load_fonts(cx);
             cx.set_global(extensions);
             let kept = prefs::Prefs::load();

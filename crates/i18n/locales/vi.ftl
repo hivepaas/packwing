@@ -610,6 +610,9 @@ t808b85c5 = Nhập cụm mật khẩu của tệp khoá
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Bản thân tệp khoá cũng được bảo vệ. packwing chỉ giữ cụm mật khẩu của nó khi tệp nén còn mở, và không bao giờ ghi lại.
 
+# Waiting for other jobs…
+t16ec36d9 = Đang chờ các tác vụ khác…
+
 # Extracting…
 t94279f82 = Đang giải nén…
 
@@ -667,6 +670,9 @@ t041198a4 = Không mở được tệp
 # The test failed
 tfcd070a5 = Kiểm tra không đạt
 
+# Starts when one of the others ends
+tbe2a0509 = Bắt đầu khi một tác vụ khác xong
+
 # Paused
 tde281feb = Tạm dừng
 
@@ -714,6 +720,24 @@ t454d1d8a = Tiếp tục
 
 # Pause
 t44f9bf2d = Tạm dừng
+
+# {n} job is still running | {n} jobs are still running
+tf2047916 =
+    { $n ->
+       *[other] Còn { $n } tác vụ đang chạy
+    }
+
+# Closing packwing stops them
+t2e6491b3 = Đóng packwing sẽ dừng chúng
+
+# What they have not finished stays unfinished: an archive being made is removed, and an extraction stays as far as it got.
+tf2a64f8b = Phần chưa xong sẽ dở dang: tệp nén đang tạo bị xoá, việc giải nén dừng ở chỗ đang làm.
+
+# Keep running
+t79c1b9c7 = Để chạy tiếp
+
+# Stop them and quit
+tf2707857 = Dừng và thoát
 
 # Its files stay where they are. What packwing signs in to it with is taken out of the system’s keychain.
 td68bff45 = Các tệp của nó vẫn ở nguyên chỗ. Thông tin packwing dùng để đăng nhập vào đó sẽ được xoá khỏi chuỗi khoá của hệ thống.
