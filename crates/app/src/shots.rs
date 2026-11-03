@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 78] = [
+const SCREENS: [(&str, SetUp); 79] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -237,6 +237,13 @@ const SCREENS: [(&str, SetUp); 78] = [
         cx.set_global(fake_extensions());
         add_far(ws, "Far one", std::path::Path::new("/far"), false, cx);
         ws.open_add_storage(window, cx);
+    }),
+    ("storages-remove", |ws, window, cx| {
+        cx.set_global(fake_extensions());
+        add_far(ws, "Far one", std::path::Path::new("/far"), false, cx);
+        let page = ws.storages_page();
+        let last = page.read(cx).count() - 1;
+        page.update(cx, |p, cx| p.press_remove(last, window, cx));
     }),
     ("settings-license", |ws, _, cx| {
         ws.show_settings(Section::License, cx);
@@ -1447,7 +1454,16 @@ fn a_storage_that_asks_first_asks_before_it_is_removed_or_edited() {
         })
         .expect("the window");
     cx.run_until_parked();
-    assert_eq!(count(&mut cx), before - 1, "gone once it has");
+    // Then it is asked whether to remove it, as any is.
+    assert_eq!(
+        count(&mut cx),
+        before,
+        "still there, until Remove is pressed"
+    );
+    let asked = window
+        .update(&mut cx, |ws, _, _| ws.dialog_open())
+        .expect("the window");
+    assert!(asked, "Remove is asked once it has");
 }
 
 #[test]

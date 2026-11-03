@@ -210,3 +210,30 @@ scenario!(
         );
     }
 );
+
+scenario!(
+    /// Remove from this list asks first: Cancel keeps the storage, Remove takes it off
+    /// the list and leaves its folder.
+    removing_a_storage_is_asked_first,
+    |ui| {
+        let folder = ui.work.join("place");
+        ui.storage(&folder);
+        let count = |ui: &mut Ui| ui.ws(|ws, _, cx| ws.storages_page().read(cx).count());
+        let before = count(ui);
+        let last = format!("storage-{}", before - 1);
+        ui.right_click(&last);
+        ui.click("storage-remove");
+        ui.wait_for("storage-remove-yes");
+        ui.click("cancel");
+        assert!(!ui.dialog_open());
+        assert_eq!(count(ui), before);
+        ui.right_click(&last);
+        ui.click("storage-remove");
+        ui.click("storage-remove-yes");
+        assert!(!ui.dialog_open());
+        assert_eq!(count(ui), before - 1);
+        assert!(folder.is_dir());
+        ui.start();
+        assert_eq!(count(ui), before - 1);
+    }
+);

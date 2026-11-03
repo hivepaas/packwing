@@ -19,7 +19,8 @@ use crate::demo;
 use crate::dialogs::{
     AddDialog, AddStorageDialog, CreateDialog, Creating, DeleteDialog, DialogEvent, EditDialog,
     ExtractDialog, Job, OpenFileDialog, OpenStoredDialog, PasswordDialog, PasswordEvent,
-    ProgressDialog, Saving, SignDialog, TransferDialog, Verb, ViewDialog, asked_for,
+    ProgressDialog, RemoveStorageDialog, Saving, SignDialog, TransferDialog, Verb, ViewDialog,
+    asked_for,
 };
 use crate::explorer::ExplorerEvent;
 use crate::model::{Archive, Kind, Selection, stem};
@@ -28,7 +29,7 @@ use crate::pages::browse::BrowsePage;
 use crate::pages::onboarding::{Done, Onboarding};
 use crate::pages::recent::{OpenRecent, RecentPage, Row};
 use crate::pages::settings::{Appearance, AppearanceChosen, SettingsPage};
-use crate::pages::storages::{AddStorageAsked, EditStorageAsked, StoragesPage};
+use crate::pages::storages::{AddStorageAsked, EditStorageAsked, RemoveStorageAsked, StoragesPage};
 use crate::placement::{self, WindowPlace};
 use crate::prefs::{self, TrustedKey};
 use crate::right_click::{Action, Request, RightClickMenu};
@@ -221,6 +222,16 @@ impl Workspace {
                 window,
                 |this, page, e: &EditStorageAsked, window, cx| {
                     this.open_edit_storage(page.clone(), e.0, window, cx);
+                },
+            ),
+            cx.subscribe_in(
+                &storages,
+                window,
+                |this, page, e: &RemoveStorageAsked, window, cx| {
+                    if let Some(dialog) = RemoveStorageDialog::new(page.clone(), e.0, cx) {
+                        let view = cx.new(|_| dialog);
+                        this.show(view, true, window, cx);
+                    }
                 },
             ),
             cx.subscribe_in(&recent, window, |this, _, e: &OpenRecent, window, cx| {

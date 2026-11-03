@@ -641,6 +641,18 @@ t454d1d8a = Riprendi
 # Pause
 t44f9bf2d = Pausa
 
+# Its files stay where they are. What packwing signs in to it with is taken out of the system’s keychain.
+td68bff45 = I suoi file restano dove sono. Ciò con cui packwing vi accede viene tolto dal portachiavi di sistema.
+
+# The folder and its files stay where they are.
+t4850aaa8 = La cartella e i suoi file restano dove sono.
+
+# Remove “{name}” from the list?
+t5dd9cfcf = Rimuovere «{ $name }» dall’elenco?
+
+# It can be added again at any time.
+t80d51a99 = Si può aggiungere di nuovo in qualsiasi momento.
+
 # A passphrase for the new key
 tf5593f05 = Una passphrase per la nuova chiave
 

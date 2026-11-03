@@ -634,6 +634,18 @@ t454d1d8a = Tiếp tục
 # Pause
 t44f9bf2d = Tạm dừng
 
+# Its files stay where they are. What packwing signs in to it with is taken out of the system’s keychain.
+td68bff45 = Các tệp của nó vẫn ở nguyên chỗ. Thông tin packwing dùng để đăng nhập vào đó sẽ được xoá khỏi chuỗi khoá của hệ thống.
+
+# The folder and its files stay where they are.
+t4850aaa8 = Thư mục và các tệp trong đó vẫn ở nguyên chỗ.
+
+# Remove “{name}” from the list?
+t5dd9cfcf = Gỡ “{ $name }” khỏi danh sách?
+
+# It can be added again at any time.
+t80d51a99 = Có thể thêm lại bất cứ lúc nào.
+
 # A passphrase for the new key
 tf5593f05 = Cụm mật khẩu cho khoá mới
 

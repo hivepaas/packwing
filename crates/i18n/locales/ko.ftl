@@ -634,6 +634,18 @@ t454d1d8a = 다시 시작
 # Pause
 t44f9bf2d = 일시 중지
 
+# Its files stay where they are. What packwing signs in to it with is taken out of the system’s keychain.
+td68bff45 = 파일은 그대로 남습니다. packwing이 로그인에 쓰는 정보는 시스템 키체인에서 삭제됩니다.
+
+# The folder and its files stay where they are.
+t4850aaa8 = 폴더와 파일은 그대로 남습니다.
+
+# Remove “{name}” from the list?
+t5dd9cfcf = 목록에서 “{ $name }”을(를) 제거할까요?
+
+# It can be added again at any time.
+t80d51a99 = 언제든지 다시 추가할 수 있습니다.
+
 # A passphrase for the new key
 tf5593f05 = 새 키의 암호 문구
 

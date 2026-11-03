@@ -655,6 +655,18 @@ t454d1d8a = Продовжити
 # Pause
 t44f9bf2d = Призупинити
 
+# Its files stay where they are. What packwing signs in to it with is taken out of the system’s keychain.
+td68bff45 = Його файли залишаться на місці. Те, чим packwing до нього входить, буде вилучено зі зв’язки ключів системи.
+
+# The folder and its files stay where they are.
+t4850aaa8 = Тека та її файли залишаться на місці.
+
+# Remove “{name}” from the list?
+t5dd9cfcf = Прибрати «{ $name }» зі списку?
+
+# It can be added again at any time.
+t80d51a99 = Його можна знову додати будь-коли.
+
 # A passphrase for the new key
 tf5593f05 = Парольна фраза для нового ключа
 

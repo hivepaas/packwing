@@ -641,6 +641,18 @@ t454d1d8a = Sürdür
 # Pause
 t44f9bf2d = Duraklat
 
+# Its files stay where they are. What packwing signs in to it with is taken out of the system’s keychain.
+td68bff45 = Dosyaları olduğu yerde kalır. packwing'in oturum açmak için kullandığı bilgiler sistemin anahtar zincirinden çıkarılır.
+
+# The folder and its files stay where they are.
+t4850aaa8 = Klasör ve dosyaları olduğu yerde kalır.
+
+# Remove “{name}” from the list?
+t5dd9cfcf = “{ $name }” listeden kaldırılsın mı?
+
+# It can be added again at any time.
+t80d51a99 = İstediğiniz zaman yeniden eklenebilir.
+
 # A passphrase for the new key
 tf5593f05 = Yeni anahtar için bir parola ifadesi
 

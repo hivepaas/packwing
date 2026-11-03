@@ -634,6 +634,18 @@ t454d1d8a = 繼續
 # Pause
 t44f9bf2d = 暫停
 
+# Its files stay where they are. What packwing signs in to it with is taken out of the system’s keychain.
+td68bff45 = 其中的檔案維持原樣。packwing 用來登入它的憑證會從系統鑰匙圈中移除。
+
+# The folder and its files stay where they are.
+t4850aaa8 = 該資料夾及其中的檔案維持原樣。
+
+# Remove “{name}” from the list?
+t5dd9cfcf = 要將「{ $name }」從清單中移除嗎？
+
+# It can be added again at any time.
+t80d51a99 = 可以隨時重新加入。
+
 # A passphrase for the new key
 tf5593f05 = 新金鑰的密碼片語
 

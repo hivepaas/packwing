@@ -634,6 +634,18 @@ t454d1d8a = 再開
 # Pause
 t44f9bf2d = 一時停止
 
+# Its files stay where they are. What packwing signs in to it with is taken out of the system’s keychain.
+td68bff45 = ファイルはそのまま残ります。packwing がサインインに使う情報はシステムのキーチェーンから削除されます。
+
+# The folder and its files stay where they are.
+t4850aaa8 = フォルダとそのファイルはそのまま残ります。
+
+# Remove “{name}” from the list?
+t5dd9cfcf = 「{ $name }」を一覧から削除しますか？
+
+# It can be added again at any time.
+t80d51a99 = いつでも追加し直せます。
+
 # A passphrase for the new key
 tf5593f05 = 新しいキーのパスフレーズ
 

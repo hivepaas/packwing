@@ -634,6 +634,18 @@ t454d1d8a = Lanjutkan
 # Pause
 t44f9bf2d = Jeda
 
+# Its files stay where they are. What packwing signs in to it with is taken out of the system’s keychain.
+td68bff45 = Berkasnya tetap di tempatnya. Apa yang dipakai packwing untuk masuk ke sana dihapus dari gantungan kunci sistem.
+
+# The folder and its files stay where they are.
+t4850aaa8 = Folder dan berkasnya tetap di tempatnya.
+
+# Remove “{name}” from the list?
+t5dd9cfcf = Hapus “{ $name }” dari daftar?
+
+# It can be added again at any time.
+t80d51a99 = Bisa ditambahkan lagi kapan saja.
+
 # A passphrase for the new key
 tf5593f05 = Frasa sandi untuk kunci baru
 
