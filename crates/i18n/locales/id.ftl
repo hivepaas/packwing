@@ -103,6 +103,9 @@ t89f1bf95 = packwing Free menyimpan satu penyimpanan lewat jaringan. Lisensi Pro
 # Test connection
 te0f3b6b7 = Uji koneksi
 
+# Enter a license key
+ta24f28a2 = Masukkan kunci lisensi
+
 # Save
 t4d2d5d68 = Simpan
 

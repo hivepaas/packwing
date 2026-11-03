@@ -41,6 +41,7 @@ t7a7d61e9 = Ask for this computer’s password to open it
 t1b5ad6b1 = For a computer left unlocked: what unlocks this computer opens it, and it asks again after 5 minutes left unused.
 t89f1bf95 = packwing Free keeps one storage across a network. A Pro or Enterprise license lifts this: Settings › License. Folders on this computer are not limited.
 te0f3b6b7 = Test connection
+ta24f28a2 = Enter a license key
 t4d2d5d68 = Save
 tcf390b0a = Nothing chosen yet
 t8399ef70 = { $join } and { $more } more

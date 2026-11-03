@@ -375,6 +375,8 @@ impl Render for AddStorageDialog {
         );
         let editing = self.editing.is_some();
         let remote = self.chosen.is_some();
+        // With no room for it on this plan, nothing is asked: what lifts the limit is said.
+        let limited = self.over_the_limit(cx);
         let can_ask = confirmer(cx).how().is_some();
         let folder = self.folder.clone().map(|input| {
             div()
@@ -414,7 +416,8 @@ impl Render for AddStorageDialog {
             .when(!editing, |d| {
                 d.child(div().flex().gap(px(10.)).children(kinds).child(local))
             })
-            .child(
+            .when(!limited, |d| {
+                d.child(
                 div()
                     .id("storage-fields")
                     .min_h_0()
@@ -431,7 +434,8 @@ impl Render for AddStorageDialog {
                     .children(folder)
                     .children(fields),
             )
-            .when(remote && can_ask, |d| {
+            })
+            .when(remote && can_ask && !limited, |d| {
                 d.child(
                     div()
                         .flex()
@@ -470,7 +474,7 @@ impl Render for AddStorageDialog {
                     .child(said)
             }))
             .children(self.problem.clone().map(|why| note(Tone::Warn).child(why)))
-            .when(self.over_the_limit(cx), |d| {
+            .when(limited, |d| {
                 d.child(note(Tone::Warn).child(tr!(
                     "packwing Free keeps one storage across a network. A Pro or Enterprise \
                      license lifts this: Settings › License. Folders on this computer are not \
@@ -479,7 +483,7 @@ impl Render for AddStorageDialog {
             })
             .child(
                 footer()
-                    .when(remote, |d| {
+                    .when(remote && !limited, |d| {
                         d.child(
                             button(
                                 "storage-test",
@@ -495,15 +499,23 @@ impl Render for AddStorageDialog {
                         button("cancel", tr!("Cancel"), Fill::Outline, Size::Medium)
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close))),
                     )
-                    .child(
+                    .child(if limited {
+                        button(
+                            "storage-license",
+                            tr!("Enter a license key"),
+                            Fill::Accent,
+                            Size::Medium,
+                        )
+                        .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::ShowLicense)))
+                    } else {
                         button(
                             "storage-add",
                             if editing { tr!("Save") } else { tr!("Add") },
                             Fill::Accent,
                             Size::Medium,
                         )
-                            .on_click(cx.listener(|this, _, _, cx| this.add(cx))),
-                    ),
+                        .on_click(cx.listener(|this, _, _, cx| this.add(cx)))
+                    }),
             )
     }
 }

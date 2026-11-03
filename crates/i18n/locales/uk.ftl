@@ -109,6 +109,9 @@ t89f1bf95 = packwing Free дозволяє одне сховище в мереж
 # Test connection
 te0f3b6b7 = Перевірити з’єднання
 
+# Enter a license key
+ta24f28a2 = Ввести ліцензійний ключ
+
 # Save
 t4d2d5d68 = Зберегти
 

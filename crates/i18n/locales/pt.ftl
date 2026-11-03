@@ -105,6 +105,9 @@ t89f1bf95 = O packwing Free mantém um armazenamento em rede. Uma licença Pro o
 # Test connection
 te0f3b6b7 = Testar conexão
 
+# Enter a license key
+ta24f28a2 = Introduzir uma chave de licença
+
 # Save
 t4d2d5d68 = Salvar
 

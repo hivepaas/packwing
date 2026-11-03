@@ -105,6 +105,9 @@ t89f1bf95 = packwing Ücretsiz, ağ üzerinde tek bir depolama alanı tutar. Pro
 # Test connection
 te0f3b6b7 = Bağlantıyı dene
 
+# Enter a license key
+ta24f28a2 = Lisans anahtarı girin
+
 # Save
 t4d2d5d68 = Kaydet
 

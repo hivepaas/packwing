@@ -109,6 +109,9 @@ t89f1bf95 = В packwing Free можно подключить одно храни
 # Test connection
 te0f3b6b7 = Проверить подключение
 
+# Enter a license key
+ta24f28a2 = Ввести лицензионный ключ
+
 # Save
 t4d2d5d68 = Сохранить
 

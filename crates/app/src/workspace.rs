@@ -554,6 +554,13 @@ impl Workspace {
                     this.close_dialog(cx);
                     this.read_archive(source.clone(), Keys::default(), false, window, cx);
                 }
+                DialogEvent::ShowLicense => {
+                    this.close_dialog(cx);
+                    this.settings.update(cx, |s, cx| {
+                        s.show_section(crate::pages::settings::Section::License, cx)
+                    });
+                    this.show_page(Page::Settings, cx);
+                }
                 DialogEvent::Signed => {
                     this.close_dialog(cx);
                     this.trusted_seen = prefs::prefs(cx).trusted_keys;

@@ -236,6 +236,8 @@ pub enum DialogEvent {
     Signed,
     /// An archive on a storage was chosen, to open.
     Open(Source),
+    /// A license key is to be entered: Settings › License.
+    ShowLicense,
     /// A new archive went in this folder of this storage: shown, if `show`.
     Stored {
         place: Place,

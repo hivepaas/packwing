@@ -105,6 +105,9 @@ t89f1bf95 = packwing Free erlaubt einen Speicherort im Netzwerk. Mit einer Pro- 
 # Test connection
 te0f3b6b7 = Verbindung testen
 
+# Enter a license key
+ta24f28a2 = Lizenzschlüssel eingeben
+
 # Save
 t4d2d5d68 = Speichern
 
