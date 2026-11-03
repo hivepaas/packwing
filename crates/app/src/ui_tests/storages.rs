@@ -89,6 +89,51 @@ scenario!(
 );
 
 scenario!(
+    /// An item of a folder on this computer is shown in the system's file manager, and
+    /// the folder opened in it.
+    the_file_manager_shows_an_item_and_opens_the_folder,
+    |ui| {
+        let folder = ui.work.join("place");
+        ui.file("place/a.txt", "a");
+        ui.storage(&folder);
+        ui.explorer_names();
+        ui.ws(|ws, _, cx| {
+            ws.explorer(cx).update(cx, |e, cx| {
+                e.choose("a.txt", cx);
+                e.show_menu(400., 300., false, cx);
+            });
+        });
+        ui.click("menu-file-manager");
+        assert!(!ui.shows("explorer-menu"));
+        ui.ws(|ws, _, cx| {
+            ws.explorer(cx)
+                .update(cx, |e, cx| e.show_menu(400., 500., true, cx))
+        });
+        ui.click("menu-file-manager");
+        assert_eq!(
+            crate::file_manager::asked_for_test(),
+            [("show", folder.join("a.txt")), ("open", folder.clone())]
+        );
+        // Across a network there is nothing here to show.
+        let far = ui.work.join("far");
+        ui.file("far/b.txt", "b");
+        add_far(ui, "Far", &far);
+        ui.wait_for_no_dialog();
+        assert_eq!(ui.explorer_names(), ["b.txt"]);
+        for on_folder in [false, true] {
+            ui.ws(|ws, _, cx| {
+                ws.explorer(cx).update(cx, |e, cx| {
+                    e.choose("b.txt", cx);
+                    e.show_menu(400., 300., on_folder, cx);
+                })
+            });
+            assert!(ui.shows("explorer-menu"));
+            assert!(!ui.shows("menu-file-manager"));
+        }
+    }
+);
+
+scenario!(
     /// Copying leaves the original, moving does not.
     copy_and_move_between_folders,
     |ui| {

@@ -23,6 +23,7 @@ mod demo;
 mod dialogs;
 mod editors;
 mod explorer;
+mod file_manager;
 mod input;
 mod licensing;
 mod managed;

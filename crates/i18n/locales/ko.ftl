@@ -940,6 +940,24 @@ tc7731c8f = 폴더가 없습니다.
 # This folder is empty.
 td9e47db6 = 이 폴더는 비어 있습니다.
 
+# Show in Finder
+ta9442aa9 = Finder에서 보기
+
+# Show in File Explorer
+t23c89eda = 파일 탐색기에서 보기
+
+# Show in the file manager
+tb347ece9 = 파일 관리자에서 보기
+
+# Open in Finder
+te2a467e0 = Finder에서 열기
+
+# Open in File Explorer
+t3794d625 = 파일 탐색기에서 열기
+
+# Open in the file manager
+td1ceabc4 = 파일 관리자에서 열기
+
 # Copy all
 t6aef5c37 = 모두 복사
 

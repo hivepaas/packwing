@@ -940,6 +940,24 @@ tc7731c8f = Không có thư mục nào ở đây.
 # This folder is empty.
 td9e47db6 = Thư mục này trống.
 
+# Show in Finder
+ta9442aa9 = Hiện trong Finder
+
+# Show in File Explorer
+t23c89eda = Hiện trong File Explorer
+
+# Show in the file manager
+tb347ece9 = Hiện trong trình quản lý tệp
+
+# Open in Finder
+te2a467e0 = Mở trong Finder
+
+# Open in File Explorer
+t3794d625 = Mở trong File Explorer
+
+# Open in the file manager
+td1ceabc4 = Mở trong trình quản lý tệp
+
 # Copy all
 t6aef5c37 = Sao chép tất cả
 

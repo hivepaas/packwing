@@ -948,6 +948,24 @@ tc7731c8f = No hay carpetas aquí.
 # This folder is empty.
 td9e47db6 = Esta carpeta está vacía.
 
+# Show in Finder
+ta9442aa9 = Mostrar en el Finder
+
+# Show in File Explorer
+t23c89eda = Mostrar en el Explorador de archivos
+
+# Show in the file manager
+tb347ece9 = Mostrar en el gestor de archivos
+
+# Open in Finder
+te2a467e0 = Abrir en el Finder
+
+# Open in File Explorer
+t3794d625 = Abrir en el Explorador de archivos
+
+# Open in the file manager
+td1ceabc4 = Abrir en el gestor de archivos
+
 # Copy all
 t6aef5c37 = Copiar todo
 

@@ -28,6 +28,7 @@ use packwing_i18n::{tr, tr_n};
 
 use crate::colors::colors;
 use crate::editors;
+use crate::file_manager;
 use crate::input::{Changed, TextInput};
 use crate::model::{Kind, date, tag_of};
 use crate::prefs;
@@ -613,6 +614,11 @@ impl Explorer {
         self.place
             .as_ref()
             .is_some_and(|p| p.storage.local_path(&[]).is_some())
+    }
+
+    /// Where the folder shown is on this computer, if it is.
+    fn local_folder(&self) -> Option<PathBuf> {
+        self.place.as_ref()?.storage.local_path(&self.folder)
     }
 
     /// Where `name` is on this computer, if it is.
@@ -1421,6 +1427,16 @@ impl Explorer {
                             },
                         )),
                     )
+                    .when_some(self.local_folder(), |d, folder| {
+                        d.child(
+                            item("menu-file-manager", file_manager::open_label(), "", false)
+                                .on_click(cx.listener(move |this, _, _, cx| {
+                                    this.menu = None;
+                                    file_manager::open(&folder, cx);
+                                    cx.notify();
+                                })),
+                        )
+                    })
                     .child(line())
                     .child(
                         item(
@@ -1533,6 +1549,16 @@ impl Explorer {
                             }),
                         ))
                         .child(line())
+                        .when_some(self.local_path_of(&one.name), |d, here| {
+                            d.child(
+                                item("menu-file-manager", file_manager::show_label(), "", false)
+                                    .on_click(cx.listener(move |this, _, _, cx| {
+                                        this.menu = None;
+                                        file_manager::show(&here, cx);
+                                        cx.notify();
+                                    })),
+                            )
+                        })
                         .child(
                             item("menu-copy-path", tr!("Copy path"), "", false).on_click(
                                 cx.listener(move |this, _, _, cx| {
