@@ -182,9 +182,11 @@ impl gpui::AssetSource for Assets {
 fn usage() -> String {
     let items: Vec<String> = Action::ALL.iter().map(|a| a.option()).collect();
     format!(
-        "usage: packwing [--first-run] [--policies] [--<item> PATH…]
+        "usage: packwing [--first-run] [--policies] [--uninstall] [--<item> PATH…]
   --first-run  open on the welcome, as on the first start
   --policies   say what an organization has fixed here, and any mistake in it, then stop
+  --uninstall  take packwing out of the right-click menu and Open With, then stop:
+               for its uninstaller
   --<item>     what an item of the right-click menu runs, with the paths chosen:
                {}",
         items.join(", ")
@@ -209,6 +211,18 @@ pub fn run(extensions: Extensions) {
                 let wrong =
                     policy.failure().is_some() || policy.rows().iter().any(|r| r.problem.is_some());
                 std::process::exit(i32::from(wrong));
+            }
+            "--uninstall" => {
+                let gone = [
+                    context_menu::uninstall(right_click::ID),
+                    context_menu::open_with::uninstall(right_click::ID),
+                ];
+                let mut failed = false;
+                for e in gone.into_iter().filter_map(Result::err) {
+                    eprintln!("packwing: {e}");
+                    failed = true;
+                }
+                std::process::exit(i32::from(failed));
             }
             option => match Request::parse(option, args.by_ref()) {
                 Some(r) => request = Some(r),
