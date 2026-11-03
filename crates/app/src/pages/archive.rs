@@ -460,7 +460,7 @@ impl ArchivePage {
             .min_w_0()
             .items_center()
             .gap(ui(12.))
-            .h(ui(52.))
+            .h(ui(48.))
             .px(ui(20.))
             .rounded_full()
             .bg(rgb(c.field))
@@ -612,7 +612,7 @@ impl ArchivePage {
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Test))),
                     )
                     .child(
-                        icon_button("archive-more", "more", 52.)
+                        icon_button("archive-more", "more", 48.)
                             .bg(rgb(c.surface))
                             .on_click(cx.listener(|this, e: &ClickEvent, _, cx| {
                                 this.more_at = Some(e.position());
@@ -815,13 +815,13 @@ impl ArchivePage {
                     .child(div().flex_1().min_w_0().child(crumb))
                     .when(changeable && one, |d| {
                         d.child(
-                            button("rename", tr!("Rename"), Fill::Outline, Size::Small)
+                            button("rename", tr!("Rename"), Fill::Outline, Size::Medium)
                                 .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Rename))),
                         )
                     })
                     .when(changeable, |d| {
                         d.child(
-                            button("delete", tr!("Delete"), Fill::Outline, Size::Small)
+                            button("delete", tr!("Delete"), Fill::Outline, Size::Medium)
                                 .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Delete))),
                         )
                     }),

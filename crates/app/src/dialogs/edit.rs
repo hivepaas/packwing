@@ -91,7 +91,7 @@ impl EditDialog {
 impl Render for EditDialog {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
-        let close = icon_button("close", "x", 44.)
+        let close = icon_button("close", "x", 40.)
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         let what = match self.picked.as_slice() {
             [one] => one.last().cloned().unwrap_or_default(),
@@ -126,7 +126,7 @@ impl Render for EditDialog {
                         div()
                             .flex()
                             .items_center()
-                            .h(ui(52.))
+                            .h(ui(40.))
                             .px(ui(18.))
                             .rounded(ui(16.))
                             .bg(rgb(c.field))

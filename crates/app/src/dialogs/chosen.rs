@@ -203,11 +203,11 @@ pub fn section<V: Choosing>(this: &V, checked: bool, cx: &mut Context<V>) -> imp
                 )
                 .when(count > 0, |d| d.child(eye(this, cx)))
                 .child(
-                    button("add-files", tr!("+ Files"), Fill::Outline, Size::Small)
+                    button("add-files", tr!("+ Files"), Fill::Outline, Size::Medium)
                         .on_click(cx.listener(|this, _, _, cx| this.pick(false, cx))),
                 )
                 .child(
-                    button("add-folder", tr!("+ Folder"), Fill::Outline, Size::Small)
+                    button("add-folder", tr!("+ Folder"), Fill::Outline, Size::Medium)
                         .on_click(cx.listener(|this, _, _, cx| this.pick(true, cx))),
                 ),
         )

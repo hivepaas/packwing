@@ -632,7 +632,7 @@ impl StoragesPage {
                     .children(rows),
             )
             .child(
-                button("add-storage", tr!("Add storage"), Fill::Tonal, Size::Small)
+                button("add-storage", tr!("Add storage"), Fill::Tonal, Size::Medium)
                     .mt(ui(8.))
                     .child(icon("plus", 16., c.on_tonal))
                     .on_click(cx.listener(|this, _, _, cx| {
@@ -674,7 +674,7 @@ impl StoragesPage {
                 d.child(
                     div()
                         .w(ui(320.))
-                        .h(ui(44.))
+                        .h(ui(40.))
                         .flex()
                         .items_center()
                         .px(ui(16.))

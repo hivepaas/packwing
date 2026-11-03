@@ -248,7 +248,7 @@ impl Render for General {
                     .when(custom, |d| {
                         d.child(
                             div()
-                                .h(ui(44.))
+                                .h(ui(40.))
                                 .flex()
                                 .items_center()
                                 .px(ui(16.))

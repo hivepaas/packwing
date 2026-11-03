@@ -179,7 +179,7 @@ impl Render for Compressing {
                                     "extensions-reset",
                                     tr!("Reset to default"),
                                     Fill::Outline,
-                                    Size::Small,
+                                    Size::Medium,
                                 )
                                 .on_click(cx.listener(|this, _, _, cx| {
                                     let known = default_extensions().join(" ");

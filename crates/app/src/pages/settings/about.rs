@@ -116,7 +116,7 @@ impl About {
                     ),
             )
             .child(
-                button("about-copy-version", copy, Fill::Outline, Size::Small).on_click(
+                button("about-copy-version", copy, Fill::Outline, Size::Medium).on_click(
                     cx.listener(|this, _, _, cx| this.copy("version", version_info(), cx)),
                 ),
             )
@@ -147,7 +147,7 @@ impl About {
             .when(keys, |d| {
                 d.child(
                     div().flex().child(
-                        button("update-check", tr!("Check now"), Fill::Outline, Size::Small)
+                        button("update-check", tr!("Check now"), Fill::Outline, Size::Medium)
                             .when(checking, |d| d.opacity(0.5))
                             .on_click(move |_, _, cx| check.update(cx, |u, cx| u.check(cx))),
                     ),
@@ -183,7 +183,7 @@ impl About {
                 "update-skip",
                 tr!("Skip this version"),
                 Fill::Text,
-                Size::Small,
+                Size::Medium,
             )
             .on_click(move |_, _, cx| handle.update(cx, |u, cx| u.skip(cx)))
         };
@@ -203,7 +203,7 @@ impl About {
                         "update-restart",
                         tr!("Restart now"),
                         Fill::Accent,
-                        Size::Small,
+                        Size::Medium,
                     )
                     .on_click(move |_, _, cx| handle.update(cx, |u, cx| u.restart(cx))),
                 ),
@@ -245,7 +245,7 @@ impl About {
                     "update-notes",
                     tr!("Release notes"),
                     Fill::Outline,
-                    Size::Small,
+                    Size::Medium,
                 )
                 .on_click(move |_, _, cx| {
                     if let Some(page) = &page {
@@ -290,7 +290,7 @@ impl About {
                 .child(
                     actions()
                         .child(
-                            button("update-copy", copy, Fill::Accent, Size::Small).on_click(
+                            button("update-copy", copy, Fill::Accent, Size::Medium).on_click(
                                 cx.listener(move |this, _, _, cx| {
                                     this.copy("steps", line.clone(), cx)
                                 }),
@@ -335,7 +335,7 @@ impl About {
                     actions()
                         .when_some(get, |d, get| {
                             d.child(
-                                button("update-get", get, Fill::Accent, Size::Small)
+                                button("update-get", get, Fill::Accent, Size::Medium)
                                     .on_click(move |_, _, cx| getter.update(cx, |u, cx| u.get(cx))),
                             )
                         })
@@ -400,7 +400,7 @@ impl Render for About {
 
 /// A button that opens a web page.
 fn link(id: &'static str, name: String, url: &'static str, fill: Fill) -> gpui::Stateful<Div> {
-    button(id, name, fill, Size::Small).on_click(move |_, _, cx| cx.open_url(url))
+    button(id, name, fill, Size::Medium).on_click(move |_, _, cx| cx.open_url(url))
 }
 
 /// Buttons side by side.

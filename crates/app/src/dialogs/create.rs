@@ -1028,7 +1028,7 @@ impl CreateDialog {
                             ),
                     )
                     .child(
-                        button("change-folder", tr!("Folder…"), Fill::Outline, Size::Small)
+                        button("change-folder", tr!("Folder…"), Fill::Outline, Size::Medium)
                             .on_click(cx.listener(|this, _, _, cx| this.pick_folder(cx))),
                     )
                     // With no storage of the user's, Folder… is all there is.
@@ -1040,7 +1040,7 @@ impl CreateDialog {
                                     "change-storage",
                                     tr!("Storage…"),
                                     Fill::Outline,
-                                    Size::Small,
+                                    Size::Medium,
                                 )
                                 .on_click(cx.listener(|this, _, _, cx| this.pick_storage(cx))),
                             )
@@ -1104,7 +1104,7 @@ impl CreateDialog {
             this.picking = None;
             cx.notify();
         };
-        let close = icon_button("close", "x", 44.)
+        let close = icon_button("close", "x", 40.)
             .on_click(cx.listener(move |this, _, _, cx| back(this, cx)));
         let picker = picking.picker.clone();
         super::card()
@@ -1176,7 +1176,7 @@ impl CreateDialog {
                     .flex()
                     .items_center()
                     .gap(ui(8.))
-                    .h(ui(52.))
+                    .h(ui(40.))
                     .pl(ui(18.))
                     .pr(ui(6.))
                     .rounded(ui(16.))
@@ -1432,14 +1432,14 @@ impl CreateDialog {
                     div()
                         .flex()
                         .items_center()
-                        .h(ui(48.))
+                        .h(ui(40.))
                         .px(ui(16.))
                         .rounded(ui(14.))
                         .bg(rgb(c.surface))
                         .text_size(ui(16.))
                         .child(div().flex_1().min_w_0().child(self.password.clone()))
                         .child(
-                            button("suggest-password", tr!("Suggest"), Fill::Outline, Size::Small)
+                            button("suggest-password", tr!("Suggest"), Fill::Outline, Size::Medium)
                                 .on_click(cx.listener(|this, _, _, cx| this.suggest(cx))),
                         ),
                 )
@@ -1506,7 +1506,7 @@ impl CreateDialog {
                                 .child(said),
                         )
                         .child(
-                            button("keys-clear", tr!("Remove"), Fill::Outline, Size::Small)
+                            button("keys-clear", tr!("Remove"), Fill::Outline, Size::Medium)
                                 .on_click(cx.listener(|this, _, _, cx| {
                                     this.keys_file = None;
                                     cx.notify();
@@ -1538,7 +1538,7 @@ impl CreateDialog {
                                 .flex_1()
                                 .min_w_0()
                                 .items_center()
-                                .h(ui(48.))
+                                .h(ui(40.))
                                 .px(ui(16.))
                                 .rounded(ui(14.))
                                 .bg(rgb(c.surface))
@@ -1546,8 +1546,13 @@ impl CreateDialog {
                                 .child(self.key.clone()),
                         )
                         .child(
-                            button("keys-file", tr!("From a file…"), Fill::Outline, Size::Small)
-                                .on_click(cx.listener(|this, _, _, cx| this.pick_keys_file(cx))),
+                            button(
+                                "keys-file",
+                                tr!("From a file…"),
+                                Fill::Outline,
+                                Size::Medium,
+                            )
+                            .on_click(cx.listener(|this, _, _, cx| this.pick_keys_file(cx))),
                         )
                         .into_any_element(),
                 );
@@ -1649,7 +1654,7 @@ impl Render for CreateDialog {
                 size(s.bytes)
             )
         };
-        let close = icon_button("close", "x", 44.)
+        let close = icon_button("close", "x", 40.)
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         super::card()
             .id("create-dialog")
