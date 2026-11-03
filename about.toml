@@ -24,8 +24,7 @@ accepted = [
 # Only what is built into the program: not what builds it.
 ignore-build-dependencies = true
 ignore-dev-dependencies = true
-# hivepack comes from its repository, not crates.io, and packwing's crates
-# are not published: they are listed. packwing's own, the only crates under the GPL,
+# packwing's crates are not published: they are listed. packwing's own, the only crates under the GPL,
 # the template leaves out.
 private = { ignore = false }
 
@@ -60,7 +59,7 @@ accepted = ["GPL-3.0-or-later"]
 # of with its copyright lines, which cargo-about leaves out of a text it
 # recognizes (its LICENSE.md lists them). The modules open, sevenz and sign
 # hold the crate's own MIT text again, which LICENSE gives. Each file is
-# pinned to the commit packwing builds with: a notice that changes stops the
+# pinned to the release packwing builds with: a notice that changes stops the
 # package until it is looked at again.
 #
 # UnRAR is accepted for this crate alone, for its rar module: see
