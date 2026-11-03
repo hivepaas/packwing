@@ -144,6 +144,11 @@ scenario!(
             far.join("old/sample.7z"),
         )
         .expect("the fixture");
+        std::fs::copy(
+            crate::ui_tests::fixture("rar5_multiple_files.rar"),
+            far.join("other.rar"),
+        )
+        .expect("the fixture");
         ui.file("far/notes.txt", "not an archive");
         add_far(ui, "Far", &far);
         ui.wait_for_no_dialog();
@@ -156,6 +161,17 @@ scenario!(
         ui.click("pick: sample.7z");
         ui.wait_for_no_dialog();
         ui.wait_until("the archive read", |ui| !ui.archive_names().is_empty());
+        // Open, the archive's page offers another beside its search.
+        let first = ui.archive_names();
+        assert!(ui.shows("open-another"));
+        ui.click("open-stored");
+        ui.wait_for("pick: other.rar");
+        ui.click("pick: other.rar");
+        ui.wait_for_no_dialog();
+        ui.wait_until("the other archive read", |ui| {
+            let names = ui.archive_names();
+            !names.is_empty() && names != first
+        });
     }
 );
 

@@ -431,11 +431,13 @@ impl ArchivePage {
             .update(cx, |s, cx| s.set_text(query, query.len()..query.len(), cx));
     }
 
-    fn search_bar(&self) -> impl IntoElement {
+    /// The search, and beside it what opens another archive.
+    fn search_bar(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
-        div()
+        let search = div()
             .flex()
-            .flex_shrink_0()
+            .flex_1()
+            .min_w_0()
             .items_center()
             .gap(px(12.))
             .h(px(52.))
@@ -444,7 +446,36 @@ impl ArchivePage {
             .bg(rgb(c.field))
             .text_size(px(16.))
             .child(icon("search", 20., c.muted))
-            .child(self.search.clone())
+            .child(self.search.clone());
+        div()
+            .flex()
+            .flex_shrink_0()
+            .items_center()
+            .gap(px(8.))
+            .child(search)
+            .child(
+                button(
+                    "open-another",
+                    tr!("Open another…"),
+                    Fill::Tonal,
+                    Size::Large,
+                )
+                .flex_shrink_0()
+                .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Open))),
+            )
+            // The system's dialog reaches this computer's folders, not a network.
+            .when(prefs::has_network_storage(cx), |d| {
+                d.child(
+                    button(
+                        "open-stored",
+                        tr!("From a storage…"),
+                        Fill::Tonal,
+                        Size::Large,
+                    )
+                    .flex_shrink_0()
+                    .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::OpenStored))),
+                )
+            })
     }
 
     fn header(&self, a: &Archive, cx: &mut Context<Self>) -> impl IntoElement {
@@ -1063,7 +1094,7 @@ impl Render for ArchivePage {
             return page.child(self.empty(cx));
         };
         let more = self.more_at.map(|at| self.more_menu(at, cx));
-        page.child(self.search_bar())
+        page.child(self.search_bar(cx))
             .child(self.header(a, cx))
             .children(more)
             .child(
