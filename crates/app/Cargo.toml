@@ -25,7 +25,8 @@ x11 = ["gpui_platform/x11"]
 # Linux only): `cargo test -p packwing --features shots shots`.
 shots = ["gpui_platform/test-support", "dep:gpui_wgpu", "dep:image", "test-hooks"]
 # The UI scenarios (src/ui_tests): the real window, driven as a user does, with no
-# display. `make test-ui`, and on CI by hand and daily (.github/workflows/ui-tests.yml).
+# display. `make test-ui`; on CI on Linux for every pull request (.github/workflows/ci.yml),
+# and by hand and daily on all three systems (.github/workflows/ui-tests.yml).
 ui-tests = ["gpui/test-support", "test-hooks"]
 # What the tests above look in through.
 test-hooks = ["packwing-update/test-source"]

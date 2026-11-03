@@ -7,8 +7,12 @@
 //! opens on the welcome. An item of the right-click menu runs packwing with its
 //! option and the paths chosen (`right_click.rs`).
 
-// The hooks the screenshots look through are not all the scenarios'.
-#![cfg_attr(all(test, feature = "ui-tests"), allow(dead_code))]
+// The hooks the screenshots look through are not all the scenarios', nor theirs all
+// the screenshots'.
+#![cfg_attr(
+    all(test, any(feature = "ui-tests", feature = "shots")),
+    allow(dead_code)
+)]
 
 mod chrome;
 mod colors;

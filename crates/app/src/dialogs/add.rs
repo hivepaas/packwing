@@ -81,8 +81,10 @@ impl Choosing for AddDialog {
 impl AddDialog {
     /// For `archive`, or `None` if it has no file: the samples.
     pub fn new(archive: &Archive, cx: &mut App) -> Option<AddDialog> {
-        let on_existing =
-            cx.new(|_| Select::new(&on_existing().map(|(name, _)| name), 0, SelectLook::Pill));
+        let on_existing = cx.new(|_| {
+            Select::new(&on_existing().map(|(name, _)| name), 0, SelectLook::Pill)
+                .marked("on-existing")
+        });
         Some(AddDialog {
             signed: archive
                 .path

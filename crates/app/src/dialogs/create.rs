@@ -370,10 +370,12 @@ impl CreateDialog {
                 chosen,
                 SelectLook::Pill,
             )
+            .marked("format")
         });
-        let split = cx.new(|_| Select::new(&splits(), 0, SelectLook::Pill));
+        let split = cx.new(|_| Select::new(&splits(), 0, SelectLook::Pill).marked("split"));
         let part = cx.new(|cx| TextInput::new(tr!("Size"), cx));
-        let unit = cx.new(|_| Select::new(&UNITS.map(|(u, _)| u), 0, SelectLook::Pill));
+        let unit =
+            cx.new(|_| Select::new(&UNITS.map(|(u, _)| u), 0, SelectLook::Pill).marked("unit"));
         let password = cx.new(|cx| TextInput::new(tr!("Password"), cx).masked());
         let key = cx.new(|cx| TextInput::new(tr!("age1…, age1pq1… or ssh-ed25519 …"), cx));
         // What is drawn follows what is typed and chosen: the extension, the

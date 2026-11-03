@@ -4,8 +4,8 @@
 //! by the `.debug_selector(..)` that the widgets give their ids ([`Ui::click`]).
 //!
 //! Built only with the `ui-tests` feature. Locally `make test-ui`, or `make test-ui
-//! FILTER=create::`; on CI by hand and daily, on all three systems
-//! (`.github/workflows/ui-tests.yml`).
+//! FILTER=create::`; on CI on Linux for every pull request (`.github/workflows/ci.yml`),
+//! and by hand and daily on all three systems (`.github/workflows/ui-tests.yml`).
 //!
 //! Each scenario runs in a child process of the test binary with its own home and config
 //! folder, so that none reads or writes the user's settings or keychain, and each has the
@@ -22,6 +22,7 @@ use crate::right_click::{Choice, RightClickMenu, Status};
 use crate::workspace::Workspace;
 
 mod archive;
+mod browse;
 mod create;
 mod edit;
 mod far;
@@ -261,6 +262,36 @@ impl Ui {
         self.cx.run_until_parked();
     }
 
+    /// Opens the select marked `mark` and clicks its option `option`, as the mouse does.
+    pub fn choose(&mut self, mark: &str, option: &str) {
+        self.click(&format!("select: {mark}"));
+        let option = format!("option: {option}");
+        // A long menu scrolls: the wheel brings the option into it.
+        for _ in 0..20 {
+            let menu = self.find("menu").expect("the menu is open");
+            let at = self
+                .find(&option)
+                .unwrap_or_else(|| panic!("the menu has no {option:?}"));
+            if menu.contains(&at.center()) {
+                break;
+            }
+            let down = if at.center().y > menu.center().y {
+                -1.
+            } else {
+                1.
+            };
+            let mut vcx = VisualTestContext::from_window(self.window().into(), &self.cx);
+            vcx.simulate_event(gpui::ScrollWheelEvent {
+                position: menu.center(),
+                delta: gpui::ScrollDelta::Pixels(gpui::point(gpui::px(0.), gpui::px(down * 40.))),
+                modifiers: gpui::Modifiers::none(),
+                touch_phase: gpui::TouchPhase::Moved,
+            });
+            self.cx.run_until_parked();
+        }
+        self.click(&option);
+    }
+
     /// Clicks the field whose hint is `hint`, and types `text` in it.
     pub fn type_in(&mut self, hint: &str, text: &str) {
         self.click(&format!("field: {hint}"));
@@ -356,6 +387,24 @@ impl Ui {
             let page = ws.archive_page();
             let page = page.read(cx);
             page.archive().map(|a| a.top_names()).unwrap_or_default()
+        })
+    }
+
+    /// The names the Archive page lists now: the folder's, or what the search found.
+    pub fn shown_in_archive(&mut self) -> Vec<String> {
+        self.ws(|ws, _, cx| ws.archive_page().read(cx).shown_names(cx))
+    }
+
+    /// The folder in the archive the Archive page shows.
+    pub fn archive_folder(&mut self) -> Vec<String> {
+        self.ws(|ws, _, cx| ws.archive_page().read(cx).shown_folder())
+    }
+
+    /// The folder on this computer the Browse page shows.
+    pub fn browsed(&mut self) -> Option<PathBuf> {
+        self.ws(|ws, _, cx| {
+            let explorer = ws.browse_page().read(cx).explorer().read(cx);
+            explorer.place()?.storage.local_path(explorer.folder())
         })
     }
 

@@ -21,7 +21,7 @@ request of its own, with what the new clippy finds fixed.
 
 ## UI scenarios
 
-`crates/app/src/ui_tests` drives the real window as a user does, with clicks and typing, on real files, with no display: `make test-ui`, or `make test-ui FILTER=create::`. Each scenario runs in a process of its own with a scratch home, so none touches your settings or keychain. A click finds its element by the `.debug_selector(..)` the widgets give their ids. They run on Linux, macOS and Windows on CI, daily and by hand (Actions > UI tests); a pull request that changes them runs them too. To see one fail in detail: `cargo test -p packwing --features ui-tests --exact ui_tests::<path>::scenario --ignored --nocapture`, with `PACKWING_UI_TEST_DIR` set to a folder.
+`crates/app/src/ui_tests` drives the real window as a user does, with clicks and typing, on real files, with no display: `make test-ui`, or `make test-ui FILTER=create::`. Each scenario runs in a process of its own with a scratch home, so none touches your settings or keychain. A click finds its element by the `.debug_selector(..)` the widgets give their ids; a `Select` made `.marked("format")` is opened as `select: format`, and `ui.choose("format", ".7z")` picks an option by its name. On CI they run on Linux for every pull request, with the format, clippy and every test (`.github/workflows/ci.yml`), and on Linux, macOS and Windows daily and by hand (Actions > UI tests); a pull request that changes them runs those too. To see one fail in detail: `cargo test -p packwing --features ui-tests --exact ui_tests::<path>::scenario --ignored --nocapture`, with `PACKWING_UI_TEST_DIR` set to a folder.
 
 ## Words on the screen
 

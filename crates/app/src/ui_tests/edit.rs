@@ -66,3 +66,29 @@ scenario!(
         assert_eq!(held.len(), 2, "{held:?}");
     }
 );
+
+scenario!(
+    /// A file added under a name the archive has already replaces it, or is skipped, as
+    /// chosen.
+    an_added_file_replaces_or_is_skipped,
+    |ui| {
+        let zip = opened_zip(ui);
+        let held = |ui: &Ui| {
+            let out = ui.work.join("out");
+            let _ = std::fs::remove_dir_all(&out);
+            let (keys, control) = (packwing_core::Keys::default(), packwing_core::Control::default());
+            packwing_core::extract(&zip, &out, &keys, &control).expect("it comes out");
+            std::fs::read_to_string(out.join("b.txt")).expect("b.txt")
+        };
+        for (choice, after) in [("Skip it", "b"), ("Replace it", "new")] {
+            let new = ui.file("new/b.txt", "new");
+            ui.ws(|ws, window, cx| ws.dropped(vec![new], window, cx));
+            ui.wait_for("add");
+            ui.choose("on-existing", choice);
+            ui.click("add");
+            ui.wait_for_no_dialog();
+            assert_eq!(held(ui), after, "{choice}");
+            assert_eq!(listed(&zip, None).len(), 2, "{choice}");
+        }
+    }
+);

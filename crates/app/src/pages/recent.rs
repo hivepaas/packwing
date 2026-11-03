@@ -62,7 +62,9 @@ impl Render for RecentPage {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
         let rows = self.archives.iter().enumerate().map(|(i, r)| {
+            let name = r.name.clone();
             div()
+                .debug_selector(move || format!("recent: {name}"))
                 .id(("recent", i))
                 .flex()
                 .items_center()

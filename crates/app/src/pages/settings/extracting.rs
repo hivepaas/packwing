@@ -25,8 +25,10 @@ pub struct Extracting {
 impl Extracting {
     pub fn new(cx: &mut Context<Self>) -> Self {
         let kept = prefs(cx);
-        let existing =
-            cx.new(|_| Select::new(&existing(), usize::from(kept.overwrite), SelectLook::Pill));
+        let existing = cx.new(|_| {
+            Select::new(&existing(), usize::from(kept.overwrite), SelectLook::Pill)
+                .marked("existing")
+        });
         let limit = cx.new(|_| {
             Select::new(
                 &LIMITS.map(|(name, limit)| match limit {

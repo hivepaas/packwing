@@ -10,7 +10,10 @@ scenario!(
             "sample.7z",
             "rar5_multiple_files.rar",
             "sample.iso.zst",
+            "sample-udf.iso.zst",
             "default.xar",
+            "tiny.pkg",
+            "test_rar_multivolume_multiple_files.part1.rar",
         ] {
             ui.open(&fixture(name));
             assert_eq!(ui.archive_failed(), None, "{name}");
@@ -141,6 +144,97 @@ scenario!(
         let work = ui.work.clone();
         for name in held.iter().filter(|n| !n.ends_with('/')) {
             assert!(work.join(name).exists(), "{name} did not come out");
+        }
+    }
+);
+
+/// A ZIP archive of `a.txt`, `b.txt` and `docs/deep/needle.txt`, made by the core, and opened.
+fn opened_tree(ui: &mut Ui) -> std::path::PathBuf {
+    ui.file("docs/deep/needle.txt", "found");
+    let paths = vec![
+        ui.file("a.txt", "a"),
+        ui.file("b.txt", "b"),
+        ui.work.join("docs"),
+    ];
+    let made = packwing_core::create(
+        &paths,
+        &ui.work.join("tree.zip"),
+        &packwing_core::NewArchive::default(),
+        &packwing_core::Control::default(),
+    )
+    .expect("the archive");
+    ui.open(&made);
+    assert_eq!(ui.archive_failed(), None);
+    made
+}
+
+scenario!(
+    /// The search finds what is deep in the archive, and a click on what it found goes
+    /// to its folder and chooses it.
+    search_finds_and_goes_to_it,
+    |ui| {
+        opened_tree(ui);
+        assert_eq!(ui.archive_folder(), Vec::<String>::new());
+        ui.type_in("Search inside this archive", "NEEDLE");
+        ui.wait_until("the search", |ui| ui.shown_in_archive() == ["needle.txt"]);
+        ui.click("entry-0");
+        assert_eq!(ui.archive_folder(), ["docs", "deep"]);
+        assert_eq!(ui.shown_in_archive(), ["needle.txt"]);
+        ui.wait_for("preview-text");
+    }
+);
+
+scenario!(
+    /// With a file chosen, Extract takes out that file alone; asked for all of it, the rest.
+    extract_takes_out_what_is_picked,
+    |ui| {
+        opened_tree(ui);
+        let a = ui.shown_in_archive().iter().position(|n| n == "a.txt").expect("a.txt");
+        ui.click(&format!("entry-{a}"));
+        ui.click("extract");
+        ui.wait_for("only-picked");
+        ui.click("dest-new");
+        ui.click("extract");
+        ui.wait_for_no_dialog();
+        let out = ui.work.join("tree");
+        let came = |out: &std::path::Path| {
+            let mut names: Vec<_> = std::fs::read_dir(out)
+                .expect("out")
+                .flatten()
+                .map(|e| e.file_name().to_string_lossy().into_owned())
+                .collect();
+            names.sort();
+            names
+        };
+        assert_eq!(came(&out), ["a.txt"]);
+        std::fs::remove_dir_all(&out).expect("out");
+        ui.click("extract");
+        ui.wait_for("all-of-it");
+        ui.click("all-of-it");
+        ui.click("dest-new");
+        ui.click("extract");
+        ui.wait_for_no_dialog();
+        assert_eq!(came(&out), ["a.txt", "b.txt", "docs"]);
+        assert!(out.join("docs/deep/needle.txt").exists());
+    }
+);
+
+scenario!(
+    /// Extract to a folder, from the right-click menu, puts the files in a folder named
+    /// after the archive.
+    extract_to_a_folder_from_the_right_click_menu,
+    |ui| {
+        let archive = ui.copy_of("sample.7z");
+        let held = listed(&archive, None);
+        let request = crate::right_click::Request {
+            action: crate::right_click::Action::ExtractToFolder,
+            paths: vec![archive],
+        };
+        ui.ws(|ws, window, cx| ws.start(request, window, cx));
+        ui.wait_for_no_dialog();
+        let out = ui.work.join("sample");
+        for name in held.iter().filter(|n| !n.ends_with('/')) {
+            assert!(out.join(name).exists(), "{name} did not come out in {out:?}");
         }
     }
 );
