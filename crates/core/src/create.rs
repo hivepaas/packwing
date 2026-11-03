@@ -76,6 +76,10 @@ impl Kind {
 /// takes longer to make, not to open.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Level {
+    /// Not at all: a ZIP or 7z archive's files go in as they are. What is
+    /// compressed whole, as a tar archive is, takes its lowest level, as plain
+    /// `.tar` is the one with none.
+    Store,
     Lowest,
     Low,
     #[default]
@@ -88,7 +92,7 @@ impl Level {
     /// The level Deflate is asked for: zlib's own default in the middle.
     fn deflate(self) -> u32 {
         match self {
-            Level::Lowest => 1,
+            Level::Store | Level::Lowest => 1,
             Level::Low => 3,
             Level::Medium => 6,
             Level::High => 8,
@@ -99,7 +103,7 @@ impl Level {
     /// The preset of LZMA and LZMA2: xz's own default in the middle.
     fn xz(self) -> u32 {
         match self {
-            Level::Lowest => 1,
+            Level::Store | Level::Lowest => 1,
             Level::Low => 3,
             Level::Medium => 6,
             Level::High => 7,
@@ -112,7 +116,7 @@ impl Level {
     /// bzip2's block size, in 100 KB: most of what it can find is within one.
     fn bzip2(self) -> i32 {
         match self {
-            Level::Lowest => 1,
+            Level::Store | Level::Lowest => 1,
             Level::Low => 5,
             Level::Medium | Level::High | Level::Highest => 9,
         }
@@ -121,7 +125,7 @@ impl Level {
     /// LZ4's level: its fast way up to the middle, as speed is why it is chosen.
     fn lz4(self) -> i32 {
         match self {
-            Level::Lowest => -1,
+            Level::Store | Level::Lowest => -1,
             Level::Low | Level::Medium => 1,
             Level::High => 9,
             Level::Highest => 12,
@@ -130,7 +134,7 @@ impl Level {
 
     fn zstd(self) -> i32 {
         match self {
-            Level::Lowest => 1,
+            Level::Store | Level::Lowest => 1,
             Level::Low => 3,
             Level::Medium => 9,
             Level::High => 15,
@@ -158,6 +162,10 @@ pub struct NewArchive {
     pub whole_with_age: bool,
     /// Encrypts a 7z archive's names too, with its password.
     pub hide_names: bool,
+    /// The extensions of files a ZIP archive holds as they are, whatever their
+    /// case: those compressed already, as [`COMPRESSED_EXTENSIONS`], which
+    /// squeezed again take time and come out no smaller.
+    pub stored_extensions: Vec<String>,
     /// Leaves out what only a Mac uses, under the paths chosen: `.DS_Store`,
     /// `__MACOSX` and the `._` files of resource forks.
     pub skip_mac_files: bool,
@@ -228,6 +236,7 @@ impl fmt::Debug for NewArchive {
             .field("password", &self.password.is_some())
             .field("whole_with_age", &self.whole_with_age)
             .field("hide_names", &self.hide_names)
+            .field("stored_extensions", &self.stored_extensions)
             .field("stream_above", &self.stream_above)
             .field("skip_mac_files", &self.skip_mac_files)
             .field("part_size", &self.part_size)
@@ -695,7 +704,11 @@ fn new_zip(
     if new.password.is_some() {
         za.set_default_password(new.password.as_deref());
     }
-    add_items(&mut za, items, new.level, new.password.is_some(), tally)?;
+    let how = Squeeze {
+        level: new.level,
+        stored: &new.stored_extensions,
+    };
+    add_items(&mut za, items, how, new.password.is_some(), tally)?;
     Ok(za)
 }
 
@@ -823,11 +836,45 @@ fn squeeze<W: Write>(
     Ok(out.finish()?)
 }
 
+/// How a ZIP archive's files are compressed.
+#[derive(Clone, Copy)]
+struct Squeeze<'a> {
+    level: Level,
+    /// See [`NewArchive::stored_extensions`].
+    stored: &'a [String],
+}
+
+/// The extensions of files that are compressed already: what squeezing again
+/// leaves no smaller. Not PDF or office documents, which often are.
+#[rustfmt::skip]
+pub const COMPRESSED_EXTENSIONS: &[&str] = &[
+    // Pictures.
+    "jpg", "jpeg", "png", "gif", "webp", "heic", "heif", "avif", "jxl",
+    // Video. Not `ts`, which is TypeScript as often.
+    "mp4", "m4v", "mov", "mkv", "webm", "avi", "wmv", "3gp", "mpg", "mpeg", "m2ts", "ogv", "flv",
+    // Sound.
+    "mp3", "m4a", "aac", "ogg", "oga", "opus", "flac", "wma", "amr",
+    // Archives, and what is encrypted.
+    "zip", "7z", "rar", "gz", "tgz", "bz2", "tbz2", "xz", "txz", "zst", "tzst", "lz4", "lzma",
+    "lz", "br", "cab", "dmg", "age",
+    // Packages, compressed inside.
+    "pkg", "xar", "deb", "rpm", "jar", "apk", "ipa", "whl", "nupkg", "appx", "msix", "snap",
+];
+
+/// Whether the file named `name` ends in one of `extensions`, whatever its case.
+fn has_extension_in(name: &str, extensions: &[impl AsRef<str>]) -> bool {
+    name.rsplit_once('.').is_some_and(|(_, ext)| {
+        extensions
+            .iter()
+            .any(|known| known.as_ref().eq_ignore_ascii_case(ext))
+    })
+}
+
 /// `items` in the ZIP archive `za`, to be read when it closes.
 fn add_items<R: ReadAt>(
     za: &mut Archive<R>,
     items: Vec<Item>,
-    level: Level,
+    how: Squeeze,
     encrypt: bool,
     tally: &Arc<Tally>,
 ) -> Result<(), Error> {
@@ -863,7 +910,11 @@ fn add_items<R: ReadAt>(
                 },
                 Flags::ENC_UTF_8,
             )?;
-            za.set_file_compression(index, cm::DEFAULT, level.deflate())?;
+            if how.level == Level::Store || has_extension_in(&item.name, how.stored) {
+                za.set_file_compression(index, i32::from(cm::STORE), 0)?;
+            } else {
+                za.set_file_compression(index, cm::DEFAULT, how.level.deflate())?;
+            }
             // Nothing to read, so nothing would count it.
             if item.metadata.len() == 0 {
                 tally.advance(1, 0);
@@ -934,10 +985,12 @@ fn write_7z<W: Write + Seek>(
                 .map_err(|_| Error::Failed(tr!("A password has to be valid Unicode.")))?,
         ),
     };
+    let method = match new.level {
+        Level::Store => hivepack_7z::Method::Copy,
+        level => hivepack_7z::Method::Lzma2 { preset: level.xz() },
+    };
     let options = hivepack_7z::WriteOptions {
-        method: hivepack_7z::Method::Lzma2 {
-            preset: new.level.xz(),
-        },
+        method,
         encrypt_headers: new.hide_names && password.is_some(),
         password,
         random_source: Some(Arc::new(|buffer: &mut [u8]| {
@@ -1289,7 +1342,7 @@ pub fn add(
     keys: &Keys,
     control: &Control,
 ) -> Result<(), Error> {
-    add_with(paths, archive, folder, OnExisting::Stop, keys, control)
+    add_with(paths, archive, folder, OnExisting::Stop, &[], keys, control)
 }
 
 /// Whether the archive at `path` is one that can be changed: a ZIP archive of
@@ -1436,12 +1489,15 @@ pub fn rename(archive: &Path, from: &[String], to: &str, keys: &Keys) -> Result<
 /// in its folder `folder`. A file whose name it holds goes as `on_existing` says;
 /// a file where it holds a folder, or the other way, always stops it. In an
 /// archive with encrypted files, the new ones are encrypted too, with its
-/// password. If this fails or is stopped, the archive is as it was.
+/// password. Files with `stored_extensions` go in as they are, as
+/// [`NewArchive::stored_extensions`] says.
+/// If this fails or is stopped, the archive is as it was.
 pub fn add_with(
     paths: &[PathBuf],
     archive: &Path,
     folder: &[String],
     on_existing: OnExisting,
+    stored_extensions: &[String],
     keys: &Keys,
     control: &Control,
 ) -> Result<(), Error> {
@@ -1549,7 +1605,11 @@ pub fn add_with(
     for index in replaced {
         za.delete(index)?;
     }
-    if let Err(e) = add_items(&mut za, new, Level::default(), encrypted.is_some(), &tally) {
+    let how = Squeeze {
+        level: Level::default(),
+        stored: stored_extensions,
+    };
+    if let Err(e) = add_items(&mut za, new, how, encrypted.is_some(), &tally) {
         return why(Err(e), &tally);
     }
     replace_with(za, archive, expected, |written| why(written, &tally))
@@ -1961,6 +2021,35 @@ pub fn create_on(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn what_is_compressed_already_is_known_by_its_extension() {
+        let known = COMPRESSED_EXTENSIONS;
+        for name in [
+            "a.jpg",
+            "b/c.PNG",
+            "film.mkv",
+            "x.tar.gz",
+            "y.7z",
+            "secret.age",
+            "Setup.pkg",
+        ] {
+            assert!(has_extension_in(name, known), "{name}");
+        }
+        for name in [
+            "a.txt",
+            "report.pdf",
+            "sheet.xlsx",
+            "jpg",
+            "noext",
+            "a.jpg.txt",
+            "app.ts",
+            "abcpng",
+        ] {
+            assert!(!has_extension_in(name, known), "{name}");
+        }
+        assert!(has_extension_in("a.RAW", &["raw".to_owned()]));
+    }
 
     #[test]
     fn room_is_asked_for_what_does_not_compress() {

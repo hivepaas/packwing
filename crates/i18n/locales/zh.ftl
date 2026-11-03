@@ -151,6 +151,9 @@ te9afe1c2 = 大多数电脑需要压缩软件或 lz4 工具才能打开。若要
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = 只能存放这一个文件。命令行工具可以打开；Windows 和 macOS 可能需要压缩软件。若要分享给任何人，请选择 .zip。
 
+# Store
+t6da32dce = 仅存储
+
 # Lowest
 t5d7dbfdb = 最低
 
@@ -192,6 +195,9 @@ ta1f147a6 = 保存到这里
 
 # Use these keys
 t1a01e439 = 使用这些密钥
+
+# No compression
+t2e9c9e78 = 不压缩
 
 # {name} compression
 te2db10f6 = { $name } 压缩
@@ -252,6 +258,9 @@ t701d5ed9 = 高级选项
 
 # Compression level
 td386c9ef = 压缩级别
+
+# Store puts the files in as they are: the quickest to make, and the largest.
+t076ef350 = 仅存储会原样放入文件：创建最快，体积最大。
 
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = 级别越高，压缩包越小，但生成时间更长，打开时间不变。
@@ -1198,11 +1207,17 @@ t0632975a = 访问 hivepaas.com
 # Always
 tad4bbd04 = 总是
 
+# Extensions, apart by spaces
+tc709375f = 扩展名，用空格分隔
+
 # Format of new archives
 t3b50d238 = 新压缩包的格式
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = 新建压缩包时默认使用它；你也可以在那里选择其他格式。
+
+# Store puts the files of ZIP and 7z archives in as they are. tar formats take Lowest, as .tar alone has no compression.
+t2595cbcb = 仅存储会原样放入 ZIP 和 7z 压缩包中的文件。tar 格式使用“最低”，因为只有 .tar 不压缩。
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = 级别越高，压缩包越小，但生成时间更长，打开时间不变。
@@ -1212,6 +1227,21 @@ ta4975128 = 直接写入上方的存储
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = 较大的文件不占用此电脑的空间，但连接中断就得重新压缩。S3 以这种方式支持 tar 和 ZIP，SFTP 则支持所有格式。
+
+# Don’t compress what already is
+t940ec31d = 不再压缩已压缩的文件
+
+# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
+tb10eab86 = ZIP：图片、视频、音频和压缩包原样放入，更快且不会变大
+
+# What goes in as it is
+tc0104b29 = 原样放入的文件
+
+# Files whose names end in these, whatever their case
+ta3acef9b = 名称以这些结尾的文件，不区分大小写
+
+# Reset to default
+t0db9f7dc = 恢复默认
 
 # Leave out Mac-only files
 t27eec14f = 排除仅限 Mac 的文件

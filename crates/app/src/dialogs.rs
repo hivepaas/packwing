@@ -105,6 +105,8 @@ pub struct Adding {
     /// The folder of it they go in.
     pub folder: Vec<String>,
     pub on_existing: OnExisting,
+    /// See [`packwing_core::NewArchive::stored_extensions`].
+    pub stored_extensions: Vec<String>,
 }
 
 /// A change to what an archive holds, by paths in it.

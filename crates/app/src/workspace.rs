@@ -1121,6 +1121,7 @@ impl Workspace {
                     how: NewArchive {
                         level: prefs::prefs(cx).level,
                         skip_mac_files: prefs::prefs(cx).skip_mac_files,
+                        stored_extensions: prefs::stored_extensions(cx),
                         ..NewArchive::default()
                     },
                 });

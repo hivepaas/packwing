@@ -10,7 +10,9 @@ use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use gpui::{App, Global};
-use packwing_core::{ExtractOptions, Level, PublicKey, Values, read_public_key};
+use packwing_core::{
+    COMPRESSED_EXTENSIONS, ExtractOptions, Level, PublicKey, Values, read_public_key,
+};
 
 use crate::dialogs::Format;
 use crate::pages::settings::Appearance;
@@ -126,6 +128,12 @@ pub struct Prefs {
     pub level: Level,
     pub hide_names: bool,
     pub skip_mac_files: bool,
+    /// ZIP stores what is compressed already as it is: see
+    /// [`packwing_core::NewArchive::stored_extensions`].
+    pub store_compressed: bool,
+    /// The extensions it knows that by, if changed from
+    /// [`COMPRESSED_EXTENSIONS`]: none follows the list as it grows.
+    pub stored_extensions: Option<Vec<String>>,
     /// In bytes: files that come to more go straight to a storage that can take
     /// them that way, and the rest through a temporary file.
     pub stream_above: u64,
@@ -169,6 +177,8 @@ impl Default for Prefs {
             level: Level::Medium,
             hide_names: true,
             skip_mac_files: true,
+            store_compressed: true,
+            stored_extensions: None,
             stream_above: 500_000_000,
             extract_to: ExtractTo::Smart,
             overwrite: false,
@@ -257,6 +267,8 @@ impl Prefs {
                 }
                 "hide_names" => p.hide_names = on(value, p.hide_names),
                 "skip_mac_files" => p.skip_mac_files = on(value, p.skip_mac_files),
+                "store_compressed" => p.store_compressed = on(value, p.store_compressed),
+                "stored_extensions" => p.stored_extensions = Some(extensions_in(value)),
                 "stream_above" => p.stream_above = value.parse().unwrap_or(p.stream_above),
                 "extract_to" => p.extract_to = ExtractTo::named(value).unwrap_or(p.extract_to),
                 // What it was before there was Smart: a new folder was the
@@ -367,17 +379,21 @@ impl Prefs {
         }
         text += &format!(
             "appearance={appearance}\nformat={}\nlevel={level}\nhide_names={}\n\
-             skip_mac_files={}\nstream_above={}\nextract_to={}\noverwrite={}\nlimit={limit}\nkeep_mark={}\n\
+             skip_mac_files={}\nstore_compressed={}\nstream_above={}\nextract_to={}\noverwrite={}\nlimit={limit}\nkeep_mark={}\n\
              ask_before_open={}\n",
             self.format.ext(),
             self.hide_names,
             self.skip_mac_files,
+            self.store_compressed,
             self.stream_above,
             self.extract_to.name(),
             self.overwrite,
             self.keep_mark,
             self.ask_before_open,
         );
+        if let Some(extensions) = &self.stored_extensions {
+            text += &format!("stored_extensions={}\n", extensions.join(" "));
+        }
         for opened in &self.recent {
             if let Some(path) = opened.path.to_str().filter(|p| !p.contains('\n')) {
                 text.push_str(&format!("recent={} {path}\n", opened.at));
@@ -552,6 +568,42 @@ pub fn has_network_storage(cx: &App) -> bool {
     })
 }
 
+/// The extensions ZIP stores as they are: none if that is off.
+pub fn stored_extensions(cx: &App) -> Vec<String> {
+    cx.try_global::<Prefs>()
+        .filter(|p| p.store_compressed)
+        .map(|p| {
+            p.stored_extensions
+                .clone()
+                .unwrap_or_else(default_extensions)
+        })
+        .unwrap_or_default()
+}
+
+/// [`COMPRESSED_EXTENSIONS`], as the preferences keep them.
+pub fn default_extensions() -> Vec<String> {
+    COMPRESSED_EXTENSIONS
+        .iter()
+        .map(|e| e.to_string())
+        .collect()
+}
+
+/// The extensions in `text`, as typed: apart by spaces or commas, with or
+/// without their dot (or `*.`), each once, in lower case.
+pub fn extensions_in(text: &str) -> Vec<String> {
+    let mut found: Vec<String> = Vec::new();
+    for word in text.split(|c: char| c.is_whitespace() || c == ',' || c == ';') {
+        let ext = word
+            .trim_start_matches('*')
+            .trim_start_matches('.')
+            .to_lowercase();
+        if !ext.is_empty() && !found.contains(&ext) {
+            found.push(ext);
+        }
+    }
+    found
+}
+
 /// Changes the preferences and keeps them. One that cannot be written lasts
 /// for this run, and says so where a user of a terminal can see it.
 pub fn change(cx: &mut App, f: impl FnOnce(&mut Prefs)) {
@@ -566,6 +618,19 @@ pub fn change(cx: &mut App, f: impl FnOnce(&mut Prefs)) {
 #[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn extensions_are_read_as_typed_and_none_kept_is_the_known_list() {
+        assert_eq!(
+            extensions_in(" .JPG, png;*.Raw  raw\nheic "),
+            ["jpg", "png", "raw", "heic"]
+        );
+        assert!(extensions_in(" , . ").is_empty());
+        let p = Prefs::parse("language=en\n");
+        assert!(p.store_compressed && p.stored_extensions.is_none());
+        let p = Prefs::parse("stored_extensions=\n");
+        assert_eq!(p.stored_extensions, Some(Vec::new()));
+    }
 
     #[test]
     fn what_a_look_for_updates_found_comes_back() {
@@ -661,6 +726,8 @@ mod tests {
             level: Level::Highest,
             hide_names: false,
             skip_mac_files: false,
+            store_compressed: false,
+            stored_extensions: Some(vec!["raw".to_owned(), "cr2".to_owned()]),
             stream_above: 1_000_000_000,
             extract_to: ExtractTo::Here,
             overwrite: true,

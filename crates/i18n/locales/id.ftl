@@ -151,6 +151,9 @@ te9afe1c2 = Sebagian besar komputer memerlukan aplikasi arsip atau alat lz4 untu
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = Berisi satu berkas ini saja. Alat baris perintah dapat membukanya; Windows dan macOS mungkin memerlukan aplikasi arsip. Untuk dibagikan ke siapa saja, pilih .zip.
 
+# Store
+t6da32dce = Simpan
+
 # Lowest
 t5d7dbfdb = Terendah
 
@@ -192,6 +195,9 @@ ta1f147a6 = Simpan di sini
 
 # Use these keys
 t1a01e439 = Gunakan kunci ini
+
+# No compression
+t2e9c9e78 = Tanpa kompresi
 
 # {name} compression
 te2db10f6 = Kompresi { $name }
@@ -252,6 +258,9 @@ t701d5ed9 = Opsi lanjutan
 
 # Compression level
 td386c9ef = Tingkat kompresi
+
+# Store puts the files in as they are: the quickest to make, and the largest.
+t076ef350 = Simpan memasukkan file apa adanya: paling cepat dibuat, dan paling besar.
 
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = Makin tinggi, arsip makin kecil, dan makin lama dibuat, bukan dibuka.
@@ -1198,11 +1207,17 @@ t0632975a = Kunjungi hivepaas.com
 # Always
 tad4bbd04 = Selalu
 
+# Extensions, apart by spaces
+tc709375f = Ekstensi, dipisahkan spasi
+
 # Format of new archives
 t3b50d238 = Format arsip baru
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = Arsip baru dimulai dengan format ini; Anda dapat memilih yang lain di sana.
+
+# Store puts the files of ZIP and 7z archives in as they are. tar formats take Lowest, as .tar alone has no compression.
+t2595cbcb = Simpan memasukkan file arsip ZIP dan 7z apa adanya. Format tar memakai Terendah, karena hanya .tar yang tanpa kompresi.
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = Makin tinggi, arsip makin kecil, dan makin lama dibuat, bukan dibuka.
@@ -1212,6 +1227,21 @@ ta4975128 = Tulis langsung ke penyimpanan di atas
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = Berkas yang lebih besar tidak memakan ruang di komputer ini, tetapi koneksi yang putus berarti kompresi ulang. S3 menerima tar dan ZIP dengan cara ini, SFTP menerima semua format.
+
+# Don’t compress what already is
+t940ec31d = Jangan kompres yang sudah terkompresi
+
+# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
+tb10eab86 = Untuk ZIP: gambar, video, audio, dan arsip masuk apa adanya, lebih cepat dan tidak lebih besar
+
+# What goes in as it is
+tc0104b29 = Yang masuk apa adanya
+
+# Files whose names end in these, whatever their case
+ta3acef9b = File yang namanya berakhir dengan ini, huruf besar atau kecil
+
+# Reset to default
+t0db9f7dc = Kembalikan ke bawaan
 
 # Leave out Mac-only files
 t27eec14f = Lewati berkas khusus Mac

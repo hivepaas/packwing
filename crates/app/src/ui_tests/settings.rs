@@ -1,6 +1,6 @@
 //! Settings: what is chosen stays, and the license is taken or refused.
 
-use super::scenario;
+use super::{Ui, scenario};
 use packwing_license::Plan;
 
 scenario!(
@@ -13,6 +13,31 @@ scenario!(
         assert!(!ui.ws(|_, _, cx| crate::prefs::prefs(cx).keep_mark));
         ui.start();
         assert!(!ui.ws(|_, _, cx| crate::prefs::prefs(cx).keep_mark));
+    }
+);
+
+scenario!(
+    /// The extensions stored as they are can be typed, stay through a restart, and Reset
+    /// brings back the known list.
+    stored_extensions_are_typed_and_reset,
+    |ui| {
+        let kept = |ui: &mut Ui| ui.ws(|_, _, cx| crate::prefs::prefs(cx).stored_extensions);
+        let mine = Some(vec!["raw".to_owned(), "cr2".to_owned()]);
+        ui.settings(2);
+        assert_eq!(kept(ui), None);
+        assert!(!ui.shows("extensions-reset"));
+        ui.replace_in("Extensions, apart by spaces", ".RAW, cr2");
+        assert_eq!(kept(ui), mine);
+        assert_eq!(
+            ui.ws(|_, _, cx| crate::prefs::stored_extensions(cx)),
+            ["raw", "cr2"]
+        );
+        ui.start();
+        assert_eq!(kept(ui), mine);
+        ui.settings(2);
+        ui.click("extensions-reset");
+        assert_eq!(kept(ui), None);
+        assert!(!ui.shows("extensions-reset"));
     }
 );
 
