@@ -896,7 +896,8 @@ impl Workspace {
     /// Asks which archive on a storage to open, and opens it.
     pub fn choose_stored_archive(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let (places, chosen) = self.storages.read(cx).places(cx);
-        let view = cx.new(|cx| OpenStoredDialog::new(places, chosen, cx));
+        let storages = self.storages.clone();
+        let view = cx.new(|cx| OpenStoredDialog::new(places, chosen, storages, cx));
         self.show(view, true, window, cx);
     }
 
@@ -931,8 +932,10 @@ impl Workspace {
             places.insert(0, from.clone());
             chosen = 0;
         }
-        let view =
-            cx.new(|cx| TransferDialog::new(from, folder, names, moving, places, chosen, cx));
+        let storages = self.storages.clone();
+        let view = cx.new(|cx| {
+            TransferDialog::new(from, folder, names, moving, (places, chosen), storages, cx)
+        });
         self.show(view, true, window, cx);
     }
 
@@ -1004,8 +1007,10 @@ impl Workspace {
         cx: &mut Context<Self>,
     ) -> Entity<CreateDialog> {
         let (places, chosen) = self.storages.read(cx).places(cx);
-        let view =
-            cx.new(|cx| CreateDialog::new(Selection::default(), cx).with_places(places, chosen));
+        let storages = self.storages.clone();
+        let view = cx.new(|cx| {
+            CreateDialog::new(Selection::default(), cx).with_places(places, chosen, storages, cx)
+        });
         if !paths.is_empty() {
             view.update(cx, |d, cx| d.add(paths, cx));
         }

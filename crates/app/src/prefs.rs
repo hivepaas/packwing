@@ -557,15 +557,12 @@ pub fn prefs(cx: &App) -> Prefs {
     cx.try_global::<Prefs>().cloned().unwrap_or_default()
 }
 
-/// Whether a storage across a network is kept: one on this computer is a
-/// folder the system's dialogs reach too.
-pub fn has_network_storage(cx: &App) -> bool {
-    cx.try_global::<Prefs>().is_some_and(|p| {
-        p.storages_kept
-            && p.storages
-                .iter()
-                .any(|s| matches!(s.place, KeptPlace::Other { .. }))
-    })
+/// Whether the user has storages of their own: one they added, here or across a
+/// network, says they mean to use them. The home and Downloads folders the page
+/// starts with, before any change, are not.
+pub fn has_storage(cx: &App) -> bool {
+    cx.try_global::<Prefs>()
+        .is_some_and(|p| p.storages_kept && !p.storages.is_empty())
 }
 
 /// The extensions ZIP stores as they are: none if that is off.

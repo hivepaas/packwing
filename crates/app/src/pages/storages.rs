@@ -142,14 +142,11 @@ impl StoragesPage {
     }
 
     /// The storages this build can reach, and the index of the one chosen. One
-    /// that asks first is not among them until it has asked.
+    /// that asks first is among them locked ([`Self::is_locked`]) until it has asked.
     pub fn places(&self, cx: &App) -> (Vec<Place>, usize) {
         let mut chosen = 0;
         let mut places = Vec::new();
         for (i, s) in self.storages.iter().enumerate() {
-            if self.locked(s) {
-                continue;
-            }
             if let Some(place) = Self::place_of(s, cx) {
                 if self.chosen == Some(i) {
                     chosen = places.len();
@@ -175,6 +172,7 @@ impl StoragesPage {
                     name: s.name.clone(),
                     tag: k.tag(),
                     storage: k.open(id, values, None),
+                    asks_first: s.asks_first(),
                 })
             }
         }
@@ -182,6 +180,12 @@ impl StoragesPage {
 
     fn locked(&self, s: &KeptStorage) -> bool {
         s.asks_first() && !self.confirmed
+    }
+
+    /// Whether `place`, of [`Self::places`], waits to be told it is the user: a
+    /// dialog shows [`Self::locked_view`] for it until it has.
+    pub fn is_locked(&self, place: &Place) -> bool {
+        place.asks_first && !self.confirmed
     }
 
     /// The storage chosen, if it waits to be told it is the user.
@@ -640,8 +644,9 @@ impl StoragesPage {
             )
     }
 
-    /// What is shown of a storage that asks first, until it has.
-    fn locked_view(&self, name: String, cx: &mut Context<Self>) -> Div {
+    /// What is shown of a storage that asks first, until it has: on this page, and
+    /// in a dialog that chooses a place.
+    pub fn locked_view(&self, name: String, cx: &mut Context<Self>) -> Div {
         let c = colors();
         let typed = confirmer(cx).how() == Some(How::Password);
         div()

@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 79] = [
+const SCREENS: [(&str, SetUp); 80] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -237,6 +237,13 @@ const SCREENS: [(&str, SetUp); 79] = [
         cx.set_global(fake_extensions());
         add_far(ws, "Far one", std::path::Path::new("/far"), false, cx);
         ws.open_add_storage(window, cx);
+    }),
+    ("storages-open-locked", |ws, window, cx| {
+        cx.set_global(fake_extensions());
+        cx.set_global(crate::confirm::ConfirmWith(Arc::new(Confirms("right"))));
+        add_far(ws, "Far one", std::path::Path::new("/far"), true, cx);
+        ws.show_page(Page::Archive, cx);
+        ws.choose_stored_archive(window, cx);
     }),
     ("storages-remove", |ws, window, cx| {
         cx.set_global(fake_extensions());
@@ -1386,7 +1393,12 @@ fn a_storage_that_asks_first_shows_nothing_until_it_has() {
         window
             .update(cx, |_, _, cx| {
                 let p = page.read(cx);
-                let offered = p.places(cx).0.iter().any(|s| s.name == "Far one");
+                // On the list, and open to browse.
+                let offered = p
+                    .places(cx)
+                    .0
+                    .iter()
+                    .any(|s| s.name == "Far one" && !p.is_locked(s));
                 (
                     p.is_chosen_locked(),
                     offered,
@@ -2529,6 +2541,7 @@ fn a_file_across_a_network_is_checked_only_when_asked() {
                 name: "Far".into(),
                 tag: "FAR",
                 storage: Arc::new(Far(packwing_core::LocalFolder::new(&dir))),
+                asks_first: false,
             };
             explorer.update(cx, |e, cx| e.show_place(Some(place), cx));
         })

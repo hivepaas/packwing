@@ -146,7 +146,7 @@ scenario!(
     an_archive_is_chosen_on_a_storage,
     |ui| {
         ui.wait_for("open-archive");
-        assert!(!ui.shows("open-stored"), "offered with no storage across a network");
+        assert!(!ui.shows("open-stored"), "offered with no storage of the user's");
         let far = ui.work.join("far");
         std::fs::create_dir_all(far.join("old")).expect("the folder");
         std::fs::copy(
@@ -235,5 +235,98 @@ scenario!(
         assert!(folder.is_dir());
         ui.start();
         assert_eq!(count(ui), before - 1);
+    }
+);
+
+scenario!(
+    /// A folder on this computer added as a storage is enough for the Archive page to
+    /// offer opening from a storage, and an archive in it opens from there.
+    a_folder_added_offers_opening_from_it,
+    |ui| {
+        ui.wait_for("open-archive");
+        assert!(!ui.shows("open-stored"), "offered before any storage was added");
+        let here = ui.work.join("here");
+        std::fs::create_dir_all(&here).expect("the folder");
+        std::fs::copy(crate::ui_tests::fixture("sample.7z"), here.join("sample.7z"))
+            .expect("the fixture");
+        ui.storage(&here);
+        ui.click("nav-archive");
+        ui.click("open-stored");
+        ui.wait_for("pick: sample.7z");
+        ui.click("pick: sample.7z");
+        ui.wait_for_no_dialog();
+        ui.wait_until("the archive read", |ui| !ui.archive_names().is_empty());
+    }
+);
+
+/// What says it is the user: the password `right`, typed in packwing.
+struct Confirms;
+
+impl crate::confirm::Confirmer for Confirms {
+    fn how(&self) -> Option<crate::confirm::How> {
+        Some(crate::confirm::How::Password)
+    }
+    fn ask(&self, _: &str, _: &str) -> Result<bool, String> {
+        Err("it is typed here".into())
+    }
+    fn check_password(&self, password: &str) -> Result<bool, String> {
+        Ok(password == "right")
+    }
+}
+
+scenario!(
+    /// A storage that asks for this computer's password first is offered locked:
+    /// chosen in a dialog, it asks for the password there, and shows its archives
+    /// once it is right. Left long enough, it asks again in New archive's Save in.
+    a_locked_storage_asks_in_the_dialog,
+    |ui| {
+        ui.cx.update(|cx| {
+            cx.set_global(crate::confirm::ConfirmWith(std::sync::Arc::new(Confirms)));
+        });
+        let far = ui.work.join("far");
+        std::fs::create_dir_all(&far).expect("the folder");
+        std::fs::copy(crate::ui_tests::fixture("sample.7z"), far.join("sample.7z"))
+            .expect("the fixture");
+        ui.ws(|ws, window, cx| ws.open_add_storage(window, cx));
+        ui.wait_for("kind-0");
+        ui.click("kind-0");
+        ui.type_in("Name", "Far");
+        ui.type_in("Folder", &far.display().to_string());
+        ui.click("storage-asks-first");
+        ui.click("storage-add");
+        ui.wait_for_no_dialog();
+        ui.click("nav-archive");
+        ui.click("open-stored");
+        ui.click("place: Far");
+        ui.wait_for("storage-unlock");
+        assert!(!ui.shows("pick: sample.7z"), "shown while locked");
+        ui.type_in("Password", "wrong");
+        ui.click("storage-unlock");
+        assert!(ui.shows("storage-unlock"), "opened with the wrong password");
+        ui.replace_in("Password", "right");
+        ui.click("storage-unlock");
+        ui.wait_for("pick: sample.7z");
+        ui.click("pick: sample.7z");
+        ui.wait_for_no_dialog();
+        ui.wait_until("the archive read", |ui| !ui.archive_names().is_empty());
+
+        // Left long enough, it shuts again; Save in asks for it as well.
+        let shut = ui.ws(|ws, _, cx| ws.storages_page().update(cx, |p, cx| p.leave_for_long(cx)));
+        assert!(shut);
+        let paths = vec![ui.file("a.txt", "a")];
+        ui.ws(|ws, window, cx| ws.open_create(paths, window, cx));
+        ui.wait_for("create");
+        ui.click("change-storage");
+        ui.click("place: Far");
+        ui.wait_for("storage-unlock");
+        ui.click("save-here");
+        assert!(ui.shows("storage-unlock"), "saved on it while locked");
+        ui.type_in("Password", "right");
+        ui.click("storage-unlock");
+        ui.wait_until("the storage open", |ui| !ui.shows("storage-unlock"));
+        ui.click("save-here");
+        ui.click("create");
+        ui.wait_for_no_dialog();
+        ui.wait_until("the archive there", |_| far.join("a.zip").exists());
     }
 );

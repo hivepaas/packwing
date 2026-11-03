@@ -69,6 +69,8 @@ pub struct Place {
     /// The letters on its tile.
     pub tag: &'static str,
     pub storage: Arc<dyn Storage>,
+    /// It asks for this computer's password before it opens.
+    pub asks_first: bool,
 }
 
 impl Place {
@@ -78,6 +80,7 @@ impl Place {
             name,
             tag: LOCAL_TAG,
             storage: Arc::new(packwing_core::LocalFolder::new(path)),
+            asks_first: false,
         }
     }
 

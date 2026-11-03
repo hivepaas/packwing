@@ -482,8 +482,8 @@ impl ArchivePage {
                 .flex_shrink_0()
                 .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Open))),
             )
-            // The system's dialog reaches this computer's folders, not a network.
-            .when(prefs::has_network_storage(cx), |d| {
+            // Beside the system's dialog, the storages the user added.
+            .when(prefs::has_storage(cx), |d| {
                 d.child(
                     button(
                         "open-stored",
@@ -979,8 +979,8 @@ impl ArchivePage {
                     .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Open))),
                 )
             })
-            // The system's dialog reaches this computer's folders, not a network.
-            .when(offer && prefs::has_network_storage(cx), |d| {
+            // Beside the system's dialog, the storages the user added.
+            .when(offer && prefs::has_storage(cx), |d| {
                 d.child(
                     button(
                         "open-stored",
