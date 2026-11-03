@@ -408,6 +408,8 @@ pub struct Select {
     chosen: usize,
     open: bool,
     look: SelectLook,
+    /// What a test clicks to open it: `select: {mark}`.
+    mark: Option<&'static str>,
 }
 
 /// Another option of a [`Select`] was chosen: [`Select::chosen`] says which.
@@ -425,7 +427,14 @@ impl Select {
             chosen: chosen.min(options.len().saturating_sub(1)),
             open: false,
             look,
+            mark: None,
         }
+    }
+
+    /// Is clicked by tests as `select: {mark}`, and its options as `option: {name}`.
+    pub fn marked(mut self, mark: &'static str) -> Self {
+        self.mark = Some(mark);
+        self
     }
 
     /// Has `options` from now on, and chooses the one at `chosen`.
@@ -470,8 +479,9 @@ impl Select {
         let c = colors();
         let items = self.options.iter().enumerate().map(|(i, o)| {
             let on = i == self.chosen;
+            let name = o.clone();
             div()
-                .debug_selector(|| format!("option-{i}"))
+                .debug_selector(move || format!("option: {name}"))
                 .id(("option", i))
                 .flex_shrink_0()
                 .h(px(40.))
@@ -494,6 +504,7 @@ impl Select {
                 .when(on, |d| d.child(icon("check", 16., c.accent)))
         });
         let menu = div()
+            .debug_selector(|| "menu".to_owned())
             .id("menu")
             // A press on it is not one elsewhere: the catcher below would close
             // the menu before the press's release chooses the option.
@@ -545,7 +556,11 @@ impl Render for Select {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
         let label = self.options.get(self.chosen).cloned().unwrap_or_default();
+        let mark = self.mark;
         let trigger = div()
+            .when_some(mark, |d, mark| {
+                d.debug_selector(move || format!("select: {mark}"))
+            })
             .id("select")
             .flex()
             .items_center()

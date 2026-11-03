@@ -46,8 +46,9 @@ impl Compressing {
             .iter()
             .position(|f| *f == kept.format)
             .unwrap_or(0);
-        let format =
-            cx.new(|_| Select::new(&Format::ALL.map(Format::ext), chosen, SelectLook::Pill));
+        let format = cx.new(|_| {
+            Select::new(&Format::ALL.map(Format::ext), chosen, SelectLook::Pill).marked("format")
+        });
         let format_chosen = cx.subscribe(&format, |_, select, _: &Chosen, cx| {
             let format = Format::of_option(select.read(cx).chosen());
             change(cx, |p| p.format = format);

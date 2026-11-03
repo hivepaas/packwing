@@ -313,6 +313,25 @@ impl ArchivePage {
         }
     }
 
+    /// The names the list shows, searched or not, for tests.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn shown_names(&self, cx: &gpui::App) -> Vec<String> {
+        self.archive()
+            .map(|a| {
+                self.shown(a, cx)
+                    .into_iter()
+                    .map(|(_, e, _)| e.name)
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
+    /// Where in the archive the list is, for tests.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn shown_folder(&self) -> Vec<String> {
+        self.archive().map(|a| a.folder.clone()).unwrap_or_default()
+    }
+
     /// The text the preview shows, and whether it is still reading, for tests.
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn previewed(&self) -> (Option<String>, bool) {
@@ -397,7 +416,7 @@ impl ArchivePage {
 
     /// What to list: the folder's entries; with something typed, what the
     /// search found, each with where it is.
-    fn shown(&self, a: &Archive, cx: &Context<Self>) -> Vec<(usize, Entry, Option<Vec<String>>)> {
+    fn shown(&self, a: &Archive, cx: &gpui::App) -> Vec<(usize, Entry, Option<Vec<String>>)> {
         let query = self.search.read(cx).text().trim().to_lowercase();
         if !query.is_empty() && a.listing.is_some() {
             return self

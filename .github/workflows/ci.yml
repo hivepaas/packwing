@@ -1,0 +1,81 @@
+name: CI
+
+# On every pull request and push to main, on Linux: the format, the catalogs, clippy,
+# every test, and the UI scenarios. The scenarios on macOS and Windows, which take
+# longer to build, run daily (ui-tests.yml).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Linux packages (GPUI: Wayland, X11, Vulkan, fonts; PAM)"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential pkg-config libfontconfig-dev libfreetype-dev \
+            libwayland-dev libxkbcommon-dev libxkbcommon-x11-dev \
+            libx11-xcb-dev libxcb1-dev libxcb-xkb-dev libxcb-shape0-dev libxcb-xfixes0-dev \
+            libvulkan-dev libdbus-1-dev libzstd-dev libpam0g-dev
+
+      # The version and its components: rust-toolchain.toml.
+      - name: Rust
+        run: rustup toolchain install
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: lint
+
+      # en.ftl follows the code, and no catalog has what the code no longer says.
+      - name: Catalogs
+        run: python3 scripts/i18n.py check
+
+      - name: Format and clippy
+        run: make lint
+
+      # The screenshots' build, which only Linux has (make test-window).
+      - name: Clippy (with the screenshots)
+        run: cargo clippy -p packwing --no-default-features --features wayland,shots --all-targets -- -D warnings
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Linux packages (GPUI: Wayland, X11, Vulkan, fonts; PAM)"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential pkg-config libfontconfig-dev libfreetype-dev \
+            libwayland-dev libxkbcommon-dev libxkbcommon-x11-dev \
+            libx11-xcb-dev libxcb1-dev libxcb-xkb-dev libxcb-shape0-dev libxcb-xfixes0-dev \
+            libvulkan-dev libdbus-1-dev libzstd-dev libpam0g-dev
+
+      - name: Rust
+        run: rustup toolchain install
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: test
+
+      - name: Tests
+        run: make test
+
+      # Whatever the tests said: both are worth seeing in one run.
+      - name: UI scenarios
+        if: success() || failure()
+        run: make test-ui
