@@ -1,10 +1,12 @@
-//! Security: what packwing checks and keeps when it extracts. What an organization
-//! fixed is shown locked, with its name in the policy, and only the rest can be changed.
+//! Security: what packwing checks and keeps when it extracts, the keys whose signatures
+//! it trusts and the checksums it shows. What an organization fixed is shown locked,
+//! with its name in the policy, and only the rest can be changed.
 
 use gpui::{
     Context, Entity, FontWeight, PathPromptOptions, Render, SharedString, Window, div, prelude::*,
     relative, rgb,
 };
+use packwing_core::Algorithm;
 use packwing_i18n::tr;
 use packwing_policy::{
     ALLOWED_ENCRYPTION_METHODS, LICENSE_KEY, MARK_STORAGE_FILES, MIN_PASSWORD_LENGTH,
@@ -16,19 +18,9 @@ use crate::colors::{Tint, colors};
 use crate::input::TextInput;
 use crate::prefs;
 use crate::text_size::ui;
-use crate::widgets::{Fill, Size, Tone, button, icon, legend, note, switch, tile};
-
-/// Monospace fonts for the policies' names, the first one installed.
-pub(super) const MONO_FONTS: [&str; 8] = [
-    "SF Mono",
-    "Menlo",
-    "Cascadia Mono",
-    "Consolas",
-    "JetBrains Mono",
-    "DejaVu Sans Mono",
-    "Liberation Mono",
-    "Ubuntu Mono",
-];
+use crate::widgets::{
+    Fill, Size, Tone, button, check_row, icon, legend, mono_font, note, switch, tile,
+};
 
 /// What a switch sets.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -263,6 +255,48 @@ impl Security {
             )
     }
 
+    /// Which checksums a file's Checksums… shows: one at least.
+    fn checksums(cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let c = colors();
+        let shown = prefs::prefs(cx).checksums;
+        let boxes = Algorithm::ALL.into_iter().map(|a| {
+            let on = shown.contains(&a);
+            let label = if a.is_weak() {
+                tr!("{name} (weak)", name = a.name())
+            } else {
+                a.name().to_owned()
+            };
+            check_row(("checksum", a as usize), on, label).on_click(cx.listener(
+                move |_, _, _, cx| {
+                    prefs::change(cx, |p| p.show_checksum(a, !on));
+                    cx.notify();
+                },
+            ))
+        });
+        div()
+            .flex()
+            .flex_col()
+            .gap(ui(8.))
+            .child(legend(tr!("Checksums")))
+            .child(div().text_size(ui(13.)).text_color(rgb(c.muted)).child(tr!(
+                "What Checksums… in a file’s menu shows, to compare with the one given \
+                     where the file came from. A weak one still tells a damaged file, but \
+                     not one changed on purpose."
+            )))
+            .child(
+                div()
+                    .flex()
+                    .flex_wrap()
+                    .gap_x(ui(24.))
+                    .gap_y(ui(12.))
+                    .px(ui(18.))
+                    .py(ui(16.))
+                    .rounded(ui(22.))
+                    .bg(rgb(c.well))
+                    .children(boxes),
+            )
+    }
+
     fn banner(policy: &Policy) -> impl IntoElement {
         let c = colors();
         let by = match &policy.organization {
@@ -364,21 +398,11 @@ impl Security {
 
 impl Render for Security {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let mono = self
-            .mono
-            .get_or_insert_with(|| {
-                let installed = window.text_system().all_font_names();
-                MONO_FONTS
-                    .iter()
-                    .find(|f| installed.iter().any(|i| i == *f))
-                    .copied()
-                    .unwrap_or(crate::FONT)
-                    .into()
-            })
-            .clone();
+        let mono = self.mono.get_or_insert_with(|| mono_font(window)).clone();
         let policy = crate::managed::policy(cx).clone();
         let locks_mark = policy.locks_mark();
         let trusted = self.trusted_keys(cx);
+        let checksums = Self::checksums(cx);
         let open = self
             .toggles
             .iter()
@@ -403,7 +427,11 @@ impl Render for Security {
                 )
             });
         if !policy.is_managed() {
-            return section().gap(ui(20.)).child(rows(open)).child(trusted);
+            return section()
+                .gap(ui(20.))
+                .child(rows(open))
+                .child(trusted)
+                .child(checksums);
         }
         let shown = policy.rows();
         let fixed = shown
@@ -422,5 +450,6 @@ impl Render for Security {
             .child(Self::banner(&policy))
             .child(rows(fixed.chain(open)))
             .child(trusted)
+            .child(checksums)
     }
 }

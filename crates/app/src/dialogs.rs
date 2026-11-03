@@ -4,6 +4,7 @@
 
 mod add;
 mod add_storage;
+mod checksum;
 mod chosen;
 mod create;
 mod delete_items;
@@ -21,6 +22,7 @@ mod view_file;
 
 pub use add::AddDialog;
 pub use add_storage::AddStorageDialog;
+pub use checksum::ChecksumDialog;
 pub use create::CreateDialog;
 pub(crate) use create::{Format, LEVELS, Level, level_name};
 pub use delete_items::DeleteDialog;
@@ -237,6 +239,8 @@ pub enum DialogEvent {
     Transferred(Transferred),
     /// A file was signed.
     Signed,
+    /// A file was kept beside one shown, and the dialog stays open.
+    Saved,
     /// An archive on a storage was chosen, to open.
     Open(Source),
     /// A license key is to be entered: Settings › License.

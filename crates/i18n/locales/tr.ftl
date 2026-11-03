@@ -111,6 +111,84 @@ ta24f28a2 = Lisans anahtarı girin
 # Save
 t4d2d5d68 = Kaydet
 
+# Paste the checksum given with the file
+t8333758c = Dosyayla birlikte verilen sağlama toplamını yapıştırın
+
+# They could not be saved: {why}
+tb45ae457 = Kaydedilemedi: { $why }
+
+# The file could not be read: {why}
+t5daa8455 = Dosya okunamadı: { $why }
+
+# Reading…
+t6aad8485 = Okunuyor…
+
+# Copied
+t8dc21305 = Kopyalandı
+
+# Copy
+t658f3664 = Kopyala
+
+# weak
+tedbc2ec9 = zayıf
+
+# There is no checksum in this.
+t231f838a = Bunda sağlama toplamı yok.
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = Bu, packwing'in hesapladığı bir sağlama toplamı değil: { $digits } haneli.
+
+# It matches the file’s {name} checksum.
+t4f0350e4 = Dosyanın { $name } sağlama toplamıyla eşleşiyor.
+
+# It is compared once the file is read.
+tcb5c1745 = Dosya okununca karşılaştırılır.
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = Dosyanın { $name } sağlama toplamıyla eşleşmiyor: bu, toplamın hesaplandığı dosya değil ya da dosya yolda değişti.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Henüz hesaplanmamış bir { $name } sağlama toplamı olabilir.
+
+# Make it
+tcbefe458 = Hesapla
+
+# Compare with
+tbddcfc14 = Şununla karşılaştır
+
+# Reading… {size} of {size2}
+t80036d1c = Okunuyor… { $size } / { $size2 }
+
+# Reading… {size}
+t1569c388 = Okunuyor… { $size }
+
+# Checksums of {name}
+te88f3ed9 = { $name } sağlama toplamları
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = Dosyanın tamamı bu bilgisayardan geçer ve sağlayıcınız okunan veri için ücret alabilir.
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = Zayıf bir sağlama toplamı ({ $names }) bozuk bir dosyayı yakalar, ama eşleşsin diye bilerek değiştirilmiş bir dosyayı yakalamaz.
+
+# Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
+t1d91952b = Yanına { $files } olarak kaydedildi; sha256sum -c ve benzerleri packwing olmadan denetler.
+
+# Compare…
+tec85be80 = Karşılaştır…
+
+# Saving…
+tbd79b37d = Kaydediliyor…
+
+# Save beside it
+t7f4d85e3 = Yanına kaydet
+
+# Read it
+t80fb8482 = Oku
+
+# Done
+t8dd31791 = Bitti
+
 # Nothing chosen yet
 tcf390b0a = Henüz bir şey seçilmedi
 
@@ -722,9 +800,6 @@ t1aaf57aa = Buraya taşı
 # Copy here
 t85f0245a = Buraya kopyala
 
-# Copy
-t658f3664 = Kopyala
-
 # Move
 t7f2c2a34 = Taşı
 
@@ -754,9 +829,6 @@ tb7927177 = Okunamadı
 
 # It could not be read: {why}
 t26005fe3 = Okunamadı: { $why }
-
-# Reading…
-t6aad8485 = Okunuyor…
 
 # It could not be shown
 tb60fb288 = Gösterilemedi
@@ -835,6 +907,9 @@ t7a32320b = Şuraya taşı…
 
 # Sign…
 td6d61b10 = İmzala…
+
+# Checksums…
+t2891102d = Sağlama toplamları…
 
 # Copy path
 tf165cb2b = Yolu kopyala
@@ -1057,9 +1132,6 @@ t7d0c09c7 = { $location } · artık yok
 
 # The archives you open will show here.
 tc0cc82d5 = Açtığınız arşivler burada görünür.
-
-# Copied
-t8dc21305 = Kopyalandı
 
 # Copy version info
 t3d37483c = Sürüm bilgisini kopyala
@@ -1511,6 +1583,15 @@ td25843b8 = Bunlardan biriyle atılan imza, dosyayı kimin imzaladığını söy
 # Choose a file…
 t28a576c9 = Dosya seç…
 
+# {name} (weak)
+tdb06c037 = { $name } (zayıf)
+
+# Checksums
+t47dd48d3 = Sağlama toplamları
+
+# What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
+t6edeb650 = Bir dosyanın menüsündeki Sağlama toplamları… öğesinin gösterdikleri; dosyanın alındığı yerde verilen toplamla karşılaştırmak için. Zayıf olan bozuk bir dosyayı yakalar, ama bilerek değiştirilmiş olanı yakalamaz.
+
 # Its policies cannot be read, so what they guard refuses: {why}
 t7b4eb9c1 = İlkeleri okunamıyor; bu yüzden koruduğu şey reddediyor: { $why }
 
@@ -1716,6 +1797,9 @@ t75e7db7c = { $folder }, her biri için bir klasör
 
 # New
 t8b242db1 = Yeni
+
+# There is no file to save it beside.
+ta9906e3b = Yanına kaydedilecek dosya yok.
 
 # Could not read {path}: {e}
 tad0120eb = { $path } okunamadı: { $e }

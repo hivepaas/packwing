@@ -109,6 +109,84 @@ ta24f28a2 = 輸入授權金鑰
 # Save
 t4d2d5d68 = 儲存
 
+# Paste the checksum given with the file
+t8333758c = 貼上隨檔案提供的檢查碼
+
+# They could not be saved: {why}
+tb45ae457 = 無法儲存：{ $why }
+
+# The file could not be read: {why}
+t5daa8455 = 無法讀取檔案：{ $why }
+
+# Reading…
+t6aad8485 = 正在讀取…
+
+# Copied
+t8dc21305 = 已複製
+
+# Copy
+t658f3664 = 複製
+
+# weak
+tedbc2ec9 = 弱
+
+# There is no checksum in this.
+t231f838a = 這裡面沒有檢查碼。
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = 這不是 packwing 產生的檢查碼：它有 { $digits } 位數。
+
+# It matches the file’s {name} checksum.
+t4f0350e4 = 與檔案的 { $name } 檢查碼相符。
+
+# It is compared once the file is read.
+tcb5c1745 = 檔案讀取完成後會進行比較。
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = 與檔案的 { $name } 檢查碼不符：這不是產生該檢查碼的檔案，或是檔案在傳輸途中有所變動。
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = 這可能是尚未產生的 { $name } 檢查碼。
+
+# Make it
+tcbefe458 = 產生
+
+# Compare with
+tbddcfc14 = 比較對象
+
+# Reading… {size} of {size2}
+t80036d1c = 正在讀取… { $size } / { $size2 }
+
+# Reading… {size}
+t1569c388 = 正在讀取… { $size }
+
+# Checksums of {name}
+te88f3ed9 = { $name } 的檢查碼
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = 整個檔案都會經過這台電腦，而你的服務供應商可能會就讀取的資料量收費。
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = 弱檢查碼（{ $names }）能發現損壞的檔案，但無法發現被刻意修改成相符的檔案。
+
+# Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
+t1d91952b = 已儲存在旁邊，檔名為 { $files }；sha256sum -c 等工具不需 packwing 即可驗證。
+
+# Compare…
+tec85be80 = 比較…
+
+# Saving…
+tbd79b37d = 正在儲存…
+
+# Save beside it
+t7f4d85e3 = 儲存在旁邊
+
+# Read it
+t80fb8482 = 讀取
+
+# Done
+t8dd31791 = 完成
+
 # Nothing chosen yet
 tcf390b0a = 尚未選擇
 
@@ -715,9 +793,6 @@ t1aaf57aa = 移到這裡
 # Copy here
 t85f0245a = 複製到這裡
 
-# Copy
-t658f3664 = 複製
-
 # Move
 t7f2c2a34 = 移動
 
@@ -747,9 +822,6 @@ tb7927177 = 無法讀取
 
 # It could not be read: {why}
 t26005fe3 = 無法讀取：{ $why }
-
-# Reading…
-t6aad8485 = 正在讀取…
 
 # It could not be shown
 tb60fb288 = 無法顯示
@@ -828,6 +900,9 @@ t7a32320b = 移動到…
 
 # Sign…
 td6d61b10 = 簽署…
+
+# Checksums…
+t2891102d = 檢查碼…
 
 # Copy path
 tf165cb2b = 複製路徑
@@ -1044,9 +1119,6 @@ t7d0c09c7 = { $location } · 已不在該處
 
 # The archives you open will show here.
 tc0cc82d5 = 你開啟過的封存檔會顯示在這裡。
-
-# Copied
-t8dc21305 = 已複製
 
 # Copy version info
 t3d37483c = 複製版本資訊
@@ -1498,6 +1570,15 @@ td25843b8 = 這些金鑰之一所簽的章，代表簽署者的身分。其他�
 # Choose a file…
 t28a576c9 = 選擇檔案…
 
+# {name} (weak)
+tdb06c037 = { $name }（弱）
+
+# Checksums
+t47dd48d3 = 檢查碼
+
+# What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
+t6edeb650 = 檔案選單中「檢查碼…」顯示的內容，用來與檔案來源處提供的檢查碼比較。弱檢查碼能發現損壞的檔案，但無法發現被刻意修改的檔案。
+
 # Its policies cannot be read, so what they guard refuses: {why}
 t7b4eb9c1 = 無法讀取其政策，因此它所保護的項目一律拒絕：{ $why }
 
@@ -1698,6 +1779,9 @@ t75e7db7c = { $folder }，各自放進一個資料夾
 
 # New
 t8b242db1 = 新增
+
+# There is no file to save it beside.
+ta9906e3b = 沒有可在其旁邊儲存的檔案。
 
 # Could not read {path}: {e}
 tad0120eb = 無法讀取 { $path }：{ $e }

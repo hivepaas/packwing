@@ -109,6 +109,84 @@ ta24f28a2 = Masukkan kunci lisensi
 # Save
 t4d2d5d68 = Simpan
 
+# Paste the checksum given with the file
+t8333758c = Tempel checksum yang diberikan bersama berkas
+
+# They could not be saved: {why}
+tb45ae457 = Tidak dapat disimpan: { $why }
+
+# The file could not be read: {why}
+t5daa8455 = Berkas tidak dapat dibaca: { $why }
+
+# Reading…
+t6aad8485 = Membaca…
+
+# Copied
+t8dc21305 = Disalin
+
+# Copy
+t658f3664 = Salin
+
+# weak
+tedbc2ec9 = lemah
+
+# There is no checksum in this.
+t231f838a = Tidak ada checksum di sini.
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = Ini bukan checksum yang dibuat packwing: panjangnya { $digits } digit.
+
+# It matches the file’s {name} checksum.
+t4f0350e4 = Cocok dengan checksum { $name } berkas.
+
+# It is compared once the file is read.
+tcb5c1745 = Dibandingkan setelah berkas selesai dibaca.
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = Tidak cocok dengan checksum { $name } berkas: ini bukan berkas asal checksum itu, atau berkas berubah di perjalanan.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Mungkin ini checksum { $name }, yang belum dibuat.
+
+# Make it
+tcbefe458 = Buat
+
+# Compare with
+tbddcfc14 = Bandingkan dengan
+
+# Reading… {size} of {size2}
+t80036d1c = Membaca… { $size } dari { $size2 }
+
+# Reading… {size}
+t1569c388 = Membaca… { $size }
+
+# Checksums of {name}
+te88f3ed9 = Checksum { $name }
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = Seluruh berkas melewati komputer ini, dan penyedia Anda mungkin menagih untuk data yang dibaca darinya.
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = Checksum lemah ({ $names }) tetap mengenali berkas yang rusak, tetapi tidak berkas yang sengaja diubah, yang bisa dibuat cocok.
+
+# Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
+t1d91952b = Disimpan di sampingnya sebagai { $files }, yang bisa diperiksa sha256sum -c dan sejenisnya tanpa packwing.
+
+# Compare…
+tec85be80 = Bandingkan…
+
+# Saving…
+tbd79b37d = Menyimpan…
+
+# Save beside it
+t7f4d85e3 = Simpan di sampingnya
+
+# Read it
+t80fb8482 = Baca
+
+# Done
+t8dd31791 = Selesai
+
 # Nothing chosen yet
 tcf390b0a = Belum ada yang dipilih
 
@@ -715,9 +793,6 @@ t1aaf57aa = Pindahkan ke sini
 # Copy here
 t85f0245a = Salin ke sini
 
-# Copy
-t658f3664 = Salin
-
 # Move
 t7f2c2a34 = Pindahkan
 
@@ -747,9 +822,6 @@ tb7927177 = Tidak dapat dibaca
 
 # It could not be read: {why}
 t26005fe3 = Tidak dapat dibaca: { $why }
-
-# Reading…
-t6aad8485 = Membaca…
 
 # It could not be shown
 tb60fb288 = Tidak dapat ditampilkan
@@ -828,6 +900,9 @@ t7a32320b = Pindahkan ke…
 
 # Sign…
 td6d61b10 = Tandatangani…
+
+# Checksums…
+t2891102d = Checksum…
 
 # Copy path
 tf165cb2b = Salin jalur
@@ -1044,9 +1119,6 @@ t7d0c09c7 = { $location } · sudah tidak ada
 
 # The archives you open will show here.
 tc0cc82d5 = Arsip yang Anda buka akan tampil di sini.
-
-# Copied
-t8dc21305 = Disalin
 
 # Copy version info
 t3d37483c = Salin info versi
@@ -1498,6 +1570,15 @@ td25843b8 = Tanda tangan oleh salah satu kunci ini menyatakan siapa yang menanda
 # Choose a file…
 t28a576c9 = Pilih berkas…
 
+# {name} (weak)
+tdb06c037 = { $name } (lemah)
+
+# Checksums
+t47dd48d3 = Checksum
+
+# What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
+t6edeb650 = Yang ditampilkan Checksum… di menu berkas, untuk dibandingkan dengan checksum yang diberikan di tempat asal berkas. Checksum lemah tetap mengenali berkas yang rusak, tetapi tidak berkas yang sengaja diubah.
+
 # Its policies cannot be read, so what they guard refuses: {why}
 t7b4eb9c1 = Kebijakannya tidak dapat dibaca, jadi apa yang dijaganya ditolak: { $why }
 
@@ -1698,6 +1779,9 @@ t75e7db7c = { $folder }, satu folder untuk masing-masing
 
 # New
 t8b242db1 = Baru
+
+# There is no file to save it beside.
+ta9906e3b = Tidak ada berkas untuk tempat menyimpannya.
 
 # Could not read {path}: {e}
 tad0120eb = Tidak dapat membaca { $path }: { $e }

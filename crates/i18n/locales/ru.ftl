@@ -115,6 +115,84 @@ ta24f28a2 = Ввести лицензионный ключ
 # Save
 t4d2d5d68 = Сохранить
 
+# Paste the checksum given with the file
+t8333758c = Вставьте контрольную сумму, указанную для файла
+
+# They could not be saved: {why}
+tb45ae457 = Не удалось сохранить: { $why }
+
+# The file could not be read: {why}
+t5daa8455 = Не удалось прочитать файл: { $why }
+
+# Reading…
+t6aad8485 = Чтение…
+
+# Copied
+t8dc21305 = Скопировано
+
+# Copy
+t658f3664 = Копировать
+
+# weak
+tedbc2ec9 = слабая
+
+# There is no checksum in this.
+t231f838a = Здесь нет контрольной суммы.
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = Это не контрольная сумма, которую считает packwing: в ней { $digits } цифр.
+
+# It matches the file’s {name} checksum.
+t4f0350e4 = Совпадает с контрольной суммой { $name } файла.
+
+# It is compared once the file is read.
+tcb5c1745 = Сравнение — когда файл будет прочитан.
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = Не совпадает с контрольной суммой { $name } файла: это не тот файл, по которому она посчитана, или файл изменился по пути.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Возможно, это контрольная сумма { $name }, которая ещё не посчитана.
+
+# Make it
+tcbefe458 = Посчитать
+
+# Compare with
+tbddcfc14 = Сравнить с
+
+# Reading… {size} of {size2}
+t80036d1c = Чтение… { $size } из { $size2 }
+
+# Reading… {size}
+t1569c388 = Чтение… { $size }
+
+# Checksums of {name}
+te88f3ed9 = Контрольные суммы { $name }
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = Весь файл проходит через этот компьютер, и провайдер может взять плату за прочитанные данные.
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = Слабая контрольная сумма ({ $names }) выявит повреждённый файл, но не файл, изменённый намеренно так, чтобы она совпала.
+
+# Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
+t1d91952b = Сохранено рядом как { $files }; sha256sum -c и подобные проверят без packwing.
+
+# Compare…
+tec85be80 = Сравнить…
+
+# Saving…
+tbd79b37d = Сохранение…
+
+# Save beside it
+t7f4d85e3 = Сохранить рядом
+
+# Read it
+t80fb8482 = Прочитать
+
+# Done
+t8dd31791 = Готово
+
 # Nothing chosen yet
 tcf390b0a = Пока ничего не выбрано
 
@@ -736,9 +814,6 @@ t1aaf57aa = Переместить сюда
 # Copy here
 t85f0245a = Копировать сюда
 
-# Copy
-t658f3664 = Копировать
-
 # Move
 t7f2c2a34 = Переместить
 
@@ -768,9 +843,6 @@ tb7927177 = Не удалось прочитать
 
 # It could not be read: {why}
 t26005fe3 = Не удалось прочитать: { $why }
-
-# Reading…
-t6aad8485 = Чтение…
 
 # It could not be shown
 tb60fb288 = Не удалось показать
@@ -849,6 +921,9 @@ t7a32320b = Переместить в…
 
 # Sign…
 td6d61b10 = Подписать…
+
+# Checksums…
+t2891102d = Контрольные суммы…
 
 # Copy path
 tf165cb2b = Копировать путь
@@ -1083,9 +1158,6 @@ t7d0c09c7 = { $location } · больше не существует
 
 # The archives you open will show here.
 tc0cc82d5 = Здесь появятся архивы, которые вы откроете.
-
-# Copied
-t8dc21305 = Скопировано
 
 # Copy version info
 t3d37483c = Скопировать сведения о версии
@@ -1537,6 +1609,15 @@ td25843b8 = Подпись одним из этих ключей говорит,
 # Choose a file…
 t28a576c9 = Выбрать файл…
 
+# {name} (weak)
+tdb06c037 = { $name } (слабая)
+
+# Checksums
+t47dd48d3 = Контрольные суммы
+
+# What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
+t6edeb650 = Что показывает пункт «Контрольные суммы…» в меню файла, для сравнения с суммой, указанной там, откуда взят файл. Слабая выявит повреждённый файл, но не изменённый намеренно.
+
 # Its policies cannot be read, so what they guard refuses: {why}
 t7b4eb9c1 = Не удаётся прочитать его политики, поэтому то, что они защищают, отклоняется: { $why }
 
@@ -1752,6 +1833,9 @@ t75e7db7c = { $folder }, для каждого своя папка
 
 # New
 t8b242db1 = Новый
+
+# There is no file to save it beside.
+ta9906e3b = Нет файла, рядом с которым сохранить.
 
 # Could not read {path}: {e}
 tad0120eb = Не удалось прочитать { $path }: { $e }

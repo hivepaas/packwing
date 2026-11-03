@@ -109,6 +109,84 @@ ta24f28a2 = ライセンスキーを入力
 # Save
 t4d2d5d68 = 保存
 
+# Paste the checksum given with the file
+t8333758c = ファイルと一緒に提供されたチェックサムを貼り付け
+
+# They could not be saved: {why}
+tb45ae457 = 保存できませんでした: { $why }
+
+# The file could not be read: {why}
+t5daa8455 = ファイルを読み取れませんでした: { $why }
+
+# Reading…
+t6aad8485 = 読み取り中…
+
+# Copied
+t8dc21305 = コピーしました
+
+# Copy
+t658f3664 = コピー
+
+# weak
+tedbc2ec9 = 弱い
+
+# There is no checksum in this.
+t231f838a = チェックサムが含まれていません。
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = packwing が作成するチェックサムではありません（{ $digits } 桁）。
+
+# It matches the file’s {name} checksum.
+t4f0350e4 = ファイルの { $name } チェックサムと一致します。
+
+# It is compared once the file is read.
+tcb5c1745 = ファイルの読み取りが終わると比較します。
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = ファイルの { $name } チェックサムと一致しません。このチェックサムの元のファイルではないか、途中でファイルが変化しました。
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = まだ作成していない { $name } チェックサムかもしれません。
+
+# Make it
+tcbefe458 = 作成
+
+# Compare with
+tbddcfc14 = 比較対象
+
+# Reading… {size} of {size2}
+t80036d1c = 読み取り中… { $size } / { $size2 }
+
+# Reading… {size}
+t1569c388 = 読み取り中… { $size }
+
+# Checksums of {name}
+te88f3ed9 = { $name } のチェックサム
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = ファイル全体がこのコンピューターを通過し、読み取った分についてプロバイダーから料金がかかる場合があります。
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = 弱いチェックサム（{ $names }）は破損したファイルは見分けられますが、一致するように意図的に変更されたファイルは見分けられません。
+
+# Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
+t1d91952b = { $files } として隣に保存しました。sha256sum -c などで packwing なしで確認できます。
+
+# Compare…
+tec85be80 = 比較…
+
+# Saving…
+tbd79b37d = 保存中…
+
+# Save beside it
+t7f4d85e3 = 隣に保存
+
+# Read it
+t80fb8482 = 読み取る
+
+# Done
+t8dd31791 = 完了
+
 # Nothing chosen yet
 tcf390b0a = まだ何も選択されていません
 
@@ -715,9 +793,6 @@ t1aaf57aa = ここに移動
 # Copy here
 t85f0245a = ここにコピー
 
-# Copy
-t658f3664 = コピー
-
 # Move
 t7f2c2a34 = 移動
 
@@ -747,9 +822,6 @@ tb7927177 = 読み取れませんでした
 
 # It could not be read: {why}
 t26005fe3 = 読み取れませんでした：{ $why }
-
-# Reading…
-t6aad8485 = 読み取り中…
 
 # It could not be shown
 tb60fb288 = 表示できませんでした
@@ -828,6 +900,9 @@ t7a32320b = 移動先…
 
 # Sign…
 td6d61b10 = 署名…
+
+# Checksums…
+t2891102d = チェックサム…
 
 # Copy path
 tf165cb2b = パスをコピー
@@ -1044,9 +1119,6 @@ t7d0c09c7 = { $location } · すでに存在しません
 
 # The archives you open will show here.
 tc0cc82d5 = 開いたアーカイブがここに表示されます。
-
-# Copied
-t8dc21305 = コピーしました
 
 # Copy version info
 t3d37483c = バージョン情報をコピー
@@ -1498,6 +1570,15 @@ td25843b8 = これらのキーのいずれかによる署名は、誰がファ�
 # Choose a file…
 t28a576c9 = ファイルを選択…
 
+# {name} (weak)
+tdb06c037 = { $name }（弱い）
+
+# Checksums
+t47dd48d3 = チェックサム
+
+# What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
+t6edeb650 = ファイルのメニューの「チェックサム…」に表示するもの。ファイルの入手元に記載されたチェックサムと比較できます。弱いものは破損したファイルは見分けられますが、意図的に変更されたファイルは見分けられません。
+
 # Its policies cannot be read, so what they guard refuses: {why}
 t7b4eb9c1 = ポリシーを読み取れないため、保護対象は拒否されます：{ $why }
 
@@ -1689,6 +1770,9 @@ t75e7db7c = { $folder }、それぞれ専用のフォルダ
 
 # New
 t8b242db1 = 新規
+
+# There is no file to save it beside.
+ta9906e3b = 隣に保存するファイルがありません。
 
 # Could not read {path}: {e}
 tad0120eb = { $path } を読み取れませんでした：{ $e }

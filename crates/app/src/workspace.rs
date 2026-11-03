@@ -17,10 +17,10 @@ use crate::colors::{self, colors};
 #[cfg(all(test, feature = "test-hooks"))]
 use crate::demo;
 use crate::dialogs::{
-    AddDialog, AddStorageDialog, CreateDialog, Creating, DeleteDialog, DialogEvent, EditDialog,
-    ExtractDialog, Job, OpenFileDialog, OpenStoredDialog, PasswordDialog, PasswordEvent,
-    ProgressDialog, RemoveStorageDialog, Saving, SignDialog, TransferDialog, Verb, ViewDialog,
-    asked_for,
+    AddDialog, AddStorageDialog, ChecksumDialog, CreateDialog, Creating, DeleteDialog, DialogEvent,
+    EditDialog, ExtractDialog, Job, OpenFileDialog, OpenStoredDialog, PasswordDialog,
+    PasswordEvent, ProgressDialog, RemoveStorageDialog, Saving, SignDialog, TransferDialog, Verb,
+    ViewDialog, asked_for,
 };
 use crate::explorer::ExplorerEvent;
 use crate::model::{Archive, Kind, Selection, stem};
@@ -245,6 +245,7 @@ impl Workspace {
                     ArchiveEvent::AddFiles => this.add_files(window, cx),
                     ArchiveEvent::Test => this.test_archive(window, cx),
                     ArchiveEvent::Sign => this.open_sign_archive(window, cx),
+                    ArchiveEvent::Checksums => this.open_checksums_archive(window, cx),
                     ArchiveEvent::Open => this.choose_archive(window, cx),
                     ArchiveEvent::OpenStored => this.choose_stored_archive(window, cx),
                     ArchiveEvent::Delete => this.open_edit(false, window, cx),
@@ -466,6 +467,26 @@ impl Workspace {
         view
     }
 
+    /// Shows the checksums of the file `name` of the storage shown, for tests.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn open_checksums_of(
+        &mut self,
+        name: &str,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Entity<ChecksumDialog> {
+        let explorer = self.storages.read(cx).explorer().read(cx);
+        let storage = explorer
+            .place()
+            .expect("a storage is shown")
+            .storage
+            .clone();
+        let path = explorer.path_of_name(name);
+        let view = cx.new(|cx| ChecksumDialog::new(storage, path, cx));
+        self.show(view.clone(), true, window, cx);
+        view
+    }
+
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn refresh_explorers_for_test(&mut self, cx: &mut Context<Self>) {
         self.refresh_explorers(cx);
@@ -481,6 +502,20 @@ impl Workspace {
             .and_then(|s| s.place());
         if let Some((storage, path)) = place {
             let view = cx.new(|cx| SignDialog::new(storage, path, window, cx));
+            self.show(view, true, window, cx);
+        }
+    }
+
+    /// Shows the checksums of the file of the archive open.
+    fn open_checksums_archive(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let place = self
+            .archive
+            .read(cx)
+            .archive()
+            .and_then(|a| a.source.as_ref())
+            .and_then(|s| s.place());
+        if let Some((storage, path)) = place {
+            let view = cx.new(|cx| ChecksumDialog::new(storage, path, cx));
             self.show(view, true, window, cx);
         }
     }
@@ -542,6 +577,14 @@ impl Workspace {
                 if let Some(place) = shown.place() {
                     let (storage, path) = (place.storage.clone(), shown.path_of_name(name));
                     let view = cx.new(|cx| SignDialog::new(storage, path, window, cx));
+                    this.show(view, true, window, cx);
+                }
+            }
+            ExplorerEvent::Checksums(name) => {
+                let shown = explorer.read(cx);
+                if let Some(place) = shown.place() {
+                    let (storage, path) = (place.storage.clone(), shown.path_of_name(name));
+                    let view = cx.new(|cx| ChecksumDialog::new(storage, path, cx));
                     this.show(view, true, window, cx);
                 }
             }
@@ -618,6 +661,7 @@ impl Workspace {
                     });
                     this.show_page(Page::Settings, cx);
                 }
+                DialogEvent::Saved => this.refresh_explorers(cx),
                 DialogEvent::Signed => {
                     this.close_dialog(cx);
                     this.trusted_seen = prefs::prefs(cx).trusted_keys;

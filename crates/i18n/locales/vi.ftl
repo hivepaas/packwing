@@ -109,6 +109,84 @@ ta24f28a2 = Nhập khoá giấy phép
 # Save
 t4d2d5d68 = Lưu
 
+# Paste the checksum given with the file
+t8333758c = Dán checksum đi kèm tệp
+
+# They could not be saved: {why}
+tb45ae457 = Không lưu được: { $why }
+
+# The file could not be read: {why}
+t5daa8455 = Không đọc được tệp: { $why }
+
+# Reading…
+t6aad8485 = Đang đọc…
+
+# Copied
+t8dc21305 = Đã sao chép
+
+# Copy
+t658f3664 = Sao chép
+
+# weak
+tedbc2ec9 = yếu
+
+# There is no checksum in this.
+t231f838a = Trong này không có checksum nào.
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = Đây không phải checksum mà packwing tạo: nó có { $digits } chữ số.
+
+# It matches the file’s {name} checksum.
+t4f0350e4 = Khớp với checksum { $name } của tệp.
+
+# It is compared once the file is read.
+tcb5c1745 = Sẽ so sánh khi đã đọc xong tệp.
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = Không khớp với checksum { $name } của tệp: đây không phải tệp đã tạo ra checksum đó, hoặc tệp đã bị thay đổi trên đường đến.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Có thể đây là checksum { $name }, loại chưa được tạo.
+
+# Make it
+tcbefe458 = Tạo
+
+# Compare with
+tbddcfc14 = So sánh với
+
+# Reading… {size} of {size2}
+t80036d1c = Đang đọc… { $size } / { $size2 }
+
+# Reading… {size}
+t1569c388 = Đang đọc… { $size }
+
+# Checksums of {name}
+te88f3ed9 = Checksum của { $name }
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = Toàn bộ tệp sẽ đi qua máy tính này, và nhà cung cấp có thể tính phí cho phần dữ liệu đọc ra.
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = Checksum yếu ({ $names }) vẫn phát hiện được tệp bị hỏng, nhưng không phát hiện được tệp bị cố ý sửa để khớp.
+
+# Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
+t1d91952b = Đã lưu cạnh tệp thành { $files }; sha256sum -c và các công cụ tương tự kiểm tra được mà không cần packwing.
+
+# Compare…
+tec85be80 = So sánh…
+
+# Saving…
+tbd79b37d = Đang lưu…
+
+# Save beside it
+t7f4d85e3 = Lưu cạnh tệp
+
+# Read it
+t80fb8482 = Đọc tệp
+
+# Done
+t8dd31791 = Xong
+
 # Nothing chosen yet
 tcf390b0a = Chưa chọn gì
 
@@ -715,9 +793,6 @@ t1aaf57aa = Chuyển vào đây
 # Copy here
 t85f0245a = Sao chép vào đây
 
-# Copy
-t658f3664 = Sao chép
-
 # Move
 t7f2c2a34 = Di chuyển
 
@@ -747,9 +822,6 @@ tb7927177 = Không đọc được
 
 # It could not be read: {why}
 t26005fe3 = Không đọc được: { $why }
-
-# Reading…
-t6aad8485 = Đang đọc…
 
 # It could not be shown
 tb60fb288 = Không hiện được
@@ -828,6 +900,9 @@ t7a32320b = Di chuyển đến…
 
 # Sign…
 td6d61b10 = Ký…
+
+# Checksums…
+t2891102d = Checksum…
 
 # Copy path
 tf165cb2b = Sao chép đường dẫn
@@ -1044,9 +1119,6 @@ t7d0c09c7 = { $location } · không còn ở đó
 
 # The archives you open will show here.
 tc0cc82d5 = Các tệp nén bạn mở sẽ hiện ở đây.
-
-# Copied
-t8dc21305 = Đã sao chép
 
 # Copy version info
 t3d37483c = Sao chép thông tin phiên bản
@@ -1498,6 +1570,15 @@ td25843b8 = Chữ ký của một trong các khoá này cho biết ai đã ký t
 # Choose a file…
 t28a576c9 = Chọn tệp…
 
+# {name} (weak)
+tdb06c037 = { $name } (yếu)
+
+# Checksums
+t47dd48d3 = Checksum
+
+# What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
+t6edeb650 = Những gì mục Checksum… trong menu của tệp hiển thị, để so sánh với checksum được cung cấp ở nơi bạn lấy tệp. Checksum yếu vẫn phát hiện được tệp bị hỏng, nhưng không phát hiện được tệp bị cố ý sửa.
+
 # Its policies cannot be read, so what they guard refuses: {why}
 t7b4eb9c1 = Không đọc được chính sách của nó, nên những gì nó bảo vệ bị từ chối: { $why }
 
@@ -1689,6 +1770,9 @@ t75e7db7c = { $folder }, mỗi tệp nén một thư mục
 
 # New
 t8b242db1 = Mới
+
+# There is no file to save it beside.
+ta9906e3b = Không có tệp nào để lưu cạnh.
 
 # Could not read {path}: {e}
 tad0120eb = Không đọc được { $path }: { $e }

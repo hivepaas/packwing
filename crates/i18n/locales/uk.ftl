@@ -115,6 +115,84 @@ ta24f28a2 = Ввести ліцензійний ключ
 # Save
 t4d2d5d68 = Зберегти
 
+# Paste the checksum given with the file
+t8333758c = Вставте контрольну суму, надану разом із файлом
+
+# They could not be saved: {why}
+tb45ae457 = Не вдалося зберегти: { $why }
+
+# The file could not be read: {why}
+t5daa8455 = Не вдалося прочитати файл: { $why }
+
+# Reading…
+t6aad8485 = Читання…
+
+# Copied
+t8dc21305 = Скопійовано
+
+# Copy
+t658f3664 = Копіювати
+
+# weak
+tedbc2ec9 = слабка
+
+# There is no checksum in this.
+t231f838a = Тут немає контрольної суми.
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = Це не контрольна сума, яку обчислює packwing: у ній { $digits } цифр.
+
+# It matches the file’s {name} checksum.
+t4f0350e4 = Збігається з контрольною сумою { $name } файлу.
+
+# It is compared once the file is read.
+tcb5c1745 = Порівняння — коли файл буде прочитано.
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = Не збігається з контрольною сумою { $name } файлу: це не той файл, з якого її обчислено, або файл змінився дорогою.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Можливо, це контрольна сума { $name }, яку ще не обчислено.
+
+# Make it
+tcbefe458 = Обчислити
+
+# Compare with
+tbddcfc14 = Порівняти з
+
+# Reading… {size} of {size2}
+t80036d1c = Читання… { $size } з { $size2 }
+
+# Reading… {size}
+t1569c388 = Читання… { $size }
+
+# Checksums of {name}
+te88f3ed9 = Контрольні суми { $name }
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = Увесь файл проходить через цей комп’ютер, і ваш провайдер може стягнути плату за прочитане з нього.
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = Слабка контрольна сума ({ $names }) виявить пошкоджений файл, але не файл, навмисно змінений так, щоб вона збіглася.
+
+# Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
+t1d91952b = Збережено поруч як { $files }; sha256sum -c та подібні перевірять без packwing.
+
+# Compare…
+tec85be80 = Порівняти…
+
+# Saving…
+tbd79b37d = Збереження…
+
+# Save beside it
+t7f4d85e3 = Зберегти поруч
+
+# Read it
+t80fb8482 = Прочитати
+
+# Done
+t8dd31791 = Готово
+
 # Nothing chosen yet
 tcf390b0a = Ще нічого не вибрано
 
@@ -736,9 +814,6 @@ t1aaf57aa = Перемістити сюди
 # Copy here
 t85f0245a = Скопіювати сюди
 
-# Copy
-t658f3664 = Копіювати
-
 # Move
 t7f2c2a34 = Перемістити
 
@@ -768,9 +843,6 @@ tb7927177 = Не вдалося прочитати
 
 # It could not be read: {why}
 t26005fe3 = Не вдалося прочитати: { $why }
-
-# Reading…
-t6aad8485 = Читання…
 
 # It could not be shown
 tb60fb288 = Не вдалося показати
@@ -849,6 +921,9 @@ t7a32320b = Перемістити до…
 
 # Sign…
 td6d61b10 = Підписати…
+
+# Checksums…
+t2891102d = Контрольні суми…
 
 # Copy path
 tf165cb2b = Копіювати шлях
@@ -1083,9 +1158,6 @@ t7d0c09c7 = { $location } · його вже немає
 
 # The archives you open will show here.
 tc0cc82d5 = Тут з’являться архіви, які ви відкриєте.
-
-# Copied
-t8dc21305 = Скопійовано
 
 # Copy version info
 t3d37483c = Копіювати відомості про версію
@@ -1537,6 +1609,15 @@ td25843b8 = Підпис одного з цих ключів показує, х�
 # Choose a file…
 t28a576c9 = Вибрати файл…
 
+# {name} (weak)
+tdb06c037 = { $name } (слабка)
+
+# Checksums
+t47dd48d3 = Контрольні суми
+
+# What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
+t6edeb650 = Що показує пункт «Контрольні суми…» в меню файлу, для порівняння із сумою, наданою там, звідки взято файл. Слабка виявить пошкоджений файл, але не навмисно змінений.
+
 # Its policies cannot be read, so what they guard refuses: {why}
 t7b4eb9c1 = Його політики не вдається прочитати, тож те, що вони охороняють, відхиляється: { $why }
 
@@ -1752,6 +1833,9 @@ t75e7db7c = { $folder }, окрема папка для кожного
 
 # New
 t8b242db1 = Новий
+
+# There is no file to save it beside.
+ta9906e3b = Немає файлу, поруч із яким зберегти.
 
 # Could not read {path}: {e}
 tad0120eb = Не вдалося прочитати { $path }: { $e }

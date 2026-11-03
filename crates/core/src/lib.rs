@@ -9,6 +9,7 @@
 //! file (taken out to a temporary one first when it is under layers), or
 //! one file, compressed or encrypted on its own (`notes.txt.zst`).
 
+mod checksum;
 mod create;
 mod job;
 mod joined;
@@ -35,6 +36,10 @@ use hivepack::open::Opener;
 
 use crate::source::SourceReader;
 
+pub use checksum::{
+    Algorithm, algorithms_of, checksum_file_name, checksum_in, checksum_line, checksums,
+    checksums_of, save_checksum,
+};
 pub use create::{
     COMPRESSED_EXTENSIONS, Kind, Level, Measured, NewArchive, OnExisting, Route, add, add_with,
     age_key_is_post_quantum, age_key_problem, age_keys_in, can_add, create, create_on, delete,

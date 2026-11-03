@@ -10,12 +10,13 @@ use gpui::{
 use packwing_i18n::tr;
 use packwing_update::Install;
 
-use super::security::MONO_FONTS;
 use super::{explain, group, heading, label, rows, section, setting};
 use crate::colors::colors;
 use crate::text_size::ui;
 use crate::updates::{self, Stage, Updates};
-use crate::widgets::{Fill, Size, Tone, accent_tint, button, chip, logo, note, switch, tile};
+use crate::widgets::{
+    Fill, Size, Tone, accent_tint, button, chip, logo, mono_font, note, switch, tile,
+};
 
 const SOURCE: &str = "https://github.com/hivepaas/packwing";
 const LICENSE: &str = "https://github.com/hivepaas/packwing/blob/main/LICENSE";
@@ -256,12 +257,7 @@ impl About {
             let title = tr!("packwing {version} is out", version = version);
             if let Some(steps) = u.steps() {
                 let line = steps.join(" && ");
-                let installed = window.text_system().all_font_names();
-                let mono = MONO_FONTS
-                    .iter()
-                    .find(|f| installed.iter().any(|i| i == *f))
-                    .copied()
-                    .unwrap_or(crate::FONT);
+                let mono = mono_font(window);
                 let copy = if self.copied == Some("steps") {
                     tr!("Copied")
                 } else {
