@@ -14,6 +14,7 @@ use packwing_i18n::tr;
 use super::{DialogEvent, footer, header};
 use crate::colors::colors;
 use crate::explorer::{Explorer, runs_when_opened};
+use crate::input::TextInput;
 use crate::model::{Kind, size, text_preview};
 use crate::pages::archive::{MOST_PREVIEWED, MOST_TEXT, picture_format};
 use crate::widgets::{Fill, Size, button, icon_button, tonal_tint};
@@ -30,6 +31,8 @@ pub struct ViewDialog {
     item: Item,
     explorer: Entity<Explorer>,
     shown: Shown,
+    /// The text, when it is one: it can be chosen and copied.
+    text: Entity<TextInput>,
     _reading: Option<Task<()>>,
 }
 
@@ -42,6 +45,7 @@ impl ViewDialog {
             item: item.clone(),
             explorer: explorer.clone(),
             shown: Shown::Reading,
+            text: cx.new(|cx| TextInput::new("", cx).read_only()),
             _reading: None,
         };
         if item.size > MOST_PREVIEWED {
@@ -76,6 +80,9 @@ impl ViewDialog {
         dialog._reading = Some(cx.spawn(async move |this, cx| {
             let shown = reading.await;
             let _ = this.update(cx, |this, cx| {
+                if let Shown::Text(text) = &shown {
+                    this.text.update(cx, |t, cx| t.set_text(text, 0..0, cx));
+                }
                 this.shown = shown;
                 cx.notify();
             });
@@ -115,13 +122,14 @@ impl Render for ViewDialog {
                                 .into_any_element()
                         }),
                 ),
-                Shown::Text(text) => d.items_start().justify_start().overflow_y_scroll().child(
+                Shown::Text(_) => d.items_start().justify_start().child(
                     div()
-                        .w_full()
+                        .size_full()
+                        .flex()
                         .p(px(16.))
                         .text_size(px(13.))
                         .text_color(rgb(c.text))
-                        .child(text.clone()),
+                        .child(self.text.clone()),
                 ),
                 Shown::Not(why) => d.child(why.clone()),
             });

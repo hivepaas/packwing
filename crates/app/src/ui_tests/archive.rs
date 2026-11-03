@@ -1,6 +1,6 @@
 //! Opening archives, and what comes out of them.
 
-use super::{fixture, listed, scenario};
+use super::{Ui, fixture, listed, scenario};
 
 scenario!(
     /// Each format packwing reads opens on the Archive page.
@@ -78,6 +78,38 @@ scenario!(
         ui.wait_for("close");
         ui.click("close");
         ui.wait_for_no_dialog();
+    }
+);
+
+scenario!(
+    /// A file's text in the preview can be chosen and copied, and not changed.
+    the_preview_text_copies_and_stays,
+    |ui| {
+        let text = "xin chào\nthế giới\n";
+        let made = packwing_core::create(
+            &[ui.file("notes.txt", text)],
+            &ui.work.join("notes.zip"),
+            &packwing_core::NewArchive::default(),
+            &packwing_core::Control::default(),
+        )
+        .expect("the archive");
+        ui.open(&made);
+        ui.click("entry-0");
+        ui.wait_for("preview-text");
+        ui.click("preview-text");
+        let cmd = if cfg!(target_os = "macos") { "cmd" } else { "ctrl" };
+        let copied = |ui: &mut Ui| {
+            ui.cx.write_to_clipboard(gpui::ClipboardItem::new_string(String::new()));
+            ui.keys(&format!("{cmd}-a {cmd}-c"));
+            ui.cx.read_from_clipboard().and_then(|c| c.text())
+        };
+        assert_eq!(copied(ui).as_deref(), Some(text));
+        // Typing, deleting and pasting at its end, past the selection.
+        ui.keys("right");
+        let window = ui.window();
+        ui.cx.simulate_input(window.into(), "x");
+        ui.keys(&format!("backspace backspace {cmd}-v"));
+        assert_eq!(copied(ui).as_deref(), Some(text));
     }
 );
 

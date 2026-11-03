@@ -54,6 +54,8 @@ pub struct TextInput {
     lines: Option<Lines>,
     /// Code: colored by part, its lines numbered, as high as its parent.
     code: Option<Painter>,
+    /// Text to read, not to change: [`TextInput::read_only`].
+    read_only: bool,
     history: History,
 }
 
@@ -293,6 +295,7 @@ impl TextInput {
             masked: false,
             lines: None,
             code: None,
+            read_only: false,
             history: History::default(),
         }
     }
@@ -323,6 +326,16 @@ impl TextInput {
             self = self.multiline(1, usize::MAX);
         }
         self.code = Some(paint);
+        self
+    }
+
+    /// Text to read, not to change: several lines as high as what holds it,
+    /// which can be chosen and copied, with no caret.
+    pub fn read_only(mut self) -> Self {
+        if self.lines.is_none() {
+            self = self.multiline(1, usize::MAX);
+        }
+        self.read_only = true;
         self
     }
 
@@ -574,6 +587,9 @@ impl TextInput {
     }
 
     fn replace(&mut self, range: Range<usize>, text: &str, cx: &mut Context<Self>) {
+        if self.read_only {
+            return;
+        }
         let kind = if text.is_empty() {
             EditKind::Deleting
         } else if range.is_empty() && text != "\n" && text.chars().count() == 1 {
@@ -894,6 +910,9 @@ impl EntityInputHandler for TextInput {
         _: &mut Window,
         cx: &mut Context<Self>,
     ) {
+        if self.read_only {
+            return;
+        }
         let range = range_utf16
             .as_ref()
             .map(|r| self.range_from_utf16(r))
@@ -1314,8 +1333,8 @@ impl Element for AreaElement {
         cx: &mut App,
     ) -> (LayoutId, ()) {
         let input = self.input.read(cx);
-        // Code: as high as what holds it; it scrolls past that.
-        if input.code.is_some() {
+        // Code, or text to read: as high as what holds it; it scrolls past that.
+        if input.code.is_some() || input.read_only {
             let mut layout = Style::default();
             layout.size.width = relative(1.).into();
             layout.size.height = relative(1.).into();
@@ -1469,15 +1488,17 @@ impl Element for AreaElement {
         scroll_y = scroll_y
             .min((top - bounds.size.height).max(px(0.)))
             .max(px(0.));
-        let cursor = caret.filter(|_| input.selected.is_empty()).map(|c| {
-            fill(
-                Bounds::new(
-                    point(bounds.left() + c.x, bounds.top() + c.y - scroll_y),
-                    size(px(2.), line_height),
-                ),
-                rgb(colors().accent),
-            )
-        });
+        let cursor = caret
+            .filter(|_| input.selected.is_empty() && !input.read_only)
+            .map(|c| {
+                fill(
+                    Bounds::new(
+                        point(bounds.left() + c.x, bounds.top() + c.y - scroll_y),
+                        size(px(2.), line_height),
+                    ),
+                    rgb(colors().accent),
+                )
+            });
         Area {
             text: bounds,
             numbers,
