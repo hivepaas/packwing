@@ -7,11 +7,11 @@ use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use hivepack_age::RandomSource;
-use hivepack_sign::{Error as SignError, FILE_NAMESPACE, PrivateKey, Signature, sign, verify};
+use hivepack::age::RandomSource;
+use hivepack::sign::{Error as SignError, FILE_NAMESPACE, PrivateKey, Signature, sign, verify};
 use packwing_i18n::tr;
 
-pub use hivepack_sign::PublicKey;
+pub use hivepack::sign::PublicKey;
 
 use crate::job::Control;
 use crate::source::Source;
@@ -100,7 +100,7 @@ pub fn read_signing_key(file: &[u8], passphrase: Option<&[u8]>) -> Result<Signin
         Ok(key) => Ok(SigningKey(Arc::new(key))),
         Err(SignError::PassphraseNeeded) => Err(KeyRefused::NeedsPassphrase),
         Err(SignError::WrongPassphrase) => Err(KeyRefused::WrongPassphrase),
-        Err(SignError::PrivateKey(hivepack_age::SshKeyError::IncorrectPassword)) => {
+        Err(SignError::PrivateKey(hivepack::age::SshKeyError::IncorrectPassword)) => {
             Err(KeyRefused::WrongPassphrase)
         }
         Err(e) => Err(KeyRefused::Not(e.to_string())),

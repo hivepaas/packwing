@@ -386,7 +386,7 @@ impl ExtractDialog {
 
     fn safety(&self) -> impl IntoElement {
         let c = colors();
-        // What hivepack-extract does for every archive, said before it has run:
+        // What hivepack::extract does for every archive, said before it has run:
         // no path leaves the folder, no link points out of it, and what is
         // written stops at the limit. It is not a verdict on this archive.
         div()

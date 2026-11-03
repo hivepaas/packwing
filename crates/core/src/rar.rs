@@ -1,4 +1,4 @@
-//! RAR archives, through hivepack-rar, which reads them and never writes them.
+//! RAR archives, through hivepack::rar, which reads them and never writes them.
 //! It is under UnRAR's license; packwing's own license allows that
 //! (`GPL-ADDITIONAL-PERMISSION.md`).
 
@@ -9,8 +9,8 @@ use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use hivepack_extract::{Progress, Summary};
-use hivepack_rar::{Archive, ExitCode, Extract, HEAD_FILE, ReadAt, name};
+use hivepack::extract::{Progress, Summary};
+use hivepack::rar::{Archive, ExitCode, Extract, HEAD_FILE, ReadAt, name};
 
 use crate::job::{Control, copy_progress};
 use crate::listing::{Entry, components};
@@ -30,7 +30,7 @@ pub(crate) fn open(
     path: &Path,
     password: &str,
     packed: Arc<AtomicU64>,
-) -> Result<Archive<File>, hivepack_rar::Error> {
+) -> Result<Archive<File>, hivepack::rar::Error> {
     let next = move |volume: &str| {
         let file = File::open(volume).ok()?;
         let size = fs::metadata(volume).map_or(0, |m| m.len());

@@ -15,7 +15,7 @@ Comment: The program holds Nunito, the typeface its window is drawn in, the
  SecLists' common passwords (MIT, Copyright (c) 2018 Daniel Miessler), and
  the Rust crates it is built with, each under its own license (MIT,
  Apache-2.0, BSD, Unicode-3.0, Zlib, ISC, CC0-1.0, MPL-2.0, and UnRAR's for
- hivepack-rar, which reads RAR archives): their texts, and the crates under
+ hivepack's rar module, which reads RAR archives): their texts, and the crates under
  each, are in /usr/share/doc/packwing/THIRD-PARTY-LICENSES.
 License: GPL-3.0-or-later and OFL-1.1
 
@@ -32,12 +32,13 @@ License: GPL-3.0-or-later
  any later version.
  .
  Additional permission under GNU GPL version 3 section 7: if you modify this
- Program, or any covered work, by linking or combining it with hivepack-rar
- (or a modified version of that library), containing parts covered by the
- terms of the UnRAR license, the licensors of this Program grant you
- additional permission to convey the resulting work. Corresponding Source for
- a non-source form of such a combination shall include the source code for
- the parts of hivepack-rar used as well as that of the covered work.
+ Program, or any covered work, by linking or combining it with hivepack::rar
+ or hivepack-rar (or a modified version of that module or library), containing
+ parts covered by the terms of the UnRAR license, the licensors of this
+ Program grant you additional permission to convey the resulting work.
+ Corresponding Source for a non-source form of such a combination shall
+ include the source code for the parts of hivepack::rar or hivepack-rar used
+ as well as that of the covered work.
  .
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or

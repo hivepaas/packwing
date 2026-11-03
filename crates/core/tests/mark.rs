@@ -6,7 +6,7 @@ use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use hivepack_extract::Origin;
+use hivepack::extract::Origin;
 use packwing_core::{
     Control, Item, Keys, Kind, Lister, LocalFolder, NewArchive, OnExisting, Source, Storage,
     Stored, Transfer, create, extract, transfer,

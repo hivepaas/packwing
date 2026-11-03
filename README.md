@@ -89,7 +89,7 @@ packwing is built and maintained by HivePaaS, who also make:
 
 packwing is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License, version 3 or (at your option) any later version. See [LICENSE](LICENSE). Copyright (C) 2026 HivePaaS.
 
-packwing reads RAR through `hivepack-rar`, a port of UnRAR under UnRAR's own license, which [GPL-ADDITIONAL-PERMISSION.md](GPL-ADDITIONAL-PERMISSION.md) allows it to be combined with, under section 7 of the GPL.
+packwing reads RAR through `hivepack::rar`, hivepack's port of UnRAR under UnRAR's own license, which [GPL-ADDITIONAL-PERMISSION.md](GPL-ADDITIONAL-PERMISSION.md) allows it to be combined with, under section 7 of the GPL.
 
 The name and logo are not covered by the GPL: see [TRADEMARKS.md](TRADEMARKS.md). Contributions are welcome under the terms in [CONTRIBUTING.md](CONTRIBUTING.md).
 

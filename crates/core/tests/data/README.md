@@ -6,7 +6,7 @@ packwing-core's tests read them.
 
 - `sample.iso.zst`: ISO 9660, with Rock Ridge and Joliet, under zstd.
 - `sample-udf.iso.zst`: UDF beside ISO 9660, as DVDs and Windows' images
-  are, which hivepack-open finds as a UDF volume, under zstd.
+  are, which hivepack::open finds as a UDF volume, under zstd.
 - `sample.7z`: 7-Zip's defaults, LZMA2 in one solid block.
 - `secret.7z`: the same, its files encrypted with AES; password `secret`.
 - `hidden.7z`: the same, its names encrypted too (`-mhe=on`).

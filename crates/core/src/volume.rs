@@ -3,13 +3,13 @@
 use std::collections::HashSet;
 use std::io::{Read, Seek};
 
-use hivepack_udf::{Node, Stat, Udf, VType};
+use hivepack::udf::{Node, Stat, Udf, VType};
 
 use crate::Error;
 
 /// Calls `each` with every entry of the volume, parents before what they
 /// hold, in the order its directories list them (hidden entries left out,
-/// as hivepack-extract leaves them): its path, a component at a time, its
+/// as hivepack::extract leaves them): its path, a component at a time, its
 /// node and its attributes. A directory met again, which UDF does not
 /// allow, is not walked twice, so that a volume made to loop ends.
 pub(crate) fn walk<R: Read + Seek>(

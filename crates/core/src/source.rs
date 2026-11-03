@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
 
-use hivepack_zip::ReadAt;
+use hivepack::zip::ReadAt;
 
 use crate::joined::{Joined, joined_size};
 use crate::storage::Storage;

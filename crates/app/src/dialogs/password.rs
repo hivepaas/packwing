@@ -117,7 +117,7 @@ impl PasswordDialog {
     }
 }
 
-/// The most a key file is read of: more than any key file is, as hivepack-age
+/// The most a key file is read of: more than any key file is, as hivepack::age
 /// takes 16 MiB, and a file chosen by mistake may be any size.
 const KEY_FILE_LIMIT: u64 = 16 << 20;
 
