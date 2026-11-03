@@ -2581,3 +2581,50 @@ fn keys_are_read_from_a_file_as_age_reads_them() {
     // A private key has no place there.
     assert!(age_keys_in(AGE_KEY.as_bytes()).is_err());
 }
+
+/// What is a ZIP, a 7z or a tar archive under another name, as Java, Android,
+/// Firefox, ebooks, comic books and the short names of compressed tars give
+/// it, opens as one: packwing goes by its bytes.
+#[test]
+fn an_archive_under_another_name_opens() {
+    let s = Scratch::new("names");
+    let root = s.path("Báo cáo");
+    fs::create_dir_all(&root).unwrap();
+    fs::write(root.join("ghi chú.txt"), "xin chào\n").unwrap();
+    let cases: [(Kind, &str, &[&str]); 8] = [
+        (
+            Kind::Zip,
+            "zip",
+            &["jar", "war", "ear", "apk", "xpi", "epub", "cbz"],
+        ),
+        (Kind::SevenZip, "7z", &["cb7"]),
+        (Kind::Tar, "tar", &["cbt"]),
+        (Kind::TarGz, "tar.gz", &["tgz"]),
+        (Kind::TarBz2, "tar.bz2", &["tbz2", "tbz"]),
+        (Kind::TarXz, "tar.xz", &["txz"]),
+        (Kind::TarZst, "tar.zst", &["tzst"]),
+        (Kind::TarLz4, "tar.lz4", &["tlz4"]),
+    ];
+    for (kind, ext, names) in cases {
+        let new = NewArchive {
+            kind,
+            ..NewArchive::default()
+        };
+        let made = create(
+            std::slice::from_ref(&root),
+            &s.path(&format!("a.{ext}")),
+            &new,
+            &Control::default(),
+        )
+        .unwrap();
+        for name in names {
+            let renamed = s.path(&format!("a.{name}"));
+            fs::copy(&made, &renamed).unwrap();
+            let listing = list(&renamed, &Keys::default())
+                .unwrap_or_else(|e| panic!(".{name}, a {ext}: {e}"));
+            assert_eq!(listing.files, 1, ".{name}");
+            test(&renamed, &Keys::default(), &Control::default())
+                .unwrap_or_else(|e| panic!(".{name}, a {ext}: {e}"));
+        }
+    }
+}
