@@ -75,6 +75,11 @@ pub struct EditStorageAsked(pub usize);
 
 impl EventEmitter<EditStorageAsked> for StoragesPage {}
 
+/// Remove was pressed for the storage at this index: it is asked first.
+pub struct RemoveStorageAsked(pub usize);
+
+impl EventEmitter<RemoveStorageAsked> for StoragesPage {}
+
 /// With no use for this long, a storage that asks first asks again.
 pub const ASKS_AGAIN_AFTER: Duration = Duration::from_secs(5 * 60);
 
@@ -255,7 +260,7 @@ impl StoragesPage {
                 }
                 match then {
                     Some(Then::Edit(i)) => cx.emit(EditStorageAsked(i)),
-                    Some(Then::Remove(i)) => self.remove(i, cx),
+                    Some(Then::Remove(i)) => cx.emit(RemoveStorageAsked(i)),
                     None => {}
                 }
             }
@@ -314,7 +319,7 @@ impl StoragesPage {
         if !self.storages.get(i).is_some_and(|s| self.locked(s)) {
             match then {
                 Then::Edit(i) => cx.emit(EditStorageAsked(i)),
-                Then::Remove(i) => self.remove(i, cx),
+                Then::Remove(i) => cx.emit(RemoveStorageAsked(i)),
             }
             return;
         }
@@ -412,6 +417,14 @@ impl StoragesPage {
             }
         };
         self.choose(at, cx);
+    }
+
+    /// Takes the storage at `i` off the list, if it is still the one named `name`, as
+    /// it was when asked.
+    pub fn remove_named(&mut self, i: usize, name: &str, cx: &mut Context<Self>) {
+        if self.storages.get(i).is_some_and(|s| s.name == name) {
+            self.remove(i, cx);
+        }
     }
 
     /// Takes the storage at `i` off the list. Its files stay where they are.
@@ -751,6 +764,7 @@ impl StoragesPage {
                         }))
                         .child(
                             div()
+                                .debug_selector(|| "storage-remove".to_owned())
                                 .id("storage-remove")
                                 .h(px(40.))
                                 .px(px(12.))

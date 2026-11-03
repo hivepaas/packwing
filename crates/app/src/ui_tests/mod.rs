@@ -262,6 +262,19 @@ impl Ui {
         self.cx.run_until_parked();
     }
 
+    /// Presses the right button on the middle of the element marked `selector`.
+    pub fn right_click(&mut self, selector: &str) {
+        let at = self
+            .find(selector)
+            .unwrap_or_else(|| panic!("nothing marked {selector:?} is drawn"))
+            .center();
+        let mut vcx = VisualTestContext::from_window(self.window().into(), &self.cx);
+        let none = gpui::Modifiers::none();
+        vcx.simulate_mouse_down(at, gpui::MouseButton::Right, none);
+        vcx.simulate_mouse_up(at, gpui::MouseButton::Right, none);
+        self.cx.run_until_parked();
+    }
+
     /// Opens the select marked `mark` and clicks its option `option`, as the mouse does.
     pub fn choose(&mut self, mark: &str, option: &str) {
         self.click(&format!("select: {mark}"));
