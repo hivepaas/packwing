@@ -107,6 +107,8 @@ pub struct ArchivePage {
     /// Shift for those between. What only shows in the preview is not one.
     selected: BTreeSet<usize>,
     preview: Preview,
+    /// The preview's text, when it is one: it can be chosen and copied.
+    preview_text: Entity<TextInput>,
     /// What stops the preview being read, and the reading.
     previewing: Option<(Cancel, Task<()>)>,
     /// What the search found: all of it, as it was typed, in an archive with
@@ -140,6 +142,7 @@ impl ArchivePage {
             chosen: None,
             selected: BTreeSet::new(),
             preview: Preview::Nothing,
+            preview_text: cx.new(|cx| TextInput::new("", cx).read_only()),
             previewing: None,
             found: Vec::new(),
             signature: None,
@@ -283,11 +286,19 @@ impl ArchivePage {
             let preview = reading.await;
             let _ = this.update(cx, |this, cx| {
                 this.previewing = None;
-                this.preview = preview;
-                cx.notify();
+                this.show_preview(preview, cx);
             });
         });
         self.previewing = Some((cancel, task));
+    }
+
+    fn show_preview(&mut self, preview: Preview, cx: &mut Context<Self>) {
+        if let Preview::Text(text) = &preview {
+            self.preview_text
+                .update(cx, |t, cx| t.set_text(text, 0..0, cx));
+        }
+        self.preview = preview;
+        cx.notify();
     }
 
     /// Why the file named could not be opened, if it could not, for tests.
@@ -317,11 +328,11 @@ impl ArchivePage {
         text: &str,
         cx: &mut Context<Self>,
     ) {
-        self.preview = match picture {
+        let preview = match picture {
             Some(bytes) => Preview::Picture(Arc::new(Image::from_bytes(ImageFormat::Png, bytes))),
             None => Preview::Text(text.to_owned()),
         };
-        cx.notify();
+        self.show_preview(preview, cx);
     }
 
     /// A click on the entry at `i`: it alone, or with `more` as well, or with
@@ -946,14 +957,14 @@ impl ArchivePage {
                                 .into_any_element()
                         }),
                 ),
-                (Some(_), Preview::Text(text)) => d.items_start().justify_start().child(
+                (Some(_), Preview::Text(_)) => d.items_start().justify_start().child(
                     div()
-                        .id("preview-text")
+                        .debug_selector(|| "preview-text".to_owned())
                         .size_full()
-                        .overflow_y_scroll()
+                        .flex()
                         .p(px(12.))
                         .text_size(px(12.))
-                        .child(text.clone()),
+                        .child(self.preview_text.clone()),
                 ),
                 (Some(_), Preview::Reading) => d.child(
                     div()
