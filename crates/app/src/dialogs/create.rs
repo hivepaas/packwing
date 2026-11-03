@@ -151,7 +151,8 @@ impl Format {
         }
     }
 
-    /// Whether it is protected with age, around it: ZIP and 7z have their own way.
+    /// Whether it is protected with age, around it, whatever is chosen: ZIP and 7z
+    /// have their own AES-256, and age only if it is chosen.
     pub fn uses_age(self) -> bool {
         !matches!(self, Format::Zip | Format::SevenZip)
     }
@@ -294,6 +295,8 @@ pub struct CreateDialog {
     password: Entity<TextInput>,
     /// With age: to keys, not to a password.
     to_keys: bool,
+    /// A ZIP or 7z archive encrypted whole with age, not with its own AES-256.
+    zip_age: bool,
     /// The key typed for age to encrypt to.
     key: Entity<TextInput>,
     /// Or the keys of a file, what it is called and how many it left out.
@@ -402,6 +405,7 @@ impl CreateDialog {
             passphrase_made: false,
             password,
             to_keys: false,
+            zip_age: false,
             key,
             keys_file: None,
             keys_file_problem: None,
@@ -433,6 +437,13 @@ impl CreateDialog {
         self.part
             .update(cx, |t, cx| t.set_text(part, part.len()..part.len(), cx));
         self.protect = true;
+        cx.notify();
+    }
+
+    /// Encrypts a ZIP or 7z archive whole with age, as pressing age would, for tests.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn choose_age(&mut self, cx: &mut Context<Self>) {
+        self.zip_age = true;
         cx.notify();
     }
 
@@ -707,9 +718,15 @@ impl CreateDialog {
         self.protect
     }
 
+    /// Whether what it is protected with is age: always, but for a ZIP or 7z
+    /// archive left to its own AES-256.
+    fn with_age(&self, cx: &App) -> bool {
+        self.format(cx).uses_age() || self.zip_age
+    }
+
     /// Whether it is to be encrypted to keys with age.
     fn encrypted_to_keys(&self, cx: &App) -> bool {
-        self.protect && self.to_keys && self.format(cx).uses_age()
+        self.protect && self.to_keys && self.with_age(cx)
     }
 
     /// The keys age is to encrypt to: those of the file, or the one typed if it is one.
@@ -813,6 +830,7 @@ impl CreateDialog {
             kind: self.format(cx).kind(),
             password: password.then(|| self.password.read(cx).text().as_bytes().to_vec()),
             age_keys,
+            whole_with_age: self.zip_age,
             ..NewArchive::default()
         }
     }
@@ -850,7 +868,7 @@ impl CreateDialog {
             cx.notify();
             return;
         }
-        let encrypted = self.protected() && format.uses_age();
+        let encrypted = self.protected() && self.with_age(cx);
         let name = format!(
             "{typed}{}{}",
             format.ext(),
@@ -889,7 +907,8 @@ impl CreateDialog {
                 level: self.level,
                 password: password.then(|| self.password.read(cx).text().as_bytes().to_vec()),
                 age_keys,
-                hide_names: self.hide_names,
+                whole_with_age: self.zip_age,
+                hide_names: self.hide_names && !self.with_age(cx),
                 skip_mac_files: crate::prefs::prefs(cx).skip_mac_files,
                 part_size: self.parts(cx),
                 stream_above: Some(crate::prefs::prefs(cx).stream_above),
@@ -1254,6 +1273,7 @@ impl CreateDialog {
         let c = colors();
         let format = self.format(cx);
         let on = self.protected();
+        let age = self.with_age(cx);
         let to_keys = self.encrypted_to_keys(cx);
         let typed = self.password.read(cx).text().to_string();
         let strength = (!typed.is_empty()).then(|| strength(&typed));
@@ -1278,7 +1298,7 @@ impl CreateDialog {
                             .flex_1()
                             .text_size(px(15.))
                             .font_weight(FontWeight::SEMIBOLD)
-                            .child(if format.uses_age() {
+                            .child(if age {
                                 tr!("Encrypt with age")
                             } else {
                                 tr!("Protect with a password")
@@ -1295,7 +1315,27 @@ impl CreateDialog {
                             .into_any_element()
                     }),
             )
-            .when(on && format.uses_age(), |d| {
+            // ZIP and 7z have their own AES-256, or age around them, as the others do.
+            .when(on && !format.uses_age(), |d| {
+                d.child(segments([
+                    segment(
+                        "own-aes",
+                        format!("{} AES-256", format.ext().trim_start_matches('.').to_uppercase()),
+                        !self.zip_age,
+                    )
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.zip_age = false;
+                        cx.notify();
+                    })),
+                    segment("whole-age", "age", self.zip_age).on_click(cx.listener(
+                        |this, _, _, cx| {
+                            this.zip_age = true;
+                            cx.notify();
+                        },
+                    )),
+                ]))
+            })
+            .when(on && age, |d| {
                 d.child(segments([
                     segment("age-password", tr!("Password"), !self.to_keys).on_click(cx.listener(
                         |this, _, _, cx| {
@@ -1336,7 +1376,7 @@ impl CreateDialog {
                 .when(typed.is_empty() && self.checked, |d| {
                     d.child(note(Tone::Warn).child(tr!("Type a password, or turn this off.")))
                 })
-                .when(format == Format::SevenZip, |d| {
+                .when(format == Format::SevenZip && !age, |d| {
                     d.child(
                         check_row("hide-names", self.hide_names, tr!("Hide file names too")).on_click(
                             cx.listener(|this, _, _, cx| {
@@ -1346,7 +1386,7 @@ impl CreateDialog {
                         ),
                     )
                 })
-                .when(format == Format::Zip, |d| {
+                .when(format == Format::Zip && !age, |d| {
                     d.child(note(Tone::Warn).child(
                         tr!("With a password, the built-in Windows and macOS tools can’t open this ZIP. \
                          The recipient needs an archiver app. File names also stay visible; \
@@ -1356,7 +1396,7 @@ impl CreateDialog {
             })
             .when(to_keys, |d| d.children(self.keys_part(cx)))
             .when_some(refused, |d, why| d.child(note(Tone::Warn).child(why)))
-            .when(on && format.uses_age(), |d| {
+            .when(on && age, |d| {
                 d.child(note(Tone::Warn).child(tr!(
                     "Saved as {name}. The names inside are encrypted too. Windows and macOS may need the age tool or an archiver app to open it.",
                     name = saved_as

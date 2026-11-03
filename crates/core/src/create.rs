@@ -145,12 +145,17 @@ pub struct NewArchive {
     pub kind: Kind,
     pub level: Level,
     /// Encrypts its files with AES-256: WinZip's in a ZIP archive, 7-Zip's in
-    /// a 7z one. Any other kind is encrypted whole with age, to this passphrase.
+    /// a 7z one. Any other kind is encrypted whole with age, to this passphrase,
+    /// and a ZIP or 7z one too with `whole_with_age`.
     pub password: Option<Vec<u8>>,
     /// Encrypts it whole with age, to these keys: `age1…`, `age1pq1…` or
     /// `ssh-ed25519 …`, post-quantum ones or others but not both. Not for a ZIP or 7z
-    /// archive, and not with a password, as age has a passphrase alone.
+    /// archive unless `whole_with_age`, and not with a password, as age has a
+    /// passphrase alone.
     pub age_keys: Vec<String>,
+    /// Encrypts a ZIP or 7z archive whole with age, as any other kind is, in place
+    /// of its own AES-256: its names are hidden too, and it can go to keys.
+    pub whole_with_age: bool,
     /// Encrypts a 7z archive's names too, with its password.
     pub hide_names: bool,
     /// Leaves out what only a Mac uses, under the paths chosen: `.DS_Store`,
@@ -169,6 +174,7 @@ pub struct NewArchive {
 /// it starts, and [`create`] and [`create_on`] whoever asks them.
 pub fn refused_by(policy: &Policy, new: &NewArchive) -> Result<(), Refused> {
     let method = match (&new.password, new.kind) {
+        (Some(_), _) if with_age(new) => Some(Method::AgePassphrase),
         (Some(_), Kind::Zip) => Some(Method::ZipAes256),
         (Some(_), Kind::SevenZip) => Some(Method::SevenZipAes256),
         (Some(_), _) => Some(Method::AgePassphrase),
@@ -205,7 +211,8 @@ pub fn route(to: &dyn Storage, folder: &[String], new: &NewArchive, bytes: u64) 
     }
     // A tar or ZIP archive can be written going only forwards. A 7z one goes back to
     // its start, and parts are files of their own, which are not worth the trouble yet.
-    let forwards = new.kind != Kind::SevenZip;
+    // Encrypted whole with age, it is made in a temporary file and goes forwards.
+    let forwards = new.kind != Kind::SevenZip || new.whole_with_age;
     let can = new.part_size.is_none() && (to.writes_anywhere() || (forwards && to.sends_as_read()));
     match new.stream_above {
         Some(above) if can && bytes > above => Route::Straight,
@@ -219,6 +226,7 @@ impl fmt::Debug for NewArchive {
             .field("kind", &self.kind)
             .field("level", &self.level)
             .field("password", &self.password.is_some())
+            .field("whole_with_age", &self.whole_with_age)
             .field("hide_names", &self.hide_names)
             .field("stream_above", &self.stream_above)
             .field("skip_mac_files", &self.skip_mac_files)
@@ -590,10 +598,71 @@ fn write_archive<W: Write + Seek>(
     out: W,
 ) -> Result<(), Error> {
     match new.kind {
+        Kind::Zip | Kind::SevenZip if new.whole_with_age => write_sealed(items, new, tally, out),
         Kind::Zip => write_zip(items, new, tally, out),
         Kind::SevenZip => write_7z(items, new, tally, out),
         _ => write_squeezed(items, new, tally, out),
     }
+}
+
+/// A ZIP or 7z archive, encrypted whole with age: a ZIP one as it is made, a 7z
+/// one, which goes back to its start, in a temporary file first that only its
+/// owner can read, as one that is opened is.
+fn write_sealed<W: Write>(
+    items: Vec<Item>,
+    new: &NewArchive,
+    tally: &Arc<Tally>,
+    mut out: W,
+) -> Result<(), Error> {
+    // With nothing to encrypt to, it is not encrypted.
+    match age_recipients(new)? {
+        Some(recipients) => {
+            let mut encrypted = age_writer(out, &recipients)?;
+            write_unsealed(items, new, tally, &mut encrypted)?;
+            encrypted.finish()?;
+        }
+        None => write_unsealed(items, new, tally, &mut out)?,
+    }
+    Ok(())
+}
+
+/// The ZIP or 7z archive that [`write_sealed`] encrypts, with no password.
+fn write_unsealed<W: Write>(
+    items: Vec<Item>,
+    new: &NewArchive,
+    tally: &Arc<Tally>,
+    out: &mut W,
+) -> Result<(), Error> {
+    let plain = NewArchive {
+        password: None,
+        age_keys: Vec::new(),
+        whole_with_age: false,
+        hide_names: false,
+        ..new.clone()
+    };
+    if new.kind == Kind::Zip {
+        return zip_closed(new_zip(items, &plain, tally)?.close_to_stream(out)?);
+    }
+    let scratch = crate::spool::scratch()?;
+    write_7z(items, &plain, tally, &scratch.file)?;
+    io::copy(&mut scratch.rewound()?, out)?;
+    Ok(())
+}
+
+/// What encrypts what is written to `out` with age, to `recipients`.
+fn age_writer<W: Write>(
+    out: W,
+    recipients: &[BoxedRecipient],
+) -> Result<hivepack_age::Encryptor<W>, Error> {
+    let recipients: Vec<&dyn Recipient> = recipients
+        .iter()
+        .map(|r| r.as_ref() as &dyn Recipient)
+        .collect();
+    // Random bytes given, as hivepack-age has its own source on Unix alone.
+    let random: RandomSource =
+        Arc::new(|buffer: &mut [u8]| getrandom::fill(buffer).map_err(io::Error::other));
+    hivepack_age::encrypt(out, &recipients, Some(&random))
+        .map_err(|e| Error::Failed(tr!("Could not encrypt: {e}", e = e.to_string())))
 }
 
 fn write_zip<W: Write + Seek>(
@@ -642,27 +711,23 @@ fn write_squeezed<W: Write>(
         squeeze(items, new, tally, out)?;
         return Ok(());
     };
-    let recipients: Vec<&dyn Recipient> = recipients
-        .iter()
-        .map(|r| r.as_ref() as &dyn Recipient)
-        .collect();
-    // Random bytes given, as hivepack-age has its own source on Unix alone.
-    let random: RandomSource =
-        Arc::new(|buffer: &mut [u8]| getrandom::fill(buffer).map_err(io::Error::other));
-    let encrypted = hivepack_age::encrypt(out, &recipients, Some(&random))
-        .map_err(|e| Error::Failed(tr!("Could not encrypt: {e}", e = e.to_string())))?;
-    squeeze(items, new, tally, encrypted)?.finish()?;
+    squeeze(items, new, tally, age_writer(out, &recipients)?)?.finish()?;
     Ok(())
 }
 
+/// Whether what `new` is encrypted with, if anything, is age.
+fn with_age(new: &NewArchive) -> bool {
+    !matches!(new.kind, Kind::Zip | Kind::SevenZip) || new.whole_with_age
+}
+
 /// What a new archive is encrypted to with age, if it is: none for ZIP and 7z, which
-/// have their own encryption.
+/// have their own encryption, unless they are encrypted whole with age.
 fn age_recipients(new: &NewArchive) -> Result<Option<Vec<BoxedRecipient>>, Error> {
     let bad = |e: String| Error::Failed(tr!("Could not encrypt: {e}", e = e));
-    if matches!(new.kind, Kind::Zip | Kind::SevenZip) {
+    if !with_age(new) {
         if !new.age_keys.is_empty() {
             return Err(Error::Failed(tr!(
-                "Only tar and single files take age keys."
+                "A ZIP or 7z archive takes age keys only when age encrypts it whole."
             )));
         }
         return Ok(None);
@@ -1769,6 +1834,9 @@ fn straight(
             broken: broken.clone(),
         };
         let written = match new.kind {
+            Kind::Zip | Kind::SevenZip if new.whole_with_age => {
+                write_sealed(items, new, &tally, out)
+            }
             Kind::Zip => new_zip(items, new, &tally)
                 .and_then(|mut za| Ok(za.close_to_stream(out)?))
                 .and_then(zip_closed),

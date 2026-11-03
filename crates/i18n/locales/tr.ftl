@@ -1681,14 +1681,14 @@ t8dd055c6 = { $path } yazılamadı: { $e }
 # {wanted} and the names after it are taken.
 t40554bf6 = { $wanted } ve ondan sonraki adlar kullanımda.
 
-# Nothing to compress.
-t47339885 = Sıkıştırılacak bir şey yok.
-
 # Could not encrypt: {e}
 t485d71ab = Şifrelenemedi: { $e }
 
-# Only tar and single files take age keys.
-tc1754be6 = Yalnızca tar ve tek dosyalar age anahtarlarını kabul eder.
+# Nothing to compress.
+t47339885 = Sıkıştırılacak bir şey yok.
+
+# A ZIP or 7z archive takes age keys only when age encrypts it whole.
+t582284c9 = ZIP veya 7z arşivi age anahtarlarını yalnızca age onu bütünüyle şifrelediğinde alır.
 
 # age encrypts to a passphrase or to keys, not to both.
 t83582c17 = age bir parola ifadesine veya anahtarlara şifreler, ikisine birden değil.

@@ -1654,14 +1654,14 @@ t8dd055c6 = { $path } を書き込めませんでした：{ $e }
 # {wanted} and the names after it are taken.
 t40554bf6 = { $wanted } とそれ以降の名前はすでに使われています。
 
-# Nothing to compress.
-t47339885 = 圧縮するものがありません。
-
 # Could not encrypt: {e}
 t485d71ab = 暗号化できませんでした：{ $e }
 
-# Only tar and single files take age keys.
-tc1754be6 = age のキーを使えるのは、tar と単一ファイルだけです。
+# Nothing to compress.
+t47339885 = 圧縮するものがありません。
+
+# A ZIP or 7z archive takes age keys only when age encrypts it whole.
+t582284c9 = ZIP や 7z のアーカイブで age の鍵を使えるのは、age で全体を暗号化する場合だけです。
 
 # age encrypts to a passphrase or to keys, not to both.
 t83582c17 = age の暗号化はパスフレーズかキーのどちらか一方で、両方は使えません。

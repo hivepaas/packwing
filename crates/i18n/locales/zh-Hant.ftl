@@ -1663,14 +1663,14 @@ t8dd055c6 = 無法寫入 { $path }：{ $e }
 # {wanted} and the names after it are taken.
 t40554bf6 = { $wanted } 及其後的名稱都已被使用。
 
-# Nothing to compress.
-t47339885 = 沒有可壓縮的內容。
-
 # Could not encrypt: {e}
 t485d71ab = 無法加密：{ $e }
 
-# Only tar and single files take age keys.
-tc1754be6 = 只有 tar 和單一檔案可使用 age 金鑰。
+# Nothing to compress.
+t47339885 = 沒有可壓縮的內容。
+
+# A ZIP or 7z archive takes age keys only when age encrypts it whole.
+t582284c9 = ZIP 或 7z 封存檔只有在由 age 整體加密時才能使用 age 金鑰。
 
 # age encrypts to a passphrase or to keys, not to both.
 t83582c17 = age 加密只能使用密碼片語或金鑰，不能兩者並用。

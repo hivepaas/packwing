@@ -80,6 +80,25 @@ fn what_is_allowed_is_made() {
     assert!(make(&dir, Kind::TarZst, Some(LONG)).expect("age").exists());
 }
 
+#[test]
+fn a_zip_archive_encrypted_whole_with_age_is_age_s_to_allow() {
+    let dir = folder("zip-age");
+    let new = NewArchive {
+        kind: Kind::Zip,
+        password: Some(LONG.as_bytes().to_vec()),
+        whole_with_age: true,
+        ..NewArchive::default()
+    };
+    let made = create(
+        &[dir.join("file.txt")],
+        &dir.join("made"),
+        &new,
+        &Control::default(),
+    )
+    .expect("age-passphrase is allowed, though zip-aes256 is not");
+    assert!(made.exists());
+}
+
 /// An empty ZIP-with-one-empty-file archive, in the clear, as one from elsewhere.
 fn clear_zip(path: &Path) {
     let name = b"a.txt";

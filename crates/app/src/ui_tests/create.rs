@@ -42,6 +42,33 @@ scenario!(
 );
 
 scenario!(
+    /// A ZIP archive encrypted whole with age instead is saved as .zip.age, and opens
+    /// with the passphrase alone.
+    a_zip_archive_encrypted_with_age,
+    |ui| {
+        let work = new_archive(ui);
+        ui.click("advanced");
+        ui.click("protect");
+        ui.click("whole-age");
+        ui.type_in("Password", "correct horse battery");
+        ui.click("create");
+        ui.wait_for_no_dialog();
+        assert!(!work.join("a.zip").exists());
+        let made = work.join("a.zip.age");
+        let control = packwing_core::Control::default();
+        let none = packwing_core::Keys::default();
+        assert!(packwing_core::list(packwing_core::Source::from(made.as_path()), &none).is_err());
+        let keys = packwing_core::Keys {
+            passphrase: Some(b"correct horse battery".to_vec()),
+            ..packwing_core::Keys::default()
+        };
+        let out = work.join("out");
+        packwing_core::extract(&made, &out, &keys, &control).expect("it opens with the passphrase");
+        assert_eq!(std::fs::read_to_string(out.join("a.txt")).expect("a.txt came out"), "held");
+    }
+);
+
+scenario!(
     /// Asked to protect it, an empty password stops it, and says so.
     no_password_makes_nothing,
     |ui| {

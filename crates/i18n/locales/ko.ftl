@@ -1654,14 +1654,14 @@ t8dd055c6 = { $path }에 쓸 수 없습니다: { $e }
 # {wanted} and the names after it are taken.
 t40554bf6 = { $wanted }와(과) 그 뒤의 이름은 이미 사용 중입니다.
 
-# Nothing to compress.
-t47339885 = 압축할 항목이 없습니다.
-
 # Could not encrypt: {e}
 t485d71ab = 암호화할 수 없습니다: { $e }
 
-# Only tar and single files take age keys.
-tc1754be6 = tar와 단일 파일만 age 키를 사용할 수 있습니다.
+# Nothing to compress.
+t47339885 = 압축할 항목이 없습니다.
+
+# A ZIP or 7z archive takes age keys only when age encrypts it whole.
+t582284c9 = ZIP 또는 7z 압축 파일은 age로 전체를 암호화할 때만 age 키를 쓸 수 있습니다.
 
 # age encrypts to a passphrase or to keys, not to both.
 t83582c17 = age는 암호 문구 또는 키 중 하나로만 암호화할 수 있으며, 둘을 함께 쓸 수 없습니다.
