@@ -316,9 +316,16 @@ pub fn window_chrome(
     let (left, right) = if windows {
         // Full screen has no caption: Windows ignores the control areas then.
         let buttons = (!fullscreen).then(|| windows_buttons(window));
+        // Every part of the bar but the buttons drags. GPUI answers Windows with
+        // the first control area painted under the pointer, and a parent paints
+        // before its children: the buttons must not be inside a drag area, or
+        // Windows sees the caption where they are, and a press does nothing.
+        let drag = || row().window_control_area(WindowControlArea::Drag);
         (
-            row(),
-            row().pl(px(6.)).children(switch.take()).children(buttons),
+            drag(),
+            row()
+                .child(drag().pl(px(6.)).children(switch.take()))
+                .children(buttons),
         )
     } else if mac {
         // The system draws the traffic lights over the left end.
@@ -359,7 +366,6 @@ pub fn window_chrome(
             // On Windows the system moves the window from the drag areas
             // itself (see `windows_buttons`); handling the press here would
             // stop it.
-            .when(windows, |d| d.window_control_area(WindowControlArea::Drag))
             .when(!windows, |d| {
                 d.on_mouse_down(MouseButton::Left, move |e, window, _| {
                     if e.click_count != 2 {
@@ -378,7 +384,12 @@ pub fn window_chrome(
                 })
             })
             .child(left)
-            .child(div().flex_1())
+            .child(
+                div()
+                    .flex_1()
+                    .h_full()
+                    .when(windows, |d| d.window_control_area(WindowControlArea::Drag)),
+            )
             .child(right)
     });
     let (inset, border) = (px(INSET), px(BORDER));
