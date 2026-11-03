@@ -466,6 +466,12 @@ t72430853 = 実行する
 # Open
 t538b10e9 = 開く
 
+# Open from a storage
+t45a8991d = ストレージから開く
+
+# Choose a storage, and an archive in it
+t3c900950 = ストレージと、その中のアーカイブを選択してください
+
 # Choose
 t73c66160 = 選択
 
@@ -826,6 +832,9 @@ t0f9a8a58 = 一致するものがありません。
 # Add a storage to browse it.
 t0b82c83a = ストレージを追加すると、ここで閲覧できます。
 
+# No folders or archives here.
+t6a090cc3 = フォルダもアーカイブもありません。
+
 # No folders here.
 tc7731c8f = フォルダがありません。
 
@@ -882,6 +891,9 @@ tff74a552 = ほかを開く…
 
 # Open an archive…
 t2cf2a8ee = アーカイブを開く…
+
+# From a storage…
+tcfba8fd5 = ストレージから…
 
 # Choose a file to see it here
 t37854216 = ファイルを選択するとここに表示されます

@@ -18,8 +18,8 @@ use crate::colors::{self, colors};
 use crate::demo;
 use crate::dialogs::{
     AddDialog, AddStorageDialog, CreateDialog, Creating, DeleteDialog, DialogEvent, EditDialog,
-    ExtractDialog, Job, OpenFileDialog, PasswordDialog, PasswordEvent, ProgressDialog, Saving,
-    SignDialog, TransferDialog, Verb, ViewDialog, asked_for,
+    ExtractDialog, Job, OpenFileDialog, OpenStoredDialog, PasswordDialog, PasswordEvent,
+    ProgressDialog, Saving, SignDialog, TransferDialog, Verb, ViewDialog, asked_for,
 };
 use crate::explorer::ExplorerEvent;
 use crate::model::{Archive, Kind, Selection, stem};
@@ -199,6 +199,7 @@ impl Workspace {
                     ArchiveEvent::Test => this.test_archive(window, cx),
                     ArchiveEvent::Sign => this.open_sign_archive(window, cx),
                     ArchiveEvent::Open => this.choose_archive(window, cx),
+                    ArchiveEvent::OpenStored => this.choose_stored_archive(window, cx),
                     ArchiveEvent::Delete => this.open_edit(false, window, cx),
                     ArchiveEvent::Rename => this.open_edit(true, window, cx),
                     ArchiveEvent::OpenEntry(entry) => this.open_entry(entry.clone(), window, cx),
@@ -549,6 +550,10 @@ impl Workspace {
                     this.refresh_explorers(cx);
                     this.shown_explorer(cx).update(cx, |e, cx| e.say(said, cx));
                 }
+                DialogEvent::Open(source) => {
+                    this.close_dialog(cx);
+                    this.read_archive(source.clone(), Keys::default(), false, window, cx);
+                }
                 DialogEvent::Signed => {
                     this.close_dialog(cx);
                     this.trusted_seen = prefs::prefs(cx).trusted_keys;
@@ -868,6 +873,13 @@ impl Workspace {
             }
         })
         .detach();
+    }
+
+    /// Asks which archive on a storage to open, and opens it.
+    pub fn choose_stored_archive(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let (places, chosen) = self.storages.read(cx).places(cx);
+        let view = cx.new(|cx| OpenStoredDialog::new(places, chosen, cx));
+        self.show(view, true, window, cx);
     }
 
     pub fn open_extract(&mut self, window: &mut Window, cx: &mut Context<Self>) {

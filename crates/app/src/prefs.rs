@@ -541,6 +541,17 @@ pub fn prefs(cx: &App) -> Prefs {
     cx.try_global::<Prefs>().cloned().unwrap_or_default()
 }
 
+/// Whether a storage across a network is kept: one on this computer is a
+/// folder the system's dialogs reach too.
+pub fn has_network_storage(cx: &App) -> bool {
+    cx.try_global::<Prefs>().is_some_and(|p| {
+        p.storages_kept
+            && p.storages
+                .iter()
+                .any(|s| matches!(s.place, KeptPlace::Other { .. }))
+    })
+}
+
 /// Changes the preferences and keeps them. One that cannot be written lasts
 /// for this run, and says so where a user of a terminal can see it.
 pub fn change(cx: &mut App, f: impl FnOnce(&mut Prefs)) {

@@ -466,6 +466,12 @@ t72430853 = 執行
 # Open
 t538b10e9 = 開啟
 
+# Open from a storage
+t45a8991d = 從儲存位置開啟
+
+# Choose a storage, and an archive in it
+t3c900950 = 請選擇儲存位置及其中的封存檔
+
 # Choose
 t73c66160 = 選擇
 
@@ -826,6 +832,9 @@ t0f9a8a58 = 沒有符合的項目。
 # Add a storage to browse it.
 t0b82c83a = 新增儲存位置後即可瀏覽。
 
+# No folders or archives here.
+t6a090cc3 = 這裡沒有資料夾或封存檔。
+
 # No folders here.
 tc7731c8f = 這裡沒有資料夾。
 
@@ -882,6 +891,9 @@ tff74a552 = 開啟其他…
 
 # Open an archive…
 t2cf2a8ee = 開啟封存檔…
+
+# From a storage…
+tcfba8fd5 = 從儲存位置…
 
 # Choose a file to see it here
 t37854216 = 選擇檔案即可在此查看

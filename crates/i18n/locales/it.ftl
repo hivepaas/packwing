@@ -472,6 +472,12 @@ t72430853 = Eseguilo
 # Open
 t538b10e9 = Apri
 
+# Open from a storage
+t45a8991d = Apri da uno spazio di archiviazione
+
+# Choose a storage, and an archive in it
+t3c900950 = Scegli uno spazio di archiviazione e un archivio al suo interno
+
 # Choose
 t73c66160 = Scegli
 
@@ -834,6 +840,9 @@ t0f9a8a58 = Nulla qui corrisponde.
 # Add a storage to browse it.
 t0b82c83a = Aggiungi uno spazio di archiviazione per sfogliarlo.
 
+# No folders or archives here.
+t6a090cc3 = Nessuna cartella o archivio qui.
+
 # No folders here.
 tc7731c8f = Nessuna cartella qui.
 
@@ -890,6 +899,9 @@ tff74a552 = Aprine un altro…
 
 # Open an archive…
 t2cf2a8ee = Apri un archivio…
+
+# From a storage…
+tcfba8fd5 = Da uno spazio di archiviazione…
 
 # Choose a file to see it here
 t37854216 = Scegli un file per vederlo qui

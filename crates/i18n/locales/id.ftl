@@ -466,6 +466,12 @@ t72430853 = Jalankan
 # Open
 t538b10e9 = Buka
 
+# Open from a storage
+t45a8991d = Buka dari penyimpanan
+
+# Choose a storage, and an archive in it
+t3c900950 = Pilih penyimpanan, dan arsip di dalamnya
+
 # Choose
 t73c66160 = Pilih
 
@@ -826,6 +832,9 @@ t0f9a8a58 = Tidak ada yang cocok.
 # Add a storage to browse it.
 t0b82c83a = Tambahkan penyimpanan untuk menjelajahinya.
 
+# No folders or archives here.
+t6a090cc3 = Tidak ada folder atau arsip di sini.
+
 # No folders here.
 tc7731c8f = Tidak ada folder di sini.
 
@@ -882,6 +891,9 @@ tff74a552 = Buka yang lain…
 
 # Open an archive…
 t2cf2a8ee = Buka arsip…
+
+# From a storage…
+tcfba8fd5 = Dari penyimpanan…
 
 # Choose a file to see it here
 t37854216 = Pilih berkas untuk melihatnya di sini

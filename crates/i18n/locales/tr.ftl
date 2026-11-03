@@ -472,6 +472,12 @@ t72430853 = Çalıştır
 # Open
 t538b10e9 = Aç
 
+# Open from a storage
+t45a8991d = Bir depolama alanından aç
+
+# Choose a storage, and an archive in it
+t3c900950 = Bir depolama alanı ve içinde bir arşiv seçin
+
 # Choose
 t73c66160 = Seç
 
@@ -834,6 +840,9 @@ t0f9a8a58 = Buna uyan bir şey yok.
 # Add a storage to browse it.
 t0b82c83a = Göz atmak için bir depolama alanı ekleyin.
 
+# No folders or archives here.
+t6a090cc3 = Burada klasör veya arşiv yok.
+
 # No folders here.
 tc7731c8f = Burada klasör yok.
 
@@ -890,6 +899,9 @@ tff74a552 = Başkasını aç…
 
 # Open an archive…
 t2cf2a8ee = Arşiv aç…
+
+# From a storage…
+tcfba8fd5 = Bir depolama alanından…
 
 # Choose a file to see it here
 t37854216 = Burada görmek için bir dosya seçin
