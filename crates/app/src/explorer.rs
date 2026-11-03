@@ -32,6 +32,7 @@ use crate::input::{Changed, TextInput};
 use crate::model::{Kind, date, tag_of};
 use crate::prefs;
 use crate::signatures::{self, Looking};
+use crate::text_size::ui;
 use crate::widgets::{Fill, Size, button, float_shadow, icon, icon_button, tile};
 
 /// How many items are asked for at a time.
@@ -1046,7 +1047,7 @@ impl Explorer {
             div()
                 .flex()
                 .items_center()
-                .gap_x(px(6.))
+                .gap_x(ui(6.))
                 .when(i > 0, |d| d.child("›"))
                 .child(
                     div()
@@ -1070,9 +1071,9 @@ impl Explorer {
             .flex_wrap()
             .flex_shrink_0()
             .items_center()
-            .gap(px(10.))
-            .px(px(8.))
-            .pb(px(12.))
+            .gap(ui(10.))
+            .px(ui(8.))
+            .pb(ui(12.))
             .child(
                 icon_button("up", "arrow-up", 44.)
                     .on_click(cx.listener(|this, _, _, cx| this.go_up(cx))),
@@ -1084,28 +1085,28 @@ impl Explorer {
             .child(
                 div()
                     .flex_1()
-                    .min_w(px(160.))
+                    .min_w(ui(160.))
                     .flex()
                     .flex_wrap()
                     .items_center()
-                    .gap_x(px(6.))
-                    .text_size(px(14.))
+                    .gap_x(ui(6.))
+                    .text_size(ui(14.))
                     .text_color(rgb(c.muted))
                     .children(crumbs),
             )
             .when(!self.picking, |d| {
                 d.child(
                     div()
-                        .w(px(220.))
-                        .h(px(44.))
+                        .w(ui(220.))
+                        .h(ui(44.))
                         .flex()
                         .flex_shrink_0()
                         .items_center()
-                        .gap(px(8.))
-                        .px(px(16.))
+                        .gap(ui(8.))
+                        .px(ui(16.))
                         .rounded_full()
                         .bg(rgb(c.field))
-                        .text_size(px(14.))
+                        .text_size(ui(14.))
                         .child(icon("search", 16., c.muted))
                         .child(self.search.clone()),
                 )
@@ -1130,13 +1131,13 @@ impl Explorer {
             .flex()
             .flex_shrink_0()
             .items_center()
-            .gap(px(12.))
-            .px(px(14.))
-            .pb(px(8.))
-            .text_size(px(12.))
+            .gap(ui(12.))
+            .px(ui(14.))
+            .pb(ui(8.))
+            .text_size(ui(12.))
             .font_weight(FontWeight::SEMIBOLD)
             .text_color(rgb(c.muted))
-            .child(div().w(px(36.)).flex_shrink_0())
+            .child(div().w(ui(36.)).flex_shrink_0())
             .child(
                 div()
                     .flex_1()
@@ -1145,13 +1146,13 @@ impl Explorer {
             )
             .child(
                 div()
-                    .w(px(90.))
+                    .w(ui(90.))
                     .flex_shrink_0()
                     .flex()
                     .justify_end()
                     .child(head("sort-size", tr!("Size"), Column::Size, cx)),
             )
-            .child(div().w(px(100.)).flex_shrink_0().child(head(
+            .child(div().w(ui(100.)).flex_shrink_0().child(head(
                 "sort-modified",
                 tr!("Modified"),
                 Column::Modified,
@@ -1172,35 +1173,35 @@ impl Explorer {
         div()
             .id(id)
             .w_full()
-            .h(px(ROW))
+            .h(ui(ROW))
             .flex()
             .items_center()
-            .gap(px(12.))
-            .px(px(14.))
-            .rounded(px(16.))
+            .gap(ui(12.))
+            .px(ui(14.))
+            .rounded(ui(16.))
             .child(
                 tile(36., 11., tint)
-                    .h(px(32.))
-                    .text_size(px(10.))
+                    .h(ui(32.))
+                    .text_size(ui(10.))
                     .font_weight(FontWeight::BOLD)
                     .child(tag),
             )
             .child(div().flex_1().min_w_0().child(name))
             .child(
                 div()
-                    .w(px(90.))
+                    .w(ui(90.))
                     .flex_shrink_0()
                     .flex()
                     .justify_end()
-                    .text_size(px(13.))
+                    .text_size(ui(13.))
                     .text_color(rgb(c.muted))
                     .child(size),
             )
             .child(
                 div()
-                    .w(px(100.))
+                    .w(ui(100.))
                     .flex_shrink_0()
-                    .text_size(px(13.))
+                    .text_size(ui(13.))
                     .text_color(rgb(c.muted))
                     .child(modified),
             )
@@ -1210,15 +1211,15 @@ impl Explorer {
     fn name_box(&self) -> Div {
         let c = colors();
         div()
-            .h(px(36.))
+            .h(ui(36.))
             .flex()
             .items_center()
-            .px(px(10.))
-            .rounded(px(10.))
+            .px(ui(10.))
+            .rounded(ui(10.))
             .border_2()
             .border_color(rgb(c.accent))
             .bg(rgb(c.surface))
-            .text_size(px(15.))
+            .text_size(ui(15.))
             .child(self.name_field.clone())
     }
 
@@ -1249,7 +1250,7 @@ impl Explorer {
         } else {
             div()
                 .truncate()
-                .text_size(px(15.))
+                .text_size(ui(15.))
                 .font_weight(if on {
                     FontWeight::SEMIBOLD
                 } else {
@@ -1334,12 +1335,12 @@ impl Explorer {
         let row = div()
             .id("last-row")
             .w_full()
-            .h(px(ROW))
+            .h(ui(ROW))
             .flex()
             .items_center()
             .justify_center()
-            .gap(px(12.))
-            .text_size(px(13.))
+            .gap(ui(12.))
+            .text_size(ui(13.))
             .text_color(rgb(c.muted));
         if self.state == State::Loading {
             return row.child(tr!("Loading…")).into_any_element();
@@ -1376,13 +1377,13 @@ impl Explorer {
         let item = |id: &'static str, label: String, key: &'static str, bad: bool| {
             div()
                 .id(id)
-                .h(px(40.))
-                .px(px(12.))
+                .h(ui(40.))
+                .px(ui(12.))
                 .flex()
                 .items_center()
                 .justify_between()
-                .gap(px(24.))
-                .rounded(px(12.))
+                .gap(ui(24.))
+                .rounded(ui(12.))
                 .cursor_pointer()
                 .whitespace_nowrap()
                 .hover(|s| s.bg(rgb(c.hover)))
@@ -1390,25 +1391,25 @@ impl Explorer {
                 .child(label)
                 .child(
                     div()
-                        .text_size(px(12.))
+                        .text_size(ui(12.))
                         .text_color(rgb(c.muted))
                         .child(SharedString::from(key)),
                 )
         };
-        let line = || div().my(px(4.)).mx(px(10.)).h(px(1.)).bg(rgb(c.field));
+        let line = || div().my(ui(4.)).mx(ui(10.)).h(ui(1.)).bg(rgb(c.field));
         let mut menu = div()
             .id("explorer-menu")
             .occlude()
-            .min_w(px(230.))
-            .p(px(6.))
+            .min_w(ui(230.))
+            .p(ui(6.))
             .flex()
             .flex_col()
-            .rounded(px(16.))
+            .rounded(ui(16.))
             .bg(rgb(c.surface))
             .border_1()
             .border_color(rgb(c.outline))
             .shadow(float_shadow(8., 24.))
-            .text_size(px(14.))
+            .text_size(ui(14.))
             .text_color(rgb(c.text))
             .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
             .on_mouse_down_out(cx.listener(|this, e: &MouseDownEvent, _, cx| {
@@ -1732,9 +1733,9 @@ impl Render for Explorer {
                 .flex_col()
                 .items_center()
                 .justify_center()
-                .gap(px(14.))
-                .p(px(24.))
-                .text_size(px(14.))
+                .gap(ui(14.))
+                .p(ui(24.))
+                .text_size(ui(14.))
                 .text_color(rgb(c.muted))
                 .child(div().text_center().child(why.clone()))
                 .child(
@@ -1756,7 +1757,7 @@ impl Render for Explorer {
                 .flex()
                 .items_center()
                 .justify_center()
-                .text_size(px(14.))
+                .text_size(ui(14.))
                 .text_color(rgb(c.muted))
                 .child(text)
                 .into_any_element()
@@ -1818,24 +1819,24 @@ impl Render for Explorer {
             )
             .children(self.problem.clone().map(|why| {
                 div()
-                    .mx(px(4.))
-                    .mt(px(8.))
-                    .px(px(14.))
-                    .py(px(10.))
-                    .rounded(px(14.))
+                    .mx(ui(4.))
+                    .mt(ui(8.))
+                    .px(ui(14.))
+                    .py(ui(10.))
+                    .rounded(ui(14.))
                     .bg(rgb(c.bad_bg))
                     .text_color(rgb(c.bad_text))
-                    .text_size(px(13.))
+                    .text_size(ui(13.))
                     .child(why)
             }))
             .when(!self.picking, |d| {
                 d.child(
                     div()
                         .flex_shrink_0()
-                        .px(px(14.))
-                        .pt(px(10.))
-                        .pb(px(4.))
-                        .text_size(px(12.))
+                        .px(ui(14.))
+                        .pt(ui(10.))
+                        .pb(ui(4.))
+                        .text_size(ui(12.))
                         .text_color(rgb(c.muted))
                         .child(self.status()),
                 )

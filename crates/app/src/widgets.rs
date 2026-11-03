@@ -9,12 +9,13 @@ use gpui::{
 };
 
 use crate::colors::{Tint, colors};
+use crate::text_size::ui;
 
 /// An icon from `assets/icons`, by its name, `size` px square.
 pub fn icon(name: &str, size: f32, color: u32) -> Svg {
     svg()
         .path(SharedString::from(format!("icons/{name}.svg")))
-        .size(px(size))
+        .size(ui(size))
         .flex_shrink_0()
         .text_color(rgb(color))
 }
@@ -22,9 +23,9 @@ pub fn icon(name: &str, size: f32, color: u32) -> Svg {
 /// A rounded square holding an icon or a few letters.
 pub fn tile(size: f32, radius: f32, tint: Tint) -> Div {
     div()
-        .size(px(size))
+        .size(ui(size))
         .flex_shrink_0()
-        .rounded(px(radius))
+        .rounded(ui(radius))
         .bg(rgb(tint.ground))
         .text_color(rgb(tint.ink))
         .flex()
@@ -47,7 +48,7 @@ pub fn accent_tint() -> Tint {
 pub fn logo(size: f32, tint: Tint) -> Div {
     div()
         .relative()
-        .size(px(size))
+        .size(ui(size))
         .flex_shrink_0()
         .child(icon("logo", size, tint.ink).absolute().top_0().left_0())
         .child(
@@ -122,16 +123,16 @@ pub fn button(
         .flex_shrink_0()
         .items_center()
         .justify_center()
-        .gap(px(8.))
-        .h(px(h))
-        .px(px(pad))
+        .gap(ui(8.))
+        .h(ui(h))
+        .px(ui(pad))
         .rounded_full()
         .when_some(ground, |d, g| d.bg(rgb(g)))
         .when(fill == Fill::Outline, |d| {
             d.border_1().border_color(rgb(c.outline))
         })
         .text_color(rgb(ink))
-        .text_size(px(text))
+        .text_size(ui(text))
         .font_weight(FontWeight::SEMIBOLD)
         .whitespace_nowrap()
         .cursor_pointer()
@@ -147,7 +148,7 @@ pub fn icon_button(id: impl Into<ElementId>, name: &str, size: f32) -> Stateful<
     div()
         .debug_selector(|| selector)
         .id(id)
-        .size(px(size))
+        .size(ui(size))
         .flex_shrink_0()
         .rounded_full()
         .bg(rgb(c.well))
@@ -165,13 +166,13 @@ pub fn chip(text: impl Into<SharedString>, ground: u32, ink: u32) -> Div {
         .flex()
         .flex_shrink_0()
         .items_center()
-        .gap(px(6.))
-        .px(px(12.))
-        .py(px(6.))
+        .gap(ui(6.))
+        .px(ui(12.))
+        .py(ui(6.))
         .rounded_full()
         .bg(rgb(ground))
         .text_color(rgb(ink))
-        .text_size(px(13.))
+        .text_size(ui(13.))
         .font_weight(FontWeight::SEMIBOLD)
         .whitespace_nowrap()
         .child(text.into())
@@ -186,9 +187,9 @@ pub fn switch(id: impl Into<ElementId>, on: bool) -> Stateful<Div> {
         .debug_selector(|| selector)
         .id(id)
         .flex_shrink_0()
-        .w(px(52.))
-        .h(px(32.))
-        .p(px(4.))
+        .w(ui(52.))
+        .h(ui(32.))
+        .p(ui(4.))
         .rounded_full()
         .flex()
         .when(on, |d| d.justify_end())
@@ -196,7 +197,7 @@ pub fn switch(id: impl Into<ElementId>, on: bool) -> Stateful<Div> {
         .cursor_pointer()
         .child(
             div()
-                .size(px(24.))
+                .size(ui(24.))
                 .rounded_full()
                 .bg(rgb(if on { c.knob_on } else { c.knob_off })),
         )
@@ -206,7 +207,7 @@ pub fn switch(id: impl Into<ElementId>, on: bool) -> Stateful<Div> {
 pub fn radio(on: bool) -> Div {
     let c = colors();
     div()
-        .size(px(20.))
+        .size(ui(20.))
         .flex_shrink_0()
         .rounded_full()
         .border_2()
@@ -215,7 +216,7 @@ pub fn radio(on: bool) -> Div {
         .items_center()
         .justify_center()
         .when(on, |d| {
-            d.child(div().size(px(10.)).rounded_full().bg(rgb(c.accent)))
+            d.child(div().size(ui(10.)).rounded_full().bg(rgb(c.accent)))
         })
 }
 
@@ -223,9 +224,9 @@ pub fn radio(on: bool) -> Div {
 pub fn checkbox(on: bool) -> Div {
     let c = colors();
     div()
-        .size(px(18.))
+        .size(ui(18.))
         .flex_shrink_0()
-        .rounded(px(5.))
+        .rounded(ui(5.))
         .flex()
         .items_center()
         .justify_center()
@@ -248,8 +249,8 @@ pub fn check_row(
         .id(id)
         .flex()
         .items_center()
-        .gap(px(10.))
-        .text_size(px(14.))
+        .gap(ui(10.))
+        .text_size(ui(14.))
         .cursor_pointer()
         .child(checkbox(on))
         .child(label.into())
@@ -267,10 +268,10 @@ pub fn option_card(id: impl Into<ElementId>, on: bool) -> Stateful<Div> {
         .flex()
         .min_w_0()
         .items_center()
-        .gap(px(14.))
-        .px(px(16.))
-        .py(px(14.))
-        .rounded(px(20.))
+        .gap(ui(14.))
+        .px(ui(16.))
+        .py(ui(14.))
+        .rounded(ui(20.))
         .bg(rgb(if on { c.tonal } else { c.well }))
         .text_color(rgb(if on { c.on_tonal } else { c.text }))
         .cursor_pointer()
@@ -283,11 +284,11 @@ pub fn titled(title: impl Into<SharedString>, detail: impl Into<SharedString>, o
     div()
         .flex()
         .flex_col()
-        .gap(px(2.))
+        .gap(ui(2.))
         .min_w_0()
         .child(
             div()
-                .text_size(px(15.))
+                .text_size(ui(15.))
                 .font_weight(if on {
                     FontWeight::BOLD
                 } else {
@@ -297,7 +298,7 @@ pub fn titled(title: impl Into<SharedString>, detail: impl Into<SharedString>, o
         )
         .child(
             div()
-                .text_size(px(13.))
+                .text_size(ui(13.))
                 .truncate()
                 .when(!on, |d| d.text_color(rgb(colors().muted)))
                 .child(detail.into()),
@@ -318,13 +319,13 @@ pub fn segment(
         .id(id)
         .flex_1()
         .min_w_0()
-        .h(px(36.))
-        .px(px(12.))
+        .h(ui(36.))
+        .px(ui(12.))
         .flex()
         .items_center()
         .justify_center()
         .rounded_full()
-        .text_size(px(14.))
+        .text_size(ui(14.))
         .font_weight(if on {
             FontWeight::BOLD
         } else {
@@ -340,8 +341,8 @@ pub fn segment(
 pub fn segments(items: impl IntoIterator<Item = Stateful<Div>>) -> Div {
     div()
         .flex()
-        .gap(px(4.))
-        .p(px(4.))
+        .gap(ui(4.))
+        .p(ui(4.))
         .rounded_full()
         .bg(rgb(colors().field))
         .children(items)
@@ -364,19 +365,19 @@ pub fn note(tone: Tone) -> Div {
         Tone::Good => (c.tonal, c.on_tonal),
     };
     div()
-        .px(px(12.))
-        .py(px(10.))
-        .rounded(px(14.))
+        .px(ui(12.))
+        .py(ui(10.))
+        .rounded(ui(14.))
         .bg(rgb(ground))
         .text_color(rgb(ink))
-        .text_size(px(13.))
+        .text_size(ui(13.))
         .line_height(relative(1.45))
 }
 
 /// A heading over a group of choices.
 pub fn legend(text: impl Into<SharedString>) -> Div {
     div()
-        .text_size(px(15.))
+        .text_size(ui(15.))
         .font_weight(FontWeight::SEMIBOLD)
         .child(text.into())
 }
@@ -484,12 +485,12 @@ impl Select {
                 .debug_selector(move || format!("option: {name}"))
                 .id(("option", i))
                 .flex_shrink_0()
-                .h(px(40.))
-                .px(px(12.))
+                .h(ui(40.))
+                .px(ui(12.))
                 .flex()
                 .items_center()
-                .gap(px(10.))
-                .rounded(px(12.))
+                .gap(ui(10.))
+                .rounded(ui(12.))
                 .cursor_pointer()
                 .hover(|s| s.bg(rgb(c.hover)))
                 .when(on, |d| d.font_weight(FontWeight::SEMIBOLD))
@@ -509,19 +510,19 @@ impl Select {
             // A press on it is not one elsewhere: the catcher below would close
             // the menu before the press's release chooses the option.
             .occlude()
-            .min_w(px(220.))
+            .min_w(ui(220.))
             // More than this scroll.
-            .max_h(px(372.))
+            .max_h(ui(372.))
             .overflow_y_scroll()
-            .p(px(6.))
+            .p(ui(6.))
             .flex()
             .flex_col()
-            .rounded(px(16.))
+            .rounded(ui(16.))
             .bg(rgb(c.surface))
             .border_1()
             .border_color(rgb(c.outline))
             .shadow(float_shadow(8., 24.))
-            .text_size(px(14.))
+            .text_size(ui(14.))
             .text_color(rgb(c.text))
             .children(items);
         // A press anywhere else closes the menu, and goes no further.
@@ -564,7 +565,7 @@ impl Render for Select {
             .id("select")
             .flex()
             .items_center()
-            .gap(px(6.))
+            .gap(ui(6.))
             .rounded_full()
             .bg(rgb(c.surface))
             .text_color(rgb(c.text))
@@ -573,17 +574,17 @@ impl Render for Select {
             .hover(|s| s.bg(rgb(c.hover)))
             .map(|d| match self.look {
                 SelectLook::Pill => d
-                    .h(px(40.))
-                    .px(px(14.))
+                    .h(ui(40.))
+                    .px(ui(14.))
                     .border_1()
                     .border_color(rgb(c.outline))
-                    .text_size(px(14.)),
+                    .text_size(ui(14.)),
                 SelectLook::Field => d
                     .w_full()
-                    .h(px(44.))
-                    .pl(px(16.))
-                    .pr(px(14.))
-                    .text_size(px(15.)),
+                    .h(ui(44.))
+                    .pl(ui(16.))
+                    .pr(ui(14.))
+                    .text_size(ui(15.)),
             })
             .on_click(cx.listener(|this, _, _, cx| {
                 this.open = !this.open;
@@ -609,15 +610,15 @@ impl Render for Tip {
     fn render(&mut self, _: &mut Window, _: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
         div()
-            .px(px(10.))
-            .py(px(6.))
-            .rounded(px(10.))
+            .px(ui(10.))
+            .py(ui(6.))
+            .rounded(ui(10.))
             .bg(rgb(c.surface))
             .border_1()
             .border_color(rgb(c.outline))
             .shadow(float_shadow(4., 12.))
             .font_family(crate::FONT)
-            .text_size(px(13.))
+            .text_size(ui(13.))
             .text_color(rgb(c.text))
             .child(self.0.clone())
     }

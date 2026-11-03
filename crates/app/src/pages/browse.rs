@@ -4,7 +4,7 @@ use std::path::{Component, Path, PathBuf};
 
 use gpui::{
     Context, Div, Entity, FontWeight, Render, SharedString, Stateful, Subscription, Window, div,
-    prelude::*, px, rgb,
+    prelude::*, rgb,
 };
 use packwing_i18n::tr;
 
@@ -13,6 +13,7 @@ use super::{explorer_info, panel};
 use crate::colors::colors;
 use crate::explorer::{Explorer, Place};
 use crate::prefs;
+use crate::text_size::ui;
 use crate::widgets::icon;
 
 /// What the page shows.
@@ -147,12 +148,12 @@ fn pill(
         .id(id)
         .flex()
         .items_center()
-        .gap(px(8.))
-        .h(px(40.))
-        .px(px(14.))
+        .gap(ui(8.))
+        .h(ui(40.))
+        .px(ui(14.))
         .rounded_full()
         .cursor_pointer()
-        .text_size(px(14.))
+        .text_size(ui(14.))
         .when(on, |d| {
             d.bg(rgb(c.tonal))
                 .text_color(rgb(c.on_tonal))
@@ -172,15 +173,15 @@ fn drop_hint(dragging: bool) -> Div {
         .debug_selector(|| "drop-hint".to_owned())
         .flex()
         .items_center()
-        .gap(px(8.))
-        .h(px(40.))
-        .px(px(14.))
-        .ml(px(4.))
+        .gap(ui(8.))
+        .h(ui(40.))
+        .px(ui(14.))
+        .ml(ui(4.))
         .rounded_full()
         .border_1()
         .border_dashed()
         .border_color(rgb(ink))
-        .text_size(px(14.))
+        .text_size(ui(14.))
         .text_color(rgb(ink))
         .child(icon("drop", 18., ink))
         .child(tr!("Drop to open"))
@@ -193,7 +194,7 @@ impl Render for BrowsePage {
         let tabs = div()
             .flex()
             .items_center()
-            .gap(px(4.))
+            .gap(ui(4.))
             .child(
                 pill("tab-browse", "folder", tr!("Browse"), tab == Tab::Browse)
                     .on_click(cx.listener(|this, _, _, cx| this.show_tab(Tab::Browse, cx))),
@@ -216,24 +217,24 @@ impl Render for BrowsePage {
             .flex_shrink_0()
             .items_center()
             .justify_between()
-            .gap(px(8.))
-            .px(px(8.))
-            .pt(px(8.))
+            .gap(ui(8.))
+            .px(ui(8.))
+            .pt(ui(8.))
             .child(tabs)
             .when(tab == Tab::Browse, |d| {
-                d.child(div().flex().items_center().gap(px(4.)).children(shortcuts))
+                d.child(div().flex().items_center().gap(ui(4.)).children(shortcuts))
             });
         let body = div().flex_1().min_h_0();
         let body = match tab {
             Tab::Browse => body
                 .flex()
-                .gap(px(18.))
+                .gap(ui(18.))
                 .child(
                     panel()
                         .flex_1()
                         .min_w_0()
-                        .p(px(10.))
-                        .pt(px(14.))
+                        .p(ui(10.))
+                        .pt(ui(14.))
                         .child(self.explorer.clone()),
                 )
                 .child(explorer_info::info(&self.explorer, window, cx)),
@@ -243,7 +244,7 @@ impl Render for BrowsePage {
             .size_full()
             .flex()
             .flex_col()
-            .gap(px(14.))
+            .gap(ui(14.))
             .child(top)
             .child(body)
     }

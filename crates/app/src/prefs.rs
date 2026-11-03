@@ -121,6 +121,8 @@ pub struct Prefs {
     file: Option<PathBuf>,
     /// A language's tag, or none for the system's.
     pub language: Option<String>,
+    /// Body text's size in px, or none for the system's (`text_size`).
+    pub text_size: Option<u8>,
     /// How the window was last left; none before it has been.
     pub window: Option<WindowPlace>,
     pub appearance: Appearance,
@@ -171,6 +173,7 @@ impl Default for Prefs {
         Prefs {
             file: None,
             language: None,
+            text_size: None,
             window: None,
             appearance: Appearance::System,
             format: Format::Zip,
@@ -244,6 +247,12 @@ impl Prefs {
             };
             match key {
                 "language" => p.language = Some(value.to_owned()).filter(|v| !v.is_empty()),
+                "text_size" => {
+                    p.text_size = value
+                        .parse()
+                        .ok()
+                        .filter(|s| crate::text_size::CHOICES.contains(s));
+                }
                 "window" => p.window = WindowPlace::parse(value),
                 "appearance" => {
                     p.appearance = match value {
@@ -374,6 +383,9 @@ impl Prefs {
             "language={}\n",
             self.language.as_deref().unwrap_or_default()
         );
+        if let Some(size) = self.text_size {
+            text += &format!("text_size={size}\n");
+        }
         if let Some(window) = self.window {
             text += &format!("window={}\n", window.to_text());
         }
@@ -839,5 +851,15 @@ mod tests {
                 keep_mark: false,
             }
         );
+    }
+
+    #[test]
+    fn a_text_size_is_kept_when_it_is_one_offered() {
+        let p = Prefs::parse("text_size=12\n");
+        assert_eq!(p.text_size, Some(12));
+        assert_eq!(Prefs::parse(&p.text()).text_size, Some(12));
+        assert_eq!(Prefs::parse("text_size=7\n").text_size, None);
+        assert_eq!(Prefs::parse("text_size=big\n").text_size, None);
+        assert!(!Prefs::default().text().contains("text_size"));
     }
 }

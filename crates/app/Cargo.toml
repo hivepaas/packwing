@@ -66,6 +66,10 @@ nix = { version = "0.31", default-features = false, features = ["user"] }
 gpui_wgpu = { package = "gpui-pre-wgpu", version = "=0.3.9", optional = true }
 image = { version = "0.25", default-features = false, features = ["png"], optional = true }
 
+# The system's UI font size (src/text_size.rs).
+[target.'cfg(windows)'.dependencies]
+winreg = "0.56"
+
 # The icon and the version in packwing.exe (build.rs).
 [target.'cfg(windows)'.build-dependencies]
 winresource = "0.1.34"

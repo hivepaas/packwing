@@ -1,13 +1,14 @@
 //! Asked before a storage is taken off the list: its files stay where they are,
 //! and what it signs in with leaves the keychain.
 
-use gpui::{App, Context, Entity, EventEmitter, Render, Window, div, prelude::*, px, rgb};
+use gpui::{App, Context, Entity, EventEmitter, Render, Window, div, prelude::*, rgb};
 use packwing_i18n::tr;
 
 use super::{DialogEvent, footer, header};
 use crate::colors::colors;
 use crate::pages::storages::StoragesPage;
 use crate::prefs::KeptPlace;
+use crate::text_size::ui;
 use crate::widgets::{Fill, Size, button, icon_button, tonal_tint};
 
 pub struct RemoveStorageDialog {
@@ -50,7 +51,7 @@ impl Render for RemoveStorageDialog {
             tr!("The folder and its files stay where they are.")
         };
         super::card()
-            .w(px(520.))
+            .w(ui(520.))
             .child(header(
                 "warning",
                 tonal_tint(),
@@ -60,7 +61,7 @@ impl Render for RemoveStorageDialog {
             ))
             .child(
                 div()
-                    .text_size(px(14.))
+                    .text_size(ui(14.))
                     .text_color(rgb(c.muted))
                     .child(note),
             )

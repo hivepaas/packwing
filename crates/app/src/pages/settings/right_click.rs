@@ -2,11 +2,12 @@
 //! items, and whether they sit in a submenu of their own; and what came of
 //! the last change.
 
-use gpui::{Context, Entity, Render, Window, prelude::*, px};
+use gpui::{Context, Entity, Render, Window, prelude::*};
 use packwing_i18n::tr;
 
 use super::{explain, group, heading, label, section, setting};
 use crate::right_click::{Action, RightClickMenu, Status};
+use crate::text_size::ui;
 use crate::widgets::{Tone, check_row, note, switch};
 
 pub struct RightClick {
@@ -26,8 +27,8 @@ impl Render for RightClick {
         let (shown, choice, status) = (m.shown(), m.choice().clone(), m.status().clone());
         let items = Action::ALL.into_iter().enumerate().map(|(i, a)| {
             check_row(("item", i), choice.has(a), a.label(choice.submenu))
-                .text_size(px(15.))
-                .py(px(6.))
+                .text_size(ui(15.))
+                .py(ui(6.))
                 .on_click(cx.listener(move |this, _, _, cx| {
                     this.menu.update(cx, |m, cx| {
                         let mut c = m.choice().clone();

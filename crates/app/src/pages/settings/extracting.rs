@@ -1,12 +1,13 @@
 //! Extracting: where the files go, what happens to a file already there, and
 //! how big an archive may unpack.
 
-use gpui::{Context, Entity, Render, Subscription, Window, div, prelude::*, px, rgb};
+use gpui::{Context, Entity, Render, Subscription, Window, div, prelude::*, rgb};
 use packwing_i18n::tr;
 
 use super::{group, heading, rows, section, setting};
 use crate::colors::colors;
 use crate::prefs::{ExtractTo, LIMITS, change, prefs};
+use crate::text_size::ui;
 use crate::widgets::{Chosen, Select, SelectLook, option_card, titled};
 
 /// What hivepack can do with a file that is there, the first what it does
@@ -64,9 +65,9 @@ impl Render for Extracting {
         let place = |id: &'static str, to: ExtractTo, title: String, detail: String| {
             let on = self.extract_to == to;
             option_card(id, on)
-                .px(px(14.))
-                .py(px(12.))
-                .rounded(px(18.))
+                .px(ui(14.))
+                .py(ui(12.))
+                .rounded(ui(18.))
                 .when(!on, |d| d.bg(rgb(c.surface)))
                 .on_click(cx.listener(move |this, _, _, cx| {
                     this.extract_to = to;
@@ -86,7 +87,7 @@ impl Render for Extracting {
                         div()
                             .grid()
                             .grid_cols(3)
-                            .gap(px(8.))
+                            .gap(ui(8.))
                             .child(place(
                                 "smart",
                                 ExtractTo::Smart,

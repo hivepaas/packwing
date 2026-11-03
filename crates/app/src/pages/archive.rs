@@ -26,6 +26,7 @@ use crate::input::{Changed, TextInput};
 use crate::model::{Archive, Entry, Kind, count, size, text_preview};
 use crate::prefs;
 use crate::signatures::{self, Looking, Standing};
+use crate::text_size::ui;
 use crate::widgets::{
     Fill, Size, Tone, button, chip, float_shadow, icon, icon_button, note, tile, tonal_tint,
 };
@@ -458,19 +459,19 @@ impl ArchivePage {
             .flex_1()
             .min_w_0()
             .items_center()
-            .gap(px(12.))
-            .h(px(52.))
-            .px(px(20.))
+            .gap(ui(12.))
+            .h(ui(52.))
+            .px(ui(20.))
             .rounded_full()
             .bg(rgb(c.field))
-            .text_size(px(16.))
+            .text_size(ui(16.))
             .child(icon("search", 20., c.muted))
             .child(self.search.clone());
         div()
             .flex()
             .flex_shrink_0()
             .items_center()
-            .gap(px(8.))
+            .gap(ui(8.))
             .child(search)
             .child(
                 button(
@@ -504,13 +505,13 @@ impl ArchivePage {
             .flex()
             .flex_shrink_0()
             .items_center()
-            .gap(px(6.))
-            .px(px(12.))
-            .py(px(6.))
+            .gap(ui(6.))
+            .px(ui(12.))
+            .py(ui(6.))
             .rounded_full()
             .bg(rgb(c.accent))
             .text_color(rgb(c.on_accent))
-            .text_size(px(13.))
+            .text_size(ui(13.))
             .font_weight(FontWeight::SEMIBOLD)
             .child(icon("check", 14., c.on_accent))
             .child(tr!("Safe to extract"));
@@ -519,11 +520,11 @@ impl ArchivePage {
             .flex_shrink_0()
             .flex_wrap()
             .items_center()
-            .gap_x(px(24.))
-            .gap_y(px(16.))
-            .px(px(28.))
-            .py(px(24.))
-            .rounded(px(28.))
+            .gap_x(ui(24.))
+            .gap_y(ui(16.))
+            .px(ui(28.))
+            .py(ui(24.))
+            .rounded(ui(28.))
             .bg(rgb(c.tonal))
             .text_color(rgb(c.on_tonal))
             .child(
@@ -532,10 +533,10 @@ impl ArchivePage {
                     .min_w_0()
                     .flex()
                     .flex_col()
-                    .gap(px(10.))
+                    .gap(ui(10.))
                     .child(
                         div()
-                            .text_size(px(28.))
+                            .text_size(ui(28.))
                             .font_weight(FontWeight::BOLD)
                             .line_height(relative(1.2))
                             .truncate()
@@ -545,7 +546,7 @@ impl ArchivePage {
                         div()
                             .flex()
                             .flex_wrap()
-                            .gap(px(8.))
+                            .gap(ui(8.))
                             .child(chip(
                                 format!("{} · {}%", size(a.packed), a.ratio()),
                                 c.surface,
@@ -585,10 +586,10 @@ impl ArchivePage {
                 div()
                     .flex()
                     .flex_wrap()
-                    .gap(px(10.))
+                    .gap(ui(10.))
                     .child(
                         button("extract", tr!("Extract"), Fill::Accent, Size::Large)
-                            .px(px(28.))
+                            .px(ui(28.))
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Extract))),
                     )
                     // A 7z or tar archive has to be written whole again, and
@@ -657,16 +658,16 @@ impl ArchivePage {
                     div()
                         .id("archive-menu")
                         .occlude()
-                        .min_w(px(180.))
-                        .p(px(6.))
+                        .min_w(ui(180.))
+                        .p(ui(6.))
                         .flex()
                         .flex_col()
-                        .rounded(px(16.))
+                        .rounded(ui(16.))
                         .bg(rgb(c.surface))
                         .border_1()
                         .border_color(rgb(c.outline))
                         .shadow(float_shadow(8., 24.))
-                        .text_size(px(14.))
+                        .text_size(ui(14.))
                         .text_color(rgb(c.text))
                         .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
                         .on_mouse_down_out(cx.listener(|this, _, _, cx| {
@@ -676,11 +677,11 @@ impl ArchivePage {
                         .child(
                             div()
                                 .id("menu-sign")
-                                .h(px(40.))
-                                .px(px(12.))
+                                .h(ui(40.))
+                                .px(ui(12.))
                                 .flex()
                                 .items_center()
-                                .rounded(px(12.))
+                                .rounded(ui(12.))
                                 .cursor_pointer()
                                 .whitespace_nowrap()
                                 .hover(|s| s.bg(rgb(c.hover)))
@@ -730,11 +731,11 @@ impl ArchivePage {
                 .id(("entry", i))
                 .flex()
                 .items_center()
-                .gap(px(14.))
-                .min_h(px(56.))
-                .px(px(14.))
-                .py(px(6.))
-                .rounded(px(18.))
+                .gap(ui(14.))
+                .min_h(ui(56.))
+                .px(ui(14.))
+                .py(ui(6.))
+                .rounded(ui(18.))
                 .cursor_pointer()
                 .when(on, |d| d.bg(rgb(c.chosen)))
                 .when(!on, |d| d.hover(|s| s.bg(rgb(c.hover))))
@@ -759,7 +760,7 @@ impl ArchivePage {
                 }))
                 .child(
                     tile(40., 14., tint)
-                        .text_size(px(11.))
+                        .text_size(ui(11.))
                         .font_weight(FontWeight::BOLD)
                         .child(e.tag()),
                 )
@@ -768,7 +769,7 @@ impl ArchivePage {
                         .flex_1()
                         .min_w_0()
                         .truncate()
-                        .text_size(px(15.))
+                        .text_size(ui(15.))
                         .font_weight(if on {
                             FontWeight::SEMIBOLD
                         } else {
@@ -778,7 +779,7 @@ impl ArchivePage {
                         .children(under.map(|under| {
                             div()
                                 .truncate()
-                                .text_size(px(13.))
+                                .text_size(ui(13.))
                                 .font_weight(FontWeight::NORMAL)
                                 .text_color(rgb(c.muted))
                                 .child(under)
@@ -787,7 +788,7 @@ impl ArchivePage {
                 .child(
                     div()
                         .flex_shrink_0()
-                        .text_size(px(13.))
+                        .text_size(ui(13.))
                         .text_color(rgb(c.muted))
                         .child(size(e.size)),
                 )
@@ -805,12 +806,12 @@ impl ArchivePage {
             .max_h_full()
             .flex()
             .flex_col()
-            .p(px(10.))
+            .p(ui(10.))
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(8.))
+                    .gap(ui(8.))
                     .child(div().flex_1().min_w_0().child(crumb))
                     .when(changeable && one, |d| {
                         d.child(
@@ -836,9 +837,9 @@ impl ArchivePage {
                     .when(empty, |d| {
                         d.child(
                             div()
-                                .px(px(14.))
-                                .py(px(12.))
-                                .text_size(px(14.))
+                                .px(ui(14.))
+                                .py(ui(12.))
+                                .text_size(ui(14.))
                                 .text_color(rgb(c.muted))
                                 .child(if searching {
                                     tr!("Nothing in this archive matches “{query}”.", query = query)
@@ -850,9 +851,9 @@ impl ArchivePage {
                     .when(searching && more > 0, |d| {
                         d.child(
                             div()
-                                .px(px(14.))
-                                .py(px(12.))
-                                .text_size(px(14.))
+                                .px(ui(14.))
+                                .py(ui(12.))
+                                .text_size(ui(14.))
                                 .text_color(rgb(c.muted))
                                 .child(tr!(
                                     "And {more} more. Type more to narrow it down.",
@@ -881,11 +882,11 @@ impl ArchivePage {
             .flex_wrap()
             .min_w_0()
             .items_center()
-            .gap_x(px(6.))
-            .px(px(14.))
-            .pt(px(10.))
-            .pb(px(6.))
-            .text_size(px(13.))
+            .gap_x(ui(6.))
+            .px(ui(14.))
+            .pt(ui(10.))
+            .pb(ui(6.))
+            .text_size(ui(13.))
             .text_color(rgb(c.muted))
             .children(steps.into_iter().enumerate().map(move |(i, step)| {
                 let here = i == last;
@@ -894,7 +895,7 @@ impl ArchivePage {
                     .min_w_0()
                     .max_w_full()
                     .items_center()
-                    .gap_x(px(6.))
+                    .gap_x(ui(6.))
                     .when(i > 0, |d| d.child("›"))
                     .child(
                         div()
@@ -939,8 +940,8 @@ impl ArchivePage {
             .flex_col()
             .items_center()
             .justify_center()
-            .gap(px(16.))
-            .p(px(40.))
+            .gap(ui(16.))
+            .p(ui(40.))
             .child(tile(72., 24., tonal_tint()).child(icon(
                 if failed { "warning" } else { "archive" },
                 32.,
@@ -948,15 +949,15 @@ impl ArchivePage {
             )))
             .child(
                 div()
-                    .text_size(px(24.))
+                    .text_size(ui(24.))
                     .font_weight(FontWeight::BOLD)
                     .text_center()
                     .child(title),
             )
             .child(
                 div()
-                    .max_w(px(520.))
-                    .text_size(px(15.))
+                    .max_w(ui(520.))
+                    .text_size(ui(15.))
                     .text_center()
                     .line_height(relative(1.45))
                     .text_color(rgb(c.muted))
@@ -974,8 +975,8 @@ impl ArchivePage {
                         Fill::Accent,
                         Size::Large,
                     )
-                    .mt(px(8.))
-                    .px(px(28.))
+                    .mt(ui(8.))
+                    .px(ui(28.))
                     .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Open))),
                 )
             })
@@ -1001,9 +1002,9 @@ impl ArchivePage {
         let showing =
             entry.is_some() && matches!(self.preview, Preview::Picture(_) | Preview::Text(_));
         let picture = div()
-            .when(showing, |d| d.flex_1().min_h(px(200.)))
-            .when(!showing, |d| d.h(px(200.)))
-            .rounded(px(20.))
+            .when(showing, |d| d.flex_1().min_h(ui(200.)))
+            .when(!showing, |d| d.h(ui(200.)))
+            .rounded(ui(20.))
             .bg(rgb(c.field))
             .flex()
             .items_center()
@@ -1016,7 +1017,7 @@ impl ArchivePage {
                         .object_fit(ObjectFit::Contain)
                         .with_fallback(move || {
                             div()
-                                .text_size(px(13.))
+                                .text_size(ui(13.))
                                 .text_color(rgb(c.muted))
                                 .child(tr!("It could not be shown"))
                                 .into_any_element()
@@ -1027,33 +1028,33 @@ impl ArchivePage {
                         .debug_selector(|| "preview-text".to_owned())
                         .size_full()
                         .flex()
-                        .p(px(12.))
-                        .text_size(px(12.))
+                        .p(ui(12.))
+                        .text_size(ui(12.))
                         .child(self.preview_text.clone()),
                 ),
                 (Some(_), Preview::Reading) => d.child(
                     div()
-                        .text_size(px(13.))
+                        .text_size(ui(13.))
                         .text_color(rgb(c.muted))
                         .child(tr!("Reading…")),
                 ),
                 (Some(_), Preview::Not(why)) => d.child(
                     div()
-                        .px(px(16.))
-                        .text_size(px(13.))
+                        .px(ui(16.))
+                        .text_size(ui(13.))
                         .text_color(rgb(c.muted))
                         .child(why.clone()),
                 ),
                 (Some(e), _) if e.kind == Kind::Image => d.child(icon("image", 40., c.muted)),
                 (Some(e), _) => d.child(
                     tile(64., 20., e.kind.tint(&c))
-                        .text_size(px(15.))
+                        .text_size(ui(15.))
                         .font_weight(FontWeight::BOLD)
                         .child(e.tag()),
                 ),
                 (None, _) => d.child(
                     div()
-                        .text_size(px(13.))
+                        .text_size(ui(13.))
                         .text_color(rgb(c.muted))
                         .child(tr!("Choose a file to see it here")),
                 ),
@@ -1061,14 +1062,14 @@ impl ArchivePage {
         panel()
             // Near a third of the row, as the window grows.
             .w(relative(0.3))
-            .min_w(px(300.))
+            .min_w(ui(300.))
             .flex_shrink_0()
             .when(showing, |d| d.h_full())
             .max_h_full()
             .flex()
             .flex_col()
-            .gap(px(14.))
-            .p(px(18.))
+            .gap(ui(14.))
+            .p(ui(18.))
             .child(picture)
             .children(entry.map(|e| {
                 div()
@@ -1076,12 +1077,12 @@ impl ArchivePage {
                     .min_w_0()
                     .child(
                         div()
-                            .text_size(px(16.))
+                            .text_size(ui(16.))
                             .font_weight(FontWeight::SEMIBOLD)
                             .truncate()
                             .child(e.name),
                     )
-                    .child(div().text_size(px(13.)).text_color(rgb(c.muted)).child(
+                    .child(div().text_size(ui(13.)).text_color(rgb(c.muted)).child(
                         if e.modified.is_empty() {
                             size(e.size)
                         } else {
@@ -1092,9 +1093,9 @@ impl ArchivePage {
             .when(marked > 0, |d| {
                 d.child(
                     note(Tone::Warn)
-                        .px(px(14.))
-                        .py(px(12.))
-                        .rounded(px(18.))
+                        .px(ui(14.))
+                        .py(ui(12.))
+                        .rounded(ui(18.))
                         .child(tr_n!(
                             marked,
                             "{count} executable in this folder will keep its Internet mark when extracted.",
@@ -1108,7 +1109,7 @@ impl ArchivePage {
 
 impl Render for ArchivePage {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let page = div().size_full().flex().flex_col().gap(px(18.));
+        let page = div().size_full().flex().flex_col().gap(ui(18.));
         let Some(a) = self.archive() else {
             return page.child(self.empty(cx));
         };
@@ -1122,7 +1123,7 @@ impl Render for ArchivePage {
                     .min_h_0()
                     .flex()
                     .items_start()
-                    .gap(px(18.))
+                    .gap(ui(18.))
                     .child(self.contents(a, cx))
                     .child(self.preview(a)),
             )

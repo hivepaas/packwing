@@ -9,19 +9,20 @@ pub mod recent;
 pub mod settings;
 pub mod storages;
 
-use gpui::{Div, FontWeight, SharedString, div, prelude::*, px, rgb};
+use gpui::{Div, FontWeight, SharedString, div, prelude::*, rgb};
 
 use crate::colors::colors;
+use crate::text_size::ui;
 
 /// A page's or a card's big title.
 pub fn title(text: impl Into<SharedString>, size: f32) -> Div {
     div()
-        .text_size(px(size))
+        .text_size(ui(size))
         .font_weight(FontWeight::BOLD)
         .child(text.into())
 }
 
 /// A white card on the page.
 pub fn panel() -> Div {
-    div().rounded(px(28.)).bg(rgb(colors().surface))
+    div().rounded(ui(28.)).bg(rgb(colors().surface))
 }

@@ -1,12 +1,13 @@
 //! General: the language, light or dark, and whether packwing is in the right-click menu.
 
-use gpui::{Context, Entity, EventEmitter, Render, Subscription, Window, div, prelude::*, px, rgb};
+use gpui::{Context, Entity, EventEmitter, Render, Subscription, Window, div, prelude::*, rgb};
 use packwing_i18n::tr;
 
 use super::{explain, group, heading, label, rows, section, setting};
 use crate::colors::colors;
 use crate::input::{Changed, TextInput};
 use crate::right_click::RightClickMenu;
+use crate::text_size::ui;
 use crate::widgets::{Chosen, Select, SelectLook, segment, segments, switch};
 
 /// Light, dark, or as the system is.
@@ -84,6 +85,9 @@ fn editor_option(kept: Option<&str>, found: &[(String, String)]) -> usize {
 pub struct General {
     language: Entity<Select>,
     _language_chosen: Subscription,
+    /// Body text's size: the system's, then [`text_size::CHOICES`].
+    text_size: Entity<Select>,
+    _text_size_chosen: Subscription,
     /// The editors found on this system: (name, command).
     editors: Vec<(String, String)>,
     editor: Entity<Select>,
@@ -116,6 +120,28 @@ impl General {
             crate::prefs::change(cx, |p| p.language = tag.map(str::to_owned));
             // Words said when drawn change now; a menu's options, made once,
             // when packwing next starts.
+            cx.refresh_windows();
+        });
+        let system = crate::text_size::system(cx);
+        let sizes: Vec<String> = std::iter::once(tr!(
+            "The system’s ({size} px)",
+            size = format!("{}", (system * 10.).round() / 10.)
+        ))
+        .chain(crate::text_size::CHOICES.iter().map(|s| format!("{s} px")))
+        .collect();
+        let chosen = crate::prefs::prefs(cx)
+            .text_size
+            .and_then(|s| crate::text_size::CHOICES.iter().position(|c| *c == s))
+            .map_or(0, |at| at + 1);
+        let text_size =
+            cx.new(|_| Select::new(&sizes, chosen, SelectLook::Field).marked("text-size"));
+        let text_size_chosen = cx.subscribe(&text_size, |_, select, _: &Chosen, cx| {
+            let at = select.read(cx).chosen();
+            let size = at
+                .checked_sub(1)
+                .and_then(|i| crate::text_size::CHOICES.get(i).copied());
+            crate::prefs::change(cx, |p| p.text_size = size);
+            // Every window draws at the new size now.
             cx.refresh_windows();
         });
         let editors = crate::editors::installed();
@@ -151,6 +177,8 @@ impl General {
         General {
             language,
             _language_chosen: language_chosen,
+            text_size,
+            _text_size_chosen: text_size_chosen,
             editors,
             editor,
             editor_command,
@@ -193,7 +221,7 @@ impl Render for General {
                 div()
                     .grid()
                     .grid_cols(2)
-                    .gap(px(12.))
+                    .gap(ui(12.))
                     .child(
                         group()
                             .child(label(tr!("Language")))
@@ -203,6 +231,11 @@ impl Render for General {
                         group()
                             .child(label(tr!("Appearance")))
                             .child(segments(looks)),
+                    )
+                    .child(
+                        group()
+                            .child(label(tr!("Text size")))
+                            .child(self.text_size.clone()),
                     ),
             )
             .child(
@@ -215,10 +248,10 @@ impl Render for General {
                     .when(custom, |d| {
                         d.child(
                             div()
-                                .h(px(44.))
+                                .h(ui(44.))
                                 .flex()
                                 .items_center()
-                                .px(px(16.))
+                                .px(ui(16.))
                                 .rounded_full()
                                 .bg(rgb(colors().field))
                                 .child(self.editor_command.clone()),

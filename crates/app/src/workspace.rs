@@ -8,7 +8,7 @@ use std::time::Duration;
 use gpui::{
     AnyView, Context, Entity, EventEmitter, ExternalPaths, FocusHandle, Focusable, FontWeight,
     KeyDownEvent, PathPromptOptions, Render, Subscription, Window, WindowAppearance, div,
-    prelude::*, px, rgb, rgba,
+    prelude::*, rgb, rgba,
 };
 use packwing_core::{Asked, Keys, NewArchive, Source};
 
@@ -33,6 +33,7 @@ use crate::pages::storages::{AddStorageAsked, EditStorageAsked, RemoveStorageAsk
 use crate::placement::{self, WindowPlace};
 use crate::prefs::{self, TrustedKey};
 use crate::right_click::{Action, Request, RightClickMenu};
+use crate::text_size::ui;
 use crate::updates::{Badge, Updates};
 use crate::widgets::{accent_tint, icon, logo, tile};
 
@@ -167,6 +168,51 @@ fn what_a_drop_means(paths: &[PathBuf], takes_more: bool) -> Dropped {
 /// How long after the window last changed its place is kept: it changes all the
 /// way through a drag.
 const SAVE_BOUNDS: Duration = Duration::from_millis(400);
+
+/// The width of the menu down the window's left side, padding and all.
+const MENU_W: f32 = 98.;
+/// What the menu's labels have of it, between its padding.
+const LABEL_ROOM: f32 = MENU_W - 8.;
+
+/// The size the menu's `labels` are drawn at: body text's, as large as the
+/// system's own labels, unless the longest word of one is wider than the menu,
+/// as in some languages; then as much smaller as it takes for it to fit, for
+/// all of them alike.
+fn label_size(labels: &[String], window: &Window) -> f32 {
+    let rem = window.rem_size();
+    let body = ui(15.).to_pixels(rem);
+    let room = ui(LABEL_ROOM).to_pixels(rem);
+    let font = gpui::Font {
+        // The one chosen is drawn bolder: the widest it can be.
+        weight: FontWeight::SEMIBOLD,
+        ..crate::ui_font()
+    };
+    let widest = labels
+        .iter()
+        .flat_map(|l| l.split_whitespace())
+        .map(|word| {
+            let run = gpui::TextRun {
+                len: word.len(),
+                font: font.clone(),
+                color: gpui::black(),
+                background_color: None,
+                underline: None,
+                strikethrough: None,
+            };
+            window
+                .text_system()
+                .shape_line(word.to_owned().into(), body, &[run], None)
+                .width
+        })
+        .fold(gpui::px(0.), gpui::Pixels::max);
+    // A little to spare: laid out, a word just as wide as the room may break.
+    let room = room * 0.96;
+    if widest > room {
+        15. * (room / widest)
+    } else {
+        15.
+    }
+}
 
 impl Workspace {
     pub fn new(
@@ -1291,9 +1337,19 @@ impl Workspace {
         }
     }
 
-    /// The menu down the window's left side.
+    /// The menu down the window's left side, [`MENU_W`] wide.
     fn menu(&self, top: f32, window: &Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
+        let size = label_size(
+            &[
+                tr!("Archive"),
+                tr!("Browse"),
+                tr!("New"),
+                tr!("Storages"),
+                tr!("Settings"),
+            ],
+            window,
+        );
         let item = |id: &'static str, icon_name: &'static str, label: String, on: bool| {
             let ink = if on { c.on_tonal } else { c.muted };
             div()
@@ -1303,9 +1359,9 @@ impl Workspace {
                 .flex()
                 .flex_col()
                 .items_center()
-                .gap(px(4.))
+                .gap(ui(4.))
                 .cursor_pointer()
-                .text_size(px(12.))
+                .text_size(ui(size))
                 .font_weight(if on {
                     FontWeight::SEMIBOLD
                 } else {
@@ -1314,8 +1370,8 @@ impl Workspace {
                 .text_color(rgb(ink))
                 .child(
                     div()
-                        .w(px(56.))
-                        .h(px(32.))
+                        .w(ui(56.))
+                        .h(ui(32.))
                         .rounded_full()
                         .flex()
                         .items_center()
@@ -1330,19 +1386,18 @@ impl Workspace {
         // Where the system draws the title bar, the badge has no place: a dot says it.
         let dot = !chrome::draws_title_bar(window) && self.updates.read(cx).badge().is_some();
         div()
-            // As wide as the longest word of a label in any language: it does not break.
-            .w(px(100.))
+            .w(ui(MENU_W))
             .flex_shrink_0()
             .flex()
             .flex_col()
             .items_center()
-            .gap(px(10.))
-            .px(px(4.))
-            .pt(px(top))
-            .pb(px(20.))
+            .gap(ui(10.))
+            .px(ui(4.))
+            .pt(ui(top))
+            .pb(ui(20.))
             .child(
                 tile(48., 16., accent_tint())
-                    .mb(px(12.))
+                    .mb(ui(12.))
                     .child(logo(24., accent_tint())),
             )
             .child(
@@ -1386,9 +1441,9 @@ impl Workspace {
                     d.child(
                         div()
                             .absolute()
-                            .top(px(2.))
-                            .right(px(8.))
-                            .size(px(8.))
+                            .top(ui(2.))
+                            .right(ui(8.))
+                            .size(ui(8.))
                             .rounded_full()
                             .bg(rgb(c.accent)),
                     )
@@ -1420,7 +1475,7 @@ impl Workspace {
                     .flex()
                     .items_center()
                     .justify_center()
-                    .p(px(24.))
+                    .p(ui(24.))
                     .rounded_tl(round.top_left)
                     .rounded_tr(round.top_right)
                     .rounded_bl(round.bottom_left)
@@ -1439,6 +1494,8 @@ impl Focusable for Workspace {
 
 impl Render for Workspace {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        // Every size in rems follows the body size: the system's, or Settings'.
+        window.set_rem_size(crate::text_size::rem_for(crate::text_size::body(cx)));
         let c = colors();
         // Under the app's title bar the page starts at once; under the
         // system's it keeps the design's margin.
@@ -1467,10 +1524,10 @@ impl Render for Workspace {
                             .min_w_0()
                             .flex()
                             .flex_col()
-                            .pt(px(top))
-                            .pr(px(24.))
-                            .pb(px(24.))
-                            .pl(px(8.))
+                            .pt(ui(top))
+                            .pr(ui(24.))
+                            .pb(ui(24.))
+                            .pl(ui(8.))
                             .child(page),
                     )
             }
@@ -1502,7 +1559,7 @@ impl Render for Workspace {
                 this.dropped(dropped.paths().to_vec(), window, cx)
             }))
             .font(crate::ui_font())
-            .text_size(px(15.))
+            .text_size(ui(15.))
             .text_color(rgb(c.text))
             .child(framed)
             .when_some(dialog, |d, view| d.child(self.overlay(view, window)))

@@ -1,12 +1,13 @@
 //! The archives opened before, the latest first: a tab of Browse.
 
-use gpui::{Context, EventEmitter, FontWeight, Render, Window, div, prelude::*, px, rgb};
+use gpui::{Context, EventEmitter, FontWeight, Render, Window, div, prelude::*, rgb};
 use packwing_i18n::tr;
 
 use super::panel;
 use crate::colors::colors;
 use crate::model::{Kind, date, size, tag_of};
 use crate::prefs::Opened;
+use crate::text_size::ui;
 use crate::widgets::tile;
 
 /// One of them was asked for: its index.
@@ -68,17 +69,17 @@ impl Render for RecentPage {
                 .id(("recent", i))
                 .flex()
                 .items_center()
-                .gap(px(14.))
-                .min_h(px(64.))
-                .px(px(14.))
-                .py(px(8.))
-                .rounded(px(18.))
+                .gap(ui(14.))
+                .min_h(ui(64.))
+                .px(ui(14.))
+                .py(ui(8.))
+                .rounded(ui(18.))
                 .cursor_pointer()
                 .hover(|s| s.bg(rgb(c.hover)))
                 .on_click(cx.listener(move |_, _, _, cx| cx.emit(OpenRecent(i))))
                 .child(
                     tile(40., 14., Kind::Archive.tint(&c))
-                        .text_size(px(11.))
+                        .text_size(ui(11.))
                         .font_weight(FontWeight::BOLD)
                         .child(tag_of(&r.name, Kind::Archive)),
                 )
@@ -87,16 +88,16 @@ impl Render for RecentPage {
                         .flex_1()
                         .min_w_0()
                         .child(
-                            div().flex().items_center().gap(px(8.)).child(
+                            div().flex().items_center().gap(ui(8.)).child(
                                 div()
                                     .min_w_0()
                                     .truncate()
-                                    .text_size(px(15.))
+                                    .text_size(ui(15.))
                                     .font_weight(FontWeight::MEDIUM)
                                     .child(r.name.clone()),
                             ),
                         )
-                        .child(div().text_size(px(13.)).text_color(rgb(c.muted)).child(
+                        .child(div().text_size(ui(13.)).text_color(rgb(c.muted)).child(
                             match r.size {
                                 Some(bytes) => format!("{} · {}", r.location, size(bytes)),
                                 None => {
@@ -108,7 +109,7 @@ impl Render for RecentPage {
                 .child(
                     div()
                         .flex_shrink_0()
-                        .text_size(px(13.))
+                        .text_size(ui(13.))
                         .text_color(rgb(c.muted))
                         .child(r.opened.clone()),
                 )
@@ -121,12 +122,12 @@ impl Render for RecentPage {
                 .overflow_y_scroll()
                 .flex()
                 .flex_col()
-                .p(px(10.))
+                .p(ui(10.))
                 .when(self.archives.is_empty(), |d| {
                     d.child(
                         div()
-                            .p(px(16.))
-                            .text_size(px(14.))
+                            .p(ui(16.))
+                            .text_size(ui(14.))
                             .text_color(rgb(c.muted))
                             .child(tr!("The archives you open will show here.")),
                     )

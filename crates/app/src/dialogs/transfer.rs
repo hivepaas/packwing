@@ -1,7 +1,7 @@
 //! Copying or moving what is chosen in a storage: where to, in the same explorer
 //! as the page's, showing folders alone. The folder it shows is where they go.
 
-use gpui::{Context, Entity, EventEmitter, Render, Subscription, Window, div, prelude::*, px, rgb};
+use gpui::{Context, Entity, EventEmitter, Render, Subscription, Window, div, prelude::*, rgb};
 use packwing_core::{OnExisting, Transfer};
 use packwing_i18n::{tr, tr_n};
 use std::sync::{Arc, Mutex};
@@ -10,6 +10,7 @@ use super::{DialogEvent, Job, Transferring, Verb, footer, header, places};
 use crate::colors::colors;
 use crate::explorer::{Explorer, Place};
 use crate::pages::storages::StoragesPage;
+use crate::text_size::ui;
 use crate::widgets::{
     Fill, Select, SelectLook, Size, button, icon_button, legend, segment, segments, tonal_tint,
 };
@@ -156,16 +157,16 @@ impl Render for TransferDialog {
         };
         let picker = self.picker.clone();
         super::card()
-            .w(px(900.))
+            .w(ui(900.))
             .child(header("storages", tonal_tint(), title, from, Some(close)))
             .child(
                 div()
                     .flex()
-                    .gap(px(8.))
-                    .h(px(340.))
+                    .gap(ui(8.))
+                    .h(ui(340.))
                     .flex_shrink_0()
-                    .p(px(10.))
-                    .rounded(px(22.))
+                    .p(ui(10.))
+                    .rounded(ui(22.))
                     .bg(rgb(c.well))
                     .child(places)
                     .child(div().flex_1().min_w_0().child(beside)),
@@ -175,8 +176,8 @@ impl Render for TransferDialog {
                     .flex()
                     .flex_wrap()
                     .items_center()
-                    .gap(px(16.))
-                    .child(div().w(px(220.)).child(segments([
+                    .gap(ui(16.))
+                    .child(div().w(ui(220.)).child(segments([
                         segment("do-copy", tr!("Copy"), !self.moving).on_click(cx.listener(
                             |this, _, _, cx| {
                                 this.moving = false;
@@ -195,7 +196,7 @@ impl Render for TransferDialog {
             )
             .child(
                 div()
-                    .text_size(px(13.))
+                    .text_size(ui(13.))
                     .text_color(rgb(c.muted))
                     .child(if same {
                         tr!("They are in this folder already. Choose another.")

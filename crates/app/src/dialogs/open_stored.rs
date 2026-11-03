@@ -1,13 +1,14 @@
 //! Opening an archive on a storage: the storages beside a picker showing their
 //! folders and archives. A click on an archive opens it.
 
-use gpui::{Context, Entity, EventEmitter, Render, Subscription, Window, div, prelude::*, px, rgb};
+use gpui::{Context, Entity, EventEmitter, Render, Subscription, Window, div, prelude::*, rgb};
 use packwing_i18n::tr;
 
 use super::{DialogEvent, footer, header, places};
 use crate::colors::colors;
 use crate::explorer::{Explorer, ExplorerEvent, Place};
 use crate::pages::storages::StoragesPage;
+use crate::text_size::ui;
 use crate::widgets::{Fill, Size, button, icon_button, tonal_tint};
 
 pub struct OpenStoredDialog {
@@ -83,7 +84,7 @@ impl Render for OpenStoredDialog {
         let list = places::list(&self.places, self.chosen, Self::pick_place, cx);
         let beside = places::beside(&self.places, self.chosen, &self.picker, &self.storages, cx);
         super::card()
-            .w(px(900.))
+            .w(ui(900.))
             .child(header(
                 "storages",
                 tonal_tint(),
@@ -94,11 +95,11 @@ impl Render for OpenStoredDialog {
             .child(
                 div()
                     .flex()
-                    .gap(px(8.))
-                    .h(px(340.))
+                    .gap(ui(8.))
+                    .h(ui(340.))
                     .flex_shrink_0()
-                    .p(px(10.))
-                    .rounded(px(22.))
+                    .p(ui(10.))
+                    .rounded(ui(22.))
                     .bg(rgb(c.well))
                     .child(list)
                     .child(div().flex_1().min_w_0().child(beside)),

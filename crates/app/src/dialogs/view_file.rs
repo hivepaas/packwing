@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use gpui::{
     Context, Entity, EventEmitter, Image, ObjectFit, Render, StyledImage, Task, Window, div, img,
-    prelude::*, px, rgb,
+    prelude::*, rgb,
 };
 use packwing_core::{Item, image_fits};
 use packwing_i18n::tr;
@@ -17,6 +17,7 @@ use crate::explorer::{Explorer, runs_when_opened};
 use crate::input::TextInput;
 use crate::model::{Kind, size, text_preview};
 use crate::pages::archive::{MOST_PREVIEWED, MOST_TEXT, picture_format};
+use crate::text_size::ui;
 use crate::widgets::{Fill, Size, button, icon_button, tonal_tint};
 
 enum Shown {
@@ -98,15 +99,15 @@ impl Render for ViewDialog {
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         let content = div()
             .id("view-content")
-            .h(px(420.))
+            .h(ui(420.))
             .flex_shrink_0()
-            .rounded(px(20.))
+            .rounded(ui(20.))
             .bg(rgb(c.field))
             .flex()
             .items_center()
             .justify_center()
             .overflow_hidden()
-            .text_size(px(14.))
+            .text_size(ui(14.))
             .text_color(rgb(c.muted))
             .map(|d| match &self.shown {
                 Shown::Reading => d.child(tr!("Reading…")),
@@ -116,7 +117,7 @@ impl Render for ViewDialog {
                         .object_fit(ObjectFit::Contain)
                         .with_fallback(move || {
                             div()
-                                .text_size(px(13.))
+                                .text_size(ui(13.))
                                 .text_color(rgb(c.muted))
                                 .child(tr!("It could not be shown"))
                                 .into_any_element()
@@ -126,8 +127,8 @@ impl Render for ViewDialog {
                     div()
                         .size_full()
                         .flex()
-                        .p(px(16.))
-                        .text_size(px(13.))
+                        .p(ui(16.))
+                        .text_size(ui(13.))
                         .text_color(rgb(c.text))
                         .child(self.text.clone()),
                 ),
@@ -136,7 +137,7 @@ impl Render for ViewDialog {
         let offer = !runs_when_opened(&self.item);
         let (edit, app) = (self.item.clone(), self.item.clone());
         super::card()
-            .w(px(820.))
+            .w(ui(820.))
             .child(header(
                 "image",
                 tonal_tint(),

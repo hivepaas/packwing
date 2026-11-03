@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use gpui::{
     App, Context, Entity, EventEmitter, Focusable as _, FontWeight, Render, Task, Window, div,
-    prelude::*, px, rgb,
+    prelude::*, rgb,
 };
 use packwing_core::{Field, StorageKind, Values};
 use packwing_i18n::tr;
@@ -20,6 +20,7 @@ use crate::explorer::LOCAL_TAG;
 use crate::input::TextInput;
 use crate::pages::storages::StoragesPage;
 use crate::prefs::{ASKS_FIRST, KeptPlace};
+use crate::text_size::ui;
 use crate::widgets::{Fill, Size, Tone, button, check_row, icon_button, note, tile, tonal_tint};
 
 /// How a test of the settings went.
@@ -304,20 +305,20 @@ fn labelled(label: String, input: Entity<TextInput>) -> gpui::Div {
     div()
         .flex()
         .flex_col()
-        .gap(px(6.))
-        .text_size(px(13.))
+        .gap(ui(6.))
+        .text_size(ui(13.))
         .font_weight(FontWeight::SEMIBOLD)
         .text_color(rgb(c.muted))
         .child(label)
         .child(
             div()
-                .h(px(44.))
+                .h(ui(44.))
                 .flex()
                 .items_center()
-                .px(px(16.))
-                .rounded(px(16.))
+                .px(ui(16.))
+                .rounded(ui(16.))
                 .bg(rgb(c.field))
-                .text_size(px(15.))
+                .text_size(ui(15.))
                 .font_weight(FontWeight::MEDIUM)
                 .text_color(rgb(c.text))
                 .child(input),
@@ -336,9 +337,9 @@ impl Render for AddStorageDialog {
                 .flex_1()
                 .flex()
                 .flex_col()
-                .gap(px(8.))
-                .p(px(14.))
-                .rounded(px(20.))
+                .gap(ui(8.))
+                .p(ui(14.))
+                .rounded(ui(20.))
                 .cursor_pointer()
                 .bg(rgb(if on { c.tonal } else { c.well }))
                 .text_color(rgb(if on { c.on_tonal } else { c.text }))
@@ -346,13 +347,13 @@ impl Render for AddStorageDialog {
                 .child(
                     tile(40., 14., tonal_tint())
                         .bg(rgb(c.surface))
-                        .text_size(px(11.))
+                        .text_size(ui(11.))
                         .font_weight(FontWeight::BOLD)
                         .child(tag),
                 )
                 .child(
                     div()
-                        .text_size(px(15.))
+                        .text_size(ui(15.))
                         .font_weight(FontWeight::SEMIBOLD)
                         .child(name),
                 )
@@ -380,13 +381,13 @@ impl Render for AddStorageDialog {
         let can_ask = confirmer(cx).how().is_some();
         let folder = self.folder.clone().map(|input| {
             div()
-                .w(px(300.))
+                .w(ui(300.))
                 .flex_grow(1.)
                 .child(labelled(tr!("Folder"), input))
         });
         let fields = self.fields.iter().map(|(field, input)| {
             div()
-                .w(px(300.))
+                .w(ui(300.))
                 .flex_grow(1.)
                 .child(labelled(field.label.clone(), input.clone()))
         });
@@ -397,7 +398,7 @@ impl Render for AddStorageDialog {
             Tested::Failed(why) => Some(tr!("It did not answer: {why}", why = why)),
         };
         super::card()
-            .w(px(720.))
+            .w(ui(720.))
             .child(header(
                 "storages",
                 tonal_tint(),
@@ -414,7 +415,7 @@ impl Render for AddStorageDialog {
                 Some(close),
             ))
             .when(!editing, |d| {
-                d.child(div().flex().gap(px(10.)).children(kinds).child(local))
+                d.child(div().flex().gap(ui(10.)).children(kinds).child(local))
             })
             .when(!limited, |d| {
                 d.child(
@@ -424,10 +425,10 @@ impl Render for AddStorageDialog {
                     .overflow_y_scroll()
                     .flex()
                     .flex_wrap()
-                    .gap(px(14.))
+                    .gap(ui(14.))
                     .child(
                         div()
-                            .w(px(300.))
+                            .w(ui(300.))
                             .flex_grow(1.)
                             .child(labelled(tr!("Name"), self.name.clone())),
                     )
@@ -440,7 +441,7 @@ impl Render for AddStorageDialog {
                     div()
                         .flex()
                         .flex_col()
-                        .gap(px(4.))
+                        .gap(ui(4.))
                         .child(
                             check_row(
                                 "storage-asks-first",
@@ -454,8 +455,8 @@ impl Render for AddStorageDialog {
                         )
                         .child(
                             div()
-                                .pl(px(30.))
-                                .text_size(px(12.))
+                                .pl(ui(30.))
+                                .text_size(ui(12.))
                                 .text_color(rgb(c.muted))
                                 .child(tr!(
                                     "For a computer left unlocked: what unlocks this computer opens it, and it asks again after 5 minutes left unused."
@@ -465,7 +466,7 @@ impl Render for AddStorageDialog {
             })
             .children(tested.map(|said| {
                 div()
-                    .text_size(px(13.))
+                    .text_size(ui(13.))
                     .text_color(rgb(if matches!(self.tested, Tested::Failed(_)) {
                         c.bad_text
                     } else {

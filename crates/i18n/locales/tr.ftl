@@ -1337,6 +1337,9 @@ t1d68c60b = Sistemin
 # Custom…
 ta391dade = Özel…
 
+# The system’s ({size} px)
+ta51f1877 = Sistemin boyutu ({ $size } px)
+
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = örn. code -n veya /path/to/editor --flag
 
@@ -1351,6 +1354,9 @@ t9a73db9b = Dil
 
 # Appearance
 t31018b9f = Görünüm
+
+# Text size
+t2c041143 = Yazı boyutu
 
 # Text editor
 t1ca82aab = Metin düzenleyici

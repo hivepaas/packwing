@@ -1324,6 +1324,9 @@ t1d68c60b = 系统的
 # Custom…
 ta391dade = 自定义…
 
+# The system’s ({size} px)
+ta51f1877 = 跟随系统（{ $size } px）
+
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = 例如 code -n，或 /path/to/editor --flag
 
@@ -1338,6 +1341,9 @@ t9a73db9b = 语言
 
 # Appearance
 t31018b9f = 外观
+
+# Text size
+t2c041143 = 文字大小
 
 # Text editor
 t1ca82aab = 文本编辑器

@@ -1,11 +1,12 @@
 //! The first run: a welcome, and what packwing may set up on the computer,
 //! each with a switch.
 
-use gpui::{Context, EventEmitter, FontWeight, Render, Window, div, prelude::*, px, relative, rgb};
+use gpui::{Context, EventEmitter, FontWeight, Render, Window, div, prelude::*, relative, rgb};
 use packwing_i18n::tr;
 
 use super::{panel, title};
 use crate::colors::{Tint, colors};
+use crate::text_size::ui;
 use crate::widgets::{Fill, Size, accent_tint, button, logo, switch, tile};
 
 /// Get started was pressed.
@@ -45,21 +46,21 @@ impl Render for Onboarding {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
         let welcome = div()
-            .w(px(340.))
+            .w(ui(340.))
             .flex_shrink_0()
             .flex()
             .flex_col()
-            .gap(px(18.))
-            .px(px(32.))
-            .py(px(36.))
-            .rounded(px(28.))
+            .gap(ui(18.))
+            .px(ui(32.))
+            .py(ui(36.))
+            .rounded(ui(28.))
             .bg(rgb(c.tonal))
             .text_color(rgb(c.on_tonal))
             .child(tile(72., 24., accent_tint()).child(logo(36., accent_tint())))
             .child(title(tr!("Welcome to packwing"), 34.).line_height(relative(1.15)))
             .child(
                 div()
-                    .text_size(px(17.))
+                    .text_size(ui(17.))
                     .line_height(relative(1.5))
                     .child(tr!(
                         "Open any archive, make smaller files to share, and stay safe from \
@@ -82,14 +83,14 @@ impl Render for Onboarding {
             div()
                 .flex()
                 .items_start()
-                .gap(px(14.))
-                .px(px(16.))
-                .py(px(14.))
-                .rounded(px(20.))
+                .gap(ui(14.))
+                .px(ui(16.))
+                .py(ui(14.))
+                .rounded(ui(20.))
                 .bg(rgb(c.well))
                 .child(
                     tile(40., 14., tint)
-                        .text_size(px(15.))
+                        .text_size(ui(15.))
                         .font_weight(FontWeight::BOLD)
                         .child((i + 1).to_string()),
                 )
@@ -99,16 +100,16 @@ impl Render for Onboarding {
                         .min_w_0()
                         .flex()
                         .flex_col()
-                        .gap(px(3.))
+                        .gap(ui(3.))
                         .child(
                             div()
-                                .text_size(px(16.))
+                                .text_size(ui(16.))
                                 .font_weight(FontWeight::SEMIBOLD)
                                 .child(s.label.clone()),
                         )
                         .child(
                             div()
-                                .text_size(px(14.))
+                                .text_size(ui(14.))
                                 .line_height(relative(1.45))
                                 .text_color(rgb(c.muted))
                                 .child(s.detail.clone()),
@@ -116,7 +117,7 @@ impl Render for Onboarding {
                 )
                 .child(
                     div()
-                        .pt(px(4.))
+                        .pt(ui(4.))
                         .child(switch(("step", i), s.on).on_click(cx.listener(
                             move |this, _, _, cx| {
                                 this.steps[i].on = !this.steps[i].on;
@@ -130,26 +131,26 @@ impl Render for Onboarding {
             .min_w_0()
             .flex()
             .flex_col()
-            .gap(px(14.))
-            .p(px(32.))
-            .child(title(tr!("Set things up"), 22.).pb(px(4.)))
+            .gap(ui(14.))
+            .p(ui(32.))
+            .child(title(tr!("Set things up"), 22.).pb(ui(4.)))
             .children(steps)
             .child(div().flex_1())
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(12.))
+                    .gap(ui(12.))
                     .child(
                         div()
                             .flex_1()
-                            .text_size(px(13.))
+                            .text_size(ui(13.))
                             .text_color(rgb(c.muted))
                             .child(tr!("You can change these later in Settings.")),
                     )
                     .child(
                         button("get-started", tr!("Get started"), Fill::Accent, Size::Large)
-                            .px(px(32.))
+                            .px(ui(32.))
                             .on_click(cx.listener(|this, _, _, cx| {
                                 cx.emit(Done {
                                     right_click: this.steps[0].on,
@@ -157,12 +158,12 @@ impl Render for Onboarding {
                             })),
                     ),
             );
-        div().size_full().flex().justify_center().p(px(16.)).child(
+        div().size_full().flex().justify_center().p(ui(16.)).child(
             div()
                 .w_full()
-                .max_w(px(1100.))
+                .max_w(ui(1100.))
                 .flex()
-                .gap(px(16.))
+                .gap(ui(16.))
                 .child(welcome)
                 .child(setup),
         )

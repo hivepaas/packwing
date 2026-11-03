@@ -20,6 +20,7 @@ use packwing_i18n::tr;
 use super::{panel, title};
 use crate::colors::colors;
 use crate::right_click::RightClickMenu;
+use crate::text_size::ui;
 use crate::updates::Updates;
 
 /// The sections, in the menu's order.
@@ -140,10 +141,10 @@ impl SettingsPage {
                 .id(("section", i))
                 .flex()
                 .items_center()
-                .h(px(52.))
-                .px(px(18.))
+                .h(ui(52.))
+                .px(ui(18.))
                 .rounded_full()
-                .text_size(px(15.))
+                .text_size(ui(15.))
                 .cursor_pointer()
                 .when(on, |d| {
                     d.bg(rgb(c.tonal))
@@ -158,14 +159,14 @@ impl SettingsPage {
                 .child(s.name())
         });
         div()
-            .w(px(240.))
+            .w(ui(240.))
             .flex_shrink_0()
             .flex()
             .flex_col()
-            .gap(px(4.))
-            .px(px(8.))
-            .py(px(12.))
-            .child(title(tr!("Settings"), 24.).px(px(16.)).pb(px(16.)))
+            .gap(ui(4.))
+            .px(ui(8.))
+            .py(ui(12.))
+            .child(title(tr!("Settings"), 24.).px(ui(16.)).pb(ui(16.)))
             .children(items)
     }
 }
@@ -180,7 +181,7 @@ impl Render for SettingsPage {
         div()
             .size_full()
             .flex()
-            .gap(px(8.))
+            .gap(ui(8.))
             .child(self.menu(cx))
             .child(
                 panel()
@@ -192,10 +193,10 @@ impl Render for SettingsPage {
                     .track_scroll(&self.scroll)
                     .flex()
                     .flex_col()
-                    .gap(px(14.))
-                    .px(px(24.))
-                    .py(px(20.))
-                    .child(title(name, 26.).pb(px(4.)))
+                    .gap(ui(14.))
+                    .px(ui(24.))
+                    .py(ui(20.))
+                    .child(title(name, 26.).pb(ui(4.)))
                     .child(
                         div()
                             .flex_1()
@@ -209,7 +210,7 @@ impl Render for SettingsPage {
 
 /// What a section's view is drawn in: its settings one under another.
 fn section() -> Div {
-    div().flex_1().flex().flex_col().gap(px(14.))
+    div().flex_1().flex().flex_col().gap(ui(14.))
 }
 
 /// A group of settings on the well's tint.
@@ -217,17 +218,17 @@ fn group() -> Div {
     div()
         .flex()
         .flex_col()
-        .gap(px(10.))
-        .px(px(18.))
-        .py(px(16.))
-        .rounded(px(22.))
+        .gap(ui(10.))
+        .px(ui(18.))
+        .py(ui(16.))
+        .rounded(ui(22.))
         .bg(rgb(colors().well))
 }
 
 /// A setting's name.
 fn label(text: impl Into<SharedString>) -> Div {
     div()
-        .text_size(px(15.))
+        .text_size(ui(15.))
         .font_weight(FontWeight::SEMIBOLD)
         .child(text.into())
 }
@@ -235,7 +236,7 @@ fn label(text: impl Into<SharedString>) -> Div {
 /// What a setting does, under its name.
 fn explain(text: impl Into<SharedString>) -> Div {
     div()
-        .text_size(px(13.))
+        .text_size(ui(13.))
         .text_color(rgb(colors().muted))
         .child(text.into())
 }
@@ -245,7 +246,7 @@ fn heading(name: impl Into<SharedString>, does: impl Into<SharedString>) -> Div 
     div()
         .flex()
         .flex_col()
-        .gap(px(2.))
+        .gap(ui(2.))
         .child(label(name))
         .child(explain(does))
 }
@@ -260,11 +261,11 @@ fn setting(
     div()
         .flex()
         .items_center()
-        .gap(px(16.))
-        .min_h(px(60.))
-        .px(px(18.))
-        .py(px(8.))
-        .rounded(px(18.))
+        .gap(ui(16.))
+        .min_h(ui(60.))
+        .px(ui(18.))
+        .py(ui(8.))
+        .rounded(ui(18.))
         .bg(rgb(colors().well))
         .child(
             div()
@@ -278,5 +279,5 @@ fn setting(
 
 /// Settings one under another, close together.
 fn rows(items: impl IntoIterator<Item = impl IntoElement>) -> Div {
-    div().flex().flex_col().gap(px(6.)).children(items)
+    div().flex().flex_col().gap(ui(6.)).children(items)
 }
