@@ -904,6 +904,9 @@ t64215c53 = Màn hình nền
 # Downloads
 t539307de = Tải xuống
 
+# Drop to open
+tb255877b = Thả vào để mở
+
 # Browse
 t0eac1f07 = Duyệt
 

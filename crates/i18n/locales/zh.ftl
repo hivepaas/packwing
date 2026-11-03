@@ -904,6 +904,9 @@ t64215c53 = 桌面
 # Downloads
 t539307de = 下载
 
+# Drop to open
+tb255877b = 拖放即可打开
+
 # Browse
 t0eac1f07 = 浏览
 

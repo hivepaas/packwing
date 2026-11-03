@@ -913,6 +913,9 @@ t64215c53 = Scrivania
 # Downloads
 t539307de = Download
 
+# Drop to open
+tb255877b = Rilascia per aprire
+
 # Browse
 t0eac1f07 = Sfoglia
 

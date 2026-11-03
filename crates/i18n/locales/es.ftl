@@ -913,6 +913,9 @@ t64215c53 = Escritorio
 # Downloads
 t539307de = Descargas
 
+# Drop to open
+tb255877b = Suelta para abrir
+
 # Browse
 t0eac1f07 = Explorar
 

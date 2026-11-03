@@ -329,6 +329,7 @@ tfa0d176a = This computer
 t52f50eae = Home
 t64215c53 = Desktop
 t539307de = Downloads
+tb255877b = Drop to open
 t0eac1f07 = Browse
 t50e888fe = Recent
 t50aac02b = Choose a file to see its information here

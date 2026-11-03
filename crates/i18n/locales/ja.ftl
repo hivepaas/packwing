@@ -904,6 +904,9 @@ t64215c53 = デスクトップ
 # Downloads
 t539307de = ダウンロード
 
+# Drop to open
+tb255877b = ドロップして開く
+
 # Browse
 t0eac1f07 = 参照
 

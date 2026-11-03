@@ -913,6 +913,9 @@ t64215c53 = Bureau
 # Downloads
 t539307de = Téléchargements
 
+# Drop to open
+tb255877b = Déposez pour ouvrir
+
 # Browse
 t0eac1f07 = Parcourir
 

@@ -904,6 +904,9 @@ t64215c53 = 바탕 화면
 # Downloads
 t539307de = 다운로드
 
+# Drop to open
+tb255877b = 놓아서 열기
+
 # Browse
 t0eac1f07 = 찾아보기
 

@@ -127,6 +127,7 @@ const ICONS: &[(&str, &[u8])] = icons![
     "chevron-down",
     "desktop",
     "download",
+    "drop",
     "extract",
     "eye",
     "eye-off",
