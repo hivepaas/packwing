@@ -115,7 +115,7 @@ impl Render for LicenseSection {
                             div()
                                 .flex_1()
                                 .min_w_0()
-                                .h(ui(44.))
+                                .h(ui(40.))
                                 .flex()
                                 .items_center()
                                 .px(ui(16.))

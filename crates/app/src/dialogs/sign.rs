@@ -62,7 +62,7 @@ fn secret_field(label: String, field: Entity<TextInput>) -> impl IntoElement {
             div()
                 .flex()
                 .items_center()
-                .h(ui(52.))
+                .h(ui(40.))
                 .px(ui(18.))
                 .rounded(ui(16.))
                 .bg(rgb(colors().field))
@@ -367,16 +367,23 @@ impl SignDialog {
                                     .child(chosen),
                             )
                             .child(
-                                button("sign-choose", tr!("Choose…"), Fill::Outline, Size::Small)
+                                button("sign-choose", tr!("Choose…"), Fill::Outline, Size::Medium)
                                     .on_click(cx.listener(|this, _, _, cx| this.pick_key(cx))),
                             )
                             .child(
-                                button("sign-new-key", tr!("New key…"), Fill::Outline, Size::Small)
-                                    .on_click(cx.listener(|this, _, _, cx| {
+                                button(
+                                    "sign-new-key",
+                                    tr!("New key…"),
+                                    Fill::Outline,
+                                    Size::Medium,
+                                )
+                                .on_click(cx.listener(
+                                    |this, _, _, cx| {
                                         this.making = true;
                                         this.problem = None;
                                         cx.notify();
-                                    })),
+                                    },
+                                )),
                             ),
                     ),
             )
@@ -409,7 +416,7 @@ impl SignDialog {
 impl Render for SignDialog {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
-        let close = icon_button("close", "x", 44.)
+        let close = icon_button("close", "x", 40.)
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         let refused = self.refused(cx);
         let far = self.storage.local_path(&[]).is_none();

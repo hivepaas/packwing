@@ -83,15 +83,14 @@ pub enum Fill {
     Text,
 }
 
-/// How big a button is: its height and its text.
+/// How big a button is: its height and its text. Every other control, a field, a
+/// select, the segments, an icon button, is as tall as a Medium one beside it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Size {
-    /// 52 px, on a page.
+    /// 48 px, at the top of a page, as its search is.
     Large,
-    /// 48 px, in a dialog's footer.
+    /// 40 px: in a dialog, its footer's and its rows', and in Settings.
     Medium,
-    /// 40 px, beside a note or a row.
-    Small,
 }
 
 /// A pill button saying `label`.
@@ -105,9 +104,8 @@ pub fn button(
     let id = id.into();
     let selector = id.to_string();
     let (h, text, pad) = match size {
-        Size::Large => (52., 16., 22.),
-        Size::Medium => (48., 15., 22.),
-        Size::Small => (40., 14., 16.),
+        Size::Large => (48., 16., 22.),
+        Size::Medium => (40., 15., 18.),
     };
     let (ground, ink, hover) = match fill {
         Fill::Accent => (Some(c.accent), c.on_accent, c.accent_hover),
@@ -319,7 +317,7 @@ pub fn segment(
         .id(id)
         .flex_1()
         .min_w_0()
-        .h(ui(36.))
+        .h(ui(32.))
         .px(ui(12.))
         .flex()
         .items_center()
@@ -581,7 +579,7 @@ impl Render for Select {
                     .text_size(ui(14.)),
                 SelectLook::Field => d
                     .w_full()
-                    .h(ui(44.))
+                    .h(ui(40.))
                     .pl(ui(16.))
                     .pr(ui(14.))
                     .text_size(ui(15.)),

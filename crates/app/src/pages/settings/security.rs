@@ -197,7 +197,7 @@ impl Security {
                     ("trusted-remove", i),
                     tr!("Remove"),
                     Fill::Outline,
-                    Size::Small,
+                    Size::Medium,
                 )
                 .on_click(cx.listener(move |_, _, _, cx| {
                     prefs::change(cx, |p| {
@@ -239,7 +239,7 @@ impl Security {
                             .child(self.new_key.clone()),
                     )
                     .child(
-                        button("trusted-add", tr!("Add"), Fill::Tonal, Size::Small).on_click(
+                        button("trusted-add", tr!("Add"), Fill::Tonal, Size::Medium).on_click(
                             cx.listener(|this, _, _, cx| {
                                 let text = this.new_key.read(cx).text().to_owned();
                                 this.trust(&text, cx);
@@ -251,7 +251,7 @@ impl Security {
                             "trusted-pick",
                             tr!("Choose a file…"),
                             Fill::Outline,
-                            Size::Small,
+                            Size::Medium,
                         )
                         .on_click(cx.listener(|this, _, _, cx| this.pick_key(cx))),
                     ),
@@ -316,7 +316,7 @@ impl Security {
             )
             .when_some(url, |d, url| {
                 d.child(
-                    button("policy-url", tr!("Get help"), Fill::Raised, Size::Small)
+                    button("policy-url", tr!("Get help"), Fill::Raised, Size::Medium)
                         .text_color(rgb(c.warn_text))
                         .on_click(move |_, _, cx| cx.open_url(&url)),
                 )

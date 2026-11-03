@@ -79,7 +79,7 @@ impl OpenStoredDialog {
 impl Render for OpenStoredDialog {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
-        let close = icon_button("close", "x", 44.)
+        let close = icon_button("close", "x", 40.)
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         let list = places::list(&self.places, self.chosen, Self::pick_place, cx);
         let beside = places::beside(&self.places, self.chosen, &self.picker, &self.storages, cx);

@@ -358,7 +358,7 @@ impl ExtractDialog {
                 div()
                     .flex()
                     .items_center()
-                    .h(ui(52.))
+                    .h(ui(40.))
                     .pl(ui(18.))
                     .rounded(ui(16.))
                     .bg(rgb(c.field))
@@ -438,7 +438,7 @@ impl Render for ExtractDialog {
             ),
             size(a.unpacked)
         );
-        let close = icon_button("close", "x", 44.)
+        let close = icon_button("close", "x", 40.)
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         card()
             .id("extract-dialog")

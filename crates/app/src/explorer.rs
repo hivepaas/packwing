@@ -1075,11 +1075,11 @@ impl Explorer {
             .px(ui(8.))
             .pb(ui(12.))
             .child(
-                icon_button("up", "arrow-up", 44.)
+                icon_button("up", "arrow-up", 40.)
                     .on_click(cx.listener(|this, _, _, cx| this.go_up(cx))),
             )
             .child(
-                icon_button("refresh", "refresh", 44.)
+                icon_button("refresh", "refresh", 40.)
                     .on_click(cx.listener(|this, _, _, cx| this.refresh(cx))),
             )
             .child(
@@ -1098,7 +1098,7 @@ impl Explorer {
                 d.child(
                     div()
                         .w(ui(220.))
-                        .h(ui(44.))
+                        .h(ui(40.))
                         .flex()
                         .flex_shrink_0()
                         .items_center()
@@ -1353,7 +1353,7 @@ impl Explorer {
                         "search-all",
                         tr!("Search the whole folder"),
                         Fill::Text,
-                        Size::Small,
+                        Size::Medium,
                     )
                     .on_click(cx.listener(|this, _, _, cx| this.load_more(usize::MAX, cx))),
                 )
@@ -1364,7 +1364,7 @@ impl Explorer {
                 "load-more",
                 tr!("Load {n} more", n = crate::model::count(PAGE as u64)),
                 Fill::Tonal,
-                Size::Small,
+                Size::Medium,
             )
             .on_click(cx.listener(|this, _, _, cx| this.load_more(PAGE, cx))),
         )
@@ -1739,7 +1739,7 @@ impl Render for Explorer {
                 .text_color(rgb(c.muted))
                 .child(div().text_center().child(why.clone()))
                 .child(
-                    button("try-again", tr!("Try again"), Fill::Tonal, Size::Small)
+                    button("try-again", tr!("Try again"), Fill::Tonal, Size::Medium)
                         .on_click(cx.listener(|this, _, _, cx| this.refresh(cx))),
                 )
                 .into_any_element()

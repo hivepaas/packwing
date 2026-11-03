@@ -19,12 +19,12 @@ fn transfers(explorer: &Entity<Explorer>) -> Div {
         .flex()
         .gap(ui(8.))
         .child(
-            button("info-copy", tr!("Copy to…"), Fill::Outline, Size::Small)
+            button("info-copy", tr!("Copy to…"), Fill::Outline, Size::Medium)
                 .flex_1()
                 .on_click(move |_, _, cx| copy.update(cx, |e, cx| e.ask_transfer(false, cx))),
         )
         .child(
-            button("info-move", tr!("Move to…"), Fill::Outline, Size::Small)
+            button("info-move", tr!("Move to…"), Fill::Outline, Size::Medium)
                 .flex_1()
                 .on_click(move |_, _, cx| moved.update(cx, |e, cx| e.ask_transfer(true, cx))),
         )
@@ -69,11 +69,11 @@ pub fn info(explorer: &Entity<Explorer>, window: &Window, cx: &App) -> Div {
                     .child(tr!("Files in them come to {size}", size = size(bytes))),
             )
             .child(
-                button("info-compress", tr!("Compress…"), Fill::Tonal, Size::Small)
+                button("info-compress", tr!("Compress…"), Fill::Tonal, Size::Medium)
                     .on_click(move |_, _, cx| compress.update(cx, |e, cx| e.compress(cx))),
             )
             .child(
-                button("info-delete", tr!("Delete…"), Fill::Outline, Size::Small)
+                button("info-delete", tr!("Delete…"), Fill::Outline, Size::Medium)
                     .on_click(move |_, _, cx| delete.update(cx, |e, cx| e.ask_delete(cx))),
             )
             .child(transfers(explorer))
@@ -179,13 +179,13 @@ fn info_of(entity: &Entity<Explorer>, item: &Item, body: Div, cx: &App) -> Div {
         .gap(ui(8.))
         .when(local || !is_archive(item), |d| {
             d.child(
-                button("info-open", open_label, Fill::Accent, Size::Small)
+                button("info-open", open_label, Fill::Accent, Size::Medium)
                     .on_click(on(|e, i, cx| e.open(i, cx))),
             )
         });
     if is_archive(item) && local {
         actions = actions.child(
-            button("info-extract", tr!("Extract…"), Fill::Tonal, Size::Small)
+            button("info-extract", tr!("Extract…"), Fill::Tonal, Size::Medium)
                 .on_click(on(|e, i, cx| e.extract(i, cx))),
         );
     }
@@ -195,7 +195,7 @@ fn info_of(entity: &Entity<Explorer>, item: &Item, body: Div, cx: &App) -> Div {
                 "info-edit",
                 Explorer::edit_label(cx),
                 Fill::Tonal,
-                Size::Small,
+                Size::Medium,
             )
             .on_click(on(|e, i, cx| e.edit(i, cx))),
         );
@@ -205,7 +205,7 @@ fn info_of(entity: &Entity<Explorer>, item: &Item, body: Div, cx: &App) -> Div {
                     "info-app",
                     tr!("Open with default app"),
                     Fill::Outline,
-                    Size::Small,
+                    Size::Medium,
                 )
                 .on_click(on(|e, i, cx| e.open_with_system(i, cx))),
             );
@@ -218,7 +218,7 @@ fn info_of(entity: &Entity<Explorer>, item: &Item, body: Div, cx: &App) -> Div {
                 "info-count",
                 tr!("Count size and files"),
                 Fill::Outline,
-                Size::Small,
+                Size::Medium,
             )
             .on_click(move |_, _, cx| {
                 handle.update(cx, |e, cx| e.count_folder(&name, cx));
@@ -267,7 +267,7 @@ fn info_of(entity: &Entity<Explorer>, item: &Item, body: Div, cx: &App) -> Div {
                         "info-check-signature",
                         tr!("Check the signature"),
                         Fill::Tonal,
-                        Size::Small,
+                        Size::Medium,
                     )
                     .on_click(move |_, _, cx| handle.update(cx, |e, cx| e.check_signature(cx))),
                 )
@@ -277,7 +277,7 @@ fn info_of(entity: &Entity<Explorer>, item: &Item, body: Div, cx: &App) -> Div {
             .when(can_be_signed(item), |d| {
                 let handle = entity.clone();
                 d.child(
-                    button("info-sign", tr!("Sign…"), Fill::Outline, Size::Small)
+                    button("info-sign", tr!("Sign…"), Fill::Outline, Size::Medium)
                         .on_click(move |_, _, cx| handle.update(cx, |e, cx| e.ask_sign(cx))),
                 )
             }),
