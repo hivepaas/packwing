@@ -9,6 +9,7 @@ use std::sync::{Arc, Mutex};
 use super::{DialogEvent, Job, Transferring, Verb, footer, header, places};
 use crate::colors::colors;
 use crate::explorer::{Explorer, Place};
+use crate::pages::storages::StoragesPage;
 use crate::widgets::{
     Fill, Select, SelectLook, Size, button, icon_button, legend, segment, segments, tonal_tint,
 };
@@ -30,24 +31,26 @@ pub struct TransferDialog {
     places: Vec<Place>,
     chosen: usize,
     picker: Entity<Explorer>,
+    storages: Entity<StoragesPage>,
     on_existing: Entity<Select>,
     _picker_changed: Subscription,
+    _lock_changed: Subscription,
 }
 
 impl EventEmitter<DialogEvent> for TransferDialog {}
 
 impl TransferDialog {
-    /// Starts at `chosen` of `places`, in the folder they are in if it is theirs.
+    /// Starts at `chosen` of `places` (`to`), in the folder they are in if it is theirs.
     pub fn new(
         from: Place,
         from_folder: Vec<String>,
         names: Vec<String>,
         moving: bool,
-        places: Vec<Place>,
-        chosen: usize,
+        (places, chosen): (Vec<Place>, usize),
+        storages: Entity<StoragesPage>,
         cx: &mut Context<Self>,
     ) -> TransferDialog {
-        let start = places.get(chosen).cloned();
+        let start = places::open_place(&places, chosen, &storages, cx);
         let folder = from_folder.clone();
         let picker = cx.new(|cx| {
             let mut picker = Explorer::picker(cx);
@@ -56,6 +59,10 @@ impl TransferDialog {
             picker
         });
         let changed = cx.observe(&picker, |_, _, cx| cx.notify());
+        let lock_changed = cx.observe(&storages, |this: &mut Self, _, cx| {
+            places::follow_lock(&this.places, this.chosen, &this.picker, &this.storages, cx);
+            cx.notify();
+        });
         let on_existing =
             cx.new(|_| Select::new(&on_existing().map(|(name, _)| name), 0, SelectLook::Pill));
         TransferDialog {
@@ -66,14 +73,16 @@ impl TransferDialog {
             places,
             chosen,
             picker,
+            storages,
             on_existing,
             _picker_changed: changed,
+            _lock_changed: lock_changed,
         }
     }
 
     fn pick_place(&mut self, i: usize, cx: &mut Context<Self>) {
         self.chosen = i;
-        let place = self.places.get(i).cloned();
+        let place = places::open_place(&self.places, i, &self.storages, cx);
         self.picker.update(cx, |p, cx| p.show_place(place, cx));
         cx.notify();
     }
@@ -136,6 +145,7 @@ impl Render for TransferDialog {
         };
         let from = places::shown(&self.from.name, &self.from_folder);
         let places = places::list(&self.places, self.chosen, Self::pick_place, cx);
+        let beside = places::beside(&self.places, self.chosen, &self.picker, &self.storages, cx);
         let same = self.is_where_they_are(cx);
         let there = self.picker.read(cx).is_local();
         let through = !there || self.from.storage.local_path(&[]).is_none();
@@ -158,7 +168,7 @@ impl Render for TransferDialog {
                     .rounded(px(22.))
                     .bg(rgb(c.well))
                     .child(places)
-                    .child(div().flex_1().min_w_0().child(self.picker.clone())),
+                    .child(div().flex_1().min_w_0().child(beside)),
             )
             .child(
                 div()

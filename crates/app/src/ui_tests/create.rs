@@ -339,3 +339,19 @@ scenario!(
         assert_eq!(listed(&work.join("a.7z"), None), ["a.txt"]);
     }
 );
+
+scenario!(
+    /// New archive offers to save on a storage only once the user has one.
+    a_storage_is_offered_once_there_is_one,
+    |ui| {
+        new_archive(ui);
+        assert!(ui.shows("change-folder"));
+        assert!(!ui.shows("change-storage"), "offered with no storage of the user's");
+        ui.click("cancel");
+        ui.wait_for_no_dialog();
+        ui.storage(&ui.work.join("place"));
+        new_archive(ui);
+        ui.click("change-storage");
+        ui.wait_for("save-here");
+    }
+);

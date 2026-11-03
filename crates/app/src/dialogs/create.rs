@@ -21,6 +21,7 @@ use crate::colors::colors;
 use crate::explorer::{Explorer, Place};
 use crate::input::{Changed, TextInput};
 use crate::model::{Selection, count, size};
+use crate::pages::storages::StoragesPage;
 use crate::widgets::{
     Chosen, Fill, Select, SelectLook, Size, Tone, button, check_row, icon, icon_button, legend,
     note, segment, segments, switch, tonal_tint,
@@ -284,6 +285,8 @@ pub struct CreateDialog {
     /// The storages it can go on, and the one to show first.
     places: Vec<Place>,
     first_place: usize,
+    /// Where a storage that asks first is opened, and its watch.
+    storages: Option<(Entity<StoragesPage>, Subscription)>,
     picking: Option<Picking>,
     /// The name it was given last: while the field still says it, more
     /// files change it.
@@ -396,6 +399,7 @@ impl CreateDialog {
             on: None,
             places: Vec::new(),
             first_place: 0,
+            storages: None,
             picking: None,
             selection,
             list_shown: false,
@@ -425,11 +429,33 @@ impl CreateDialog {
         }
     }
 
-    /// With `places` to save on, the one at `first` shown first.
-    pub fn with_places(mut self, places: Vec<Place>, first: usize) -> Self {
+    /// With `places` to save on, the one at `first` shown first: those that ask
+    /// first open through `storages`.
+    pub fn with_places(
+        mut self,
+        places: Vec<Place>,
+        first: usize,
+        storages: Entity<StoragesPage>,
+        cx: &mut Context<Self>,
+    ) -> Self {
         self.places = places;
         self.first_place = first;
+        let watch = cx.observe(&storages, |this: &mut Self, storages, cx| {
+            if let Some(picking) = &this.picking {
+                places::follow_lock(&this.places, picking.chosen, &picking.picker, &storages, cx);
+            }
+            cx.notify();
+        });
+        self.storages = Some((storages, watch));
         self
+    }
+
+    /// The place at `i`, to browse: none while it asks first and has not.
+    fn open_place(&self, i: usize, cx: &App) -> Option<Place> {
+        match &self.storages {
+            Some((storages, _)) => places::open_place(&self.places, i, storages, cx),
+            None => self.places.get(i).cloned(),
+        }
     }
 
     #[cfg(all(test, feature = "test-hooks"))]
@@ -673,7 +699,7 @@ impl CreateDialog {
             ),
             None => (self.first_place, Vec::new()),
         };
-        let start = self.places.get(chosen).cloned();
+        let start = self.open_place(chosen, cx);
         let picker = cx.new(|cx| {
             let mut picker = Explorer::picker(cx);
             picker.show_place(start, cx);
@@ -690,7 +716,7 @@ impl CreateDialog {
     }
 
     fn pick_place(&mut self, i: usize, cx: &mut Context<Self>) {
-        let place = self.places.get(i).cloned();
+        let place = self.open_place(i, cx);
         if let Some(picking) = &mut self.picking {
             picking.chosen = i;
             picking.picker.update(cx, |p, cx| p.show_place(place, cx));
@@ -699,12 +725,15 @@ impl CreateDialog {
     }
 
     /// The archive goes in the folder the storages show.
+    /// Nothing, while the storage chosen asks first.
     fn save_here(&mut self, cx: &mut Context<Self>) {
-        if let Some(picking) = self.picking.take() {
+        let shown = self.picking.as_ref().and_then(|picking| {
             let picker = picking.picker.read(cx);
-            if let Some(place) = picker.place().cloned() {
-                self.on = Some((place, picker.folder().to_vec()));
-            }
+            Some((picker.place().cloned()?, picker.folder().to_vec()))
+        });
+        if let Some(on) = shown {
+            self.on = Some(on);
+            self.picking = None;
         }
         cx.notify();
     }
@@ -1001,14 +1030,20 @@ impl CreateDialog {
                         button("change-folder", tr!("Folder…"), Fill::Outline, Size::Small)
                             .on_click(cx.listener(|this, _, _, cx| this.pick_folder(cx))),
                     )
-                    .child(
-                        button(
-                            "change-storage",
-                            tr!("Storage…"),
-                            Fill::Outline,
-                            Size::Small,
-                        )
-                        .on_click(cx.listener(|this, _, _, cx| this.pick_storage(cx))),
+                    // With no storage of the user's, Folder… is all there is.
+                    .when(
+                        !self.places.is_empty() && crate::prefs::has_storage(cx),
+                        |d| {
+                            d.child(
+                                button(
+                                    "change-storage",
+                                    tr!("Storage…"),
+                                    Fill::Outline,
+                                    Size::Small,
+                                )
+                                .on_click(cx.listener(|this, _, _, cx| this.pick_storage(cx))),
+                            )
+                        },
                     ),
             )
             .children(about_storage)
@@ -1096,7 +1131,16 @@ impl CreateDialog {
                         Self::pick_place,
                         cx,
                     ))
-                    .child(div().flex_1().min_w_0().child(picking.picker.clone())),
+                    .child(div().flex_1().min_w_0().child(match &self.storages {
+                        Some((storages, _)) => places::beside(
+                            &self.places,
+                            picking.chosen,
+                            &picking.picker,
+                            storages,
+                            cx,
+                        ),
+                        None => picking.picker.clone().into_any_element(),
+                    })),
             )
             .child(
                 footer()
