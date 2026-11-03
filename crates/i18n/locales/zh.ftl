@@ -940,6 +940,24 @@ tc7731c8f = 这里没有文件夹。
 # This folder is empty.
 td9e47db6 = 此文件夹为空。
 
+# Show in Finder
+ta9442aa9 = 在访达中显示
+
+# Show in File Explorer
+t23c89eda = 在文件资源管理器中显示
+
+# Show in the file manager
+tb347ece9 = 在文件管理器中显示
+
+# Open in Finder
+te2a467e0 = 在访达中打开
+
+# Open in File Explorer
+t3794d625 = 在文件资源管理器中打开
+
+# Open in the file manager
+td1ceabc4 = 在文件管理器中打开
+
 # Copy all
 t6aef5c37 = 全部复制
 

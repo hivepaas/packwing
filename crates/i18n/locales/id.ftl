@@ -940,6 +940,24 @@ tc7731c8f = Tidak ada folder di sini.
 # This folder is empty.
 td9e47db6 = Folder ini kosong.
 
+# Show in Finder
+ta9442aa9 = Tampilkan di Finder
+
+# Show in File Explorer
+t23c89eda = Tampilkan di File Explorer
+
+# Show in the file manager
+tb347ece9 = Tampilkan di pengelola berkas
+
+# Open in Finder
+te2a467e0 = Buka di Finder
+
+# Open in File Explorer
+t3794d625 = Buka di File Explorer
+
+# Open in the file manager
+td1ceabc4 = Buka di pengelola berkas
+
 # Copy all
 t6aef5c37 = Salin semua
 

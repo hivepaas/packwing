@@ -948,6 +948,24 @@ tc7731c8f = Burada klasör yok.
 # This folder is empty.
 td9e47db6 = Bu klasör boş.
 
+# Show in Finder
+ta9442aa9 = Finder'da göster
+
+# Show in File Explorer
+t23c89eda = Dosya Gezgini'nde göster
+
+# Show in the file manager
+tb347ece9 = Dosya yöneticisinde göster
+
+# Open in Finder
+te2a467e0 = Finder'da aç
+
+# Open in File Explorer
+t3794d625 = Dosya Gezgini'nde aç
+
+# Open in the file manager
+td1ceabc4 = Dosya yöneticisinde aç
+
 # Copy all
 t6aef5c37 = Tümünü kopyala
 

@@ -940,6 +940,24 @@ tc7731c8f = 這裡沒有資料夾。
 # This folder is empty.
 td9e47db6 = 這個資料夾是空的。
 
+# Show in Finder
+ta9442aa9 = 在 Finder 中顯示
+
+# Show in File Explorer
+t23c89eda = 在檔案總管中顯示
+
+# Show in the file manager
+tb347ece9 = 在檔案管理員中顯示
+
+# Open in Finder
+te2a467e0 = 在 Finder 中開啟
+
+# Open in File Explorer
+t3794d625 = 在檔案總管中開啟
+
+# Open in the file manager
+td1ceabc4 = 在檔案管理員中開啟
+
 # Copy all
 t6aef5c37 = 全部複製
 

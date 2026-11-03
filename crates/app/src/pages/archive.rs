@@ -22,6 +22,7 @@ use packwing_core::{Cancel, Control, Error, Signed, image_fits, read_entry};
 
 use super::panel;
 use crate::colors::colors;
+use crate::file_manager;
 use crate::input::{Changed, TextInput};
 use crate::model::{Archive, Entry, Kind, count, size, text_preview};
 use crate::prefs;
@@ -659,6 +660,11 @@ impl ArchivePage {
                 cx.notify();
             }))
         };
+        let here = self
+            .archive()
+            .and_then(|a| a.source.as_ref())
+            .and_then(|s| s.place())
+            .and_then(|(storage, path)| storage.local_path(&path));
         deferred(
             anchored()
                 .position(at)
@@ -674,7 +680,17 @@ impl ArchivePage {
                         .child(item("menu-sign", tr!("Sign…"), || ArchiveEvent::Sign))
                         .child(item("menu-checksums", tr!("Checksums…"), || {
                             ArchiveEvent::Checksums
-                        })),
+                        }))
+                        .when_some(here, |d, here| {
+                            d.child(
+                                menu_item("menu-file-manager", file_manager::show_label(), "")
+                                    .on_click(cx.listener(move |this, _, _, cx| {
+                                        this.more_at = None;
+                                        file_manager::show(&here, cx);
+                                        cx.notify();
+                                    })),
+                            )
+                        }),
                 ),
         )
         .with_priority(1)

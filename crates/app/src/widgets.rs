@@ -411,7 +411,10 @@ pub fn legend(text: impl Into<SharedString>) -> Div {
 /// one under another. What closes it is the caller's.
 pub fn menu_panel(id: impl Into<ElementId>) -> Stateful<Div> {
     let c = colors();
+    let id = id.into();
+    let selector = id.to_string();
     div()
+        .debug_selector(|| selector)
         .id(id)
         .occlude()
         .p(ui(6.))

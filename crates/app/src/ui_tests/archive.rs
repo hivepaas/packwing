@@ -42,6 +42,23 @@ scenario!(
 );
 
 scenario!(
+    /// The archive open, from this computer, is shown in the system's file manager.
+    an_archive_is_shown_in_the_file_manager,
+    |ui| {
+        let archive = ui.copy_of("sample.7z");
+        ui.open(&archive);
+        ui.ws(|ws, _, cx| {
+            ws.archive_page().update(cx, |p, cx| {
+                p.open_more_for_shot(gpui::point(gpui::px(600.), gpui::px(200.)), cx)
+            });
+        });
+        ui.click("menu-file-manager");
+        assert!(!ui.shows("archive-menu"));
+        assert_eq!(crate::file_manager::asked_for_test(), [("show", archive)]);
+    }
+);
+
+scenario!(
     /// A file that is no archive says so, and the window goes on working.
     what_is_no_archive_says_so,
     |ui| {

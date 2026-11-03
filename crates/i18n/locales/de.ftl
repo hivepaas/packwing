@@ -948,6 +948,24 @@ tc7731c8f = Hier gibt es keine Ordner.
 # This folder is empty.
 td9e47db6 = Dieser Ordner ist leer.
 
+# Show in Finder
+ta9442aa9 = Im Finder anzeigen
+
+# Show in File Explorer
+t23c89eda = Im Datei-Explorer anzeigen
+
+# Show in the file manager
+tb347ece9 = Im Dateimanager anzeigen
+
+# Open in Finder
+te2a467e0 = Im Finder öffnen
+
+# Open in File Explorer
+t3794d625 = Im Datei-Explorer öffnen
+
+# Open in the file manager
+td1ceabc4 = Im Dateimanager öffnen
+
 # Copy all
 t6aef5c37 = Alles kopieren
 

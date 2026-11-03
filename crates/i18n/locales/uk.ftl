@@ -964,6 +964,24 @@ tc7731c8f = Тут немає папок.
 # This folder is empty.
 td9e47db6 = Ця папка порожня.
 
+# Show in Finder
+ta9442aa9 = Показати у Finder
+
+# Show in File Explorer
+t23c89eda = Показати у Провіднику
+
+# Show in the file manager
+tb347ece9 = Показати у файловому менеджері
+
+# Open in Finder
+te2a467e0 = Відкрити у Finder
+
+# Open in File Explorer
+t3794d625 = Відкрити у Провіднику
+
+# Open in the file manager
+td1ceabc4 = Відкрити у файловому менеджері
+
 # Copy all
 t6aef5c37 = Копіювати все
 

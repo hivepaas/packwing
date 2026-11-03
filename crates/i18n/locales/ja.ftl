@@ -940,6 +940,24 @@ tc7731c8f = フォルダがありません。
 # This folder is empty.
 td9e47db6 = このフォルダは空です。
 
+# Show in Finder
+ta9442aa9 = Finder で表示
+
+# Show in File Explorer
+t23c89eda = エクスプローラーで表示
+
+# Show in the file manager
+tb347ece9 = ファイルマネージャーで表示
+
+# Open in Finder
+te2a467e0 = Finder で開く
+
+# Open in File Explorer
+t3794d625 = エクスプローラーで開く
+
+# Open in the file manager
+td1ceabc4 = ファイルマネージャーで開く
+
 # Copy all
 t6aef5c37 = すべてコピー
 
