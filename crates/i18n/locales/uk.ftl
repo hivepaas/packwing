@@ -964,6 +964,9 @@ tc7731c8f = Тут немає папок.
 # This folder is empty.
 td9e47db6 = Ця папка порожня.
 
+# Copy all
+t6aef5c37 = Копіювати все
+
 # This system has no folder for settings.
 tfd0ff0a1 = У цій системі немає папки для налаштувань.
 

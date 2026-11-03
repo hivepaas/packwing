@@ -407,6 +407,50 @@ pub fn legend(text: impl Into<SharedString>) -> Div {
         .child(text.into())
 }
 
+/// A menu that floats over the page, as a right click or a `…` opens one: its items
+/// one under another. What closes it is the caller's.
+pub fn menu_panel(id: impl Into<ElementId>) -> Stateful<Div> {
+    let c = colors();
+    div()
+        .id(id)
+        .occlude()
+        .p(ui(6.))
+        .flex()
+        .flex_col()
+        .rounded(ui(16.))
+        .bg(rgb(c.surface))
+        .border_1()
+        .border_color(rgb(c.outline))
+        .shadow(float_shadow(8., 24.))
+        .text_size(ui(14.))
+        .text_color(rgb(c.text))
+}
+
+/// An item of a [`menu_panel`]: what it does, and its keys at the right, if any.
+pub fn menu_item(id: &'static str, label: impl Into<SharedString>, keys: &str) -> Stateful<Div> {
+    let c = colors();
+    div()
+        .debug_selector(move || id.to_owned())
+        .id(id)
+        .h(ui(40.))
+        .px(ui(12.))
+        .flex()
+        .items_center()
+        .justify_between()
+        .gap(ui(24.))
+        .rounded(ui(12.))
+        .cursor_pointer()
+        .whitespace_nowrap()
+        .hover(|s| s.bg(rgb(c.hover)))
+        .child(label.into())
+        .child(
+            div()
+                .text_size(ui(12.))
+                .text_color(rgb(c.muted))
+                .child(SharedString::from(keys.to_owned())),
+        )
+}
+
 /// The shadow under a dialog, a menu or a card that floats.
 pub fn float_shadow(y: f32, blur: f32) -> Vec<BoxShadow> {
     vec![BoxShadow {

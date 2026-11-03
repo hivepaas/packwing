@@ -940,6 +940,9 @@ tc7731c8f = 这里没有文件夹。
 # This folder is empty.
 td9e47db6 = 此文件夹为空。
 
+# Copy all
+t6aef5c37 = 全部复制
+
 # This system has no folder for settings.
 tfd0ff0a1 = 此系统没有用于存放设置的文件夹。
 

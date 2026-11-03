@@ -1,6 +1,7 @@
 //! A one-line text field with input method support (preedit), selection and
 //! the clipboard. A masked one (for passphrases) shows a dot per character
-//! and gives nothing to the clipboard.
+//! and gives nothing to the clipboard. Text to read has a right-click menu:
+//! Copy, and Copy all.
 //!
 //! Taken from shellwing (`crates/app/src/input.rs`), which adapted it from
 //! GPUI's `examples/input.rs` (Apache-2.0, Zed Industries): keys are handled
@@ -15,12 +16,15 @@ use gpui::{
     App, Bounds, ClipboardItem, Context, CursorStyle, ElementId, ElementInputHandler, Entity,
     EntityInputHandler, FocusHandle, Focusable, GlobalElementId, KeyDownEvent, LayoutId,
     MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent, PaintQuad, Pixels, Point, Render,
-    ShapedLine, SharedString, Style, TextRun, UTF16Selection, UnderlineStyle, Window, div, fill,
-    point, prelude::*, px, relative, rgb, rgba, size,
+    ShapedLine, SharedString, Style, TextRun, UTF16Selection, UnderlineStyle, Window, anchored,
+    deferred, div, fill, point, prelude::*, px, relative, rgb, rgba, size,
 };
+use packwing_i18n::tr;
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::colors::colors;
+use crate::text_size::ui;
+use crate::widgets::{menu_item, menu_panel};
 
 /// The text changed.
 pub struct Changed;
@@ -56,6 +60,8 @@ pub struct TextInput {
     code: Option<Painter>,
     /// Text to read, not to change: [`TextInput::read_only`].
     read_only: bool,
+    /// Where its right-click menu is open, for text to read.
+    menu_at: Option<Point<Pixels>>,
     history: History,
 }
 
@@ -296,6 +302,7 @@ impl TextInput {
             lines: None,
             code: None,
             read_only: false,
+            menu_at: None,
             history: History::default(),
         }
     }
@@ -480,8 +487,15 @@ impl TextInput {
         self.selected = selected.start.min(end)..end;
         self.reversed = false;
         self.marked = None;
+        self.menu_at = None;
         cx.emit(Changed);
         cx.notify();
+    }
+
+    /// Whether its right-click menu is open, for tests.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn menu_open(&self) -> bool {
+        self.menu_at.is_some()
     }
 
     fn cursor(&self) -> usize {
@@ -611,6 +625,11 @@ impl TextInput {
     fn on_key(&mut self, ev: &KeyDownEvent, _: &mut Window, cx: &mut Context<Self>) {
         let k = &ev.keystroke;
         let m = &k.modifiers;
+        if self.menu_at.is_some() && k.key == "escape" {
+            self.menu_at = None;
+            cx.notify();
+            return cx.stop_propagation();
+        }
         // The platform's shortcut modifier: Cmd on macOS, Ctrl elsewhere.
         let cmd = if cfg!(target_os = "macos") {
             m.platform
@@ -794,6 +813,69 @@ impl TextInput {
         } else {
             self.move_to(at, cx);
         }
+    }
+
+    /// A right click on text to read opens its menu, and leaves what is chosen.
+    fn right_down(&mut self, e: &MouseDownEvent, window: &mut Window, cx: &mut Context<Self>) {
+        if !self.read_only {
+            return;
+        }
+        window.focus(&self.focus, cx);
+        self.selecting = false;
+        self.menu_at = Some(e.position);
+        cx.stop_propagation();
+        cx.notify();
+    }
+
+    /// Copies what is chosen, or with `all`, all of it, and closes the menu.
+    fn copy(&mut self, all: bool, cx: &mut Context<Self>) {
+        let text = if all {
+            self.content.to_string()
+        } else {
+            self.content[self.selected.clone()].to_string()
+        };
+        if !text.is_empty() && !self.masked {
+            cx.write_to_clipboard(ClipboardItem::new_string(text));
+        }
+        self.menu_at = None;
+        cx.notify();
+    }
+
+    /// The right-click menu of text to read, at `at`: Copy only with something chosen.
+    fn menu(&self, at: Point<Pixels>, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let copy_keys = if cfg!(target_os = "macos") {
+            "⌘C"
+        } else {
+            "Ctrl+C"
+        };
+        deferred(
+            anchored()
+                .position(at)
+                .snap_to_window_with_margin(px(8.))
+                .child(
+                    menu_panel("text-menu")
+                        .min_w(ui(180.))
+                        .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+                        .on_mouse_down_out(cx.listener(|this, e: &MouseDownEvent, _, cx| {
+                            // A right click opens the next one.
+                            if e.button != MouseButton::Right {
+                                this.menu_at = None;
+                                cx.notify();
+                            }
+                        }))
+                        .when(!self.selected.is_empty(), |d| {
+                            d.child(
+                                menu_item("text-copy", tr!("Copy"), copy_keys)
+                                    .on_click(cx.listener(|this, _, _, cx| this.copy(false, cx))),
+                            )
+                        })
+                        .child(
+                            menu_item("text-copy-all", tr!("Copy all"), "")
+                                .on_click(cx.listener(|this, _, _, cx| this.copy(true, cx))),
+                        ),
+                ),
+        )
+        .with_priority(1)
     }
 
     /// A wheel or a touchpad scrolls a field of several lines; at its top
@@ -1199,6 +1281,7 @@ impl Render for TextInput {
             .cursor(CursorStyle::IBeam)
             .on_key_down(cx.listener(Self::on_key))
             .on_mouse_down(MouseButton::Left, cx.listener(Self::mouse_down))
+            .on_mouse_down(MouseButton::Right, cx.listener(Self::right_down))
             .on_mouse_up(MouseButton::Left, cx.listener(Self::mouse_up))
             .on_mouse_up_out(MouseButton::Left, cx.listener(Self::mouse_up))
             .on_mouse_move(cx.listener(Self::mouse_move))
@@ -1209,6 +1292,7 @@ impl Render for TextInput {
             .when(self.lines.is_some(), |d| {
                 d.child(AreaElement { input: cx.entity() })
             })
+            .when_some(self.menu_at, |d, at| d.child(self.menu(at, cx)))
     }
 }
 

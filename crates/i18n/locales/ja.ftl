@@ -940,6 +940,9 @@ tc7731c8f = フォルダがありません。
 # This folder is empty.
 td9e47db6 = このフォルダは空です。
 
+# Copy all
+t6aef5c37 = すべてコピー
+
 # This system has no folder for settings.
 tfd0ff0a1 = このシステムには設定用のフォルダがありません。
 

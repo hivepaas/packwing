@@ -940,6 +940,9 @@ tc7731c8f = Tidak ada folder di sini.
 # This folder is empty.
 td9e47db6 = Folder ini kosong.
 
+# Copy all
+t6aef5c37 = Salin semua
+
 # This system has no folder for settings.
 tfd0ff0a1 = Sistem ini tidak memiliki folder untuk pengaturan.
 

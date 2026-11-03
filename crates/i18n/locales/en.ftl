@@ -338,6 +338,7 @@ t0b82c83a = Add a storage to browse it.
 t6a090cc3 = No folders or archives here.
 tc7731c8f = No folders here.
 td9e47db6 = This folder is empty.
+t6aef5c37 = Copy all
 tfd0ff0a1 = This system has no folder for settings.
 t73690b65 = Archive
 tb35c0c27 = Search inside this archive
