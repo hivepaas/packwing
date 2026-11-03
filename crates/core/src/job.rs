@@ -9,15 +9,15 @@ use std::sync::Arc;
 use std::sync::atomic::AtomicU64;
 use std::time::Duration;
 
-use hivepack_extract::{
+use hivepack::extract::{
     Cancel, Links, NameDecoder, Options, Progress, ProgressFn, RarProblem, Select, Summary,
     extract_7z, extract_cpio, extract_iso, extract_rar, extract_tar, extract_udf, extract_xar,
     extract_zip,
 };
-use hivepack_open::{Container, Opened};
-use hivepack_tar::Reader;
-use hivepack_udf::{Udf, VType};
-use hivepack_zip::{Archive, Flags, OpenFlags, ReadAt, Volumes};
+use hivepack::open::{Container, Opened};
+use hivepack::tar::Reader;
+use hivepack::udf::{Udf, VType};
+use hivepack::zip::{Archive, Flags, OpenFlags, ReadAt, Volumes};
 
 use crate::rar;
 use crate::source::Source;
@@ -98,7 +98,7 @@ pub fn extract(
 }
 
 /// Extracts the archive at `path` into `destination`, made if it is not
-/// there, with hivepack-extract's checks: nothing outside it, over what is
+/// there, with hivepack::extract's checks: nothing outside it, over what is
 /// there, or through a link. A link that stays inside it is made, last; one
 /// that leaves it stops the job. On Windows, where most accounts cannot make
 /// links, a link is a file that holds its target. The files keep the archive's
@@ -398,7 +398,7 @@ fn extract_picked(
             let spooled = spool(&mut opened)?;
             let result = extract_rar(
                 |password| {
-                    hivepack_rar::Archive::open_with_password(spooled.rewound()?, false, password)
+                    hivepack::rar::Archive::open_with_password(spooled.rewound()?, false, password)
                 },
                 destination,
                 &options,
@@ -423,11 +423,11 @@ fn extract_picked(
 /// password given is the wrong password, which RAR 3 and earlier have nothing
 /// else to tell by.
 fn rar_result(
-    result: Result<Summary, hivepack_extract::Error>,
+    result: Result<Summary, hivepack::extract::Error>,
     keys: &Keys,
 ) -> Result<Summary, Error> {
     result.map_err(|e| match e.kind {
-        hivepack_extract::ErrorKind::RarEntry(
+        hivepack::extract::ErrorKind::RarEntry(
             RarProblem::BrokenData | RarProblem::BrokenArchive,
         ) if keys.password.is_some() => Error::WrongPassword,
         _ => Error::from(e),
@@ -523,7 +523,8 @@ pub fn test(source: impl Into<Source>, keys: &Keys, control: &Control) -> Result
             let mut tr = Reader::new(&mut opened);
             while let Some(h) = tr.next()? {
                 copy(&mut tr, &mut io::sink(), control, &mut done)?;
-                if h.typeflag == hivepack_tar::TYPE_REG || h.typeflag == hivepack_tar::TYPE_REG_A {
+                if h.typeflag == hivepack::tar::TYPE_REG || h.typeflag == hivepack::tar::TYPE_REG_A
+                {
                     summary.files += 1;
                 }
                 done.entries += 1;
@@ -561,7 +562,7 @@ pub fn test(source: impl Into<Source>, keys: &Keys, control: &Control) -> Result
         }
         Container::Iso => {
             test_iso(
-                hivepack_iso::Reader::new(&mut opened),
+                hivepack::iso::Reader::new(&mut opened),
                 control,
                 &mut summary,
             )?;
@@ -587,7 +588,7 @@ pub fn test(source: impl Into<Source>, keys: &Keys, control: &Control) -> Result
         }
         Container::Cpio => {
             test_cpio(
-                hivepack_cpio::Reader::new(&mut opened),
+                hivepack::cpio::Reader::new(&mut opened),
                 control,
                 &mut summary,
             )?;
@@ -595,7 +596,7 @@ pub fn test(source: impl Into<Source>, keys: &Keys, control: &Control) -> Result
         }
         Container::Xar => {
             test_xar(
-                hivepack_xar::Reader::new(&mut opened),
+                hivepack::xar::Reader::new(&mut opened),
                 control,
                 &mut summary,
             )?;
@@ -610,7 +611,7 @@ pub fn test(source: impl Into<Source>, keys: &Keys, control: &Control) -> Result
         }
         Container::Rar => {
             let spooled = spool(&mut opened)?;
-            let arc = hivepack_rar::Archive::open_with_password(
+            let arc = hivepack::rar::Archive::open_with_password(
                 spooled.rewound()?,
                 false,
                 &rar::password(keys),
@@ -665,7 +666,7 @@ fn read_to_end(r: &mut impl Read, control: &Control, done: &mut Progress) -> Res
 /// with every file's CRC and every folder's checks: the password of the
 /// encrypted ones was given when it was opened.
 fn test_7z<R: Read + Seek>(
-    mut archive: hivepack_7z::Archive<R>,
+    mut archive: hivepack::sevenz::Archive<R>,
     control: &Control,
     summary: &mut Summary,
 ) -> Result<(), Error> {
@@ -688,7 +689,7 @@ fn test_7z<R: Read + Seek>(
 /// decompressed and checked by its layers. An entry found after bytes that
 /// are not a header fails it, as it fails an extraction.
 fn test_cpio<R: Read>(
-    mut cpio: hivepack_cpio::Reader<R>,
+    mut cpio: hivepack::cpio::Reader<R>,
     control: &Control,
     summary: &mut Summary,
 ) -> Result<(), Error> {
@@ -700,7 +701,7 @@ fn test_cpio<R: Read>(
             return Err(Error::Failed(format!("{name}: {warning}")));
         }
         let read = copy(&mut cpio, &mut io::sink(), control, &mut done)?;
-        if h.file_type() == hivepack_cpio::AE_IFREG && read > 0 {
+        if h.file_type() == hivepack::cpio::AE_IFREG && read > 0 {
             summary.bytes += read;
             summary.files += 1;
         }
@@ -715,7 +716,7 @@ fn test_cpio<R: Read>(
 /// payloads are read as the files they are: their own layers check them
 /// when they extract.
 fn test_xar<R: Read>(
-    mut xar: hivepack_xar::Reader<R>,
+    mut xar: hivepack::xar::Reader<R>,
     control: &Control,
     summary: &mut Summary,
 ) -> Result<(), Error> {
@@ -730,7 +731,7 @@ fn test_xar<R: Read>(
             }));
         }
         let read = copy(&mut xar, &mut io::sink(), control, &mut done)?;
-        if h.mode & hivepack_xar::AE_IFMT == hivepack_xar::AE_IFREG && h.hardlink.is_none() {
+        if h.mode & hivepack::xar::AE_IFMT == hivepack::xar::AE_IFREG && h.hardlink.is_none() {
             summary.bytes += read;
             summary.files += 1;
         }
@@ -745,7 +746,7 @@ fn test_xar<R: Read>(
 /// with something missing (a directory left out, a file past the image's
 /// end) fails it, as it fails an extraction.
 fn test_iso<R: Read>(
-    mut iso: hivepack_iso::Reader<R>,
+    mut iso: hivepack::iso::Reader<R>,
     control: &Control,
     summary: &mut Summary,
 ) -> Result<(), Error> {
@@ -760,7 +761,7 @@ fn test_iso<R: Read>(
             }));
         }
         let read = copy(&mut iso, &mut io::sink(), control, &mut done)?;
-        if h.file_type() == hivepack_iso::AE_IFREG && h.hardlink.is_none() {
+        if h.file_type() == hivepack::iso::AE_IFREG && h.hardlink.is_none() {
             summary.bytes += read;
             summary.files += 1;
         }

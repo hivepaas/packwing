@@ -3,7 +3,7 @@
 //! archives. Nothing here draws; the window shows what comes back.
 //!
 //! A file is opened through its layers (age, zstd, xz, gzip, bzip2, an RPM
-//! package's lead and headers and the others hivepack-open finds), and what
+//! package's lead and headers and the others hivepack::open finds), and what
 //! is under them read: a tar, cpio or XAR archive (a macOS package) or an
 //! ISO 9660 image as it streams, a ZIP, RAR or 7z archive or a UDF volume from a
 //! file (taken out to a temporary one first when it is under layers), or
@@ -28,10 +28,10 @@ use std::fmt;
 use std::io;
 use std::sync::Arc;
 
-use hivepack_age::{
+use hivepack::age::{
     BoxedIdentity, LazyScryptIdentity, PassphraseFor, PassphrasePrompt, parse_identities_file,
 };
-use hivepack_open::Opener;
+use hivepack::open::Opener;
 
 use crate::source::SourceReader;
 
@@ -40,8 +40,8 @@ pub use create::{
     age_key_is_post_quantum, age_key_problem, age_keys_in, can_add, create, create_on, delete,
     measure, refused_by, rename, route,
 };
-pub use hivepack_extract::{Cancel, Progress, Summary};
-pub use hivepack_open::{Container, Layer};
+pub use hivepack::extract::{Cancel, Progress, Summary};
+pub use hivepack::open::{Container, Layer};
 pub use job::{
     Control, ExtractOptions, clean_opened_files, extract, extract_selected, extract_to_open,
     extract_with, image_fits, read_entry, test,
@@ -226,13 +226,13 @@ impl std::error::Error for Error {}
 
 impl From<io::Error> for Error {
     fn from(e: io::Error) -> Error {
-        // hivepack-open's errors travel inside io::Error on their way out of
-        // a reader such as hivepack-extract's.
+        // hivepack::open's errors travel inside io::Error on their way out of
+        // a reader such as hivepack::extract's.
         if e.get_ref()
-            .is_some_and(|inner| inner.is::<hivepack_open::Error>())
+            .is_some_and(|inner| inner.is::<hivepack::open::Error>())
         {
             if let Some(inner) = e.into_inner()
-                && let Ok(open) = inner.downcast::<hivepack_open::Error>()
+                && let Ok(open) = inner.downcast::<hivepack::open::Error>()
             {
                 return Error::from(*open);
             }
@@ -241,13 +241,13 @@ impl From<io::Error> for Error {
         // A 7z or ZIP file's data, read with a password that is not its own.
         if let Some(&inner) = e
             .get_ref()
-            .and_then(|inner| inner.downcast_ref::<hivepack_7z::Error>())
+            .and_then(|inner| inner.downcast_ref::<hivepack::sevenz::Error>())
         {
             return Error::from(inner);
         }
         if let Some(&inner) = e
             .get_ref()
-            .and_then(|inner| inner.downcast_ref::<hivepack_zip::Error>())
+            .and_then(|inner| inner.downcast_ref::<hivepack::zip::Error>())
             && is_password_error(&inner)
         {
             return Error::from(inner);
@@ -256,16 +256,16 @@ impl From<io::Error> for Error {
     }
 }
 
-impl From<hivepack_open::Error> for Error {
-    fn from(e: hivepack_open::Error) -> Error {
+impl From<hivepack::open::Error> for Error {
+    fn from(e: hivepack::open::Error) -> Error {
         match e {
-            hivepack_open::Error::Age(hivepack_age::Error::NoMatch(m)) => Error::Locked {
+            hivepack::open::Error::Age(hivepack::age::Error::NoMatch(m)) => Error::Locked {
                 needs: m.stanza_types,
             },
-            hivepack_open::Error::Age(hivepack_age::Error::Header(message)) => {
+            hivepack::open::Error::Age(hivepack::age::Error::Header(message)) => {
                 age_header_error(message)
             }
-            hivepack_open::Error::Io(e) => Error::Failed(e.to_string()),
+            hivepack::open::Error::Io(e) => Error::Failed(e.to_string()),
             e => Error::Failed(e.to_string()),
         }
     }
@@ -299,23 +299,23 @@ fn age_header_error(message: String) -> Error {
     Error::Failed(message)
 }
 
-impl From<hivepack_rar::Error> for Error {
-    fn from(e: hivepack_rar::Error) -> Error {
+impl From<hivepack::rar::Error> for Error {
+    fn from(e: hivepack::rar::Error) -> Error {
         match e {
-            hivepack_rar::Error::MissingPassword { .. } => Error::Locked {
+            hivepack::rar::Error::MissingPassword { .. } => Error::Locked {
                 needs: vec![PASSWORD.to_owned()],
             },
-            hivepack_rar::Error::Io(io) => Error::from(io),
+            hivepack::rar::Error::Io(io) => Error::from(io),
             e => Error::Failed(e.to_string()),
         }
     }
 }
 
-impl From<hivepack_extract::Error> for Error {
-    fn from(e: hivepack_extract::Error) -> Error {
+impl From<hivepack::extract::Error> for Error {
+    fn from(e: hivepack::extract::Error) -> Error {
         match e.kind {
-            hivepack_extract::ErrorKind::Cancelled => Error::Cancelled,
-            hivepack_extract::ErrorKind::Name(why) => {
+            hivepack::extract::ErrorKind::Cancelled => Error::Cancelled,
+            hivepack::extract::ErrorKind::Name(why) => {
                 let name = e
                     .name
                     .as_deref()
@@ -326,99 +326,100 @@ impl From<hivepack_extract::Error> for Error {
                     why = why
                 ))
             }
-            hivepack_extract::ErrorKind::Rar(inner) => Error::from(inner),
-            hivepack_extract::ErrorKind::RarEntry(
-                hivepack_extract::RarProblem::MissingPassword,
+            hivepack::extract::ErrorKind::Rar(inner) => Error::from(inner),
+            hivepack::extract::ErrorKind::RarEntry(
+                hivepack::extract::RarProblem::MissingPassword,
             ) => Error::Locked {
                 needs: vec![PASSWORD.to_owned()],
             },
-            hivepack_extract::ErrorKind::RarEntry(hivepack_extract::RarProblem::BadPassword) => {
+            hivepack::extract::ErrorKind::RarEntry(hivepack::extract::RarProblem::BadPassword) => {
                 Error::WrongPassword
             }
-            hivepack_extract::ErrorKind::Io(io) => Error::from(io),
-            hivepack_extract::ErrorKind::Archive(zip) if is_password_error(&zip) => {
+            hivepack::extract::ErrorKind::Io(io) => Error::from(io),
+            hivepack::extract::ErrorKind::Archive(zip) if is_password_error(&zip) => {
                 Error::from(zip)
             }
-            hivepack_extract::ErrorKind::SevenZip(
-                inner @ (hivepack_7z::Error::PasswordRequired | hivepack_7z::Error::WrongPassword),
+            hivepack::extract::ErrorKind::SevenZip(
+                inner @ (hivepack::sevenz::Error::PasswordRequired
+                | hivepack::sevenz::Error::WrongPassword),
             ) => Error::from(inner),
             _ => Error::Failed(e.to_string()),
         }
     }
 }
 
-impl From<hivepack_7z::Error> for Error {
-    fn from(e: hivepack_7z::Error) -> Error {
+impl From<hivepack::sevenz::Error> for Error {
+    fn from(e: hivepack::sevenz::Error) -> Error {
         match e {
-            hivepack_7z::Error::PasswordRequired => Error::Locked {
+            hivepack::sevenz::Error::PasswordRequired => Error::Locked {
                 needs: vec![PASSWORD.to_owned()],
             },
-            hivepack_7z::Error::WrongPassword => Error::WrongPassword,
-            hivepack_7z::Error::NoArchive => Error::NotAnArchive,
+            hivepack::sevenz::Error::WrongPassword => Error::WrongPassword,
+            hivepack::sevenz::Error::NoArchive => Error::NotAnArchive,
             e => Error::Failed(e.to_string()),
         }
     }
 }
 
-impl From<hivepack_cpio::Error> for Error {
-    fn from(e: hivepack_cpio::Error) -> Error {
+impl From<hivepack::cpio::Error> for Error {
+    fn from(e: hivepack::cpio::Error) -> Error {
         match e {
-            // What hivepack-open said, under the archive's reader.
-            hivepack_cpio::Error::Io(io) => Error::from(io),
+            // What hivepack::open said, under the archive's reader.
+            hivepack::cpio::Error::Io(io) => Error::from(io),
             e => Error::Failed(e.to_string()),
         }
     }
 }
 
-impl From<hivepack_xar::Error> for Error {
-    fn from(e: hivepack_xar::Error) -> Error {
+impl From<hivepack::xar::Error> for Error {
+    fn from(e: hivepack::xar::Error) -> Error {
         match e {
-            hivepack_xar::Error::Io(io) => Error::from(io),
+            hivepack::xar::Error::Io(io) => Error::from(io),
             e => Error::Failed(e.to_string()),
         }
     }
 }
 
 /// Whether a ZIP archive's error is about its password.
-fn is_password_error(e: &hivepack_zip::Error) -> bool {
+fn is_password_error(e: &hivepack::zip::Error) -> bool {
     matches!(
         e.code(),
-        hivepack_zip::ErrorCode::NoPasswd | hivepack_zip::ErrorCode::WrongPasswd
+        hivepack::zip::ErrorCode::NoPasswd | hivepack::zip::ErrorCode::WrongPasswd
     )
 }
 
-impl From<hivepack_zip::Error> for Error {
-    fn from(e: hivepack_zip::Error) -> Error {
+impl From<hivepack::zip::Error> for Error {
+    fn from(e: hivepack::zip::Error) -> Error {
         match e.code() {
-            hivepack_zip::ErrorCode::NoPasswd => Error::Locked {
+            hivepack::zip::ErrorCode::NoPasswd => Error::Locked {
                 needs: vec![PASSWORD.to_owned()],
             },
-            hivepack_zip::ErrorCode::WrongPasswd => Error::WrongPassword,
+            hivepack::zip::ErrorCode::WrongPasswd => Error::WrongPassword,
             _ => Error::Failed(e.to_string()),
         }
     }
 }
 
-impl From<hivepack_tar::Error> for Error {
-    fn from(e: hivepack_tar::Error) -> Error {
+impl From<hivepack::tar::Error> for Error {
+    fn from(e: hivepack::tar::Error) -> Error {
         Error::Failed(e.to_string())
     }
 }
 
-impl From<hivepack_iso::Error> for Error {
-    fn from(e: hivepack_iso::Error) -> Error {
+impl From<hivepack::iso::Error> for Error {
+    fn from(e: hivepack::iso::Error) -> Error {
         match e {
-            // What hivepack-open said, under the image's reader.
-            hivepack_iso::Error::Io(io) => Error::from(io),
+            // What hivepack::open said, under the image's reader.
+            hivepack::iso::Error::Io(io) => Error::from(io),
             e => Error::Failed(e.to_string()),
         }
     }
 }
 
-impl From<hivepack_udf::Error> for Error {
-    fn from(e: hivepack_udf::Error) -> Error {
+impl From<hivepack::udf::Error> for Error {
+    fn from(e: hivepack::udf::Error) -> Error {
         match e {
-            hivepack_udf::Error::Io(io) => Error::from(io),
+            hivepack::udf::Error::Io(io) => Error::from(io),
             e => Error::Failed(e.to_string()),
         }
     }
@@ -463,7 +464,7 @@ fn opener<'a>(
 
 /// A 7z archive, opened, and whether its names are encrypted.
 pub(crate) struct SevenZip<R> {
-    pub(crate) archive: hivepack_7z::Archive<R>,
+    pub(crate) archive: hivepack::sevenz::Archive<R>,
     pub(crate) headers_encrypted: bool,
 }
 
@@ -490,13 +491,13 @@ pub(crate) fn seven_zip<R: io::Read + io::Seek>(
         .password
         .as_deref()
         .map(|p| String::from_utf8_lossy(p).into_owned());
-    let mut options = hivepack_7z::Options {
+    let mut options = hivepack::sevenz::Options {
         memory_limit: SEVEN_ZIP_MEMORY,
         decoder_memory_limit: SEVEN_ZIP_MEMORY,
         password: None,
         max_key_cycles: SEVEN_ZIP_KEY_CYCLES,
     };
-    match hivepack_7z::Archive::open_with(open()?, &options) {
+    match hivepack::sevenz::Archive::open_with(open()?, &options) {
         Ok(mut archive) => {
             if let Some(password) = &password {
                 archive.set_password(password);
@@ -506,14 +507,14 @@ pub(crate) fn seven_zip<R: io::Read + io::Seek>(
                 headers_encrypted: false,
             })
         }
-        Err(hivepack_7z::Error::PasswordRequired) => {
+        Err(hivepack::sevenz::Error::PasswordRequired) => {
             let Some(password) = password else {
                 return Err(Error::Locked {
                     needs: vec![PASSWORD.to_owned()],
                 });
             };
             options.password = Some(password);
-            match hivepack_7z::Archive::open_with(open()?, &options) {
+            match hivepack::sevenz::Archive::open_with(open()?, &options) {
                 Ok(archive) => Ok(SevenZip {
                     archive,
                     headers_encrypted: true,
@@ -521,10 +522,10 @@ pub(crate) fn seven_zip<R: io::Read + io::Seek>(
                 // Headers that do not decode with the password: it is not
                 // theirs, or they are damaged, which 7z cannot tell apart.
                 Err(
-                    hivepack_7z::Error::WrongPassword
-                    | hivepack_7z::Error::Crc
-                    | hivepack_7z::Error::Data
-                    | hivepack_7z::Error::Archive,
+                    hivepack::sevenz::Error::WrongPassword
+                    | hivepack::sevenz::Error::Crc
+                    | hivepack::sevenz::Error::Data
+                    | hivepack::sevenz::Error::Archive,
                 ) => Err(Error::WrongPassword),
                 Err(e) => Err(e.into()),
             }
@@ -547,9 +548,9 @@ fn without_layers(name: &str, layers: &[Layer]) -> String {
 }
 
 // hivepack's `unsafe-fast` is on in all that has it, as the workspace asks.
-const _: () = assert!(hivepack_deflate::UNSAFE_FAST);
-const _: () = assert!(hivepack_lz4::UNSAFE_FAST);
-const _: () = assert!(hivepack_zstd::UNSAFE_FAST);
+const _: () = assert!(hivepack::deflate::UNSAFE_FAST);
+const _: () = assert!(hivepack::lz4::UNSAFE_FAST);
+const _: () = assert!(hivepack::zstd::UNSAFE_FAST);
 
 /// A size as people read it: three figures at most, no trailing zeros, in SI
 /// units as macOS shows them (`880 KB`, `6.4 MB`, `412 MB`, `1.24 GB`).

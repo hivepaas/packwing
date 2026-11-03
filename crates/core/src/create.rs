@@ -1,5 +1,5 @@
-//! Making an archive of files and folders: ZIP through hivepack-zip, 7z
-//! through hivepack-7z, and tar through hivepack-tar, under gzip, xz, zstd, bzip2
+//! Making an archive of files and folders: ZIP through hivepack::zip, 7z
+//! through hivepack::sevenz, and tar through hivepack::tar, under gzip, xz, zstd, bzip2
 //! or LZ4 or none; or one file compressed by itself. Those two can be encrypted
 //! with age, to a passphrase or to keys.
 //! It is written beside what is there, never over it, and taken away again
@@ -24,15 +24,15 @@ use std::sync::mpsc::{Receiver, SyncSender, sync_channel};
 use std::sync::{Arc, Mutex, PoisonError};
 use std::time::UNIX_EPOCH;
 
-use hivepack_age::{
+use hivepack::age::{
     BoxedRecipient, RandomSource, Recipient, ScryptRecipient, parse_recipient,
     parse_recipients_file,
 };
-use hivepack_deflate::{DEF_MEM_LEVEL, Deflate, Flush, Z_DEFAULT_STRATEGY};
-use hivepack_extract::Progress;
-use hivepack_open::Container;
-use hivepack_xz::{MtOptions, Stream, stream_encoder_mt_memusage};
-use hivepack_zip::{
+use hivepack::deflate::{DEF_MEM_LEVEL, Deflate, Flush, Z_DEFAULT_STRATEGY};
+use hivepack::extract::Progress;
+use hivepack::open::Container;
+use hivepack::xz::{MtOptions, Stream, stream_encoder_mt_memusage};
+use hivepack::zip::{
     Archive, BufferSource, Closed, DataSource, ErrorCode, FileAttributes, Flags, OpenFlags, ReadAt,
     Stat, cm, em, file_attributes, opsys, stat, volume_paths,
 };
@@ -388,7 +388,7 @@ impl Tally {
     }
 }
 
-/// A file's data, for hivepack-zip: opened when it is first read and closed
+/// A file's data, for hivepack::zip: opened when it is first read and closed
 /// at its end, as an archive may hold more files than can be open at once.
 /// Reading it counts towards the progress, and is where a job stops.
 struct DiskFile {
@@ -403,7 +403,7 @@ struct DiskFile {
 }
 
 impl DiskFile {
-    fn failed(&self, e: &io::Error) -> hivepack_zip::Error {
+    fn failed(&self, e: &io::Error) -> hivepack::zip::Error {
         *self
             .tally
             .failed
@@ -413,12 +413,12 @@ impl DiskFile {
             path = self.path.display(),
             e = e
         ));
-        hivepack_zip::Error::new(ErrorCode::Read, e.raw_os_error().unwrap_or(0))
+        hivepack::zip::Error::new(ErrorCode::Read, e.raw_os_error().unwrap_or(0))
     }
 }
 
 impl DataSource for DiskFile {
-    fn stat(&self) -> hivepack_zip::Result<Stat<'static>> {
+    fn stat(&self) -> hivepack::zip::Result<Stat<'static>> {
         Ok(Stat {
             valid: stat::SIZE | stat::MTIME,
             size: self.size,
@@ -427,7 +427,7 @@ impl DataSource for DiskFile {
         })
     }
 
-    fn file_attributes(&self) -> hivepack_zip::Result<FileAttributes> {
+    fn file_attributes(&self) -> hivepack::zip::Result<FileAttributes> {
         Ok(FileAttributes {
             valid: file_attributes::HOST_SYSTEM | file_attributes::EXTERNAL_FILE_ATTRIBUTES,
             host_system: self.attributes.0,
@@ -436,9 +436,9 @@ impl DataSource for DiskFile {
         })
     }
 
-    fn read_at(&self, offset: u64, buf: &mut [u8]) -> hivepack_zip::Result<usize> {
+    fn read_at(&self, offset: u64, buf: &mut [u8]) -> hivepack::zip::Result<usize> {
         if self.tally.control.check().is_err() {
-            return Err(hivepack_zip::Error::new(ErrorCode::Cancelled, 0));
+            return Err(hivepack::zip::Error::new(ErrorCode::Cancelled, 0));
         }
         let left = self.size.saturating_sub(offset);
         let wanted = (buf.len() as u64).min(left) as usize;
@@ -452,7 +452,7 @@ impl DataSource for DiskFile {
         let Some(open) = file.as_ref() else {
             return Ok(0);
         };
-        let n = hivepack_zip::ReadAt::read_at(&open, offset, &mut buf[..wanted])
+        let n = hivepack::zip::ReadAt::read_at(&open, offset, &mut buf[..wanted])
             .map_err(|e| self.failed(&e))?;
         let end = offset + n as u64;
         let before = self.reached.fetch_max(end, Ordering::Relaxed);
@@ -662,15 +662,15 @@ fn write_unsealed<W: Write>(
 fn age_writer<W: Write>(
     out: W,
     recipients: &[BoxedRecipient],
-) -> Result<hivepack_age::Encryptor<W>, Error> {
+) -> Result<hivepack::age::Encryptor<W>, Error> {
     let recipients: Vec<&dyn Recipient> = recipients
         .iter()
         .map(|r| r.as_ref() as &dyn Recipient)
         .collect();
-    // Random bytes given, as hivepack-age has its own source on Unix alone.
+    // Random bytes given, as hivepack::age has its own source on Unix alone.
     let random: RandomSource =
         Arc::new(|buffer: &mut [u8]| getrandom::fill(buffer).map_err(io::Error::other));
-    hivepack_age::encrypt(out, &recipients, Some(&random))
+    hivepack::age::encrypt(out, &recipients, Some(&random))
         .map_err(|e| Error::Failed(tr!("Could not encrypt: {e}", e = e.to_string())))
 }
 
@@ -986,24 +986,24 @@ fn write_7z<W: Write + Seek>(
         ),
     };
     let method = match new.level {
-        Level::Store => hivepack_7z::Method::Copy,
-        level => hivepack_7z::Method::Lzma2 { preset: level.xz() },
+        Level::Store => hivepack::sevenz::Method::Copy,
+        level => hivepack::sevenz::Method::Lzma2 { preset: level.xz() },
     };
-    let options = hivepack_7z::WriteOptions {
+    let options = hivepack::sevenz::WriteOptions {
         method,
         encrypt_headers: new.hide_names && password.is_some(),
         password,
         random_source: Some(Arc::new(|buffer: &mut [u8]| {
             getrandom::fill(buffer).map_err(io::Error::other)
         })),
-        ..hivepack_7z::WriteOptions::default()
+        ..hivepack::sevenz::WriteOptions::default()
     };
-    let mut archive = hivepack_7z::Writer::with_options(out, options)?;
+    let mut archive = hivepack::sevenz::Writer::with_options(out, options)?;
     let mut buf = vec![0; PIECE];
     for item in &items {
         // 7-Zip keeps a Unix mode above its own attributes, marked by 0x8000.
         let attributes = attributes(&item.metadata).1 | 0x8000;
-        let entry = hivepack_7z::NewEntry {
+        let entry = hivepack::sevenz::NewEntry {
             name: item.name.trim_end_matches('/').to_owned(),
             attributes: Some(attributes),
             mtime: ntfs_time(&item.metadata),
@@ -1025,27 +1025,27 @@ fn write_7z<W: Write + Seek>(
 }
 
 fn write_tar<W: Write>(items: Vec<Item>, tally: &Tally, out: Squeezed<W>) -> Result<W, Error> {
-    let mut tar = hivepack_tar::Writer::new(out);
+    let mut tar = hivepack::tar::Writer::new(out);
     let mut buf = vec![0; PIECE];
     for item in &items {
         let kind = item.metadata.file_type();
         let link = kind.is_symlink();
-        let mut header = hivepack_tar::Header {
+        let mut header = hivepack::tar::Header {
             name: item.name.as_bytes().to_vec(),
             mode: i64::from((attributes(&item.metadata).1 >> 16) & 0o7777),
-            mod_time: Some(hivepack_tar::Time {
+            mod_time: Some(hivepack::tar::Time {
                 secs: seconds(&item.metadata),
                 nanos: 0,
             }),
-            ..hivepack_tar::Header::default()
+            ..hivepack::tar::Header::default()
         };
         if kind.is_dir() {
-            header.typeflag = hivepack_tar::TYPE_DIR;
+            header.typeflag = hivepack::tar::TYPE_DIR;
         } else if link {
-            header.typeflag = hivepack_tar::TYPE_SYMLINK;
+            header.typeflag = hivepack::tar::TYPE_SYMLINK;
             header.linkname = link_target(&item.path)?;
         } else {
-            header.typeflag = hivepack_tar::TYPE_REG;
+            header.typeflag = hivepack::tar::TYPE_REG;
             header.size = i64::try_from(item.metadata.len()).map_err(|_| {
                 Error::Failed(tr!("{path} is too big.", path = item.path.display()))
             })?;
@@ -1074,10 +1074,10 @@ enum Coder {
     Plain,
     Gzip(Box<Deflate>),
     Xz(Box<Stream>),
-    Zstd(Box<hivepack_zstd::CCtx>),
-    Bzip2(Box<hivepack_bzip2::Compress>),
+    Zstd(Box<hivepack::zstd::CCtx>),
+    Bzip2(Box<hivepack::bzip2::Compress>),
     /// What it makes waits in its `Vec`. None once it has ended.
-    Lz4(Option<Box<hivepack_lz4::Encoder<Vec<u8>>>>),
+    Lz4(Option<Box<hivepack::lz4::Encoder<Vec<u8>>>>),
 }
 
 /// A stream compressed into `out`, whose end [`Squeezed::finish`] writes.
@@ -1098,16 +1098,16 @@ impl<W: Write> Squeezed<W> {
         let coder = match new.kind {
             Kind::Tar => Coder::Plain,
             Kind::TarBz2 | Kind::Bz2 => Coder::Bzip2(Box::new(
-                hivepack_bzip2::Compress::new(new.level.bzip2(), 0)
+                hivepack::bzip2::Compress::new(new.level.bzip2(), 0)
                     .map_err(|e| failed(e.to_string()))?,
             )),
             Kind::TarLz4 | Kind::Lz4 => {
-                let prefs = hivepack_lz4::frame::Preferences {
+                let prefs = hivepack::lz4::frame::Preferences {
                     compression_level: new.level.lz4(),
                     ..Default::default()
                 };
                 Coder::Lz4(Some(Box::new(
-                    hivepack_lz4::Encoder::new(Vec::new(), Some(&prefs))
+                    hivepack::lz4::Encoder::new(Vec::new(), Some(&prefs))
                         .map_err(|e| failed(e.to_string()))?,
                 )))
             }
@@ -1115,7 +1115,7 @@ impl<W: Write> Squeezed<W> {
                 let mut options = MtOptions {
                     threads: threads(),
                     preset: new.level.xz(),
-                    check: hivepack_xz::Check::CRC64,
+                    check: hivepack::xz::Check::CRC64,
                     ..MtOptions::default()
                 };
                 while options.threads > 1 && stream_encoder_mt_memusage(&options) > XZ_MEMORY {
@@ -1126,11 +1126,11 @@ impl<W: Write> Squeezed<W> {
                 ))
             }
             Kind::TarZst | Kind::Zst => {
-                let mut cctx = hivepack_zstd::CCtx::new();
+                let mut cctx = hivepack::zstd::CCtx::new();
                 for parameter in [
-                    hivepack_zstd::CParameter::CompressionLevel(new.level.zstd()),
-                    hivepack_zstd::CParameter::ChecksumFlag(true),
-                    hivepack_zstd::CParameter::NbWorkers(threads()),
+                    hivepack::zstd::CParameter::CompressionLevel(new.level.zstd()),
+                    hivepack::zstd::CParameter::ChecksumFlag(true),
+                    hivepack::zstd::CParameter::NbWorkers(threads()),
                 ] {
                     cctx.set_parameter(parameter)
                         .map_err(|e| failed(e.to_string()))?;
@@ -1184,7 +1184,7 @@ impl<W: Write> Squeezed<W> {
             let (made, done) = match &mut self.coder {
                 Coder::Plain | Coder::Lz4(_) => return Ok(()),
                 Coder::Bzip2(stream) => {
-                    use hivepack_bzip2::{Action, InBuffer, OutBuffer, Status};
+                    use hivepack::bzip2::{Action, InBuffer, OutBuffer, Status};
                     if !finish && input.is_empty() {
                         return Ok(());
                     }
@@ -1199,7 +1199,7 @@ impl<W: Write> Squeezed<W> {
                     (output.pos, done)
                 }
                 Coder::Gzip(stream) => {
-                    use hivepack_deflate::{InBuffer, OutBuffer, Status};
+                    use hivepack::deflate::{InBuffer, OutBuffer, Status};
                     let mut output = OutBuffer::new(&mut self.buf);
                     let mut from = InBuffer::new(&input[at..]);
                     let flush = if finish {
@@ -1213,7 +1213,7 @@ impl<W: Write> Squeezed<W> {
                     let status = match status {
                         Ok(status) => status,
                         // Nothing to do: no more input, and nothing held back.
-                        Err(e) if !finish && e.code() == hivepack_deflate::ErrorCode::Buf => {
+                        Err(e) if !finish && e.code() == hivepack::deflate::ErrorCode::Buf => {
                             Status::Ok
                         }
                         Err(e) => return Err(failed(e.to_string())),
@@ -1223,7 +1223,7 @@ impl<W: Write> Squeezed<W> {
                     (made, done)
                 }
                 Coder::Xz(stream) => {
-                    use hivepack_xz::{Action, InBuffer, OutBuffer, Status};
+                    use hivepack::xz::{Action, InBuffer, OutBuffer, Status};
                     let mut output = OutBuffer::new(&mut self.buf);
                     let mut from = InBuffer::new(&input[at..]);
                     let action = if finish { Action::Finish } else { Action::Run };
@@ -1237,7 +1237,7 @@ impl<W: Write> Squeezed<W> {
                     (made, done)
                 }
                 Coder::Zstd(cctx) => {
-                    use hivepack_zstd::{EndDirective, InBuffer, OutBuffer};
+                    use hivepack::zstd::{EndDirective, InBuffer, OutBuffer};
                     let mut output = OutBuffer::new(&mut self.buf);
                     let mut from = InBuffer::new(&input[at..]);
                     let directive = if finish {

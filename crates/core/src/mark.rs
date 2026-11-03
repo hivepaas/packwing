@@ -5,7 +5,7 @@
 
 use std::path::Path;
 
-use hivepack_extract::Origin;
+use hivepack::extract::Origin;
 
 use crate::{Error, Source, Storage};
 

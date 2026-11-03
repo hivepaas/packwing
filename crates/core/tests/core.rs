@@ -74,7 +74,7 @@ fn zip(entries: &[(&str, &[u8])]) -> Vec<u8> {
     let mut central = Vec::new();
     for (name, data) in entries {
         let offset = out.len() as u32;
-        let crc = hivepack_deflate::crc32(0, data);
+        let crc = hivepack::deflate::crc32(0, data);
         let size = data.len() as u32;
         let mut common = Vec::new();
         common.extend(20u16.to_le_bytes()); // version needed
@@ -112,20 +112,20 @@ fn zip(entries: &[(&str, &[u8])]) -> Vec<u8> {
 }
 
 fn zstd(data: &[u8]) -> Vec<u8> {
-    let mut out = vec![0u8; hivepack_zstd::compress_bound(data.len()).unwrap()];
-    let n = hivepack_zstd::compress(&mut out, data, 3).unwrap();
+    let mut out = vec![0u8; hivepack::zstd::compress_bound(data.len()).unwrap()];
+    let n = hivepack::zstd::compress(&mut out, data, 3).unwrap();
     out.truncate(n);
     out
 }
 
 /// What zstd's frames in `data` hold, which say their size.
 fn unzstd(data: &[u8]) -> Vec<u8> {
-    let hivepack_zstd::ContentSize::Known(size) = hivepack_zstd::find_decompressed_size(data)
+    let hivepack::zstd::ContentSize::Known(size) = hivepack::zstd::find_decompressed_size(data)
     else {
         panic!("the frames do not say their size");
     };
     let mut out = vec![0u8; size as usize];
-    let n = hivepack_zstd::decompress(&mut out, data).unwrap();
+    let n = hivepack::zstd::decompress(&mut out, data).unwrap();
     out.truncate(n);
     out
 }
@@ -860,11 +860,11 @@ fn an_age_file_says_it_needs_a_passphrase_and_opens_with_it() {
 }
 
 /// A ZIP archive of `sample()`'s files, encrypted with WinZip AES-256 to
-/// `password`, as hivepack-zip writes it.
+/// `password`, as hivepack::zip writes it.
 fn encrypted_zip(password: &[u8]) -> Vec<u8> {
-    use hivepack_zip::{Archive, BufferSource, Flags, OpenFlags, em};
+    use hivepack::zip::{Archive, BufferSource, Flags, OpenFlags, em};
     let mut za = Archive::open(&[][..], OpenFlags(0)).unwrap();
-    // As packwing does: hivepack-zip has none of its own on every system.
+    // As packwing does: hivepack::zip has none of its own on every system.
     za.set_random_source(Some(std::sync::Arc::new(|buffer: &mut [u8]| {
         getrandom::fill(buffer).map_err(std::io::Error::other)
     })));
@@ -1222,13 +1222,13 @@ fn a_search_finds_names_at_any_depth_whatever_their_case_and_accents() {
 
 /// A tar archive of a file named by these bytes, as GNU's format takes any.
 fn tar_named(name: &[u8]) -> Vec<u8> {
-    let mut tar = hivepack_tar::Writer::new(Vec::new());
-    tar.write_header(&hivepack_tar::Header {
-        typeflag: hivepack_tar::TYPE_REG,
+    let mut tar = hivepack::tar::Writer::new(Vec::new());
+    tar.write_header(&hivepack::tar::Header {
+        typeflag: hivepack::tar::TYPE_REG,
         name: name.to_vec(),
         mode: 0o644,
         size: 2,
-        format: hivepack_tar::Format::GNU,
+        format: hivepack::tar::Format::GNU,
         ..Default::default()
     })
     .unwrap();

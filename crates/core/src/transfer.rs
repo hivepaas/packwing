@@ -6,7 +6,7 @@ use std::io::{self, Read};
 use std::path::Path;
 use std::sync::Arc;
 
-use hivepack_deflate::crc32;
+use hivepack::deflate::crc32;
 use packwing_i18n::tr;
 
 use crate::create::OnExisting;

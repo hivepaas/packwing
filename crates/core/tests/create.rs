@@ -313,17 +313,17 @@ fn links_stay_links_and_pipes_are_left_out() {
     )
     .unwrap();
     let mut data = Vec::new();
-    let za = hivepack_zip::Archive::open(
+    let za = hivepack::zip::Archive::open(
         fs::File::open(&made).unwrap(),
-        hivepack_zip::OpenFlags::RDONLY,
+        hivepack::zip::OpenFlags::RDONLY,
     )
     .unwrap();
-    let mut entry = za.fopen(b"d/link", hivepack_zip::Flags::NONE).unwrap();
+    let mut entry = za.fopen(b"d/link", hivepack::zip::Flags::NONE).unwrap();
     std::io::Read::read_to_end(&mut entry, &mut data).unwrap();
     assert_eq!(data, s.path("secret").as_os_str().as_bytes());
     if piped.is_ok_and(|p| p.success()) {
         assert!(
-            za.name_locate(b"d/pipe", hivepack_zip::Flags::NONE)
+            za.name_locate(b"d/pipe", hivepack::zip::Flags::NONE)
                 .is_err()
         );
     }
@@ -427,16 +427,16 @@ fn a_higher_level_makes_a_smaller_archive() {
 
 /// Each file of the ZIP archive at `path`, and whether it went in as it is.
 fn stored_in(path: &Path) -> Vec<(String, bool)> {
-    let za = hivepack_zip::Archive::open(
+    let za = hivepack::zip::Archive::open(
         fs::File::open(path).unwrap(),
-        hivepack_zip::OpenFlags::RDONLY,
+        hivepack::zip::OpenFlags::RDONLY,
     )
     .unwrap();
-    (0..za.get_num_entries(hivepack_zip::Flags::NONE))
-        .map(|i| za.stat_index(i, hivepack_zip::Flags::NONE).unwrap())
+    (0..za.get_num_entries(hivepack::zip::Flags::NONE))
+        .map(|i| za.stat_index(i, hivepack::zip::Flags::NONE).unwrap())
         .map(|stat| {
             let name = String::from_utf8_lossy(stat.name.unwrap_or_default()).into_owned();
-            (name, stat.comp_method == hivepack_zip::cm::STORE)
+            (name, stat.comp_method == hivepack::zip::cm::STORE)
         })
         .filter(|(name, _)| !name.ends_with('/'))
         .collect()
@@ -966,14 +966,14 @@ fn a_folder_it_holds_takes_new_files_without_a_second_entry() {
     fs::create_dir_all(&source).unwrap();
     fs::write(source.join("mới.txt"), "mới").unwrap();
     add(&[source], &made, &[], &Keys::default(), &Control::default()).unwrap();
-    let za = hivepack_zip::Archive::open(
+    let za = hivepack::zip::Archive::open(
         fs::File::open(&made).unwrap(),
-        hivepack_zip::OpenFlags::RDONLY,
+        hivepack::zip::OpenFlags::RDONLY,
     )
     .unwrap();
     let mut folders = 0;
-    for i in 0..za.get_num_entries(hivepack_zip::Flags::NONE) {
-        let stat = za.stat_index(i, hivepack_zip::Flags::NONE).unwrap();
+    for i in 0..za.get_num_entries(hivepack::zip::Flags::NONE) {
+        let stat = za.stat_index(i, hivepack::zip::Flags::NONE).unwrap();
         folders += usize::from(stat.name == Some("Báo cáo/".as_bytes()));
     }
     assert_eq!(folders, 1);

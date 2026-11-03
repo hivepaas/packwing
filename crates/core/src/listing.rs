@@ -7,10 +7,10 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use hivepack_open::{Container, Layer, Opener};
-use hivepack_tar::{Reader, TYPE_DIR, TYPE_X_GLOBAL_HEADER};
-use hivepack_udf::{Udf, VType};
-use hivepack_zip::{Archive, Flags, OpenFlags, Volumes, em, volume_paths};
+use hivepack::open::{Container, Layer, Opener};
+use hivepack::tar::{Reader, TYPE_DIR, TYPE_X_GLOBAL_HEADER};
+use hivepack::udf::{Udf, VType};
+use hivepack::zip::{Archive, Flags, OpenFlags, Volumes, em, volume_paths};
 use unicode_normalization::UnicodeNormalization;
 use unicode_normalization::char::is_combining_mark;
 
@@ -20,7 +20,7 @@ use crate::spool::spool;
 use crate::volume::walk;
 use crate::{Error, Keys, SevenZip, opener, seven_zip, without_layers};
 
-/// The names of a macOS package's payloads, which hivepack-extract expands
+/// The names of a macOS package's payloads, which hivepack::extract expands
 /// into folders of their names, as `pkgutil --expand-full` does: a
 /// component package's files and scripts, and a `.xip` file's content.
 const PAYLOADS: [&str; 3] = ["Payload", "Scripts", "Content"];
@@ -216,9 +216,9 @@ pub fn list(source: impl Into<Source>, keys: &Keys) -> Result<Listing, Error> {
         // its directory is read by going back.
         Container::Iso if layers.is_empty() => {
             drop(opened);
-            iso_entries(hivepack_iso::Reader::seekable(source.reader()?))?
+            iso_entries(hivepack::iso::Reader::seekable(source.reader()?))?
         }
-        Container::Iso => iso_entries(hivepack_iso::Reader::new(&mut opened))?,
+        Container::Iso => iso_entries(hivepack::iso::Reader::new(&mut opened))?,
         Container::Udf if layers.is_empty() => {
             drop(opened);
             udf_entries(source.reader()?)?
@@ -250,7 +250,7 @@ pub fn list(source: impl Into<Source>, keys: &Keys) -> Result<Listing, Error> {
             } else {
                 let spooled = spool(&mut opened)?;
                 rar::entries(
-                    hivepack_rar::Archive::open_with_password(
+                    hivepack::rar::Archive::open_with_password(
                         spooled.rewound()?,
                         false,
                         &password,
@@ -315,7 +315,7 @@ fn tar_entries(r: impl Read) -> Result<Vec<Entry>, Error> {
     Ok(entries)
 }
 
-fn zip_entries<R: hivepack_zip::ReadAt>(source: R) -> Result<(Vec<Entry>, Option<String>), Error> {
+fn zip_entries<R: hivepack::zip::ReadAt>(source: R) -> Result<(Vec<Entry>, Option<String>), Error> {
     let archive = Archive::open(source, OpenFlags::CHECKCONS | OpenFlags::RDONLY)?;
     let mut entries = Vec::new();
     let mut encryption = None;
@@ -350,7 +350,7 @@ fn zip_entries<R: hivepack_zip::ReadAt>(source: R) -> Result<(Vec<Entry>, Option
 /// An ISO 9660 image's entries: Rock Ridge's names, else Joliet's, else
 /// ISO 9660's. The root directory, `.`, is not one, nor is an entry
 /// whose name could not be made.
-fn iso_entries<R: Read>(mut iso: hivepack_iso::Reader<R>) -> Result<Vec<Entry>, Error> {
+fn iso_entries<R: Read>(mut iso: hivepack::iso::Reader<R>) -> Result<Vec<Entry>, Error> {
     let mut entries = Vec::new();
     while let Some(h) = iso.next()? {
         let Some(name) = &h.path else {
@@ -403,7 +403,7 @@ fn ntfs_to_unix(ntfs: u64) -> i64 {
 /// A cpio archive's entries: Linux's initramfs, an RPM package's payload.
 /// The root, `.`, is not one.
 fn cpio_entries(r: impl Read) -> Result<Vec<Entry>, Error> {
-    let mut cpio = hivepack_cpio::Reader::new(r);
+    let mut cpio = hivepack::cpio::Reader::new(r);
     let mut entries = Vec::new();
     while let Some(h) = cpio.next()? {
         let path = components(&String::from_utf8_lossy(&h.path));
@@ -411,11 +411,11 @@ fn cpio_entries(r: impl Read) -> Result<Vec<Entry>, Error> {
             continue;
         }
         let kind = h.file_type();
-        let dir = kind == hivepack_cpio::AE_IFDIR;
+        let dir = kind == hivepack::cpio::AE_IFDIR;
         entries.push(Entry {
             path,
             dir,
-            size: if kind == hivepack_cpio::AE_IFREG {
+            size: if kind == hivepack::cpio::AE_IFREG {
                 h.size
             } else {
                 0
@@ -430,7 +430,7 @@ fn cpio_entries(r: impl Read) -> Result<Vec<Entry>, Error> {
 /// `Scripts`, a `.xip` file's `Content`), cpio archives under gzip or
 /// pbzx, show as folders of what they hold, as they extract.
 fn xar_entries(r: impl Read + Send) -> Result<Vec<Entry>, Error> {
-    let mut xar = hivepack_xar::Reader::new(r);
+    let mut xar = hivepack::xar::Reader::new(r);
     let mut entries = Vec::new();
     while let Some(h) = xar.next()? {
         let Some(name) = &h.path else {
@@ -440,8 +440,8 @@ fn xar_entries(r: impl Read + Send) -> Result<Vec<Entry>, Error> {
         if path.is_empty() {
             continue;
         }
-        let kind = h.mode & hivepack_xar::AE_IFMT;
-        let is_payload = kind == hivepack_xar::AE_IFREG
+        let kind = h.mode & hivepack::xar::AE_IFMT;
+        let is_payload = kind == hivepack::xar::AE_IFREG
             && h.hardlink.is_none()
             && path
                 .last()
@@ -459,11 +459,11 @@ fn xar_entries(r: impl Read + Send) -> Result<Vec<Entry>, Error> {
             }));
             continue;
         }
-        let dir = kind == hivepack_xar::AE_IFDIR;
+        let dir = kind == hivepack::xar::AE_IFDIR;
         entries.push(Entry {
             path,
             dir,
-            size: if kind == hivepack_xar::AE_IFREG && h.hardlink.is_none() {
+            size: if kind == hivepack::xar::AE_IFREG && h.hardlink.is_none() {
                 h.size
             } else {
                 0
@@ -478,7 +478,7 @@ fn xar_entries(r: impl Read + Send) -> Result<Vec<Entry>, Error> {
 /// under its layers; `None` if it is something else, which shows as a
 /// file.
 fn payload_entries<R: Read + Send>(
-    xar: &mut hivepack_xar::Reader<R>,
+    xar: &mut hivepack::xar::Reader<R>,
 ) -> Result<Option<Vec<Entry>>, Error> {
     let mut once = Some(xar);
     let mut opener = Opener::new(move || {
