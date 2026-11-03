@@ -183,15 +183,15 @@ fn what_a_drop_means(paths: &[PathBuf], takes_more: bool) -> Dropped {
 /// way through a drag.
 const SAVE_BOUNDS: Duration = Duration::from_millis(400);
 
-/// The width of the menu down the window's left side, padding and all.
-const MENU_W: f32 = 98.;
+/// The size of the menu's labels, a little under body text's, in rems as it is: they
+/// follow the system's size, or Settings' Text size.
+const LABEL: f32 = 13.;
+/// The width of the menu down the window's left side, padding and all: as much
+/// narrower than for body text as its labels are smaller.
+const MENU_W: f32 = 86.;
 /// What the menu's labels have of it, between its padding.
 const LABEL_ROOM: f32 = MENU_W - 8.;
 
-/// The size the menu's `labels` are drawn at: body text's, as large as the
-/// system's own labels, unless the longest word of one is wider than the menu,
-/// as in some languages; then as much smaller as it takes for it to fit, for
-/// all of them alike.
 /// How many jobs run at once: more wait for their turn, so that those that run
 /// are not each slowed by the others on the same disk.
 const MOST_RUNNING: usize = 2;
@@ -234,9 +234,12 @@ fn jobs_mark(s: Summary) -> Option<gpui::Div> {
     })
 }
 
+/// The size the menu's `labels` are drawn at: [`LABEL`], unless the longest word of
+/// one is wider than the menu, as in some languages; then as much smaller as it
+/// takes for it to fit, for all of them alike.
 fn label_size(labels: &[String], window: &Window) -> f32 {
     let rem = window.rem_size();
-    let body = ui(15.).to_pixels(rem);
+    let size = ui(LABEL).to_pixels(rem);
     let room = ui(LABEL_ROOM).to_pixels(rem);
     let font = gpui::Font {
         // The one chosen is drawn bolder: the widest it can be.
@@ -257,16 +260,16 @@ fn label_size(labels: &[String], window: &Window) -> f32 {
             };
             window
                 .text_system()
-                .shape_line(word.to_owned().into(), body, &[run], None)
+                .shape_line(word.to_owned().into(), size, &[run], None)
                 .width
         })
         .fold(gpui::px(0.), gpui::Pixels::max);
     // A little to spare: laid out, a word just as wide as the room may break.
     let room = room * 0.96;
     if widest > room {
-        15. * (room / widest)
+        LABEL * (room / widest)
     } else {
-        15.
+        LABEL
     }
 }
 
