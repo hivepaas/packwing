@@ -1337,6 +1337,9 @@ t1d68c60b = Celle du système
 # Custom…
 ta391dade = Personnalisé…
 
+# The system’s ({size} px)
+ta51f1877 = Celle du système ({ $size } px)
+
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = p. ex. code -n, ou /path/to/editor --flag
 
@@ -1351,6 +1354,9 @@ t9a73db9b = Langue
 
 # Appearance
 t31018b9f = Apparence
+
+# Text size
+t2c041143 = Taille du texte
 
 # Text editor
 t1ca82aab = Éditeur de texte

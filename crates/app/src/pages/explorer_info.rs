@@ -1,7 +1,7 @@
 //! What is known about what is chosen in an [`Explorer`], and what to do with it:
 //! the panel beside it, on the pages that browse.
 
-use gpui::{App, Context, Div, Entity, FontWeight, Window, div, prelude::*, px, rgb};
+use gpui::{App, Context, Div, Entity, FontWeight, Window, div, prelude::*, rgb};
 use packwing_core::{Item, Signed};
 use packwing_i18n::{tr, tr_n};
 
@@ -10,13 +10,14 @@ use crate::colors::colors;
 use crate::explorer::{Explorer, can_be_signed, is_archive, runs_when_opened};
 use crate::model::{Kind, date, size, tag_of};
 use crate::signatures::{self, Standing};
+use crate::text_size::ui;
 use crate::widgets::{Fill, Size, button, tile};
 
 fn transfers(explorer: &Entity<Explorer>) -> Div {
     let (copy, moved) = (explorer.clone(), explorer.clone());
     div()
         .flex()
-        .gap(px(8.))
+        .gap(ui(8.))
         .child(
             button("info-copy", tr!("Copy to…"), Fill::Outline, Size::Small)
                 .flex_1()
@@ -36,19 +37,19 @@ pub fn info(explorer: &Entity<Explorer>, window: &Window, cx: &App) -> Div {
     let body = panel()
         // A quarter of the window, as it grows; its buttons need the least.
         .w(window.viewport_size().width * 0.25)
-        .min_w(px(280.))
+        .min_w(ui(280.))
         .flex_shrink_0()
         .flex()
         .flex_col()
-        .gap(px(14.))
-        .p(px(18.));
+        .gap(ui(14.))
+        .p(ui(18.));
     match selection.as_slice() {
         [] => body.child(
             div()
                 .m_auto()
-                .p(px(16.))
+                .p(ui(16.))
                 .text_center()
-                .text_size(px(13.))
+                .text_size(ui(13.))
                 .text_color(rgb(c.muted))
                 .child(tr!("Choose a file to see its information here")),
         ),
@@ -63,7 +64,7 @@ pub fn info(explorer: &Entity<Explorer>, window: &Window, cx: &App) -> Div {
             ))
             .child(
                 div()
-                    .text_size(px(13.))
+                    .text_size(ui(13.))
                     .text_color(rgb(c.muted))
                     .child(tr!("Files in them come to {size}", size = size(bytes))),
             )
@@ -87,11 +88,11 @@ fn info_of(entity: &Entity<Explorer>, item: &Item, body: Div, cx: &App) -> Div {
     let row = |key: String, value: String| {
         div()
             .flex()
-            .gap(px(12.))
-            .text_size(px(13.))
+            .gap(ui(12.))
+            .text_size(ui(13.))
             .child(
                 div()
-                    .w(px(84.))
+                    .w(ui(84.))
                     .flex_shrink_0()
                     .text_color(rgb(c.muted))
                     .child(key),
@@ -175,7 +176,7 @@ fn info_of(entity: &Entity<Explorer>, item: &Item, body: Div, cx: &App) -> Div {
     let mut actions = div()
         .flex()
         .flex_col()
-        .gap(px(8.))
+        .gap(ui(8.))
         .when(local || !is_archive(item), |d| {
             d.child(
                 button("info-open", open_label, Fill::Accent, Size::Small)
@@ -228,10 +229,10 @@ fn info_of(entity: &Entity<Explorer>, item: &Item, body: Div, cx: &App) -> Div {
         div()
             .flex()
             .items_center()
-            .gap(px(12.))
+            .gap(ui(12.))
             .child(
                 tile(48., 16., kind.tint(&c))
-                    .text_size(px(12.))
+                    .text_size(ui(12.))
                     .font_weight(FontWeight::BOLD)
                     .child(tag_of(&item.name, kind)),
             )
@@ -239,16 +240,16 @@ fn info_of(entity: &Entity<Explorer>, item: &Item, body: Div, cx: &App) -> Div {
                 div()
                     .flex_1()
                     .min_w_0()
-                    .text_size(px(16.))
+                    .text_size(ui(16.))
                     .font_weight(FontWeight::SEMIBOLD)
                     .child(item.name.clone()),
             ),
     )
-    .child(div().flex().flex_col().gap(px(7.)).children(rows))
+    .child(div().flex().flex_col().gap(ui(7.)).children(rows))
     .when(unread > 0, |d| {
         d.child(
             div()
-                .text_size(px(13.))
+                .text_size(ui(13.))
                 .text_color(rgb(c.muted))
                 .child(tr_n!(
                     unread,

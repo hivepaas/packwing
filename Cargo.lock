@@ -5177,6 +5177,7 @@ dependencies = [
  "robius-authentication",
  "time",
  "unicode-segmentation",
+ "winreg",
  "winresource",
 ]
 

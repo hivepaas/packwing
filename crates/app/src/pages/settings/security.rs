@@ -3,7 +3,7 @@
 
 use gpui::{
     Context, Entity, FontWeight, PathPromptOptions, Render, SharedString, Window, div, prelude::*,
-    px, relative, rgb,
+    relative, rgb,
 };
 use packwing_i18n::tr;
 use packwing_policy::{
@@ -15,6 +15,7 @@ use super::{rows, section, setting};
 use crate::colors::{Tint, colors};
 use crate::input::TextInput;
 use crate::prefs;
+use crate::text_size::ui;
 use crate::widgets::{Fill, Size, Tone, button, icon, legend, note, switch, tile};
 
 /// Monospace fonts for the policies' names, the first one installed.
@@ -211,9 +212,9 @@ impl Security {
         div()
             .flex()
             .flex_col()
-            .gap(px(8.))
+            .gap(ui(8.))
             .child(legend(tr!("Keys you trust")))
-            .child(div().text_size(px(13.)).text_color(rgb(c.muted)).child(tr!(
+            .child(div().text_size(ui(13.)).text_color(rgb(c.muted)).child(tr!(
                 "A signature by one of these says who signed a file. One by any other key \
                      proves nothing, whatever it matches."
             )))
@@ -223,18 +224,18 @@ impl Security {
                     .flex()
                     .flex_wrap()
                     .items_center()
-                    .gap(px(8.))
+                    .gap(ui(8.))
                     .child(
                         div()
                             .flex()
                             .flex_1()
-                            .min_w(px(240.))
+                            .min_w(ui(240.))
                             .items_center()
-                            .h(px(40.))
-                            .px(px(14.))
-                            .rounded(px(14.))
+                            .h(ui(40.))
+                            .px(ui(14.))
+                            .rounded(ui(14.))
                             .bg(rgb(c.field))
-                            .text_size(px(14.))
+                            .text_size(ui(14.))
                             .child(self.new_key.clone()),
                     )
                     .child(
@@ -281,10 +282,10 @@ impl Security {
         div()
             .flex()
             .items_center()
-            .gap(px(14.))
-            .px(px(18.))
-            .py(px(16.))
-            .rounded(px(22.))
+            .gap(ui(14.))
+            .px(ui(18.))
+            .py(ui(16.))
+            .rounded(ui(22.))
             .bg(rgb(c.warn_bg))
             .text_color(rgb(c.warn_text))
             .child(
@@ -302,11 +303,11 @@ impl Security {
                 div()
                     .flex_1()
                     .min_w_0()
-                    .text_size(px(14.))
+                    .text_size(ui(14.))
                     .line_height(relative(1.5))
                     .child(
                         div()
-                            .text_size(px(15.))
+                            .text_size(ui(15.))
                             .font_weight(FontWeight::BOLD)
                             .child(tr!("Some settings are managed by your organization")),
                     )
@@ -335,17 +336,17 @@ impl Security {
             .flex()
             .flex_col()
             .items_end()
-            .gap(px(3.))
+            .gap(ui(3.))
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(6.))
-                    .px(px(12.))
-                    .py(px(4.))
+                    .gap(ui(6.))
+                    .px(ui(12.))
+                    .py(ui(4.))
                     .rounded_full()
                     .bg(rgb(c.surface))
-                    .text_size(px(13.))
+                    .text_size(ui(13.))
                     .font_weight(FontWeight::SEMIBOLD)
                     .whitespace_nowrap()
                     .child(icon("lock", 13., c.text))
@@ -354,7 +355,7 @@ impl Security {
             .child(
                 div()
                     .font_family(mono)
-                    .text_size(px(11.))
+                    .text_size(ui(11.))
                     .text_color(rgb(c.muted))
                     .child(row.key.clone()),
             )
@@ -402,7 +403,7 @@ impl Render for Security {
                 )
             });
         if !policy.is_managed() {
-            return section().gap(px(20.)).child(rows(open)).child(trusted);
+            return section().gap(ui(20.)).child(rows(open)).child(trusted);
         }
         let shown = policy.rows();
         let fixed = shown
@@ -417,7 +418,7 @@ impl Render for Security {
                 setting(label, detail, Self::locked(r, mono.clone()))
             });
         section()
-            .gap(px(16.))
+            .gap(ui(16.))
             .child(Self::banner(&policy))
             .child(rows(fixed.chain(open)))
             .child(trusted)

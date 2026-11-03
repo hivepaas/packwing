@@ -5,7 +5,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use gpui::{
     ClipboardItem, Context, Div, Entity, FontWeight, Render, Subscription, Window, div, prelude::*,
-    px, relative, rgb, svg,
+    relative, rgb, svg,
 };
 use packwing_i18n::tr;
 use packwing_update::Install;
@@ -13,6 +13,7 @@ use packwing_update::Install;
 use super::security::MONO_FONTS;
 use super::{explain, group, heading, label, rows, section, setting};
 use crate::colors::colors;
+use crate::text_size::ui;
 use crate::updates::{self, Stage, Updates};
 use crate::widgets::{Fill, Size, Tone, accent_tint, button, chip, logo, note, switch, tile};
 
@@ -84,24 +85,24 @@ impl About {
             .flex_row()
             .flex_wrap()
             .items_center()
-            .gap(px(18.))
-            .py(px(20.))
+            .gap(ui(18.))
+            .py(ui(20.))
             .child(tile(72., 24., accent_tint()).child(logo(36., accent_tint())))
             .child(
                 div()
                     .flex_1()
-                    .min_w(px(220.))
+                    .min_w(ui(220.))
                     .flex()
                     .flex_col()
-                    .gap(px(2.))
+                    .gap(ui(2.))
                     .child(
                         div()
-                            .text_size(px(28.))
+                            .text_size(ui(28.))
                             .font_weight(FontWeight::BOLD)
                             .line_height(relative(1.2))
                             .child("packwing"),
                     )
-                    .child(div().text_size(px(14.)).text_color(rgb(c.muted)).child(tr!(
+                    .child(div().text_size(ui(14.)).text_color(rgb(c.muted)).child(tr!(
                         "Version {version} · {os} {arch}",
                         version = env!("CARGO_PKG_VERSION"),
                         os = std::env::consts::OS,
@@ -109,8 +110,8 @@ impl About {
                     )))
                     .child(
                         div()
-                            .pt(px(6.))
-                            .text_size(px(15.))
+                            .pt(ui(6.))
+                            .text_size(ui(15.))
                             .child(tr!("A file archiver that opens archives safely.")),
                     ),
             )
@@ -131,7 +132,7 @@ impl About {
         let check = self.updates.clone();
         let toggle = self.updates.clone();
         group()
-            .gap(px(14.))
+            .gap(ui(14.))
             .child(heading(
                 tr!("Updates"),
                 if beta {
@@ -155,7 +156,7 @@ impl About {
                     div()
                         .flex()
                         .items_center()
-                        .gap(px(16.))
+                        .gap(ui(16.))
                         .child(
                             div()
                                 .flex_1()
@@ -220,7 +221,7 @@ impl About {
             .when_some(done, |d, done| {
                 d.child(
                     div()
-                        .h(px(4.))
+                        .h(ui(4.))
                         .w_full()
                         .rounded_full()
                         .bg(rgb(c.outline))
@@ -275,12 +276,12 @@ impl About {
                 .child(
                     div()
                         .id("update-steps")
-                        .px(px(12.))
-                        .py(px(10.))
-                        .rounded(px(12.))
+                        .px(ui(12.))
+                        .py(ui(10.))
+                        .rounded(ui(12.))
                         .bg(rgb(c.field))
                         .font_family(mono)
-                        .text_size(px(12.))
+                        .text_size(ui(12.))
                         .children(steps.iter().enumerate().map(|(i, step)| {
                             let more = if i + 1 < steps.len() { " &&" } else { "" };
                             div().child(format!("{step}{more}"))
@@ -404,7 +405,7 @@ fn link(id: &'static str, name: String, url: &'static str, fill: Fill) -> gpui::
 
 /// Buttons side by side.
 fn actions() -> Div {
-    div().flex().flex_wrap().items_center().gap(px(8.))
+    div().flex().flex_wrap().items_center().gap(ui(8.))
 }
 
 /// A release, as Updates shows it: what it is and what is said of it; what can be done
@@ -413,9 +414,9 @@ fn card(title: String, body: Div) -> Div {
     div()
         .flex()
         .flex_col()
-        .gap(px(10.))
-        .p(px(14.))
-        .rounded(px(16.))
+        .gap(ui(10.))
+        .p(ui(14.))
+        .rounded(ui(16.))
         .bg(rgb(colors().surface))
         .child(label(title))
         .child(body)
@@ -426,7 +427,7 @@ fn shellwing_logo() -> Div {
     pale_tile(0xeef1f5).child(
         svg()
             .path("icons/shellwing.svg")
-            .size(px(36.))
+            .size(ui(36.))
             .text_color(rgb(0x0284c7)),
     )
 }
@@ -449,13 +450,13 @@ fn hivepaas_logo() -> Div {
     pale_tile(0xfbf7f0).child(
         div()
             .relative()
-            .size(px(36.))
+            .size(ui(36.))
             .children(CELLS.map(|(x, y, c)| {
                 div()
                     .absolute()
-                    .left(px(x - 4.3))
-                    .top(px(y - 4.3))
-                    .size(px(8.6))
+                    .left(ui(x - 4.3))
+                    .top(ui(y - 4.3))
+                    .size(ui(8.6))
                     .rounded_full()
                     .bg(rgb(c))
             })),
@@ -464,12 +465,12 @@ fn hivepaas_logo() -> Div {
 
 fn pale_tile(ground: u32) -> Div {
     div()
-        .size(px(56.))
+        .size(ui(56.))
         .flex_shrink_0()
         .flex()
         .items_center()
         .justify_center()
-        .rounded(px(16.))
+        .rounded(ui(16.))
         .bg(rgb(ground))
 }
 
@@ -480,21 +481,21 @@ fn app(mark: Div, name: &'static str, what: String, points: Vec<String>, ways: g
     div()
         .flex()
         .flex_col()
-        .gap(px(12.))
-        .p(px(14.))
-        .rounded(px(16.))
+        .gap(ui(12.))
+        .p(ui(14.))
+        .rounded(ui(16.))
         .bg(rgb(c.surface))
         .child(
-            div().flex().items_center().gap(px(14.)).child(mark).child(
+            div().flex().items_center().gap(ui(14.)).child(mark).child(
                 div()
                     .flex_1()
                     .min_w_0()
                     .flex()
                     .flex_col()
-                    .gap(px(2.))
+                    .gap(ui(2.))
                     .child(
                         div()
-                            .text_size(px(18.))
+                            .text_size(ui(18.))
                             .font_weight(FontWeight::BOLD)
                             .child(name),
                     )
@@ -505,7 +506,7 @@ fn app(mark: Div, name: &'static str, what: String, points: Vec<String>, ways: g
             div()
                 .flex()
                 .flex_wrap()
-                .gap(px(6.))
+                .gap(ui(6.))
                 .children(points.into_iter().map(|p| chip(p, c.field, c.text))),
         )
         .child(ways)
@@ -514,7 +515,7 @@ fn app(mark: Div, name: &'static str, what: String, points: Vec<String>, ways: g
 /// The other apps from HivePaaS: what each is, and where to see more.
 fn other_apps() -> Div {
     group()
-        .gap(px(14.))
+        .gap(ui(14.))
         .child(heading(
             tr!("More from HivePaaS"),
             tr!("Free and open source, like packwing."),

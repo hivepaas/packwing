@@ -2,11 +2,12 @@
 //! temporary folder, and a program in it would run. A program is always asked
 //! about.
 
-use gpui::{Context, EventEmitter, Render, SharedString, Window, div, prelude::*, px, rgb};
+use gpui::{Context, EventEmitter, Render, SharedString, Window, div, prelude::*, rgb};
 use packwing_i18n::tr;
 
 use super::{DialogEvent, Job, footer, header};
 use crate::colors::colors;
+use crate::text_size::ui;
 use crate::widgets::{Fill, Size, Tone, button, check_row, icon_button, note, tonal_tint};
 
 pub struct OpenFileDialog {
@@ -36,7 +37,7 @@ impl Render for OpenFileDialog {
         let close = icon_button("close", "x", 44.)
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         super::card()
-            .w(px(520.))
+            .w(ui(520.))
             .child(header(
                 "extract",
                 tonal_tint(),
@@ -46,7 +47,7 @@ impl Render for OpenFileDialog {
             ))
             .child(
                 div()
-                    .text_size(px(14.))
+                    .text_size(ui(14.))
                     .text_color(rgb(c.muted))
                     .child(tr!("packwing puts a copy in a temporary folder and opens that. Changes to it do not go back in the archive.")),
             )
@@ -79,7 +80,7 @@ impl Render for OpenFileDialog {
                             Fill::Accent,
                             Size::Medium,
                         )
-                        .px(px(28.))
+                        .px(ui(28.))
                         .on_click(cx.listener(|this, _, _, cx| {
                             if this.dont_ask {
                                 crate::prefs::change(cx, |p| p.ask_before_open = false);

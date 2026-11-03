@@ -33,6 +33,7 @@ use packwing_i18n::tr;
 
 use crate::colors::colors;
 use crate::pages::settings::Appearance;
+use crate::text_size::ui;
 use crate::widgets::tip;
 
 /// The title bar: as tall as GNOME's own on Linux; on macOS and Windows a
@@ -230,7 +231,7 @@ pub fn update_badge(said: String, tooltip: String) -> Stateful<Div> {
         .bg(rgb(c.accent))
         .hover(|s| s.bg(rgb(c.accent_hover)))
         .text_color(rgb(c.on_accent))
-        .text_size(px(12.))
+        .text_size(ui(12.))
         .font_weight(FontWeight::SEMIBOLD)
         .whitespace_nowrap()
         .cursor_pointer()

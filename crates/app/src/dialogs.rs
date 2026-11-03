@@ -39,7 +39,7 @@ use std::path::PathBuf;
 use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex};
 
-use gpui::{Div, FontWeight, MouseButton, SharedString, Stateful, div, prelude::*, px, rgb};
+use gpui::{Div, FontWeight, MouseButton, SharedString, Stateful, div, prelude::*, rgb};
 use packwing_core::{
     Asked, ExtractOptions, Keys, NewArchive, OnExisting, SigningKey, Source, Storage, Transfer,
     Transferred,
@@ -47,6 +47,7 @@ use packwing_core::{
 
 use crate::colors::{Tint, colors};
 use crate::explorer::Place;
+use crate::text_size::ui;
 use crate::widgets::{float_shadow, icon, logo, tile};
 
 /// What a job does.
@@ -252,14 +253,14 @@ pub enum DialogEvent {
 pub fn card() -> Div {
     let c = colors();
     div()
-        .w(px(640.))
+        .w(ui(640.))
         .max_w_full()
         .max_h_full()
         .flex()
         .flex_col()
-        .gap(px(20.))
-        .p(px(28.))
-        .rounded(px(28.))
+        .gap(ui(20.))
+        .p(ui(28.))
+        .rounded(ui(28.))
         .bg(rgb(c.surface))
         .text_color(rgb(c.text))
         .shadow(float_shadow(12., 40.))
@@ -279,7 +280,7 @@ pub fn header(
     div()
         .flex()
         .items_center()
-        .gap(px(14.))
+        .gap(ui(14.))
         .child(tile(48., 16., tint).child(if icon_name == "logo" {
             logo(24., tint).into_any_element()
         } else {
@@ -291,14 +292,14 @@ pub fn header(
                 .min_w_0()
                 .child(
                     div()
-                        .text_size(px(22.))
+                        .text_size(ui(22.))
                         .font_weight(FontWeight::BOLD)
                         .truncate()
                         .child(title.into()),
                 )
                 .child(
                     div()
-                        .text_size(px(14.))
+                        .text_size(ui(14.))
                         .text_color(rgb(colors().muted))
                         .truncate()
                         .child(detail.into()),
@@ -309,5 +310,5 @@ pub fn header(
 
 /// A dialog's row of buttons, the main one last.
 pub fn footer() -> Div {
-    div().flex().items_center().gap(px(10.))
+    div().flex().items_center().gap(ui(10.))
 }

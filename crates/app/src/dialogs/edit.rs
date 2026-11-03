@@ -4,14 +4,13 @@
 use packwing_i18n::tr;
 use std::path::PathBuf;
 
-use gpui::{
-    Context, Entity, EventEmitter, Focusable as _, Render, Window, div, prelude::*, px, rgb,
-};
+use gpui::{Context, Entity, EventEmitter, Focusable as _, Render, Window, div, prelude::*, rgb};
 use packwing_core::Keys;
 
 use super::{DialogEvent, Editing, Job, Verb, footer, header};
 use crate::colors::colors;
 use crate::input::{Changed, TextInput};
+use crate::text_size::ui;
 use crate::widgets::{Fill, Size, Tone, button, icon_button, legend, note, tonal_tint};
 
 pub struct EditDialog {
@@ -109,7 +108,7 @@ impl Render for EditDialog {
             .as_ref()
             .is_some_and(|f| !name_fits(f.read(cx).text().trim()));
         super::card()
-            .w(px(520.))
+            .w(ui(520.))
             .child(header(
                 "logo",
                 tonal_tint(),
@@ -121,17 +120,17 @@ impl Render for EditDialog {
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(6.))
+                    .gap(ui(6.))
                     .child(legend(tr!("New name")))
                     .child(
                         div()
                             .flex()
                             .items_center()
-                            .h(px(52.))
-                            .px(px(18.))
-                            .rounded(px(16.))
+                            .h(ui(52.))
+                            .px(ui(18.))
+                            .rounded(ui(16.))
                             .bg(rgb(c.field))
-                            .text_size(px(16.))
+                            .text_size(ui(16.))
                             .child(field),
                     )
             }))
@@ -163,7 +162,7 @@ impl Render for EditDialog {
                             Fill::Accent,
                             Size::Medium,
                         )
-                        .px(px(28.))
+                        .px(ui(28.))
                         .on_click(cx.listener(|this, _, _, cx| this.start(cx))),
                     ),
             )

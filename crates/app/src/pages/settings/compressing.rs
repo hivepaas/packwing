@@ -1,7 +1,7 @@
 //! Compressing: the format new archives get and how hard they are squeezed,
 //! as New archive starts, and what is left out of them.
 
-use gpui::{Context, Entity, Render, Subscription, Window, div, prelude::*, px, rgb};
+use gpui::{Context, Entity, Render, Subscription, Window, div, prelude::*, rgb};
 use packwing_i18n::tr;
 
 use super::{group, heading, rows, section, setting};
@@ -10,6 +10,7 @@ use crate::dialogs::{Format, LEVELS, Level, level_name};
 use crate::input::{Changed, TextInput};
 use crate::model::size;
 use crate::prefs::{change, default_extensions, extensions_in, prefs};
+use crate::text_size::ui;
 use crate::widgets::{Chosen, Fill, Select, SelectLook, Size, button, segment, segments, switch};
 
 /// What can be chosen for going straight to a storage, in bytes.
@@ -165,11 +166,11 @@ impl Render for Compressing {
                         ))
                         .child(
                             div()
-                                .px(px(16.))
-                                .py(px(10.))
-                                .rounded(px(14.))
+                                .px(ui(16.))
+                                .py(ui(10.))
+                                .rounded(ui(14.))
                                 .bg(rgb(colors().field))
-                                .text_size(px(14.))
+                                .text_size(ui(14.))
                                 .child(self.extensions.clone()),
                         )
                         .when(self.extensions_changed, |d| {

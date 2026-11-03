@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use gpui::{
     App, Context, Entity, EventEmitter, Focusable as _, PathPromptOptions, Render, Subscription,
-    Window, div, prelude::*, px, rgb,
+    Window, div, prelude::*, rgb,
 };
 use packwing_core::{
     KeyRefused, SigningKey, Storage, is_part_name, make_signing_key, read_signing_key,
@@ -19,6 +19,7 @@ use super::{DialogEvent, Job, Signing, Verb, footer, header};
 use crate::colors::colors;
 use crate::input::{Changed, TextInput};
 use crate::prefs;
+use crate::text_size::ui;
 use crate::widgets::{Fill, Size, Tone, button, icon_button, legend, note, tonal_tint};
 
 /// What is under way that the buttons wait for.
@@ -55,17 +56,17 @@ fn secret_field(label: String, field: Entity<TextInput>) -> impl IntoElement {
     div()
         .flex()
         .flex_col()
-        .gap(px(6.))
+        .gap(ui(6.))
         .child(legend(label))
         .child(
             div()
                 .flex()
                 .items_center()
-                .h(px(52.))
-                .px(px(18.))
-                .rounded(px(16.))
+                .h(ui(52.))
+                .px(ui(18.))
+                .rounded(ui(16.))
                 .bg(rgb(colors().field))
-                .text_size(px(16.))
+                .text_size(ui(16.))
                 .child(field),
         )
 }
@@ -340,24 +341,24 @@ impl SignDialog {
         div()
             .flex()
             .flex_col()
-            .gap(px(14.))
+            .gap(ui(14.))
             .child(
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(6.))
+                    .gap(ui(6.))
                     .child(legend(tr!("Key")))
                     .child(
                         div()
                             .flex()
                             .flex_wrap()
                             .items_center()
-                            .gap(px(8.))
+                            .gap(ui(8.))
                             .child(
                                 div()
                                     .flex_1()
-                                    .min_w(px(160.))
-                                    .text_size(px(14.))
+                                    .min_w(ui(160.))
+                                    .text_size(ui(14.))
                                     .text_color(rgb(if self.key.is_some() {
                                         c.text
                                     } else {
@@ -389,14 +390,14 @@ impl SignDialog {
         div()
             .flex()
             .flex_col()
-            .gap(px(14.))
+            .gap(ui(14.))
             .child(secret_field(tr!("Passphrase"), self.new_passphrase.clone()))
             .child(secret_field(tr!("Again"), self.repeated.clone()))
             .children(
                 self.new_passphrase_problem(cx)
                     .map(|why| note(Tone::Warn).child(why)),
             )
-            .child(div().text_size(px(13.)).text_color(rgb(c.muted)).child(tr!(
+            .child(div().text_size(ui(13.)).text_color(rgb(c.muted)).child(tr!(
                 "A new key holds Ed25519 and ML-DSA-65 together, so that a signature \
                          stands even if one of them falls. Only packwing and hivepack check \
                          these: for ssh-keygen, sign with an SSH Ed25519 key. There is no way \
@@ -434,7 +435,7 @@ impl Render for SignDialog {
             )
         };
         super::card()
-            .w(px(560.))
+            .w(ui(560.))
             .child(header(
                 "shield",
                 tonal_tint(),
@@ -447,7 +448,7 @@ impl Render for SignDialog {
             .when(refused.is_none() && !making, |d| {
                 d.child(
                     div()
-                        .text_size(px(13.))
+                        .text_size(ui(13.))
                         .text_color(rgb(c.muted))
                         .child(told),
                 )
@@ -471,7 +472,7 @@ impl Render for SignDialog {
                     .when(making && refused.is_none(), |d| {
                         d.child(
                             button("make-key", tr!("Make the key…"), Fill::Accent, Size::Medium)
-                                .px(px(28.))
+                                .px(ui(28.))
                                 .when(!can_make, |d| d.opacity(0.5))
                                 .when(can_make, |d| {
                                     d.on_click(cx.listener(|this, _, _, cx| this.make_key(cx)))
@@ -481,7 +482,7 @@ impl Render for SignDialog {
                     .when(!making || refused.is_some(), |d| {
                         d.child(
                             button("sign-start", tr!("Sign"), Fill::Accent, Size::Medium)
-                                .px(px(28.))
+                                .px(ui(28.))
                                 .when(!can_start, |d| d.opacity(0.5))
                                 .when(can_start, |d| {
                                     d.on_click(cx.listener(|this, _, _, cx| this.start(cx)))

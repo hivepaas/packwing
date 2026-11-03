@@ -78,3 +78,26 @@ scenario!(
         assert_eq!(ui.plan(), Plan::Free);
     }
 );
+
+scenario!(
+    /// A text size chosen in Settings draws every size at it at once, stays through
+    /// a restart, and the system's comes back when chosen.
+    a_text_size_is_drawn_and_kept,
+    |ui| {
+        let rem = |ui: &mut Ui| ui.ws(|_, window, _| window.rem_size());
+        ui.settings(0);
+        assert_eq!(rem(ui), gpui::px(16.), "the design's, as the tests' system is");
+        ui.choose("text-size", "12 px");
+        assert_eq!(ui.ws(|_, _, cx| crate::prefs::prefs(cx).text_size), Some(12));
+        ui.draw();
+        assert_eq!(rem(ui), crate::text_size::rem_for(12.));
+        ui.start();
+        ui.draw();
+        assert_eq!(rem(ui), crate::text_size::rem_for(12.));
+        ui.settings(0);
+        ui.choose("text-size", "The system’s (15 px)");
+        assert_eq!(ui.ws(|_, _, cx| crate::prefs::prefs(cx).text_size), None);
+        ui.draw();
+        assert_eq!(rem(ui), gpui::px(16.));
+    }
+);

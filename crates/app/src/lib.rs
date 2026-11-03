@@ -33,6 +33,7 @@ mod placement;
 mod prefs;
 mod right_click;
 mod signatures;
+mod text_size;
 mod updates;
 mod widgets;
 mod workspace;
@@ -243,6 +244,7 @@ pub fn run(extensions: Extensions) {
             let window_bounds = placement::initial(kept.window, cx);
             cx.set_global(kept);
             cx.set_global(licensing::Licensed::load());
+            cx.set_global(text_size::SystemSize(text_size::read_system()));
             packwing_core::clean_opened_files();
             // GNOME's Wayland compositor draws no window frame, so Linux gets
             // client-side decorations. macOS and Windows keep the system's

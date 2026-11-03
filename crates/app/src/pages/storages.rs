@@ -20,6 +20,7 @@ use crate::confirm::{How, confirmer};
 use crate::explorer::{Explorer, Place};
 use crate::input::TextInput;
 use crate::prefs::{self, KeptPlace, KeptStorage};
+use crate::text_size::ui;
 use crate::widgets::{Fill, Size, button, float_shadow, icon, tile};
 
 /// A storage's name, from its folder.
@@ -561,11 +562,11 @@ impl StoragesPage {
                 .id(("storage", i))
                 .flex()
                 .items_center()
-                .gap(px(12.))
-                .min_h(px(60.))
-                .px(px(12.))
-                .py(px(8.))
-                .rounded(px(18.))
+                .gap(ui(12.))
+                .min_h(ui(60.))
+                .px(ui(12.))
+                .py(ui(8.))
+                .rounded(ui(18.))
                 .cursor_pointer()
                 .when(on, |d| d.bg(rgb(c.chosen)))
                 .when(!on, |d| d.hover(|s| s.bg(rgb(c.hover))))
@@ -584,7 +585,7 @@ impl StoragesPage {
                 )
                 .child(
                     tile(40., 14., tile_tint)
-                        .text_size(px(11.))
+                        .text_size(ui(11.))
                         .font_weight(FontWeight::BOLD)
                         .child(tag),
                 )
@@ -595,14 +596,14 @@ impl StoragesPage {
                         .child(
                             div()
                                 .truncate()
-                                .text_size(px(15.))
+                                .text_size(ui(15.))
                                 .font_weight(FontWeight::SEMIBOLD)
                                 .child(s.name.clone()),
                         )
                         .child(
                             div()
                                 .truncate()
-                                .text_size(px(12.))
+                                .text_size(ui(12.))
                                 .text_color(rgb(c.muted))
                                 .child(where_it_is),
                         ),
@@ -610,15 +611,15 @@ impl StoragesPage {
                 .when(locked, |d| d.child(icon("lock", 16., c.muted)))
         });
         panel()
-            .w(px(250.))
+            .w(ui(250.))
             .flex_shrink_0()
             .flex()
             .flex_col()
-            .gap(px(4.))
-            .pt(px(18.))
-            .px(px(10.))
-            .pb(px(10.))
-            .child(title(tr!("Storages"), 20.).px(px(12.)).pb(px(10.)))
+            .gap(ui(4.))
+            .pt(ui(18.))
+            .px(ui(10.))
+            .pb(ui(10.))
+            .child(title(tr!("Storages"), 20.).px(ui(12.)).pb(ui(10.)))
             .child(
                 div()
                     .id("storage-rows")
@@ -627,12 +628,12 @@ impl StoragesPage {
                     .overflow_y_scroll()
                     .flex()
                     .flex_col()
-                    .gap(px(4.))
+                    .gap(ui(4.))
                     .children(rows),
             )
             .child(
                 button("add-storage", tr!("Add storage"), Fill::Tonal, Size::Small)
-                    .mt(px(8.))
+                    .mt(ui(8.))
                     .child(icon("plus", 16., c.on_tonal))
                     .on_click(cx.listener(|this, _, _, cx| {
                         if extensions(cx).storage_kinds.is_empty() {
@@ -655,13 +656,13 @@ impl StoragesPage {
             .flex_col()
             .items_center()
             .justify_center()
-            .gap(px(14.))
-            .px(px(24.))
+            .gap(ui(14.))
+            .px(ui(24.))
             .child(icon("lock", 40., c.muted))
             .child(title(name, 20.))
             .child(
                 div()
-                    .text_size(px(14.))
+                    .text_size(ui(14.))
                     .text_color(rgb(c.muted))
                     .child(if typed {
                         tr!("Type the password you log in to this computer with to open it.")
@@ -672,14 +673,14 @@ impl StoragesPage {
             .when(typed, |d| {
                 d.child(
                     div()
-                        .w(px(320.))
-                        .h(px(44.))
+                        .w(ui(320.))
+                        .h(ui(44.))
                         .flex()
                         .items_center()
-                        .px(px(16.))
-                        .rounded(px(16.))
+                        .px(ui(16.))
+                        .rounded(ui(16.))
                         .bg(rgb(c.field))
-                        .text_size(px(15.))
+                        .text_size(ui(15.))
                         .text_color(rgb(c.text))
                         .on_key_down(cx.listener(|this, e: &KeyDownEvent, _, cx| {
                             if e.keystroke.key == "enter" {
@@ -692,7 +693,7 @@ impl StoragesPage {
             })
             .children(self.refused.clone().map(|why| {
                 div()
-                    .text_size(px(13.))
+                    .text_size(ui(13.))
                     .text_color(rgb(c.bad_text))
                     .child(why)
             }))
@@ -711,7 +712,7 @@ impl StoragesPage {
             )
             .child(
                 div()
-                    .text_size(px(12.))
+                    .text_size(ui(12.))
                     .text_color(rgb(c.muted))
                     .child(tr!("It asks again after 5 minutes left unused.")),
             )
@@ -739,13 +740,13 @@ impl StoragesPage {
                     div()
                         .id("storage-menu")
                         .occlude()
-                        .p(px(6.))
-                        .rounded(px(16.))
+                        .p(ui(6.))
+                        .rounded(ui(16.))
                         .bg(rgb(c.surface))
                         .border_1()
                         .border_color(rgb(c.outline))
                         .shadow(float_shadow(8., 24.))
-                        .text_size(px(14.))
+                        .text_size(ui(14.))
                         .on_mouse_down_out(cx.listener(|this, _, _, cx| {
                             this.menu = None;
                             cx.notify();
@@ -753,12 +754,12 @@ impl StoragesPage {
                         .children(editable.then(|| {
                             div()
                                 .id("storage-edit")
-                                .h(px(40.))
-                                .px(px(12.))
+                                .h(ui(40.))
+                                .px(ui(12.))
                                 .flex()
                                 .items_center()
                                 .whitespace_nowrap()
-                                .rounded(px(12.))
+                                .rounded(ui(12.))
                                 .cursor_pointer()
                                 .hover(|s| s.bg(rgb(c.hover)))
                                 .child(tr!("Edit…"))
@@ -771,12 +772,12 @@ impl StoragesPage {
                             div()
                                 .debug_selector(|| "storage-remove".to_owned())
                                 .id("storage-remove")
-                                .h(px(40.))
-                                .px(px(12.))
+                                .h(ui(40.))
+                                .px(ui(12.))
                                 .flex()
                                 .items_center()
                                 .whitespace_nowrap()
-                                .rounded(px(12.))
+                                .rounded(ui(12.))
                                 .cursor_pointer()
                                 .hover(|s| s.bg(rgb(c.hover)))
                                 .child(tr!("Remove from this list"))
@@ -803,7 +804,7 @@ impl Render for StoragesPage {
         let page = div()
             .size_full()
             .flex()
-            .gap(px(18.))
+            .gap(ui(18.))
             .on_mouse_move(cx.listener(|this, _: &gpui::MouseMoveEvent, _, _| this.used()))
             .on_scroll_wheel(cx.listener(|this, _: &gpui::ScrollWheelEvent, _, _| this.used()))
             .capture_key_down(cx.listener(|this, _: &KeyDownEvent, _, _| this.used()))
@@ -812,8 +813,8 @@ impl Render for StoragesPage {
                 panel()
                     .flex_1()
                     .min_w_0()
-                    .p(px(10.))
-                    .pt(px(14.))
+                    .p(ui(10.))
+                    .pt(ui(14.))
                     .child(browsing),
             )
             .child(info);

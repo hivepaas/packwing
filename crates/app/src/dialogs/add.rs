@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 
 use gpui::{
     App, AppContext as _, Context, Entity, EventEmitter, ExternalPaths, PathPromptOptions, Render,
-    SharedString, Task, UniformListScrollHandle, Window, div, prelude::*, px, rgb,
+    SharedString, Task, UniformListScrollHandle, Window, div, prelude::*, rgb,
 };
 use packwing_core::{Keys, OnExisting};
 
@@ -15,6 +15,7 @@ use super::chosen::{self, Choosing};
 use super::{Adding, DialogEvent, Job, Verb, footer, header};
 use crate::colors::colors;
 use crate::model::{Archive, Selection, count, size};
+use crate::text_size::ui;
 use crate::widgets::{
     Fill, Select, SelectLook, Size, Tone, button, icon_button, legend, note, tonal_tint,
 };
@@ -226,7 +227,7 @@ impl Render for AddDialog {
             div().flex_1().min_w_0().child(legend(label)).child(
                 div()
                     .truncate()
-                    .text_size(px(13.))
+                    .text_size(ui(13.))
                     .text_color(rgb(c.muted))
                     .child(text),
             )
@@ -253,7 +254,7 @@ impl Render for AddDialog {
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(12.))
+                    .gap(ui(12.))
                     .child(
                         div()
                             .flex_1()
@@ -268,7 +269,7 @@ impl Render for AddDialog {
                 )))
             })
             .when(self.encrypted, |d| {
-                d.child(div().text_size(px(13.)).text_color(rgb(c.muted)).child(tr!(
+                d.child(div().text_size(ui(13.)).text_color(rgb(c.muted)).child(tr!(
                     "The new files are encrypted with the archive’s password."
                 )))
             })
@@ -281,7 +282,7 @@ impl Render for AddDialog {
                     )
                     .child(
                         button("add", tr!("Add"), Fill::Accent, Size::Medium)
-                            .px(px(28.))
+                            .px(ui(28.))
                             .on_click(cx.listener(|this, _, _, cx| this.start(cx))),
                     ),
             )

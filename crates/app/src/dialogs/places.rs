@@ -2,11 +2,12 @@
 //! the one chosen. A storage that asks for this computer's password first is on
 //! the list with a lock, and asks for it, as its page does, before it is shown.
 
-use gpui::{AnyElement, App, Context, Div, Entity, FontWeight, Stateful, div, prelude::*, px, rgb};
+use gpui::{AnyElement, App, Context, Div, Entity, FontWeight, Stateful, div, prelude::*, rgb};
 
 use crate::colors::colors;
 use crate::explorer::{Explorer, Place};
 use crate::pages::storages::StoragesPage;
+use crate::text_size::ui;
 use crate::widgets::{icon, tile};
 
 /// The storages to choose from: `pick` is told the index of the one pressed.
@@ -25,18 +26,18 @@ pub fn list<V: 'static>(
             .id(("to-place", i))
             .flex()
             .items_center()
-            .gap(px(10.))
-            .min_h(px(48.))
-            .px(px(10.))
-            .rounded(px(14.))
+            .gap(ui(10.))
+            .min_h(ui(48.))
+            .px(ui(10.))
+            .rounded(ui(14.))
             .cursor_pointer()
             .when(on, |d| d.bg(rgb(c.tonal)))
             .when(!on, |d| d.hover(|s| s.bg(rgb(c.well_hover))))
             .on_click(cx.listener(move |this, _, _, cx| pick(this, i, cx)))
             .child(
                 tile(34., 10., place.tint(&c))
-                    .h(px(30.))
-                    .text_size(px(10.))
+                    .h(ui(30.))
+                    .text_size(ui(10.))
                     .font_weight(FontWeight::BOLD)
                     .child(place.tag),
             )
@@ -45,7 +46,7 @@ pub fn list<V: 'static>(
                     .flex_1()
                     .min_w_0()
                     .truncate()
-                    .text_size(px(14.))
+                    .text_size(ui(14.))
                     .when(on, |d| d.font_weight(FontWeight::SEMIBOLD))
                     .child(place.name.clone()),
             )
@@ -53,12 +54,12 @@ pub fn list<V: 'static>(
     });
     div()
         .id("to-places")
-        .w(px(200.))
+        .w(ui(200.))
         .flex_shrink_0()
         .overflow_y_scroll()
         .flex()
         .flex_col()
-        .gap(px(4.))
+        .gap(ui(4.))
         .children(rows)
 }
 

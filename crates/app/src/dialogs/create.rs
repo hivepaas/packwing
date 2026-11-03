@@ -9,7 +9,7 @@ use std::sync::Arc;
 use gpui::{
     App, Context, Div, Entity, EventEmitter, ExternalPaths, FontWeight, PathPromptOptions, Render,
     ScrollHandle, Stateful, Subscription, Task, UniformListScrollHandle, Window, div, prelude::*,
-    px, relative, rgb,
+    relative, rgb,
 };
 use packwing_core::{Kind, NewArchive, Route};
 
@@ -22,6 +22,7 @@ use crate::explorer::{Explorer, Place};
 use crate::input::{Changed, TextInput};
 use crate::model::{Selection, count, size};
 use crate::pages::storages::StoragesPage;
+use crate::text_size::ui;
 use crate::widgets::{
     Chosen, Fill, Select, SelectLook, Size, Tone, button, check_row, icon, icon_button, legend,
     note, segment, segments, switch, tonal_tint,
@@ -1006,13 +1007,13 @@ impl CreateDialog {
         div()
             .flex()
             .flex_col()
-            .gap(px(10.))
+            .gap(ui(10.))
             .child(chosen::section(self, self.checked, cx))
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(8.))
+                    .gap(ui(8.))
                     .child(
                         div()
                             .flex_1()
@@ -1021,7 +1022,7 @@ impl CreateDialog {
                             .child(
                                 div()
                                     .truncate()
-                                    .text_size(px(13.))
+                                    .text_size(ui(13.))
                                     .text_color(rgb(c.muted))
                                     .child(shown),
                             ),
@@ -1108,7 +1109,7 @@ impl CreateDialog {
         let picker = picking.picker.clone();
         super::card()
             .id("save-in")
-            .w(px(900.))
+            .w(ui(900.))
             .child(header(
                 "storages",
                 tonal_tint(),
@@ -1119,11 +1120,11 @@ impl CreateDialog {
             .child(
                 div()
                     .flex()
-                    .gap(px(8.))
-                    .h(px(340.))
+                    .gap(ui(8.))
+                    .h(ui(340.))
                     .flex_shrink_0()
-                    .p(px(10.))
-                    .rounded(px(22.))
+                    .p(ui(10.))
+                    .rounded(ui(22.))
                     .bg(rgb(c.well))
                     .child(places::list(
                         &self.places,
@@ -1168,19 +1169,19 @@ impl CreateDialog {
         div()
             .flex()
             .flex_col()
-            .gap(px(6.))
+            .gap(ui(6.))
             .child(legend(tr!("Name")))
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(8.))
-                    .h(px(52.))
-                    .pl(px(18.))
-                    .pr(px(6.))
-                    .rounded(px(16.))
+                    .gap(ui(8.))
+                    .h(ui(52.))
+                    .pl(ui(18.))
+                    .pr(ui(6.))
+                    .rounded(ui(16.))
                     .bg(rgb(c.field))
-                    .text_size(px(16.))
+                    .text_size(ui(16.))
                     .child(self.name.clone())
                     .child(self.format.clone()),
             )
@@ -1189,7 +1190,7 @@ impl CreateDialog {
                 |d| {
                     d.child(
                         note(Tone::Warn)
-                            .mt(px(4.))
+                            .mt(ui(4.))
                             .child(tr!("Give it a name, without / or \\ in it.")),
                     )
                 },
@@ -1197,7 +1198,7 @@ impl CreateDialog {
             .children(
                 self.format(cx)
                     .caveat()
-                    .map(|caveat| note(Tone::Warn).mt(px(4.)).child(caveat)),
+                    .map(|caveat| note(Tone::Warn).mt(ui(4.)).child(caveat)),
             )
     }
 
@@ -1211,15 +1212,15 @@ impl CreateDialog {
         div()
             .flex()
             .items_center()
-            .gap(px(10.))
+            .gap(ui(10.))
             .child(
                 div()
                     .debug_selector(|| "advanced".to_owned())
                     .id("advanced")
                     .flex_shrink_0()
-                    .px(px(4.))
-                    .py(px(8.))
-                    .text_size(px(14.))
+                    .px(ui(4.))
+                    .py(ui(8.))
+                    .text_size(ui(14.))
                     .font_weight(FontWeight::SEMIBOLD)
                     .text_color(rgb(c.accent))
                     .cursor_pointer()
@@ -1239,7 +1240,7 @@ impl CreateDialog {
                     div()
                         .min_w_0()
                         .truncate()
-                        .text_size(px(13.))
+                        .text_size(ui(13.))
                         .text_color(rgb(c.muted))
                         .child(changed.join(" · ")),
                 )
@@ -1267,24 +1268,24 @@ impl CreateDialog {
         div()
             .flex()
             .flex_col()
-            .gap(px(12.))
-            .px(px(16.))
-            .py(px(14.))
-            .rounded(px(20.))
+            .gap(ui(12.))
+            .px(ui(16.))
+            .py(ui(14.))
+            .rounded(ui(20.))
             .bg(rgb(c.well))
             .child(
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(6.))
+                    .gap(ui(6.))
                     .child(
                         div()
-                            .text_size(px(13.))
+                            .text_size(ui(13.))
                             .font_weight(FontWeight::SEMIBOLD)
                             .child(tr!("Compression level")),
                     )
                     .child(segments(levels))
-                    .child(div().text_size(px(13.)).text_color(rgb(c.muted)).child(
+                    .child(div().text_size(ui(13.)).text_color(rgb(c.muted)).child(
                         if now == Level::Store {
                             tr!("Store puts the files in as they are: the quickest to make, and the largest.")
                         } else {
@@ -1296,11 +1297,11 @@ impl CreateDialog {
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(12.))
+                    .gap(ui(12.))
                     .child(
                         div()
                             .flex_1()
-                            .text_size(px(14.))
+                            .text_size(ui(14.))
                             .font_weight(FontWeight::SEMIBOLD)
                             .child(tr!("Split into parts")),
                     )
@@ -1311,20 +1312,20 @@ impl CreateDialog {
                     div()
                         .flex()
                         .items_center()
-                        .gap(px(8.))
-                        .child(div().flex_1().text_size(px(14.)).child(tr!("Each part")))
+                        .gap(ui(8.))
+                        .child(div().flex_1().text_size(ui(14.)).child(tr!("Each part")))
                         .child(
                             div()
                                 .flex()
                                 .items_center()
-                                .w(px(120.))
-                                .h(px(40.))
-                                .px(px(14.))
+                                .w(ui(120.))
+                                .h(ui(40.))
+                                .px(ui(14.))
                                 .rounded_full()
                                 .border_1()
                                 .border_color(rgb(if bad_part { c.warn_text } else { c.outline }))
                                 .bg(rgb(c.surface))
-                                .text_size(px(14.))
+                                .text_size(ui(14.))
                                 .child(self.part.clone()),
                         )
                         .child(self.unit.clone()),
@@ -1332,7 +1333,7 @@ impl CreateDialog {
             })
             .when(self.split.read(cx).chosen() != 0, |d| {
                 d.child(
-                    div().text_size(px(13.)).text_color(rgb(c.muted)).child(
+                    div().text_size(ui(13.)).text_color(rgb(c.muted)).child(
                         tr!("Parts open in 7-Zip and archivers like it, not in the tools built into Windows and macOS."),
                     ),
                 )
@@ -1358,20 +1359,20 @@ impl CreateDialog {
         div()
             .flex()
             .flex_col()
-            .gap(px(12.))
-            .p(px(16.))
-            .rounded(px(20.))
+            .gap(ui(12.))
+            .p(ui(16.))
+            .rounded(ui(20.))
             .bg(rgb(c.well))
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(12.))
+                    .gap(ui(12.))
                     .child(icon("lock", 22., c.accent))
                     .child(
                         div()
                             .flex_1()
-                            .text_size(px(15.))
+                            .text_size(ui(15.))
                             .font_weight(FontWeight::SEMIBOLD)
                             .child(if age {
                                 tr!("Encrypt with age")
@@ -1431,11 +1432,11 @@ impl CreateDialog {
                     div()
                         .flex()
                         .items_center()
-                        .h(px(48.))
-                        .px(px(16.))
-                        .rounded(px(14.))
+                        .h(ui(48.))
+                        .px(ui(16.))
+                        .rounded(ui(14.))
                         .bg(rgb(c.surface))
-                        .text_size(px(16.))
+                        .text_size(ui(16.))
                         .child(div().flex_1().min_w_0().child(self.password.clone()))
                         .child(
                             button("suggest-password", tr!("Suggest"), Fill::Outline, Size::Small)
@@ -1495,13 +1496,13 @@ impl CreateDialog {
                     div()
                         .flex()
                         .items_center()
-                        .gap(px(8.))
+                        .gap(ui(8.))
                         .child(
                             div()
                                 .flex_1()
                                 .min_w_0()
                                 .truncate()
-                                .text_size(px(14.))
+                                .text_size(ui(14.))
                                 .child(said),
                         )
                         .child(
@@ -1530,18 +1531,18 @@ impl CreateDialog {
                     div()
                         .flex()
                         .items_center()
-                        .gap(px(8.))
+                        .gap(ui(8.))
                         .child(
                             div()
                                 .flex()
                                 .flex_1()
                                 .min_w_0()
                                 .items_center()
-                                .h(px(48.))
-                                .px(px(16.))
-                                .rounded(px(14.))
+                                .h(ui(48.))
+                                .px(ui(16.))
+                                .rounded(ui(14.))
                                 .bg(rgb(c.surface))
-                                .text_size(px(14.))
+                                .text_size(ui(14.))
                                 .child(self.key.clone()),
                         )
                         .child(
@@ -1600,12 +1601,12 @@ fn strength_bar(s: Strength) -> impl IntoElement {
     div()
         .flex()
         .items_center()
-        .gap(px(10.))
-        .text_size(px(13.))
+        .gap(ui(10.))
+        .text_size(ui(13.))
         .child(
             div()
                 .flex_1()
-                .h(px(6.))
+                .h(ui(6.))
                 .rounded_full()
                 .bg(rgb(c.field))
                 .child(
@@ -1656,10 +1657,10 @@ impl Render for CreateDialog {
             .on_drop(cx.listener(|this, dropped: &ExternalPaths, _, cx| {
                 this.add(dropped.paths().to_vec(), cx)
             }))
-            .p(px(0.))
-            .gap(px(0.))
+            .p(ui(0.))
+            .gap(ui(0.))
             .overflow_hidden()
-            .child(div().px(px(28.)).pt(px(24.)).pb(px(8.)).child(header(
+            .child(div().px(ui(28.)).pt(ui(24.)).pb(ui(8.)).child(header(
                 "logo",
                 tonal_tint(),
                 tr!("New archive"),
@@ -1673,12 +1674,12 @@ impl Render for CreateDialog {
                     .flex_1()
                     .min_h_0()
                     .overflow_y_scroll()
-                    .px(px(28.))
-                    .pt(px(12.))
-                    .pb(px(8.))
+                    .px(ui(28.))
+                    .pt(ui(12.))
+                    .pb(ui(8.))
                     .flex()
                     .flex_col()
-                    .gap(px(14.))
+                    .gap(ui(14.))
                     .child(self.contents(cx))
                     .child(self.name_field(cx))
                     .child(self.advanced_toggle(cx))
@@ -1689,16 +1690,16 @@ impl Render for CreateDialog {
             .child(
                 footer()
                     .justify_end()
-                    .px(px(28.))
-                    .pt(px(16.))
-                    .pb(px(24.))
+                    .px(ui(28.))
+                    .pt(ui(16.))
+                    .pb(ui(24.))
                     .child(
                         button("cancel", tr!("Cancel"), Fill::Text, Size::Medium)
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close))),
                     )
                     .child(
                         button("create", tr!("Create"), Fill::Accent, Size::Medium)
-                            .px(px(28.))
+                            .px(ui(28.))
                             .on_click(cx.listener(|this, _, _, cx| this.start(cx))),
                     ),
             )

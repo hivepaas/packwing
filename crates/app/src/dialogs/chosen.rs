@@ -9,6 +9,7 @@ use packwing_i18n::tr;
 
 use crate::colors::colors;
 use crate::model::{Kind, Selection, tag_of};
+use crate::text_size::ui;
 use crate::widgets::{Fill, Size, Tone, button, icon, icon_button, legend, note, tile, tip};
 
 /// How tall a row of the list is, and how many show before it scrolls.
@@ -58,14 +59,14 @@ fn eye<V: Choosing>(this: &V, cx: &mut Context<V>) -> impl IntoElement {
         .flex()
         .flex_shrink_0()
         .items_center()
-        .gap(px(6.))
-        .h(px(40.))
-        .px(px(12.))
+        .gap(ui(6.))
+        .h(ui(40.))
+        .px(ui(12.))
         .rounded_full()
         .border_1()
         .border_color(rgb(c.outline))
         .bg(rgb(c.surface))
-        .text_size(px(14.))
+        .text_size(ui(14.))
         .cursor_pointer()
         .hover(|s| s.bg(rgb(c.hover)))
         .tooltip(tip(if shown {
@@ -102,13 +103,13 @@ fn row<V: Choosing>(this: &V, at: usize, cx: &mut Context<V>) -> Option<impl Int
             .h(px(ROW))
             .flex()
             .items_center()
-            .gap(px(10.))
-            .px(px(10.))
-            .rounded(px(12.))
+            .gap(ui(10.))
+            .px(ui(10.))
+            .rounded(ui(12.))
             .hover(|s| s.bg(rgb(c.well_hover)))
             .child(
                 tile(30., 10., kind.tint(&c))
-                    .text_size(px(9.))
+                    .text_size(ui(9.))
                     .font_weight(FontWeight::BOLD)
                     .child(tag_of(&name, kind)),
             )
@@ -117,7 +118,7 @@ fn row<V: Choosing>(this: &V, at: usize, cx: &mut Context<V>) -> Option<impl Int
                     .flex_1()
                     .min_w_0()
                     .truncate()
-                    .text_size(px(14.))
+                    .text_size(ui(14.))
                     .font_weight(FontWeight::MEDIUM)
                     .child(name),
             )
@@ -126,7 +127,7 @@ fn row<V: Choosing>(this: &V, at: usize, cx: &mut Context<V>) -> Option<impl Int
                     .flex_1()
                     .min_w_0()
                     .truncate()
-                    .text_size(px(13.))
+                    .text_size(ui(13.))
                     .text_color(rgb(c.muted))
                     .child(folder),
             )
@@ -156,8 +157,8 @@ pub fn section<V: Choosing>(this: &V, checked: bool, cx: &mut Context<V>) -> imp
     let list = (this.list_shown() && count > 0).then(|| {
         div()
             .id("chosen-frame")
-            .p(px(4.))
-            .rounded(px(16.))
+            .p(ui(4.))
+            .rounded(ui(16.))
             .bg(rgb(c.well))
             // Every scrolling area under the pointer takes the wheel. One that
             // has more to show keeps it, so the dialog holds still under it; a
@@ -181,12 +182,12 @@ pub fn section<V: Choosing>(this: &V, checked: bool, cx: &mut Context<V>) -> imp
     div()
         .flex()
         .flex_col()
-        .gap(px(10.))
+        .gap(ui(10.))
         .child(
             div()
                 .flex()
                 .items_center()
-                .gap(px(8.))
+                .gap(ui(8.))
                 .child(
                     div()
                         .flex_1()
@@ -195,7 +196,7 @@ pub fn section<V: Choosing>(this: &V, checked: bool, cx: &mut Context<V>) -> imp
                         .child(
                             div()
                                 .truncate()
-                                .text_size(px(13.))
+                                .text_size(ui(13.))
                                 .text_color(rgb(if dragging { c.accent } else { c.muted }))
                                 .child(line),
                         ),

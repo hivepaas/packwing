@@ -1363,6 +1363,9 @@ t1d68c60b = Системна
 # Custom…
 ta391dade = Інший…
 
+# The system’s ({size} px)
+ta51f1877 = Як у системі ({ $size } px)
+
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = наприклад, code -n або /path/to/editor --flag
 
@@ -1377,6 +1380,9 @@ t9a73db9b = Мова
 
 # Appearance
 t31018b9f = Вигляд
+
+# Text size
+t2c041143 = Розмір тексту
 
 # Text editor
 t1ca82aab = Текстовий редактор

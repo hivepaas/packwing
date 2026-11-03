@@ -9,13 +9,14 @@ use std::path::Path;
 
 use gpui::{
     Context, Entity, EventEmitter, Focusable as _, KeyDownEvent, PathPromptOptions, Render,
-    SharedString, Window, div, prelude::*, px, rgb,
+    SharedString, Window, div, prelude::*, rgb,
 };
 use packwing_core::{Asked, Error, Keys};
 
 use super::{card, footer, header};
 use crate::colors::colors;
 use crate::input::TextInput;
+use crate::text_size::ui;
 use crate::widgets::{Fill, Size, Tone, button, icon, icon_button, legend, note, tonal_tint};
 
 /// What the user chose.
@@ -209,7 +210,7 @@ impl Render for PasswordDialog {
             .on_click(cx.listener(|_, _, _, cx| cx.emit(PasswordEvent::Cancelled)));
         let eye = div()
             .id("show-password")
-            .size(px(52.))
+            .size(ui(52.))
             .flex_shrink_0()
             .flex()
             .items_center()
@@ -226,16 +227,16 @@ impl Render for PasswordDialog {
         let field = div()
             .flex()
             .items_center()
-            .h(px(52.))
-            .pl(px(18.))
-            .rounded(px(16.))
+            .h(ui(52.))
+            .pl(ui(18.))
+            .rounded(ui(16.))
             .bg(rgb(c.field))
-            .text_size(px(16.))
+            .text_size(ui(16.))
             .child(self.field.clone())
             .child(eye);
         card()
             .id("password-dialog")
-            .w(px(520.))
+            .w(ui(520.))
             .on_key_down(cx.listener(Self::on_key))
             .child(header(
                 "lock",
@@ -249,7 +250,7 @@ impl Render for PasswordDialog {
                     div()
                         .flex()
                         .flex_col()
-                        .gap(px(6.))
+                        .gap(ui(6.))
                         .child(legend(label))
                         .child(field),
                 )
@@ -259,7 +260,7 @@ impl Render for PasswordDialog {
                     .clone()
                     .map(|again| note(Tone::Warn).child(again)),
             )
-            .child(div().text_size(px(14.)).text_color(rgb(c.muted)).child(why))
+            .child(div().text_size(ui(14.)).text_color(rgb(c.muted)).child(why))
             .child(
                 footer()
                     .child(div().flex_1())
@@ -278,7 +279,7 @@ impl Render for PasswordDialog {
                             Fill::Accent,
                             Size::Medium,
                         )
-                        .px(px(28.))
+                        .px(ui(28.))
                         .on_click(cx.listener(|this, _, _, cx| this.open(cx))),
                     ),
             )

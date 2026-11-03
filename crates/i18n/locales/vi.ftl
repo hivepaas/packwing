@@ -1324,6 +1324,9 @@ t1d68c60b = Của hệ thống
 # Custom…
 ta391dade = Tuỳ chỉnh…
 
+# The system’s ({size} px)
+ta51f1877 = Theo hệ thống ({ $size } px)
+
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = ví dụ code -n, hoặc /đường/dẫn/trình-soạn-thảo --flag
 
@@ -1338,6 +1341,9 @@ t9a73db9b = Ngôn ngữ
 
 # Appearance
 t31018b9f = Giao diện
+
+# Text size
+t2c041143 = Cỡ chữ
 
 # Text editor
 t1ca82aab = Trình soạn thảo văn bản

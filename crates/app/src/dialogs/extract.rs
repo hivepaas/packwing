@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 use gpui::{
     Context, Entity, EventEmitter, FontWeight, PathPromptOptions, Render, SharedString, Window,
-    div, prelude::*, px, rgb,
+    div, prelude::*, rgb,
 };
 
 use super::{DialogEvent, Job, Verb, card, footer, header};
@@ -13,6 +13,7 @@ use crate::colors::colors;
 use crate::input::TextInput;
 use crate::model::{Archive, count, size};
 use crate::prefs::ExtractTo;
+use crate::text_size::ui;
 use crate::widgets::{
     Fill, Size, Tone, button, chip, icon, icon_button, legend, note, option_card, segment,
     segments, titled, tonal_tint,
@@ -241,7 +242,7 @@ impl ExtractDialog {
         div()
             .flex()
             .flex_col()
-            .gap(px(6.))
+            .gap(ui(6.))
             .child(legend(tr!("What should it extract?")))
             .child(segments([
                 segment("only-picked", picked, self.only_picked).on_click(cx.listener(
@@ -280,7 +281,7 @@ impl ExtractDialog {
             ));
         let title = |text: String, on: bool| {
             div()
-                .text_size(px(15.))
+                .text_size(ui(15.))
                 .when(on, |d| d.font_weight(FontWeight::BOLD))
                 .child(text)
         };
@@ -291,7 +292,7 @@ impl ExtractDialog {
         div()
             .flex()
             .flex_col()
-            .gap(px(8.))
+            .gap(ui(8.))
             .child(legend(tr!("Where should the files go?")))
             .child(recommended)
             .child(
@@ -299,7 +300,7 @@ impl ExtractDialog {
                     .grid()
                     .grid_cols(3)
                     .min_w_0()
-                    .gap(px(8.))
+                    .gap(ui(8.))
                     .child(
                         option_card("dest-new", new_folder)
                             .on_click(cx.listener(|this, _, _, cx| {
@@ -333,8 +334,8 @@ impl ExtractDialog {
             .when(!smart, |d| {
                 d.child(
                     div()
-                        .px(px(4.))
-                        .text_size(px(13.))
+                        .px(ui(4.))
+                        .text_size(ui(13.))
                         .text_color(rgb(c.muted))
                         .truncate()
                         .child(tr!(
@@ -351,22 +352,22 @@ impl ExtractDialog {
         div()
             .flex()
             .flex_col()
-            .gap(px(6.))
+            .gap(ui(6.))
             .child(legend(tr!("Password")))
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .h(px(52.))
-                    .pl(px(18.))
-                    .rounded(px(16.))
+                    .h(ui(52.))
+                    .pl(ui(18.))
+                    .rounded(ui(16.))
                     .bg(rgb(c.field))
-                    .text_size(px(16.))
+                    .text_size(ui(16.))
                     .child(self.password.clone())
                     .child(
                         div()
                             .id("show-password")
-                            .size(px(52.))
+                            .size(ui(52.))
                             .flex_shrink_0()
                             .flex()
                             .items_center()
@@ -392,27 +393,27 @@ impl ExtractDialog {
         div()
             .flex()
             .flex_col()
-            .gap(px(8.))
-            .px(px(16.))
-            .py(px(14.))
-            .rounded(px(20.))
+            .gap(ui(8.))
+            .px(ui(16.))
+            .py(ui(14.))
+            .rounded(ui(20.))
             .bg(rgb(c.tonal))
             .text_color(rgb(c.on_tonal))
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(10.))
+                    .gap(ui(10.))
                     .child(icon("shield", 20., c.on_tonal))
                     .child(
                         div()
-                            .text_size(px(15.))
+                            .text_size(ui(15.))
                             .font_weight(FontWeight::BOLD)
                             .child(tr!("Checked as it goes")),
                     )
                     .child(
                         div()
-                            .text_size(px(13.))
+                            .text_size(ui(13.))
                             .font_weight(FontWeight::MEDIUM)
                             .child(tr!("· Nothing leaves the folder or passes the size limit")),
                     ),
@@ -466,7 +467,7 @@ impl Render for ExtractDialog {
                     )
                     .child(
                         button("extract", tr!("Extract"), Fill::Accent, Size::Medium)
-                            .px(px(28.))
+                            .px(ui(28.))
                             .on_click(cx.listener(|this, _, _, cx| this.start(cx))),
                     ),
             )

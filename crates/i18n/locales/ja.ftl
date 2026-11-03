@@ -1324,6 +1324,9 @@ t1d68c60b = システムの設定
 # Custom…
 ta391dade = カスタム…
 
+# The system’s ({size} px)
+ta51f1877 = システムの設定（{ $size } px）
+
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = 例：code -n、または /path/to/editor --flag
 
@@ -1338,6 +1341,9 @@ t9a73db9b = 言語
 
 # Appearance
 t31018b9f = 外観
+
+# Text size
+t2c041143 = 文字サイズ
 
 # Text editor
 t1ca82aab = テキストエディタ

@@ -224,7 +224,7 @@ impl Ui {
         }
     }
 
-    fn draw(&mut self) {
+    pub fn draw(&mut self) {
         let window = self.window();
         gpui::AppContext::update_window(&mut self.cx, window.into(), |_, w, cx| {
             w.refresh();

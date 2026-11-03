@@ -1324,6 +1324,9 @@ t1d68c60b = 시스템 설정
 # Custom…
 ta391dade = 사용자 지정…
 
+# The system’s ({size} px)
+ta51f1877 = 시스템 설정({ $size } px)
+
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = 예: code -n 또는 /path/to/editor --flag
 
@@ -1338,6 +1341,9 @@ t9a73db9b = 언어
 
 # Appearance
 t31018b9f = 모양
+
+# Text size
+t2c041143 = 글자 크기
 
 # Text editor
 t1ca82aab = 텍스트 편집기

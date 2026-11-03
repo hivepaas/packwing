@@ -1324,6 +1324,9 @@ t1d68c60b = Milik sistem
 # Custom…
 ta391dade = Kustom…
 
+# The system’s ({size} px)
+ta51f1877 = Bawaan sistem ({ $size } px)
+
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = mis. code -n, atau /path/to/editor --flag
 
@@ -1338,6 +1341,9 @@ t9a73db9b = Bahasa
 
 # Appearance
 t31018b9f = Tampilan
+
+# Text size
+t2c041143 = Ukuran teks
 
 # Text editor
 t1ca82aab = Editor teks

@@ -13,7 +13,7 @@ use std::sync::{Arc, Mutex, PoisonError};
 use std::time::{Duration, Instant};
 
 use gpui::{
-    Context, EventEmitter, FontWeight, Render, Task, Window, div, prelude::*, px, relative, rgb,
+    Context, EventEmitter, FontWeight, Render, Task, Window, div, prelude::*, relative, rgb,
 };
 use packwing_core::{Cancel, Control, Error, Progress};
 
@@ -23,6 +23,7 @@ use super::{
 };
 use crate::colors::colors;
 use crate::model::{count, size};
+use crate::text_size::ui;
 use crate::widgets::{Fill, Size, Tone, button, check_row, icon, note, tonal_tint};
 
 /// The made-up speed, in bytes a second.
@@ -476,7 +477,7 @@ impl Render for ProgressDialog {
         };
         if let Some((files, bytes)) = self.passed {
             return card()
-                .gap(px(22.))
+                .gap(ui(22.))
                 .child(header(
                     icon_name,
                     tonal_tint(),
@@ -494,7 +495,7 @@ impl Render for ProgressDialog {
                 .child(
                     footer().child(div().flex_1()).child(
                         button("close", tr!("Close"), Fill::Accent, Size::Medium)
-                            .px(px(28.))
+                            .px(ui(28.))
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close))),
                     ),
                 );
@@ -502,13 +503,13 @@ impl Render for ProgressDialog {
         let header = header(icon_name, tonal_tint(), self.title(), detail, None);
         if let Some(why) = &self.failed {
             return card()
-                .gap(px(22.))
+                .gap(ui(22.))
                 .child(header)
                 .child(note(Tone::Warn).child(why.clone()))
                 .child(
                     footer().child(div().flex_1()).child(
                         button("close", tr!("Close"), Fill::Accent, Size::Medium)
-                            .px(px(28.))
+                            .px(ui(28.))
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close))),
                     ),
                 );
@@ -521,22 +522,22 @@ impl Render for ProgressDialog {
         let current = format!("Ảnh hiện trạng / IMG_{}.jpg", 2000 + files % 400);
         let speed = self.speed();
         card()
-            .gap(px(22.))
+            .gap(ui(22.))
             .child(header)
             .child(
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(10.))
+                    .gap(ui(10.))
                     .child(
                         div()
                             .flex()
                             .items_end()
                             .justify_between()
-                            .gap(px(12.))
+                            .gap(ui(12.))
                             .child(
                                 div()
-                                    .text_size(px(40.))
+                                    .text_size(ui(40.))
                                     .line_height(relative(1.1))
                                     .font_weight(FontWeight::BOLD)
                                     .text_color(rgb(c.on_tonal))
@@ -544,14 +545,14 @@ impl Render for ProgressDialog {
                             )
                             .child(
                                 div()
-                                    .pb(px(6.))
-                                    .text_size(px(15.))
+                                    .pb(ui(6.))
+                                    .text_size(ui(15.))
                                     .font_weight(FontWeight::SEMIBOLD)
                                     .child(self.left()),
                             ),
                     )
                     .child(
-                        div().h(px(14.)).rounded_full().bg(rgb(c.field)).child(
+                        div().h(ui(14.)).rounded_full().bg(rgb(c.field)).child(
                             div()
                                 .h_full()
                                 .w(relative(self.done as f32))
@@ -564,9 +565,9 @@ impl Render for ProgressDialog {
                             .flex()
                             .flex_wrap()
                             .justify_between()
-                            .gap_x(px(16.))
-                            .gap_y(px(4.))
-                            .text_size(px(14.))
+                            .gap_x(ui(16.))
+                            .gap_y(ui(4.))
+                            .text_size(ui(14.))
                             .text_color(rgb(c.muted))
                             .child(tr!(
                                 "{count} of {count2} files · {size} of {size2}",
@@ -587,10 +588,10 @@ impl Render for ProgressDialog {
                     div()
                         .flex()
                         .items_center()
-                        .gap(px(12.))
-                        .px(px(16.))
-                        .py(px(12.))
-                        .rounded(px(18.))
+                        .gap(ui(12.))
+                        .px(ui(16.))
+                        .py(ui(12.))
+                        .rounded(ui(18.))
                         .bg(rgb(c.well))
                         .child(icon("image", 20., c.accent))
                         .child(
@@ -598,7 +599,7 @@ impl Render for ProgressDialog {
                                 .flex_1()
                                 .min_w_0()
                                 .truncate()
-                                .text_size(px(14.))
+                                .text_size(ui(14.))
                                 .child(current),
                         ),
                 )
@@ -640,7 +641,7 @@ impl Render for ProgressDialog {
                                 Fill::Tonal,
                                 Size::Medium,
                             )
-                            .px(px(20.))
+                            .px(ui(20.))
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close))),
                         )
                     })
@@ -657,7 +658,7 @@ impl Render for ProgressDialog {
                                 Fill::Text,
                                 Size::Medium,
                             )
-                            .px(px(20.))
+                            .px(ui(20.))
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.paused = !this.paused;
                                 cx.notify();

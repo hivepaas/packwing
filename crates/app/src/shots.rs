@@ -642,19 +642,26 @@ fn out_dir() -> PathBuf {
 }
 
 /// Every screen, in `SHOTS_LANGUAGE` if it names one, then to `target/shots/<it>`:
-/// for looking at what a language does to the layout, with this test alone.
+/// for looking at what a language does to the layout, with this test alone. With
+/// `SHOTS_TEXT_SIZE`, at that body size, as a system's (12 is Windows's), to
+/// `target/shots/<it>px`.
 #[test]
 fn shots() {
     let language = std::env::var("SHOTS_LANGUAGE").ok();
-    let dir = match &language {
+    let text_size: Option<f32> = std::env::var("SHOTS_TEXT_SIZE")
+        .ok()
+        .and_then(|s| s.parse().ok());
+    let mut dir = match &language {
         Some(tag) => {
             packwing_i18n::set_language(Some(tag));
-            let dir = out_dir().join(tag);
-            std::fs::create_dir_all(&dir).expect("cannot make its folder");
-            dir
+            out_dir().join(tag)
         }
         None => out_dir(),
     };
+    if let Some(size) = text_size {
+        dir = dir.join(format!("{size}px"));
+    }
+    std::fs::create_dir_all(&dir).expect("cannot make its folder");
     for (name, set_up) in SCREENS {
         for dark in [false, true] {
             let text = Arc::new(gpui_wgpu::CosmicTextSystem::new(crate::FONT));
@@ -662,6 +669,9 @@ fn shots() {
                 gpui_platform::current_headless_renderer()
             });
             cx.update(crate::load_fonts);
+            if let Some(size) = text_size {
+                cx.update(|cx| cx.set_global(crate::text_size::SystemSize(size)));
+            }
             let window = cx
                 .open_window(size(px(1280.), px(800.)), |window, cx| {
                     // Nothing is put in the system's menu.

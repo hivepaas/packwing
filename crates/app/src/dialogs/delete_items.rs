@@ -1,12 +1,13 @@
 //! Asked before items of a storage are deleted: to the system's Trash where
 //! there is one, and for good where there is not.
 
-use gpui::{Context, Entity, EventEmitter, Render, Window, div, prelude::*, px, rgb};
+use gpui::{Context, Entity, EventEmitter, Render, Window, div, prelude::*, rgb};
 use packwing_i18n::{tr, tr_n};
 
 use super::{DialogEvent, footer, header};
 use crate::colors::colors;
 use crate::explorer::Explorer;
+use crate::text_size::ui;
 use crate::widgets::{Fill, Size, button, icon_button, tonal_tint};
 
 /// The most names listed.
@@ -57,7 +58,7 @@ impl Render for DeleteDialog {
         let close = icon_button("close", "x", 44.)
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         super::card()
-            .w(px(520.))
+            .w(ui(520.))
             .child(header(
                 "warning",
                 tonal_tint(),
@@ -69,12 +70,12 @@ impl Render for DeleteDialog {
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(4.))
-                    .px(px(14.))
-                    .py(px(12.))
-                    .rounded(px(18.))
+                    .gap(ui(4.))
+                    .px(ui(14.))
+                    .py(ui(12.))
+                    .rounded(ui(18.))
                     .bg(rgb(c.well))
-                    .text_size(px(14.))
+                    .text_size(ui(14.))
                     .children(
                         self.names
                             .iter()
@@ -91,7 +92,7 @@ impl Render for DeleteDialog {
             )
             .child(
                 div()
-                    .text_size(px(14.))
+                    .text_size(ui(14.))
                     .text_color(rgb(c.muted))
                     .child(note),
             )
