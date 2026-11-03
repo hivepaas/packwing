@@ -37,9 +37,9 @@ WORK="target/package-windows"
 
 # context-menu-rs's native extension for Windows, of the release whose crate
 # packwing builds with (Cargo.lock): the menu's definition is theirs alike.
-CONTEXT_MENU_VERSION="0.2.0"
+CONTEXT_MENU_VERSION="0.2.1"
 case "$ARCH" in
-	x86_64) EXTENSION_SHA="fbf9b8a141499b32b21b94fcee2417d8e149e6f2723b13c8410d299694056605" ;;
+	x86_64) EXTENSION_SHA="557b1126fec515de47870b3aaf946624ecfbf6d4ecddf732bb73c9c78f1f7bf9" ;;
 	*) echo "no native extension pinned for $ARCH" >&2; exit 1 ;;
 esac
 EXTENSION_URL="https://github.com/hivepaas/context-menu-rs/releases/download/v$CONTEXT_MENU_VERSION/context-menu-windows-$ARCH.dll"

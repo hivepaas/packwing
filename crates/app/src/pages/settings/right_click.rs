@@ -2,13 +2,33 @@
 //! items, and whether they sit in a submenu of their own; and what came of
 //! the last change.
 
-use gpui::{Context, Entity, Render, Window, prelude::*};
+use gpui::{Context, Div, Entity, FontWeight, Render, Window, div, prelude::*, rgb};
 use packwing_i18n::tr;
 
 use super::{explain, group, heading, label, section, setting};
+use crate::colors::colors;
 use crate::right_click::{Action, RightClickMenu, Status};
 use crate::text_size::ui;
-use crate::widgets::{Tone, check_row, note, switch};
+use crate::widgets::{Tone, check_row, icon, note, switch};
+
+/// A setting the system holds on, where a switch would be.
+fn held_on() -> Div {
+    let c = colors();
+    div()
+        .debug_selector(|| "submenu-held".to_owned())
+        .flex()
+        .items_center()
+        .gap(ui(6.))
+        .px(ui(12.))
+        .py(ui(4.))
+        .rounded_full()
+        .bg(rgb(c.surface))
+        .text_size(ui(13.))
+        .font_weight(FontWeight::SEMIBOLD)
+        .whitespace_nowrap()
+        .child(icon("lock", 13., c.text))
+        .child(tr!("On"))
+}
 
 pub struct RightClick {
     menu: Entity<RightClickMenu>,
@@ -25,6 +45,7 @@ impl Render for RightClick {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let m = self.menu.read(cx);
         let (shown, choice, status) = (m.shown(), m.choice().clone(), m.status().clone());
+        let one_entry = m.one_entry();
         let items = Action::ALL.into_iter().enumerate().map(|(i, a)| {
             check_row(("item", i), choice.has(a), a.label(choice.submenu))
                 .text_size(ui(15.))
@@ -71,17 +92,26 @@ impl Render for RightClick {
                     .child(heading(tr!("Items in the menu"), items_are))
                     .children(items),
             )
-            .child(setting(
-                tr!("Put them in a submenu"),
-                tr!("One packwing item, with these under it"),
-                switch("submenu", choice.submenu).on_click(cx.listener(|this, _, _, cx| {
-                    this.menu.update(cx, |m, cx| {
-                        let mut c = m.choice().clone();
-                        c.submenu = !c.submenu;
-                        m.choose(c, cx);
-                    });
-                })),
-            ))
+            .child(if one_entry {
+                // Windows groups a package's commands under one entry.
+                setting(
+                    tr!("Put them in a submenu"),
+                    tr!("Windows 11 puts them under one Packwing item, in its menu and under Show more options"),
+                    held_on(),
+                )
+            } else {
+                setting(
+                    tr!("Put them in a submenu"),
+                    tr!("One packwing item, with these under it"),
+                    switch("submenu", choice.submenu).on_click(cx.listener(|this, _, _, cx| {
+                        this.menu.update(cx, |m, cx| {
+                            let mut c = m.choice().clone();
+                            c.submenu = !c.submenu;
+                            m.choose(c, cx);
+                        });
+                    })),
+                )
+            })
             .children(came)
     }
 }

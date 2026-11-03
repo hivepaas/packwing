@@ -1543,6 +1543,9 @@ t3b8f0190 = Aktifkan
 # A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
 t9e6ecd3d = Kunci diperiksa di komputer ini. Tidak ada yang dikirim ke mana pun, dan tidak ada lisensi yang mengubah apa yang dilakukan kebijakan organisasi Anda.
 
+# On
+t60e47df0 = Aktif
+
 # They show when you right-click files, folders and archives.
 te216d656 = Muncul saat Anda mengeklik kanan berkas, folder, dan arsip.
 
@@ -1563,6 +1566,9 @@ t67537dc4 = Item di menu
 
 # Put them in a submenu
 te3449a65 = Taruh dalam submenu
+
+# Windows 11 puts them under one Packwing item, in its menu and under Show more options
+t7730ec1a = Windows 11 menaruhnya di bawah satu item Packwing, di menunya dan di bawah Tampilkan opsi lainnya
 
 # One packwing item, with these under it
 tb5fdc584 = Satu item packwing, dengan semua ini di bawahnya
@@ -1653,9 +1659,6 @@ t4a1ed54a = Dapatkan bantuan
 
 # Not understood
 t068eea1b = Tidak dipahami
-
-# On
-t60e47df0 = Aktif
 
 # Off
 t0dc6b4aa = Mati

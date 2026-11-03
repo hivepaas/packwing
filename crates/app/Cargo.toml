@@ -49,7 +49,8 @@ packwing-update.workspace = true
 # The interface's words, in the user's language.
 packwing-i18n.workspace = true
 # The system's right-click menu: packwing's items in it (src/right_click.rs).
-context-menu = "0.2"
+# 0.2.1 says which package serves the menu on Windows (src/right_click.rs).
+context-menu = "0.2.1"
 # The date a license ends.
 time = { version = "0.3", default-features = false, features = ["std"] }
 unicode-segmentation = "1"

@@ -1260,9 +1260,9 @@ checksum = "3d52eff69cd5e647efe296129160853a42795992097e8af39800e1060caeea9b"
 
 [[package]]
 name = "context-menu"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d731f7989ebe8d2674862f9b46a9ac8d7b50dcc3e0765d6ad4d125a83cb74791"
+checksum = "b1ba54d5449dda8ebf6524315f8f6d5dd59bf03eec06550dfe65caf33863df4f"
 dependencies = [
  "winreg",
 ]
@@ -3229,9 +3229,9 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 
 [[package]]
 name = "hivepack"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57d7dba39bd3886da2a04a98a902eb0d20dc97416be65bea52630a97c87a647e"
+checksum = "0e004f128daecaeee57133edc724d24e7120a6f7fc65ca0f69f549d16d8411e1"
 dependencies = [
  "aes 0.9.3",
  "blake2s_simd",

@@ -120,3 +120,37 @@ scenario!(
         assert_eq!(rem(ui), gpui::px(16.));
     }
 );
+
+scenario!(
+    /// Where Windows shows packwing's items in one entry, Put them in a submenu is
+    /// held on, and stays so as the items change.
+    the_submenu_is_held_where_windows_makes_one_entry,
+    |ui| {
+        ui.settings(4);
+        assert!(ui.shows("submenu"));
+        assert!(!ui.shows("submenu-held"));
+        ui.ws(|ws, _, cx| ws.right_click().update(cx, |m, cx| m.set_one_entry(cx)));
+        assert!(!ui.shows("submenu"), "a switch that does nothing");
+        assert!(ui.shows("submenu-held"));
+        let held = |ui: &mut Ui| ui.ws(|ws, _, cx| ws.right_click().read(cx).choice().submenu);
+        ui.click("item-0");
+        assert!(held(ui), "the items left their submenu");
+        // The first run's choice, which has no submenu, as the welcome makes it.
+        ui.ws(|ws, _, cx| {
+            ws.right_click()
+                .update(cx, |m, cx| m.choose(crate::right_click::Choice::default(), cx))
+        });
+        assert!(held(ui), "chosen without a submenu");
+        // Out of the menu with no items, and in again with the first run's.
+        ui.ws(|ws, _, cx| {
+            let none = crate::right_click::Choice {
+                items: Vec::new(),
+                submenu: false,
+            };
+            ws.right_click().update(cx, |m, cx| m.choose(none, cx))
+        });
+        ui.click("shown");
+        assert!(ui.ws(|ws, _, cx| ws.right_click().read(cx).shown()));
+        assert!(held(ui), "in again without a submenu");
+    }
+);

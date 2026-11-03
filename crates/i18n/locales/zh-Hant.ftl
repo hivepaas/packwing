@@ -1543,6 +1543,9 @@ t3b8f0190 = 啟用
 # A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
 t9e6ecd3d = 金鑰只在這台電腦上檢查，不會傳送到任何地方，授權也不會改變你組織政策的效果。
 
+# On
+t60e47df0 = 開啟
+
 # They show when you right-click files, folders and archives.
 te216d656 = 在你對檔案、資料夾和封存檔按右鍵時顯示。
 
@@ -1563,6 +1566,9 @@ t67537dc4 = 選單中的項目
 
 # Put them in a submenu
 te3449a65 = 放進子選單
+
+# Windows 11 puts them under one Packwing item, in its menu and under Show more options
+t7730ec1a = Windows 11 會把它們放在一個 Packwing 項目下，無論在其選單中還是「顯示更多選項」中
 
 # One packwing item, with these under it
 tb5fdc584 = 只顯示一個 packwing 項目，這些項目在其下方
@@ -1653,9 +1659,6 @@ t4a1ed54a = 取得協助
 
 # Not understood
 t068eea1b = 無法理解
-
-# On
-t60e47df0 = 開啟
 
 # Off
 t0dc6b4aa = 關閉
