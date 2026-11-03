@@ -18,14 +18,13 @@ gpui = { package = "gpui-pre", version = "=0.3.9" }
 gpui_platform = { package = "gpui-pre-platform", version = "=0.3.9", default-features = false, features = ["font-kit", "runtime_shaders"] }
 
 # hivepack, packwing's archive library: one crate, a module for each format.
-# From its repository at one commit, which has what 0.1.0 on crates.io lacks
-# (sevenz's Writer::set_method), until a release has it.
+# 0.2 has sevenz's Writer::set_method.
 #
 # With `rar`, under UnRAR's license (GPL-ADDITIONAL-PERMISSION.md), and with
 # `unsafe-fast`, which hivepack leaves off by default: the processor's CRC-32
 # instructions, and the unchecked fast loops of zstd, LZ4 and Deflate. What
 # each does is in hivepack's docs/unsafe.md.
-hivepack = { git = "https://github.com/hivepaas/hivepack-rs", rev = "11c7b3ad72d1b7a18bdd744e17f913ab61a993e7", features = ["rar", "unsafe-fast"] }
+hivepack = { version = "0.2", features = ["rar", "unsafe-fast"] }
 packwing-core = { path = "crates/core" }
 packwing-remote = { path = "crates/remote" }
 packwing-i18n = { path = "crates/i18n" }

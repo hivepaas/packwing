@@ -3216,8 +3216,9 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 
 [[package]]
 name = "hivepack"
-version = "0.1.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=11c7b3ad72d1b7a18bdd744e17f913ab61a993e7#11c7b3ad72d1b7a18bdd744e17f913ab61a993e7"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57d7dba39bd3886da2a04a98a902eb0d20dc97416be65bea52630a97c87a647e"
 dependencies = [
  "aes 0.9.3",
  "blake2s_simd",
@@ -7567,7 +7568,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.3.4",
+ "getrandom 0.4.3",
  "once_cell",
  "rustix",
  "windows-sys 0.61.2",
@@ -8679,7 +8680,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.48.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
