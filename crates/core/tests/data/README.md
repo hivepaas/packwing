@@ -10,6 +10,9 @@ packwing-core's tests read them.
 - `sample.7z`: 7-Zip's defaults, LZMA2 in one solid block.
 - `secret.7z`: the same, its files encrypted with AES; password `secret`.
 - `hidden.7z`: the same, its names encrypted too (`-mhe=on`).
+- `notes.tlz`: a tar archive (`./docs/notes.txt`, `./numbers.txt`,
+  `./table.csv`) under `lzma -9` (xz 5.8), with the short name of `.tar.lzma`,
+  which has no magic: told by its name.
 - `tiny.pkg`, `default.xar`: hivepack-rs's `testdata/xar` (made on macOS
   27.0.1 with `pkgbuild` and `xar`; MIT, Copyright (c) 2026 HivePaaS). The
   package's one file is `Payload/usr/local/share/example/readme.txt`, in a

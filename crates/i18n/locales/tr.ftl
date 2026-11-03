@@ -1556,6 +1556,9 @@ t3b8f0190 = Etkinleştir
 # A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
 t9e6ecd3d = Anahtar bu bilgisayarda denetlenir. Hiçbir yere bir şey gönderilmez ve hiçbir lisans, kuruluşunuzun ilkelerinin yaptığı şeyi değiştirmez.
 
+# On
+t60e47df0 = Açık
+
 # They show when you right-click files, folders and archives.
 te216d656 = Dosyalara, klasörlere ve arşivlere sağ tıkladığınızda görünürler.
 
@@ -1576,6 +1579,9 @@ t67537dc4 = Menüdeki öğeler
 
 # Put them in a submenu
 te3449a65 = Alt menüye koy
+
+# Windows 11 puts them under one Packwing item, in its menu and under Show more options
+t7730ec1a = Windows 11 bunları hem kendi menüsünde hem de “Daha fazla seçenek göster” altında tek bir Packwing öğesinde toplar
 
 # One packwing item, with these under it
 tb5fdc584 = Tek bir packwing öğesi, bunlar altında
@@ -1666,9 +1672,6 @@ t4a1ed54a = Yardım al
 
 # Not understood
 t068eea1b = Anlaşılamadı
-
-# On
-t60e47df0 = Açık
 
 # Off
 t0dc6b4aa = Kapalı

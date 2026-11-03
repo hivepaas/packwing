@@ -1556,6 +1556,9 @@ t3b8f0190 = Aktivieren
 # A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
 t9e6ecd3d = Ein Schlüssel wird auf diesem Computer geprüft. Nichts wird irgendwohin gesendet, und keine Lizenz ändert, was die Richtlinien deiner Organisation bewirken.
 
+# On
+t60e47df0 = An
+
 # They show when you right-click files, folders and archives.
 te216d656 = Sie erscheinen, wenn du Dateien, Ordner und Archive mit der rechten Maustaste anklickst.
 
@@ -1576,6 +1579,9 @@ t67537dc4 = Einträge im Menü
 
 # Put them in a submenu
 te3449a65 = In ein Untermenü legen
+
+# Windows 11 puts them under one Packwing item, in its menu and under Show more options
+t7730ec1a = Windows 11 fasst sie unter einem Eintrag „Packwing“ zusammen, im eigenen Menü und unter „Weitere Optionen anzeigen“
 
 # One packwing item, with these under it
 tb5fdc584 = Ein packwing-Eintrag mit diesen darunter
@@ -1666,9 +1672,6 @@ t4a1ed54a = Hilfe
 
 # Not understood
 t068eea1b = Nicht verstanden
-
-# On
-t60e47df0 = An
 
 # Off
 t0dc6b4aa = Aus

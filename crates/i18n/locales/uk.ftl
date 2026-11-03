@@ -1582,6 +1582,9 @@ t3b8f0190 = Активувати
 # A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
 t9e6ecd3d = Ключ перевіряється на цьому комп’ютері. Нічого нікуди не надсилається, і жодна ліцензія не змінює того, що роблять політики вашої організації.
 
+# On
+t60e47df0 = Увімкнено
+
 # They show when you right-click files, folders and archives.
 te216d656 = Вони з’являються, коли ви клацаєте правою кнопкою файли, папки й архіви.
 
@@ -1602,6 +1605,9 @@ t67537dc4 = Пункти меню
 
 # Put them in a submenu
 te3449a65 = Помістити їх у підменю
+
+# Windows 11 puts them under one Packwing item, in its menu and under Show more options
+t7730ec1a = Windows 11 збирає їх в один пункт Packwing — і у своєму меню, і в «Показати додаткові параметри»
 
 # One packwing item, with these under it
 tb5fdc584 = Один пункт packwing, а ці — під ним
@@ -1692,9 +1698,6 @@ t4a1ed54a = Отримати допомогу
 
 # Not understood
 t068eea1b = Не зрозуміло
-
-# On
-t60e47df0 = Увімкнено
 
 # Off
 t0dc6b4aa = Вимк.

@@ -1543,6 +1543,9 @@ t3b8f0190 = 激活
 # A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
 t9e6ecd3d = 密钥在此电脑上验证。不会向任何地方发送任何内容，许可证也不会改变你所在组织的策略效果。
 
+# On
+t60e47df0 = 开
+
 # They show when you right-click files, folders and archives.
 te216d656 = 当你右键单击文件、文件夹和压缩包时显示。
 
@@ -1563,6 +1566,9 @@ t67537dc4 = 菜单中的项目
 
 # Put them in a submenu
 te3449a65 = 放入子菜单
+
+# Windows 11 puts them under one Packwing item, in its menu and under Show more options
+t7730ec1a = Windows 11 会把它们放在一个 Packwing 项下，无论在其菜单中还是“显示更多选项”中
 
 # One packwing item, with these under it
 tb5fdc584 = 只显示一个 packwing 项，这些项目在其下
@@ -1653,9 +1659,6 @@ t4a1ed54a = 获取帮助
 
 # Not understood
 t068eea1b = 无法识别
-
-# On
-t60e47df0 = 开
 
 # Off
 t0dc6b4aa = 关闭

@@ -1543,6 +1543,9 @@ t3b8f0190 = 활성화
 # A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
 t9e6ecd3d = 키는 이 컴퓨터에서 확인합니다. 어디로도 전송되지 않으며, 라이선스가 조직 정책의 동작을 바꾸지 않습니다.
 
+# On
+t60e47df0 = 켜짐
+
 # They show when you right-click files, folders and archives.
 te216d656 = 파일, 폴더, 압축 파일을 마우스 오른쪽 버튼으로 클릭하면 표시됩니다.
 
@@ -1563,6 +1566,9 @@ t67537dc4 = 메뉴 항목
 
 # Put them in a submenu
 te3449a65 = 하위 메뉴에 넣기
+
+# Windows 11 puts them under one Packwing item, in its menu and under Show more options
+t7730ec1a = Windows 11은 메뉴와 ‘더 많은 옵션 표시’ 모두에서 이 항목들을 하나의 Packwing 항목 아래에 둡니다
 
 # One packwing item, with these under it
 tb5fdc584 = packwing 항목 하나 아래에 이 항목들을 모읍니다
@@ -1653,9 +1659,6 @@ t4a1ed54a = 도움말
 
 # Not understood
 t068eea1b = 이해할 수 없음
-
-# On
-t60e47df0 = 켜짐
 
 # Off
 t0dc6b4aa = 끔

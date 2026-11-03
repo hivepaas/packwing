@@ -2628,3 +2628,12 @@ fn an_archive_under_another_name_opens() {
         }
     }
 }
+
+/// `.tlz`, `.tar.lzma`'s short name: .lzma has no magic, and is told by its name.
+#[test]
+fn a_tar_lzma_under_its_short_name_opens() {
+    let tlz = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/notes.tlz");
+    let listing = list(&tlz, &Keys::default()).unwrap();
+    assert_eq!(listing.files, 3);
+    test(&tlz, &Keys::default(), &Control::default()).unwrap();
+}

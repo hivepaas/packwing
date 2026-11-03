@@ -30,14 +30,14 @@ pub const ID: &str = "packwing";
 /// `rpm` a package whose payload is a cpio archive; `pkg` a macOS package, a
 /// XAR archive.
 #[rustfmt::skip]
-pub const ARCHIVES: [&str; 32] = [
+pub const ARCHIVES: [&str; 33] = [
     // ZIP, and what is one under its own name
     "zip", "jar", "war", "ear", "apk", "xpi", "epub", "cbz",
     // RAR and 7z
     "rar", "cbr", "7z", "cb7",
     // tar, and compressed: as `.tar.<it>`, its short name, or a file alone
     "tar", "cbt", "gz", "tgz", "bz2", "tbz2", "tbz", "xz", "txz", "zst", "tzst", "lz4",
-    "tlz4", "lz", "lzma",
+    "tlz4", "lz", "lzma", "tlz",
     // Disc images and packages
     "iso", "cpio", "rpm", "xar", "pkg",
 ];
@@ -221,6 +221,11 @@ pub struct RightClickMenu {
     shown: bool,
     /// The items, kept while packwing is not in the menu too.
     choice: Choice,
+    /// Windows 11 shows the menu as one entry, a submenu: packwing's package
+    /// serves it (context-menu-rs's `serving_package`), and Windows groups a
+    /// package's commands under one entry. Then the items go in a submenu,
+    /// whatever was chosen.
+    one_entry: bool,
     status: Status,
     /// Changes the system's menu: not in tests, which change nothing.
     system: bool,
@@ -237,15 +242,20 @@ impl RightClickMenu {
         let mut this = RightClickMenu {
             shown: false,
             choice: Choice::default(),
+            one_entry: context_menu::windows::serving_package(ID).is_some(),
             status: Status::Idle,
             system: true,
             changes: 0,
             job: None,
         };
+        if this.one_entry {
+            this.choice.submenu = true;
+        }
         match read() {
             Ok(Some(menu)) => {
                 this.shown = true;
                 this.choice = Choice::of(&menu);
+                this.choice.submenu |= this.one_entry;
                 this.apply(true, cx);
             }
             Ok(None) => {}
@@ -260,6 +270,7 @@ impl RightClickMenu {
         RightClickMenu {
             shown,
             choice,
+            one_entry: false,
             status,
             system: false,
             changes: 0,
@@ -279,6 +290,19 @@ impl RightClickMenu {
         &self.status
     }
 
+    /// Whether the system shows the items in one entry, whatever is chosen.
+    pub fn one_entry(&self) -> bool {
+        self.one_entry
+    }
+
+    /// As when packwing's package serves the menu, for tests.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn set_one_entry(&mut self, cx: &mut Context<Self>) {
+        self.one_entry = true;
+        self.choice.submenu = true;
+        cx.notify();
+    }
+
     /// Puts packwing in the menu, or takes it out. With no items chosen,
     /// it goes in with the first run's.
     pub fn show(&mut self, shown: bool, cx: &mut Context<Self>) {
@@ -289,8 +313,10 @@ impl RightClickMenu {
         self.apply(false, cx);
     }
 
-    /// Chooses the items. With none, packwing leaves the menu.
-    pub fn choose(&mut self, choice: Choice, cx: &mut Context<Self>) {
+    /// Chooses the items. With none, packwing leaves the menu. Shown as one
+    /// entry, they are in a submenu.
+    pub fn choose(&mut self, mut choice: Choice, cx: &mut Context<Self>) {
+        choice.submenu |= self.one_entry;
         self.choice = choice;
         if self.shown {
             self.shown = !self.choice.items.is_empty();
@@ -308,6 +334,8 @@ impl RightClickMenu {
     /// Brings the system's menu to what is chosen, once the change before
     /// is done. `if_stale`: only when it is not installed so already.
     fn apply(&mut self, if_stale: bool, cx: &mut Context<Self>) {
+        // Shown as one entry, the items are in a submenu, whatever came.
+        self.choice.submenu |= self.one_entry;
         cx.notify();
         if !self.system {
             return;

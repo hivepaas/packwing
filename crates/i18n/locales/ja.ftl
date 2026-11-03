@@ -1543,6 +1543,9 @@ t3b8f0190 = 有効化
 # A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
 t9e6ecd3d = キーはこのコンピューター上で確認されます。何も外部には送信されず、ライセンスによって組織のポリシーの効果が変わることもありません。
 
+# On
+t60e47df0 = オン
+
 # They show when you right-click files, folders and archives.
 te216d656 = ファイル、フォルダ、アーカイブを右クリックしたときに表示されます。
 
@@ -1563,6 +1566,9 @@ t67537dc4 = メニューの項目
 
 # Put them in a submenu
 te3449a65 = サブメニューにまとめる
+
+# Windows 11 puts them under one Packwing item, in its menu and under Show more options
+t7730ec1a = Windows 11 では、メニューと「その他のオプションを確認」の両方で、1 つの Packwing 項目の下にまとめられます
 
 # One packwing item, with these under it
 tb5fdc584 = packwing の項目を 1 つにして、この下にまとめます
@@ -1653,9 +1659,6 @@ t4a1ed54a = ヘルプを見る
 
 # Not understood
 t068eea1b = 解釈できません
-
-# On
-t60e47df0 = オン
 
 # Off
 t0dc6b4aa = オフ

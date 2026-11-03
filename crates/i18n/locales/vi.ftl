@@ -1543,6 +1543,9 @@ t3b8f0190 = Kích hoạt
 # A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
 t9e6ecd3d = Khoá được kiểm tra ngay trên máy tính này. Không có gì được gửi đi đâu, và không giấy phép nào thay đổi chính sách của tổ chức bạn.
 
+# On
+t60e47df0 = Bật
+
 # They show when you right-click files, folders and archives.
 te216d656 = Chúng hiện khi bạn bấm chuột phải vào tệp, thư mục và tệp nén.
 
@@ -1563,6 +1566,9 @@ t67537dc4 = Các mục trong menu
 
 # Put them in a submenu
 te3449a65 = Đặt trong menu con
+
+# Windows 11 puts them under one Packwing item, in its menu and under Show more options
+t7730ec1a = Windows 11 gom chúng vào một mục Packwing, trong menu của nó và trong “Hiển thị thêm tùy chọn”
 
 # One packwing item, with these under it
 tb5fdc584 = Một mục packwing, các mục này nằm bên dưới
@@ -1653,9 +1659,6 @@ t4a1ed54a = Nhận trợ giúp
 
 # Not understood
 t068eea1b = Không hiểu
-
-# On
-t60e47df0 = Bật
 
 # Off
 t0dc6b4aa = Tắt
