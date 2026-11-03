@@ -1244,8 +1244,8 @@ t2b8f2459 = Les fichiers volumineux ne prennent pas de place sur cet ordinateur,
 # Don’t compress what already is
 t940ec31d = Ne pas compresser ce qui l’est déjà
 
-# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
-tb10eab86 = Pour ZIP : images, vidéos, sons et archives y vont tels quels, plus vite et pas plus gros
+# For ZIP and 7z: pictures, video, sound and archives go in as they are, sooner and no larger
+t4de1e81e = Pour ZIP et 7z : images, vidéos, sons et archives y vont tels quels, plus vite et pas plus gros
 
 # What goes in as it is
 tc0104b29 = Ce qui y va tel quel

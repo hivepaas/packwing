@@ -1231,8 +1231,8 @@ t2b8f2459 = 大きなファイルがこのコンピューターの容量を使�
 # Don’t compress what already is
 t940ec31d = 圧縮済みのファイルは圧縮しない
 
-# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
-tb10eab86 = ZIP の場合: 画像・動画・音声・アーカイブをそのまま格納するので、速く、サイズも大きくなりません
+# For ZIP and 7z: pictures, video, sound and archives go in as they are, sooner and no larger
+t4de1e81e = ZIP と 7z の場合: 画像・動画・音声・アーカイブをそのまま格納するので、速く、サイズも大きくなりません
 
 # What goes in as it is
 tc0104b29 = そのまま格納するもの

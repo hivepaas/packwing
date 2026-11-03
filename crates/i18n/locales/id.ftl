@@ -1231,8 +1231,8 @@ t2b8f2459 = Berkas yang lebih besar tidak memakan ruang di komputer ini, tetapi 
 # Don’t compress what already is
 t940ec31d = Jangan kompres yang sudah terkompresi
 
-# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
-tb10eab86 = Untuk ZIP: gambar, video, audio, dan arsip masuk apa adanya, lebih cepat dan tidak lebih besar
+# For ZIP and 7z: pictures, video, sound and archives go in as they are, sooner and no larger
+t4de1e81e = Untuk ZIP dan 7z: gambar, video, audio, dan arsip masuk apa adanya, lebih cepat dan tidak lebih besar
 
 # What goes in as it is
 tc0104b29 = Yang masuk apa adanya

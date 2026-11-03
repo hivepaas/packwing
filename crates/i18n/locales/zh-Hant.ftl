@@ -1231,8 +1231,8 @@ t2b8f2459 = 較大的檔案不會佔用這台電腦的空間，但若連線中�
 # Don’t compress what already is
 t940ec31d = 不再壓縮已壓縮的檔案
 
-# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
-tb10eab86 = ZIP：圖片、影片、音訊和封存檔原樣放入，更快且不會變大
+# For ZIP and 7z: pictures, video, sound and archives go in as they are, sooner and no larger
+t4de1e81e = ZIP 和 7z：圖片、影片、音訊和封存檔原樣放入，更快且不會變大
 
 # What goes in as it is
 tc0104b29 = 原樣放入的檔案

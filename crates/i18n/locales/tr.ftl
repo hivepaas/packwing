@@ -1244,8 +1244,8 @@ t2b8f2459 = Büyük dosyalar bu bilgisayarda yer kaplamaz, ama bağlantı kesili
 # Don’t compress what already is
 t940ec31d = Zaten sıkıştırılmış olanı sıkıştırma
 
-# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
-tb10eab86 = ZIP için: resimler, video, ses ve arşivler olduğu gibi girer; daha hızlı ve daha büyük değil
+# For ZIP and 7z: pictures, video, sound and archives go in as they are, sooner and no larger
+t4de1e81e = ZIP ve 7z için: resimler, video, ses ve arşivler olduğu gibi girer; daha hızlı ve daha büyük değil
 
 # What goes in as it is
 tc0104b29 = Olduğu gibi girenler

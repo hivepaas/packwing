@@ -162,9 +162,10 @@ pub struct NewArchive {
     pub whole_with_age: bool,
     /// Encrypts a 7z archive's names too, with its password.
     pub hide_names: bool,
-    /// The extensions of files a ZIP archive holds as they are, whatever their
-    /// case: those compressed already, as [`COMPRESSED_EXTENSIONS`], which
-    /// squeezed again take time and come out no smaller.
+    /// The extensions of files held as they are, whatever their case: those
+    /// compressed already, as [`COMPRESSED_EXTENSIONS`], which squeezed again
+    /// take time and come out no smaller. A ZIP archive stores each; a 7z one
+    /// puts them after the rest, in a folder of their own, stored.
     pub stored_extensions: Vec<String>,
     /// Leaves out what only a Mac uses, under the paths chosen: `.DS_Store`,
     /// `__MACOSX` and the `._` files of resource forks.
@@ -1000,7 +1001,17 @@ fn write_7z<W: Write + Seek>(
     };
     let mut archive = hivepack::sevenz::Writer::with_options(out, options)?;
     let mut buf = vec![0; PIECE];
-    for item in &items {
+    // What is compressed already comes last, stored in a folder of its own, and
+    // the rest stays together in one, which compresses it best.
+    let (stored, squeezed): (Vec<&Item>, Vec<&Item>) = items.iter().partition(|item| {
+        new.level != Level::Store
+            && item.metadata.is_file()
+            && has_extension_in(&item.name, &new.stored_extensions)
+    });
+    for (i, item) in squeezed.iter().chain(&stored).enumerate() {
+        if i == squeezed.len() {
+            archive.set_method(hivepack::sevenz::Method::Copy)?;
+        }
         // 7-Zip keeps a Unix mode above its own attributes, marked by 0x8000.
         let attributes = attributes(&item.metadata).1 | 0x8000;
         let entry = hivepack::sevenz::NewEntry {

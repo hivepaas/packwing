@@ -1231,8 +1231,8 @@ t2b8f2459 = 큰 파일이 이 컴퓨터의 공간을 차지하지 않지만, 연
 # Don’t compress what already is
 t940ec31d = 이미 압축된 것은 압축하지 않기
 
-# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
-tb10eab86 = ZIP: 사진, 동영상, 오디오, 압축 파일을 그대로 넣어 더 빠르고 크기도 커지지 않습니다
+# For ZIP and 7z: pictures, video, sound and archives go in as they are, sooner and no larger
+t4de1e81e = ZIP과 7z: 사진, 동영상, 오디오, 압축 파일을 그대로 넣어 더 빠르고 크기도 커지지 않습니다
 
 # What goes in as it is
 tc0104b29 = 그대로 넣을 파일

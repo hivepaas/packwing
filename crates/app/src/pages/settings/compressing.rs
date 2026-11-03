@@ -150,7 +150,7 @@ impl Render for Compressing {
             ))
             .child(setting(
                 tr!("Don’t compress what already is"),
-                tr!("For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger"),
+                tr!("For ZIP and 7z: pictures, video, sound and archives go in as they are, sooner and no larger"),
                 toggle("store-compressed", self.store_compressed, |s| {
                     s.store_compressed = !s.store_compressed
                 }),

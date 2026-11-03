@@ -1270,8 +1270,8 @@ t2b8f2459 = Більші файли не займають місця на цьо
 # Don’t compress what already is
 t940ec31d = Не стискати вже стиснене
 
-# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
-tb10eab86 = Для ZIP: зображення, відео, звук і архіви кладуться як є — швидше й не більші
+# For ZIP and 7z: pictures, video, sound and archives go in as they are, sooner and no larger
+t4de1e81e = Для ZIP і 7z: зображення, відео, звук і архіви кладуться як є — швидше й не більші
 
 # What goes in as it is
 tc0104b29 = Що кладеться як є
