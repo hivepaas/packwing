@@ -311,22 +311,18 @@ pub fn window_chrome(
     let (mac, windows) = (cfg!(target_os = "macos"), cfg!(target_os = "windows"));
     let row = || div().flex().items_center().h_full();
     let mut switch = Some(row().gap(px(8.)).children(badge).child(switch));
+    // On Windows, as in shellwing, the bar is no drag area itself: what is marked
+    // in it is, and the caption buttons come after, outside any. GPUI answers
+    // Windows with the first control area painted under the pointer, and a
+    // parent paints before its children: buttons inside a drag area would be the
+    // caption to Windows, and a press on them would do nothing.
+    // Full screen has no caption: Windows ignores the control areas then.
+    let caption = (windows && !fullscreen).then(|| windows_buttons(window));
+    let drag = || row().window_control_area(WindowControlArea::Drag);
     // What each end of the bar holds: the window's buttons, and the switch
     // on their inner side.
     let (left, right) = if windows {
-        // Full screen has no caption: Windows ignores the control areas then.
-        let buttons = (!fullscreen).then(|| windows_buttons(window));
-        // Every part of the bar but the buttons drags. GPUI answers Windows with
-        // the first control area painted under the pointer, and a parent paints
-        // before its children: the buttons must not be inside a drag area, or
-        // Windows sees the caption where they are, and a press does nothing.
-        let drag = || row().window_control_area(WindowControlArea::Drag);
-        (
-            drag(),
-            row()
-                .child(drag().pl(px(6.)).children(switch.take()))
-                .children(buttons),
-        )
+        (drag(), drag().pl(px(6.)).children(switch.take()))
     } else if mac {
         // The system draws the traffic lights over the left end.
         let after = TRAFFIC_LIGHTS.x + px(TRAFFIC_LIGHTS_W + 10.);
@@ -391,6 +387,7 @@ pub fn window_chrome(
                     .when(windows, |d| d.window_control_area(WindowControlArea::Drag)),
             )
             .child(right)
+            .children(caption)
     });
     let (inset, border) = (px(INSET), px(BORDER));
     let floating = !(t.top && t.bottom && t.left && t.right);
