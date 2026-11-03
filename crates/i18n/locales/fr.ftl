@@ -333,6 +333,9 @@ t1926d127 = Nouveau dossier
 # Give it a name, without / or \ in it.
 ta598b15b = Donnez-lui un nom, sans / ni \.
 
+# A file of that name is there already: this one will be {name}.
+t9451c3b1 = Un fichier de ce nom existe déjà : celui-ci sera { $name }.
+
 # Hide advanced
 tae2a96e9 = Masquer les options avancées
 
@@ -836,6 +839,12 @@ tb60fb288 = Affichage impossible
 # Open with default app
 t5ef80ec5 = Ouvrir avec l'application par défaut
 
+# Another job is making {name} there now: give this one another name, or wait for it to end.
+tc8c2bae0 = Une autre tâche crée { $name } à cet endroit : donnez un autre nom à celle-ci, ou attendez qu'elle se termine.
+
+# Another job is extracting into {folder} now: choose another folder, or wait for it to end.
+t042cbb2a = Une autre tâche extrait dans { $folder } : choisissez un autre dossier, ou attendez qu'elle se termine.
+
 # no editor command
 tbf2a5d3a = aucune commande d'éditeur
 
@@ -1126,6 +1135,39 @@ t6d165412 =
 
 # Check the signature
 t9d44730e = Vérifier la signature
+
+# Extracted
+t3250471f = Extrait
+
+# Archive created
+t22c69419 = Archive créée
+
+# Moved
+t82869bf0 = Déplacé
+
+# Signed
+t27c3ab35 = Signé
+
+# Waiting for a password or a key
+t0e83ae32 = En attente d'un mot de passe ou d'une clé
+
+# Enter it…
+tddb7844a = La saisir…
+
+# Show
+t29742e5c = Afficher
+
+# Stop
+t4b7f7705 = Arrêter
+
+# Jobs
+t4ae6a79d = Tâches
+
+# Clear finished
+t30c178e8 = Effacer les terminées
+
+# Nothing runs in the background.
+t2573f39e = Rien ne tourne en arrière-plan.
 
 # Add to the right-click menu
 t116d3868 = Ajouter au menu contextuel

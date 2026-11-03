@@ -331,6 +331,9 @@ t1926d127 = 새 폴더
 # Give it a name, without / or \ in it.
 ta598b15b = 이름을 입력하세요. /나 \는 사용할 수 없습니다.
 
+# A file of that name is there already: this one will be {name}.
+t9451c3b1 = 이름이 같은 파일이 이미 있습니다. 이 파일은 { $name }(으)로 저장됩니다.
+
 # Hide advanced
 tae2a96e9 = 고급 옵션 숨기기
 
@@ -829,6 +832,12 @@ tb60fb288 = 표시할 수 없습니다
 # Open with default app
 t5ef80ec5 = 기본 앱으로 열기
 
+# Another job is making {name} there now: give this one another name, or wait for it to end.
+tc8c2bae0 = 다른 작업이 그곳에서 { $name }을(를) 만들고 있습니다. 다른 이름을 지정하거나 끝날 때까지 기다리세요.
+
+# Another job is extracting into {folder} now: choose another folder, or wait for it to end.
+t042cbb2a = 다른 작업이 { $folder }에 압축을 풀고 있습니다. 다른 폴더를 선택하거나 끝날 때까지 기다리세요.
+
 # no editor command
 tbf2a5d3a = 편집기 명령 없음
 
@@ -1113,6 +1122,39 @@ t6d165412 =
 
 # Check the signature
 t9d44730e = 서명 확인
+
+# Extracted
+t3250471f = 압축 해제됨
+
+# Archive created
+t22c69419 = 아카이브 생성됨
+
+# Moved
+t82869bf0 = 이동됨
+
+# Signed
+t27c3ab35 = 서명됨
+
+# Waiting for a password or a key
+t0e83ae32 = 암호 또는 키를 기다리는 중
+
+# Enter it…
+tddb7844a = 입력…
+
+# Show
+t29742e5c = 보기
+
+# Stop
+t4b7f7705 = 중지
+
+# Jobs
+t4ae6a79d = 작업
+
+# Clear finished
+t30c178e8 = 완료된 항목 지우기
+
+# Nothing runs in the background.
+t2573f39e = 백그라운드에서 실행 중인 작업이 없습니다.
 
 # Add to the right-click menu
 t116d3868 = 마우스 오른쪽 버튼 메뉴에 추가

@@ -331,6 +331,9 @@ t1926d127 = 新增資料夾
 # Give it a name, without / or \ in it.
 ta598b15b = 請輸入名稱，不可包含 / 或 \。
 
+# A file of that name is there already: this one will be {name}.
+t9451c3b1 = 已有同名檔案：此檔案將命名為 { $name }。
+
 # Hide advanced
 tae2a96e9 = 隱藏進階選項
 
@@ -829,6 +832,12 @@ tb60fb288 = 無法顯示
 # Open with default app
 t5ef80ec5 = 以預設應用程式開啟
 
+# Another job is making {name} there now: give this one another name, or wait for it to end.
+tc8c2bae0 = 另一個工作正在那裡建立 { $name }：請為這個工作換個名稱，或等它結束。
+
+# Another job is extracting into {folder} now: choose another folder, or wait for it to end.
+t042cbb2a = 另一個工作正在解壓縮到 { $folder }：請選擇其他資料夾，或等它結束。
+
 # no editor command
 tbf2a5d3a = 未設定編輯器指令
 
@@ -1113,6 +1122,39 @@ t6d165412 =
 
 # Check the signature
 t9d44730e = 驗證簽章
+
+# Extracted
+t3250471f = 已解壓縮
+
+# Archive created
+t22c69419 = 已建立封存檔
+
+# Moved
+t82869bf0 = 已移動
+
+# Signed
+t27c3ab35 = 已簽署
+
+# Waiting for a password or a key
+t0e83ae32 = 正在等待密碼或金鑰
+
+# Enter it…
+tddb7844a = 輸入…
+
+# Show
+t29742e5c = 顯示
+
+# Stop
+t4b7f7705 = 停止
+
+# Jobs
+t4ae6a79d = 工作
+
+# Clear finished
+t30c178e8 = 清除已完成
+
+# Nothing runs in the background.
+t2573f39e = 背景中沒有正在執行的工作。
 
 # Add to the right-click menu
 t116d3868 = 加入右鍵選單

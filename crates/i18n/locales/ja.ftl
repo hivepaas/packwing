@@ -331,6 +331,9 @@ t1926d127 = 新しいフォルダ
 # Give it a name, without / or \ in it.
 ta598b15b = / や \ を含まない名前を付けてください。
 
+# A file of that name is there already: this one will be {name}.
+t9451c3b1 = 同じ名前のファイルがすでにあります。このファイルは { $name } になります。
+
 # Hide advanced
 tae2a96e9 = 詳細設定を隠す
 
@@ -829,6 +832,12 @@ tb60fb288 = 表示できませんでした
 # Open with default app
 t5ef80ec5 = 既定のアプリで開く
 
+# Another job is making {name} there now: give this one another name, or wait for it to end.
+tc8c2bae0 = 別のジョブがそこで { $name } を作成中です。別の名前にするか、終わるまでお待ちください。
+
+# Another job is extracting into {folder} now: choose another folder, or wait for it to end.
+t042cbb2a = 別のジョブが { $folder } に展開中です。別のフォルダーを選ぶか、終わるまでお待ちください。
+
 # no editor command
 tbf2a5d3a = エディタのコマンドがありません
 
@@ -1113,6 +1122,39 @@ t6d165412 =
 
 # Check the signature
 t9d44730e = 署名を確認
+
+# Extracted
+t3250471f = 展開しました
+
+# Archive created
+t22c69419 = アーカイブを作成しました
+
+# Moved
+t82869bf0 = 移動しました
+
+# Signed
+t27c3ab35 = 署名しました
+
+# Waiting for a password or a key
+t0e83ae32 = パスワードまたは鍵を待っています
+
+# Enter it…
+tddb7844a = 入力…
+
+# Show
+t29742e5c = 表示
+
+# Stop
+t4b7f7705 = 停止
+
+# Jobs
+t4ae6a79d = ジョブ
+
+# Clear finished
+t30c178e8 = 完了したものを消去
+
+# Nothing runs in the background.
+t2573f39e = バックグラウンドで実行中のものはありません。
 
 # Add to the right-click menu
 t116d3868 = 右クリックメニューに追加

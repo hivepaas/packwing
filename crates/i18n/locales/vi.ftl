@@ -331,6 +331,9 @@ t1926d127 = Thư mục mới
 # Give it a name, without / or \ in it.
 ta598b15b = Đặt tên, không có / hoặc \ trong đó.
 
+# A file of that name is there already: this one will be {name}.
+t9451c3b1 = Đã có một tệp tên này: tệp mới sẽ là { $name }.
+
 # Hide advanced
 tae2a96e9 = Ẩn nâng cao
 
@@ -829,6 +832,12 @@ tb60fb288 = Không hiện được
 # Open with default app
 t5ef80ec5 = Mở bằng ứng dụng mặc định
 
+# Another job is making {name} there now: give this one another name, or wait for it to end.
+tc8c2bae0 = Một tác vụ khác đang tạo { $name } ở đó: hãy đặt tên khác, hoặc chờ tác vụ đó xong.
+
+# Another job is extracting into {folder} now: choose another folder, or wait for it to end.
+t042cbb2a = Một tác vụ khác đang giải nén vào { $folder }: hãy chọn thư mục khác, hoặc chờ tác vụ đó xong.
+
 # no editor command
 tbf2a5d3a = chưa có lệnh mở trình soạn thảo
 
@@ -1113,6 +1122,39 @@ t6d165412 =
 
 # Check the signature
 t9d44730e = Kiểm tra chữ ký
+
+# Extracted
+t3250471f = Đã giải nén
+
+# Archive created
+t22c69419 = Đã tạo tệp nén
+
+# Moved
+t82869bf0 = Đã di chuyển
+
+# Signed
+t27c3ab35 = Đã ký
+
+# Waiting for a password or a key
+t0e83ae32 = Đang chờ mật khẩu hoặc khoá
+
+# Enter it…
+tddb7844a = Nhập…
+
+# Show
+t29742e5c = Xem
+
+# Stop
+t4b7f7705 = Dừng
+
+# Jobs
+t4ae6a79d = Tác vụ
+
+# Clear finished
+t30c178e8 = Xoá các tác vụ đã xong
+
+# Nothing runs in the background.
+t2573f39e = Không có gì đang chạy nền.
 
 # Add to the right-click menu
 t116d3868 = Thêm vào menu chuột phải

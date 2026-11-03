@@ -331,6 +331,9 @@ t1926d127 = 新建文件夹
 # Give it a name, without / or \ in it.
 ta598b15b = 请起个名字，不要包含 / 或 \。
 
+# A file of that name is there already: this one will be {name}.
+t9451c3b1 = 已有同名文件：此文件将命名为 { $name }。
+
 # Hide advanced
 tae2a96e9 = 隐藏高级选项
 
@@ -829,6 +832,12 @@ tb60fb288 = 无法显示
 # Open with default app
 t5ef80ec5 = 用默认应用打开
 
+# Another job is making {name} there now: give this one another name, or wait for it to end.
+tc8c2bae0 = 另一个任务正在那里创建 { $name }：请为此任务换个名称，或等它结束。
+
+# Another job is extracting into {folder} now: choose another folder, or wait for it to end.
+t042cbb2a = 另一个任务正在解压到 { $folder }：请选择其他文件夹，或等它结束。
+
 # no editor command
 tbf2a5d3a = 未设置编辑器命令
 
@@ -1113,6 +1122,39 @@ t6d165412 =
 
 # Check the signature
 t9d44730e = 验证签名
+
+# Extracted
+t3250471f = 已解压
+
+# Archive created
+t22c69419 = 已创建归档
+
+# Moved
+t82869bf0 = 已移动
+
+# Signed
+t27c3ab35 = 已签名
+
+# Waiting for a password or a key
+t0e83ae32 = 正在等待密码或密钥
+
+# Enter it…
+tddb7844a = 输入…
+
+# Show
+t29742e5c = 显示
+
+# Stop
+t4b7f7705 = 停止
+
+# Jobs
+t4ae6a79d = 任务
+
+# Clear finished
+t30c178e8 = 清除已完成
+
+# Nothing runs in the background.
+t2573f39e = 后台没有正在运行的任务。
 
 # Add to the right-click menu
 t116d3868 = 添加到右键菜单

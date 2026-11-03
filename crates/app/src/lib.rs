@@ -140,6 +140,7 @@ const ICONS: &[(&str, &[u8])] = icons![
     "folder",
     "home",
     "image",
+    "jobs",
     "lock",
     "logo",
     "logo-feather",

@@ -31,7 +31,7 @@ pub use extract::ExtractDialog;
 pub use open_file::OpenFileDialog;
 pub use open_stored::OpenStoredDialog;
 pub use password::{PasswordDialog, PasswordEvent, asked_for};
-pub use progress::ProgressDialog;
+pub use progress::{ProgressDialog, State};
 pub use remove_storage::RemoveStorageDialog;
 pub use sign::SignDialog;
 pub use transfer::TransferDialog;
@@ -46,6 +46,7 @@ use packwing_core::{
     Asked, ExtractOptions, Keys, NewArchive, OnExisting, SigningKey, Source, Storage, Transfer,
     Transferred,
 };
+use packwing_i18n::tr;
 
 use crate::colors::{Tint, colors};
 use crate::explorer::Place;
@@ -197,6 +198,46 @@ pub struct Job {
 }
 
 impl Job {
+    /// Why it cannot start while `other` runs, if it cannot: the two would write the
+    /// same new archive, or extract into the same folder.
+    pub fn clash(&self, other: &Job) -> Option<String> {
+        if let (Some(a), Some(b)) = (&self.create, &other.create) {
+            let same = match (&a.to, &b.to) {
+                (Saving::Here(x), Saving::Here(y)) => x == y,
+                (Saving::On(x), Saving::On(y)) => {
+                    (Arc::ptr_eq(&x.place.storage, &y.place.storage)
+                        || x.place.name == y.place.name)
+                        && x.folder == y.folder
+                        && x.name == y.name
+                }
+                _ => false,
+            };
+            return same.then(|| {
+                tr!(
+                    "Another job is making {name} there now: give this one another name, or \
+                     wait for it to end.",
+                    name = self.name
+                )
+            });
+        }
+        if self.verb != Verb::Extract || other.verb != Verb::Extract {
+            return None;
+        }
+        let folders =
+            |j: &Job| -> Vec<PathBuf> { j.work.iter().filter_map(|(_, to)| to.clone()).collect() };
+        let theirs = folders(other);
+        folders(self)
+            .into_iter()
+            .find(|to| theirs.contains(to))
+            .map(|to| {
+                tr!(
+                    "Another job is extracting into {folder} now: choose another folder, or \
+                     wait for it to end.",
+                    folder = to.display()
+                )
+            })
+    }
+
     /// A job that counts up at a made-up speed.
     pub fn shown(
         verb: Verb,
@@ -241,6 +282,8 @@ pub enum DialogEvent {
     Signed,
     /// A file was kept beside one shown, and the dialog stays open.
     Saved,
+    /// The job goes on behind, on the Jobs page: its dialog closes, not it.
+    Behind,
     /// An archive on a storage was chosen, to open.
     Open(Source),
     /// A license key is to be entered: Settings › License.

@@ -1,5 +1,6 @@
 //! A job under way: how far it is, how long is left, and how it ended if it
-//! failed.
+//! failed. One that takes long can go on behind, on the Jobs page, without its
+//! dialog: it is the same view, kept there, and shown again when asked.
 //!
 //! A job with work runs it in the background through packwing-core, and the
 //! dialog shows what it reports. One without (the screenshots'
@@ -41,6 +42,20 @@ struct Running {
     _work: Task<()>,
 }
 
+/// Where a job stands.
+#[derive(Clone, Debug, PartialEq)]
+pub enum State {
+    Running,
+    /// It did what it was for. Where what it made is, if it is on this computer: a
+    /// new archive, or the folder extracted to.
+    Done(Option<PathBuf>),
+    /// Stopped when asked.
+    Cancelled,
+    Failed(String),
+    /// A test that read everything: the files and bytes.
+    Passed(u64, u64),
+}
+
 pub struct ProgressDialog {
     job: Job,
     /// How much is done, 0 to 1.
@@ -54,6 +69,8 @@ pub struct ProgressDialog {
     failed: Option<String>,
     /// The files and bytes read, if it was a test and all of them were sound.
     passed: Option<(u64, u64)>,
+    /// It ended, not failing: done, and where what it made is, or stopped.
+    ended: Option<State>,
     _ticking: Task<()>,
 }
 
@@ -61,6 +78,16 @@ impl EventEmitter<DialogEvent> for ProgressDialog {}
 
 impl ProgressDialog {
     pub fn new(job: Job, cx: &mut Context<Self>) -> Self {
+        let runs = !job.work.is_empty()
+            || job.create.is_some()
+            || job.add.is_some()
+            || job.edit.is_some()
+            || job.transfer.is_some()
+            || job.sign.is_some();
+        Self::with(job, runs, cx)
+    }
+
+    fn with(job: Job, runs: bool, cx: &mut Context<Self>) -> Self {
         let ticking = cx.spawn(async move |this, cx| {
             loop {
                 cx.background_executor().timer(TICK).await;
@@ -70,13 +97,7 @@ impl ProgressDialog {
                 }
             }
         });
-        let running = (!job.work.is_empty()
-            || job.create.is_some()
-            || job.add.is_some()
-            || job.edit.is_some()
-            || job.transfer.is_some()
-            || job.sign.is_some())
-        .then(|| Self::run(&job, cx));
+        let running = runs.then(|| Self::run(&job, cx));
         ProgressDialog {
             job,
             done: 0.,
@@ -87,8 +108,53 @@ impl ProgressDialog {
             running,
             failed: None,
             passed: None,
+            ended: None,
             _ticking: ticking,
         }
+    }
+
+    /// A job that never ends, as if it ran on: what it would write is taken.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn held(job: Job, cx: &mut Context<Self>) -> Self {
+        Self::with(job, false, cx)
+    }
+
+    /// A job that does not start, for `why`: it says so, as one that failed.
+    pub fn refused(job: Job, why: String, cx: &mut Context<Self>) -> Self {
+        let mut dialog = Self::with(job, false, cx);
+        dialog.failed = Some(why);
+        dialog
+    }
+
+    /// Where it stands.
+    pub fn state(&self) -> State {
+        if let Some(why) = &self.failed {
+            return State::Failed(why.clone());
+        }
+        if let Some((files, bytes)) = self.passed {
+            return State::Passed(files, bytes);
+        }
+        self.ended.clone().unwrap_or(State::Running)
+    }
+
+    /// Whether it can go on behind, without its dialog: one that runs, and does not
+    /// change the archive open or open a file when it is done.
+    pub fn can_go_behind(&self) -> bool {
+        self.running.is_some()
+            && self.state() == State::Running
+            && matches!(
+                self.job.verb,
+                Verb::Extract | Verb::Create | Verb::Test | Verb::Copy | Verb::Move | Verb::Sign
+            )
+    }
+
+    pub fn job(&self) -> &Job {
+        &self.job
+    }
+
+    /// How much is done, 0 to 1.
+    pub fn done(&self) -> f64 {
+        self.done
     }
 
     /// Starts `job`'s work in the background: the new archive, or each archive
@@ -204,6 +270,13 @@ impl ProgressDialog {
 
     /// The job ended: done, cancelled, or failed.
     fn finish(&mut self, result: Result<Option<PathBuf>, Error>, cx: &mut Context<Self>) {
+        self.ended = match &result {
+            Ok(made) => Some(State::Done(self.made_at(made.clone()))),
+            Err(Error::Cancelled) => Some(State::Cancelled),
+            Err(_) => None,
+        };
+        // Whoever looks at it, the Jobs page among them, sees it ended.
+        cx.notify();
         match result {
             Ok(_) if self.job.add.is_some() => {
                 if let Some(a) = self.job.add.clone() {
@@ -277,6 +350,18 @@ impl ProgressDialog {
         }
     }
 
+    /// Where what it made is, on this computer: the new archive, or the folder it
+    /// extracted to.
+    fn made_at(&self, made: Option<PathBuf>) -> Option<PathBuf> {
+        if self.saving_on().is_some() {
+            return None;
+        }
+        made.or_else(|| match (self.job.verb, self.job.work.first()) {
+            (Verb::Extract, Some((_, Some(to)))) => Some(to.clone()),
+            _ => None,
+        })
+    }
+
     /// The new archive's place on a storage, if that is where it goes.
     fn saving_on(&self) -> Option<&SavingOn> {
         match self.job.create.as_ref().map(|c| &c.to) {
@@ -296,6 +381,18 @@ impl ProgressDialog {
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn set_failed(&mut self, why: String, cx: &mut Context<Self>) {
         self.failed = Some(why);
+        cx.notify();
+    }
+
+    /// Puts it where `state` says, as the Jobs page's picture shows it.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn set_state_for_test(&mut self, state: State, cx: &mut Context<Self>) {
+        match state {
+            State::Failed(why) => self.failed = Some(why),
+            State::Passed(files, bytes) => self.passed = Some((files, bytes)),
+            State::Running => self.ended = None,
+            ended => self.ended = Some(ended),
+        }
         cx.notify();
     }
 
@@ -369,7 +466,7 @@ impl ProgressDialog {
     /// One step: of the made-up job, or a look at the real one. True when
     /// the dialog has no more to count.
     fn tick(&mut self, cx: &mut Context<Self>) -> bool {
-        if self.failed.is_some() || self.passed.is_some() {
+        if self.failed.is_some() || self.passed.is_some() || self.ended.is_some() {
             return true;
         }
         if !self.uploading
@@ -406,7 +503,7 @@ impl ProgressDialog {
         false
     }
 
-    fn cancel(&mut self, cx: &mut Context<Self>) {
+    pub fn cancel(&mut self, cx: &mut Context<Self>) {
         match &self.running {
             // It stops at its next step, and closes the dialog then.
             Some(r) if self.failed.is_none() => r.cancel.cancel(),
@@ -414,7 +511,7 @@ impl ProgressDialog {
         }
     }
 
-    fn title(&self) -> String {
+    pub fn title(&self) -> String {
         match (self.job.verb, self.failed.is_some()) {
             (Verb::Extract, false) => tr!("Extracting…"),
             (Verb::Create, false) if self.uploading => tr!("Uploading…"),
@@ -438,7 +535,7 @@ impl ProgressDialog {
         }
     }
 
-    fn left(&self) -> String {
+    pub fn left(&self) -> String {
         if self.paused {
             return tr!("Paused");
         }
@@ -460,21 +557,33 @@ impl ProgressDialog {
     }
 }
 
-impl Render for ProgressDialog {
-    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let c = colors();
+impl ProgressDialog {
+    /// What it reads and where it goes, in a line.
+    pub fn detail(&self) -> String {
         let j = &self.job;
-        let detail = match &j.to {
+        match &j.to {
             Some(to) => format!("{} → {}", j.name, to),
             None => tr!("{name} · checking that every file reads", name = j.name),
-        };
-        let icon_name = match j.verb {
+        }
+    }
+
+    pub fn icon_name(&self) -> &'static str {
+        match self.job.verb {
             Verb::Extract | Verb::Open => "extract",
             Verb::Create | Verb::Add | Verb::Edit => "logo",
             Verb::Test => "shield",
             Verb::Copy | Verb::Move => "storages",
             Verb::Sign => "shield",
-        };
+        }
+    }
+}
+
+impl Render for ProgressDialog {
+    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let c = colors();
+        let j = &self.job;
+        let detail = self.detail();
+        let icon_name = self.icon_name();
         if let Some((files, bytes)) = self.passed {
             return card()
                 .gap(ui(22.))
@@ -631,8 +740,28 @@ impl Render for ProgressDialog {
             )
             .child(
                 footer()
-                    // A job that runs cannot go on without its dialog, or
-                    // pause, yet.
+                    // The samples' only goes away.
+                    .when(!real || self.can_go_behind(), |d| {
+                        d.child(
+                            button(
+                                "background",
+                                tr!("Run in background"),
+                                Fill::Tonal,
+                                Size::Medium,
+                            )
+                            .px(ui(20.))
+                            .on_click(cx.listener(
+                                move |_, _, _, cx| {
+                                    cx.emit(if real {
+                                        DialogEvent::Behind
+                                    } else {
+                                        DialogEvent::Close
+                                    })
+                                },
+                            )),
+                        )
+                    })
+                    // A job that runs cannot pause yet.
                     .when(!real, |d| {
                         d.child(
                             button(
