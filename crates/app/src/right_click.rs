@@ -23,12 +23,23 @@ pub const ID: &str = "packwing";
 
 /// What the archive items show for: the types packwing opens, by extension,
 /// and the short names of compressed tars. `gz` takes in `tar.gz`, and the
-/// others alike. Open With is for them too. `iso` is a disc image, ISO 9660
-/// or UDF; `rpm` a package whose payload is a cpio archive; `pkg` a macOS
-/// package, a XAR archive.
-pub const ARCHIVES: [&str; 17] = [
-    "zip", "rar", "7z", "tar", "gz", "tgz", "xz", "txz", "zst", "tzst", "cbz", "cbr", "iso",
-    "cpio", "rpm", "xar", "pkg",
+/// others alike. Open With is for them too. packwing tells a file by its
+/// bytes, so what is a ZIP, a RAR or a 7z archive under another name opens as
+/// one: Java's jar, war and ear, Android's apk, Firefox's xpi, an epub book, a
+/// comic book (cbz, cbr, cb7, cbt). `iso` is a disc image, ISO 9660 or UDF;
+/// `rpm` a package whose payload is a cpio archive; `pkg` a macOS package, a
+/// XAR archive.
+#[rustfmt::skip]
+pub const ARCHIVES: [&str; 32] = [
+    // ZIP, and what is one under its own name
+    "zip", "jar", "war", "ear", "apk", "xpi", "epub", "cbz",
+    // RAR and 7z
+    "rar", "cbr", "7z", "cb7",
+    // tar, and compressed: as `.tar.<it>`, its short name, or a file alone
+    "tar", "cbt", "gz", "tgz", "bz2", "tbz2", "tbz", "xz", "txz", "zst", "tzst", "lz4",
+    "tlz4", "lz", "lzma",
+    // Disc images and packages
+    "iso", "cpio", "rpm", "xar", "pkg",
 ];
 
 /// One of packwing's items.
@@ -472,14 +483,17 @@ mod tests {
         let listed: Vec<&str> = key("MimeType").split_terminator(';').collect();
         for ext in ARCHIVES {
             let glob = format!("*.{ext}");
-            let mime = globs
-                .lines()
-                .find_map(|l| {
-                    let mut parts = l.split(':').skip(1);
-                    let mime = parts.next()?;
-                    (parts.next()? == glob).then_some(mime)
-                })
-                .unwrap_or_else(|| panic!("shared-mime-info knows no type for .{ext}"));
+            let mime = globs.lines().find_map(|l| {
+                let mut parts = l.split(':').skip(1);
+                let mime = parts.next()?;
+                (parts.next()? == glob).then_some(mime)
+            });
+            // A type the desktop has no name for (war, ear, tlz4) has no Open
+            // With there: the menu's items, which go by extension, are for it.
+            let Some(mime) = mime else {
+                assert!(["war", "ear", "tlz4"].contains(&ext), "no type for .{ext}");
+                continue;
+            };
             assert!(
                 listed.contains(&mime),
                 ".{ext}'s type, {mime}, is not listed"

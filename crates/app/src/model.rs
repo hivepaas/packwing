@@ -50,14 +50,19 @@ impl Kind {
             "jpg" | "jpeg" | "png" | "gif" | "webp" | "heic" | "bmp" | "tif" | "tiff" | "svg" => {
                 Kind::Image
             }
-            "doc" | "docx" | "odt" | "rtf" | "pages" | "ppt" | "pptx" | "odp" | "key" => {
+            "doc" | "docx" | "odt" | "rtf" | "pages" | "ppt" | "pptx" | "odp" | "key" | "epub" => {
                 Kind::Document
             }
             "xls" | "xlsx" | "ods" | "csv" | "numbers" => Kind::Sheet,
             "exe" | "msi" | "dll" | "app" | "dmg" | "pkg" | "deb" | "rpm" | "sh" | "bat"
             | "cmd" | "ps1" | "js" | "lnk" | "jar" | "apk" => Kind::Program,
-            "zip" | "tar" | "gz" | "tgz" | "zst" | "xz" | "bz2" | "lz" | "lz4" | "lzma" | "7z"
-            | "rar" | "age" | "iso" | "cpio" | "xar" => Kind::Archive,
+            // Java's and Android's run, as the packages above install: packwing
+            // opens them when asked, the system when they are opened.
+            "zip" | "tar" | "gz" | "tgz" | "zst" | "tzst" | "xz" | "txz" | "bz2" | "tbz2"
+            | "tbz" | "lz" | "lz4" | "tlz4" | "lzma" | "tlz" | "7z" | "rar" | "age" | "iso"
+            | "cpio" | "xar" | "war" | "ear" | "xpi" | "cbz" | "cbr" | "cb7" | "cbt" => {
+                Kind::Archive
+            }
             _ => Kind::Text,
         }
     }
@@ -277,9 +282,11 @@ pub fn tag_of(name: &str, kind: Kind) -> String {
 /// `name` without its archive extensions and a part number: what it unpacks
 /// to (`Báo cáo.part1.rar` → `Báo cáo`, `backup.tar.zst.age` → `backup`).
 pub fn stem(name: &str) -> &str {
-    const EXTENSIONS: [&str; 22] = [
-        ".age", ".zst", ".gz", ".xz", ".bz2", ".lz4", ".lz", ".lzma", ".tgz", ".tbz2", ".txz",
-        ".tzst", ".tlz", ".tar", ".7z", ".zip", ".rar", ".iso", ".cpio", ".rpm", ".xar", ".pkg",
+    const EXTENSIONS: [&str; 34] = [
+        ".age", ".zst", ".gz", ".xz", ".bz2", ".lz4", ".lz", ".lzma", ".tgz", ".tbz2", ".tbz",
+        ".txz", ".tzst", ".tlz", ".tlz4", ".tar", ".7z", ".zip", ".rar", ".iso", ".cpio", ".rpm",
+        ".xar", ".pkg", ".jar", ".war", ".ear", ".apk", ".xpi", ".epub", ".cbz", ".cbr", ".cb7",
+        ".cbt",
     ];
     let mut s = name;
     while let Some(rest) = EXTENSIONS
@@ -533,6 +540,20 @@ mod tests {
         assert_eq!(Kind::of("photo.jpeg", false), Kind::Image);
         assert_eq!(Kind::of("setup.exe", false), Kind::Program);
         assert_eq!(Kind::of("backup.tar.zst", false), Kind::Archive);
+        // Short names of compressed tars, and what is an archive under its own.
+        for name in [
+            "a.tbz2", "a.tlz4", "a.tzst", "a.war", "a.ear", "a.xpi", "a.cbz", "a.cbr",
+        ] {
+            assert_eq!(Kind::of(name, false), Kind::Archive, "{name}");
+        }
+        // Java's and Android's run, as packages do; an epub is a book.
+        assert_eq!(Kind::of("a.jar", false), Kind::Program);
+        assert_eq!(Kind::of("a.apk", false), Kind::Program);
+        assert_eq!(Kind::of("a.epub", false), Kind::Document);
+        assert_eq!(stem("Báo cáo.apk"), "Báo cáo");
+        assert_eq!(stem("ứng dụng.war"), "ứng dụng");
+        assert_eq!(stem("truyện.cbz"), "truyện");
+        assert_eq!(stem("sao lưu.tlz4"), "sao lưu");
         assert_eq!(Kind::of("Makefile", false), Kind::Text);
         assert_eq!(Kind::of("docs", true), Kind::Folder);
     }
