@@ -1756,6 +1756,12 @@ fn the_route_follows_the_storage_the_format_and_the_size() {
     assert_eq!(route(&across, &[], &tar(None), 1000), Route::Temporary);
     assert_eq!(route(&across, &[], &zip, 1000), Route::Straight);
     assert_eq!(route(&across, &[], &seven, 1000), Route::Temporary);
+    // Encrypted whole with age, a 7z archive is made first and goes forwards.
+    let sealed = NewArchive {
+        whole_with_age: true,
+        ..seven.clone()
+    };
+    assert_eq!(route(&across, &[], &sealed, 1000), Route::Straight);
     assert_eq!(route(&across, &[], &parts, 1000), Route::Temporary);
     across.writes_anywhere = true;
     assert_eq!(route(&across, &[], &seven, 1000), Route::Straight);
@@ -2290,6 +2296,91 @@ fn what_age_cannot_do_is_refused_before_anything_is_made() {
         assert!(e.is_err(), "{how:?}");
         assert!(files_in(&there).is_empty());
     }
+}
+
+#[test]
+fn zip_and_7z_encrypted_whole_with_age_read_back_and_age_agrees() {
+    let (what, there, _) = up_scratch("age-whole");
+    let passphrase = Keys {
+        passphrase: Some(b"correct horse".to_vec()),
+        ..Keys::default()
+    };
+    let key = Keys {
+        key_file: Some(AGE_KEY.as_bytes().to_vec()),
+        ..Keys::default()
+    };
+    let key_file = there.join("key.txt");
+    fs::write(&key_file, AGE_KEY).unwrap();
+    let identity = key_file.to_string_lossy().into_owned();
+    for (kind, ext, magic) in [
+        (Kind::Zip, "zip", &b"PK\x03\x04"[..]),
+        (Kind::SevenZip, "7z", &b"7z\xbc\xaf\x27\x1c"[..]),
+    ] {
+        for (to_keys, keys) in [(false, &passphrase), (true, &key)] {
+            let how = NewArchive {
+                kind,
+                password: (!to_keys).then(|| b"correct horse".to_vec()),
+                age_keys: if to_keys {
+                    vec![AGE_PUBLIC.to_owned()]
+                } else {
+                    Vec::new()
+                },
+                whole_with_age: true,
+                ..NewArchive::default()
+            };
+            let made = create(
+                std::slice::from_ref(&what),
+                &there.join(format!("a-{to_keys}.{ext}.age")),
+                &how,
+                &Control::default(),
+            )
+            .unwrap();
+            // Its names cannot be read without what it was encrypted to.
+            assert!(
+                list(Source::from(made.clone()), &Keys::default()).is_err(),
+                "{how:?}"
+            );
+            assert!(
+                names_in(&made, keys).contains(&"what/noise.bin".to_owned()),
+                "{how:?}"
+            );
+            let out = there.join(format!("out-{ext}-{to_keys}"));
+            extract(&made, &out, keys, &Control::default()).unwrap();
+            assert_eq!(
+                fs::read(out.join("what/noise.bin")).unwrap(),
+                fs::read(what.join("noise.bin")).unwrap(),
+                "{how:?}"
+            );
+            if to_keys && let Some(inner) = age_decrypts(&["-i", &identity], &made) {
+                // Under age, the archive itself, with no password of its own.
+                assert_eq!(&inner[..magic.len()], magic, "{how:?}");
+            }
+        }
+    }
+}
+
+#[test]
+fn a_7z_archive_encrypted_whole_with_age_goes_straight() {
+    let (what, there, mut across) = up_scratch("age-whole-straight");
+    across.sends_as_read = true;
+    let how = NewArchive {
+        kind: Kind::SevenZip,
+        stream_above: Some(0),
+        age_keys: vec![AGE_PUBLIC.to_owned()],
+        whole_with_age: true,
+        ..NewArchive::default()
+    };
+    assert!(!up(&what, &across, "a.7z.age", &how, &Control::default()).unwrap());
+    let keys = Keys {
+        key_file: Some(AGE_KEY.as_bytes().to_vec()),
+        ..Keys::default()
+    };
+    let out = there.join("out");
+    extract(there.join("a.7z.age"), &out, &keys, &Control::default()).unwrap();
+    assert_eq!(
+        fs::read(out.join("what/noise.bin")).unwrap(),
+        fs::read(what.join("noise.bin")).unwrap()
+    );
 }
 
 #[test]

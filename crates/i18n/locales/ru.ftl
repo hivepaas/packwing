@@ -1717,14 +1717,14 @@ t8dd055c6 = Не удалось записать { $path }: { $e }
 # {wanted} and the names after it are taken.
 t40554bf6 = { $wanted } и следующие за ним имена заняты.
 
-# Nothing to compress.
-t47339885 = Нечего сжимать.
-
 # Could not encrypt: {e}
 t485d71ab = Не удалось зашифровать: { $e }
 
-# Only tar and single files take age keys.
-tc1754be6 = Ключи age принимают только tar и одиночные файлы.
+# Nothing to compress.
+t47339885 = Нечего сжимать.
+
+# A ZIP or 7z archive takes age keys only when age encrypts it whole.
+t582284c9 = Архив ZIP или 7z принимает ключи age, только если age шифрует его целиком.
 
 # age encrypts to a passphrase or to keys, not to both.
 t83582c17 = age шифрует либо парольной фразой, либо ключами, но не тем и другим.

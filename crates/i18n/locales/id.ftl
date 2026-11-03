@@ -1663,14 +1663,14 @@ t8dd055c6 = Tidak dapat menulis { $path }: { $e }
 # {wanted} and the names after it are taken.
 t40554bf6 = { $wanted } dan nama setelahnya sudah dipakai.
 
-# Nothing to compress.
-t47339885 = Tidak ada yang dikompres.
-
 # Could not encrypt: {e}
 t485d71ab = Tidak dapat mengenkripsi: { $e }
 
-# Only tar and single files take age keys.
-tc1754be6 = Hanya tar dan berkas tunggal yang menerima kunci age.
+# Nothing to compress.
+t47339885 = Tidak ada yang dikompres.
+
+# A ZIP or 7z archive takes age keys only when age encrypts it whole.
+t582284c9 = Arsip ZIP atau 7z hanya menerima kunci age jika age mengenkripsinya secara utuh.
 
 # age encrypts to a passphrase or to keys, not to both.
 t83582c17 = age mengenkripsi ke frasa sandi atau ke kunci, tidak keduanya.

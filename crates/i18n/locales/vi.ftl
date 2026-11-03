@@ -1654,14 +1654,14 @@ t8dd055c6 = Không ghi được { $path }: { $e }
 # {wanted} and the names after it are taken.
 t40554bf6 = { $wanted } và các tên sau nó đã có.
 
-# Nothing to compress.
-t47339885 = Không có gì để nén.
-
 # Could not encrypt: {e}
 t485d71ab = Không mã hoá được: { $e }
 
-# Only tar and single files take age keys.
-tc1754be6 = Chỉ tar và tệp đơn mới dùng được khoá age.
+# Nothing to compress.
+t47339885 = Không có gì để nén.
+
+# A ZIP or 7z archive takes age keys only when age encrypts it whole.
+t582284c9 = Tệp nén ZIP hoặc 7z chỉ nhận khoá age khi age mã hoá toàn bộ tệp.
 
 # age encrypts to a passphrase or to keys, not to both.
 t83582c17 = age mã hoá bằng cụm mật khẩu hoặc bằng khoá, không dùng cả hai.

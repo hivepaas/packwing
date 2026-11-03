@@ -1681,14 +1681,14 @@ t8dd055c6 = { $path } konnte nicht geschrieben werden: { $e }
 # {wanted} and the names after it are taken.
 t40554bf6 = { $wanted } und die Namen danach sind vergeben.
 
-# Nothing to compress.
-t47339885 = Nichts zu komprimieren.
-
 # Could not encrypt: {e}
 t485d71ab = Verschlüsseln nicht möglich: { $e }
 
-# Only tar and single files take age keys.
-tc1754be6 = Nur tar und einzelne Dateien nehmen age-Schlüssel an.
+# Nothing to compress.
+t47339885 = Nichts zu komprimieren.
+
+# A ZIP or 7z archive takes age keys only when age encrypts it whole.
+t582284c9 = Ein ZIP- oder 7z-Archiv nimmt age-Schlüssel nur, wenn age es als Ganzes verschlüsselt.
 
 # age encrypts to a passphrase or to keys, not to both.
 t83582c17 = age verschlüsselt mit einer Passphrase oder mit Schlüsseln, nicht mit beidem.

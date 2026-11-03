@@ -31,6 +31,14 @@ impl Drop for Spooled {
 
 /// What `from` reads, in a new temporary file.
 pub(crate) fn spool(from: &mut impl Read) -> io::Result<Spooled> {
+    let mut spooled = scratch()?;
+    io::copy(from, &mut spooled.file)?;
+    spooled.file.seek(SeekFrom::Start(0))?;
+    Ok(spooled)
+}
+
+/// A new temporary file, empty, to write to.
+pub(crate) fn scratch() -> io::Result<Spooled> {
     static NEXT: AtomicU64 = AtomicU64::new(0);
     let mut options = OpenOptions::new();
     options.read(true).write(true).create_new(true);
@@ -43,8 +51,5 @@ pub(crate) fn spool(from: &mut impl Read) -> io::Result<Spooled> {
         NEXT.fetch_add(1, Ordering::Relaxed)
     ));
     let file = options.open(&path)?;
-    let mut spooled = Spooled { path, file };
-    io::copy(from, &mut spooled.file)?;
-    spooled.file.seek(SeekFrom::Start(0))?;
-    Ok(spooled)
+    Ok(Spooled { path, file })
 }
