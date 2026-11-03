@@ -168,7 +168,8 @@ impl Choice {
         if self.items.is_empty() {
             return None;
         }
-        let menu = Menu::new(ID, "packwing").submenu(self.submenu);
+        // The entry's title, capitalised as the menu's other entries are.
+        let menu = Menu::new(ID, "Packwing").submenu(self.submenu);
         Some(
             self.items
                 .iter()
@@ -400,6 +401,27 @@ mod tests {
         std::env::current_exe().expect("the test has a program")
     }
 
+    /// The Windows package declares the native extension as context-menu-rs names
+    /// it for this menu: its class, from the menu's id, and its file.
+    #[test]
+    fn the_windows_package_declares_the_menu_s_extension() {
+        let manifest = include_str!("../../../packaging/windows/AppxManifest.xml");
+        let lines = |text: &str| -> Vec<String> {
+            text.lines()
+                .map(|l| l.trim().to_owned())
+                .filter(|l| !l.is_empty())
+                .collect()
+        };
+        let declared = lines(&context_menu::windows::package_extensions(ID));
+        let had = lines(manifest);
+        assert!(
+            had.windows(declared.len())
+                .any(|w| w == declared.as_slice()),
+            "packaging/windows/AppxManifest.xml's Extensions are not:\n{}",
+            declared.join("\n")
+        );
+    }
+
     fn chosen(name: &str, folder: bool) -> Chosen<'_> {
         Chosen { name, folder }
     }
@@ -494,6 +516,7 @@ mod tests {
         let menu = Choice::default().menu(&program()).expect("items");
         menu.validate().expect("a valid menu");
         assert_eq!(menu.id, "packwing");
+        assert_eq!(menu.title, "Packwing");
         assert!(!menu.submenu);
         let ids: Vec<&str> = menu.items.iter().map(|i| i.id.as_str()).collect();
         assert_eq!(
@@ -552,7 +575,7 @@ mod tests {
                 "{label} is Nautilus's too"
             );
         }
-        // Under "packwing", the submenu says whose they are.
+        // Under "Packwing", the submenu says whose they are.
         assert_eq!(
             labels(true),
             [
