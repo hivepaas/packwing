@@ -24,6 +24,7 @@ use super::panel;
 use crate::colors::colors;
 use crate::input::{Changed, TextInput};
 use crate::model::{Archive, Entry, Kind, count, size, text_preview};
+use crate::prefs;
 use crate::signatures::{self, Looking, Standing};
 use crate::widgets::{
     Fill, Size, Tone, button, chip, float_shadow, icon, icon_button, note, tile, tonal_tint,
@@ -38,6 +39,8 @@ pub enum ArchiveEvent {
     Sign,
     /// Choose an archive to open.
     Open,
+    /// Choose an archive on a storage to open.
+    OpenStored,
     /// Delete what is selected, or rename the one selected.
     Delete,
     Rename,
@@ -924,6 +927,18 @@ impl ArchivePage {
                     .mt(px(8.))
                     .px(px(28.))
                     .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Open))),
+                )
+            })
+            // The system's dialog reaches this computer's folders, not a network.
+            .when(offer && prefs::has_network_storage(cx), |d| {
+                d.child(
+                    button(
+                        "open-stored",
+                        tr!("From a storage…"),
+                        Fill::Text,
+                        Size::Medium,
+                    )
+                    .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::OpenStored))),
                 )
             })
     }

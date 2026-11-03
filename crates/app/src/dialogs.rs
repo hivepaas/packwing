@@ -10,6 +10,7 @@ mod delete_items;
 mod edit;
 mod extract;
 mod open_file;
+mod open_stored;
 mod password;
 mod places;
 mod progress;
@@ -25,6 +26,7 @@ pub use delete_items::DeleteDialog;
 pub use edit::EditDialog;
 pub use extract::ExtractDialog;
 pub use open_file::OpenFileDialog;
+pub use open_stored::OpenStoredDialog;
 pub use password::{PasswordDialog, PasswordEvent, asked_for};
 pub use progress::ProgressDialog;
 pub use sign::SignDialog;
@@ -230,6 +232,8 @@ pub enum DialogEvent {
     Transferred(Transferred),
     /// A file was signed.
     Signed,
+    /// An archive on a storage was chosen, to open.
+    Open(Source),
     /// A new archive went in this folder of this storage: shown, if `show`.
     Stored {
         place: Place,

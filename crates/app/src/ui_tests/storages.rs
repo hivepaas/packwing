@@ -130,6 +130,35 @@ scenario!(
     }
 );
 
+scenario!(
+    /// With a storage across a network, the Archive page offers to open from one: its
+    /// dialog shows folders and archives, and a click on an archive opens it.
+    an_archive_is_chosen_on_a_storage,
+    |ui| {
+        ui.wait_for("open-archive");
+        assert!(!ui.shows("open-stored"), "offered with no storage across a network");
+        let far = ui.work.join("far");
+        std::fs::create_dir_all(far.join("old")).expect("the folder");
+        std::fs::copy(
+            crate::ui_tests::fixture("sample.7z"),
+            far.join("old/sample.7z"),
+        )
+        .expect("the fixture");
+        ui.file("far/notes.txt", "not an archive");
+        add_far(ui, "Far", &far);
+        ui.wait_for_no_dialog();
+        ui.click("nav-archive");
+        ui.click("open-stored");
+        ui.wait_for("pick: old");
+        assert!(!ui.shows("pick: notes.txt"), "a file that is no archive is offered");
+        ui.click("pick: old");
+        ui.wait_for("pick: sample.7z");
+        ui.click("pick: sample.7z");
+        ui.wait_for_no_dialog();
+        ui.wait_until("the archive read", |ui| !ui.archive_names().is_empty());
+    }
+);
+
 #[cfg(any(windows, target_os = "macos"))]
 scenario!(
     /// A file copied here from a storage across a network is marked as from the Internet.

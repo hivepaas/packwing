@@ -466,6 +466,12 @@ t72430853 = 运行
 # Open
 t538b10e9 = 打开
 
+# Open from a storage
+t45a8991d = 从存储打开
+
+# Choose a storage, and an archive in it
+t3c900950 = 请选择存储及其中的压缩包
+
 # Choose
 t73c66160 = 选择
 
@@ -826,6 +832,9 @@ t0f9a8a58 = 没有符合的内容。
 # Add a storage to browse it.
 t0b82c83a = 添加存储后即可浏览。
 
+# No folders or archives here.
+t6a090cc3 = 这里没有文件夹或压缩包。
+
 # No folders here.
 tc7731c8f = 这里没有文件夹。
 
@@ -882,6 +891,9 @@ tff74a552 = 打开其他…
 
 # Open an archive…
 t2cf2a8ee = 打开压缩包…
+
+# From a storage…
+tcfba8fd5 = 从存储…
 
 # Choose a file to see it here
 t37854216 = 选择一个文件即可在此查看

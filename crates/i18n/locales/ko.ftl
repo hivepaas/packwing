@@ -466,6 +466,12 @@ t72430853 = 실행
 # Open
 t538b10e9 = 열기
 
+# Open from a storage
+t45a8991d = 스토리지에서 열기
+
+# Choose a storage, and an archive in it
+t3c900950 = 스토리지와 그 안의 압축 파일을 선택하세요
+
 # Choose
 t73c66160 = 선택
 
@@ -826,6 +832,9 @@ t0f9a8a58 = 일치하는 항목이 없습니다.
 # Add a storage to browse it.
 t0b82c83a = 탐색하려면 스토리지를 추가하세요.
 
+# No folders or archives here.
+t6a090cc3 = 폴더나 압축 파일이 없습니다.
+
 # No folders here.
 tc7731c8f = 폴더가 없습니다.
 
@@ -882,6 +891,9 @@ tff74a552 = 다른 파일 열기…
 
 # Open an archive…
 t2cf2a8ee = 압축 파일 열기…
+
+# From a storage…
+tcfba8fd5 = 스토리지에서…
 
 # Choose a file to see it here
 t37854216 = 파일을 선택하면 여기에 표시됩니다

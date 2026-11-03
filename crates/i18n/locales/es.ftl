@@ -472,6 +472,12 @@ t72430853 = Ejecutarlo
 # Open
 t538b10e9 = Abrir
 
+# Open from a storage
+t45a8991d = Abrir desde un almacenamiento
+
+# Choose a storage, and an archive in it
+t3c900950 = Elige un almacenamiento y un archivo comprimido dentro de él
+
 # Choose
 t73c66160 = Elegir
 
@@ -834,6 +840,9 @@ t0f9a8a58 = Nada coincide con eso.
 # Add a storage to browse it.
 t0b82c83a = Añade un almacenamiento para explorarlo.
 
+# No folders or archives here.
+t6a090cc3 = No hay carpetas ni archivos comprimidos aquí.
+
 # No folders here.
 tc7731c8f = No hay carpetas aquí.
 
@@ -890,6 +899,9 @@ tff74a552 = Abrir otro…
 
 # Open an archive…
 t2cf2a8ee = Abrir un archivo comprimido…
+
+# From a storage…
+tcfba8fd5 = Desde un almacenamiento…
 
 # Choose a file to see it here
 t37854216 = Elige un archivo para verlo aquí

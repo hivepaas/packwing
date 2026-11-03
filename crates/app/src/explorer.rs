@@ -154,6 +154,8 @@ pub struct Explorer {
     /// Choosing a folder to put things in: only folders show, a click goes into
     /// one, and there is no menu or search.
     picking: bool,
+    /// Choosing an archive: they show beside the folders, and a click opens one.
+    archives: bool,
     place: Option<Place>,
     folder: Vec<String>,
     items: Vec<Item>,
@@ -230,6 +232,7 @@ impl Explorer {
         Explorer {
             focus: cx.focus_handle(),
             picking: false,
+            archives: false,
             place: None,
             folder: Vec::new(),
             items: Vec::new(),
@@ -261,6 +264,14 @@ impl Explorer {
         Explorer {
             picking: true,
             ..Explorer::new(cx)
+        }
+    }
+
+    /// One for choosing an archive to open.
+    pub fn archive_picker(cx: &mut Context<Self>) -> Self {
+        Explorer {
+            archives: true,
+            ..Explorer::picker(cx)
         }
     }
 
@@ -516,7 +527,7 @@ impl Explorer {
             .filter(|&i| {
                 let item = &items[i];
                 (self.show_hidden || !item.hidden)
-                    && (!self.picking || item.dir)
+                    && (!self.picking || item.dir || (self.archives && is_archive(item)))
                     && (self.query.is_empty() || name_holds(&item.name, &self.query))
             })
             .collect();
@@ -1257,9 +1268,13 @@ impl Explorer {
                 tag_of(&item.name, kind),
                 kind.tint(&c),
                 name,
-                String::new(),
+                if item.dir { String::new() } else { size },
                 modified,
             )
+            .debug_selector({
+                let name = item.name.clone();
+                move || format!("pick: {name}")
+            })
             .cursor_pointer()
             .hover(|s| s.bg(rgb(c.well_hover)))
             .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
@@ -1729,6 +1744,7 @@ impl Render for Explorer {
                 State::Opening => tr!("Reading…"),
                 _ if !self.query.is_empty() => tr!("Nothing here matches that."),
                 _ if self.place.is_none() => tr!("Add a storage to browse it."),
+                _ if self.archives => tr!("No folders or archives here."),
                 _ if self.picking => tr!("No folders here."),
                 _ => tr!("This folder is empty."),
             };

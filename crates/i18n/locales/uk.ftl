@@ -484,6 +484,12 @@ t72430853 = Запустити
 # Open
 t538b10e9 = Відкрити
 
+# Open from a storage
+t45a8991d = Відкрити зі сховища
+
+# Choose a storage, and an archive in it
+t3c900950 = Виберіть сховище й архів у ньому
+
 # Choose
 t73c66160 = Вибрати
 
@@ -850,6 +856,9 @@ t0f9a8a58 = Нічого відповідного.
 # Add a storage to browse it.
 t0b82c83a = Додайте сховище, щоб переглядати його.
 
+# No folders or archives here.
+t6a090cc3 = Тут немає папок чи архівів.
+
 # No folders here.
 tc7731c8f = Тут немає папок.
 
@@ -906,6 +915,9 @@ tff74a552 = Відкрити інший…
 
 # Open an archive…
 t2cf2a8ee = Відкрити архів…
+
+# From a storage…
+tcfba8fd5 = Зі сховища…
 
 # Choose a file to see it here
 t37854216 = Виберіть файл, щоб побачити його тут

@@ -472,6 +472,12 @@ t72430853 = L'exécuter
 # Open
 t538b10e9 = Ouvrir
 
+# Open from a storage
+t45a8991d = Ouvrir depuis un stockage
+
+# Choose a storage, and an archive in it
+t3c900950 = Choisissez un stockage, et une archive dedans
+
 # Choose
 t73c66160 = Choisir
 
@@ -834,6 +840,9 @@ t0f9a8a58 = Rien ici ne correspond.
 # Add a storage to browse it.
 t0b82c83a = Ajoutez un stockage pour le parcourir.
 
+# No folders or archives here.
+t6a090cc3 = Aucun dossier ni archive ici.
+
 # No folders here.
 tc7731c8f = Aucun dossier ici.
 
@@ -890,6 +899,9 @@ tff74a552 = En ouvrir une autre…
 
 # Open an archive…
 t2cf2a8ee = Ouvrir une archive…
+
+# From a storage…
+tcfba8fd5 = Depuis un stockage…
 
 # Choose a file to see it here
 t37854216 = Choisissez un fichier pour le voir ici

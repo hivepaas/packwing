@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 74] = [
+const SCREENS: [(&str, SetUp); 76] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -185,6 +185,16 @@ const SCREENS: [(&str, SetUp); 74] = [
     }),
     ("archive-none", |ws, _, cx| {
         ws.show_archive(Shown::Nothing, cx)
+    }),
+    ("archive-none-stored", |ws, _, cx| {
+        cx.set_global(fake_extensions());
+        add_far(ws, "Far one", &sample_storage(), false, cx);
+        ws.show_archive(Shown::Nothing, cx)
+    }),
+    ("open-stored", |ws, window, cx| {
+        cx.set_global(fake_extensions());
+        add_far(ws, "Far one", &sample_storage(), false, cx);
+        ws.choose_stored_archive(window, cx);
     }),
     ("archive-read", |ws, _, cx| ws.show_archive(read(), cx)),
     ("archive-failed", |ws, _, cx| {

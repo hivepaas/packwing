@@ -466,6 +466,12 @@ t72430853 = Chạy
 # Open
 t538b10e9 = Mở
 
+# Open from a storage
+t45a8991d = Mở từ nơi lưu trữ
+
+# Choose a storage, and an archive in it
+t3c900950 = Chọn một nơi lưu trữ và một tệp nén trong đó
+
 # Choose
 t73c66160 = Chọn
 
@@ -826,6 +832,9 @@ t0f9a8a58 = Không có gì khớp.
 # Add a storage to browse it.
 t0b82c83a = Thêm nơi lưu trữ để duyệt.
 
+# No folders or archives here.
+t6a090cc3 = Không có thư mục hay tệp nén nào ở đây.
+
 # No folders here.
 tc7731c8f = Không có thư mục nào ở đây.
 
@@ -882,6 +891,9 @@ tff74a552 = Mở tệp khác…
 
 # Open an archive…
 t2cf2a8ee = Mở tệp nén…
+
+# From a storage…
+tcfba8fd5 = Từ nơi lưu trữ…
 
 # Choose a file to see it here
 t37854216 = Chọn một tệp để xem ở đây
