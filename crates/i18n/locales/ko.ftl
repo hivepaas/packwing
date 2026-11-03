@@ -151,6 +151,9 @@ te9afe1c2 = 대부분의 컴퓨터에서 열려면 압축 앱이나 lz4 도구�
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = 파일 하나만 담습니다. 명령줄 도구로 열 수 있으며, Windows와 macOS는 압축 앱이 필요할 수 있습니다. 누구에게나 공유하려면 .zip을 선택하세요.
 
+# Store
+t6da32dce = 저장만
+
 # Lowest
 t5d7dbfdb = 최저
 
@@ -192,6 +195,9 @@ ta1f147a6 = 여기에 저장
 
 # Use these keys
 t1a01e439 = 이 키 사용
+
+# No compression
+t2e9c9e78 = 압축 안 함
 
 # {name} compression
 te2db10f6 = { $name } 압축
@@ -252,6 +258,9 @@ t701d5ed9 = 고급 옵션
 
 # Compression level
 td386c9ef = 압축 수준
+
+# Store puts the files in as they are: the quickest to make, and the largest.
+t076ef350 = 저장만은 파일을 그대로 넣습니다. 만들기는 가장 빠르고 크기는 가장 큽니다.
 
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = 높을수록 압축 파일이 작아지며, 만드는 시간이 길어지지만 여는 시간은 그대로입니다.
@@ -1198,11 +1207,17 @@ t0632975a = hivepaas.com 방문
 # Always
 tad4bbd04 = 항상
 
+# Extensions, apart by spaces
+tc709375f = 확장자, 공백으로 구분
+
 # Format of new archives
 t3b50d238 = 새 압축 파일의 형식
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = 새 압축 파일은 이 형식으로 시작하며, 만들 때 다른 형식을 선택할 수 있습니다.
+
+# Store puts the files of ZIP and 7z archives in as they are. tar formats take Lowest, as .tar alone has no compression.
+t2595cbcb = 저장만은 ZIP과 7z 압축 파일의 파일을 그대로 넣습니다. tar 형식은 최저를 씁니다. 압축이 없는 것은 .tar뿐입니다.
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = 높을수록 압축 파일이 작아지며, 만드는 시간이 길어지지만 여는 시간은 그대로입니다.
@@ -1212,6 +1227,21 @@ ta4975128 = 위의 스토리지에 바로 쓰기
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = 큰 파일이 이 컴퓨터의 공간을 차지하지 않지만, 연결이 끊기면 처음부터 다시 압축해야 합니다. S3는 tar와 ZIP, SFTP는 모든 형식에서 이 방식을 사용할 수 있습니다.
+
+# Don’t compress what already is
+t940ec31d = 이미 압축된 것은 압축하지 않기
+
+# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
+tb10eab86 = ZIP: 사진, 동영상, 오디오, 압축 파일을 그대로 넣어 더 빠르고 크기도 커지지 않습니다
+
+# What goes in as it is
+tc0104b29 = 그대로 넣을 파일
+
+# Files whose names end in these, whatever their case
+ta3acef9b = 이름이 이것으로 끝나는 파일(대소문자 무관)
+
+# Reset to default
+t0db9f7dc = 기본값으로 되돌리기
 
 # Leave out Mac-only files
 t27eec14f = Mac 전용 파일 제외

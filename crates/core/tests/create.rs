@@ -11,10 +11,10 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use packwing_core::{
-    Cancel, Control, Error, ExtractOptions, Item, Keys, Kind, Level, Lister, LocalFolder,
-    NewArchive, OnExisting, Progress, Route, Source, Storage, StoredFile, add, add_with,
-    age_key_is_post_quantum, age_key_problem, age_keys_in, can_add, create, create_on, delete,
-    extract, extract_selected, extract_to_open, extract_with, image_fits, list, measure,
+    COMPRESSED_EXTENSIONS, Cancel, Control, Error, ExtractOptions, Item, Keys, Kind, Level, Lister,
+    LocalFolder, NewArchive, OnExisting, Progress, Route, Source, Storage, StoredFile, add,
+    add_with, age_key_is_post_quantum, age_key_problem, age_keys_in, can_add, create, create_on,
+    delete, extract, extract_selected, extract_to_open, extract_with, image_fits, list, measure,
     read_entry, rename, route, test,
 };
 
@@ -422,6 +422,125 @@ fn a_higher_level_makes_a_smaller_archive() {
         };
         let (lowest, highest) = (size(Level::Lowest), size(Level::Highest));
         assert!(highest < lowest, "{kind:?}: {highest} and {lowest}");
+    }
+}
+
+/// Each file of the ZIP archive at `path`, and whether it went in as it is.
+fn stored_in(path: &Path) -> Vec<(String, bool)> {
+    let za = hivepack_zip::Archive::open(
+        fs::File::open(path).unwrap(),
+        hivepack_zip::OpenFlags::RDONLY,
+    )
+    .unwrap();
+    (0..za.get_num_entries(hivepack_zip::Flags::NONE))
+        .map(|i| za.stat_index(i, hivepack_zip::Flags::NONE).unwrap())
+        .map(|stat| {
+            let name = String::from_utf8_lossy(stat.name.unwrap_or_default()).into_owned();
+            (name, stat.comp_method == hivepack_zip::cm::STORE)
+        })
+        .filter(|(name, _)| !name.ends_with('/'))
+        .collect()
+}
+
+#[test]
+fn stored_a_zip_or_7z_archive_holds_its_files_as_they_are() {
+    let s = Scratch::new("store");
+    let file = s.path("words.txt");
+    let words = "xin chào thế giới ".repeat(60_000);
+    fs::write(&file, &words).unwrap();
+    for (kind, extension) in [(Kind::Zip, "zip"), (Kind::SevenZip, "7z")] {
+        let made = |level| {
+            let new = NewArchive {
+                kind,
+                level,
+                ..NewArchive::default()
+            };
+            let path = s.path(&format!("{kind:?}-{level:?}.{extension}"));
+            create(
+                std::slice::from_ref(&file),
+                &path,
+                &new,
+                &Control::default(),
+            )
+            .unwrap()
+        };
+        let (stored, lowest) = (made(Level::Store), made(Level::Lowest));
+        let size = |path: &PathBuf| fs::metadata(path).unwrap().len();
+        assert!(size(&stored) >= words.len() as u64, "{kind:?}");
+        assert!(size(&lowest) < words.len() as u64 / 10, "{kind:?}");
+        let out = s.path(&format!("out-{extension}"));
+        extract(&stored, &out, &Keys::default(), &Control::default()).unwrap();
+        assert_eq!(fs::read_to_string(out.join("words.txt")).unwrap(), words);
+    }
+    // A tar archive compressed whole takes its lowest level.
+    let new = NewArchive {
+        kind: Kind::TarZst,
+        level: Level::Store,
+        ..NewArchive::default()
+    };
+    let tar = create(
+        std::slice::from_ref(&file),
+        &s.path("words.tar.zst"),
+        &new,
+        &Control::default(),
+    )
+    .unwrap();
+    assert!(fs::metadata(&tar).unwrap().len() < words.len() as u64 / 10);
+}
+
+#[test]
+fn a_zip_archive_stores_the_extensions_it_is_told() {
+    let s = Scratch::new("store-compressed");
+    let what = s.path("what");
+    fs::create_dir_all(&what).unwrap();
+    // As compressible as the text: only its name says it is compressed.
+    let text = "xin chào ".repeat(20_000);
+    for name in ["notes.txt", "photo.JPG", "clip.mp4", "old.zip", "shot.raw"] {
+        fs::write(what.join(name), &text).unwrap();
+    }
+    let known: Vec<String> = COMPRESSED_EXTENSIONS
+        .iter()
+        .map(|e| e.to_string())
+        .collect();
+    let mine = vec!["raw".to_owned(), "TXT".to_owned()];
+    for (tag, stored_extensions) in [("known", known), ("mine", mine), ("none", Vec::new())] {
+        let new = NewArchive {
+            stored_extensions: stored_extensions.clone(),
+            ..NewArchive::default()
+        };
+        let made = create(
+            std::slice::from_ref(&what),
+            &s.path(&format!("{tag}.zip")),
+            &new,
+            &Control::default(),
+        )
+        .unwrap();
+        let wanted = |name: &str| match tag {
+            "known" => !name.ends_with(".txt") && !name.ends_with(".raw"),
+            "mine" => name.ends_with(".txt") || name.ends_with(".raw"),
+            _ => false,
+        };
+        for (name, stored) in stored_in(&made) {
+            assert_eq!(stored, wanted(&name), "{tag}: {name}");
+        }
+        // What is added follows the same rule.
+        let more = s.path(&format!("more-{tag}.png"));
+        fs::write(&more, &text).unwrap();
+        add_with(
+            &[more],
+            &made,
+            &[],
+            OnExisting::Stop,
+            &stored_extensions,
+            &Keys::default(),
+            &Control::default(),
+        )
+        .unwrap();
+        let added = stored_in(&made)
+            .into_iter()
+            .find(|(name, _)| name.ends_with(".png"))
+            .unwrap();
+        assert_eq!(added.1, tag == "known", "{tag}");
     }
 }
 
@@ -1318,6 +1437,7 @@ fn a_name_it_holds_can_be_replaced_or_skipped() {
         &made,
         &[],
         OnExisting::Skip,
+        &[],
         &keys,
         &control,
     )
@@ -1330,6 +1450,7 @@ fn a_name_it_holds_can_be_replaced_or_skipped() {
         &made,
         &[],
         OnExisting::Replace,
+        &[],
         &keys,
         &control,
     )
@@ -1346,7 +1467,18 @@ fn a_name_it_holds_can_be_replaced_or_skipped() {
     fs::write(clash.join("Hình ảnh"), "x").unwrap();
     let inner = ["Báo cáo".to_owned()];
     let file = [clash.join("Hình ảnh")];
-    assert!(add_with(&file, &made, &inner, OnExisting::Replace, &keys, &control).is_err());
+    assert!(
+        add_with(
+            &file,
+            &made,
+            &inner,
+            OnExisting::Replace,
+            &[],
+            &keys,
+            &control
+        )
+        .is_err()
+    );
 }
 
 #[test]

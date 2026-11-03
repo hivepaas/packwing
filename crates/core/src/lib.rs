@@ -36,9 +36,9 @@ use hivepack_open::Opener;
 use crate::source::SourceReader;
 
 pub use create::{
-    Kind, Level, Measured, NewArchive, OnExisting, Route, add, add_with, age_key_is_post_quantum,
-    age_key_problem, age_keys_in, can_add, create, create_on, delete, measure, refused_by, rename,
-    route,
+    COMPRESSED_EXTENSIONS, Kind, Level, Measured, NewArchive, OnExisting, Route, add, add_with,
+    age_key_is_post_quantum, age_key_problem, age_keys_in, can_add, create, create_on, delete,
+    measure, refused_by, rename, route,
 };
 pub use hivepack_extract::{Cancel, Progress, Summary};
 pub use hivepack_open::{Container, Layer};

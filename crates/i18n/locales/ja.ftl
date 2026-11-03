@@ -151,6 +151,9 @@ te9afe1c2 = ほとんどのコンピューターで、開くにはアーカイ�
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = 1 つのファイルだけを格納します。コマンドラインツールで開けます。Windows と macOS ではアーカイバアプリが必要な場合があります。誰とでも共有するには .zip を選んでください。
 
+# Store
+t6da32dce = 無圧縮
+
 # Lowest
 t5d7dbfdb = 最低
 
@@ -192,6 +195,9 @@ ta1f147a6 = ここに保存
 
 # Use these keys
 t1a01e439 = これらのキーを使う
+
+# No compression
+t2e9c9e78 = 圧縮なし
 
 # {name} compression
 te2db10f6 = { $name } 圧縮
@@ -252,6 +258,9 @@ t701d5ed9 = 詳細設定
 
 # Compression level
 td386c9ef = 圧縮レベル
+
+# Store puts the files in as they are: the quickest to make, and the largest.
+t076ef350 = 無圧縮はファイルをそのまま格納します。作成は最も速く、サイズは最も大きくなります。
 
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = 高くするとアーカイブは小さくなりますが、作成に時間がかかります。開く速さは変わりません。
@@ -1198,11 +1207,17 @@ t0632975a = hivepaas.com を見る
 # Always
 tad4bbd04 = 常に
 
+# Extensions, apart by spaces
+tc709375f = 拡張子（スペース区切り）
+
 # Format of new archives
 t3b50d238 = 新規アーカイブの形式
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = 新規アーカイブはこの形式で始まります。そこで別の形式も選べます。
+
+# Store puts the files of ZIP and 7z archives in as they are. tar formats take Lowest, as .tar alone has no compression.
+t2595cbcb = 無圧縮は ZIP と 7z のファイルをそのまま格納します。tar 形式では「最低」になります。圧縮しないのは .tar だけです。
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = 高くするとアーカイブは小さくなりますが、作成に時間がかかります。開く速さは変わりません。
@@ -1212,6 +1227,21 @@ ta4975128 = 上のストレージに直接書き込む
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = 大きなファイルがこのコンピューターの容量を使いませんが、接続が切れると圧縮からやり直しになります。S3 では tar と ZIP、SFTP ではすべての形式がこの方法で使えます。
+
+# Don’t compress what already is
+t940ec31d = 圧縮済みのファイルは圧縮しない
+
+# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
+tb10eab86 = ZIP の場合: 画像・動画・音声・アーカイブをそのまま格納するので、速く、サイズも大きくなりません
+
+# What goes in as it is
+tc0104b29 = そのまま格納するもの
+
+# Files whose names end in these, whatever their case
+ta3acef9b = 名前がこれらで終わるファイル（大文字・小文字は問いません）
+
+# Reset to default
+t0db9f7dc = 既定に戻す
 
 # Leave out Mac-only files
 t27eec14f = Mac 専用のファイルを除外

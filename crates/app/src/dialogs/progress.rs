@@ -146,6 +146,7 @@ impl ProgressDialog {
                     &a.archive,
                     &a.folder,
                     a.on_existing,
+                    &a.stored_extensions,
                     &keys,
                     &control,
                 )?;

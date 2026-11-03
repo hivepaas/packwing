@@ -157,6 +157,9 @@ te9afe1c2 = На большинстве компьютеров для его о�
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = В нём один файл. Открывается утилитами командной строки; в Windows и macOS может понадобиться архиватор. Чтобы поделиться с кем угодно, выберите .zip.
 
+# Store
+t6da32dce = Без сжатия
+
 # Lowest
 t5d7dbfdb = Минимум
 
@@ -198,6 +201,9 @@ ta1f147a6 = Сохранить здесь
 
 # Use these keys
 t1a01e439 = Использовать эти ключи
+
+# No compression
+t2e9c9e78 = Без сжатия
 
 # {name} compression
 te2db10f6 = Сжатие { $name }
@@ -258,6 +264,9 @@ t701d5ed9 = Дополнительные параметры
 
 # Compression level
 td386c9ef = Уровень сжатия
+
+# Store puts the files in as they are: the quickest to make, and the largest.
+t076ef350 = «Без сжатия» кладёт файлы как есть: быстрее всего и больше всего по размеру.
 
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = Чем выше уровень, тем меньше архив и дольше его создание, но не открытие.
@@ -1237,11 +1246,17 @@ t0632975a = Перейти на hivepaas.com
 # Always
 tad4bbd04 = Всегда
 
+# Extensions, apart by spaces
+tc709375f = Расширения через пробел
+
 # Format of new archives
 t3b50d238 = Формат новых архивов
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = Новый архив начинается с него; там можно выбрать другой.
+
+# Store puts the files of ZIP and 7z archives in as they are. tar formats take Lowest, as .tar alone has no compression.
+t2595cbcb = «Без сжатия» кладёт файлы архивов ZIP и 7z как есть. Форматы tar берут Минимум: без сжатия только .tar.
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = Чем выше уровень, тем меньше архивы и дольше их создание, но не открытие.
@@ -1251,6 +1266,21 @@ ta4975128 = Записывать прямо в хранилище
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = Большие файлы не занимают место на этом компьютере, но при обрыве связи сжимать придётся заново. S3 принимает так tar и ZIP, SFTP — и остальные форматы.
+
+# Don’t compress what already is
+t940ec31d = Не сжимать уже сжатое
+
+# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
+tb10eab86 = Для ZIP: изображения, видео, звук и архивы кладутся как есть — быстрее и не больше
+
+# What goes in as it is
+tc0104b29 = Что кладётся как есть
+
+# Files whose names end in these, whatever their case
+ta3acef9b = Файлы, чьи имена оканчиваются на них, в любом регистре
+
+# Reset to default
+t0db9f7dc = Вернуть по умолчанию
 
 # Leave out Mac-only files
 t27eec14f = Не включать файлы, нужные только Mac

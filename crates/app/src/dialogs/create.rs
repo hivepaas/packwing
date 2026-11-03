@@ -151,6 +151,12 @@ impl Format {
         }
     }
 
+    /// Whether its files can go in as they are, with [`Level::Store`]: a tar
+    /// format has `.tar` for that.
+    pub fn stores(self) -> bool {
+        matches!(self, Format::Zip | Format::SevenZip)
+    }
+
     /// Whether it is protected with age, around it, whatever is chosen: ZIP and 7z
     /// have their own AES-256, and age only if it is chosen.
     pub fn uses_age(self) -> bool {
@@ -169,7 +175,8 @@ fn format_options(one_file: bool) -> Vec<&'static str> {
 }
 
 /// The levels, by the names they are kept under.
-pub(crate) const LEVELS: [(Level, &str); 5] = [
+pub(crate) const LEVELS: [(Level, &str); 6] = [
+    (Level::Store, "Store"),
     (Level::Lowest, "Lowest"),
     (Level::Low, "Low"),
     (Level::Medium, "Medium"),
@@ -180,6 +187,7 @@ pub(crate) const LEVELS: [(Level, &str); 5] = [
 /// A level as the user reads it.
 pub(crate) fn level_name(level: Level) -> String {
     match level {
+        Level::Store => tr!("Store"),
         Level::Lowest => tr!("Lowest"),
         Level::Low => tr!("Low"),
         Level::Medium => tr!("Medium"),
@@ -718,6 +726,15 @@ impl CreateDialog {
         self.protect
     }
 
+    /// The level it is made at: Store, where the format has none, is its lowest.
+    fn level(&self, cx: &App) -> Level {
+        if self.level == Level::Store && !self.format(cx).stores() {
+            Level::Lowest
+        } else {
+            self.level
+        }
+    }
+
     /// Whether what it is protected with is age: always, but for a ZIP or 7z
     /// archive left to its own AES-256.
     fn with_age(&self, cx: &App) -> bool {
@@ -904,11 +921,12 @@ impl CreateDialog {
             to,
             how: NewArchive {
                 kind: format.kind(),
-                level: self.level,
+                level: self.level(cx),
                 password: password.then(|| self.password.read(cx).text().as_bytes().to_vec()),
                 age_keys,
                 whole_with_age: self.zip_age,
                 hide_names: self.hide_names && !self.with_age(cx),
+                stored_extensions: crate::prefs::stored_extensions(cx),
                 skip_mac_files: crate::prefs::prefs(cx).skip_mac_files,
                 part_size: self.parts(cx),
                 stream_above: Some(crate::prefs::prefs(cx).stream_above),
@@ -921,8 +939,10 @@ impl CreateDialog {
     /// level, the parts, a password.
     fn changed(&self, cx: &App) -> Vec<String> {
         let mut said = Vec::new();
-        if self.level != Level::Medium {
-            said.push(tr!("{name} compression", name = level_name(self.level)));
+        match self.level(cx) {
+            Level::Medium => {}
+            Level::Store => said.push(tr!("No compression")),
+            level => said.push(tr!("{name} compression", name = level_name(level))),
         }
         match self.split.read(cx).chosen() {
             0 => {}
@@ -1182,14 +1202,19 @@ impl CreateDialog {
 
     fn compression(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
-        let levels = LEVELS.iter().map(|&(level, label)| {
-            segment(label, level_name(level), level == self.level).on_click(cx.listener(
-                move |this, _, _, cx| {
-                    this.level = level;
-                    cx.notify();
-                },
-            ))
-        });
+        let stores = self.format(cx).stores();
+        let now = self.level(cx);
+        let levels = LEVELS
+            .iter()
+            .filter(|(level, _)| stores || *level != Level::Store)
+            .map(|&(level, label)| {
+                segment(label, level_name(level), level == now).on_click(cx.listener(
+                    move |this, _, _, cx| {
+                        this.level = level;
+                        cx.notify();
+                    },
+                ))
+            });
         let custom = self.custom_split(cx);
         let typed = !self.part.read(cx).text().trim().is_empty();
         let bad_part = custom && self.part_size(cx).is_none() && (typed || self.checked);
@@ -1214,7 +1239,11 @@ impl CreateDialog {
                     )
                     .child(segments(levels))
                     .child(div().text_size(px(13.)).text_color(rgb(c.muted)).child(
-                        tr!("Higher makes a smaller archive, which takes longer to make, not to open."),
+                        if now == Level::Store {
+                            tr!("Store puts the files in as they are: the quickest to make, and the largest.")
+                        } else {
+                            tr!("Higher makes a smaller archive, which takes longer to make, not to open.")
+                        },
                     )),
             )
             .child(

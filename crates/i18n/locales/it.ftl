@@ -153,6 +153,9 @@ te9afe1c2 = La maggior parte dei computer richiede un'app per archivi o lo strum
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = Contiene questo solo file. Si apre con gli strumenti da riga di comando; Windows e macOS possono richiedere un'app per archivi. Per condividere con chiunque, scegli .zip.
 
+# Store
+t6da32dce = Archivia
+
 # Lowest
 t5d7dbfdb = Minima
 
@@ -194,6 +197,9 @@ ta1f147a6 = Salva qui
 
 # Use these keys
 t1a01e439 = Usa queste chiavi
+
+# No compression
+t2e9c9e78 = Nessuna compressione
 
 # {name} compression
 te2db10f6 = Compressione { $name }
@@ -254,6 +260,9 @@ t701d5ed9 = Opzioni avanzate
 
 # Compression level
 td386c9ef = Livello di compressione
+
+# Store puts the files in as they are: the quickest to make, and the largest.
+t076ef350 = Archivia inserisce i file così come sono: il più rapido da creare, e il più grande.
 
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = Più è alto, più l'archivio è piccolo e più tempo richiede crearlo, non aprirlo.
@@ -1211,11 +1220,17 @@ t0632975a = Visita hivepaas.com
 # Always
 tad4bbd04 = Sempre
 
+# Extensions, apart by spaces
+tc709375f = Estensioni, separate da spazi
+
 # Format of new archives
 t3b50d238 = Formato dei nuovi archivi
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = Un nuovo archivio parte con questo; lì puoi sceglierne un altro.
+
+# Store puts the files of ZIP and 7z archives in as they are. tar formats take Lowest, as .tar alone has no compression.
+t2595cbcb = Archivia inserisce così come sono i file degli archivi ZIP e 7z. I formati tar usano Minima, perché solo .tar è senza compressione.
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = Più è alto, più gli archivi sono piccoli e più tempo richiede crearli, non aprirli.
@@ -1225,6 +1240,21 @@ ta4975128 = Scrivi direttamente in uno spazio di archiviazione sopra
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = I file grandi non occupano spazio su questo computer, ma se la connessione cade bisogna comprimere di nuovo. S3 accetta tar e ZIP così, SFTP anche ogni altro formato.
+
+# Don’t compress what already is
+t940ec31d = Non comprimere ciò che lo è già
+
+# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
+tb10eab86 = Per ZIP: immagini, video, audio e archivi entrano così come sono, più in fretta e non più grandi
+
+# What goes in as it is
+tc0104b29 = Cosa entra così com’è
+
+# Files whose names end in these, whatever their case
+ta3acef9b = I file il cui nome finisce con queste, maiuscole o minuscole
+
+# Reset to default
+t0db9f7dc = Ripristina predefinite
 
 # Leave out Mac-only files
 t27eec14f = Escludi i file solo per Mac

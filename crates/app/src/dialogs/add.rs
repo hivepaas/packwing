@@ -180,6 +180,7 @@ impl AddDialog {
             archive: self.archive.clone(),
             folder: self.folder.clone(),
             on_existing: on_existing()[self.on_existing.read(cx).chosen().min(2)].1,
+            stored_extensions: crate::prefs::stored_extensions(cx),
         });
         cx.emit(DialogEvent::Start(job));
     }

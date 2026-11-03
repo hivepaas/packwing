@@ -151,6 +151,9 @@ te9afe1c2 = Hầu hết máy tính cần ứng dụng giải nén hoặc công c
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = Nó chỉ chứa một tệp. Công cụ dòng lệnh mở được; Windows và macOS có thể cần ứng dụng giải nén. Để chia sẻ cho mọi người, hãy chọn .zip.
 
+# Store
+t6da32dce = Không nén
+
 # Lowest
 t5d7dbfdb = Thấp nhất
 
@@ -192,6 +195,9 @@ ta1f147a6 = Lưu tại đây
 
 # Use these keys
 t1a01e439 = Dùng các khoá này
+
+# No compression
+t2e9c9e78 = Không nén
 
 # {name} compression
 te2db10f6 = Nén { $name }
@@ -252,6 +258,9 @@ t701d5ed9 = Tuỳ chọn nâng cao
 
 # Compression level
 td386c9ef = Mức nén
+
+# Store puts the files in as they are: the quickest to make, and the largest.
+t076ef350 = Không nén đưa tệp vào nguyên trạng: tạo nhanh nhất, và lớn nhất.
 
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = Mức cao hơn cho tệp nén nhỏ hơn, tạo lâu hơn nhưng mở không chậm hơn.
@@ -1198,11 +1207,17 @@ t0632975a = Xem hivepaas.com
 # Always
 tad4bbd04 = Luôn luôn
 
+# Extensions, apart by spaces
+tc709375f = Các đuôi, cách nhau bằng dấu cách
+
 # Format of new archives
 t3b50d238 = Định dạng của tệp nén mới
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = Tệp nén mới bắt đầu với định dạng này; bạn có thể chọn định dạng khác ở đó.
+
+# Store puts the files of ZIP and 7z archives in as they are. tar formats take Lowest, as .tar alone has no compression.
+t2595cbcb = Không nén đưa nguyên trạng các tệp của tệp nén ZIP và 7z. Các định dạng tar dùng Thấp nhất, vì chỉ .tar là không nén.
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = Mức cao hơn cho tệp nén nhỏ hơn, tạo lâu hơn nhưng mở không chậm hơn.
@@ -1212,6 +1227,21 @@ ta4975128 = Ghi thẳng vào nơi lưu trữ ở trên
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = Tệp lớn không chiếm chỗ trên máy tính này, nhưng mất kết nối thì phải nén lại. S3 nhận tar và ZIP theo cách này, SFTP nhận cả mọi định dạng khác.
+
+# Don’t compress what already is
+t940ec31d = Không nén lại những tệp đã nén
+
+# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
+tb10eab86 = Với ZIP: ảnh, video, âm thanh và tệp nén được đưa vào nguyên trạng, nhanh hơn mà không lớn hơn
+
+# What goes in as it is
+tc0104b29 = Những gì đưa vào nguyên trạng
+
+# Files whose names end in these, whatever their case
+ta3acef9b = Tệp có tên kết thúc bằng các đuôi này, không phân biệt hoa thường
+
+# Reset to default
+t0db9f7dc = Đặt lại mặc định
 
 # Leave out Mac-only files
 t27eec14f = Bỏ các tệp chỉ dành cho Mac

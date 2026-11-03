@@ -153,6 +153,9 @@ te9afe1c2 = Çoğu bilgisayarda açmak için bir arşivleme uygulaması veya lz4
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = Yalnızca bu tek dosyayı tutar. Komut satırı araçları açar; Windows ve macOS için bir arşivleme uygulaması gerekebilir. Herkesle paylaşmak için .zip seçin.
 
+# Store
+t6da32dce = Sakla
+
 # Lowest
 t5d7dbfdb = En düşük
 
@@ -194,6 +197,9 @@ ta1f147a6 = Buraya kaydet
 
 # Use these keys
 t1a01e439 = Bu anahtarları kullan
+
+# No compression
+t2e9c9e78 = Sıkıştırma yok
 
 # {name} compression
 te2db10f6 = { $name } sıkıştırma
@@ -254,6 +260,9 @@ t701d5ed9 = Gelişmiş seçenekler
 
 # Compression level
 td386c9ef = Sıkıştırma düzeyi
+
+# Store puts the files in as they are: the quickest to make, and the largest.
+t076ef350 = Sakla dosyaları olduğu gibi koyar: en hızlı oluşturulan ve en büyük olan.
 
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = Daha yüksek düzey daha küçük bir arşiv üretir; arşivin oluşması uzun sürer, açılması değil.
@@ -1211,11 +1220,17 @@ t0632975a = hivepaas.com sitesini ziyaret et
 # Always
 tad4bbd04 = Her zaman
 
+# Extensions, apart by spaces
+tc709375f = Uzantılar, boşlukla ayrılmış
+
 # Format of new archives
 t3b50d238 = Yeni arşivlerin biçimi
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = Yeni arşiv bununla başlar; orada başkasını seçebilirsiniz.
+
+# Store puts the files of ZIP and 7z archives in as they are. tar formats take Lowest, as .tar alone has no compression.
+t2595cbcb = Sakla, ZIP ve 7z arşivlerinin dosyalarını olduğu gibi koyar. tar biçimleri En düşük alır, çünkü sıkıştırmasız olan yalnızca .tar'dır.
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = Daha yüksek düzey daha küçük arşivler üretir; arşivlerin oluşması uzun sürer, açılması değil.
@@ -1225,6 +1240,21 @@ ta4975128 = Doğrudan yukarıdaki bir depolama alanına yaz
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = Büyük dosyalar bu bilgisayarda yer kaplamaz, ama bağlantı kesilirse yeniden sıkıştırmak gerekir. S3 bu yolla tar ve ZIP kabul eder, SFTP ise her biçimi.
+
+# Don’t compress what already is
+t940ec31d = Zaten sıkıştırılmış olanı sıkıştırma
+
+# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
+tb10eab86 = ZIP için: resimler, video, ses ve arşivler olduğu gibi girer; daha hızlı ve daha büyük değil
+
+# What goes in as it is
+tc0104b29 = Olduğu gibi girenler
+
+# Files whose names end in these, whatever their case
+ta3acef9b = Adı bunlarla biten dosyalar, büyük küçük harf fark etmez
+
+# Reset to default
+t0db9f7dc = Varsayılana sıfırla
 
 # Leave out Mac-only files
 t27eec14f = Yalnızca Mac'e ait dosyaları dışarıda bırak

@@ -157,6 +157,9 @@ te9afe1c2 = Більшості комп’ютерів, щоб його відк
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = Він містить лише цей один файл. Його відкривають інструменти командного рядка; у Windows і macOS може знадобитися програма-архіватор. Щоб поділитися з будь-ким, виберіть .zip.
 
+# Store
+t6da32dce = Без стиснення
+
 # Lowest
 t5d7dbfdb = Мінімум
 
@@ -198,6 +201,9 @@ ta1f147a6 = Зберегти тут
 
 # Use these keys
 t1a01e439 = Використати ці ключі
+
+# No compression
+t2e9c9e78 = Без стиснення
 
 # {name} compression
 te2db10f6 = Стиснення { $name }
@@ -258,6 +264,9 @@ t701d5ed9 = Додаткові параметри
 
 # Compression level
 td386c9ef = Рівень стиснення
+
+# Store puts the files in as they are: the quickest to make, and the largest.
+t076ef350 = «Без стиснення» кладе файли як є: найшвидше й найбільше за розміром.
 
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = Вищий рівень дає менший архів, який довше створюється, але не довше відкривається.
@@ -1237,11 +1246,17 @@ t0632975a = Перейти на hivepaas.com
 # Always
 tad4bbd04 = Завжди
 
+# Extensions, apart by spaces
+tc709375f = Розширення через пробіл
+
 # Format of new archives
 t3b50d238 = Формат нових архівів
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = Новий архів починається з нього; там можна вибрати інший.
+
+# Store puts the files of ZIP and 7z archives in as they are. tar formats take Lowest, as .tar alone has no compression.
+t2595cbcb = «Без стиснення» кладе файли архівів ZIP і 7z як є. Формати tar беруть Мінімум: без стиснення лише .tar.
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = Вищий рівень дає менші архіви, які довше створюються, але не довше відкриваються.
@@ -1251,6 +1266,21 @@ ta4975128 = Писати прямо в сховище вище
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = Більші файли не займають місця на цьому комп’ютері, але якщо з’єднання втратиться, стискати доведеться заново. S3 приймає так tar і ZIP, SFTP також усі формати.
+
+# Don’t compress what already is
+t940ec31d = Не стискати вже стиснене
+
+# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
+tb10eab86 = Для ZIP: зображення, відео, звук і архіви кладуться як є — швидше й не більші
+
+# What goes in as it is
+tc0104b29 = Що кладеться як є
+
+# Files whose names end in these, whatever their case
+ta3acef9b = Файли, чиї імена закінчуються на них, у будь-якому регістрі
+
+# Reset to default
+t0db9f7dc = Повернути типові
 
 # Leave out Mac-only files
 t27eec14f = Пропускати файли лише для Mac

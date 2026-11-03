@@ -68,6 +68,53 @@ scenario!(
     }
 );
 
+/// The ZIP archive New archive made in the work folder, and its size.
+fn zip_made(ui: &Ui) -> (std::path::PathBuf, u64) {
+    let made = std::fs::read_dir(&ui.work)
+        .expect("the work folder")
+        .filter_map(|e| e.ok().map(|e| e.path()))
+        .find(|p| p.extension().is_some_and(|e| e == "zip"))
+        .expect("a ZIP archive");
+    let size = std::fs::metadata(&made).expect("its size").len();
+    (made, size)
+}
+
+/// What compresses to almost nothing.
+const SQUEEZABLE: usize = 200_000;
+
+scenario!(
+    /// Store puts the files in as they are.
+    store_puts_the_files_in_as_they_are,
+    |ui| {
+        let paths = vec![ui.file("words.txt", &"x".repeat(SQUEEZABLE))];
+        ui.ws(|ws, window, cx| ws.open_create(paths, window, cx));
+        ui.wait_for("create");
+        ui.click("advanced");
+        ui.click("Store");
+        ui.click("create");
+        ui.wait_for_no_dialog();
+        let (made, size) = zip_made(ui);
+        assert!(size > SQUEEZABLE as u64, "{size}");
+        assert_eq!(listed(&made, None), ["words.txt"]);
+    }
+);
+
+scenario!(
+    /// By default, a picture goes in as it is while text is compressed.
+    what_is_compressed_already_goes_in_as_it_is,
+    |ui| {
+        let text = "x".repeat(SQUEEZABLE);
+        let paths = vec![ui.file("photo.jpg", &text), ui.file("notes.txt", &text)];
+        ui.ws(|ws, window, cx| ws.open_create(paths, window, cx));
+        ui.wait_for("create");
+        ui.click("create");
+        ui.wait_for_no_dialog();
+        let (_, size) = zip_made(ui);
+        // The picture's bytes, and little more for the text.
+        assert!(size > SQUEEZABLE as u64 && size < SQUEEZABLE as u64 * 11 / 10, "{size}");
+    }
+);
+
 scenario!(
     /// Asked to protect it, an empty password stops it, and says so.
     no_password_makes_nothing,

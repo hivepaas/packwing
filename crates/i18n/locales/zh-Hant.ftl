@@ -151,6 +151,9 @@ te9afe1c2 = 多數電腦需要封存檔應用程式或 lz4 工具才能開啟。
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = 僅能存放這一個檔案。命令列工具可開啟；Windows 和 macOS 可能需要封存檔應用程式。若要與任何人分享，請選擇 .zip。
 
+# Store
+t6da32dce = 僅儲存
+
 # Lowest
 t5d7dbfdb = 最低
 
@@ -192,6 +195,9 @@ ta1f147a6 = 儲存於此
 
 # Use these keys
 t1a01e439 = 使用這些金鑰
+
+# No compression
+t2e9c9e78 = 不壓縮
 
 # {name} compression
 te2db10f6 = { $name } 壓縮
@@ -252,6 +258,9 @@ t701d5ed9 = 進階選項
 
 # Compression level
 td386c9ef = 壓縮等級
+
+# Store puts the files in as they are: the quickest to make, and the largest.
+t076ef350 = 僅儲存會原樣放入檔案：建立最快，體積最大。
 
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = 等級越高，封存檔越小，建立時間越長，但開啟時間不變。
@@ -1198,11 +1207,17 @@ t0632975a = 前往 hivepaas.com
 # Always
 tad4bbd04 = 一律
 
+# Extensions, apart by spaces
+tc709375f = 副檔名，以空格分隔
+
 # Format of new archives
 t3b50d238 = 新封存檔的格式
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = 新增封存檔時預設使用此格式；你也可以在該處選擇其他格式。
+
+# Store puts the files of ZIP and 7z archives in as they are. tar formats take Lowest, as .tar alone has no compression.
+t2595cbcb = 僅儲存會原樣放入 ZIP 和 7z 封存檔中的檔案。tar 格式使用「最低」，因為只有 .tar 不壓縮。
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = 等級越高，封存檔越小，建立時間越長，但開啟時間不變。
@@ -1212,6 +1227,21 @@ ta4975128 = 直接寫入上方的儲存位置
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = 較大的檔案不會佔用這台電腦的空間，但若連線中斷就得重新壓縮。S3 以此方式支援 tar 和 ZIP，SFTP 則支援所有格式。
+
+# Don’t compress what already is
+t940ec31d = 不再壓縮已壓縮的檔案
+
+# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
+tb10eab86 = ZIP：圖片、影片、音訊和封存檔原樣放入，更快且不會變大
+
+# What goes in as it is
+tc0104b29 = 原樣放入的檔案
+
+# Files whose names end in these, whatever their case
+ta3acef9b = 名稱以這些結尾的檔案，不分大小寫
+
+# Reset to default
+t0db9f7dc = 還原預設值
 
 # Leave out Mac-only files
 t27eec14f = 排除 Mac 專用檔案
