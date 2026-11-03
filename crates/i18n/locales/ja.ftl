@@ -103,6 +103,9 @@ t89f1bf95 = packwing Free では、ネットワーク越しのストレージは
 # Test connection
 te0f3b6b7 = 接続をテスト
 
+# Enter a license key
+ta24f28a2 = ライセンスキーを入力
+
 # Save
 t4d2d5d68 = 保存
 

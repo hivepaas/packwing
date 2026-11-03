@@ -103,6 +103,9 @@ t89f1bf95 = packwing Free chỉ giữ một nơi lưu trữ qua mạng. Giấy p
 # Test connection
 te0f3b6b7 = Thử kết nối
 
+# Enter a license key
+ta24f28a2 = Nhập khoá giấy phép
+
 # Save
 t4d2d5d68 = Lưu
 

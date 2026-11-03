@@ -105,6 +105,9 @@ t89f1bf95 = packwing Free permet un seul stockage sur un réseau. Une licence Pr
 # Test connection
 te0f3b6b7 = Tester la connexion
 
+# Enter a license key
+ta24f28a2 = Saisir une clé de licence
+
 # Save
 t4d2d5d68 = Enregistrer
 

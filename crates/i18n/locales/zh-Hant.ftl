@@ -103,6 +103,9 @@ t89f1bf95 = packwing 免費版只能使用一個網路儲存位置。Pro 或 Ent
 # Test connection
 te0f3b6b7 = 測試連線
 
+# Enter a license key
+ta24f28a2 = 輸入授權金鑰
+
 # Save
 t4d2d5d68 = 儲存
 

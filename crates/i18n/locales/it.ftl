@@ -105,6 +105,9 @@ t89f1bf95 = packwing Free permette uno spazio di archiviazione in rete. Una lice
 # Test connection
 te0f3b6b7 = Prova la connessione
 
+# Enter a license key
+ta24f28a2 = Inserisci una chiave di licenza
+
 # Save
 t4d2d5d68 = Salva
 

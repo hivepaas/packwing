@@ -69,14 +69,24 @@ scenario!(
     free_keeps_one_remote_storage,
     |ui| {
         assert_eq!(ui.plan(), Plan::Free);
-        let (one, two) = (ui.work.join("one"), ui.work.join("two"));
+        let one = ui.work.join("one");
         add_far(ui, "One", &one);
         ui.wait_for_no_dialog();
         assert_eq!(ui.remote_storages(), 1);
-        add_far(ui, "Two", &two);
-        assert!(ui.dialog_open(), "the second was not refused");
+        // The second is not asked for: no field, no Add, but where a license is entered.
+        ui.ws(|ws, window, cx| ws.open_add_storage(window, cx));
+        ui.wait_for("kind-0");
+        ui.click("kind-0");
+        for hidden in ["field: Name", "storage-add", "storage-test"] {
+            assert!(!ui.shows(hidden), "{hidden} is shown over the limit");
+        }
+        ui.click("storage-license");
+        assert!(!ui.dialog_open());
+        assert_eq!(
+            ui.ws(|ws, _, cx| ws.settings_section(cx)),
+            crate::pages::settings::Section::License
+        );
         assert_eq!(ui.remote_storages(), 1);
-        ui.click("close");
         for i in 0..3 {
             let folder = ui.work.join(format!("here{i}"));
             ui.storage(&folder);

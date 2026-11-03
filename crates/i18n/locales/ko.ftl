@@ -103,6 +103,9 @@ t89f1bf95 = packwing Free는 네트워크 너머의 스토리지를 하나만 �
 # Test connection
 te0f3b6b7 = 연결 테스트
 
+# Enter a license key
+ta24f28a2 = 라이선스 키 입력
+
 # Save
 t4d2d5d68 = 저장
 

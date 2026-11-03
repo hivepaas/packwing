@@ -105,6 +105,9 @@ t89f1bf95 = packwing Free admite un almacenamiento en red. Una licencia Pro o En
 # Test connection
 te0f3b6b7 = Probar conexión
 
+# Enter a license key
+ta24f28a2 = Introducir una clave de licencia
+
 # Save
 t4d2d5d68 = Guardar
 
