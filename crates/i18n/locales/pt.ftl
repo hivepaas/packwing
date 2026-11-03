@@ -913,6 +913,9 @@ t64215c53 = Área de trabalho
 # Downloads
 t539307de = Downloads
 
+# Drop to open
+tb255877b = Solte para abrir
+
 # Browse
 t0eac1f07 = Navegar
 

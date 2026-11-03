@@ -163,6 +163,29 @@ fn pill(
         .child(label.into())
 }
 
+/// Says that files can be dropped on the window: it takes them anywhere, and
+/// this lights up while they are dragged over it.
+fn drop_hint(dragging: bool) -> Div {
+    let c = colors();
+    let ink = if dragging { c.accent } else { c.muted };
+    div()
+        .debug_selector(|| "drop-hint".to_owned())
+        .flex()
+        .items_center()
+        .gap(px(8.))
+        .h(px(40.))
+        .px(px(14.))
+        .ml(px(4.))
+        .rounded_full()
+        .border_1()
+        .border_dashed()
+        .border_color(rgb(ink))
+        .text_size(px(14.))
+        .text_color(rgb(ink))
+        .child(icon("drop", 18., ink))
+        .child(tr!("Drop to open"))
+}
+
 impl Render for BrowsePage {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let tab = self.tab;
@@ -178,7 +201,8 @@ impl Render for BrowsePage {
             .child(
                 pill("tab-recent", "recent", tr!("Recent"), tab == Tab::Recent)
                     .on_click(cx.listener(|this, _, _, cx| this.show_tab(Tab::Recent, cx))),
-            );
+            )
+            .child(drop_hint(cx.has_active_drag()));
         let shortcuts = Self::shortcuts()
             .into_iter()
             .map(|(id, icon_name, label, path)| {

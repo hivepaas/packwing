@@ -904,6 +904,9 @@ t64215c53 = Desktop
 # Downloads
 t539307de = Unduhan
 
+# Drop to open
+tb255877b = Lepaskan untuk membuka
+
 # Browse
 t0eac1f07 = Jelajahi
 
