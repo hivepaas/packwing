@@ -28,7 +28,8 @@ use crate::prefs;
 use crate::signatures::{self, Looking, Standing};
 use crate::text_size::ui;
 use crate::widgets::{
-    Fill, Size, Tone, button, chip, float_shadow, icon, icon_button, note, tile, tonal_tint,
+    Fill, Size, Tone, button, chip, icon, icon_button, menu_item, menu_panel, note, tile,
+    tonal_tint,
 };
 
 /// What the user asked of the archive.
@@ -651,45 +652,20 @@ impl ArchivePage {
 
     /// The `…` menu: what is used less, so that the header's buttons stay few.
     fn more_menu(&self, at: Point<Pixels>, cx: &mut Context<Self>) -> impl IntoElement + use<> {
-        let c = colors();
         let item = |id: &'static str, label: String, asked: fn() -> ArchiveEvent| {
-            div()
-                .debug_selector(move || id.to_owned())
-                .id(id)
-                .h(ui(40.))
-                .px(ui(12.))
-                .flex()
-                .items_center()
-                .rounded(ui(12.))
-                .cursor_pointer()
-                .whitespace_nowrap()
-                .hover(|s| s.bg(rgb(c.hover)))
-                .child(label)
-                .on_click(cx.listener(move |this, _, _, cx| {
-                    this.more_at = None;
-                    cx.emit(asked());
-                    cx.notify();
-                }))
+            menu_item(id, label, "").on_click(cx.listener(move |this, _, _, cx| {
+                this.more_at = None;
+                cx.emit(asked());
+                cx.notify();
+            }))
         };
         deferred(
             anchored()
                 .position(at)
                 .snap_to_window_with_margin(px(8.))
                 .child(
-                    div()
-                        .id("archive-menu")
-                        .occlude()
+                    menu_panel("archive-menu")
                         .min_w(ui(180.))
-                        .p(ui(6.))
-                        .flex()
-                        .flex_col()
-                        .rounded(ui(16.))
-                        .bg(rgb(c.surface))
-                        .border_1()
-                        .border_color(rgb(c.outline))
-                        .shadow(float_shadow(8., 24.))
-                        .text_size(ui(14.))
-                        .text_color(rgb(c.text))
                         .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
                         .on_mouse_down_out(cx.listener(|this, _, _, cx| {
                             this.more_at = None;

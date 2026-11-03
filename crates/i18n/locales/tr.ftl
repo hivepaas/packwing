@@ -948,6 +948,9 @@ tc7731c8f = Burada klasör yok.
 # This folder is empty.
 td9e47db6 = Bu klasör boş.
 
+# Copy all
+t6aef5c37 = Tümünü kopyala
+
 # This system has no folder for settings.
 tfd0ff0a1 = Bu sistemde ayarlar için bir klasör yok.
 

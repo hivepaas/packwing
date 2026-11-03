@@ -948,6 +948,9 @@ tc7731c8f = Nenhuma pasta aqui.
 # This folder is empty.
 td9e47db6 = Esta pasta está vazia.
 
+# Copy all
+t6aef5c37 = Copiar tudo
+
 # This system has no folder for settings.
 tfd0ff0a1 = Este sistema não tem uma pasta para configurações.
 

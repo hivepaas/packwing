@@ -948,6 +948,9 @@ tc7731c8f = Aucun dossier ici.
 # This folder is empty.
 td9e47db6 = Ce dossier est vide.
 
+# Copy all
+t6aef5c37 = Tout copier
+
 # This system has no folder for settings.
 tfd0ff0a1 = Ce système n'a pas de dossier pour les réglages.
 

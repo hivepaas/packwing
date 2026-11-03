@@ -17,8 +17,8 @@ use std::time::Duration;
 use gpui::{
     App, ClipboardItem, Context, Div, ElementId, Entity, EventEmitter, FocusHandle, Focusable,
     FontWeight, KeyDownEvent, MouseButton, MouseDownEvent, Pixels, Point, Render, ScrollStrategy,
-    SharedString, Stateful, Subscription, Task, UniformListScrollHandle, Window, anchored,
-    deferred, div, prelude::*, px, rgb, uniform_list,
+    Stateful, Subscription, Task, UniformListScrollHandle, Window, anchored, deferred, div,
+    prelude::*, px, rgb, uniform_list,
 };
 use packwing_core::{
     Cancel, Counted, Item, Lister, Signed, Source, Storage, Stored, bad_name, count, folded_query,
@@ -33,7 +33,7 @@ use crate::model::{Kind, date, tag_of};
 use crate::prefs;
 use crate::signatures::{self, Looking};
 use crate::text_size::ui;
-use crate::widgets::{Fill, Size, button, float_shadow, icon, icon_button, tile};
+use crate::widgets::{Fill, Size, button, icon, icon_button, menu_item, menu_panel, tile};
 
 /// How many items are asked for at a time.
 pub const PAGE: usize = 1000;
@@ -1388,43 +1388,11 @@ impl Explorer {
     fn menu(&self, at: Point<Pixels>, target: MenuFor, cx: &mut Context<Self>) -> gpui::AnyElement {
         let c = colors();
         let item = |id: &'static str, label: String, key: &'static str, bad: bool| {
-            div()
-                .debug_selector(move || id.to_owned())
-                .id(id)
-                .h(ui(40.))
-                .px(ui(12.))
-                .flex()
-                .items_center()
-                .justify_between()
-                .gap(ui(24.))
-                .rounded(ui(12.))
-                .cursor_pointer()
-                .whitespace_nowrap()
-                .hover(|s| s.bg(rgb(c.hover)))
-                .when(bad, |d| d.text_color(rgb(c.bad_text)))
-                .child(label)
-                .child(
-                    div()
-                        .text_size(ui(12.))
-                        .text_color(rgb(c.muted))
-                        .child(SharedString::from(key)),
-                )
+            menu_item(id, label, key).when(bad, |d| d.text_color(rgb(c.bad_text)))
         };
         let line = || div().my(ui(4.)).mx(ui(10.)).h(ui(1.)).bg(rgb(c.field));
-        let mut menu = div()
-            .id("explorer-menu")
-            .occlude()
+        let mut menu = menu_panel("explorer-menu")
             .min_w(ui(230.))
-            .p(ui(6.))
-            .flex()
-            .flex_col()
-            .rounded(ui(16.))
-            .bg(rgb(c.surface))
-            .border_1()
-            .border_color(rgb(c.outline))
-            .shadow(float_shadow(8., 24.))
-            .text_size(ui(14.))
-            .text_color(rgb(c.text))
             .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
             .on_mouse_down_out(cx.listener(|this, e: &MouseDownEvent, _, cx| {
                 // A right click opens the next one.

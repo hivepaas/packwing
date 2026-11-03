@@ -940,6 +940,9 @@ tc7731c8f = 폴더가 없습니다.
 # This folder is empty.
 td9e47db6 = 이 폴더는 비어 있습니다.
 
+# Copy all
+t6aef5c37 = 모두 복사
+
 # This system has no folder for settings.
 tfd0ff0a1 = 이 시스템에는 설정 폴더가 없습니다.
 

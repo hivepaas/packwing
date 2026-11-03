@@ -940,6 +940,9 @@ tc7731c8f = Không có thư mục nào ở đây.
 # This folder is empty.
 td9e47db6 = Thư mục này trống.
 
+# Copy all
+t6aef5c37 = Sao chép tất cả
+
 # This system has no folder for settings.
 tfd0ff0a1 = Hệ thống này không có thư mục cho cài đặt.
 

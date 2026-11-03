@@ -136,6 +136,43 @@ scenario!(
 );
 
 scenario!(
+    /// A right click on text to read offers Copy all, and Copy once some is chosen.
+    the_preview_text_has_a_copy_menu,
+    |ui| {
+        let text = "xin chào\nthế giới\n";
+        let made = packwing_core::create(
+            &[ui.file("notes.txt", text)],
+            &ui.work.join("notes.zip"),
+            &packwing_core::NewArchive::default(),
+            &packwing_core::Control::default(),
+        )
+        .expect("the archive");
+        ui.open(&made);
+        ui.click("entry-0");
+        ui.wait_for("preview-text");
+        let clipboard = |ui: &mut Ui| ui.cx.read_from_clipboard().and_then(|c| c.text());
+        ui.cx
+            .write_to_clipboard(gpui::ClipboardItem::new_string(String::new()));
+        ui.right_click("preview-text");
+        assert!(ui.shows("text-copy-all"));
+        assert!(!ui.shows("text-copy"), "nothing is chosen to copy");
+        ui.click("text-copy-all");
+        assert!(!ui.shows("text-menu"));
+        assert_eq!(clipboard(ui).as_deref(), Some(text));
+        // What is chosen, its first word, is what Copy takes.
+        let cmd = if cfg!(target_os = "macos") { "cmd" } else { "ctrl" };
+        ui.keys(&format!("{cmd}-a left shift-right shift-right shift-right"));
+        ui.right_click("preview-text");
+        ui.click("text-copy");
+        assert_eq!(clipboard(ui).as_deref(), Some("xin"));
+        // Escape closes it, and the text stays as it was.
+        ui.right_click("preview-text");
+        ui.keys("escape");
+        assert!(!ui.shows("text-menu"));
+    }
+);
+
+scenario!(
     /// An age file asks for its passphrase and opens with it.
     an_age_file_opens_with_its_passphrase,
     |ui| {
