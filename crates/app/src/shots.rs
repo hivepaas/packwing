@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 80] = [
+const SCREENS: [(&str, SetUp); 85] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -48,6 +48,37 @@ const SCREENS: [(&str, SetUp); 80] = [
         ws.show_storage(sample_storage(), cx);
         ws.open_sign_of("readme.txt", window, cx)
             .update(cx, |d, cx| d.ask_new_key_for_test(cx));
+    }),
+    ("checksums", |ws, window, cx| {
+        ws.show_storage(sample_storage(), cx);
+        ws.open_checksums_of("readme.txt", window, cx)
+            .update(cx, |d, cx| d.read_for_test(cx));
+    }),
+    ("checksums-matches", |ws, window, cx| {
+        let dir = sample_storage();
+        let sum = sha256_of(&dir, "readme.txt");
+        ws.show_storage(dir, cx);
+        ws.open_checksums_of("readme.txt", window, cx)
+            .update(cx, |d, cx| {
+                d.read_for_test(cx);
+                d.compare_for_test(&format!("{sum}  readme.txt"), cx);
+            });
+    }),
+    ("checksums-saved", |ws, window, cx| {
+        ws.show_storage(sample_storage(), cx);
+        ws.open_checksums_of("readme.txt", window, cx)
+            .update(cx, |d, cx| {
+                d.read_for_test(cx);
+                d.save_for_test(cx);
+            });
+    }),
+    ("checksums-differs", |ws, window, cx| {
+        ws.show_storage(sample_storage(), cx);
+        ws.open_checksums_of("readme.txt", window, cx)
+            .update(cx, |d, cx| {
+                d.read_for_test(cx);
+                d.compare_for_test(&"0".repeat(64), cx);
+            });
     }),
     ("storages-signed", |ws, _, cx| {
         let dir = sample_storage();
@@ -282,6 +313,11 @@ const SCREENS: [(&str, SetUp); 80] = [
         });
         ws.show_settings(Section::Security, cx)
     }),
+    ("settings-security-checksums", |ws, _, cx| {
+        ws.show_settings(Section::Security, cx);
+        ws.settings()
+            .update(cx, |s, cx| s.scroll_for_test(900., cx));
+    }),
     ("settings-right-click", |ws, _, cx| {
         ws.show_settings(Section::RightClick, cx)
     }),
@@ -414,6 +450,20 @@ const SCREENS: [(&str, SetUp); 80] = [
 ];
 
 /// A folder for the Storages screens.
+/// The SHA-256 checksum of the file `name` in `dir`.
+fn sha256_of(dir: &std::path::Path, name: &str) -> String {
+    let folder = packwing_core::LocalFolder::new(dir);
+    packwing_core::checksums(
+        &folder,
+        &[name.to_owned()],
+        &[packwing_core::Algorithm::Sha256],
+        &packwing_core::Control::default(),
+    )
+    .expect("the file reads")
+    .remove(0)
+    .1
+}
+
 fn sample_storage() -> PathBuf {
     let dir = out_dir().join("sample-storage");
     let _ = std::fs::remove_dir_all(&dir);

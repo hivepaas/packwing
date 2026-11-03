@@ -11,7 +11,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use gpui::{App, Global};
 use packwing_core::{
-    COMPRESSED_EXTENSIONS, ExtractOptions, Level, PublicKey, Values, read_public_key,
+    Algorithm, COMPRESSED_EXTENSIONS, ExtractOptions, Level, PublicKey, Values, read_public_key,
 };
 
 use crate::dialogs::Format;
@@ -164,6 +164,8 @@ pub struct Prefs {
     pub trusted_keys: Vec<TrustedKey>,
     /// The key file signed with last. Its contents never go in this file.
     pub signing_key: Option<PathBuf>,
+    /// The checksums Checksums shows, in [`Algorithm::ALL`]'s order; never none.
+    pub checksums: Vec<Algorithm>,
 }
 
 impl Global for Prefs {}
@@ -197,6 +199,7 @@ impl Default for Prefs {
             update: UpdateState::default(),
             trusted_keys: Vec::new(),
             signing_key: None,
+            checksums: vec![Algorithm::Sha256, Algorithm::Sha1],
         }
     }
 }
@@ -323,6 +326,12 @@ impl Prefs {
                         .map(|(version, path)| (version.to_owned(), PathBuf::from(path)));
                 }
                 "signing_key" => p.signing_key = Some(PathBuf::from(value)),
+                "checksums" => {
+                    let named: Vec<_> = value.split(' ').filter_map(Algorithm::keyed).collect();
+                    if !named.is_empty() {
+                        p.checksums = named;
+                    }
+                }
                 // What it is called, a tab, and its public key's line.
                 "trusted_key" => {
                     if let Some((name, line)) = value.split_once('\t') {
@@ -455,6 +464,8 @@ impl Prefs {
         {
             text.push_str(&format!("signing_key={key}\n"));
         }
+        let checksums: Vec<_> = self.checksums.iter().map(|a| a.key()).collect();
+        text.push_str(&format!("checksums={}\n", checksums.join(" ")));
         for key in &self.trusted_keys {
             text.push_str(&format!(
                 "trusted_key={}\t{}\n",
@@ -509,6 +520,23 @@ impl Prefs {
             },
         );
         self.recent.truncate(RECENT);
+    }
+
+    /// Shows `algorithm`'s checksum, or not: the last one shown stays.
+    pub fn show_checksum(&mut self, algorithm: Algorithm, on: bool) {
+        let shown: Vec<_> = Algorithm::ALL
+            .into_iter()
+            .filter(|a| {
+                if *a == algorithm {
+                    on
+                } else {
+                    self.checksums.contains(a)
+                }
+            })
+            .collect();
+        if !shown.is_empty() {
+            self.checksums = shown;
+        }
     }
 
     /// The keys trusted, those that read: one edited by hand may not.
@@ -748,6 +776,7 @@ mod tests {
                 name: "Tôi\tở nhà".to_owned(),
                 line: "ssh-ed25519 AAAA".to_owned(),
             }],
+            checksums: vec![Algorithm::Sha512, Algorithm::Blake3],
             ..Prefs::default()
         };
         p.recent.push(Opened {
@@ -792,8 +821,9 @@ mod tests {
 
     #[test]
     fn what_cannot_be_read_stays_at_its_default() {
-        let p =
-            Prefs::parse("format=.rar\nlevel=9\nhide_names=maybe\nnew=1\nnonsense\nrecent=x y\n");
+        let p = Prefs::parse(
+            "format=.rar\nlevel=9\nhide_names=maybe\nnew=1\nnonsense\nrecent=x y\nchecksums=crc\n",
+        );
         assert_eq!(p, Prefs::default());
     }
 
@@ -861,5 +891,30 @@ mod tests {
         assert_eq!(Prefs::parse("text_size=7\n").text_size, None);
         assert_eq!(Prefs::parse("text_size=big\n").text_size, None);
         assert!(!Prefs::default().text().contains("text_size"));
+    }
+
+    #[test]
+    fn checksums_stay_in_their_order_and_one_is_always_shown() {
+        let mut p = Prefs::default();
+        assert_eq!(p.checksums, [Algorithm::Sha256, Algorithm::Sha1]);
+        p.show_checksum(Algorithm::Md5, true);
+        p.show_checksum(Algorithm::Sha512, true);
+        assert_eq!(
+            p.checksums,
+            [
+                Algorithm::Sha256,
+                Algorithm::Sha512,
+                Algorithm::Sha1,
+                Algorithm::Md5
+            ]
+        );
+        for a in Algorithm::ALL {
+            p.show_checksum(a, false);
+        }
+        assert_eq!(p.checksums, [Algorithm::Md5]);
+        assert_eq!(
+            Prefs::parse("checksums=md5 nonsense\n").checksums,
+            [Algorithm::Md5]
+        );
     }
 }

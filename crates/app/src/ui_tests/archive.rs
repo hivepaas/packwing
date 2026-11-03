@@ -23,6 +23,25 @@ scenario!(
 );
 
 scenario!(
+    /// The archive open has Checksums… in its `…` menu, for its file.
+    an_archive_s_checksums_are_shown,
+    |ui| {
+        let archive = ui.copy_of("sample.7z");
+        ui.open(&archive);
+        ui.ws(|ws, _, cx| {
+            ws.archive_page().update(cx, |p, cx| {
+                p.open_more_for_shot(gpui::point(gpui::px(600.), gpui::px(200.)), cx)
+            });
+        });
+        ui.click("menu-checksums");
+        ui.wait_for("checksum-copy-0");
+        ui.click("checksum-save");
+        ui.wait_for("checksum-saved");
+        assert!(ui.work.join("sample.7z.sha256").exists());
+    }
+);
+
+scenario!(
     /// A file that is no archive says so, and the window goes on working.
     what_is_no_archive_says_so,
     |ui| {

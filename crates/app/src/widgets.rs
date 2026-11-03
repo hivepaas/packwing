@@ -11,6 +11,30 @@ use gpui::{
 use crate::colors::{Tint, colors};
 use crate::text_size::ui;
 
+/// Monospace fonts, for what is read character by character, the first one
+/// installed.
+const MONO_FONTS: [&str; 8] = [
+    "SF Mono",
+    "Menlo",
+    "Cascadia Mono",
+    "Consolas",
+    "JetBrains Mono",
+    "DejaVu Sans Mono",
+    "Liberation Mono",
+    "Ubuntu Mono",
+];
+
+/// The first of [`MONO_FONTS`] installed, or packwing's own font.
+pub fn mono_font(window: &Window) -> SharedString {
+    let installed = window.text_system().all_font_names();
+    MONO_FONTS
+        .iter()
+        .find(|f| installed.iter().any(|i| i == *f))
+        .copied()
+        .unwrap_or(crate::FONT)
+        .into()
+}
+
 /// An icon from `assets/icons`, by its name, `size` px square.
 pub fn icon(name: &str, size: f32, color: u32) -> Svg {
     svg()
@@ -353,6 +377,8 @@ pub enum Tone {
     Warn,
     /// It went well.
     Good,
+    /// It is wrong.
+    Bad,
 }
 
 /// A short note in a tinted box.
@@ -361,6 +387,7 @@ pub fn note(tone: Tone) -> Div {
     let (ground, ink) = match tone {
         Tone::Warn => (c.warn_bg, c.warn_text),
         Tone::Good => (c.tonal, c.on_tonal),
+        Tone::Bad => (c.bad_bg, c.bad_text),
     };
     div()
         .px(ui(12.))

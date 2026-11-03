@@ -111,6 +111,84 @@ ta24f28a2 = Inserisci una chiave di licenza
 # Save
 t4d2d5d68 = Salva
 
+# Paste the checksum given with the file
+t8333758c = Incolla il checksum fornito con il file
+
+# They could not be saved: {why}
+tb45ae457 = Non è stato possibile salvarli: { $why }
+
+# The file could not be read: {why}
+t5daa8455 = Il file non può essere letto: { $why }
+
+# Reading…
+t6aad8485 = Lettura…
+
+# Copied
+t8dc21305 = Copiato
+
+# Copy
+t658f3664 = Copia
+
+# weak
+tedbc2ec9 = debole
+
+# There is no checksum in this.
+t231f838a = Qui non c'è nessun checksum.
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = Non è un checksum che packwing calcola: ha { $digits } cifre.
+
+# It matches the file’s {name} checksum.
+t4f0350e4 = Corrisponde al checksum { $name } del file.
+
+# It is compared once the file is read.
+tcb5c1745 = Il confronto avviene quando il file è stato letto.
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = Non corrisponde al checksum { $name } del file: non è il file da cui è stato calcolato, oppure il file è cambiato lungo la strada.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Potrebbe essere un checksum { $name }, non ancora calcolato.
+
+# Make it
+tcbefe458 = Calcolalo
+
+# Compare with
+tbddcfc14 = Confronta con
+
+# Reading… {size} of {size2}
+t80036d1c = Lettura… { $size } di { $size2 }
+
+# Reading… {size}
+t1569c388 = Lettura… { $size }
+
+# Checksums of {name}
+te88f3ed9 = Checksum di { $name }
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = Tutto il file passa da questo computer, e il tuo provider può addebitare ciò che viene letto.
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = Un checksum debole ({ $names }) rileva un file danneggiato, ma non uno modificato apposta, che si può far corrispondere.
+
+# Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
+t1d91952b = Salvati accanto come { $files }, dove sha256sum -c e simili li verificano senza packwing.
+
+# Compare…
+tec85be80 = Confronta…
+
+# Saving…
+tbd79b37d = Salvataggio…
+
+# Save beside it
+t7f4d85e3 = Salva accanto
+
+# Read it
+t80fb8482 = Leggilo
+
+# Done
+t8dd31791 = Fine
+
 # Nothing chosen yet
 tcf390b0a = Ancora nulla di scelto
 
@@ -722,9 +800,6 @@ t1aaf57aa = Sposta qui
 # Copy here
 t85f0245a = Copia qui
 
-# Copy
-t658f3664 = Copia
-
 # Move
 t7f2c2a34 = Sposta
 
@@ -754,9 +829,6 @@ tb7927177 = Impossibile leggerlo
 
 # It could not be read: {why}
 t26005fe3 = Impossibile leggerlo: { $why }
-
-# Reading…
-t6aad8485 = Lettura…
 
 # It could not be shown
 tb60fb288 = Impossibile mostrarlo
@@ -835,6 +907,9 @@ t7a32320b = Sposta in…
 
 # Sign…
 td6d61b10 = Firma…
+
+# Checksums…
+t2891102d = Checksum…
 
 # Copy path
 tf165cb2b = Copia percorso
@@ -1057,9 +1132,6 @@ t7d0c09c7 = { $location } · non c'è più
 
 # The archives you open will show here.
 tc0cc82d5 = Gli archivi che apri compariranno qui.
-
-# Copied
-t8dc21305 = Copiato
 
 # Copy version info
 t3d37483c = Copia info sulla versione
@@ -1511,6 +1583,15 @@ td25843b8 = Una firma di una di queste dice chi ha firmato un file. Una di quals
 # Choose a file…
 t28a576c9 = Scegli un file…
 
+# {name} (weak)
+tdb06c037 = { $name } (debole)
+
+# Checksums
+t47dd48d3 = Checksum
+
+# What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
+t6edeb650 = Ciò che mostra Checksum… nel menu di un file, da confrontare con quello indicato dove il file è stato preso. Uno debole rileva un file danneggiato, ma non uno modificato apposta.
+
 # Its policies cannot be read, so what they guard refuses: {why}
 t7b4eb9c1 = I suoi criteri non si possono leggere, quindi ciò che proteggono viene rifiutato: { $why }
 
@@ -1716,6 +1797,9 @@ t75e7db7c = { $folder }, una cartella per ciascuno
 
 # New
 t8b242db1 = Nuovo
+
+# There is no file to save it beside.
+ta9906e3b = Non c'è nessun file accanto a cui salvarlo.
 
 # Could not read {path}: {e}
 tad0120eb = Impossibile leggere { $path }: { $e }

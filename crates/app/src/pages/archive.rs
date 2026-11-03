@@ -38,6 +38,8 @@ pub enum ArchiveEvent {
     Test,
     /// Sign its file.
     Sign,
+    /// Show its file's checksums.
+    Checksums,
     /// Choose an archive to open.
     Open,
     /// Choose an archive on a storage to open.
@@ -650,6 +652,25 @@ impl ArchivePage {
     /// The `…` menu: what is used less, so that the header's buttons stay few.
     fn more_menu(&self, at: Point<Pixels>, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let c = colors();
+        let item = |id: &'static str, label: String, asked: fn() -> ArchiveEvent| {
+            div()
+                .debug_selector(move || id.to_owned())
+                .id(id)
+                .h(ui(40.))
+                .px(ui(12.))
+                .flex()
+                .items_center()
+                .rounded(ui(12.))
+                .cursor_pointer()
+                .whitespace_nowrap()
+                .hover(|s| s.bg(rgb(c.hover)))
+                .child(label)
+                .on_click(cx.listener(move |this, _, _, cx| {
+                    this.more_at = None;
+                    cx.emit(asked());
+                    cx.notify();
+                }))
+        };
         deferred(
             anchored()
                 .position(at)
@@ -674,24 +695,10 @@ impl ArchivePage {
                             this.more_at = None;
                             cx.notify();
                         }))
-                        .child(
-                            div()
-                                .id("menu-sign")
-                                .h(ui(40.))
-                                .px(ui(12.))
-                                .flex()
-                                .items_center()
-                                .rounded(ui(12.))
-                                .cursor_pointer()
-                                .whitespace_nowrap()
-                                .hover(|s| s.bg(rgb(c.hover)))
-                                .child(tr!("Sign…"))
-                                .on_click(cx.listener(|this, _, _, cx| {
-                                    this.more_at = None;
-                                    cx.emit(ArchiveEvent::Sign);
-                                    cx.notify();
-                                })),
-                        ),
+                        .child(item("menu-sign", tr!("Sign…"), || ArchiveEvent::Sign))
+                        .child(item("menu-checksums", tr!("Checksums…"), || {
+                            ArchiveEvent::Checksums
+                        })),
                 ),
         )
         .with_priority(1)

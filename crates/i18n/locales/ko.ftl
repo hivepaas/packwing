@@ -109,6 +109,84 @@ ta24f28a2 = 라이선스 키 입력
 # Save
 t4d2d5d68 = 저장
 
+# Paste the checksum given with the file
+t8333758c = 파일과 함께 제공된 체크섬을 붙여 넣으세요
+
+# They could not be saved: {why}
+tb45ae457 = 저장할 수 없습니다: { $why }
+
+# The file could not be read: {why}
+t5daa8455 = 파일을 읽을 수 없습니다: { $why }
+
+# Reading…
+t6aad8485 = 읽는 중…
+
+# Copied
+t8dc21305 = 복사됨
+
+# Copy
+t658f3664 = 복사
+
+# weak
+tedbc2ec9 = 약함
+
+# There is no checksum in this.
+t231f838a = 여기에는 체크섬이 없습니다.
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = packwing이 만드는 체크섬이 아닙니다: { $digits }자리입니다.
+
+# It matches the file’s {name} checksum.
+t4f0350e4 = 파일의 { $name } 체크섬과 일치합니다.
+
+# It is compared once the file is read.
+tcb5c1745 = 파일을 다 읽으면 비교합니다.
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = 파일의 { $name } 체크섬과 일치하지 않습니다: 이 체크섬을 만든 파일이 아니거나, 오는 도중에 파일이 바뀌었습니다.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = 아직 만들지 않은 { $name } 체크섬일 수 있습니다.
+
+# Make it
+tcbefe458 = 만들기
+
+# Compare with
+tbddcfc14 = 비교 대상
+
+# Reading… {size} of {size2}
+t80036d1c = 읽는 중… { $size } / { $size2 }
+
+# Reading… {size}
+t1569c388 = 읽는 중… { $size }
+
+# Checksums of {name}
+te88f3ed9 = { $name }의 체크섬
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = 파일 전체가 이 컴퓨터를 거치므로, 제공업체에서 읽은 양에 따라 요금이 부과될 수 있습니다.
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = 약한 체크섬({ $names })은 손상된 파일은 알아내지만, 일치하도록 일부러 바꾼 파일은 알아내지 못합니다.
+
+# Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
+t1d91952b = 옆에 { $files }(으)로 저장했습니다. sha256sum -c 등으로 packwing 없이 확인할 수 있습니다.
+
+# Compare…
+tec85be80 = 비교…
+
+# Saving…
+tbd79b37d = 저장 중…
+
+# Save beside it
+t7f4d85e3 = 옆에 저장
+
+# Read it
+t80fb8482 = 읽기
+
+# Done
+t8dd31791 = 완료
+
 # Nothing chosen yet
 tcf390b0a = 아직 선택하지 않음
 
@@ -715,9 +793,6 @@ t1aaf57aa = 여기로 이동
 # Copy here
 t85f0245a = 여기로 복사
 
-# Copy
-t658f3664 = 복사
-
 # Move
 t7f2c2a34 = 이동
 
@@ -747,9 +822,6 @@ tb7927177 = 읽을 수 없습니다
 
 # It could not be read: {why}
 t26005fe3 = 읽을 수 없습니다: { $why }
-
-# Reading…
-t6aad8485 = 읽는 중…
 
 # It could not be shown
 tb60fb288 = 표시할 수 없습니다
@@ -828,6 +900,9 @@ t7a32320b = 이동…
 
 # Sign…
 td6d61b10 = 서명…
+
+# Checksums…
+t2891102d = 체크섬…
 
 # Copy path
 tf165cb2b = 경로 복사
@@ -1044,9 +1119,6 @@ t7d0c09c7 = { $location } · 더 이상 없음
 
 # The archives you open will show here.
 tc0cc82d5 = 연 압축 파일이 여기에 표시됩니다.
-
-# Copied
-t8dc21305 = 복사됨
 
 # Copy version info
 t3d37483c = 버전 정보 복사
@@ -1498,6 +1570,15 @@ td25843b8 = 이 중 하나의 서명은 누가 파일에 서명했는지 알려 
 # Choose a file…
 t28a576c9 = 파일 선택…
 
+# {name} (weak)
+tdb06c037 = { $name } (약함)
+
+# Checksums
+t47dd48d3 = 체크섬
+
+# What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
+t6edeb650 = 파일 메뉴의 체크섬…에 표시되는 항목으로, 파일을 받은 곳에서 제공한 체크섬과 비교할 수 있습니다. 약한 체크섬은 손상된 파일은 알아내지만, 일부러 바꾼 파일은 알아내지 못합니다.
+
 # Its policies cannot be read, so what they guard refuses: {why}
 t7b4eb9c1 = 정책을 읽을 수 없어 정책이 지키는 항목은 거부됩니다: { $why }
 
@@ -1689,6 +1770,9 @@ t75e7db7c = { $folder }, 각각 폴더 하나씩
 
 # New
 t8b242db1 = 새로 만들기
+
+# There is no file to save it beside.
+ta9906e3b = 옆에 저장할 파일이 없습니다.
 
 # Could not read {path}: {e}
 tad0120eb = { $path }을(를) 읽을 수 없습니다: { $e }

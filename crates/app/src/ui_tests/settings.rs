@@ -17,6 +17,25 @@ scenario!(
 );
 
 scenario!(
+    /// The checksums shown can be chosen, and the last one cannot be left out.
+    checksums_shown_are_chosen,
+    |ui| {
+        use packwing_core::Algorithm;
+        let kept = |ui: &mut Ui| ui.ws(|_, _, cx| crate::prefs::prefs(cx).checksums);
+        ui.settings(3);
+        assert_eq!(kept(ui), [Algorithm::Sha256, Algorithm::Sha1]);
+        ui.click("checksum-3");
+        ui.click("checksum-0");
+        ui.click("checksum-2");
+        assert_eq!(kept(ui), [Algorithm::Md5]);
+        ui.click("checksum-3");
+        assert_eq!(kept(ui), [Algorithm::Md5]);
+        ui.start();
+        assert_eq!(kept(ui), [Algorithm::Md5]);
+    }
+);
+
+scenario!(
     /// The extensions stored as they are can be typed, stay through a restart, and Reset
     /// brings back the known list.
     stored_extensions_are_typed_and_reset,

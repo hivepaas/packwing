@@ -109,6 +109,84 @@ ta24f28a2 = 输入许可证密钥
 # Save
 t4d2d5d68 = 保存
 
+# Paste the checksum given with the file
+t8333758c = 粘贴随文件提供的校验和
+
+# They could not be saved: {why}
+tb45ae457 = 无法保存：{ $why }
+
+# The file could not be read: {why}
+t5daa8455 = 无法读取文件：{ $why }
+
+# Reading…
+t6aad8485 = 正在读取…
+
+# Copied
+t8dc21305 = 已复制
+
+# Copy
+t658f3664 = 复制
+
+# weak
+tedbc2ec9 = 弱
+
+# There is no checksum in this.
+t231f838a = 这里面没有校验和。
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = 这不是 packwing 生成的校验和：它有 { $digits } 位。
+
+# It matches the file’s {name} checksum.
+t4f0350e4 = 与文件的 { $name } 校验和一致。
+
+# It is compared once the file is read.
+tcb5c1745 = 文件读取完成后进行比较。
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = 与文件的 { $name } 校验和不一致：这不是生成该校验和的文件，或者文件在传输途中发生了变化。
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = 这可能是尚未生成的 { $name } 校验和。
+
+# Make it
+tcbefe458 = 生成
+
+# Compare with
+tbddcfc14 = 比较对象
+
+# Reading… {size} of {size2}
+t80036d1c = 正在读取… { $size } / { $size2 }
+
+# Reading… {size}
+t1569c388 = 正在读取… { $size }
+
+# Checksums of {name}
+te88f3ed9 = { $name } 的校验和
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = 整个文件都会经过此电脑，读取数据可能会产生服务商收费。
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = 弱校验和（{ $names }）能发现损坏的文件，但发现不了被故意修改以使其一致的文件。
+
+# Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
+t1d91952b = 已保存在旁边，文件名为 { $files }；sha256sum -c 等工具无需 packwing 即可校验。
+
+# Compare…
+tec85be80 = 比较…
+
+# Saving…
+tbd79b37d = 正在保存…
+
+# Save beside it
+t7f4d85e3 = 保存在旁边
+
+# Read it
+t80fb8482 = 读取
+
+# Done
+t8dd31791 = 完成
+
 # Nothing chosen yet
 tcf390b0a = 尚未选择
 
@@ -715,9 +793,6 @@ t1aaf57aa = 移到此处
 # Copy here
 t85f0245a = 复制到此处
 
-# Copy
-t658f3664 = 复制
-
 # Move
 t7f2c2a34 = 移动
 
@@ -747,9 +822,6 @@ tb7927177 = 无法读取
 
 # It could not be read: {why}
 t26005fe3 = 无法读取：{ $why }
-
-# Reading…
-t6aad8485 = 正在读取…
 
 # It could not be shown
 tb60fb288 = 无法显示
@@ -828,6 +900,9 @@ t7a32320b = 移动到…
 
 # Sign…
 td6d61b10 = 签名…
+
+# Checksums…
+t2891102d = 校验和…
 
 # Copy path
 tf165cb2b = 复制路径
@@ -1044,9 +1119,6 @@ t7d0c09c7 = { $location } · 已不存在
 
 # The archives you open will show here.
 tc0cc82d5 = 你打开过的压缩包会显示在这里。
-
-# Copied
-t8dc21305 = 已复制
 
 # Copy version info
 t3d37483c = 复制版本信息
@@ -1498,6 +1570,15 @@ td25843b8 = 这些密钥中任何一个的签名，都表明文件由谁签署�
 # Choose a file…
 t28a576c9 = 选择文件…
 
+# {name} (weak)
+tdb06c037 = { $name }（弱）
+
+# Checksums
+t47dd48d3 = 校验和
+
+# What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
+t6edeb650 = 文件菜单中“校验和…”显示的内容，用于与文件来源处提供的校验和进行比较。弱校验和能发现损坏的文件，但发现不了被故意修改的文件。
+
 # Its policies cannot be read, so what they guard refuses: {why}
 t7b4eb9c1 = 无法读取其策略，因此受其保护的操作一律拒绝：{ $why }
 
@@ -1689,6 +1770,9 @@ t75e7db7c = { $folder }，每个压缩包一个文件夹
 
 # New
 t8b242db1 = 新建
+
+# There is no file to save it beside.
+ta9906e3b = 没有可在其旁边保存的文件。
 
 # Could not read {path}: {e}
 tad0120eb = 无法读取 { $path }：{ $e }

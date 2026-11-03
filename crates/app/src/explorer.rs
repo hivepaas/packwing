@@ -61,6 +61,8 @@ pub enum ExplorerEvent {
     Transfer { moving: bool },
     /// Ask how to sign this file, by its name in the folder.
     Sign(String),
+    /// Show this file's checksums, by its name in the folder.
+    Checksums(String),
 }
 
 /// A storage, by what the user calls it.
@@ -305,6 +307,17 @@ impl Explorer {
         {
             self.menu = None;
             cx.emit(ExplorerEvent::Sign(one.name.clone()));
+        }
+    }
+
+    /// Shows the checksums of the one file chosen.
+    pub fn ask_checksums(&mut self, cx: &mut Context<Self>) {
+        if let [one] = self.selection().as_slice()
+            && !one.dir
+            && !one.link
+        {
+            self.menu = None;
+            cx.emit(ExplorerEvent::Checksums(one.name.clone()));
         }
     }
 
@@ -1376,6 +1389,7 @@ impl Explorer {
         let c = colors();
         let item = |id: &'static str, label: String, key: &'static str, bad: bool| {
             div()
+                .debug_selector(move || id.to_owned())
                 .id(id)
                 .h(ui(40.))
                 .px(ui(12.))
@@ -1529,6 +1543,12 @@ impl Explorer {
                             d.child(
                                 item("menu-sign", tr!("Sign…"), "", false)
                                     .on_click(cx.listener(|this, _, _, cx| this.ask_sign(cx))),
+                            )
+                        })
+                        .when(!one.dir && !one.link, |d| {
+                            d.child(
+                                item("menu-checksums", tr!("Checksums…"), "", false)
+                                    .on_click(cx.listener(|this, _, _, cx| this.ask_checksums(cx))),
                             )
                         })
                         .child(line())

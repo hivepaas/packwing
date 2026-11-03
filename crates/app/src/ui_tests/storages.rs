@@ -37,6 +37,58 @@ scenario!(
 );
 
 scenario!(
+    /// Checksums… in a file's menu shows its checksums, and says whether one pasted matches.
+    a_file_s_checksums_are_shown_and_compared,
+    |ui| {
+        let folder = ui.work.join("place");
+        ui.file("place/a.txt", "abc");
+        ui.storage(&folder);
+        ui.explorer_names();
+        ui.ws(|ws, _, cx| {
+            ws.explorer(cx).update(cx, |e, cx| {
+                e.choose("a.txt", cx);
+                e.show_menu(400., 300., false, cx);
+            });
+        });
+        ui.click("menu-checksums");
+        ui.wait_for("checksum-copy-0");
+        assert!(ui.shows("checksum: sha1"));
+        assert!(!ui.shows("checksum: md5"));
+        ui.click("checksum-compare");
+        ui.type_in(
+            "Paste the checksum given with the file",
+            "BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD  a.txt",
+        );
+        assert!(ui.shows("checksum-matches"));
+        ui.replace_in("Paste the checksum given with the file", &"0".repeat(40));
+        assert!(ui.shows("checksum-differs"));
+        // One not shown is made when asked, and then compared.
+        ui.replace_in(
+            "Paste the checksum given with the file",
+            "900150983cd24fb0d6963f7d28e17f72",
+        );
+        ui.click("checksum-make");
+        ui.wait_for("checksum-matches");
+        assert!(ui.shows("checksum: md5"));
+        // Each is kept beside the file, as sha256sum writes one, and the folder shows it.
+        ui.click("checksum-save");
+        ui.wait_for("checksum-saved");
+        assert_eq!(
+            std::fs::read_to_string(folder.join("a.txt.sha256")).expect("kept"),
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad  a.txt\n"
+        );
+        assert_eq!(
+            std::fs::read_to_string(folder.join("a.txt.md5")).expect("kept"),
+            "900150983cd24fb0d6963f7d28e17f72  a.txt\n"
+        );
+        assert!(folder.join("a.txt.sha1").exists());
+        ui.wait_until("the folder read again", |ui| {
+            ui.explorer_names().contains(&"a.txt.sha256".to_owned())
+        });
+    }
+);
+
+scenario!(
     /// Copying leaves the original, moving does not.
     copy_and_move_between_folders,
     |ui| {
