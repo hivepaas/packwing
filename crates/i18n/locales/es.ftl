@@ -333,6 +333,9 @@ t1926d127 = Nueva carpeta
 # Give it a name, without / or \ in it.
 ta598b15b = Ponle un nombre, sin / ni \.
 
+# A file of that name is there already: this one will be {name}.
+t9451c3b1 = Ya hay un archivo con ese nombre: este será { $name }.
+
 # Hide advanced
 tae2a96e9 = Ocultar opciones avanzadas
 
@@ -836,6 +839,12 @@ tb60fb288 = No se pudo mostrar
 # Open with default app
 t5ef80ec5 = Abrir con la app predeterminada
 
+# Another job is making {name} there now: give this one another name, or wait for it to end.
+tc8c2bae0 = Otra tarea está creando { $name } ahí ahora: dale otro nombre a esta o espera a que termine.
+
+# Another job is extracting into {folder} now: choose another folder, or wait for it to end.
+t042cbb2a = Otra tarea está extrayendo en { $folder } ahora: elige otra carpeta o espera a que termine.
+
 # no editor command
 tbf2a5d3a = sin comando de editor
 
@@ -1126,6 +1135,39 @@ t6d165412 =
 
 # Check the signature
 t9d44730e = Comprobar la firma
+
+# Extracted
+t3250471f = Extraído
+
+# Archive created
+t22c69419 = Archivo creado
+
+# Moved
+t82869bf0 = Movido
+
+# Signed
+t27c3ab35 = Firmado
+
+# Waiting for a password or a key
+t0e83ae32 = Esperando una contraseña o una clave
+
+# Enter it…
+tddb7844a = Introducirla…
+
+# Show
+t29742e5c = Mostrar
+
+# Stop
+t4b7f7705 = Detener
+
+# Jobs
+t4ae6a79d = Tareas
+
+# Clear finished
+t30c178e8 = Quitar las terminadas
+
+# Nothing runs in the background.
+t2573f39e = No hay nada en segundo plano.
 
 # Add to the right-click menu
 t116d3868 = Añadir al menú contextual

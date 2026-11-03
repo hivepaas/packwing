@@ -318,6 +318,8 @@ pub struct CreateDialog {
     hide_names: bool,
     /// Create was pressed with something missing: the notes say what.
     checked: bool,
+    /// Why it did not start: another job makes an archive of that name there now.
+    busy: Option<String>,
     _follow: Vec<Subscription>,
 }
 
@@ -426,6 +428,7 @@ impl CreateDialog {
             keys_file_problem: None,
             hide_names: kept.hide_names,
             checked: false,
+            busy: None,
             _follow: follow,
         }
     }
@@ -901,7 +904,15 @@ impl CreateDialog {
         }
     }
 
+    /// It did not start, for `why`: said over its buttons, until it is started again.
+    pub fn refuse(&mut self, why: String, cx: &mut Context<Self>) {
+        self.busy = Some(why);
+        cx.notify();
+    }
+
     fn start(&mut self, cx: &mut Context<Self>) {
+        self.busy = None;
+        cx.notify();
         let format = self.format(cx);
         let typed = self.name.read(cx).text().trim().to_owned();
         let chosen_place = self.on.is_some() || self.folder.is_some();
@@ -917,12 +928,7 @@ impl CreateDialog {
             cx.notify();
             return;
         }
-        let encrypted = self.protected() && self.with_age(cx);
-        let name = format!(
-            "{typed}{}{}",
-            format.ext(),
-            if encrypted { ".age" } else { "" }
-        );
+        let name = self.file_name(cx);
         let age_keys = self.age_keys(cx);
         let password = self.protected() && age_keys.is_empty();
         let (shown, to) = match (&self.on, &self.folder) {
@@ -1164,6 +1170,33 @@ impl CreateDialog {
             )
     }
 
+    /// The new archive's file name: what is typed, and what the format and Advanced
+    /// add to it.
+    fn file_name(&self, cx: &App) -> String {
+        let typed = self.name.read(cx).text().trim();
+        let encrypted = self.protected() && self.with_age(cx);
+        format!(
+            "{typed}{}{}",
+            self.format(cx).ext(),
+            if encrypted { ".age" } else { "" }
+        )
+    }
+
+    /// The name it will get instead, if a file of its name is in the folder chosen on
+    /// this computer already.
+    fn renamed(&self, cx: &App) -> Option<String> {
+        let folder = self.folder.as_ref().filter(|_| self.on.is_none())?;
+        if !name_fits(self.name.read(cx).text().trim()) {
+            return None;
+        }
+        let wanted = folder.join(self.file_name(cx));
+        let free = packwing_core::free_archive_path(&wanted, self.parts(cx).is_some());
+        if free == wanted {
+            return None;
+        }
+        Some(free.file_name()?.to_string_lossy().into_owned())
+    }
+
     fn name_field(&self, cx: &App) -> impl IntoElement {
         let c = colors();
         div()
@@ -1195,6 +1228,15 @@ impl CreateDialog {
                     )
                 },
             )
+            .children(self.renamed(cx).map(|name| {
+                note(Tone::Warn)
+                    .mt(ui(4.))
+                    .debug_selector(|| "renamed".to_owned())
+                    .child(tr!(
+                        "A file of that name is there already: this one will be {name}.",
+                        name = name
+                    ))
+            }))
             .children(
                 self.format(cx)
                     .caveat()
@@ -1690,7 +1732,12 @@ impl Render for CreateDialog {
                     .child(self.advanced_toggle(cx))
                     .when(self.advanced, |d| {
                         d.child(self.compression(cx)).child(self.protection(cx))
-                    }),
+                    })
+                    .children(self.busy.clone().map(|why| {
+                        note(Tone::Warn)
+                            .debug_selector(|| "busy".to_owned())
+                            .child(why)
+                    })),
             )
             .child(
                 footer()

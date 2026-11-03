@@ -331,6 +331,9 @@ t1926d127 = Folder baru
 # Give it a name, without / or \ in it.
 ta598b15b = Beri nama, tanpa / atau \ di dalamnya.
 
+# A file of that name is there already: this one will be {name}.
+t9451c3b1 = Sudah ada berkas dengan nama itu: yang ini akan menjadi { $name }.
+
 # Hide advanced
 tae2a96e9 = Sembunyikan opsi lanjutan
 
@@ -829,6 +832,12 @@ tb60fb288 = Tidak dapat ditampilkan
 # Open with default app
 t5ef80ec5 = Buka dengan aplikasi bawaan
 
+# Another job is making {name} there now: give this one another name, or wait for it to end.
+tc8c2bae0 = Tugas lain sedang membuat { $name } di sana: beri nama lain untuk yang ini, atau tunggu sampai selesai.
+
+# Another job is extracting into {folder} now: choose another folder, or wait for it to end.
+t042cbb2a = Tugas lain sedang mengekstrak ke { $folder }: pilih folder lain, atau tunggu sampai selesai.
+
 # no editor command
 tbf2a5d3a = tidak ada perintah editor
 
@@ -1113,6 +1122,39 @@ t6d165412 =
 
 # Check the signature
 t9d44730e = Periksa tanda tangan
+
+# Extracted
+t3250471f = Diekstrak
+
+# Archive created
+t22c69419 = Arsip dibuat
+
+# Moved
+t82869bf0 = Dipindahkan
+
+# Signed
+t27c3ab35 = Ditandatangani
+
+# Waiting for a password or a key
+t0e83ae32 = Menunggu kata sandi atau kunci
+
+# Enter it…
+tddb7844a = Masukkan…
+
+# Show
+t29742e5c = Tampilkan
+
+# Stop
+t4b7f7705 = Hentikan
+
+# Jobs
+t4ae6a79d = Tugas
+
+# Clear finished
+t30c178e8 = Hapus yang selesai
+
+# Nothing runs in the background.
+t2573f39e = Tidak ada yang berjalan di latar belakang.
 
 # Add to the right-click menu
 t116d3868 = Tambahkan ke menu klik kanan

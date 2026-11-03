@@ -50,6 +50,8 @@ pub struct ExtractDialog {
     password: Entity<TextInput>,
     /// The password is shown as typed.
     shown: bool,
+    /// Why it did not start: another job extracts there now.
+    busy: Option<String>,
 }
 
 impl EventEmitter<DialogEvent> for ExtractDialog {}
@@ -69,7 +71,14 @@ impl ExtractDialog {
             },
             password: cx.new(|cx| TextInput::new(tr!("The archive’s password"), cx).masked()),
             shown: false,
+            busy: None,
         }
+    }
+
+    /// It did not start, for `why`: said over its buttons, until it is started again.
+    pub fn refuse(&mut self, why: String, cx: &mut Context<Self>) {
+        self.busy = Some(why);
+        cx.notify();
     }
 
     /// The new folder beside the archive, as the user knows the place.
@@ -188,6 +197,8 @@ impl ExtractDialog {
     }
 
     fn start(&mut self, cx: &mut Context<Self>) {
+        self.busy = None;
+        cx.notify();
         let a = &self.archive;
         let mut job = Job::shown(
             Verb::Extract,
@@ -458,6 +469,11 @@ impl Render for ExtractDialog {
                 d.child(self.password(cx))
             })
             .child(self.safety())
+            .children(self.busy.clone().map(|why| {
+                note(Tone::Warn)
+                    .debug_selector(|| "busy".to_owned())
+                    .child(why)
+            }))
             .child(
                 footer()
                     .child(div().flex_1())

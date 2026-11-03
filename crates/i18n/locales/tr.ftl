@@ -333,6 +333,9 @@ t1926d127 = Yeni klasör
 # Give it a name, without / or \ in it.
 ta598b15b = Bir ad verin; içinde / veya \ olmasın.
 
+# A file of that name is there already: this one will be {name}.
+t9451c3b1 = Bu adda bir dosya zaten var: bu { $name } olacak.
+
 # Hide advanced
 tae2a96e9 = Gelişmişi gizle
 
@@ -836,6 +839,12 @@ tb60fb288 = Gösterilemedi
 # Open with default app
 t5ef80ec5 = Varsayılan uygulamayla aç
 
+# Another job is making {name} there now: give this one another name, or wait for it to end.
+tc8c2bae0 = Başka bir iş şu an orada { $name } oluşturuyor: buna başka bir ad verin ya da onun bitmesini bekleyin.
+
+# Another job is extracting into {folder} now: choose another folder, or wait for it to end.
+t042cbb2a = Başka bir iş şu an { $folder } içine çıkarıyor: başka bir klasör seçin ya da onun bitmesini bekleyin.
+
 # no editor command
 tbf2a5d3a = düzenleyici komutu yok
 
@@ -1126,6 +1135,39 @@ t6d165412 =
 
 # Check the signature
 t9d44730e = İmzayı denetle
+
+# Extracted
+t3250471f = Çıkarıldı
+
+# Archive created
+t22c69419 = Arşiv oluşturuldu
+
+# Moved
+t82869bf0 = Taşındı
+
+# Signed
+t27c3ab35 = İmzalandı
+
+# Waiting for a password or a key
+t0e83ae32 = Bir parola ya da anahtar bekliyor
+
+# Enter it…
+tddb7844a = Gir…
+
+# Show
+t29742e5c = Göster
+
+# Stop
+t4b7f7705 = Durdur
+
+# Jobs
+t4ae6a79d = İşler
+
+# Clear finished
+t30c178e8 = Bitenleri temizle
+
+# Nothing runs in the background.
+t2573f39e = Arka planda çalışan bir şey yok.
 
 # Add to the right-click menu
 t116d3868 = Sağ tık menüsüne ekle

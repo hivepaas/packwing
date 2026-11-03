@@ -26,6 +26,7 @@ mod browse;
 mod create;
 mod edit;
 mod far;
+mod jobs;
 mod policy;
 mod settings;
 mod storages;

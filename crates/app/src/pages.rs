@@ -4,6 +4,7 @@
 pub mod archive;
 pub mod browse;
 mod explorer_info;
+pub mod jobs;
 pub mod onboarding;
 pub mod recent;
 pub mod settings;

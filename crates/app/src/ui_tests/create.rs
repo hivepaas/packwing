@@ -23,6 +23,24 @@ scenario!(
 );
 
 scenario!(
+    /// A name taken in the folder is said before: the new archive gets the next one.
+    a_name_taken_is_said_before,
+    |ui| {
+        let work = new_archive(ui);
+        assert!(!ui.shows("renamed"));
+        ui.click("cancel");
+        assert!(!ui.dialog_open());
+        std::fs::write(work.join("a.zip"), "there").expect("the file");
+        new_archive(ui);
+        assert!(ui.shows("renamed"));
+        ui.click("create");
+        ui.wait_for_no_dialog();
+        assert_eq!(std::fs::read(work.join("a.zip")).expect("kept"), b"there");
+        assert_eq!(listed(&work.join("a (2).zip"), None), ["a.txt"]);
+    }
+);
+
+scenario!(
     /// With a password, the archive opens with it and not without.
     a_zip_archive_with_a_password,
     |ui| {

@@ -600,6 +600,20 @@ fn free_name<T>(
     )))
 }
 
+/// What a new archive asked for as `wanted` will be called on this computer:
+/// `wanted`, or the first `name (2).zip` after it that is free, as [`create`] takes
+/// it; for one in `parts`, free for its first part too. Said ahead: what is there
+/// when it is made decides.
+pub fn free_archive_path(wanted: &Path, parts: bool) -> PathBuf {
+    free_name(wanted, |path| {
+        if path.exists() || (parts && part_path(path, 0).exists()) {
+            return Err(io::ErrorKind::AlreadyExists.into());
+        }
+        Ok(())
+    })
+    .map_or_else(|_| wanted.to_path_buf(), |(free, ())| free)
+}
+
 /// Writes `items` in the archive to `out`.
 fn write_archive<W: Write + Seek>(
     items: Vec<Item>,

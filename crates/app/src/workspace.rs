@@ -19,13 +19,14 @@ use crate::demo;
 use crate::dialogs::{
     AddDialog, AddStorageDialog, ChecksumDialog, CreateDialog, Creating, DeleteDialog, DialogEvent,
     EditDialog, ExtractDialog, Job, OpenFileDialog, OpenStoredDialog, PasswordDialog,
-    PasswordEvent, ProgressDialog, RemoveStorageDialog, Saving, SignDialog, TransferDialog, Verb,
-    ViewDialog, asked_for,
+    PasswordEvent, ProgressDialog, RemoveStorageDialog, Saving, SignDialog, State, TransferDialog,
+    Verb, ViewDialog, asked_for,
 };
 use crate::explorer::ExplorerEvent;
 use crate::model::{Archive, Kind, Selection, stem};
 use crate::pages::archive::{ArchiveEvent, ArchivePage, Shown};
 use crate::pages::browse::BrowsePage;
+use crate::pages::jobs::{JobsEvent, JobsPage, Summary};
 use crate::pages::onboarding::{Done, Onboarding};
 use crate::pages::recent::{OpenRecent, RecentPage, Row};
 use crate::pages::settings::{Appearance, AppearanceChosen, SettingsPage};
@@ -43,6 +44,8 @@ pub enum Page {
     Archive,
     Storages,
     Browse,
+    /// What runs in the background: in the menu only while there is some.
+    Jobs,
     Settings,
 }
 
@@ -92,7 +95,8 @@ struct Open {
     view: AnyView,
     /// Escape closes it: not a job's progress, which has its own buttons.
     dismissable: bool,
-    _events: Subscription,
+    /// What it says: none for a job's dialog shown from the Jobs page, which keeps it.
+    events: Option<Subscription>,
 }
 
 pub struct Workspace {
@@ -103,6 +107,8 @@ pub struct Workspace {
     browse: Entity<BrowsePage>,
     recent: Entity<RecentPage>,
     settings: Entity<SettingsPage>,
+    /// The jobs sent to run in the background.
+    jobs: Entity<JobsPage>,
     /// Whether a newer version is out.
     updates: Entity<Updates>,
     /// packwing's items in the system's right-click menu.
@@ -124,6 +130,10 @@ pub struct Workspace {
     system_dark: bool,
     /// The keys trusted when signatures were last looked at: Settings may change them.
     trusted_seen: Vec<TrustedKey>,
+    /// Jobs go on in the background as they start, as Run in background sends one:
+    /// a scenario's job ends before a click on it could.
+    #[cfg(all(test, feature = "test-hooks"))]
+    behind_at_once: bool,
     _subscriptions: Vec<Subscription>,
 }
 
@@ -178,6 +188,44 @@ const LABEL_ROOM: f32 = MENU_W - 8.;
 /// system's own labels, unless the longest word of one is wider than the menu,
 /// as in some languages; then as much smaller as it takes for it to fit, for
 /// all of them alike.
+/// The mark on the menu's Jobs: how many run; else a dot for one that ended unseen,
+/// in the warning's colors for one that waits for the user.
+fn jobs_mark(s: Summary) -> Option<gpui::Div> {
+    let c = colors();
+    let at = || div().absolute().rounded_full();
+    if s.waiting {
+        return Some(
+            at().top(ui(2.))
+                .right(ui(8.))
+                .size(ui(8.))
+                .bg(rgb(c.warn_text)),
+        );
+    }
+    if s.running > 0 {
+        return Some(
+            at().top(ui(-2.))
+                .right(ui(4.))
+                .min_w(ui(16.))
+                .h(ui(16.))
+                .px(ui(4.))
+                .flex()
+                .items_center()
+                .justify_center()
+                .bg(rgb(c.accent))
+                .text_color(rgb(c.on_accent))
+                .text_size(ui(11.))
+                .font_weight(gpui::FontWeight::BOLD)
+                .child(s.running.to_string()),
+        );
+    }
+    s.unseen.then(|| {
+        at().top(ui(2.))
+            .right(ui(8.))
+            .size(ui(8.))
+            .bg(rgb(c.accent))
+    })
+}
+
 fn label_size(labels: &[String], window: &Window) -> f32 {
     let rem = window.rem_size();
     let body = ui(15.).to_pixels(rem);
@@ -235,8 +283,24 @@ impl Workspace {
         let updates = cx.new(Updates::new);
         let settings =
             cx.new(|cx| SettingsPage::new(appearance, right_click.clone(), updates.clone(), cx));
+        let jobs = cx.new(|_| JobsPage::new());
         let subscriptions = vec![
             cx.observe(&updates, |_, _, cx| cx.notify()),
+            cx.subscribe_in(
+                &jobs,
+                window,
+                |this, _, e: &JobsEvent, window, cx| match e {
+                    JobsEvent::Show(view) => this.show_job(view.clone(), cx),
+                    JobsEvent::Ask(job, asked, again) => {
+                        let ask = Ask {
+                            asked: *asked,
+                            then: Then::Run(job.clone()),
+                        };
+                        this.ask(ask, again.clone(), window, cx);
+                    }
+                    JobsEvent::Changed => cx.notify(),
+                },
+            ),
             cx.subscribe_in(
                 &archive,
                 window,
@@ -304,6 +368,7 @@ impl Workspace {
             browse,
             recent,
             settings,
+            jobs,
             updates,
             right_click,
             welcome: None,
@@ -315,6 +380,8 @@ impl Workspace {
             appearance,
             system_dark: looks_dark(window),
             trusted_seen: kept.trusted_keys.clone(),
+            #[cfg(all(test, feature = "test-hooks"))]
+            behind_at_once: false,
             _subscriptions: subscriptions,
         };
         if first_run {
@@ -428,6 +495,8 @@ impl Workspace {
 
     pub fn show_page(&mut self, page: Page, cx: &mut Context<Self>) {
         self.page = page;
+        self.jobs
+            .update(cx, |j, cx| j.set_shown(page == Page::Jobs, cx));
         let trusted = prefs::prefs(cx).trusted_keys;
         if trusted != self.trusted_seen {
             self.trusted_seen = trusted;
@@ -627,7 +696,21 @@ impl Workspace {
             |this, _, e: &DialogEvent, window, cx| match e {
                 DialogEvent::Close => this.close_dialog(cx),
                 DialogEvent::Start(job) => {
-                    this.open_progress(job.clone(), window, cx);
+                    // Said in the dialog, which stays for another name or folder.
+                    let refused = this.jobs.read(cx).clash(job, cx).and_then(|why| {
+                        let view = this.dialog.as_ref()?.view.clone();
+                        if let Ok(d) = view.clone().downcast::<CreateDialog>() {
+                            d.update(cx, |d, cx| d.refuse(why, cx));
+                        } else if let Ok(d) = view.downcast::<ExtractDialog>() {
+                            d.update(cx, |d, cx| d.refuse(why, cx));
+                        } else {
+                            return None;
+                        }
+                        Some(())
+                    });
+                    if refused.is_none() {
+                        this.open_progress(job.clone(), window, cx);
+                    }
                 }
                 DialogEvent::Transferred(went) => {
                     this.close_dialog(cx);
@@ -662,6 +745,8 @@ impl Workspace {
                     this.show_page(Page::Settings, cx);
                 }
                 DialogEvent::Saved => this.refresh_explorers(cx),
+                // Only a job's dialog says it, and it is heard in job_event.
+                DialogEvent::Behind => {}
                 DialogEvent::Signed => {
                     this.close_dialog(cx);
                     this.trusted_seen = prefs::prefs(cx).trusted_keys;
@@ -698,7 +783,7 @@ impl Workspace {
         self.dialog = Some(Open {
             view: view.into(),
             dismissable,
-            _events: events,
+            events: Some(events),
         });
         cx.notify();
     }
@@ -958,7 +1043,7 @@ impl Workspace {
             view: view.into(),
             // Escape goes to the dialog, which gives up as Cancel does.
             dismissable: false,
-            _events: events,
+            events: Some(events),
         });
         cx.notify();
     }
@@ -1161,9 +1246,212 @@ impl Workspace {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> Entity<ProgressDialog> {
-        let view = cx.new(|cx| ProgressDialog::new(job, cx));
-        self.show(view.clone(), false, window, cx);
+        // A job that would write where one in the background does says why it did not
+        // start, as one that failed.
+        let view = match self.jobs.read(cx).clash(&job, cx) {
+            Some(why) => cx.new(|cx| ProgressDialog::refused(job, why, cx)),
+            None => cx.new(|cx| ProgressDialog::new(job, cx)),
+        };
+        let events = cx.subscribe_in(&view, window, Self::job_event);
+        self.dialog = Some(Open {
+            view: view.clone().into(),
+            dismissable: false,
+            events: Some(events),
+        });
+        cx.notify();
+        #[cfg(all(test, feature = "test-hooks"))]
+        if self.behind_at_once && view.read(cx).can_go_behind() {
+            view.update(cx, |_, cx| cx.emit(DialogEvent::Behind));
+        }
         view
+    }
+
+    /// Sends each job that starts to the background at once.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn send_jobs_behind_for_test(&mut self) {
+        self.behind_at_once = true;
+    }
+
+    /// The Jobs page with a job of each kind, as its picture shows it.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn show_sample_jobs(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let samples = [
+            (
+                Verb::Extract,
+                "Tài liệu dự án 2026.7z",
+                "~/Downloads/Tài liệu dự án 2026",
+                State::Running,
+            ),
+            (
+                Verb::Extract,
+                "Hợp đồng 2025.zip",
+                "~/Documents/Hợp đồng 2025",
+                State::Running,
+            ),
+            (
+                Verb::Create,
+                "site-2026-10.zip",
+                "~/Backups",
+                State::Done(Some(PathBuf::from("/home/me/Backups/site-2026-10.zip"))),
+            ),
+            (
+                Verb::Copy,
+                "photos.7z",
+                "S3 · backups",
+                State::Failed("The connection was reset.".to_owned()),
+            ),
+        ];
+        for (i, (verb, name, to, state)) in samples.into_iter().enumerate() {
+            let job = Job::shown(verb, name.into(), Some(to.into()), 1_284, 412_000_000);
+            let view = cx.new(|cx| ProgressDialog::new(job.clone(), cx));
+            view.update(cx, |p, cx| {
+                p.set_done(0.45, cx);
+                p.set_state_for_test(state, cx);
+            });
+            let events = cx.subscribe_in(&view, window, Self::job_event);
+            self.jobs
+                .update(cx, |j, cx| j.add(view.clone(), events, cx));
+            if i == 1 {
+                let asked = (job, Asked::Password, None);
+                self.jobs.update(cx, |j, cx| j.wait_for(&view, asked, cx));
+            }
+        }
+        self.show_page(Page::Jobs, cx);
+    }
+
+    /// `job` in the background, never ending: what it writes stays taken.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn hold_job_for_test(&mut self, job: Job, window: &mut Window, cx: &mut Context<Self>) {
+        let view = cx.new(|cx| ProgressDialog::held(job, cx));
+        let events = cx.subscribe_in(&view, window, Self::job_event);
+        self.jobs.update(cx, |j, cx| j.add(view, events, cx));
+    }
+
+    /// What the menu says of the jobs in the background.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn jobs_summary(&self, cx: &gpui::App) -> Summary {
+        self.jobs.read(cx).summary()
+    }
+
+    /// Whether `view` is the dialog shown.
+    fn shows(&self, view: &Entity<ProgressDialog>) -> bool {
+        self.dialog
+            .as_ref()
+            .is_some_and(|d| d.view.entity_id() == view.entity_id())
+    }
+
+    /// Shows the dialog of a job of the Jobs page, over what is there if nothing is.
+    fn show_job(&mut self, view: Entity<ProgressDialog>, cx: &mut Context<Self>) {
+        if self.dialog.is_some() {
+            return;
+        }
+        // Escape sends it back, as Run in background does.
+        let dismissable = view.read(cx).can_go_behind();
+        self.dialog = Some(Open {
+            view: view.into(),
+            dismissable,
+            events: None,
+        });
+        cx.notify();
+    }
+
+    /// What a job said: as its dialog, if it is shown, else quietly, on the Jobs page.
+    fn job_event(
+        &mut self,
+        view: &Entity<ProgressDialog>,
+        e: &DialogEvent,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let shown = self.shows(view);
+        // A job over while its dialog is shown leaves with it.
+        let over = |this: &mut Self, cx: &mut Context<Self>| {
+            if shown {
+                this.close_dialog(cx);
+                this.jobs.update(cx, |j, cx| j.remove(view, cx));
+            }
+        };
+        match e {
+            DialogEvent::Behind => {
+                if shown && let Some(open) = self.dialog.take() {
+                    // One shown from the page is on it still.
+                    if let Some(events) = open.events {
+                        self.jobs
+                            .update(cx, |j, cx| j.add(view.clone(), events, cx));
+                    }
+                    cx.notify();
+                }
+            }
+            DialogEvent::Close => {
+                over(self, cx);
+                if view.read(cx).state() == State::Cancelled {
+                    self.jobs.update(cx, |j, cx| j.remove(view, cx));
+                }
+            }
+            DialogEvent::Transferred(went) => {
+                over(self, cx);
+                let mut said = Vec::new();
+                if went.skipped > 0 {
+                    said.push(tr_n!(
+                        went.skipped,
+                        "{n} file was skipped, as its name was taken.",
+                        "{n} files were skipped, as their names were taken."
+                    ));
+                }
+                if went.links_left > 0 {
+                    said.push(tr_n!(
+                        went.links_left,
+                        "{n} link stayed where it was.",
+                        "{n} links stayed where they were."
+                    ));
+                }
+                let said = (!said.is_empty()).then(|| said.join(" "));
+                self.refresh_explorers(cx);
+                self.shown_explorer(cx).update(cx, |e, cx| e.say(said, cx));
+            }
+            DialogEvent::Signed => {
+                over(self, cx);
+                self.trusted_seen = prefs::prefs(cx).trusted_keys;
+                self.look_at_signatures_again(cx);
+                self.refresh_explorers(cx);
+            }
+            DialogEvent::Stored {
+                place,
+                folder,
+                show,
+            } => {
+                // One that ends in the background does not take the user away.
+                if *show && shown {
+                    self.show_page(Page::Storages, cx);
+                    self.storages
+                        .update(cx, |p, cx| p.show(place, folder.clone(), cx));
+                }
+                over(self, cx);
+                self.refresh_explorers(cx);
+            }
+            DialogEvent::Added(path, folder, keys) => {
+                over(self, cx);
+                self.folder_after_reading = Some(folder.clone());
+                self.read_archive(path.into(), keys.clone(), false, window, cx);
+            }
+            DialogEvent::Ask(job, asked, again) => {
+                if shown {
+                    self.jobs.update(cx, |j, cx| j.remove(view, cx));
+                    let ask = Ask {
+                        asked: *asked,
+                        then: Then::Run(Box::new(job.clone())),
+                    };
+                    self.ask(ask, again.clone(), window, cx);
+                } else {
+                    let asked = (job.clone(), *asked, again.clone());
+                    self.jobs.update(cx, |j, cx| j.wait_for(view, asked, cx));
+                }
+            }
+            DialogEvent::Start(_)
+            | DialogEvent::Open(_)
+            | DialogEvent::ShowLicense
+            | DialogEvent::Saved => {}
+        }
     }
 
     /// Does what an item of the right-click menu asked.
@@ -1390,6 +1678,7 @@ impl Workspace {
                 tr!("Browse"),
                 tr!("New"),
                 tr!("Storages"),
+                tr!("Jobs"),
                 tr!("Settings"),
             ],
             window,
@@ -1427,6 +1716,7 @@ impl Workspace {
                 .child(div().text_center().child(label))
         };
         let page = self.page;
+        let jobs = self.jobs.read(cx).summary();
         // Where the system draws the title bar, the badge has no place: a dot says it.
         let dot = !chrome::draws_title_bar(window) && self.updates.read(cx).badge().is_some();
         div()
@@ -1494,6 +1784,15 @@ impl Workspace {
                 })
                 .on_click(cx.listener(|this, _, _, cx| this.show_page(Page::Settings, cx))),
             )
+            // At the foot, where it is seen as it comes and goes.
+            .when(jobs.jobs > 0 || page == Page::Jobs, |d| {
+                d.child(div().flex_1()).child(
+                    item("nav-jobs", "jobs", tr!("Jobs"), page == Page::Jobs)
+                        .relative()
+                        .children(jobs_mark(jobs))
+                        .on_click(cx.listener(|this, _, _, cx| this.show_page(Page::Jobs, cx))),
+                )
+            })
     }
 
     /// The shade over the window, with the dialog on it.
@@ -1555,6 +1854,7 @@ impl Render for Workspace {
                     Page::Archive => self.archive.clone().into(),
                     Page::Storages => self.storages.clone().into(),
                     Page::Browse => self.browse.clone().into(),
+                    Page::Jobs => self.jobs.clone().into(),
                     Page::Settings => self.settings.clone().into(),
                 };
                 div()

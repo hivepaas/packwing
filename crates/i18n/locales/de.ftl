@@ -333,6 +333,9 @@ t1926d127 = Neuer Ordner
 # Give it a name, without / or \ in it.
 ta598b15b = Gib einen Namen ohne / oder \ an.
 
+# A file of that name is there already: this one will be {name}.
+t9451c3b1 = Eine Datei dieses Namens ist schon da: diese wird { $name }.
+
 # Hide advanced
 tae2a96e9 = Erweitert ausblenden
 
@@ -836,6 +839,12 @@ tb60fb288 = Sie ließ sich nicht anzeigen
 # Open with default app
 t5ef80ec5 = Mit Standard-App öffnen
 
+# Another job is making {name} there now: give this one another name, or wait for it to end.
+tc8c2bae0 = Eine andere Aufgabe erstellt dort gerade { $name }: gib diesem einen anderen Namen oder warte, bis sie fertig ist.
+
+# Another job is extracting into {folder} now: choose another folder, or wait for it to end.
+t042cbb2a = Eine andere Aufgabe entpackt gerade nach { $folder }: wähle einen anderen Ordner oder warte, bis sie fertig ist.
+
 # no editor command
 tbf2a5d3a = kein Editor-Befehl
 
@@ -1126,6 +1135,39 @@ t6d165412 =
 
 # Check the signature
 t9d44730e = Signatur prüfen
+
+# Extracted
+t3250471f = Entpackt
+
+# Archive created
+t22c69419 = Archiv erstellt
+
+# Moved
+t82869bf0 = Verschoben
+
+# Signed
+t27c3ab35 = Signiert
+
+# Waiting for a password or a key
+t0e83ae32 = Wartet auf ein Passwort oder einen Schlüssel
+
+# Enter it…
+tddb7844a = Eingeben…
+
+# Show
+t29742e5c = Anzeigen
+
+# Stop
+t4b7f7705 = Stoppen
+
+# Jobs
+t4ae6a79d = Aufgaben
+
+# Clear finished
+t30c178e8 = Erledigte entfernen
+
+# Nothing runs in the background.
+t2573f39e = Im Hintergrund läuft nichts.
 
 # Add to the right-click menu
 t116d3868 = Zum Kontextmenü hinzufügen

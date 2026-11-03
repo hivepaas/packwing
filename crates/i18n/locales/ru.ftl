@@ -337,6 +337,9 @@ t1926d127 = Новая папка
 # Give it a name, without / or \ in it.
 ta598b15b = Дайте имя без / и \.
 
+# A file of that name is there already: this one will be {name}.
+t9451c3b1 = Файл с таким именем уже есть: этот будет называться { $name }.
+
 # Hide advanced
 tae2a96e9 = Скрыть дополнительные
 
@@ -850,6 +853,12 @@ tb60fb288 = Не удалось показать
 # Open with default app
 t5ef80ec5 = Открыть в приложении по умолчанию
 
+# Another job is making {name} there now: give this one another name, or wait for it to end.
+tc8c2bae0 = Другая задача сейчас создаёт там { $name }: дайте этой другое имя или дождитесь её завершения.
+
+# Another job is extracting into {folder} now: choose another folder, or wait for it to end.
+t042cbb2a = Другая задача сейчас распаковывает в { $folder }: выберите другую папку или дождитесь её завершения.
+
 # no editor command
 tbf2a5d3a = нет команды редактора
 
@@ -1152,6 +1161,39 @@ t6d165412 =
 
 # Check the signature
 t9d44730e = Проверить подпись
+
+# Extracted
+t3250471f = Распаковано
+
+# Archive created
+t22c69419 = Архив создан
+
+# Moved
+t82869bf0 = Перемещено
+
+# Signed
+t27c3ab35 = Подписано
+
+# Waiting for a password or a key
+t0e83ae32 = Ждёт пароль или ключ
+
+# Enter it…
+tddb7844a = Ввести…
+
+# Show
+t29742e5c = Показать
+
+# Stop
+t4b7f7705 = Остановить
+
+# Jobs
+t4ae6a79d = Задачи
+
+# Clear finished
+t30c178e8 = Убрать завершённые
+
+# Nothing runs in the background.
+t2573f39e = В фоне ничего не выполняется.
 
 # Add to the right-click menu
 t116d3868 = Добавить в контекстное меню

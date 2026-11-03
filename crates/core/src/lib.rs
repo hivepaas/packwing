@@ -43,7 +43,7 @@ pub use checksum::{
 pub use create::{
     COMPRESSED_EXTENSIONS, Kind, Level, Measured, NewArchive, OnExisting, Route, add, add_with,
     age_key_is_post_quantum, age_key_problem, age_keys_in, can_add, create, create_on, delete,
-    measure, refused_by, rename, route,
+    free_archive_path, measure, refused_by, rename, route,
 };
 pub use hivepack::extract::{Cancel, Progress, Summary};
 pub use hivepack::open::{Container, Layer};
