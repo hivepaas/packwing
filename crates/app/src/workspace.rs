@@ -7,8 +7,8 @@ use std::time::Duration;
 
 use gpui::{
     AnyView, Context, Entity, EventEmitter, ExternalPaths, FocusHandle, Focusable, FontWeight,
-    KeyDownEvent, PathPromptOptions, Render, Subscription, Window, WindowAppearance, div,
-    prelude::*, rgb, rgba,
+    KeyDownEvent, PathPromptOptions, Render, Subscription, WeakEntity, Window, WindowAppearance,
+    div, prelude::*, rgb, rgba,
 };
 use packwing_core::{Asked, Keys, NewArchive, Source};
 
@@ -19,8 +19,8 @@ use crate::demo;
 use crate::dialogs::{
     AddDialog, AddStorageDialog, ChecksumDialog, CreateDialog, Creating, DeleteDialog, DialogEvent,
     EditDialog, ExtractDialog, Job, OpenFileDialog, OpenStoredDialog, PasswordDialog,
-    PasswordEvent, ProgressDialog, RemoveStorageDialog, Saving, SignDialog, State, TransferDialog,
-    Verb, ViewDialog, asked_for,
+    PasswordEvent, ProgressDialog, QuitDialog, RemoveStorageDialog, Saving, SignDialog, State,
+    TransferDialog, Verb, ViewDialog, asked_for,
 };
 use crate::explorer::ExplorerEvent;
 use crate::model::{Archive, Kind, Selection, stem};
@@ -130,6 +130,10 @@ pub struct Workspace {
     system_dark: bool,
     /// The keys trusted when signatures were last looked at: Settings may change them.
     trusted_seen: Vec<TrustedKey>,
+    /// Jobs waiting for their turn, the first first.
+    queue: Vec<WeakEntity<ProgressDialog>>,
+    /// The window closes once the jobs have stopped.
+    quitting: bool,
     /// Jobs go on in the background as they start, as Run in background sends one:
     /// a scenario's job ends before a click on it could.
     #[cfg(all(test, feature = "test-hooks"))]
@@ -188,6 +192,10 @@ const LABEL_ROOM: f32 = MENU_W - 8.;
 /// system's own labels, unless the longest word of one is wider than the menu,
 /// as in some languages; then as much smaller as it takes for it to fit, for
 /// all of them alike.
+/// How many jobs run at once: more wait for their turn, so that those that run
+/// are not each slowed by the others on the same disk.
+const MOST_RUNNING: usize = 2;
+
 /// The mark on the menu's Jobs: how many run; else a dot for one that ended unseen,
 /// in the warning's colors for one that waits for the user.
 fn jobs_mark(s: Summary) -> Option<gpui::Div> {
@@ -380,6 +388,8 @@ impl Workspace {
             appearance,
             system_dark: looks_dark(window),
             trusted_seen: kept.trusted_keys.clone(),
+            queue: Vec::new(),
+            quitting: false,
             #[cfg(all(test, feature = "test-hooks"))]
             behind_at_once: false,
             _subscriptions: subscriptions,
@@ -387,6 +397,21 @@ impl Workspace {
         if first_run {
             ws.show_welcome(window, cx);
         }
+        // Closing the window asks first while jobs run: from its own button, or the
+        // system's.
+        let me = cx.entity().downgrade();
+        let may_close: chrome::MayClose = std::rc::Rc::new(move |window, cx| {
+            me.update(cx, |ws, cx| ws.may_close(window, cx))
+                .unwrap_or(true)
+        });
+        cx.set_global(chrome::Closing(may_close.clone()));
+        window.on_window_should_close(cx, move |window, cx| may_close(window, cx));
+        // A notification of a job that ended brings its page.
+        let me = cx.entity().downgrade();
+        cx.on_system_notification_response(move |_, cx| {
+            cx.activate(true);
+            let _ = me.update(cx, |ws, cx| ws.show_page(Page::Jobs, cx));
+        });
         ws.apply_appearance(window, cx);
         ws
     }
@@ -745,8 +770,9 @@ impl Workspace {
                     this.show_page(Page::Settings, cx);
                 }
                 DialogEvent::Saved => this.refresh_explorers(cx),
-                // Only a job's dialog says it, and it is heard in job_event.
-                DialogEvent::Behind => {}
+                DialogEvent::Quit => this.stop_and_quit(window, cx),
+                // Only a job's dialog says these, and they are heard in job_event.
+                DialogEvent::Behind | DialogEvent::Ended => {}
                 DialogEvent::Signed => {
                     this.close_dialog(cx);
                     this.trusted_seen = prefs::prefs(cx).trusted_keys;
@@ -1247,9 +1273,14 @@ impl Workspace {
         cx: &mut Context<Self>,
     ) -> Entity<ProgressDialog> {
         // A job that would write where one in the background does says why it did not
-        // start, as one that failed.
+        // start, as one that failed; one more than may run at once waits its turn.
         let view = match self.jobs.read(cx).clash(&job, cx) {
             Some(why) => cx.new(|cx| ProgressDialog::refused(job, why, cx)),
+            None if self.running(cx) >= MOST_RUNNING => {
+                let view = cx.new(|cx| ProgressDialog::queued(job, cx));
+                self.queue.push(view.downgrade());
+                view
+            }
             None => cx.new(|cx| ProgressDialog::new(job, cx)),
         };
         let events = cx.subscribe_in(&view, window, Self::job_event);
@@ -1288,6 +1319,7 @@ impl Workspace {
                 "~/Documents/Hợp đồng 2025",
                 State::Running,
             ),
+            (Verb::Test, "photos-2026.7z", "", State::Queued),
             (
                 Verb::Create,
                 "site-2026-10.zip",
@@ -1302,7 +1334,8 @@ impl Workspace {
             ),
         ];
         for (i, (verb, name, to, state)) in samples.into_iter().enumerate() {
-            let job = Job::shown(verb, name.into(), Some(to.into()), 1_284, 412_000_000);
+            let to = (!to.is_empty()).then(|| to.into());
+            let job = Job::shown(verb, name.into(), to, 1_284, 412_000_000);
             let view = cx.new(|cx| ProgressDialog::new(job.clone(), cx));
             view.update(cx, |p, cx| {
                 p.set_done(0.45, cx);
@@ -1327,10 +1360,125 @@ impl Workspace {
         self.jobs.update(cx, |j, cx| j.add(view, events, cx));
     }
 
+    /// Asks whether to close the window, as its close button does.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn ask_to_close_for_test(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.may_close(window, cx);
+    }
+
+    /// Where each job of the Jobs page stands.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn job_states(&self, cx: &gpui::App) -> Vec<State> {
+        self.jobs.read(cx).states(cx)
+    }
+
     /// What the menu says of the jobs in the background.
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn jobs_summary(&self, cx: &gpui::App) -> Summary {
         self.jobs.read(cx).summary()
+    }
+
+    /// The job whose dialog is shown, if it is not one of the Jobs page.
+    fn shown_job(&self, cx: &gpui::App) -> Option<Entity<ProgressDialog>> {
+        let view = self
+            .dialog
+            .as_ref()?
+            .view
+            .clone()
+            .downcast::<ProgressDialog>()
+            .ok()?;
+        (!self.jobs.read(cx).holds(&view)).then_some(view)
+    }
+
+    /// How many jobs run now, not those waiting for their turn.
+    fn running(&self, cx: &gpui::App) -> usize {
+        let shown = self
+            .shown_job(cx)
+            .is_some_and(|v| v.read(cx).state() == State::Running);
+        self.jobs.read(cx).running(cx) + usize::from(shown)
+    }
+
+    /// The jobs that run or wait for their turn.
+    fn going(&self, cx: &gpui::App) -> Vec<Entity<ProgressDialog>> {
+        let mut going = self.jobs.read(cx).going(cx);
+        going.extend(
+            self.shown_job(cx)
+                .filter(|v| matches!(v.read(cx).state(), State::Running | State::Queued)),
+        );
+        going
+    }
+
+    /// Starts those waiting for their turn, as far as there is room.
+    fn start_queued(&mut self, cx: &mut Context<Self>) {
+        while self.running(cx) < MOST_RUNNING && !self.queue.is_empty() {
+            let next = self.queue.remove(0);
+            if let Some(view) = next.upgrade()
+                && view.read(cx).state() == State::Queued
+            {
+                view.update(cx, |v, cx| v.begin(cx));
+            }
+        }
+    }
+
+    /// Whether the window may close: not while jobs run, until the user says.
+    fn may_close(&mut self, window: &mut Window, cx: &mut Context<Self>) -> bool {
+        let going = self.going(cx).len();
+        if self.quitting || going == 0 {
+            return true;
+        }
+        // A job shown goes on in the background, behind what is asked.
+        if let Some(view) = self.shown_job(cx)
+            && let Some(Open {
+                events: Some(events),
+                ..
+            }) = self.dialog.take()
+        {
+            self.jobs.update(cx, |j, cx| j.add(view, events, cx));
+        }
+        let view = cx.new(|_| QuitDialog::new(going));
+        self.show(view, true, window, cx);
+        false
+    }
+
+    /// Stops every job, and closes the window once they have stopped.
+    fn stop_and_quit(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.quitting = true;
+        self.close_dialog(cx);
+        for view in self.going(cx) {
+            view.update(cx, |v, cx| v.cancel(cx));
+        }
+        self.close_if_quitting(window, cx);
+    }
+
+    fn close_if_quitting(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.quitting && self.going(cx).is_empty() {
+            window.remove_window();
+        }
+    }
+
+    /// Tells the system a job in the background ended, when the window is not the one
+    /// the user is in.
+    fn tell_ended(
+        &self,
+        view: &Entity<ProgressDialog>,
+        shown: bool,
+        window: &Window,
+        cx: &mut Context<Self>,
+    ) {
+        if shown || window.is_window_active() || self.quitting {
+            return;
+        }
+        let waits = self.jobs.read(cx).waits(view);
+        let job = view.read(cx);
+        if job.state() == State::Cancelled {
+            return;
+        }
+        cx.show_system_notification(gpui::SystemNotification {
+            tag: format!("job-{}", view.entity_id()).into(),
+            title: crate::pages::jobs::headline(job, waits).into(),
+            body: job.detail().into(),
+            actions: Vec::new(),
+        });
     }
 
     /// Whether `view` is the dialog shown.
@@ -1447,11 +1595,16 @@ impl Workspace {
                     self.jobs.update(cx, |j, cx| j.wait_for(view, asked, cx));
                 }
             }
+            DialogEvent::Ended => self.tell_ended(view, shown, window, cx),
             DialogEvent::Start(_)
             | DialogEvent::Open(_)
             | DialogEvent::ShowLicense
-            | DialogEvent::Saved => {}
+            | DialogEvent::Saved
+            | DialogEvent::Quit => {}
         }
+        // What ended makes room for one waiting, or lets the window close.
+        self.start_queued(cx);
+        self.close_if_quitting(window, cx);
     }
 
     /// Does what an item of the right-click menu asked.

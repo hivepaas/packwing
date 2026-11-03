@@ -121,3 +121,94 @@ scenario!(
         assert!(!out.exists());
     }
 );
+
+/// A job that never ends, in the background: one more that runs.
+fn hold(ui: &mut Ui, name: &str) {
+    let job = crate::dialogs::Job::shown(crate::dialogs::Verb::Test, name.into(), None, 1, 4);
+    ui.ws(|ws, window, cx| ws.hold_job_for_test(job, window, cx));
+}
+
+scenario!(
+    /// Two jobs run at once: a third waits for its turn, and starts when one ends.
+    a_third_job_waits_for_its_turn,
+    |ui| {
+        use crate::dialogs::State;
+        let archive = ui.copy_of("sample.7z");
+        let held = listed(&archive, None);
+        hold(ui, "one.zip");
+        hold(ui, "two.zip");
+        ui.ws(|ws, _, _| ws.send_jobs_behind_for_test());
+        extract(ui, &archive);
+        let out = ui.work.join("sample");
+        assert_eq!(
+            ui.ws(|ws, _, cx| ws.job_states(cx)),
+            [State::Running, State::Running, State::Queued]
+        );
+        assert!(!out.exists(), "it waits");
+        ui.click("nav-jobs");
+        ui.click("job-stop-0");
+        ui.wait_until("the files out", |_| {
+            held.iter()
+                .filter(|n| !n.ends_with('/'))
+                .all(|n| out.join(n).exists())
+        });
+        assert!(
+            ui.cx.shown_system_notifications().is_empty(),
+            "the window is the user's: the page says it"
+        );
+    }
+);
+
+scenario!(
+    /// A job that ends in the background while the user is in another window is told
+    /// through the system, and its notification brings the Jobs page.
+    the_system_tells_of_a_job_that_ended,
+    |ui| {
+        let archive = ui.copy_of("sample.7z");
+        ui.ws(|ws, _, _| ws.send_jobs_behind_for_test());
+        ui.open(&archive);
+        ui.click("extract");
+        ui.wait_for("dest-new");
+        ui.click("dest-new");
+        let mut vcx = gpui::VisualTestContext::from_window(ui.window().into(), &ui.cx);
+        vcx.deactivate_window();
+        ui.click("extract");
+        ui.wait_until("it is told", |ui| {
+            !ui.cx.shown_system_notifications().is_empty()
+        });
+        let told = ui.cx.shown_system_notifications().remove(0);
+        assert_eq!(told.title.as_ref(), "Extracted");
+        assert!(told.body.contains("sample.7z"), "{}", told.body);
+        ui.cx
+            .simulate_system_notification_response(gpui::SystemNotificationResponse {
+                tag: told.tag,
+                action_id: None,
+            });
+        ui.cx.run_until_parked();
+        assert!(ui.shows("job-0"), "the Jobs page is shown");
+    }
+);
+
+scenario!(
+    /// Closing the window while a job runs asks first: the job goes on, or it stops and
+    /// the window closes.
+    closing_while_a_job_runs_asks,
+    |ui| {
+        hold(ui, "one.zip");
+        let mut vcx = gpui::VisualTestContext::from_window(ui.window().into(), &ui.cx);
+        assert!(!vcx.simulate_close(), "it stays open, to ask");
+        ui.cx.run_until_parked();
+        assert!(ui.shows("quit-stop"));
+        ui.click("quit-keep");
+        assert!(!ui.dialog_open());
+        assert_eq!(ui.ws(|ws, _, cx| ws.jobs_summary(cx)).running, 1);
+        let mut vcx = gpui::VisualTestContext::from_window(ui.window().into(), &ui.cx);
+        assert!(!vcx.simulate_close());
+        ui.cx.run_until_parked();
+        ui.click("quit-stop");
+        assert!(
+            ui.cx.update(|cx| cx.windows().is_empty()),
+            "the window closed once the job stopped"
+        );
+    }
+);

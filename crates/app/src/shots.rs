@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 86] = [
+const SCREENS: [(&str, SetUp); 87] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -50,6 +50,10 @@ const SCREENS: [(&str, SetUp); 86] = [
             .update(cx, |d, cx| d.ask_new_key_for_test(cx));
     }),
     ("jobs", |ws, window, cx| ws.show_sample_jobs(window, cx)),
+    ("jobs-quit", |ws, window, cx| {
+        ws.show_sample_jobs(window, cx);
+        ws.ask_to_close_for_test(window, cx);
+    }),
     ("checksums", |ws, window, cx| {
         ws.show_storage(sample_storage(), cx);
         ws.open_checksums_of("readme.txt", window, cx)

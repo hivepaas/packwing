@@ -610,6 +610,9 @@ t808b85c5 = キーファイルのパスフレーズを入力
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = このキーファイル自体が保護されています。packwing はそのパスフレーズをアーカイブを開いている間だけ保持し、書き留めることはありません。
 
+# Waiting for other jobs…
+t16ec36d9 = 他のジョブを待っています…
+
 # Extracting…
 t94279f82 = 展開中…
 
@@ -667,6 +670,9 @@ t041198a4 = ファイルを開けませんでした
 # The test failed
 tfcd070a5 = テストに失敗しました
 
+# Starts when one of the others ends
+tbe2a0509 = 他のジョブが終わると始まります
+
 # Paused
 tde281feb = 一時停止中
 
@@ -714,6 +720,24 @@ t454d1d8a = 再開
 
 # Pause
 t44f9bf2d = 一時停止
+
+# {n} job is still running | {n} jobs are still running
+tf2047916 =
+    { $n ->
+       *[other] { $n } 件のジョブがまだ実行中です
+    }
+
+# Closing packwing stops them
+t2e6491b3 = packwing を閉じると停止します
+
+# What they have not finished stays unfinished: an archive being made is removed, and an extraction stays as far as it got.
+tf2a64f8b = 終わっていない作業は途中のままになります。作成中のアーカイブは削除され、展開は途中まで残ります。
+
+# Keep running
+t79c1b9c7 = 続ける
+
+# Stop them and quit
+tf2707857 = 停止して終了
 
 # Its files stay where they are. What packwing signs in to it with is taken out of the system’s keychain.
 td68bff45 = ファイルはそのまま残ります。packwing がサインインに使う情報はシステムのキーチェーンから削除されます。

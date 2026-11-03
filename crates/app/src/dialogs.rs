@@ -15,6 +15,7 @@ mod open_stored;
 mod password;
 mod places;
 mod progress;
+mod quit;
 mod remove_storage;
 mod sign;
 mod transfer;
@@ -32,6 +33,7 @@ pub use open_file::OpenFileDialog;
 pub use open_stored::OpenStoredDialog;
 pub use password::{PasswordDialog, PasswordEvent, asked_for};
 pub use progress::{ProgressDialog, State};
+pub use quit::QuitDialog;
 pub use remove_storage::RemoveStorageDialog;
 pub use sign::SignDialog;
 pub use transfer::TransferDialog;
@@ -284,6 +286,10 @@ pub enum DialogEvent {
     Saved,
     /// The job goes on behind, on the Jobs page: its dialog closes, not it.
     Behind,
+    /// The job ended, however it did: another may take its turn.
+    Ended,
+    /// Stop the jobs, and close the window once they have.
+    Quit,
     /// An archive on a storage was chosen, to open.
     Open(Source),
     /// A license key is to be entered: Settings › License.

@@ -32,7 +32,8 @@ struct Behind {
 
 impl Behind {
     fn ended(&self, cx: &gpui::App) -> bool {
-        self.asked.is_none() && self.view.read(cx).state() != State::Running
+        self.asked.is_none()
+            && !matches!(self.view.read(cx).state(), State::Running | State::Queued)
     }
 }
 
@@ -79,6 +80,17 @@ fn done_title(verb: Verb) -> String {
     }
 }
 
+/// What a job's row, or the system's notification of it, says first: where it
+/// stands, or that it waits for a password.
+pub fn headline(job: &ProgressDialog, waits: bool) -> String {
+    match job.state() {
+        _ if waits => tr!("Waiting for a password or a key"),
+        State::Done(_) => done_title(job.job().verb),
+        State::Passed(..) => tr!("The test passed"),
+        _ => job.title(),
+    }
+}
+
 impl JobsPage {
     pub fn new() -> Self {
         JobsPage {
@@ -98,8 +110,39 @@ impl JobsPage {
             .iter()
             .filter(|b| b.asked.is_none())
             .map(|b| b.view.read(cx))
-            .filter(|v| v.state() == State::Running)
+            .filter(|v| matches!(v.state(), State::Running | State::Queued))
             .find_map(|v| job.clash(v.job()))
+    }
+
+    /// How many of its jobs run now, not those waiting for their turn.
+    pub fn running(&self, cx: &gpui::App) -> usize {
+        self.jobs
+            .iter()
+            .filter(|b| b.asked.is_none() && b.view.read(cx).state() == State::Running)
+            .count()
+    }
+
+    /// Its jobs that run or wait for their turn, to stop.
+    pub fn going(&self, cx: &gpui::App) -> Vec<Entity<ProgressDialog>> {
+        self.jobs
+            .iter()
+            .filter(|b| b.asked.is_none())
+            .filter(|b| matches!(b.view.read(cx).state(), State::Running | State::Queued))
+            .map(|b| b.view.clone())
+            .collect()
+    }
+
+    /// Where each of its jobs stands, for tests.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn states(&self, cx: &gpui::App) -> Vec<State> {
+        self.jobs.iter().map(|b| b.view.read(cx).state()).collect()
+    }
+
+    /// Whether `view` waits on the page for a password.
+    pub fn waits(&self, view: &Entity<ProgressDialog>) -> bool {
+        self.jobs
+            .iter()
+            .any(|b| &b.view == view && b.asked.is_some())
     }
 
     /// Whether `view` is a job of the page.
@@ -169,7 +212,7 @@ impl JobsPage {
         };
         for b in &mut self.jobs {
             let state = b.view.read(cx).state();
-            let running = b.asked.is_none() && state == State::Running;
+            let running = b.asked.is_none() && matches!(state, State::Running | State::Queued);
             if running {
                 summary.running += 1;
                 continue;
@@ -193,12 +236,7 @@ impl JobsPage {
         let c = colors();
         let job = b.view.read(cx);
         let state = job.state();
-        let headline = match (&b.asked, &state) {
-            (Some(_), _) => tr!("Waiting for a password or a key"),
-            (None, State::Done(_)) => done_title(job.job().verb),
-            (None, State::Passed(..)) => tr!("The test passed"),
-            (None, _) => job.title(),
-        };
+        let headline = headline(job, b.asked.is_some());
         let percent = (job.done() * 100.).floor() as u64;
         // A new archive, under the name it got: the one asked for may have been taken.
         let detail = match (&state, job.job().verb, &job.job().to) {
@@ -213,6 +251,13 @@ impl JobsPage {
         };
         let below = match (&b.asked, &state) {
             (Some(_), _) => None,
+            (None, State::Queued) => Some(
+                div()
+                    .text_size(ui(13.))
+                    .text_color(rgb(c.muted))
+                    .child(job.left())
+                    .into_any_element(),
+            ),
             (None, State::Running) => Some(
                 div()
                     .flex()
@@ -269,7 +314,7 @@ impl JobsPage {
                     ),
                 )
             }
-            (None, State::Running) => {
+            (None, State::Running | State::Queued) => {
                 let (show, stop) = (view.clone(), view.clone());
                 actions
                     .child(
@@ -297,7 +342,7 @@ impl JobsPage {
             }
             (None, _) => actions,
         };
-        let running = b.asked.is_none() && state == State::Running;
+        let running = b.asked.is_none() && matches!(state, State::Running | State::Queued);
         let actions = actions.when(!running, |d| {
             let view = view.clone();
             d.child(

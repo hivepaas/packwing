@@ -628,6 +628,9 @@ t808b85c5 = Введіть парольну фразу файлу ключа
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Сам файл ключа захищено. packwing зберігає його парольну фразу лише доки архів відкритий і ніколи її не записує.
 
+# Waiting for other jobs…
+t16ec36d9 = Чекає на інші завдання…
+
 # Extracting…
 t94279f82 = Видобування…
 
@@ -685,6 +688,9 @@ t041198a4 = Не вдалося відкрити файл
 # The test failed
 tfcd070a5 = Перевірка не пройшла
 
+# Starts when one of the others ends
+tbe2a0509 = Почнеться, коли завершиться одне з інших
+
 # Paused
 tde281feb = Призупинено
 
@@ -735,6 +741,27 @@ t454d1d8a = Продовжити
 
 # Pause
 t44f9bf2d = Призупинити
+
+# {n} job is still running | {n} jobs are still running
+tf2047916 =
+    { $n ->
+        [one] Ще виконується { $n } завдання
+        [few] Ще виконуються { $n } завдання
+        [many] Ще виконуються { $n } завдань
+       *[other] Ще виконується { $n } завдання
+    }
+
+# Closing packwing stops them
+t2e6491b3 = Закриття packwing зупинить їх
+
+# What they have not finished stays unfinished: an archive being made is removed, and an extraction stays as far as it got.
+tf2a64f8b = Незавершене залишиться незавершеним: архів, що створюється, буде видалено, а розпакування зупиниться там, де було.
+
+# Keep running
+t79c1b9c7 = Продовжити
+
+# Stop them and quit
+tf2707857 = Зупинити й вийти
 
 # Its files stay where they are. What packwing signs in to it with is taken out of the system’s keychain.
 td68bff45 = Його файли залишаться на місці. Те, чим packwing до нього входить, буде вилучено зі зв’язки ключів системи.

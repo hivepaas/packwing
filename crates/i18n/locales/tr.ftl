@@ -616,6 +616,9 @@ t808b85c5 = Anahtar dosyasının parola ifadesini girin
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Anahtar dosyasının kendisi korunuyor. packwing parola ifadesini yalnızca arşiv açıkken tutar ve hiçbir yere yazmaz.
 
+# Waiting for other jobs…
+t16ec36d9 = Diğer işler bekleniyor…
+
 # Extracting…
 t94279f82 = Çıkarılıyor…
 
@@ -673,6 +676,9 @@ t041198a4 = Dosya açılamadı
 # The test failed
 tfcd070a5 = Sınama başarısız oldu
 
+# Starts when one of the others ends
+tbe2a0509 = Diğerlerinden biri bitince başlar
+
 # Paused
 tde281feb = Duraklatıldı
 
@@ -721,6 +727,25 @@ t454d1d8a = Sürdür
 
 # Pause
 t44f9bf2d = Duraklat
+
+# {n} job is still running | {n} jobs are still running
+tf2047916 =
+    { $n ->
+        [one] { $n } iş hâlâ çalışıyor
+       *[other] { $n } iş hâlâ çalışıyor
+    }
+
+# Closing packwing stops them
+t2e6491b3 = packwing'i kapatmak onları durdurur
+
+# What they have not finished stays unfinished: an archive being made is removed, and an extraction stays as far as it got.
+tf2a64f8b = Bitmemiş olanlar yarım kalır: oluşturulan arşiv silinir, çıkarma geldiği yerde kalır.
+
+# Keep running
+t79c1b9c7 = Çalışmaya devam
+
+# Stop them and quit
+tf2707857 = Durdur ve çık
 
 # Its files stay where they are. What packwing signs in to it with is taken out of the system’s keychain.
 td68bff45 = Dosyaları olduğu yerde kalır. packwing'in oturum açmak için kullandığı bilgiler sistemin anahtar zincirinden çıkarılır.
