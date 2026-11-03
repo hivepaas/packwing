@@ -1244,8 +1244,8 @@ t2b8f2459 = Arquivos maiores não ocupam espaço neste computador, mas uma conex
 # Don’t compress what already is
 t940ec31d = Não comprimir o que já está comprimido
 
-# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
-tb10eab86 = Para ZIP: imagens, vídeos, áudio e arquivos compactados entram como estão, mais rápido e sem ficar maiores
+# For ZIP and 7z: pictures, video, sound and archives go in as they are, sooner and no larger
+t4de1e81e = Para ZIP e 7z: imagens, vídeos, áudio e arquivos compactados entram como estão, mais rápido e sem ficar maiores
 
 # What goes in as it is
 tc0104b29 = O que entra como está

@@ -1231,8 +1231,8 @@ t2b8f2459 = Tệp lớn không chiếm chỗ trên máy tính này, nhưng mất
 # Don’t compress what already is
 t940ec31d = Không nén lại những tệp đã nén
 
-# For ZIP: pictures, video, sound and archives go in as they are, sooner and no larger
-tb10eab86 = Với ZIP: ảnh, video, âm thanh và tệp nén được đưa vào nguyên trạng, nhanh hơn mà không lớn hơn
+# For ZIP and 7z: pictures, video, sound and archives go in as they are, sooner and no larger
+t4de1e81e = Với ZIP và 7z: ảnh, video, âm thanh và tệp nén được đưa vào nguyên trạng, nhanh hơn mà không lớn hơn
 
 # What goes in as it is
 tc0104b29 = Những gì đưa vào nguyên trạng

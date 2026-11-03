@@ -545,6 +545,59 @@ fn a_zip_archive_stores_the_extensions_it_is_told() {
 }
 
 #[test]
+fn a_7z_archive_stores_the_extensions_it_is_told_in_a_folder_of_their_own() {
+    let s = Scratch::new("7z-store-compressed");
+    let what = s.path("what");
+    fs::create_dir_all(&what).unwrap();
+    // As compressible as the text: only its name says it is compressed.
+    let text = "xin chào ".repeat(20_000);
+    for name in ["a.txt", "photo.JPG", "b.txt", "clip.mp4"] {
+        fs::write(what.join(name), &text).unwrap();
+    }
+    let known: Vec<String> = COMPRESSED_EXTENSIONS
+        .iter()
+        .map(|e| e.to_string())
+        .collect();
+    let new = NewArchive {
+        kind: Kind::SevenZip,
+        stored_extensions: known,
+        ..NewArchive::default()
+    };
+    let made = create(
+        std::slice::from_ref(&what),
+        &s.path("a.7z"),
+        &new,
+        &Control::default(),
+    )
+    .unwrap();
+    let a = hivepack::sevenz::Archive::open(fs::File::open(&made).unwrap()).unwrap();
+    let folder_of = |end: &str| {
+        a.entries()
+            .find(|e| e.name.ends_with(end))
+            .and_then(|e| e.folder)
+            .unwrap()
+    };
+    // The text together, compressed; the picture and the clip after, stored.
+    let (text_folder, stored_folder) = (folder_of("a.txt"), folder_of("photo.JPG"));
+    assert_eq!(folder_of("b.txt"), text_folder);
+    assert_eq!(folder_of("clip.mp4"), stored_folder);
+    assert_ne!(text_folder, stored_folder);
+    assert_eq!(
+        a.folder_packed_size(stored_folder),
+        a.folder_size(stored_folder)
+    );
+    assert!(a.folder_packed_size(text_folder) < a.folder_size(text_folder) / 10);
+    let out = s.path("out");
+    extract(&made, &out, &Keys::default(), &Control::default()).unwrap();
+    for name in ["a.txt", "photo.JPG", "b.txt", "clip.mp4"] {
+        assert_eq!(
+            fs::read_to_string(out.join("what").join(name)).unwrap(),
+            text
+        );
+    }
+}
+
+#[test]
 fn the_parts_of_every_kind_open_as_one() {
     let s = Scratch::new("kind-parts");
     let root = s.tree();
