@@ -145,6 +145,8 @@ pub struct Prefs {
     /// An index in [`LIMITS`].
     pub limit: usize,
     pub keep_mark: bool,
+    /// Extracts only names every system can use; otherwise those this one can.
+    pub portable_names: bool,
     /// Asks before a file in an archive is opened. A program always asks.
     pub ask_before_open: bool,
     /// The latest first.
@@ -189,6 +191,7 @@ impl Default for Prefs {
             overwrite: false,
             limit: 1,
             keep_mark: true,
+            portable_names: false,
             ask_before_open: true,
             recent: Vec::new(),
             storages: Vec::new(),
@@ -288,6 +291,7 @@ impl Prefs {
                 "new_folder" if value == "false" => p.extract_to = ExtractTo::Here,
                 "overwrite" => p.overwrite = on(value, p.overwrite),
                 "keep_mark" => p.keep_mark = on(value, p.keep_mark),
+                "portable_names" => p.portable_names = on(value, p.portable_names),
                 "ask_before_open" => p.ask_before_open = on(value, p.ask_before_open),
                 "limit" => {
                     if let Some(i) = LIMITS.iter().position(|(name, _)| *name == value) {
@@ -401,7 +405,7 @@ impl Prefs {
         text += &format!(
             "appearance={appearance}\nformat={}\nlevel={level}\nhide_names={}\n\
              skip_mac_files={}\nstore_compressed={}\nstream_above={}\nextract_to={}\noverwrite={}\nlimit={limit}\nkeep_mark={}\n\
-             ask_before_open={}\n",
+             portable_names={}\nask_before_open={}\n",
             self.format.ext(),
             self.hide_names,
             self.skip_mac_files,
@@ -410,6 +414,7 @@ impl Prefs {
             self.extract_to.name(),
             self.overwrite,
             self.keep_mark,
+            self.portable_names,
             self.ask_before_open,
         );
         if let Some(extensions) = &self.stored_extensions {
@@ -584,7 +589,7 @@ impl Prefs {
                 .get(self.limit)
                 .map_or(LIMITS[1].1, |(_, limit)| *limit),
             keep_mark: self.keep_mark,
-            portable_names: false,
+            portable_names: self.portable_names,
         }
     }
 }

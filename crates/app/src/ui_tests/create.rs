@@ -12,6 +12,25 @@ fn new_archive(ui: &mut Ui) -> std::path::PathBuf {
 }
 
 scenario!(
+    /// A name Windows can't use is said, and the archive made all the same.
+    a_name_windows_cannot_use_is_said,
+    |ui| {
+        let work = new_archive(ui);
+        assert!(!ui.shows("not-portable"));
+        ui.click("cancel");
+        if cfg!(windows) {
+            return;
+        }
+        let file = ui.file("a:b.txt", "colon");
+        ui.ws(|ws, window, cx| ws.open_create(vec![file], window, cx));
+        ui.wait_for("not-portable");
+        ui.click("create");
+        ui.wait_for_no_dialog();
+        assert_eq!(listed(&work.join("a:b.zip"), None), ["a:b.txt"]);
+    }
+);
+
+scenario!(
     /// The dialog's defaults make a ZIP archive beside the file.
     a_zip_archive,
     |ui| {

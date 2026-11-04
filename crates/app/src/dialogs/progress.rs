@@ -9,6 +9,8 @@
 //!
 //! An extraction that meets a file whose data is damaged waits on its dialog:
 //! to stop, to leave the file out, or to keep what was read of it, and go on.
+//! One holding names this computer can't use asks once, before anything is
+//! written, about all of them: to stop, to leave them out, or to rename them.
 //! Once it ends, the dialog stays to say which files they were.
 
 use packwing_i18n::{tr, tr_n};
@@ -23,7 +25,8 @@ use gpui::{
     relative, rgb,
 };
 use packwing_core::{
-    Cancel, Control, Damage, DamagedFn, Error, Filter, OnDamaged, Progress, damages,
+    BadName, Cancel, Control, Damage, DamagedFn, Error, Filter, OnDamaged, OnUnnamable, Progress,
+    Renaming, Summary, UnnamableFn, damages, left_out, renamings,
 };
 
 use super::{
@@ -54,15 +57,63 @@ struct Running {
     _work: Task<()>,
 }
 
-/// What an extraction and its dialog share of the files whose data is damaged.
+/// What an extraction and its dialog share of the files whose data is damaged,
+/// and of those whose names can't be used.
 #[derive(Default)]
 struct Damaged {
     /// The file it waits on an answer about, and where the answer goes.
     asked: Option<(Damage, Sender<OnDamaged>)>,
     /// What was answered for all the rest, once it is.
     for_rest: Option<OnDamaged>,
-    /// Those gone on from, once each archive is extracted.
-    found: Vec<Damage>,
+    /// The files whose names can't be used that it waits on an answer about,
+    /// and where the answer goes.
+    named: Option<(Vec<BadName>, Sender<OnUnnamable>)>,
+    /// What came of each archive extracted.
+    found: Report,
+}
+
+/// What an extraction went on from: files whose data was damaged, and files left
+/// out or renamed.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Report {
+    pub damaged: Vec<Damage>,
+    pub left_out: Vec<BadName>,
+    pub renamed: Vec<Renaming>,
+}
+
+impl Report {
+    fn add(&mut self, summary: &Summary) {
+        self.damaged.extend(damages(summary));
+        self.left_out.extend(left_out(summary));
+        self.renamed.extend(renamings(summary));
+    }
+
+    fn is_empty(&self) -> bool {
+        self.damaged.is_empty() && self.left_out.is_empty() && self.renamed.is_empty()
+    }
+
+    /// Each file, what became of it, and why, in the order said.
+    fn rows(&self) -> Vec<(String, String, String)> {
+        let damaged = self.damaged.iter().map(|d| {
+            let kept = match d.kept {
+                Some(bytes) => tr!("kept, {size}", size = size(bytes)),
+                None => tr!("left out"),
+            };
+            (d.path.clone(), kept, d.why.clone())
+        });
+        let left = self
+            .left_out
+            .iter()
+            .map(|b| (b.path.clone(), tr!("left out"), b.why.clone()));
+        let renamed = self.renamed.iter().map(|r| {
+            (
+                r.path.clone(),
+                tr!("renamed {to}", to = r.to.clone()),
+                r.why.clone(),
+            )
+        });
+        damaged.chain(left).chain(renamed).collect()
+    }
 }
 
 /// What asks the dialog about each file whose data is damaged, and waits for its
@@ -80,6 +131,21 @@ fn asking(damaged: &Arc<Mutex<Damaged>>) -> DamagedFn {
             answered
         };
         answered.recv().unwrap_or(OnDamaged::Stop)
+    })
+}
+
+/// What asks the dialog, once, about the files whose names can't be used, and
+/// waits for its answer: none, if nothing answers, stops.
+fn asking_names(damaged: &Arc<Mutex<Damaged>>) -> UnnamableFn {
+    let damaged = damaged.clone();
+    Arc::new(move |bad: &[BadName]| {
+        let answered = {
+            let mut d = damaged.lock().unwrap_or_else(PoisonError::into_inner);
+            let (answer, answered) = channel();
+            d.named = Some((bad.to_vec(), answer));
+            answered
+        };
+        answered.recv().unwrap_or(OnUnnamable::Stop)
     })
 }
 
@@ -120,8 +186,9 @@ pub struct ProgressDialog {
     same_for_rest: bool,
     /// It has said it waits on an answer, or has damaged files to show.
     called: bool,
-    /// The files whose data was damaged, once it is done with some.
-    report: Option<Vec<Damage>>,
+    /// The files whose data was damaged, left out or renamed, once it is done
+    /// with some.
+    report: Option<Report>,
     _ticking: Task<()>,
 }
 
@@ -260,7 +327,8 @@ impl ProgressDialog {
             cancel: Some(cancel.clone()),
             // Only what is extracted to stay: a file opened, or read, is whole.
             on_damaged: matches!(job.verb, Verb::Extract | Verb::Convert).then(|| asking(&damaged)),
-            on_unnamable: None,
+            on_unnamable: matches!(job.verb, Verb::Extract | Verb::Convert)
+                .then(|| asking_names(&damaged)),
         };
         let found = damaged.clone();
         let tested = Arc::new(Mutex::new((0, 0)));
@@ -299,7 +367,7 @@ impl ProgressDialog {
                     .lock()
                     .unwrap_or_else(PoisonError::into_inner)
                     .found
-                    .extend(damages(&done.summary));
+                    .add(&done.summary);
                 return Ok(Some(done.made));
             }
             if let Some(Signing(storage, path, key)) = sign {
@@ -367,7 +435,7 @@ impl ProgressDialog {
                             .lock()
                             .unwrap_or_else(PoisonError::into_inner)
                             .found
-                            .extend(damages(&done));
+                            .add(&done);
                     }
                     _ => {
                         let read = packwing_core::test(source, &keys, &control)?;
@@ -515,9 +583,9 @@ impl ProgressDialog {
         cx.emit(DialogEvent::Ended);
     }
 
-    /// The files whose data was damaged, gone on from so far.
-    fn found(&self) -> Vec<Damage> {
-        self.running.as_ref().map_or_else(Vec::new, |r| {
+    /// The files whose data was damaged, left out or renamed, so far.
+    fn found(&self) -> Report {
+        self.running.as_ref().map_or_else(Report::default, |r| {
             r.damaged
                 .lock()
                 .unwrap_or_else(PoisonError::into_inner)
@@ -549,13 +617,37 @@ impl ProgressDialog {
         cx.notify();
     }
 
+    /// The files whose names can't be used that it waits on an answer about, if
+    /// it does.
+    pub fn asked_names(&self) -> Option<Vec<BadName>> {
+        let r = self.running.as_ref()?;
+        let d = r.damaged.lock().unwrap_or_else(PoisonError::into_inner);
+        d.named.as_ref().map(|(bad, _)| bad.clone())
+    }
+
+    /// Answers about the files whose names can't be used.
+    fn answer_names(&mut self, chosen: OnUnnamable, cx: &mut Context<Self>) {
+        if let Some(r) = &self.running
+            && let Some((_, answer)) = r
+                .damaged
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner)
+                .named
+                .take()
+        {
+            let _ = answer.send(chosen);
+        }
+        self.called = false;
+        cx.notify();
+    }
+
     /// Puts it as waiting on an answer about `damage`, or as done with these
     /// damaged, as the pictures show it.
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn set_damaged_for_test(
         &mut self,
         asked: Option<Damage>,
-        report: Option<Vec<Damage>>,
+        report: Option<Report>,
         cx: &mut Context<Self>,
     ) {
         if let (Some(damage), Some(r)) = (asked, &self.running) {
@@ -569,6 +661,20 @@ impl ProgressDialog {
             self.ended = Some(State::Done(None));
         }
         self.report = report;
+        cx.notify();
+    }
+
+    /// Puts it as waiting on an answer about the files of `bad`, as the
+    /// pictures show it.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn set_names_for_test(&mut self, bad: Vec<BadName>, cx: &mut Context<Self>) {
+        if let Some(r) = &self.running {
+            let (answer, _) = channel();
+            r.damaged
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner)
+                .named = Some((bad, answer));
+        }
         cx.notify();
     }
 
@@ -709,7 +815,7 @@ impl ProgressDialog {
         }
         if self.running.is_some() {
             // Seen, even if it went on behind.
-            if !self.called && self.asked().is_some() {
+            if !self.called && (self.asked().is_some() || self.asked_names().is_some()) {
                 self.called = true;
                 cx.emit(DialogEvent::Attention);
             }
@@ -741,14 +847,12 @@ impl ProgressDialog {
             // waits on an answer goes on to it, the file left out.
             Some(r) if self.state() == State::Running => {
                 r.cancel.cancel();
-                if let Some((_, answer)) = r
-                    .damaged
-                    .lock()
-                    .unwrap_or_else(PoisonError::into_inner)
-                    .asked
-                    .take()
-                {
+                let mut d = r.damaged.lock().unwrap_or_else(PoisonError::into_inner);
+                if let Some((_, answer)) = d.asked.take() {
                     let _ = answer.send(OnDamaged::Skip);
+                }
+                if let Some((_, answer)) = d.named.take() {
+                    let _ = answer.send(OnUnnamable::Skip);
                 }
             }
             _ => {
@@ -770,10 +874,15 @@ impl ProgressDialog {
         if self.asked().is_some() {
             return tr!("A file is damaged");
         }
-        if self.report.is_some() {
-            return match self.job.verb {
-                Verb::Convert => tr!("Converted, but some files are damaged"),
-                _ => tr!("Extracted, but some files are damaged"),
+        if self.asked_names().is_some() {
+            return tr!("Some names can’t be used here");
+        }
+        if let Some(report) = &self.report {
+            return match (self.job.verb, report.damaged.is_empty()) {
+                (Verb::Convert, false) => tr!("Converted, but some files are damaged"),
+                (_, false) => tr!("Extracted, but some files are damaged"),
+                (Verb::Convert, true) => tr!("Converted, with some files left out or renamed"),
+                (_, true) => tr!("Extracted, with some files left out or renamed"),
             };
         }
         match (self.job.verb, self.failed.is_some()) {
@@ -852,6 +961,49 @@ impl ProgressDialog {
     }
 }
 
+/// Files, a row each: the path, and what is said of it, muted; the first
+/// [`MOST_SHOWN`], and how many more.
+fn listing(rows: &[(String, String, String)]) -> gpui::Div {
+    let c = colors();
+    let shown = rows.iter().take(MOST_SHOWN).map(|(path, what, _)| {
+        div()
+            .flex()
+            .gap(ui(12.))
+            .text_size(ui(14.))
+            .child(div().flex_1().min_w_0().truncate().child(path.clone()))
+            .child(
+                div()
+                    .max_w(relative(0.5))
+                    .truncate()
+                    .text_color(rgb(c.muted))
+                    .child(what.clone()),
+            )
+    });
+    let more = rows.len().saturating_sub(MOST_SHOWN) as u64;
+    div()
+        .flex()
+        .flex_col()
+        .gap(ui(6.))
+        .px(ui(16.))
+        .py(ui(12.))
+        .rounded(ui(18.))
+        .bg(rgb(c.well))
+        .children(shown)
+        .when(more > 0, |d| {
+            d.child(
+                div()
+                    .text_size(ui(14.))
+                    .text_color(rgb(c.muted))
+                    .child(tr_n!(
+                        more,
+                        "and {count} more",
+                        "and {count} more",
+                        count = count(more)
+                    )),
+            )
+        })
+}
+
 impl Render for ProgressDialog {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
@@ -928,57 +1080,92 @@ impl Render for ProgressDialog {
                         ),
                 );
         }
-        if let Some(report) = &self.report {
-            let n = report.len() as u64;
-            let listed: String = report
+        if let Some(bad) = self.asked_names() {
+            let n = bad.len() as u64;
+            let rows: Vec<(String, String, String)> = bad
                 .iter()
-                .map(|d| format!("{}\t{}\n", d.path, d.why))
+                .map(|b| (b.path.clone(), b.why.clone(), String::new()))
                 .collect();
-            let rows = report.iter().take(MOST_SHOWN).map(|d| {
-                let kept = match d.kept {
-                    Some(bytes) => tr!("kept, {size}", size = size(bytes)),
-                    None => tr!("left out"),
-                };
-                div()
-                    .flex()
-                    .gap(ui(12.))
-                    .text_size(ui(14.))
-                    .child(div().flex_1().min_w_0().truncate().child(d.path.clone()))
-                    .child(div().text_color(rgb(c.muted)).child(kept))
-            });
             return card()
                 .gap(ui(22.))
                 .child(header)
                 .child(note(Tone::Warn).child(tr_n!(
                     n,
-                    "{count} file’s data was damaged. The rest was extracted.",
-                    "{count} files’ data was damaged. The rest was extracted.",
+                    "{count} file can’t be extracted under its name here. Nothing is written yet: stop, leave it out, or rename it?",
+                    "{count} files can’t be extracted under their names here. Nothing is written yet: stop, leave them out, or rename them?",
                     count = count(n)
                 )))
+                .child(listing(&rows))
                 .child(
-                    div()
-                        .flex()
-                        .flex_col()
-                        .gap(ui(6.))
-                        .px(ui(16.))
-                        .py(ui(12.))
-                        .rounded(ui(18.))
-                        .bg(rgb(c.well))
-                        .children(rows)
-                        .when(report.len() > MOST_SHOWN, |d| {
-                            d.child(
-                                div()
-                                    .text_size(ui(14.))
-                                    .text_color(rgb(c.muted))
-                                    .child(tr_n!(
-                                        (report.len() - MOST_SHOWN) as u64,
-                                        "and {count} more",
-                                        "and {count} more",
-                                        count = count((report.len() - MOST_SHOWN) as u64)
-                                    )),
-                            )
-                        }),
-                )
+                    footer()
+                        .child(
+                            button("stop", tr!("Stop"), Fill::Outline, Size::Medium).on_click(
+                                cx.listener(|this, _, _, cx| {
+                                    this.answer_names(OnUnnamable::Stop, cx)
+                                }),
+                            ),
+                        )
+                        .child(div().flex_1())
+                        .child(
+                            button("skip", tr!("Leave out"), Fill::Tonal, Size::Medium)
+                                .px(ui(20.))
+                                .on_click(cx.listener(|this, _, _, cx| {
+                                    this.answer_names(OnUnnamable::Skip, cx)
+                                })),
+                        )
+                        .child(
+                            button("rename", tr!("Rename"), Fill::Accent, Size::Medium)
+                                .px(ui(20.))
+                                .on_click(cx.listener(|this, _, _, cx| {
+                                    this.answer_names(OnUnnamable::Rename, cx)
+                                })),
+                        ),
+                );
+        }
+        if let Some(report) = &self.report {
+            let rows = report.rows();
+            let listed: String = rows
+                .iter()
+                .map(|(path, what, why)| format!("{path}\t{what}\t{why}\n"))
+                .collect();
+            let mut said = Vec::new();
+            let damaged = report.damaged.len() as u64;
+            if damaged > 0 {
+                said.push(tr_n!(
+                    damaged,
+                    "{count} file’s data was damaged.",
+                    "{count} files’ data was damaged.",
+                    count = count(damaged)
+                ));
+            }
+            let left = report.left_out.len() as u64;
+            if left > 0 {
+                said.push(tr_n!(
+                    left,
+                    "{count} file was left out.",
+                    "{count} files were left out.",
+                    count = count(left)
+                ));
+            }
+            let renamed = report.renamed.len() as u64;
+            if renamed > 0 {
+                said.push(tr_n!(
+                    renamed,
+                    "{count} file was renamed, as its name can’t be used here.",
+                    "{count} files were renamed, as their names can’t be used here.",
+                    count = count(renamed)
+                ));
+            }
+            said.push(tr!("The rest was extracted."));
+            let what = rows
+                .iter()
+                .map(|(path, what, _)| (path.clone(), what.clone(), String::new()))
+                .collect::<Vec<_>>();
+            return card()
+                .gap(ui(22.))
+                .child(header)
+                .child(note(Tone::Warn).child(said.join(" ")))
+                .child(listing(&what))
                 .child(
                     footer()
                         .child(

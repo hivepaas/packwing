@@ -337,6 +337,9 @@ ta598b15b = 請輸入名稱，不可包含 / 或 \。
 # A file of that name is there already: this one will be {name}.
 t9451c3b1 = 已有同名檔案：此檔案將命名為 { $name }。
 
+# Some names can’t be used on Windows or macOS, such as “{name}”. There, those files may not extract as they are.
+t0da27ae4 = 有些名稱在 Windows 或 macOS 上無法使用，例如「{ $name }」。在那裡，這些檔案可能無法照原樣解壓縮。
+
 # Hide advanced
 tae2a96e9 = 隱藏進階選項
 
@@ -616,6 +619,15 @@ t808b85c5 = 輸入金鑰檔案的密碼片語
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = 這個金鑰檔案本身有密碼保護。packwing 只會在封存檔開啟期間保留其密碼片語，絕不會寫入儲存。
 
+# kept, {size}
+t001f6992 = 已保留，{ $size }
+
+# left out
+t73aeedd4 = 已略過
+
+# renamed {to}
+t7aa9b778 = 重新命名為 { $to }
+
 # The job stopped before it was done.
 t57a78885 = 工作在完成前停止了。
 
@@ -625,11 +637,20 @@ t16ec36d9 = 正在等待其他工作…
 # A file is damaged
 t8b1230ed = 有檔案已損毀
 
+# Some names can’t be used here
+t26835ec8 = 有些名稱在這裡無法使用
+
 # Converted, but some files are damaged
 t54ef3472 = 已轉換，但有些檔案已損毀
 
 # Extracted, but some files are damaged
 t8226d624 = 已解壓縮，但有些檔案已損毀
+
+# Converted, with some files left out or renamed
+t5cce0e50 = 已轉換，部分檔案被略過或重新命名
+
+# Extracted, with some files left out or renamed
+t5dc002d6 = 已解壓縮，部分檔案被略過或重新命名
 
 # Extracting…
 t94279f82 = 正在解壓縮…
@@ -730,6 +751,12 @@ tbd7a3305 = 剩餘約 { $div_ceil } 分鐘
 # {name} · checking that every file reads
 t0d56ec7c = { $name } · 正在檢查每個檔案是否可讀取
 
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+       *[other] 還有 { $count } 個
+    }
+
 # The test passed
 tdf0ce240 = 測試通過
 
@@ -757,23 +784,35 @@ taaff8ec9 = 略過
 # Keep what was read
 tc4387d25 = 保留已讀出的部分
 
-# kept, {size}
-t001f6992 = 已保留，{ $size }
-
-# left out
-t73aeedd4 = 已略過
-
-# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
-t9d82f78b =
+# {count} file can’t be extracted under its name here. Nothing is written yet: stop, leave it out, or rename it? | {count} files can’t be extracted under their names here. Nothing is written yet: stop, leave them out, or rename them?
+tb75acfb1 =
     { $n ->
-       *[other] { $count } 個檔案的資料已損毀。其餘已解壓縮。
+       *[other] { $count } 個檔案無法以其名稱在這裡解壓縮。尚未寫入任何內容：停止、略過還是重新命名？
     }
 
-# and {count} more | and {count} more
-te728628b =
+# Leave out
+ta50cc084 = 略過
+
+# {count} file’s data was damaged. | {count} files’ data was damaged.
+t85469b0f =
     { $n ->
-       *[other] 還有 { $count } 個
+       *[other] { $count } 個檔案的資料已損毀。
     }
+
+# {count} file was left out. | {count} files were left out.
+t2f0042b8 =
+    { $n ->
+       *[other] 已略過 { $count } 個檔案。
+    }
+
+# {count} file was renamed, as its name can’t be used here. | {count} files were renamed, as their names can’t be used here.
+tec751fa9 =
+    { $n ->
+       *[other] { $count } 個檔案已重新命名，因為其名稱在這裡無法使用。
+    }
+
+# The rest was extracted.
+ta7833fcb = 其餘已解壓縮。
 
 # Copy the list
 t3c49b269 = 複製清單
@@ -1557,6 +1596,12 @@ t5957c426 = 封存檔解開後的大小上限
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = 防範封存檔炸彈：很小的檔案解開後卻會塞滿磁碟
+
+# Only names every system can use
+tf47f4968 = 僅接受所有系統都能使用的名稱
+
+# Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
+t44f108af = Windows 無法使用的名稱（如 a:b.txt）以及僅大小寫不同的名稱，在這台電腦上也會詢問
 
 # Light
 t8ad2f8cf = 淺色

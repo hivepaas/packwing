@@ -135,6 +135,42 @@ scenario!(
 );
 
 scenario!(
+    /// With Settings' "Only names every system can use", a name Windows can't use
+    /// is asked about before anything is written, and renamed when asked.
+    a_name_not_every_system_takes_is_asked_about,
+    |ui| {
+        ui.settings(1);
+        ui.click("portable-names");
+        assert!(ui.ws(|_, _, cx| crate::prefs::prefs(cx).portable_names));
+        let name = if cfg!(windows) { "in/a.txt" } else { "in/a:b.txt" };
+        let files = [ui.file(name, "colon"), ui.file("in/ok.txt", "ok")];
+        let made = packwing_core::create(
+            &files,
+            &ui.work.join("names.zip"),
+            &packwing_core::NewArchive::default(),
+            &packwing_core::Control::default(),
+        )
+        .expect("the archive");
+        if cfg!(windows) {
+            return;
+        }
+        ui.open(&made);
+        ui.click("extract");
+        ui.wait_for("dest-new");
+        ui.click("dest-new");
+        ui.click("extract");
+        ui.wait_for("rename");
+        let out = ui.work.join("names");
+        assert!(!out.exists(), "written before it was answered");
+        ui.click("rename");
+        ui.wait_for("copy-list");
+        assert!(out.join("a_b.txt").exists() && out.join("ok.txt").exists());
+        ui.click("close");
+        ui.wait_for_no_dialog();
+    }
+);
+
+scenario!(
     /// An archive with a password asks for it, again when it is wrong, and opens with
     /// the right one.
     a_wrong_password_asks_again,

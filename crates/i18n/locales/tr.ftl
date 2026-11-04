@@ -339,6 +339,9 @@ ta598b15b = Bir ad verin; içinde / veya \ olmasın.
 # A file of that name is there already: this one will be {name}.
 t9451c3b1 = Bu adda bir dosya zaten var: bu { $name } olacak.
 
+# Some names can’t be used on Windows or macOS, such as “{name}”. There, those files may not extract as they are.
+t0da27ae4 = Bazı adlar Windows'ta veya macOS'te kullanılamaz, örneğin “{ $name }”. Orada bu dosyalar olduğu gibi çıkarılamayabilir.
+
 # Hide advanced
 tae2a96e9 = Gelişmişi gizle
 
@@ -622,6 +625,15 @@ t808b85c5 = Anahtar dosyasının parola ifadesini girin
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Anahtar dosyasının kendisi korunuyor. packwing parola ifadesini yalnızca arşiv açıkken tutar ve hiçbir yere yazmaz.
 
+# kept, {size}
+t001f6992 = tutuldu, { $size }
+
+# left out
+t73aeedd4 = atlandı
+
+# renamed {to}
+t7aa9b778 = { $to } olarak yeniden adlandırıldı
+
 # The job stopped before it was done.
 t57a78885 = İş bitmeden durdu.
 
@@ -631,11 +643,20 @@ t16ec36d9 = Diğer işler bekleniyor…
 # A file is damaged
 t8b1230ed = Bir dosya hasarlı
 
+# Some names can’t be used here
+t26835ec8 = Bazı adlar burada kullanılamaz
+
 # Converted, but some files are damaged
 t54ef3472 = Dönüştürüldü, ancak bazı dosyalar hasarlı
 
 # Extracted, but some files are damaged
 t8226d624 = Çıkarıldı, ancak bazı dosyalar hasarlı
+
+# Converted, with some files left out or renamed
+t5cce0e50 = Dönüştürüldü, bazı dosyalar atlandı ya da yeniden adlandırıldı
+
+# Extracted, with some files left out or renamed
+t5dc002d6 = Çıkarıldı, bazı dosyalar atlandı ya da yeniden adlandırıldı
 
 # Extracting…
 t94279f82 = Çıkarılıyor…
@@ -736,6 +757,13 @@ tbd7a3305 = Yaklaşık { $div_ceil } dakika kaldı
 # {name} · checking that every file reads
 t0d56ec7c = { $name } · her dosyanın okunabildiği denetleniyor
 
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+        [one] ve { $count } tane daha
+       *[other] ve { $count } tane daha
+    }
+
 # The test passed
 tdf0ce240 = Sınama başarılı
 
@@ -764,25 +792,39 @@ taaff8ec9 = Atla
 # Keep what was read
 tc4387d25 = Okunanı tut
 
-# kept, {size}
-t001f6992 = tutuldu, { $size }
-
-# left out
-t73aeedd4 = atlandı
-
-# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
-t9d82f78b =
+# {count} file can’t be extracted under its name here. Nothing is written yet: stop, leave it out, or rename it? | {count} files can’t be extracted under their names here. Nothing is written yet: stop, leave them out, or rename them?
+tb75acfb1 =
     { $n ->
-        [one] { $count } dosyanın verisi hasarlıydı. Geri kalanı çıkarıldı.
-       *[other] { $count } dosyanın verisi hasarlıydı. Geri kalanı çıkarıldı.
+        [one] { $count } dosya burada kendi adıyla çıkarılamıyor. Henüz hiçbir şey yazılmadı: durdurulsun mu, atlansın mı, yeniden mi adlandırılsın?
+       *[other] { $count } dosya burada kendi adlarıyla çıkarılamıyor. Henüz hiçbir şey yazılmadı: durdurulsun mu, atlansın mı, yeniden mi adlandırılsın?
     }
 
-# and {count} more | and {count} more
-te728628b =
+# Leave out
+ta50cc084 = Atla
+
+# {count} file’s data was damaged. | {count} files’ data was damaged.
+t85469b0f =
     { $n ->
-        [one] ve { $count } tane daha
-       *[other] ve { $count } tane daha
+        [one] { $count } dosyanın verisi bozuktu.
+       *[other] { $count } dosyanın verisi bozuktu.
     }
+
+# {count} file was left out. | {count} files were left out.
+t2f0042b8 =
+    { $n ->
+        [one] { $count } dosya atlandı.
+       *[other] { $count } dosya atlandı.
+    }
+
+# {count} file was renamed, as its name can’t be used here. | {count} files were renamed, as their names can’t be used here.
+tec751fa9 =
+    { $n ->
+        [one] { $count } dosya, adı burada kullanılamadığı için yeniden adlandırıldı.
+       *[other] { $count } dosya, adları burada kullanılamadığı için yeniden adlandırıldı.
+    }
+
+# The rest was extracted.
+ta7833fcb = Geri kalanı çıkarıldı.
 
 # Copy the list
 t3c49b269 = Listeyi kopyala
@@ -1573,6 +1615,12 @@ t5957c426 = Bir arşivin açılabileceği en büyük boyut
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = Arşiv bombalarını durdurur: diski doldurmak üzere açılan küçük dosyalar
+
+# Only names every system can use
+tf47f4968 = Yalnızca her sistemin kullanabildiği adlar
+
+# Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
+t44f108af = Windows'un kullanamadığı a:b.txt gibi adlar ve yalnızca büyük/küçük harfle ayrılan adlar bu bilgisayarda da sorulur
 
 # Light
 t8ad2f8cf = Açık

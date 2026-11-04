@@ -339,6 +339,9 @@ ta598b15b = Dagli un nome, senza / o \.
 # A file of that name is there already: this one will be {name}.
 t9451c3b1 = C'è già un file con quel nome: questo sarà { $name }.
 
+# Some names can’t be used on Windows or macOS, such as “{name}”. There, those files may not extract as they are.
+t0da27ae4 = Alcuni nomi non sono utilizzabili su Windows o macOS, come “{ $name }”. Lì, quei file potrebbero non estrarsi così come sono.
+
 # Hide advanced
 tae2a96e9 = Nascondi opzioni avanzate
 
@@ -622,6 +625,15 @@ t808b85c5 = Inserisci la passphrase del file di chiave
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Il file di chiave è a sua volta protetto. packwing conserva la sua passphrase solo finché l'archivio è aperto e non la scrive mai.
 
+# kept, {size}
+t001f6992 = tenuto, { $size }
+
+# left out
+t73aeedd4 = saltato
+
+# renamed {to}
+t7aa9b778 = rinominato in { $to }
+
 # The job stopped before it was done.
 t57a78885 = Il lavoro si è fermato prima di finire.
 
@@ -631,11 +643,20 @@ t16ec36d9 = In attesa di altre attività…
 # A file is damaged
 t8b1230ed = Un file è danneggiato
 
+# Some names can’t be used here
+t26835ec8 = Alcuni nomi non sono utilizzabili qui
+
 # Converted, but some files are damaged
 t54ef3472 = Convertito, ma alcuni file sono danneggiati
 
 # Extracted, but some files are damaged
 t8226d624 = Estratto, ma alcuni file sono danneggiati
+
+# Converted, with some files left out or renamed
+t5cce0e50 = Convertito, con alcuni file esclusi o rinominati
+
+# Extracted, with some files left out or renamed
+t5dc002d6 = Estratto, con alcuni file esclusi o rinominati
 
 # Extracting…
 t94279f82 = Estrazione…
@@ -736,6 +757,13 @@ tbd7a3305 = Mancano circa { $div_ceil } minuti
 # {name} · checking that every file reads
 t0d56ec7c = { $name } · controllo che ogni file si legga
 
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+        [one] e altri { $count }
+       *[other] e altri { $count }
+    }
+
 # The test passed
 tdf0ce240 = La verifica è riuscita
 
@@ -764,25 +792,39 @@ taaff8ec9 = Saltalo
 # Keep what was read
 tc4387d25 = Tieni ciò che è stato letto
 
-# kept, {size}
-t001f6992 = tenuto, { $size }
-
-# left out
-t73aeedd4 = saltato
-
-# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
-t9d82f78b =
+# {count} file can’t be extracted under its name here. Nothing is written yet: stop, leave it out, or rename it? | {count} files can’t be extracted under their names here. Nothing is written yet: stop, leave them out, or rename them?
+tb75acfb1 =
     { $n ->
-        [one] I dati di { $count } file erano danneggiati. Il resto è stato estratto.
-       *[other] I dati di { $count } file erano danneggiati. Il resto è stato estratto.
+        [one] { $count } file non può essere estratto qui con il suo nome. Non è ancora stato scritto nulla: fermarsi, escluderlo o rinominarlo?
+       *[other] { $count } file non possono essere estratti qui con i loro nomi. Non è ancora stato scritto nulla: fermarsi, escluderli o rinominarli?
     }
 
-# and {count} more | and {count} more
-te728628b =
+# Leave out
+ta50cc084 = Escludi
+
+# {count} file’s data was damaged. | {count} files’ data was damaged.
+t85469b0f =
     { $n ->
-        [one] e altri { $count }
-       *[other] e altri { $count }
+        [one] I dati di { $count } file erano danneggiati.
+       *[other] I dati di { $count } file erano danneggiati.
     }
+
+# {count} file was left out. | {count} files were left out.
+t2f0042b8 =
+    { $n ->
+        [one] { $count } file è stato escluso.
+       *[other] { $count } file sono stati esclusi.
+    }
+
+# {count} file was renamed, as its name can’t be used here. | {count} files were renamed, as their names can’t be used here.
+tec751fa9 =
+    { $n ->
+        [one] { $count } file è stato rinominato, perché il suo nome non è utilizzabile qui.
+       *[other] { $count } file sono stati rinominati, perché i loro nomi non sono utilizzabili qui.
+    }
+
+# The rest was extracted.
+ta7833fcb = Il resto è stato estratto.
 
 # Copy the list
 t3c49b269 = Copia l’elenco
@@ -1573,6 +1615,12 @@ t5957c426 = Dimensione massima a cui può espandersi un archivio
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = Ferma le bombe di archivi: piccoli file che si espandono fino a riempire il disco
+
+# Only names every system can use
+tf47f4968 = Solo nomi utilizzabili su ogni sistema
+
+# Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
+t44f108af = Anche su questo computer si chiede per i nomi che Windows non accetta, come a:b.txt, e per quelli che differiscono solo per maiuscole
 
 # Light
 t8ad2f8cf = Chiaro

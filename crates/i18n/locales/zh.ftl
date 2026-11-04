@@ -337,6 +337,9 @@ ta598b15b = 请起个名字，不要包含 / 或 \。
 # A file of that name is there already: this one will be {name}.
 t9451c3b1 = 已有同名文件：此文件将命名为 { $name }。
 
+# Some names can’t be used on Windows or macOS, such as “{name}”. There, those files may not extract as they are.
+t0da27ae4 = 有些名称在 Windows 或 macOS 上无法使用，例如“{ $name }”。在那里，这些文件可能无法按原样解压。
+
 # Hide advanced
 tae2a96e9 = 隐藏高级选项
 
@@ -616,6 +619,15 @@ t808b85c5 = 输入密钥文件的密码短语
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = 密钥文件本身受到保护。packwing 仅在压缩包打开期间保留其密码短语，且从不将其写下来。
 
+# kept, {size}
+t001f6992 = 已保留，{ $size }
+
+# left out
+t73aeedd4 = 已跳过
+
+# renamed {to}
+t7aa9b778 = 重命名为 { $to }
+
 # The job stopped before it was done.
 t57a78885 = 任务在完成前停止了。
 
@@ -625,11 +637,20 @@ t16ec36d9 = 正在等待其他任务…
 # A file is damaged
 t8b1230ed = 有文件已损坏
 
+# Some names can’t be used here
+t26835ec8 = 有些名称在这里无法使用
+
 # Converted, but some files are damaged
 t54ef3472 = 已转换，但有些文件已损坏
 
 # Extracted, but some files are damaged
 t8226d624 = 已解压，但有些文件已损坏
+
+# Converted, with some files left out or renamed
+t5cce0e50 = 已转换，部分文件被跳过或重命名
+
+# Extracted, with some files left out or renamed
+t5dc002d6 = 已解压，部分文件被跳过或重命名
 
 # Extracting…
 t94279f82 = 正在解压…
@@ -730,6 +751,12 @@ tbd7a3305 = 约剩 { $div_ceil } 分钟
 # {name} · checking that every file reads
 t0d56ec7c = { $name } · 正在检查每个文件是否可读
 
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+       *[other] 还有 { $count } 个
+    }
+
 # The test passed
 tdf0ce240 = 测试通过
 
@@ -757,23 +784,35 @@ taaff8ec9 = 跳过
 # Keep what was read
 tc4387d25 = 保留已读出的部分
 
-# kept, {size}
-t001f6992 = 已保留，{ $size }
-
-# left out
-t73aeedd4 = 已跳过
-
-# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
-t9d82f78b =
+# {count} file can’t be extracted under its name here. Nothing is written yet: stop, leave it out, or rename it? | {count} files can’t be extracted under their names here. Nothing is written yet: stop, leave them out, or rename them?
+tb75acfb1 =
     { $n ->
-       *[other] { $count } 个文件的数据已损坏。其余已解压。
+       *[other] { $count } 个文件无法以其名称在这里解压。尚未写入任何内容：停止、跳过还是重命名？
     }
 
-# and {count} more | and {count} more
-te728628b =
+# Leave out
+ta50cc084 = 跳过
+
+# {count} file’s data was damaged. | {count} files’ data was damaged.
+t85469b0f =
     { $n ->
-       *[other] 还有 { $count } 个
+       *[other] { $count } 个文件的数据已损坏。
     }
+
+# {count} file was left out. | {count} files were left out.
+t2f0042b8 =
+    { $n ->
+       *[other] 已跳过 { $count } 个文件。
+    }
+
+# {count} file was renamed, as its name can’t be used here. | {count} files were renamed, as their names can’t be used here.
+tec751fa9 =
+    { $n ->
+       *[other] { $count } 个文件已重命名，因为其名称在这里无法使用。
+    }
+
+# The rest was extracted.
+ta7833fcb = 其余已解压。
 
 # Copy the list
 t3c49b269 = 复制列表
@@ -1557,6 +1596,12 @@ t5957c426 = 压缩包解压后的最大大小
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = 防止压缩炸弹：解压后会占满磁盘的小文件
+
+# Only names every system can use
+tf47f4968 = 仅接受所有系统都能使用的名称
+
+# Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
+t44f108af = Windows 无法使用的名称（如 a:b.txt）以及仅大小写不同的名称，在这台电脑上也会询问
 
 # Light
 t8ad2f8cf = 浅色

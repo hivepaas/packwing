@@ -137,6 +137,7 @@ pub fn many_chosen() -> crate::model::Selection {
         paths,
         files: 412,
         bytes: 1_800_000_000,
+        not_portable: Vec::new(),
     }
 }
 

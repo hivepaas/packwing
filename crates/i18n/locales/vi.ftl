@@ -337,6 +337,9 @@ ta598b15b = Đặt tên, không có / hoặc \ trong đó.
 # A file of that name is there already: this one will be {name}.
 t9451c3b1 = Đã có một tệp tên này: tệp mới sẽ là { $name }.
 
+# Some names can’t be used on Windows or macOS, such as “{name}”. There, those files may not extract as they are.
+t0da27ae4 = Một số tên không dùng được trên Windows hoặc macOS, như “{ $name }”. Ở đó, các tệp này có thể không giải nén được như cũ.
+
 # Hide advanced
 tae2a96e9 = Ẩn nâng cao
 
@@ -616,6 +619,15 @@ t808b85c5 = Nhập cụm mật khẩu của tệp khoá
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Bản thân tệp khoá cũng được bảo vệ. packwing chỉ giữ cụm mật khẩu của nó khi tệp nén còn mở, và không bao giờ ghi lại.
 
+# kept, {size}
+t001f6992 = đã giữ, { $size }
+
+# left out
+t73aeedd4 = đã bỏ qua
+
+# renamed {to}
+t7aa9b778 = đổi thành { $to }
+
 # The job stopped before it was done.
 t57a78885 = Công việc đã dừng trước khi xong.
 
@@ -625,11 +637,20 @@ t16ec36d9 = Đang chờ các tác vụ khác…
 # A file is damaged
 t8b1230ed = Một file bị hỏng
 
+# Some names can’t be used here
+t26835ec8 = Một số tên không dùng được ở đây
+
 # Converted, but some files are damaged
 t54ef3472 = Đã chuyển, nhưng có file bị hỏng
 
 # Extracted, but some files are damaged
 t8226d624 = Đã giải nén, nhưng có file bị hỏng
+
+# Converted, with some files left out or renamed
+t5cce0e50 = Đã chuyển đổi, có tệp bị bỏ qua hoặc đổi tên
+
+# Extracted, with some files left out or renamed
+t5dc002d6 = Đã giải nén, có tệp bị bỏ qua hoặc đổi tên
 
 # Extracting…
 t94279f82 = Đang giải nén…
@@ -730,6 +751,12 @@ tbd7a3305 = Còn khoảng { $div_ceil } phút
 # {name} · checking that every file reads
 t0d56ec7c = { $name } · đang kiểm tra mọi tệp đều đọc được
 
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+       *[other] và { $count } file nữa
+    }
+
 # The test passed
 tdf0ce240 = Kiểm tra đạt
 
@@ -757,23 +784,35 @@ taaff8ec9 = Bỏ qua
 # Keep what was read
 tc4387d25 = Giữ phần đọc được
 
-# kept, {size}
-t001f6992 = đã giữ, { $size }
-
-# left out
-t73aeedd4 = đã bỏ qua
-
-# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
-t9d82f78b =
+# {count} file can’t be extracted under its name here. Nothing is written yet: stop, leave it out, or rename it? | {count} files can’t be extracted under their names here. Nothing is written yet: stop, leave them out, or rename them?
+tb75acfb1 =
     { $n ->
-       *[other] Dữ liệu của { $count } file bị hỏng. Phần còn lại đã được giải nén.
+       *[other] { $count } tệp không giải nén được với tên của nó ở đây. Chưa có gì được ghi: dừng, bỏ qua, hay đổi tên?
     }
 
-# and {count} more | and {count} more
-te728628b =
+# Leave out
+ta50cc084 = Bỏ qua
+
+# {count} file’s data was damaged. | {count} files’ data was damaged.
+t85469b0f =
     { $n ->
-       *[other] và { $count } file nữa
+       *[other] Dữ liệu của { $count } tệp bị hỏng.
     }
+
+# {count} file was left out. | {count} files were left out.
+t2f0042b8 =
+    { $n ->
+       *[other] { $count } tệp đã bị bỏ qua.
+    }
+
+# {count} file was renamed, as its name can’t be used here. | {count} files were renamed, as their names can’t be used here.
+tec751fa9 =
+    { $n ->
+       *[other] { $count } tệp đã được đổi tên, vì tên của chúng không dùng được ở đây.
+    }
+
+# The rest was extracted.
+ta7833fcb = Phần còn lại đã được giải nén.
 
 # Copy the list
 t3c49b269 = Sao chép danh sách
@@ -1557,6 +1596,12 @@ t5957c426 = Dung lượng tối đa tệp nén được giải ra
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = Chặn bom nén: các tệp nhỏ giải ra lấp đầy ổ đĩa
+
+# Only names every system can use
+tf47f4968 = Chỉ nhận tên dùng được trên mọi hệ điều hành
+
+# Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
+t44f108af = Tên Windows không dùng được, như a:b.txt, và tên chỉ khác chữ hoa/thường cũng sẽ được hỏi trên máy này
 
 # Light
 t8ad2f8cf = Sáng

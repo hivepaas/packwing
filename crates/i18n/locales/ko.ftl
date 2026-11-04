@@ -337,6 +337,9 @@ ta598b15b = 이름을 입력하세요. /나 \는 사용할 수 없습니다.
 # A file of that name is there already: this one will be {name}.
 t9451c3b1 = 이름이 같은 파일이 이미 있습니다. 이 파일은 { $name }(으)로 저장됩니다.
 
+# Some names can’t be used on Windows or macOS, such as “{name}”. There, those files may not extract as they are.
+t0da27ae4 = Windows나 macOS에서 쓸 수 없는 이름이 있습니다(예: “{ $name }”). 그곳에서는 이 파일들이 그대로 풀리지 않을 수 있습니다.
+
 # Hide advanced
 tae2a96e9 = 고급 옵션 숨기기
 
@@ -616,6 +619,15 @@ t808b85c5 = 키 파일의 암호 문구 입력
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = 키 파일 자체가 보호되어 있습니다. packwing은 압축 파일을 열어 둔 동안에만 암호 문구를 보관하며 어디에도 기록하지 않습니다.
 
+# kept, {size}
+t001f6992 = 남김, { $size }
+
+# left out
+t73aeedd4 = 건너뜀
+
+# renamed {to}
+t7aa9b778 = { $to }(으)로 이름 바꿈
+
 # The job stopped before it was done.
 t57a78885 = 작업이 끝나기 전에 멈췄습니다.
 
@@ -625,11 +637,20 @@ t16ec36d9 = 다른 작업을 기다리는 중…
 # A file is damaged
 t8b1230ed = 파일이 손상되었습니다
 
+# Some names can’t be used here
+t26835ec8 = 여기서 쓸 수 없는 이름이 있습니다
+
 # Converted, but some files are damaged
 t54ef3472 = 변환했지만 일부 파일이 손상되었습니다
 
 # Extracted, but some files are damaged
 t8226d624 = 압축을 풀었지만 일부 파일이 손상되었습니다
+
+# Converted, with some files left out or renamed
+t5cce0e50 = 변환함, 일부 파일은 제외하거나 이름을 바꿈
+
+# Extracted, with some files left out or renamed
+t5dc002d6 = 압축 해제함, 일부 파일은 제외하거나 이름을 바꿈
 
 # Extracting…
 t94279f82 = 압축을 푸는 중…
@@ -730,6 +751,12 @@ tbd7a3305 = 약 { $div_ceil }분 남음
 # {name} · checking that every file reads
 t0d56ec7c = { $name } · 모든 파일을 읽을 수 있는지 확인하는 중
 
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+       *[other] 외 { $count }개
+    }
+
 # The test passed
 tdf0ce240 = 테스트를 통과했습니다
 
@@ -757,23 +784,35 @@ taaff8ec9 = 건너뛰기
 # Keep what was read
 tc4387d25 = 읽은 부분 남기기
 
-# kept, {size}
-t001f6992 = 남김, { $size }
-
-# left out
-t73aeedd4 = 건너뜀
-
-# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
-t9d82f78b =
+# {count} file can’t be extracted under its name here. Nothing is written yet: stop, leave it out, or rename it? | {count} files can’t be extracted under their names here. Nothing is written yet: stop, leave them out, or rename them?
+tb75acfb1 =
     { $n ->
-       *[other] 파일 { $count }개의 데이터가 손상되었습니다. 나머지는 압축을 풀었습니다.
+       *[other] 파일 { $count }개를 여기서 원래 이름으로 풀 수 없습니다. 아직 아무것도 쓰지 않았습니다. 중지, 제외, 이름 바꾸기 중 무엇을 할까요?
     }
 
-# and {count} more | and {count} more
-te728628b =
+# Leave out
+ta50cc084 = 제외
+
+# {count} file’s data was damaged. | {count} files’ data was damaged.
+t85469b0f =
     { $n ->
-       *[other] 외 { $count }개
+       *[other] 파일 { $count }개의 데이터가 손상되었습니다.
     }
+
+# {count} file was left out. | {count} files were left out.
+t2f0042b8 =
+    { $n ->
+       *[other] 파일 { $count }개를 제외했습니다.
+    }
+
+# {count} file was renamed, as its name can’t be used here. | {count} files were renamed, as their names can’t be used here.
+tec751fa9 =
+    { $n ->
+       *[other] 이름을 여기서 쓸 수 없어 파일 { $count }개의 이름을 바꿨습니다.
+    }
+
+# The rest was extracted.
+ta7833fcb = 나머지는 압축을 풀었습니다.
 
 # Copy the list
 t3c49b269 = 목록 복사
@@ -1557,6 +1596,12 @@ t5957c426 = 압축을 풀 수 있는 최대 크기
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = 작은 파일이 풀리면서 디스크를 가득 채우는 압축 폭탄을 막습니다
+
+# Only names every system can use
+tf47f4968 = 모든 시스템에서 쓸 수 있는 이름만
+
+# Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
+t44f108af = a:b.txt처럼 Windows에서 쓸 수 없는 이름과 대소문자만 다른 이름도 이 컴퓨터에서 묻습니다
 
 # Light
 t8ad2f8cf = 라이트

@@ -343,6 +343,9 @@ ta598b15b = Дайте йому назву без / і \.
 # A file of that name is there already: this one will be {name}.
 t9451c3b1 = Файл із такою назвою вже є: цей називатиметься { $name }.
 
+# Some names can’t be used on Windows or macOS, such as “{name}”. There, those files may not extract as they are.
+t0da27ae4 = Деякі імена не можна використати у Windows чи macOS, наприклад «{ $name }». Там ці файли можуть видобутися не такими, як є.
+
 # Hide advanced
 tae2a96e9 = Сховати додаткові
 
@@ -634,6 +637,15 @@ t808b85c5 = Введіть парольну фразу файлу ключа
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Сам файл ключа захищено. packwing зберігає його парольну фразу лише доки архів відкритий і ніколи її не записує.
 
+# kept, {size}
+t001f6992 = збережено, { $size }
+
+# left out
+t73aeedd4 = пропущено
+
+# renamed {to}
+t7aa9b778 = перейменовано на { $to }
+
 # The job stopped before it was done.
 t57a78885 = Завдання зупинилося, не завершившись.
 
@@ -643,11 +655,20 @@ t16ec36d9 = Чекає на інші завдання…
 # A file is damaged
 t8b1230ed = Файл пошкоджено
 
+# Some names can’t be used here
+t26835ec8 = Деякі імена тут не можна використати
+
 # Converted, but some files are damaged
 t54ef3472 = Перетворено, але деякі файли пошкоджено
 
 # Extracted, but some files are damaged
 t8226d624 = Видобуто, але деякі файли пошкоджено
+
+# Converted, with some files left out or renamed
+t5cce0e50 = Перетворено, деякі файли пропущено або перейменовано
+
+# Extracted, with some files left out or renamed
+t5dc002d6 = Видобуто, деякі файли пропущено або перейменовано
 
 # Extracting…
 t94279f82 = Видобування…
@@ -748,6 +769,15 @@ tbd7a3305 = Залишилося близько { $div_ceil } хв
 # {name} · checking that every file reads
 t0d56ec7c = { $name } · перевірка, чи читається кожен файл
 
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+        [one] і ще { $count }
+        [few] і ще { $count }
+        [many] і ще { $count }
+       *[other] і ще { $count }
+    }
+
 # The test passed
 tdf0ce240 = Перевірку пройдено
 
@@ -778,29 +808,47 @@ taaff8ec9 = Пропустити
 # Keep what was read
 tc4387d25 = Зберегти прочитане
 
-# kept, {size}
-t001f6992 = збережено, { $size }
-
-# left out
-t73aeedd4 = пропущено
-
-# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
-t9d82f78b =
+# {count} file can’t be extracted under its name here. Nothing is written yet: stop, leave it out, or rename it? | {count} files can’t be extracted under their names here. Nothing is written yet: stop, leave them out, or rename them?
+tb75acfb1 =
     { $n ->
-        [one] Дані { $count } файлу пошкоджено. Решту видобуто.
-        [few] Дані { $count } файлів пошкоджено. Решту видобуто.
-        [many] Дані { $count } файлів пошкоджено. Решту видобуто.
-       *[other] Дані { $count } файлу пошкоджено. Решту видобуто.
+        [one] { $count } файл не можна видобути тут під його іменем. Ще нічого не записано: зупинити, пропустити чи перейменувати?
+        [few] { $count } файли не можна видобути тут під їхніми іменами. Ще нічого не записано: зупинити, пропустити чи перейменувати?
+        [many] { $count } файлів не можна видобути тут під їхніми іменами. Ще нічого не записано: зупинити, пропустити чи перейменувати?
+       *[other] { $count } файли не можна видобути тут під їхніми іменами. Ще нічого не записано: зупинити, пропустити чи перейменувати?
     }
 
-# and {count} more | and {count} more
-te728628b =
+# Leave out
+ta50cc084 = Пропустити
+
+# {count} file’s data was damaged. | {count} files’ data was damaged.
+t85469b0f =
     { $n ->
-        [one] і ще { $count }
-        [few] і ще { $count }
-        [many] і ще { $count }
-       *[other] і ще { $count }
+        [one] Дані { $count } файлу пошкоджено.
+        [few] Дані { $count } файлів пошкоджено.
+        [many] Дані { $count } файлів пошкоджено.
+       *[other] Дані { $count } файлу пошкоджено.
     }
+
+# {count} file was left out. | {count} files were left out.
+t2f0042b8 =
+    { $n ->
+        [one] { $count } файл пропущено.
+        [few] { $count } файли пропущено.
+        [many] { $count } файлів пропущено.
+       *[other] { $count } файлу пропущено.
+    }
+
+# {count} file was renamed, as its name can’t be used here. | {count} files were renamed, as their names can’t be used here.
+tec751fa9 =
+    { $n ->
+        [one] { $count } файл перейменовано, бо його ім’я тут не можна використати.
+        [few] { $count } файли перейменовано, бо їхні імена тут не можна використати.
+        [many] { $count } файлів перейменовано, бо їхні імена тут не можна використати.
+       *[other] { $count } файлу перейменовано, бо їхні імена тут не можна використати.
+    }
+
+# The rest was extracted.
+ta7833fcb = Решту видобуто.
 
 # Copy the list
 t3c49b269 = Скопіювати список
@@ -1605,6 +1653,12 @@ t5957c426 = Найбільший розмір, до якого може розп
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = Захищає від архівних бомб: малих файлів, що розпаковуються й заповнюють диск
+
+# Only names every system can use
+tf47f4968 = Лише імена, придатні для будь-якої системи
+
+# Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
+t44f108af = Імена, яких не дозволяє Windows, як-от a:b.txt, та імена, що різняться лише регістром, запитуються й на цьому комп’ютері
 
 # Light
 t8ad2f8cf = Світлий

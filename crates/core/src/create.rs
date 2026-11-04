@@ -29,7 +29,7 @@ use hivepack::age::{
     parse_recipients_file,
 };
 use hivepack::deflate::{DEF_MEM_LEVEL, Deflate, Flush, Z_DEFAULT_STRATEGY};
-use hivepack::extract::Progress;
+use hivepack::extract::{NameRules, Progress, check_name_for};
 use hivepack::open::Container;
 use hivepack::xz::{MtOptions, Stream, stream_encoder_mt_memusage};
 use hivepack::zip::{
@@ -246,10 +246,14 @@ impl fmt::Debug for NewArchive {
 }
 
 /// What a selection of files and folders holds.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Measured {
     pub files: u64,
     pub bytes: u64,
+    /// The names in it that some system can't use, as they go in the archive:
+    /// Windows' characters and device names, and a name that differs from
+    /// another only in case.
+    pub not_portable: Vec<String>,
 }
 
 /// What goes in the archive, with the name it has there.
@@ -336,7 +340,13 @@ pub fn measure(paths: &[PathBuf]) -> Result<Measured, Error> {
 /// target is not read as a file is.
 fn measured(items: &[Item]) -> Measured {
     let mut measured = Measured::default();
+    let mut seen = std::collections::HashSet::new();
     for item in items {
+        let unnamable = check_name_for(item.name.as_bytes(), NameRules::Portable)
+            .is_err_and(|e| e.is_unnamable());
+        if unnamable || !seen.insert(item.name.trim_end_matches('/').to_lowercase()) {
+            measured.not_portable.push(item.name.clone());
+        }
         if !item.metadata.is_dir() {
             measured.files += 1;
         }
