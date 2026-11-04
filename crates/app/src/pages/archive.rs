@@ -42,6 +42,12 @@ pub enum ArchiveEvent {
     Sign,
     /// Show its file's checksums.
     Checksums,
+    /// Make an archive of what it holds, in another format.
+    Convert,
+    /// Cut its file into parts.
+    Split,
+    /// Join the parts its file is one of.
+    Join,
     /// Choose an archive to open.
     Open,
     /// Choose an archive on a storage to open.
@@ -666,6 +672,12 @@ impl ArchivePage {
         )
     }
 
+    /// The archive's file, if it is on this computer.
+    pub fn local_file(&self) -> Option<std::path::PathBuf> {
+        let (storage, path) = self.archive()?.source.as_ref()?.place()?;
+        storage.local_path(&path)
+    }
+
     /// The `…` menu: what is used less, so that the header's buttons stay few.
     fn more_menu(&self, at: Point<Pixels>, cx: &mut Context<Self>) -> impl IntoElement + use<> {
         let item = |id: &'static str, label: String, asked: fn() -> ArchiveEvent| {
@@ -680,6 +692,10 @@ impl ArchivePage {
             .and_then(|a| a.source.as_ref())
             .and_then(|s| s.place())
             .and_then(|(storage, path)| storage.local_path(&path));
+        let cut = here
+            .as_deref()
+            .and_then(|h| h.file_name())
+            .is_some_and(|n| crate::explorer::is_cut_part_name(&n.to_string_lossy()));
         deferred(
             anchored()
                 .position(at)
@@ -696,6 +712,22 @@ impl ArchivePage {
                         .child(item("menu-checksums", tr!("Checksums…"), || {
                             ArchiveEvent::Checksums
                         }))
+                        // Made beside its file, on this computer.
+                        .when(here.is_some(), |d| {
+                            d.child(item("menu-convert", tr!("Convert…"), || {
+                                ArchiveEvent::Convert
+                            }))
+                            .child(item(
+                                "menu-split",
+                                tr!("Split into parts…"),
+                                || ArchiveEvent::Split,
+                            ))
+                        })
+                        .when(cut, |d| {
+                            d.child(item("menu-join", tr!("Join the parts"), || {
+                                ArchiveEvent::Join
+                            }))
+                        })
                         .when_some(here, |d, here| {
                             d.child(
                                 menu_item("menu-file-manager", file_manager::show_label(), "")

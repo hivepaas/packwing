@@ -23,6 +23,12 @@ pub enum RecentEvent {
     Extract(PathBuf),
     Sign(PathBuf),
     Checksums(PathBuf),
+    /// Make an archive of what this one holds, in another format.
+    Convert(PathBuf),
+    /// Cut this one's file into parts.
+    Split(PathBuf),
+    /// Join the parts this one is of.
+    Join(PathBuf),
     /// Take it out of the list; the file stays.
     Forget(PathBuf),
 }
@@ -119,6 +125,7 @@ impl RecentPage {
             }))
         };
         let there = row.size.is_some();
+        let cut = crate::explorer::is_cut_part_name(&row.name);
         let (shown, copied) = (row.path.clone(), row.path.display().to_string());
         let menu = menu_panel("recent-menu")
             .min_w(ui(230.))
@@ -144,6 +151,23 @@ impl RecentPage {
                         tr!("Checksums…"),
                         RecentEvent::Checksums,
                     ))
+                    .child(asking(
+                        "menu-convert",
+                        tr!("Convert…"),
+                        RecentEvent::Convert,
+                    ))
+                    .child(asking(
+                        "menu-split",
+                        tr!("Split into parts…"),
+                        RecentEvent::Split,
+                    ))
+                    .when(cut, |d| {
+                        d.child(asking(
+                            "menu-join",
+                            tr!("Join the parts"),
+                            RecentEvent::Join,
+                        ))
+                    })
                     .child(line())
                     .child(
                         menu_item("menu-file-manager", file_manager::show_label(), "").on_click(
