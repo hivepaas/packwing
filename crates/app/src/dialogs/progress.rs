@@ -421,6 +421,12 @@ impl ProgressDialog {
         };
         // Whoever looks at it, the Jobs page among them, sees it ended.
         cx.notify();
+        // What opened its one archive opens it the next time, for a while.
+        if result.is_ok()
+            && let [(source, _)] = self.job.work.as_slice()
+        {
+            cx.emit(DialogEvent::Proved(source.clone(), self.job.keys.clone()));
+        }
         match result {
             Ok(_) if self.job.add.is_some() => {
                 if let Some(a) = self.job.add.clone() {

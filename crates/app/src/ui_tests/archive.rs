@@ -398,3 +398,73 @@ scenario!(
         );
     }
 );
+
+/// Whether the archive open keeps a secret.
+fn keeps_keys(ui: &mut Ui) -> bool {
+    ui.ws(|ws, _, cx| {
+        let page = ws.archive_page();
+        let page = page.read(cx);
+        page.archive()
+            .is_some_and(|a| a.keys != packwing_core::Keys::default())
+    })
+}
+
+scenario!(
+    /// A ZIP archive whose files alone have a password opens without it; once
+    /// it is typed for one thing (here, Test), the preview, Extract and Test
+    /// need it no more, for ten minutes after it was last used.
+    the_password_is_kept_for_a_while,
+    |ui| {
+        let new = packwing_core::NewArchive {
+            password: Some(b"secret".to_vec()),
+            ..packwing_core::NewArchive::default()
+        };
+        let made = packwing_core::create(
+            &[ui.file("notes.txt", "xin chào\n")],
+            &ui.work.join("locked.zip"),
+            &new,
+            &packwing_core::Control::default(),
+        )
+        .expect("the archive");
+        ui.open(&made);
+        assert!(!ui.dialog_open(), "its names are not encrypted");
+        assert!(!keeps_keys(ui));
+        ui.click("entry-0");
+        assert!(!ui.shows("preview-text"), "the preview needs the password");
+        // Test asks for it, and goes through with it.
+        ui.click("test");
+        ui.wait_for("field: The archive’s password");
+        ui.type_in("The archive’s password", "secret");
+        ui.click("open");
+        ui.wait_for("close");
+        ui.click("close");
+        ui.wait_for_no_dialog();
+        assert!(keeps_keys(ui));
+        // The preview shows it now, and Extract asks for no password.
+        ui.click("entry-0");
+        ui.wait_for("preview-text");
+        ui.ws(|ws, window, cx| ws.open_extract(window, cx));
+        ui.wait_for("extract");
+        assert!(!ui.shows("field: The archive’s password"));
+        ui.keys("escape");
+        ui.wait_for_no_dialog();
+        // A use keeps it from then: nine minutes, a use, nine more, kept.
+        let minutes = |n: u64| std::time::Duration::from_secs(60 * n);
+        ui.cx.executor().advance_clock(minutes(9));
+        ui.cx.run_until_parked();
+        assert!(keeps_keys(ui));
+        ui.click("test");
+        ui.wait_for("close");
+        ui.click("close");
+        ui.wait_for_no_dialog();
+        ui.cx.executor().advance_clock(minutes(9));
+        ui.cx.run_until_parked();
+        assert!(keeps_keys(ui), "the test used it nine minutes ago");
+        // Ten minutes unused, it is forgotten, and asked for again.
+        ui.cx.executor().advance_clock(minutes(2));
+        ui.cx.run_until_parked();
+        assert!(!keeps_keys(ui));
+        ui.click("test");
+        ui.wait_for("field: The archive’s password");
+    }
+);

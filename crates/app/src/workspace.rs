@@ -838,7 +838,10 @@ impl Workspace {
                 DialogEvent::Saved => this.refresh_explorers(cx),
                 DialogEvent::Quit => this.stop_and_quit(window, cx),
                 // Only a job's dialog says these, and they are heard in job_event.
-                DialogEvent::Behind | DialogEvent::Ended | DialogEvent::Attention => {}
+                DialogEvent::Behind
+                | DialogEvent::Ended
+                | DialogEvent::Attention
+                | DialogEvent::Proved(..) => {}
                 DialogEvent::Signed => {
                     this.close_dialog(cx);
                     this.trusted_seen = prefs::prefs(cx).trusted_keys;
@@ -1663,6 +1666,10 @@ impl Workspace {
                 }
             }
             DialogEvent::Ended => self.tell_ended(view, shown, window, cx),
+            DialogEvent::Proved(source, keys) => {
+                self.archive
+                    .update(cx, |p, cx| p.remember_keys(source, keys, cx));
+            }
             DialogEvent::Start(_)
             | DialogEvent::Open(_)
             | DialogEvent::ShowLicense

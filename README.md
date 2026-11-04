@@ -11,7 +11,7 @@ Built in Rust on [hivepack](https://github.com/hivepaas/hivepack-rs).
 * **Writes archives:** ZIP, 7z, `.tar.gz`, `.tar.xz` and `.tar.zst`, with five levels, AES-256 on ZIP and 7z (7z can hide the names too), and parts as 7-Zip cuts them.
 * **age built in:** opens and writes `.age` files with a passphrase, age keys, Ed25519 SSH keys and post-quantum keys.
 * **Edits ZIP archives:** add, delete and rename inside an archive, which goes in place only once the new one reads back.
-* **Look before you extract:** a search through all of an archive, whatever the case and accents (`bao cao` finds `Báo cáo`), a preview of pictures and text, and Extract for just what is selected.
+* **Look before you extract:** a search through all of an archive, whatever the case and accents (`bao cao` finds `Báo cáo`), a preview of pictures and text, and Extract for just what is selected. The archive's password is asked once: it is kept in memory, never written, until ten minutes after it was last used.
 * **Storages:** browse folders, S3 buckets, WebDAV folders and SFTP servers as a file manager does, and copy and move between them, with secrets in the system's keychain.
 * **Archives in place:** a ZIP or 7z archive on a storage is listed, and a file taken from it, without fetching the rest.
 * **Signed files:** sign with an SSH Ed25519 key, or a new key of Ed25519 and ML-DSA-65 together; an SSH key's signature can be checked with `ssh-keygen -Y verify`, without packwing.
