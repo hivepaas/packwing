@@ -431,7 +431,11 @@ fn what_only_a_mac_uses_is_left_out_unless_kept() {
     assert_eq!(mac(&left), 0, "{left}");
     assert!(left.lines().any(|l| l == "src/docs/notes.txt"));
     ok(&s.pkw(&["create", "-q", "--keep-mac-files", "kept.tar", "src"]));
-    assert_eq!(mac(&ok(&s.pkw(&["list", "kept.tar"]))), 4, "the folder, and three files");
+    assert_eq!(
+        mac(&ok(&s.pkw(&["list", "kept.tar"]))),
+        4,
+        "the folder, and three files"
+    );
     // A conversion leaves them out alike.
     ok(&s.pkw(&["convert", "-q", "kept.tar", "converted.7z"]));
     assert_eq!(mac(&ok(&s.pkw(&["list", "converted.7z"]))), 0);
