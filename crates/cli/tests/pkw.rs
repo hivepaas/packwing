@@ -384,6 +384,13 @@ fn a_storage_added_to_the_app_is_named_name_colon_path() {
     assert!(String::from_utf8_lossy(&refused.stderr).contains("open it in packwing"));
     // A name no storage has is a path here.
     assert_eq!(s.pkw(&["list", "Không có:a.zip"]).status.code(), Some(1));
+    if !cfg!(feature = "remote") {
+        // Built without S3, SFTP and WebDAV: one of them says so, and is not opened.
+        s.settings("storage=other s3\tKho\ts3-2\tbucket=b\n");
+        let without = s.pkw(&["list", "Kho:a.zip"]);
+        assert_eq!(without.status.code(), Some(1));
+        assert!(String::from_utf8_lossy(&without.stderr).contains("built without"));
+    }
 }
 
 #[test]

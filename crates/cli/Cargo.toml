@@ -18,8 +18,8 @@ path = "src/main.rs"
 packwing-core.workspace = true
 packwing-i18n.workspace = true
 packwing-policy.workspace = true
-# The storages added to the app: S3, SFTP and WebDAV.
-packwing-remote.workspace = true
+# The storages added to the app: S3, SFTP and WebDAV (the `remote` feature).
+packwing-remote = { workspace = true, optional = true }
 clap = { version = "4.5", features = ["derive", "wrap_help", "string"] }
 # `pkw completions SHELL`, and the manual pages the packages hold.
 clap_complete = "4.5"
@@ -27,6 +27,13 @@ clap_mangen = "0.2"
 # A password typed with nothing shown.
 rpassword = "7"
 serde_json = "1"
+
+[features]
+default = ["remote"]
+# S3, SFTP and WebDAV storages, by NAME:PATH. Without it pkw is a third of
+# the size, and opens archives here and in the app's folder storages alone:
+#   cargo build --release -p packwing-cli --no-default-features
+remote = ["dep:packwing-remote"]
 
 [lints]
 workspace = true

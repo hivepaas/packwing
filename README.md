@@ -65,7 +65,7 @@ packwing refuses a host not in `~/.ssh/known_hosts`, so `make sftp-start` adds t
 
 ## ⌨️ Command line
 
-`pkw` is packwing without the window, for a terminal, a server over SSH or a script. It is a program of its own (`make cli`, then `target/release/pkw`), with no window system in it:
+`pkw` is packwing without the window, for a terminal, a server over SSH or a script. It is a program of its own (`make cli`, then `target/release/pkw`), with no window system in it; `make cli-slim` builds it without S3, SFTP and WebDAV, about a third of the size, for archives on this computer and the app's folder storages:
 
 ```sh
 pkw list backup.7z                      # what it holds (-l: sizes and dates; --json)
@@ -103,6 +103,8 @@ scripts/package_linux.sh
 sudo apt install ./dist/packwing_0.1.0_amd64.deb
 nautilus -q   # Nautilus loads extensions when it starts
 ```
+
+`scripts/check_linux_package.sh` checks a package holds what it should, and with `--install` installs it and runs `pkw` from it, as CI does after each merge.
 
 packwing's next start moves its items for Nautilus out of the Scripts submenu, into Nautilus's own menu. The package depends on the glibc of the system it was built on, so a .deb for every supported Ubuntu is built on the oldest one. Removing the package leaves each user's items for Dolphin, Nemo and Thunar, which Settings takes away before.
 
