@@ -104,6 +104,8 @@ sudo apt install ./dist/packwing_0.1.0_amd64.deb
 nautilus -q   # Nautilus loads extensions when it starts
 ```
 
+`scripts/check_linux_package.sh` checks a package holds what it should, and with `--install` installs it and runs `pkw` from it, as CI does after each merge.
+
 packwing's next start moves its items for Nautilus out of the Scripts submenu, into Nautilus's own menu. The package depends on the glibc of the system it was built on, so a .deb for every supported Ubuntu is built on the oldest one. Removing the package leaves each user's items for Dolphin, Nemo and Thunar, which Settings takes away before.
 
 ## 🐝 Made by HivePaaS

@@ -4,6 +4,8 @@ name: CI
 # every test, and the UI scenarios. The scenarios on macOS and Windows, which take
 # longer to build, run daily (ui-tests.yml).
 #
+# The .deb is made, checked and installed after each merge (package-linux).
+#
 # The app itself, built to try on each system, comes out as an artifact when asked:
 # by hand (Actions > CI > Run workflow), or on a pull request labelled `build`.
 
@@ -137,5 +139,53 @@ jobs:
           path: |
             target/release/packwing${{ startsWith(matrix.name, 'windows') && '.exe' || '' }}
             target/release/pkw${{ startsWith(matrix.name, 'windows') && '.exe' || '' }}
+          if-no-files-found: error
+          retention-days: 14
+
+  # The .deb, made as a release's is and checked: what it holds, then
+  # installed and pkw run from it (scripts/check_linux_package.sh). After each
+  # merge, and when the app is built on demand.
+  package-linux:
+    if: >-
+      github.event_name == 'push' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'build'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Linux packages (GPUI: Wayland, X11, Vulkan, fonts; PAM)"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential pkg-config libfontconfig-dev libfreetype-dev \
+            libwayland-dev libxkbcommon-dev libxkbcommon-x11-dev \
+            libx11-xcb-dev libxcb1-dev libxcb-xkb-dev libxcb-shape0-dev libxcb-xfixes0-dev \
+            libvulkan-dev libdbus-1-dev libzstd-dev libpam0g-dev
+
+      - name: Rust
+        run: rustup toolchain install
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: package-linux
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-about@0.9.3
+
+      - name: Build
+        run: cargo build --release --locked -p packwing -p packwing-cli
+
+      - name: Package
+        run: scripts/package_linux.sh
+
+      - name: Check, install and run
+        run: scripts/check_linux_package.sh --install dist/packwing_*_amd64.deb
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packwing-deb
+          path: dist/*.deb
           if-no-files-found: error
           retention-days: 14
