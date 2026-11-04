@@ -1259,6 +1259,9 @@ t95f41ffb = Puedes cambiar esto más adelante en Ajustes.
 # Get started
 te83ca5ee = Empezar
 
+# Remove from Recent
+t26cc8dba = Quitar de Recientes
+
 # {location} · not there any more
 t7d0c09c7 = { $location } · ya no está allí
 

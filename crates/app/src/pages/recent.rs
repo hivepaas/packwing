@@ -1,21 +1,36 @@
 //! The archives opened before, the latest first: a tab of Browse.
 
-use gpui::{Context, EventEmitter, FontWeight, Render, Window, div, prelude::*, rgb};
+use std::path::PathBuf;
+
+use gpui::{
+    ClipboardItem, Context, EventEmitter, FocusHandle, FontWeight, KeyDownEvent, MouseButton,
+    MouseDownEvent, Pixels, Point, Render, Window, anchored, deferred, div, prelude::*, px, rgb,
+};
 use packwing_i18n::tr;
 
 use super::panel;
 use crate::colors::colors;
+use crate::file_manager;
 use crate::model::{Kind, date, size, tag_of};
 use crate::prefs::Opened;
 use crate::text_size::ui;
-use crate::widgets::tile;
+use crate::widgets::{menu_item, menu_panel, tile};
 
-/// One of them was asked for: its index.
-pub struct OpenRecent(pub usize);
+/// What was asked of one of them, by its path: what the page cannot do itself.
+pub enum RecentEvent {
+    Open(PathBuf),
+    /// Open it, and offer to extract it.
+    Extract(PathBuf),
+    Sign(PathBuf),
+    Checksums(PathBuf),
+    /// Take it out of the list; the file stays.
+    Forget(PathBuf),
+}
 
 /// A row of the page.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Row {
+    pub path: PathBuf,
     pub name: String,
     pub location: String,
     /// Its size; none if it is not there any more.
@@ -28,6 +43,7 @@ impl Row {
     pub fn of(opened: &Opened) -> Row {
         let path = &opened.path;
         Row {
+            path: path.clone(),
             name: path.file_name().map_or_else(
                 || path.display().to_string(),
                 |n| n.to_string_lossy().into_owned(),
@@ -44,26 +60,137 @@ impl Row {
 
 pub struct RecentPage {
     archives: Vec<Row>,
+    /// Where the right-click menu is open, and of which row.
+    menu: Option<(Point<Pixels>, usize)>,
+    /// The list's, for Escape to close the menu.
+    focus: FocusHandle,
 }
 
-impl EventEmitter<OpenRecent> for RecentPage {}
+impl EventEmitter<RecentEvent> for RecentPage {}
 
 impl RecentPage {
-    pub fn new(archives: Vec<Row>) -> Self {
-        RecentPage { archives }
+    pub fn new(archives: Vec<Row>, cx: &mut Context<Self>) -> Self {
+        RecentPage {
+            archives,
+            menu: None,
+            focus: cx.focus_handle(),
+        }
+    }
+
+    fn on_key(&mut self, e: &KeyDownEvent, _: &mut Window, cx: &mut Context<Self>) {
+        if e.keystroke.key == "escape" && self.menu.is_some() {
+            self.menu = None;
+            cx.notify();
+            cx.stop_propagation();
+        }
     }
 
     pub fn show(&mut self, archives: Vec<Row>, cx: &mut Context<Self>) {
         self.archives = archives;
+        self.menu = None;
         cx.notify();
+    }
+
+    /// Opens the menu of the row at `i`, as the screenshots draw it.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn open_menu_for_shot(&mut self, at: Point<Pixels>, i: usize, cx: &mut Context<Self>) {
+        self.menu = Some((at, i));
+        cx.notify();
+    }
+
+    /// The right-click menu of the row at `i`, at `at`, as Browse's of an
+    /// archive: what is asked of a file no longer there is only its path,
+    /// and to take it out.
+    fn menu(
+        &self,
+        at: Point<Pixels>,
+        i: usize,
+        cx: &mut Context<Self>,
+    ) -> Option<gpui::AnyElement> {
+        let row = self.archives.get(i)?;
+        let c = colors();
+        let line = || div().my(ui(4.)).mx(ui(10.)).h(ui(1.)).bg(rgb(c.field));
+        let asking = |id: &'static str, label: String, asked: fn(PathBuf) -> RecentEvent| {
+            let path = row.path.clone();
+            menu_item(id, label, "").on_click(cx.listener(move |this, _, _, cx| {
+                this.menu = None;
+                cx.emit(asked(path.clone()));
+                cx.notify();
+            }))
+        };
+        let there = row.size.is_some();
+        let (shown, copied) = (row.path.clone(), row.path.display().to_string());
+        let menu = menu_panel("recent-menu")
+            .min_w(ui(230.))
+            .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+            .on_mouse_down_out(cx.listener(|this, e: &MouseDownEvent, _, cx| {
+                // A right click opens the next one.
+                if e.button != MouseButton::Right {
+                    this.menu = None;
+                    cx.notify();
+                }
+            }))
+            .when(there, |d| {
+                d.child(asking("menu-open", tr!("Open"), RecentEvent::Open))
+                    .child(asking(
+                        "menu-extract",
+                        tr!("Extract…"),
+                        RecentEvent::Extract,
+                    ))
+                    .child(line())
+                    .child(asking("menu-sign", tr!("Sign…"), RecentEvent::Sign))
+                    .child(asking(
+                        "menu-checksums",
+                        tr!("Checksums…"),
+                        RecentEvent::Checksums,
+                    ))
+                    .child(line())
+                    .child(
+                        menu_item("menu-file-manager", file_manager::show_label(), "").on_click(
+                            cx.listener(move |this, _, _, cx| {
+                                this.menu = None;
+                                file_manager::show(&shown, cx);
+                                cx.notify();
+                            }),
+                        ),
+                    )
+            })
+            .child(
+                menu_item("menu-copy-path", tr!("Copy path"), "").on_click(cx.listener(
+                    move |this, _, _, cx| {
+                        this.menu = None;
+                        cx.write_to_clipboard(ClipboardItem::new_string(copied.clone()));
+                        cx.notify();
+                    },
+                )),
+            )
+            .child(line())
+            .child(asking(
+                "menu-forget",
+                tr!("Remove from Recent"),
+                RecentEvent::Forget,
+            ));
+        Some(
+            deferred(
+                anchored()
+                    .position(at)
+                    .snap_to_window_with_margin(px(8.))
+                    .child(menu),
+            )
+            .with_priority(1)
+            .into_any_element(),
+        )
     }
 }
 
 impl Render for RecentPage {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
+        let menu = self.menu.and_then(|(at, i)| self.menu(at, i, cx));
+        let menu_of = self.menu.map(|(_, i)| i);
         let rows = self.archives.iter().enumerate().map(|(i, r)| {
             let name = r.name.clone();
+            let path = r.path.clone();
             div()
                 .debug_selector(move || format!("recent: {name}"))
                 .id(("recent", i))
@@ -75,8 +202,22 @@ impl Render for RecentPage {
                 .py(ui(8.))
                 .rounded(ui(18.))
                 .cursor_pointer()
-                .hover(|s| s.bg(rgb(c.hover)))
-                .on_click(cx.listener(move |_, _, _, cx| cx.emit(OpenRecent(i))))
+                .when(menu_of == Some(i), |d| d.bg(rgb(c.chosen)))
+                .when(menu_of != Some(i), |d| d.hover(|s| s.bg(rgb(c.hover))))
+                .on_click(cx.listener(move |_, _, _, cx| cx.emit(RecentEvent::Open(path.clone()))))
+                .on_mouse_down(
+                    MouseButton::Right,
+                    cx.listener(move |this, e: &MouseDownEvent, window, cx| {
+                        // Whether it is still there, now: the menu offers what is.
+                        if let Some(row) = this.archives.get_mut(i) {
+                            row.size = std::fs::metadata(&row.path).ok().map(|m| m.len());
+                        }
+                        this.menu = Some((e.position, i));
+                        window.focus(&this.focus, cx);
+                        cx.stop_propagation();
+                        cx.notify();
+                    }),
+                )
                 .child(
                     tile(40., 14., Kind::Archive.tint(&c))
                         .text_size(ui(11.))
@@ -114,9 +255,11 @@ impl Render for RecentPage {
                         .child(r.opened.clone()),
                 )
         });
-        div().size_full().flex().flex_col().child(
+        div().size_full().flex().flex_col().children(menu).child(
             panel()
                 .id("recent-list")
+                .track_focus(&self.focus)
+                .on_key_down(cx.listener(Self::on_key))
                 .max_h_full()
                 .min_h_0()
                 .overflow_y_scroll()

@@ -1243,6 +1243,9 @@ t95f41ffb = 나중에 설정에서 바꿀 수 있습니다.
 # Get started
 te83ca5ee = 시작하기
 
+# Remove from Recent
+t26cc8dba = 최근 항목에서 제거
+
 # {location} · not there any more
 t7d0c09c7 = { $location } · 더 이상 없음
 

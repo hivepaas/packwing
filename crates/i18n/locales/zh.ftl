@@ -1243,6 +1243,9 @@ t95f41ffb = 你之后可以在设置中更改这些。
 # Get started
 te83ca5ee = 开始使用
 
+# Remove from Recent
+t26cc8dba = 从最近中移除
+
 # {location} · not there any more
 t7d0c09c7 = { $location } · 已不存在
 

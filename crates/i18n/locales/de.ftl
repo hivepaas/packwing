@@ -1259,6 +1259,9 @@ t95f41ffb = Du kannst das später in den Einstellungen ändern.
 # Get started
 te83ca5ee = Los geht’s
 
+# Remove from Recent
+t26cc8dba = Aus „Zuletzt“ entfernen
+
 # {location} · not there any more
 t7d0c09c7 = { $location } · nicht mehr vorhanden
 

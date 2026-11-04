@@ -80,3 +80,73 @@ scenario!(
         ui.wait_for("checksum-copy-0");
     }
 );
+
+scenario!(
+    /// A right click on an archive of Recent opens its menu: it shows it in
+    /// the file manager, copies its path, asks its checksums, and takes it
+    /// out of the list, leaving the file.
+    the_recent_menu,
+    |ui| {
+        let archive = ui.copy_of("sample.7z");
+        ui.open(&archive);
+        ui.click("nav-browse");
+        ui.click("tab-recent");
+        ui.wait_for("recent: sample.7z");
+        ui.right_click("recent: sample.7z");
+        ui.wait_for("recent-menu");
+        for item in ["menu-open", "menu-extract", "menu-sign", "menu-checksums"] {
+            assert!(ui.shows(item), "{item}");
+        }
+        ui.click("menu-file-manager");
+        assert!(!ui.shows("recent-menu"));
+        assert!(
+            crate::file_manager::asked_for_test().contains(&("show", archive.clone())),
+            "{:?}",
+            crate::file_manager::asked_for_test()
+        );
+        // Escape closes it.
+        ui.right_click("recent: sample.7z");
+        ui.wait_for("recent-menu");
+        ui.keys("escape");
+        ui.wait_until("the menu to close", |ui| !ui.shows("recent-menu"));
+        ui.right_click("recent: sample.7z");
+        ui.click("menu-copy-path");
+        let copied = ui.cx.read_from_clipboard().and_then(|c| c.text());
+        assert_eq!(copied.as_deref(), Some(archive.display().to_string().as_str()));
+        ui.right_click("recent: sample.7z");
+        ui.click("menu-checksums");
+        ui.wait_until("the checksums", |ui| ui.dialog_open());
+        ui.keys("escape");
+        ui.wait_for_no_dialog();
+        ui.right_click("recent: sample.7z");
+        ui.click("menu-forget");
+        ui.wait_until("it out of the list", |ui| !ui.shows("recent: sample.7z"));
+        assert!(archive.exists(), "the file stays");
+        // Out of the settings too: not back after a restart.
+        ui.start();
+        ui.click("nav-browse");
+        ui.click("tab-recent");
+        assert!(!ui.shows("recent: sample.7z"));
+    }
+);
+
+scenario!(
+    /// An archive no longer there offers its path and to take it out, alone.
+    the_recent_menu_of_one_gone,
+    |ui| {
+        let archive = ui.copy_of("sample.7z");
+        ui.open(&archive);
+        std::fs::remove_file(&archive).expect("it goes");
+        ui.click("nav-browse");
+        ui.click("tab-recent");
+        ui.wait_for("recent: sample.7z");
+        ui.right_click("recent: sample.7z");
+        ui.wait_for("recent-menu");
+        assert!(ui.shows("menu-copy-path") && ui.shows("menu-forget"));
+        for item in ["menu-open", "menu-extract", "menu-sign", "menu-checksums", "menu-file-manager"] {
+            assert!(!ui.shows(item), "{item}");
+        }
+        ui.click("menu-forget");
+        ui.wait_until("it out of the list", |ui| !ui.shows("recent: sample.7z"));
+    }
+);

@@ -1243,6 +1243,9 @@ t95f41ffb = これらは後で設定から変更できます。
 # Get started
 te83ca5ee = 始める
 
+# Remove from Recent
+t26cc8dba = 最近使用から削除
+
 # {location} · not there any more
 t7d0c09c7 = { $location } · すでに存在しません
 

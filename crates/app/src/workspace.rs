@@ -28,7 +28,7 @@ use crate::pages::archive::{ArchiveEvent, ArchivePage, Shown};
 use crate::pages::browse::BrowsePage;
 use crate::pages::jobs::{JobsEvent, JobsPage, Summary};
 use crate::pages::onboarding::{Done, Onboarding};
-use crate::pages::recent::{OpenRecent, RecentPage, Row};
+use crate::pages::recent::{RecentEvent, RecentPage, Row};
 use crate::pages::settings::{Appearance, AppearanceChosen, SettingsPage};
 use crate::pages::storages::{AddStorageAsked, EditStorageAsked, RemoveStorageAsked, StoragesPage};
 use crate::placement::{self, WindowPlace};
@@ -285,7 +285,7 @@ impl Workspace {
         let archive = cx.new(ArchivePage::new);
         let storages = cx.new(StoragesPage::new);
         let explorer = storages.read(cx).explorer().clone();
-        let recent = cx.new(|_| RecentPage::new(kept.recent.iter().map(Row::of).collect()));
+        let recent = cx.new(|cx| RecentPage::new(kept.recent.iter().map(Row::of).collect(), cx));
         let browse = cx.new({
             let recent = recent.clone();
             move |cx| BrowsePage::new(recent, cx)
@@ -356,8 +356,8 @@ impl Workspace {
                     }
                 },
             ),
-            cx.subscribe_in(&recent, window, |this, _, e: &OpenRecent, window, cx| {
-                this.open_recent(e.0, window, cx)
+            cx.subscribe_in(&recent, window, |this, _, e: &RecentEvent, window, cx| {
+                this.on_recent(e, window, cx)
             }),
             cx.subscribe_in(
                 &settings,
@@ -1690,10 +1690,34 @@ impl Workspace {
         }
     }
 
-    /// Opens an archive of the Recent page.
-    fn open_recent(&mut self, i: usize, window: &mut Window, cx: &mut Context<Self>) {
-        if let Some(opened) = prefs::prefs(cx).recent.get(i) {
-            self.open_archive(opened.path.clone(), false, window, cx);
+    /// What was asked of an archive of the Recent page.
+    fn on_recent(&mut self, e: &RecentEvent, window: &mut Window, cx: &mut Context<Self>) {
+        // The folder it is in, as a storage, and its name there.
+        let place = |path: &std::path::Path| {
+            let folder = path.parent().unwrap_or(std::path::Path::new("."));
+            let name = path.file_name().map(|n| n.to_string_lossy().into_owned());
+            let storage: std::sync::Arc<dyn packwing_core::Storage> =
+                std::sync::Arc::new(packwing_core::LocalFolder::new(folder));
+            (storage, name.into_iter().collect::<Vec<_>>())
+        };
+        match e {
+            RecentEvent::Open(path) => self.open_archive(path.clone(), false, window, cx),
+            RecentEvent::Extract(path) => self.open_archive(path.clone(), true, window, cx),
+            RecentEvent::Sign(path) => {
+                let (storage, path) = place(path);
+                let view = cx.new(|cx| SignDialog::new(storage, path, window, cx));
+                self.show(view, true, window, cx);
+            }
+            RecentEvent::Checksums(path) => {
+                let (storage, path) = place(path);
+                let view = cx.new(|cx| ChecksumDialog::new(storage, path, cx));
+                self.show(view, true, window, cx);
+            }
+            RecentEvent::Forget(path) => {
+                prefs::change(cx, |p| p.forget_opened(path));
+                let rows = prefs::prefs(cx).recent.iter().map(Row::of).collect();
+                self.recent.update(cx, |r, cx| r.show(rows, cx));
+            }
         }
     }
 
@@ -1741,12 +1765,25 @@ impl Workspace {
         self.browse.clone()
     }
 
+    /// The menu of the row at `i` of Recent, as the screenshots draw it.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn open_recent_menu_for_shot(
+        &mut self,
+        at: gpui::Point<gpui::Pixels>,
+        i: usize,
+        cx: &mut Context<Self>,
+    ) {
+        self.recent
+            .update(cx, |p, cx| p.open_menu_for_shot(at, i, cx));
+    }
+
     /// The Recent page as the screenshots draw it.
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn show_recent_samples(&mut self, cx: &mut Context<Self>) {
         let rows = demo::RECENT
             .iter()
             .map(|r| Row {
+                path: std::path::Path::new(r.location).join(r.name),
                 name: r.name.to_owned(),
                 location: r.location.to_owned(),
                 size: Some(r.size),

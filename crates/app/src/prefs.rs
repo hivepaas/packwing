@@ -522,6 +522,11 @@ impl Prefs {
         self.recent.truncate(RECENT);
     }
 
+    /// Takes `path` out of the archives opened before; the file stays.
+    pub fn forget_opened(&mut self, path: &Path) {
+        self.recent.retain(|o| o.path != path);
+    }
+
     /// Shows `algorithm`'s checksum, or not: the last one shown stays.
     pub fn show_checksum(&mut self, algorithm: Algorithm, on: bool) {
         let shown: Vec<_> = Algorithm::ALL
