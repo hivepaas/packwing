@@ -2140,6 +2140,30 @@ tc95e3a9c = Нет файла для подписи.
 # {name} is not there any more.
 t07c1f2bc = { $name } больше не существует.
 
+# A part has to hold at least one byte.
+te779b111 = Часть должна содержать хотя бы один байт.
+
+# {path} is not a file.
+tdfee38b2 = { $path } — не файл.
+
+# That would make more parts than can be numbered: make them bigger.
+t7ce88e46 = Так получится больше частей, чем можно пронумеровать: сделайте их больше.
+
+# {part} is there already.
+t2577cbb6 = { $part } уже есть.
+
+# {path} is not a part of a file cut as 7-Zip cuts it, as name.001.
+t64c1c1d0 = { $path } — не часть файла, разрезанного так, как режет 7-Zip, например name.001.
+
+# {part} is missing: the parts start from it.
+t5e65a10a = Нет { $part }: с неё начинаются части.
+
+# {part} is missing, and the parts after it are there.
+t24165c89 = Нет { $part }, а части после неё есть.
+
+# {part} holds {got}, not {size} as the first part does: it may not be whole.
+tb472eff0 = В { $part } { $got }, а не { $size }, как в первой части: возможно, она неполная.
+
 # The name is empty.
 t1a9d8e4e = Имя пусто.
 

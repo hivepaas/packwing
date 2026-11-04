@@ -2096,6 +2096,30 @@ tc95e3a9c = Non c'è nessun file da firmare.
 # {name} is not there any more.
 t07c1f2bc = { $name } non c'è più.
 
+# A part has to hold at least one byte.
+te779b111 = Una parte deve contenere almeno un byte.
+
+# {path} is not a file.
+tdfee38b2 = { $path } non è un file.
+
+# That would make more parts than can be numbered: make them bigger.
+t7ce88e46 = Verrebbero più parti di quante se ne possano numerare: falle più grandi.
+
+# {part} is there already.
+t2577cbb6 = { $part } c’è già.
+
+# {path} is not a part of a file cut as 7-Zip cuts it, as name.001.
+t64c1c1d0 = { $path } non è una parte di un file diviso come lo divide 7-Zip, come name.001.
+
+# {part} is missing: the parts start from it.
+t5e65a10a = Manca { $part }: le parti cominciano da lì.
+
+# {part} is missing, and the parts after it are there.
+t24165c89 = Manca { $part }, mentre le parti successive ci sono.
+
+# {part} holds {got}, not {size} as the first part does: it may not be whole.
+tb472eff0 = { $part } contiene { $got }, non { $size } come la prima parte: potrebbe non essere completa.
+
 # The name is empty.
 t1a9d8e4e = Il nome è vuoto.
 

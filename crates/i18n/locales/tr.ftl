@@ -2096,6 +2096,30 @@ tc95e3a9c = İmzalanacak dosya yok.
 # {name} is not there any more.
 t07c1f2bc = { $name } artık yok.
 
+# A part has to hold at least one byte.
+te779b111 = Bir parça en az bir bayt içermelidir.
+
+# {path} is not a file.
+tdfee38b2 = { $path } bir dosya değil.
+
+# That would make more parts than can be numbered: make them bigger.
+t7ce88e46 = Bu, numaralandırılabilecekten çok parça çıkarır: parçaları büyütün.
+
+# {part} is there already.
+t2577cbb6 = { $part } zaten var.
+
+# {path} is not a part of a file cut as 7-Zip cuts it, as name.001.
+t64c1c1d0 = { $path }, 7-Zip’in böldüğü gibi bölünmüş bir dosyanın parçası değil (name.001 gibi).
+
+# {part} is missing: the parts start from it.
+t5e65a10a = { $part } eksik: parçalar ondan başlar.
+
+# {part} is missing, and the parts after it are there.
+t24165c89 = { $part } eksik, ama ondan sonraki parçalar duruyor.
+
+# {part} holds {got}, not {size} as the first part does: it may not be whole.
+tb472eff0 = { $part } { $got } içeriyor, ilk parça gibi { $size } değil: eksik olabilir.
+
 # The name is empty.
 t1a9d8e4e = Ad boş.
 

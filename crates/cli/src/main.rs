@@ -166,6 +166,16 @@ enum Command {
         #[command(flatten)]
         damaging: Damaging,
     },
+    /// Cut a file into parts beside it, as 7-Zip cuts one: NAME.001, NAME.002, …
+    Split {
+        file: PathBuf,
+        /// Each part's size, as 25MB or 4GB; the last holds what is left.
+        #[arg(short, long, value_name = "SIZE")]
+        size: String,
+    },
+    /// Join the parts a file was cut into, from any of them: NAME.001 and on, into NAME
+    /// beside them. They are checked to be all there, and of the same size but the last.
+    Join { part: PathBuf },
     /// Make a key to sign files with: Ed25519 and ML-DSA-65 together, its file
     /// encrypted with a passphrase, and its public key beside it, as .pub.
     Keygen {
