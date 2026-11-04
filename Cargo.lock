@@ -3345,9 +3345,9 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 
 [[package]]
 name = "hivepack"
-version = "0.2.1"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e004f128daecaeee57133edc724d24e7120a6f7fc65ca0f69f549d16d8411e1"
+checksum = "6d0a9ff74e9a956afeb6848d085afe6dd3fb5a728094b3ac659176481b0a4a38"
 dependencies = [
  "aes 0.9.3",
  "blake2s_simd",
@@ -5303,6 +5303,7 @@ version = "0.1.0"
 dependencies = [
  "context-menu",
  "dirs",
+ "futures-channel",
  "gpui-pre",
  "gpui-pre-platform",
  "gpui-pre-wgpu",
