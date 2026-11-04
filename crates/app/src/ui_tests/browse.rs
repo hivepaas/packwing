@@ -48,3 +48,35 @@ scenario!(
         assert_eq!(ui.archive_failed(), None);
     }
 );
+
+scenario!(
+    /// A file in Browse has Checksums… and Show in the file manager in its menu, as one
+    /// of a storage has.
+    browse_has_checksums_and_the_file_manager,
+    |ui| {
+        let docs = ui.work.join("docs");
+        ui.file("docs/a.txt", "abc");
+        ui.click("nav-browse");
+        let at = docs.clone();
+        ui.ws(|ws, _, cx| ws.browse_page().update(cx, |b, cx| b.go_to(&at, cx)));
+        let menu = |ui: &mut crate::ui_tests::Ui| {
+            ui.ws(|ws, _, cx| {
+                let explorer = ws.browse_page().read(cx).explorer().clone();
+                explorer.update(cx, |e, cx| {
+                    e.list_now(cx);
+                    e.choose("a.txt", cx);
+                    e.show_menu(400., 300., false, cx);
+                });
+            });
+        };
+        menu(ui);
+        ui.click("menu-file-manager");
+        assert_eq!(
+            crate::file_manager::asked_for_test(),
+            [("show", docs.join("a.txt"))]
+        );
+        menu(ui);
+        ui.click("menu-checksums");
+        ui.wait_for("checksum-copy-0");
+    }
+);
