@@ -8,6 +8,7 @@ mod commands;
 mod names;
 mod progress;
 mod secrets;
+mod signing;
 
 use std::io::IsTerminal as _;
 use std::path::PathBuf;
@@ -119,32 +120,49 @@ enum Command {
         archive: PathBuf,
         #[arg(required = true)]
         paths: Vec<PathBuf>,
-        /// zip, 7z, tar, tar.zst, tar.gz, tar.xz, tar.bz2, tar.lz4, or one file alone:
-        /// zst, gz, xz, bz2, lz4.
-        #[arg(short, long, value_name = "FORMAT")]
-        format: Option<String>,
-        /// store, lowest, low, medium, high or highest (0 to 5).
-        #[arg(short, long, value_name = "LEVEL", default_value = "medium")]
-        level: String,
-        /// Protect it with a password: asked, or read as --password-file says.
-        #[arg(short, long)]
-        password: bool,
-        /// Encrypt it whole with age to this public key (age1…, age1pq1…, ssh-ed25519 …);
-        /// again for more.
-        #[arg(long = "encrypt-to", value_name = "KEY")]
-        encrypt_to: Vec<String>,
-        /// A ZIP or 7z archive encrypted whole with age, not with its own AES-256.
+        #[command(flatten)]
+        make: Making,
+    },
+    /// Make an archive of what another holds, in another format: `pkw convert a.rar a.tar.zst`.
+    Convert {
+        /// The archive to read.
+        from: PathBuf,
+        /// The archive to make: its extension says its format, unless --format does.
+        to: PathBuf,
+        #[command(flatten)]
+        make: Making,
+    },
+    /// Make a key to sign files with: Ed25519 and ML-DSA-65 together, its file
+    /// encrypted with a passphrase, and its public key beside it, as .pub.
+    Keygen {
+        /// The folder it goes in, under the first name free.
+        #[arg(short, long, value_name = "DIR", default_value = ".")]
+        output: PathBuf,
+    },
+    /// Sign files: each one's signature goes beside it, as NAME.sig.
+    Sign {
+        #[arg(required = true)]
+        files: Vec<PathBuf>,
+        /// The key to sign with: an SSH Ed25519 key, or one `pkw keygen` made.
+        #[arg(long, value_name = "KEY", required = true)]
+        by: PathBuf,
+    },
+    /// Check files' signatures against the keys trusted: the app's, and those given.
+    Verify {
+        #[arg(required = true)]
+        files: Vec<PathBuf>,
+        /// Trust this public key too, from a .pub file; again for more.
+        #[arg(long, value_name = "KEY.pub")]
+        trust: Vec<PathBuf>,
+        /// Trust only those given, not the app's.
         #[arg(long)]
-        age: bool,
-        /// A 7z archive's names hidden behind its password too.
-        #[arg(long)]
-        hide_names: bool,
-        /// Cut it into parts of this size, as 25MB.
-        #[arg(long, value_name = "SIZE")]
-        split: Option<String>,
-        /// Compress pictures, video, sound and archives too, not only store them.
-        #[arg(long)]
-        compress_all: bool,
+        only: bool,
+    },
+    /// Suggest a passphrase of random words, stronger than most typed ones.
+    Passphrase {
+        /// At least this many characters; the organization may ask for more.
+        #[arg(long, value_name = "N", default_value_t = 0)]
+        min: usize,
     },
     /// Add files and folders to a ZIP archive.
     Add {
@@ -187,6 +205,37 @@ enum Command {
         #[arg(long)]
         save: bool,
     },
+}
+
+/// How an archive is made, by `create` and `convert`.
+#[derive(Args)]
+pub struct Making {
+    /// zip, 7z, tar, tar.zst, tar.gz, tar.xz, tar.bz2, tar.lz4, or one file alone:
+    /// zst, gz, xz, bz2, lz4.
+    #[arg(short, long, value_name = "FORMAT")]
+    pub format: Option<String>,
+    /// store, lowest, low, medium, high or highest (0 to 5).
+    #[arg(short, long, value_name = "LEVEL", default_value = "medium")]
+    pub level: String,
+    /// Protect it with a password: asked, or read as --password-file says.
+    #[arg(short, long)]
+    pub password: bool,
+    /// Encrypt it whole with age to this public key (age1…, age1pq1…, ssh-ed25519 …);
+    /// again for more.
+    #[arg(long = "encrypt-to", value_name = "KEY")]
+    pub encrypt_to: Vec<String>,
+    /// A ZIP or 7z archive encrypted whole with age, not with its own AES-256.
+    #[arg(long)]
+    pub age: bool,
+    /// A 7z archive's names hidden behind its password too.
+    #[arg(long)]
+    pub hide_names: bool,
+    /// Cut it into parts of this size, as 25MB.
+    #[arg(long, value_name = "SIZE")]
+    pub split: Option<String>,
+    /// Compress pictures, video, sound and archives too, not only store them.
+    #[arg(long)]
+    pub compress_all: bool,
 }
 
 /// How it went, as the exit code says.

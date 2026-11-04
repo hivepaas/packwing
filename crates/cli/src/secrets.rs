@@ -58,6 +58,15 @@ impl Secrets {
         self.keys.password.clone()
     }
 
+    /// A key file's passphrase, as given: `PACKWING_KEY_PASSPHRASE`, else the
+    /// password given, which is the one secret a script gives for one job.
+    pub fn key_passphrase(&self) -> Option<Vec<u8>> {
+        self.keys
+            .key_passphrase
+            .clone()
+            .or_else(|| self.keys.password.clone())
+    }
+
     /// Whether a person can be asked.
     pub fn can_ask(&self) -> bool {
         self.can_ask

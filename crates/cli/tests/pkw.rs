@@ -233,3 +233,57 @@ fn what_is_not_an_archive_or_not_understood_says_so_by_its_code() {
     assert!(!rar.is_empty());
     ok(&s.pkw(&["test", "-q", &fixture("sample.iso.zst")]));
 }
+
+#[test]
+fn a_file_is_signed_and_its_signature_checked() {
+    let s = Scratch::new("sign");
+    std::fs::write(s.path("kp"), "k3y pass\n").expect("the file");
+    std::fs::create_dir_all(s.path("keys")).expect("a folder");
+    let made = ok(&s.pkw(&["--password-file", "kp", "keygen", "-o", "keys"]));
+    let mut lines = made.lines();
+    let key = lines.next().expect("the key's file").to_owned();
+    let public = lines.next().expect("its public key").to_owned();
+    assert!(Path::new(&public).is_file() || s.path(&public).is_file());
+    ok(&s.pkw(&["create", "-q", "a.zip", "src"]));
+    ok(&s.pkw(&["--password-file", "kp", "sign", "-q", "a.zip", "--by", &key]));
+    assert!(s.path("a.zip.sig").is_file());
+    // Trusted, it is good; by a key not trusted, it is not.
+    ok(&s.pkw(&["verify", "a.zip", "--only", "--trust", &public]));
+    assert_eq!(s.pkw(&["verify", "a.zip", "--only"]).status.code(), Some(1));
+    // Changed after it was signed.
+    std::fs::write(s.path("a.zip"), "changed").expect("the file");
+    let changed = s.pkw(&["verify", "a.zip", "--only", "--trust", &public]);
+    assert_eq!(changed.status.code(), Some(1));
+    assert!(stdout(&changed).contains("changed since it was signed"));
+    // A wrong passphrase for the key, and nothing to ask: 3.
+    std::fs::write(s.path("bad"), "nope\n").expect("the file");
+    let wrong = s.pkw(&[
+        "--password-file",
+        "bad",
+        "sign",
+        "src/numbers.txt",
+        "--by",
+        &key,
+    ]);
+    assert_eq!(wrong.status.code(), Some(3));
+}
+
+#[test]
+fn an_archive_is_converted_and_a_passphrase_suggested() {
+    let s = Scratch::new("convert");
+    ok(&s.pkw(&["create", "-q", "a.zip", "src"]));
+    ok(&s.pkw(&["convert", "-q", "a.zip", "b.tar.zst"]));
+    let listed = ok(&s.pkw(&["list", "b.tar.zst"]));
+    assert!(listed.contains("src/docs/notes.txt"), "{listed}");
+    // Nothing of the work is left beside it.
+    let left: Vec<_> = std::fs::read_dir(&s.0)
+        .expect("the folder")
+        .flatten()
+        .filter(|e| e.file_name().to_string_lossy().starts_with(".pkw-convert"))
+        .collect();
+    assert!(left.is_empty());
+    let suggested = ok(&s.pkw(&["passphrase", "--min", "50"]));
+    let suggested = suggested.trim();
+    assert!(suggested.len() >= 50, "{suggested}");
+    assert!(suggested.split('-').count() >= 6, "{suggested}");
+}

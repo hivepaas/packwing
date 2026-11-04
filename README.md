@@ -20,7 +20,7 @@ Built in Rust on [hivepack](https://github.com/hivepaas/hivepack-rs).
 * **In your file manager:** Compress and Extract in the right-click menu of Windows Explorer, macOS Finder and Linux file managers, and drag and drop in the window.
 * **Updates you can trust:** a daily look for a newer version, in a list believed only when its signatures verify, with a badge on the title bar; nothing is downloaded or installed unless asked, and the look can be turned off ([docs/updates.md](docs/updates.md)).
 * **Ready for organizations:** Group Policy, a configuration profile or a file in `/etc` can keep the Internet mark, require encryption, and set which kinds and how long a password has to be ([docs/policies.md](docs/policies.md)).
-* **On the command line too:** `pkw` lists, extracts, tests, makes and changes archives, and makes and checks checksums, with no window, as safely as the app and under the same policies, with JSON for scripts and exit codes that say what went wrong (Command line, below).
+* **On the command line too:** `pkw` lists, extracts, tests, makes, changes and converts archives, signs files and checks signatures, and makes and checks checksums, with no window, as safely as the app and under the same policies, with JSON for scripts and exit codes that say what went wrong (Command line, below).
 * **Made for every day:** an interface in 15 languages ([CONTRIBUTING.md](CONTRIBUTING.md)), light and dark, and a window that comes back as it was left.
 
 ## 🛠️ Building
@@ -80,6 +80,11 @@ pkw create notes.tar.zst docs/ --encrypt-to age1…  # encrypted to a key: notes
 pkw create --split 25MB mail.zip photos/          # in parts: mail.zip.001, .002…
 pkw add archive.zip new.txt --into docs  # and delete, rename: a ZIP archive, in place
 pkw checksum -a sha256 -a blake3 *.iso   # --save beside each, or --check SHA256SUMS
+pkw convert photos.rar photos.tar.zst   # another format, as create makes it (-p, -l, --split…)
+pkw keygen -o ~/keys                     # a key to sign with: Ed25519 and ML-DSA-65, and its .pub
+pkw sign release.zip --by ~/keys/packwing-signing-key   # or an SSH Ed25519 key: release.zip.sig
+pkw verify release.zip --trust their.pub # against the keys the app trusts, and these
+pkw passphrase                           # random words, as the app suggests
 ```
 
 A password is never put on the command line, where others see it: `pkw` asks for it in a terminal, or reads it from `--password-file FILE`, `--password-stdin` or `PACKWING_PASSWORD`; an age or SSH key file comes with `--key FILE`. Its exit code says how it went: `0` done, `1` failed, `2` not understood, `3` a password or key is needed or wrong, `4` not an archive it opens. `pkw help <command>` says the rest.
