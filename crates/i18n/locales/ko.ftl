@@ -610,8 +610,17 @@ t808b85c5 = 키 파일의 암호 문구 입력
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = 키 파일 자체가 보호되어 있습니다. packwing은 압축 파일을 열어 둔 동안에만 암호 문구를 보관하며 어디에도 기록하지 않습니다.
 
+# The job stopped before it was done.
+t57a78885 = 작업이 끝나기 전에 멈췄습니다.
+
 # Waiting for other jobs…
 t16ec36d9 = 다른 작업을 기다리는 중…
+
+# A file is damaged
+t8b1230ed = 파일이 손상되었습니다
+
+# Extracted, but some files are damaged
+t8226d624 = 압축을 풀었지만 일부 파일이 손상되었습니다
 
 # Extracting…
 t94279f82 = 압축을 푸는 중…
@@ -705,6 +714,42 @@ tc1421590 =
 
 # Close
 tcd86acc3 = 닫기
+
+# “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
+t145d7a09 = “{ $path }” 파일이 손상되었습니다: { $why }. 중지할까요, 이 파일을 건너뛸까요, 읽은 부분을 남길까요?
+
+# Do the same for the other damaged files
+t798693ad = 다른 손상된 파일에도 똑같이 하기
+
+# Stop
+t4b7f7705 = 중지
+
+# Leave it out
+taaff8ec9 = 건너뛰기
+
+# Keep what was read
+tc4387d25 = 읽은 부분 남기기
+
+# kept, {size}
+t001f6992 = 남김, { $size }
+
+# left out
+t73aeedd4 = 건너뜀
+
+# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
+t9d82f78b =
+    { $n ->
+       *[other] 파일 { $count }개의 데이터가 손상되었습니다. 나머지는 압축을 풀었습니다.
+    }
+
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+       *[other] 외 { $count }개
+    }
+
+# Copy the list
+t3c49b269 = 목록 복사
 
 # {count} of {count2} files · {size} of {size2}
 t27f1ab7d = 파일 { $count }/{ $count2 }개 · { $size }/{ $size2 }
@@ -1167,9 +1212,6 @@ tddb7844a = 입력…
 
 # Show
 t29742e5c = 보기
-
-# Stop
-t4b7f7705 = 중지
 
 # Jobs
 t4ae6a79d = 작업

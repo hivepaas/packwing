@@ -616,8 +616,17 @@ t808b85c5 = Digite a frase secreta do arquivo de chave
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = O próprio arquivo de chave é protegido. O packwing guarda a frase secreta dele só enquanto o arquivo compactado está aberto e nunca a grava.
 
+# The job stopped before it was done.
+t57a78885 = O trabalho parou antes de terminar.
+
 # Waiting for other jobs…
 t16ec36d9 = Aguardando outras tarefas…
+
+# A file is damaged
+t8b1230ed = Um arquivo está danificado
+
+# Extracted, but some files are damaged
+t8226d624 = Extraído, mas alguns arquivos estão danificados
 
 # Extracting…
 t94279f82 = Extraindo…
@@ -712,6 +721,44 @@ tc1421590 =
 
 # Close
 tcd86acc3 = Fechar
+
+# “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
+t145d7a09 = “{ $path }” está danificado: { $why }. Parar, deixá-lo de fora ou manter o que foi possível ler?
+
+# Do the same for the other damaged files
+t798693ad = Fazer o mesmo com os outros arquivos danificados
+
+# Stop
+t4b7f7705 = Parar
+
+# Leave it out
+taaff8ec9 = Deixar de fora
+
+# Keep what was read
+tc4387d25 = Manter o que foi lido
+
+# kept, {size}
+t001f6992 = mantido, { $size }
+
+# left out
+t73aeedd4 = deixado de fora
+
+# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
+t9d82f78b =
+    { $n ->
+        [one] Os dados de { $count } arquivo estavam danificados. O resto foi extraído.
+       *[other] Os dados de { $count } arquivos estavam danificados. O resto foi extraído.
+    }
+
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+        [one] e mais { $count }
+       *[other] e mais { $count }
+    }
+
+# Copy the list
+t3c49b269 = Copiar a lista
 
 # {count} of {count2} files · {size} of {size2}
 t27f1ab7d = { $count } de { $count2 } arquivos · { $size } de { $size2 }
@@ -1181,9 +1228,6 @@ tddb7844a = Digitar…
 
 # Show
 t29742e5c = Mostrar
-
-# Stop
-t4b7f7705 = Parar
 
 # Jobs
 t4ae6a79d = Tarefas

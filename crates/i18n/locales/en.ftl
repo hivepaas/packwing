@@ -222,7 +222,10 @@ t6ed7c612 = Key file
 tcda9a50a = This file is encrypted with age to a key: an age key file or an SSH key. packwing keeps what it reads from it only while the archive is open, and never writes it down.
 t808b85c5 = Enter the key file’s passphrase
 t2a39d1e8 = The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
+t57a78885 = The job stopped before it was done.
 t16ec36d9 = Waiting for other jobs…
+t8b1230ed = A file is damaged
+t8226d624 = Extracted, but some files are damaged
 t94279f82 = Extracting…
 tc75fe478 = Uploading…
 t01fcd896 = Creating…
@@ -257,6 +260,24 @@ tc1421590 =
        *[other] { $count } files read through, { $size }, with no errors.
     }
 tcd86acc3 = Close
+t145d7a09 = “{ $path }” is damaged: { $why }. Stop, leave it out, or keep what could be read of it?
+t798693ad = Do the same for the other damaged files
+t4b7f7705 = Stop
+taaff8ec9 = Leave it out
+tc4387d25 = Keep what was read
+t001f6992 = kept, { $size }
+t73aeedd4 = left out
+t9d82f78b =
+    { $n ->
+        [one] { $count } file’s data was damaged. The rest was extracted.
+       *[other] { $count } files’ data was damaged. The rest was extracted.
+    }
+te728628b =
+    { $n ->
+        [one] and { $count } more
+       *[other] and { $count } more
+    }
+t3c49b269 = Copy the list
 t27f1ab7d = { $count } of { $count2 } files · { $size } of { $size2 }
 tf0f1017b = Open the folder when it’s done
 tb800c0ef = Run in background
@@ -432,7 +453,6 @@ t27c3ab35 = Signed
 t0e83ae32 = Waiting for a password or a key
 tddb7844a = Enter it…
 t29742e5c = Show
-t4b7f7705 = Stop
 t4ae6a79d = Jobs
 t30c178e8 = Clear finished
 t2573f39e = Nothing runs in the background.

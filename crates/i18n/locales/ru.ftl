@@ -628,8 +628,17 @@ t808b85c5 = Введите парольную фразу файла ключа
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Сам файл ключа защищён. packwing хранит его парольную фразу, только пока архив открыт, и нигде её не записывает.
 
+# The job stopped before it was done.
+t57a78885 = Задание остановилось, не завершившись.
+
 # Waiting for other jobs…
 t16ec36d9 = Ждёт другие задачи…
+
+# A file is damaged
+t8b1230ed = Файл повреждён
+
+# Extracted, but some files are damaged
+t8226d624 = Извлечено, но некоторые файлы повреждены
 
 # Extracting…
 t94279f82 = Извлечение…
@@ -726,6 +735,48 @@ tc1421590 =
 
 # Close
 tcd86acc3 = Закрыть
+
+# “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
+t145d7a09 = «{ $path }» повреждён: { $why }. Остановить, пропустить его или сохранить то, что удалось прочитать?
+
+# Do the same for the other damaged files
+t798693ad = Поступить так же с другими повреждёнными файлами
+
+# Stop
+t4b7f7705 = Остановить
+
+# Leave it out
+taaff8ec9 = Пропустить
+
+# Keep what was read
+tc4387d25 = Сохранить прочитанное
+
+# kept, {size}
+t001f6992 = сохранено, { $size }
+
+# left out
+t73aeedd4 = пропущен
+
+# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
+t9d82f78b =
+    { $n ->
+        [one] Данные { $count } файла повреждены. Остальное извлечено.
+        [few] Данные { $count } файлов повреждены. Остальное извлечено.
+        [many] Данные { $count } файлов повреждены. Остальное извлечено.
+       *[other] Данные { $count } файла повреждены. Остальное извлечено.
+    }
+
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+        [one] и ещё { $count }
+        [few] и ещё { $count }
+        [many] и ещё { $count }
+       *[other] и ещё { $count }
+    }
+
+# Copy the list
+t3c49b269 = Скопировать список
 
 # {count} of {count2} files · {size} of {size2}
 t27f1ab7d = { $count } из { $count2 } файлов · { $size } из { $size2 }
@@ -1209,9 +1260,6 @@ tddb7844a = Ввести…
 
 # Show
 t29742e5c = Показать
-
-# Stop
-t4b7f7705 = Остановить
 
 # Jobs
 t4ae6a79d = Задачи

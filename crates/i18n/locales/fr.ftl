@@ -616,8 +616,17 @@ t808b85c5 = Saisissez la phrase secrète du fichier de clé
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Le fichier de clé est lui-même protégé. packwing ne garde sa phrase secrète que tant que l'archive est ouverte, et ne l'écrit jamais.
 
+# The job stopped before it was done.
+t57a78885 = La tâche s’est arrêtée avant d’être terminée.
+
 # Waiting for other jobs…
 t16ec36d9 = En attente d'autres tâches…
+
+# A file is damaged
+t8b1230ed = Un fichier est endommagé
+
+# Extracted, but some files are damaged
+t8226d624 = Extrait, mais certains fichiers sont endommagés
 
 # Extracting…
 t94279f82 = Extraction…
@@ -712,6 +721,44 @@ tc1421590 =
 
 # Close
 tcd86acc3 = Fermer
+
+# “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
+t145d7a09 = « { $path } » est endommagé : { $why }. Arrêter, l’ignorer ou garder ce qui a pu être lu ?
+
+# Do the same for the other damaged files
+t798693ad = Faire de même pour les autres fichiers endommagés
+
+# Stop
+t4b7f7705 = Arrêter
+
+# Leave it out
+taaff8ec9 = L’ignorer
+
+# Keep what was read
+tc4387d25 = Garder ce qui a été lu
+
+# kept, {size}
+t001f6992 = gardé, { $size }
+
+# left out
+t73aeedd4 = ignoré
+
+# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
+t9d82f78b =
+    { $n ->
+        [one] Les données de { $count } fichier étaient endommagées. Le reste a été extrait.
+       *[other] Les données de { $count } fichiers étaient endommagées. Le reste a été extrait.
+    }
+
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+        [one] et { $count } de plus
+       *[other] et { $count } de plus
+    }
+
+# Copy the list
+t3c49b269 = Copier la liste
 
 # {count} of {count2} files · {size} of {size2}
 t27f1ab7d = { $count } sur { $count2 } fichiers · { $size } sur { $size2 }
@@ -1181,9 +1228,6 @@ tddb7844a = La saisir…
 
 # Show
 t29742e5c = Afficher
-
-# Stop
-t4b7f7705 = Arrêter
 
 # Jobs
 t4ae6a79d = Tâches

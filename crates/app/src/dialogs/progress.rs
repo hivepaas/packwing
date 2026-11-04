@@ -6,17 +6,23 @@
 //! dialog shows what it reports. One without (the screenshots'
 //! sample) counts up at a made-up speed, so the screen can be
 //! seen moving, and closes itself at the end.
+//!
+//! An extraction that meets a file whose data is damaged waits on its dialog:
+//! to stop, to leave the file out, or to keep what was read of it, and go on.
+//! Once it ends, the dialog stays to say which files they were.
 
 use packwing_i18n::{tr, tr_n};
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
+use std::sync::mpsc::{Sender, channel};
 use std::sync::{Arc, Mutex, PoisonError};
 use std::time::{Duration, Instant};
 
 use gpui::{
-    Context, EventEmitter, FontWeight, Render, Task, Window, div, prelude::*, relative, rgb,
+    ClipboardItem, Context, EventEmitter, FontWeight, Render, Task, Window, div, prelude::*,
+    relative, rgb,
 };
-use packwing_core::{Cancel, Control, Error, Progress};
+use packwing_core::{Cancel, Control, Damage, DamagedFn, Error, OnDamaged, Progress, damages};
 
 use super::{
     DialogEvent, Editing, Job, Saving, SavingOn, Signing, Transferring, Verb, asked_for, card,
@@ -31,6 +37,9 @@ use crate::widgets::{Fill, Size, Tone, button, check_row, icon, note, tonal_tint
 const SPEED: u64 = 38_000_000;
 /// How often the count moves.
 const TICK: Duration = Duration::from_millis(100);
+/// The most damaged files listed when it is done: the rest are counted, and
+/// copied with the list.
+const MOST_SHOWN: usize = 6;
 
 /// A job that runs: what it has reported, and what stops it.
 struct Running {
@@ -39,7 +48,37 @@ struct Running {
     started: Instant,
     /// The files and bytes a test has read.
     tested: Arc<Mutex<(u64, u64)>>,
+    damaged: Arc<Mutex<Damaged>>,
     _work: Task<()>,
+}
+
+/// What an extraction and its dialog share of the files whose data is damaged.
+#[derive(Default)]
+struct Damaged {
+    /// The file it waits on an answer about, and where the answer goes.
+    asked: Option<(Damage, Sender<OnDamaged>)>,
+    /// What was answered for all the rest, once it is.
+    for_rest: Option<OnDamaged>,
+    /// Those gone on from, once each archive is extracted.
+    found: Vec<Damage>,
+}
+
+/// What asks the dialog about each file whose data is damaged, and waits for its
+/// answer: none, if nothing answers, stops.
+fn asking(damaged: &Arc<Mutex<Damaged>>) -> DamagedFn {
+    let damaged = damaged.clone();
+    Arc::new(move |damage: &Damage| {
+        let answered = {
+            let mut d = damaged.lock().unwrap_or_else(PoisonError::into_inner);
+            if let Some(chosen) = d.for_rest {
+                return chosen;
+            }
+            let (answer, answered) = channel();
+            d.asked = Some((damage.clone(), answer));
+            answered
+        };
+        answered.recv().unwrap_or(OnDamaged::Stop)
+    })
 }
 
 /// Where a job stands.
@@ -75,6 +114,12 @@ pub struct ProgressDialog {
     ended: Option<State>,
     /// It waits for its turn, and has not started.
     queued: bool,
+    /// The answer about a damaged file is for all the rest too.
+    same_for_rest: bool,
+    /// It has said it waits on an answer, or has damaged files to show.
+    called: bool,
+    /// The files whose data was damaged, once it is done with some.
+    report: Option<Vec<Damage>>,
     _ticking: Task<()>,
 }
 
@@ -114,6 +159,9 @@ impl ProgressDialog {
             passed: None,
             ended: None,
             queued: false,
+            same_for_rest: false,
+            called: false,
+            report: None,
             _ticking: ticking,
         }
     }
@@ -191,13 +239,16 @@ impl ProgressDialog {
         let progress = Arc::new(Mutex::new(Progress::default()));
         let cancel = Cancel::new();
         let told = progress.clone();
+        let damaged = Arc::new(Mutex::new(Damaged::default()));
         let control = Control {
             progress: Some(Arc::new(move |p: &Progress| {
                 *told.lock().unwrap_or_else(PoisonError::into_inner) = *p;
             })),
             cancel: Some(cancel.clone()),
-            on_damaged: None,
+            // Only what is extracted to stay: a file opened, or read, is whole.
+            on_damaged: (job.verb == Verb::Extract).then(|| asking(&damaged)),
         };
+        let found = damaged.clone();
         let tested = Arc::new(Mutex::new((0, 0)));
         let tested_in_task = tested.clone();
         let (keys, how, picked) = (job.keys.clone(), job.how, job.picked.clone());
@@ -210,7 +261,7 @@ impl ProgressDialog {
         let edit = job.edit.clone();
         let transfer = job.transfer.clone();
         let sign = job.sign.clone();
-        let task = cx.background_executor().spawn(async move {
+        let job_work = move || {
             if let Some(Signing(storage, path, key)) = sign {
                 packwing_core::sign_file(storage.as_ref(), &path, &key, &control)?;
                 return Ok(None);
@@ -264,13 +315,19 @@ impl ProgressDialog {
                         let copy = packwing_core::extract_to_open(source, entry, &keys, &control)?;
                         return Ok(Some(copy));
                     }
-                    (Verb::Extract, Some(to)) if !picked.is_empty() => {
-                        packwing_core::extract_selected(
-                            source, to, &picked, &keys, &how, &control,
-                        )?;
-                    }
                     (Verb::Extract, Some(to)) => {
-                        packwing_core::extract_with(source, to, &keys, &how, &control)?;
+                        let done = if picked.is_empty() {
+                            packwing_core::extract_with(source, to, &keys, &how, &control)?
+                        } else {
+                            packwing_core::extract_selected(
+                                source, to, &picked, &keys, &how, &control,
+                            )?
+                        };
+                        found
+                            .lock()
+                            .unwrap_or_else(PoisonError::into_inner)
+                            .found
+                            .extend(damages(&done));
                     }
                     _ => {
                         let read = packwing_core::test(source, &keys, &control)?;
@@ -283,9 +340,27 @@ impl ProgressDialog {
                 }
             }
             Ok::<Option<PathBuf>, Error>(None)
-        });
+        };
+        let (done, finished) = futures_channel::oneshot::channel();
+        let run_it = move || {
+            let _ = done.send(job_work());
+        };
+        if verb == Verb::Extract {
+            // An extraction may wait on its dialog's answer about a damaged file,
+            // as long as that takes: on a thread of its own, not the executor's.
+            // One that cannot start says so, as the job's sender is gone.
+            let _ = std::thread::Builder::new()
+                .name("packwing-extract".into())
+                .spawn(run_it);
+        } else {
+            cx.background_executor()
+                .spawn(async move { run_it() })
+                .detach();
+        }
         let work = cx.spawn(async move |this, cx| {
-            let result = task.await;
+            let result = finished
+                .await
+                .unwrap_or_else(|_| Err(Error::Failed(tr!("The job stopped before it was done."))));
             let _ = this.update(cx, |this, cx| this.finish(result, cx));
         });
         Running {
@@ -293,6 +368,7 @@ impl ProgressDialog {
             cancel,
             started: Instant::now(),
             tested,
+            damaged,
             _work: work,
         }
     }
@@ -351,6 +427,17 @@ impl ProgressDialog {
                     show,
                 });
             }
+            Ok(_) if !self.found().is_empty() => {
+                if self.open_folder
+                    && let Some((_, Some(to))) = self.job.work.first()
+                {
+                    cx.open_with_system(to);
+                }
+                // It stays to say which, seen even if it went on behind.
+                self.report = Some(self.found());
+                cx.emit(DialogEvent::Attention);
+                cx.notify();
+            }
             Ok(made) => {
                 if let Some(made) = made.filter(|_| self.open_folder) {
                     cx.reveal_path(&made);
@@ -378,6 +465,63 @@ impl ProgressDialog {
             }
         }
         cx.emit(DialogEvent::Ended);
+    }
+
+    /// The files whose data was damaged, gone on from so far.
+    fn found(&self) -> Vec<Damage> {
+        self.running.as_ref().map_or_else(Vec::new, |r| {
+            r.damaged
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner)
+                .found
+                .clone()
+        })
+    }
+
+    /// The file it waits on an answer about, if it does.
+    pub fn asked(&self) -> Option<Damage> {
+        let r = self.running.as_ref()?;
+        let d = r.damaged.lock().unwrap_or_else(PoisonError::into_inner);
+        d.asked.as_ref().map(|(damage, _)| damage.clone())
+    }
+
+    /// Answers about the damaged file it waits on, and about the rest too if
+    /// that box is ticked.
+    fn answer(&mut self, chosen: OnDamaged, cx: &mut Context<Self>) {
+        if let Some(r) = &self.running {
+            let mut d = r.damaged.lock().unwrap_or_else(PoisonError::into_inner);
+            if self.same_for_rest {
+                d.for_rest = Some(chosen);
+            }
+            if let Some((_, answer)) = d.asked.take() {
+                let _ = answer.send(chosen);
+            }
+        }
+        self.called = false;
+        cx.notify();
+    }
+
+    /// Puts it as waiting on an answer about `damage`, or as done with these
+    /// damaged, as the pictures show it.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn set_damaged_for_test(
+        &mut self,
+        asked: Option<Damage>,
+        report: Option<Vec<Damage>>,
+        cx: &mut Context<Self>,
+    ) {
+        if let (Some(damage), Some(r)) = (asked, &self.running) {
+            let (answer, _) = channel();
+            r.damaged
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner)
+                .asked = Some((damage, answer));
+        }
+        if report.is_some() {
+            self.ended = Some(State::Done(None));
+        }
+        self.report = report;
+        cx.notify();
     }
 
     /// Where what it made is, on this computer: the new archive, or the folder it
@@ -516,6 +660,11 @@ impl ProgressDialog {
             }
         }
         if self.running.is_some() {
+            // Seen, even if it went on behind.
+            if !self.called && self.asked().is_some() {
+                self.called = true;
+                cx.emit(DialogEvent::Attention);
+            }
             let (_, _, bytes, total) = self.counts();
             self.done = if total == 0 {
                 0.
@@ -540,8 +689,20 @@ impl ProgressDialog {
 
     pub fn cancel(&mut self, cx: &mut Context<Self>) {
         match &self.running {
-            // It stops at its next step, and closes the dialog then.
-            Some(r) if self.state() == State::Running => r.cancel.cancel(),
+            // It stops at its next step, and closes the dialog then: one that
+            // waits on an answer goes on to it, the file left out.
+            Some(r) if self.state() == State::Running => {
+                r.cancel.cancel();
+                if let Some((_, answer)) = r
+                    .damaged
+                    .lock()
+                    .unwrap_or_else(PoisonError::into_inner)
+                    .asked
+                    .take()
+                {
+                    let _ = answer.send(OnDamaged::Skip);
+                }
+            }
             _ => {
                 // One that never ran, or waited for its turn, stops now.
                 if matches!(self.state(), State::Running | State::Queued) {
@@ -557,6 +718,12 @@ impl ProgressDialog {
     pub fn title(&self) -> String {
         if self.queued {
             return tr!("Waiting for other jobs…");
+        }
+        if self.asked().is_some() {
+            return tr!("A file is damaged");
+        }
+        if self.report.is_some() {
+            return tr!("Extracted, but some files are damaged");
         }
         match (self.job.verb, self.failed.is_some()) {
             (Verb::Extract, false) => tr!("Extracting…"),
@@ -659,6 +826,118 @@ impl Render for ProgressDialog {
                 );
         }
         let header = header(icon_name, tonal_tint(), self.title(), detail, None);
+        if let Some(damage) = self.asked() {
+            return card()
+                .gap(ui(22.))
+                .child(header)
+                .child(note(Tone::Warn).child(tr!(
+                    "“{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?",
+                    path = damage.path,
+                    why = damage.why
+                )))
+                .child(
+                    check_row(
+                        "same-for-rest",
+                        self.same_for_rest,
+                        tr!("Do the same for the other damaged files"),
+                    )
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.same_for_rest = !this.same_for_rest;
+                        cx.notify();
+                    })),
+                )
+                .child(
+                    footer()
+                        .child(
+                            button("stop", tr!("Stop"), Fill::Outline, Size::Medium).on_click(
+                                cx.listener(|this, _, _, cx| this.answer(OnDamaged::Stop, cx)),
+                            ),
+                        )
+                        .child(div().flex_1())
+                        .child(
+                            button("skip", tr!("Leave it out"), Fill::Tonal, Size::Medium)
+                                .px(ui(20.))
+                                .on_click(cx.listener(|this, _, _, cx| {
+                                    this.answer(OnDamaged::Skip, cx)
+                                })),
+                        )
+                        .child(
+                            button("keep", tr!("Keep what was read"), Fill::Accent, Size::Medium)
+                                .px(ui(20.))
+                                .on_click(cx.listener(|this, _, _, cx| {
+                                    this.answer(OnDamaged::Keep, cx)
+                                })),
+                        ),
+                );
+        }
+        if let Some(report) = &self.report {
+            let n = report.len() as u64;
+            let listed: String = report
+                .iter()
+                .map(|d| format!("{}\t{}\n", d.path, d.why))
+                .collect();
+            let rows = report.iter().take(MOST_SHOWN).map(|d| {
+                let kept = match d.kept {
+                    Some(bytes) => tr!("kept, {size}", size = size(bytes)),
+                    None => tr!("left out"),
+                };
+                div()
+                    .flex()
+                    .gap(ui(12.))
+                    .text_size(ui(14.))
+                    .child(div().flex_1().min_w_0().truncate().child(d.path.clone()))
+                    .child(div().text_color(rgb(c.muted)).child(kept))
+            });
+            return card()
+                .gap(ui(22.))
+                .child(header)
+                .child(note(Tone::Warn).child(tr_n!(
+                    n,
+                    "{count} file’s data was damaged. The rest was extracted.",
+                    "{count} files’ data was damaged. The rest was extracted.",
+                    count = count(n)
+                )))
+                .child(
+                    div()
+                        .flex()
+                        .flex_col()
+                        .gap(ui(6.))
+                        .px(ui(16.))
+                        .py(ui(12.))
+                        .rounded(ui(18.))
+                        .bg(rgb(c.well))
+                        .children(rows)
+                        .when(report.len() > MOST_SHOWN, |d| {
+                            d.child(
+                                div()
+                                    .text_size(ui(14.))
+                                    .text_color(rgb(c.muted))
+                                    .child(tr_n!(
+                                        (report.len() - MOST_SHOWN) as u64,
+                                        "and {count} more",
+                                        "and {count} more",
+                                        count = count((report.len() - MOST_SHOWN) as u64)
+                                    )),
+                            )
+                        }),
+                )
+                .child(
+                    footer()
+                        .child(
+                            button("copy-list", tr!("Copy the list"), Fill::Text, Size::Medium)
+                                .px(ui(20.))
+                                .on_click(cx.listener(move |_, _, _, cx| {
+                                    cx.write_to_clipboard(ClipboardItem::new_string(listed.clone()))
+                                })),
+                        )
+                        .child(div().flex_1())
+                        .child(
+                            button("close", tr!("Close"), Fill::Accent, Size::Medium)
+                                .px(ui(28.))
+                                .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close))),
+                        ),
+                );
+        }
         if let Some(why) = &self.failed {
             return card()
                 .gap(ui(22.))

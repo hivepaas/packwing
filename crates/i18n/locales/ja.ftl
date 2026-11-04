@@ -610,8 +610,17 @@ t808b85c5 = キーファイルのパスフレーズを入力
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = このキーファイル自体が保護されています。packwing はそのパスフレーズをアーカイブを開いている間だけ保持し、書き留めることはありません。
 
+# The job stopped before it was done.
+t57a78885 = ジョブが完了する前に止まりました。
+
 # Waiting for other jobs…
 t16ec36d9 = 他のジョブを待っています…
+
+# A file is damaged
+t8b1230ed = ファイルが破損しています
+
+# Extracted, but some files are damaged
+t8226d624 = 展開しましたが、一部のファイルが破損しています
 
 # Extracting…
 t94279f82 = 展開中…
@@ -705,6 +714,42 @@ tc1421590 =
 
 # Close
 tcd86acc3 = 閉じる
+
+# “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
+t145d7a09 = 「{ $path }」は破損しています: { $why }。中止しますか、このファイルを除外しますか、読み取れた部分を残しますか?
+
+# Do the same for the other damaged files
+t798693ad = ほかの破損ファイルにも同じようにする
+
+# Stop
+t4b7f7705 = 停止
+
+# Leave it out
+taaff8ec9 = 除外する
+
+# Keep what was read
+tc4387d25 = 読み取れた部分を残す
+
+# kept, {size}
+t001f6992 = 残しました、{ $size }
+
+# left out
+t73aeedd4 = 除外しました
+
+# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
+t9d82f78b =
+    { $n ->
+       *[other] { $count } 個のファイルのデータが破損していました。残りは展開しました。
+    }
+
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+       *[other] ほか { $count } 個
+    }
+
+# Copy the list
+t3c49b269 = リストをコピー
 
 # {count} of {count2} files · {size} of {size2}
 t27f1ab7d = { $count } / { $count2 } 個のファイル · { $size } / { $size2 }
@@ -1167,9 +1212,6 @@ tddb7844a = 入力…
 
 # Show
 t29742e5c = 表示
-
-# Stop
-t4b7f7705 = 停止
 
 # Jobs
 t4ae6a79d = ジョブ

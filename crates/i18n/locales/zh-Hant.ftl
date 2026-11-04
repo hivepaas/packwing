@@ -610,8 +610,17 @@ t808b85c5 = 輸入金鑰檔案的密碼片語
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = 這個金鑰檔案本身有密碼保護。packwing 只會在封存檔開啟期間保留其密碼片語，絕不會寫入儲存。
 
+# The job stopped before it was done.
+t57a78885 = 工作在完成前停止了。
+
 # Waiting for other jobs…
 t16ec36d9 = 正在等待其他工作…
+
+# A file is damaged
+t8b1230ed = 有檔案已損毀
+
+# Extracted, but some files are damaged
+t8226d624 = 已解壓縮，但有些檔案已損毀
 
 # Extracting…
 t94279f82 = 正在解壓縮…
@@ -705,6 +714,42 @@ tc1421590 =
 
 # Close
 tcd86acc3 = 關閉
+
+# “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
+t145d7a09 = 「{ $path }」已損毀：{ $why }。要停止、略過它，還是保留已讀出的部分？
+
+# Do the same for the other damaged files
+t798693ad = 對其他損毀的檔案也這樣處理
+
+# Stop
+t4b7f7705 = 停止
+
+# Leave it out
+taaff8ec9 = 略過
+
+# Keep what was read
+tc4387d25 = 保留已讀出的部分
+
+# kept, {size}
+t001f6992 = 已保留，{ $size }
+
+# left out
+t73aeedd4 = 已略過
+
+# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
+t9d82f78b =
+    { $n ->
+       *[other] { $count } 個檔案的資料已損毀。其餘已解壓縮。
+    }
+
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+       *[other] 還有 { $count } 個
+    }
+
+# Copy the list
+t3c49b269 = 複製清單
 
 # {count} of {count2} files · {size} of {size2}
 t27f1ab7d = { $count } / { $count2 } 個檔案 · { $size } / { $size2 }
@@ -1167,9 +1212,6 @@ tddb7844a = 輸入…
 
 # Show
 t29742e5c = 顯示
-
-# Stop
-t4b7f7705 = 停止
 
 # Jobs
 t4ae6a79d = 工作

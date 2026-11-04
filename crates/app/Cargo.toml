@@ -51,6 +51,8 @@ packwing-i18n.workspace = true
 # The system's right-click menu: packwing's items in it (src/right_click.rs).
 # 0.2.1 says which package serves the menu on Windows (src/right_click.rs).
 context-menu = "0.2.1"
+# What a job on a thread of its own hands back to the window.
+futures-channel = "0.3"
 # The date a license ends.
 time = { version = "0.3", default-features = false, features = ["std"] }
 unicode-segmentation = "1"

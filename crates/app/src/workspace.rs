@@ -775,7 +775,7 @@ impl Workspace {
                 DialogEvent::Saved => this.refresh_explorers(cx),
                 DialogEvent::Quit => this.stop_and_quit(window, cx),
                 // Only a job's dialog says these, and they are heard in job_event.
-                DialogEvent::Behind | DialogEvent::Ended => {}
+                DialogEvent::Behind | DialogEvent::Ended | DialogEvent::Attention => {}
                 DialogEvent::Signed => {
                     this.close_dialog(cx);
                     this.trusted_seen = prefs::prefs(cx).trusted_keys;
@@ -1523,6 +1523,7 @@ impl Workspace {
             }
         };
         match e {
+            DialogEvent::Attention if !shown => self.show_job(view.clone(), cx),
             DialogEvent::Behind => {
                 if shown && let Some(open) = self.dialog.take() {
                     // One shown from the page is on it still.
@@ -1603,6 +1604,7 @@ impl Workspace {
             | DialogEvent::Open(_)
             | DialogEvent::ShowLicense
             | DialogEvent::Saved
+            | DialogEvent::Attention
             | DialogEvent::Quit => {}
         }
         // What ended makes room for one waiting, or lets the window close.

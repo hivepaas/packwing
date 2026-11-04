@@ -628,8 +628,17 @@ t808b85c5 = Введіть парольну фразу файлу ключа
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Сам файл ключа захищено. packwing зберігає його парольну фразу лише доки архів відкритий і ніколи її не записує.
 
+# The job stopped before it was done.
+t57a78885 = Завдання зупинилося, не завершившись.
+
 # Waiting for other jobs…
 t16ec36d9 = Чекає на інші завдання…
+
+# A file is damaged
+t8b1230ed = Файл пошкоджено
+
+# Extracted, but some files are damaged
+t8226d624 = Видобуто, але деякі файли пошкоджено
 
 # Extracting…
 t94279f82 = Видобування…
@@ -726,6 +735,48 @@ tc1421590 =
 
 # Close
 tcd86acc3 = Закрити
+
+# “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
+t145d7a09 = «{ $path }» пошкоджено: { $why }. Зупинити, пропустити його чи зберегти те, що вдалося прочитати?
+
+# Do the same for the other damaged files
+t798693ad = Зробити так само з іншими пошкодженими файлами
+
+# Stop
+t4b7f7705 = Зупинити
+
+# Leave it out
+taaff8ec9 = Пропустити
+
+# Keep what was read
+tc4387d25 = Зберегти прочитане
+
+# kept, {size}
+t001f6992 = збережено, { $size }
+
+# left out
+t73aeedd4 = пропущено
+
+# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
+t9d82f78b =
+    { $n ->
+        [one] Дані { $count } файлу пошкоджено. Решту видобуто.
+        [few] Дані { $count } файлів пошкоджено. Решту видобуто.
+        [many] Дані { $count } файлів пошкоджено. Решту видобуто.
+       *[other] Дані { $count } файлу пошкоджено. Решту видобуто.
+    }
+
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+        [one] і ще { $count }
+        [few] і ще { $count }
+        [many] і ще { $count }
+       *[other] і ще { $count }
+    }
+
+# Copy the list
+t3c49b269 = Скопіювати список
 
 # {count} of {count2} files · {size} of {size2}
 t27f1ab7d = { $count } із { $count2 } файлів · { $size } із { $size2 }
@@ -1209,9 +1260,6 @@ tddb7844a = Ввести…
 
 # Show
 t29742e5c = Показати
-
-# Stop
-t4b7f7705 = Зупинити
 
 # Jobs
 t4ae6a79d = Завдання

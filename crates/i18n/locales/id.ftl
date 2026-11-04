@@ -610,8 +610,17 @@ t808b85c5 = Masukkan frasa sandi berkas kunci
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Berkas kunci itu sendiri dilindungi. packwing menyimpan frasa sandinya hanya selama arsip terbuka, dan tidak pernah menuliskannya.
 
+# The job stopped before it was done.
+t57a78885 = Pekerjaan berhenti sebelum selesai.
+
 # Waiting for other jobs…
 t16ec36d9 = Menunggu tugas lain…
+
+# A file is damaged
+t8b1230ed = Sebuah file rusak
+
+# Extracted, but some files are damaged
+t8226d624 = Sudah diekstrak, tetapi beberapa file rusak
 
 # Extracting…
 t94279f82 = Mengekstrak…
@@ -705,6 +714,42 @@ tc1421590 =
 
 # Close
 tcd86acc3 = Tutup
+
+# “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
+t145d7a09 = “{ $path }” rusak: { $why }. Berhenti, lewati, atau simpan bagian yang terbaca?
+
+# Do the same for the other damaged files
+t798693ad = Lakukan hal yang sama untuk file rusak lainnya
+
+# Stop
+t4b7f7705 = Hentikan
+
+# Leave it out
+taaff8ec9 = Lewati
+
+# Keep what was read
+tc4387d25 = Simpan yang terbaca
+
+# kept, {size}
+t001f6992 = disimpan, { $size }
+
+# left out
+t73aeedd4 = dilewati
+
+# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
+t9d82f78b =
+    { $n ->
+       *[other] Data { $count } file rusak. Sisanya sudah diekstrak.
+    }
+
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+       *[other] dan { $count } lainnya
+    }
+
+# Copy the list
+t3c49b269 = Salin daftar
 
 # {count} of {count2} files · {size} of {size2}
 t27f1ab7d = { $count } dari { $count2 } berkas · { $size } dari { $size2 }
@@ -1167,9 +1212,6 @@ tddb7844a = Masukkan…
 
 # Show
 t29742e5c = Tampilkan
-
-# Stop
-t4b7f7705 = Hentikan
 
 # Jobs
 t4ae6a79d = Tugas
