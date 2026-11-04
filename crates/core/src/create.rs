@@ -570,7 +570,7 @@ fn name_and_extension(name: &str) -> (&str, &str) {
 
 /// `wanted`, or if that is taken `name (2).zip`, `name (3).zip`, …, the
 /// first for which `take` makes something new.
-fn free_name<T>(
+pub(crate) fn free_name<T>(
     wanted: &Path,
     mut take: impl FnMut(&Path) -> io::Result<T>,
 ) -> Result<(PathBuf, T), Error> {

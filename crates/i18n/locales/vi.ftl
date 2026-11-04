@@ -2068,6 +2068,30 @@ tc95e3a9c = Không có tệp để ký.
 # {name} is not there any more.
 t07c1f2bc = { $name } không còn ở đó.
 
+# A part has to hold at least one byte.
+te779b111 = Mỗi phần phải chứa ít nhất một byte.
+
+# {path} is not a file.
+tdfee38b2 = { $path } không phải là file.
+
+# That would make more parts than can be numbered: make them bigger.
+t7ce88e46 = Như vậy sẽ ra nhiều phần hơn mức đánh số được: hãy chọn phần lớn hơn.
+
+# {part} is there already.
+t2577cbb6 = { $part } đã có sẵn.
+
+# {path} is not a part of a file cut as 7-Zip cuts it, as name.001.
+t64c1c1d0 = { $path } không phải một phần của file được cắt kiểu 7-Zip, như name.001.
+
+# {part} is missing: the parts start from it.
+t5e65a10a = Thiếu { $part }: các phần bắt đầu từ nó.
+
+# {part} is missing, and the parts after it are there.
+t24165c89 = Thiếu { $part }, trong khi các phần sau nó vẫn có.
+
+# {part} holds {got}, not {size} as the first part does: it may not be whole.
+tb472eff0 = { $part } chứa { $got }, không phải { $size } như phần đầu: có thể nó không nguyên vẹn.
+
 # The name is empty.
 t1a9d8e4e = Tên trống.
 

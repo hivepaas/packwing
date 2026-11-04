@@ -2099,6 +2099,30 @@ tc95e3a9c = Es gibt keine Datei zum Signieren.
 # {name} is not there any more.
 t07c1f2bc = { $name } ist nicht mehr vorhanden.
 
+# A part has to hold at least one byte.
+te779b111 = Ein Teil muss mindestens ein Byte enthalten.
+
+# {path} is not a file.
+tdfee38b2 = { $path } ist keine Datei.
+
+# That would make more parts than can be numbered: make them bigger.
+t7ce88e46 = Das ergäbe mehr Teile, als sich nummerieren lassen: Wähle größere.
+
+# {part} is there already.
+t2577cbb6 = { $part } gibt es schon.
+
+# {path} is not a part of a file cut as 7-Zip cuts it, as name.001.
+t64c1c1d0 = { $path } ist kein Teil einer Datei, die wie bei 7-Zip geteilt wurde, etwa name.001.
+
+# {part} is missing: the parts start from it.
+t5e65a10a = { $part } fehlt: Mit ihm beginnen die Teile.
+
+# {part} is missing, and the parts after it are there.
+t24165c89 = { $part } fehlt, die Teile danach sind aber da.
+
+# {part} holds {got}, not {size} as the first part does: it may not be whole.
+tb472eff0 = { $part } enthält { $got }, nicht { $size } wie der erste Teil: Er ist vielleicht nicht vollständig.
+
 # The name is empty.
 t1a9d8e4e = Der Name ist leer.
 
