@@ -32,7 +32,7 @@ SFTP_UNTRUST := touch $(HOME)/.ssh/known_hosts; \
 	printf '%s\n' "$$lines" >$(HOME)/.ssh/known_hosts
 
 .DEFAULT_GOAL := help
-.PHONY: help debug release build build-debug test test-window test-ui lint fmt clean \
+.PHONY: help debug release build build-debug cli test test-window test-ui lint fmt clean \
 	s3-start s3-stop webdav-start webdav-stop sftp-start sftp-stop
 
 help: ## List the targets
@@ -46,6 +46,9 @@ release: ## Build and run the release version
 
 build-debug: ## Build the debug version: target/debug/packwing
 	$(CARGO) build $(APP)
+
+cli: ## Build the command line, with no window: target/release/pkw
+	$(CARGO) build --release -p packwing-cli
 
 build: ## Build the release version: target/release/packwing
 	$(CARGO) build --release $(APP)

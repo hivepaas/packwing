@@ -20,6 +20,7 @@ Built in Rust on [hivepack](https://github.com/hivepaas/hivepack-rs).
 * **In your file manager:** Compress and Extract in the right-click menu of Windows Explorer, macOS Finder and Linux file managers, and drag and drop in the window.
 * **Updates you can trust:** a daily look for a newer version, in a list believed only when its signatures verify, with a badge on the title bar; nothing is downloaded or installed unless asked, and the look can be turned off ([docs/updates.md](docs/updates.md)).
 * **Ready for organizations:** Group Policy, a configuration profile or a file in `/etc` can keep the Internet mark, require encryption, and set which kinds and how long a password has to be ([docs/policies.md](docs/policies.md)).
+* **On the command line too:** `pkw` lists, extracts, tests, makes and changes archives, and makes and checks checksums, with no window, as safely as the app and under the same policies, with JSON for scripts and exit codes that say what went wrong (Command line, below).
 * **Made for every day:** an interface in 15 languages ([CONTRIBUTING.md](CONTRIBUTING.md)), light and dark, and a window that comes back as it was left.
 
 ## 🛠️ Building
@@ -61,6 +62,27 @@ make sftp-stop
 ```
 
 packwing refuses a host not in `~/.ssh/known_hosts`, so `make sftp-start` adds the server's line there for its port, and `make sftp-stop` takes it out.
+
+## ⌨️ Command line
+
+`pkw` is packwing without the window, for a terminal, a server over SSH or a script. It is a program of its own (`make cli`, then `target/release/pkw`), with no window system in it:
+
+```sh
+pkw list backup.7z                      # what it holds (-l: sizes and dates; --json)
+pkw info backup.tar.zst.age             # its format, layers, size and encryption
+pkw extract backup.7z                   # into backup/, here (-o DIR, --here, --overwrite)
+pkw extract backup.7z docs/report.pdf   # what is picked, straight into where it goes
+pkw test backup.7z                      # it reads whole, as it was made
+pkw cat backup.zip notes.txt            # a file in it, to standard output
+pkw create site.tar.zst site/           # its format by its extension, or -f; -l store…highest
+pkw create -p --hide-names private.7z docs/      # with a password, asked; its names hidden
+pkw create notes.tar.zst docs/ --encrypt-to age1…  # encrypted to a key: notes.tar.zst.age
+pkw create --split 25MB mail.zip photos/          # in parts: mail.zip.001, .002…
+pkw add archive.zip new.txt --into docs  # and delete, rename: a ZIP archive, in place
+pkw checksum -a sha256 -a blake3 *.iso   # --save beside each, or --check SHA256SUMS
+```
+
+A password is never put on the command line, where others see it: `pkw` asks for it in a terminal, or reads it from `--password-file FILE`, `--password-stdin` or `PACKWING_PASSWORD`; an age or SSH key file comes with `--key FILE`. Its exit code says how it went: `0` done, `1` failed, `2` not understood, `3` a password or key is needed or wrong, `4` not an archive it opens. `pkw help <command>` says the rest.
 
 ## 📦 Packaging
 

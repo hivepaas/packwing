@@ -557,6 +557,31 @@ const _: () = assert!(hivepack::deflate::UNSAFE_FAST);
 const _: () = assert!(hivepack::lz4::UNSAFE_FAST);
 const _: () = assert!(hivepack::zstd::UNSAFE_FAST);
 
+/// `name` without its archive extensions and a part number: what it unpacks
+/// to (`Báo cáo.part1.rar` → `Báo cáo`, `backup.tar.zst.age` → `backup`).
+pub fn stem(name: &str) -> &str {
+    const EXTENSIONS: [&str; 34] = [
+        ".age", ".zst", ".gz", ".xz", ".bz2", ".lz4", ".lz", ".lzma", ".tgz", ".tbz2", ".tbz",
+        ".txz", ".tzst", ".tlz", ".tlz4", ".tar", ".7z", ".zip", ".rar", ".iso", ".cpio", ".rpm",
+        ".xar", ".pkg", ".jar", ".war", ".ear", ".apk", ".xpi", ".epub", ".cbz", ".cbr", ".cb7",
+        ".cbt",
+    ];
+    let mut s = name;
+    while let Some(rest) = EXTENSIONS
+        .iter()
+        .find_map(|ext| s.strip_suffix(ext).filter(|r| !r.is_empty()))
+    {
+        s = rest;
+    }
+    if let Some((rest, part)) = s.rsplit_once(".part")
+        && !part.is_empty()
+        && part.bytes().all(|b| b.is_ascii_digit())
+    {
+        s = rest;
+    }
+    s
+}
+
 /// A size as people read it: three figures at most, no trailing zeros, in SI
 /// units as macOS shows them (`880 KB`, `6.4 MB`, `412 MB`, `1.24 GB`).
 pub fn size(bytes: u64) -> String {
