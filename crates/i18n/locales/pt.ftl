@@ -1936,6 +1936,9 @@ t8b242db1 = Novo
 # There is no file to save it beside.
 ta9906e3b = Não há arquivo ao lado do qual salvar.
 
+# Nothing in the archive matches the patterns given.
+t90b19482 = Nada no arquivo corresponde aos padrões indicados.
+
 # Nothing to compress.
 t47339885 = Nada para compactar.
 
@@ -2025,6 +2028,9 @@ tdb9326d3 = Antes de ser enviado, este arquivo compactado é criado em { $folder
 
 # The upload stopped.
 t528232e6 = O envio parou.
+
+# “{pattern}” names no file or folder.
+te17b2bfa = “{ $pattern }” não indica nenhum arquivo nem pasta.
 
 # {name} is already in the folder.
 tbe7fab8a = { $name } já está na pasta.

@@ -1906,6 +1906,9 @@ t8b242db1 = 새로 만들기
 # There is no file to save it beside.
 ta9906e3b = 옆에 저장할 파일이 없습니다.
 
+# Nothing in the archive matches the patterns given.
+t90b19482 = 아카이브에 지정한 패턴과 일치하는 항목이 없습니다.
+
 # Nothing to compress.
 t47339885 = 압축할 항목이 없습니다.
 
@@ -1995,6 +1998,9 @@ tdb9326d3 = 업로드하기 전에 이 압축 파일을 { $folder }에 만드는
 
 # The upload stopped.
 t528232e6 = 업로드가 중단되었습니다.
+
+# “{pattern}” names no file or folder.
+te17b2bfa = “{ $pattern }”은(는) 어떤 파일이나 폴더도 가리키지 않습니다.
 
 # {name} is already in the folder.
 tbe7fab8a = { $name }이(가) 이미 폴더에 있습니다.

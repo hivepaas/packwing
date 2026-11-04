@@ -1906,6 +1906,9 @@ t8b242db1 = 新建
 # There is no file to save it beside.
 ta9906e3b = 没有可在其旁边保存的文件。
 
+# Nothing in the archive matches the patterns given.
+t90b19482 = 归档中没有与给定模式匹配的内容。
+
 # Nothing to compress.
 t47339885 = 没有可压缩的内容。
 
@@ -1995,6 +1998,9 @@ tdb9326d3 = 上传前，此压缩包会先在 { $folder } 中生成，可能需�
 
 # The upload stopped.
 t528232e6 = 上传已停止。
+
+# “{pattern}” names no file or folder.
+te17b2bfa = “{ $pattern }”没有指向任何文件或文件夹。
 
 # {name} is already in the folder.
 tbe7fab8a = { $name } 已在该文件夹中。

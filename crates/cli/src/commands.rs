@@ -4,7 +4,7 @@ use std::io::Write as _;
 use std::path::{Path, PathBuf};
 
 use packwing_core::{
-    Algorithm, COMPRESSED_EXTENSIONS, Entry, ExtractOptions, Kind, Listing, LocalFolder,
+    Algorithm, COMPRESSED_EXTENSIONS, Entry, ExtractOptions, Filter, Kind, Listing, LocalFolder,
     NewArchive, OnExisting, Source, Transfer, add_with, algorithms_of, came_from_internet,
     checksum_line, checksums, convert, create, damages, delete, extract_selected, extract_with,
     has_signature, list, read_entry, rename, save_checksum, signature_name, size, stem, test,
@@ -62,9 +62,14 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
         Command::Convert {
             from,
             to,
+            include,
+            exclude,
             make,
             damaging,
-        } => convert_cmd(&from, &to, make, &damaging, cx),
+        } => {
+            let filter = Filter::new(&include, &exclude)?;
+            convert_cmd(&from, &to, make, &filter, &damaging, cx)
+        }
         Command::Keygen { output } => keygen_cmd(&output, cx),
         Command::Sign { files, by } => sign_cmd(&files, &by, cx),
         Command::Verify { files, trust, only } => verify_cmd(&files, &trust, only, cx),
@@ -872,6 +877,7 @@ fn convert_cmd(
     from: &Path,
     to: &Path,
     make: Making,
+    filter: &Filter,
     damaging: &Damaging,
     cx: &mut Context,
 ) -> Result<(), Exit> {
@@ -881,21 +887,31 @@ fn convert_cmd(
     let (control, bar) = crate::progress::control("Converting", cx.progress);
     let control = damaging.control(control, cx)?;
     let converted = cx.secrets.unlocking(&name, |keys| {
-        convert(Source::from(from), keys, &to, &new, &how, &control)
+        convert(Source::from(from), keys, &to, &new, &how, filter, &control)
     })?;
     drop(bar);
     let damaged = damages(&converted.summary);
     let made = &converted.made;
     let bytes = std::fs::metadata(made).map(|m| m.len()).unwrap_or_default();
+    // What signed the one read signed its bytes: the new archive's are others.
+    let unsigned = has_signature(from);
     if cx.json {
         print_json(&json!({
             "made": made.display().to_string(),
             "size": bytes,
             "files": converted.summary.files,
             "damaged": crate::damaged::as_json(&damaged),
+            "signature_left_behind": unsigned,
         }));
     } else if !cx.quiet {
         println!("{} ({})", made.display(), size(bytes));
+        if unsigned {
+            eprintln!(
+                "pkw: {} is signed; {} is not, as a signature is of the bytes it signs",
+                named(from),
+                named(made)
+            );
+        }
     }
     damaging.finish(&damaged)
 }

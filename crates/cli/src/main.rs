@@ -153,6 +153,14 @@ enum Command {
         from: PathBuf,
         /// The archive to make: its extension says its format, unless --format does.
         to: PathBuf,
+        /// Only what is under these paths, or has these names: `docs/**`, `*.pdf`; again
+        /// for more. `*` and `?` stay within a name, `**` is any folders.
+        #[arg(long, value_name = "PATTERN")]
+        include: Vec<String>,
+        /// Not what is under these paths, or has these names: `**/node_modules`, `*.log`;
+        /// again for more. It wins over --include.
+        #[arg(long, value_name = "PATTERN")]
+        exclude: Vec<String>,
         #[command(flatten)]
         make: Making,
         #[command(flatten)]

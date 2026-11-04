@@ -1936,6 +1936,9 @@ t8b242db1 = Yeni
 # There is no file to save it beside.
 ta9906e3b = Yanına kaydedilecek dosya yok.
 
+# Nothing in the archive matches the patterns given.
+t90b19482 = Arşivde verilen kalıplarla eşleşen bir şey yok.
+
 # Nothing to compress.
 t47339885 = Sıkıştırılacak bir şey yok.
 
@@ -2025,6 +2028,9 @@ tdb9326d3 = Yüklenmeden önce bu arşiv { $folder } içinde oluşturulur ve ora
 
 # The upload stopped.
 t528232e6 = Yükleme durdu.
+
+# “{pattern}” names no file or folder.
+te17b2bfa = “{ $pattern }” hiçbir dosya ya da klasörü belirtmiyor.
 
 # {name} is already in the folder.
 tbe7fab8a = { $name } klasörde zaten var.
