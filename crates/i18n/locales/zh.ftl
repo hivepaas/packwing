@@ -2068,6 +2068,30 @@ tc95e3a9c = 没有可签名的文件。
 # {name} is not there any more.
 t07c1f2bc = { $name } 已不存在。
 
+# A part has to hold at least one byte.
+te779b111 = 每个分卷至少要有一个字节。
+
+# {path} is not a file.
+tdfee38b2 = { $path } 不是文件。
+
+# That would make more parts than can be numbered: make them bigger.
+t7ce88e46 = 这样分出的分卷会多到无法编号：请把分卷设大一些。
+
+# {part} is there already.
+t2577cbb6 = { $part } 已存在。
+
+# {path} is not a part of a file cut as 7-Zip cuts it, as name.001.
+t64c1c1d0 = { $path } 不是按 7-Zip 方式切分的文件的分卷（如 name.001）。
+
+# {part} is missing: the parts start from it.
+t5e65a10a = 缺少 { $part }：分卷从它开始。
+
+# {part} is missing, and the parts after it are there.
+t24165c89 = 缺少 { $part }，而它之后的分卷都在。
+
+# {part} holds {got}, not {size} as the first part does: it may not be whole.
+tb472eff0 = { $part } 有 { $got }，不是第一个分卷的 { $size }：它可能不完整。
+
 # The name is empty.
 t1a9d8e4e = 名称为空。
 

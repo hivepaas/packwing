@@ -2077,6 +2077,30 @@ tc95e3a9c = Tidak ada berkas untuk ditandatangani.
 # {name} is not there any more.
 t07c1f2bc = { $name } sudah tidak ada.
 
+# A part has to hold at least one byte.
+te779b111 = Setiap bagian harus berisi setidaknya satu byte.
+
+# {path} is not a file.
+tdfee38b2 = { $path } bukan file.
+
+# That would make more parts than can be numbered: make them bigger.
+t7ce88e46 = Itu akan menghasilkan lebih banyak bagian daripada yang bisa diberi nomor: buat bagiannya lebih besar.
+
+# {part} is there already.
+t2577cbb6 = { $part } sudah ada.
+
+# {path} is not a part of a file cut as 7-Zip cuts it, as name.001.
+t64c1c1d0 = { $path } bukan bagian dari file yang dipotong seperti cara 7-Zip, seperti name.001.
+
+# {part} is missing: the parts start from it.
+t5e65a10a = { $part } tidak ada: bagian-bagian dimulai darinya.
+
+# {part} is missing, and the parts after it are there.
+t24165c89 = { $part } tidak ada, padahal bagian setelahnya ada.
+
+# {part} holds {got}, not {size} as the first part does: it may not be whole.
+tb472eff0 = { $part } berisi { $got }, bukan { $size } seperti bagian pertama: mungkin tidak utuh.
+
 # The name is empty.
 t1a9d8e4e = Nama kosong.
 

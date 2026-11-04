@@ -2068,6 +2068,30 @@ tc95e3a9c = 서명할 파일이 없습니다.
 # {name} is not there any more.
 t07c1f2bc = { $name }이(가) 더 이상 없습니다.
 
+# A part has to hold at least one byte.
+te779b111 = 각 부분은 최소 1바이트여야 합니다.
+
+# {path} is not a file.
+tdfee38b2 = { $path }은(는) 파일이 아닙니다.
+
+# That would make more parts than can be numbered: make them bigger.
+t7ce88e46 = 번호를 매길 수 있는 것보다 많은 부분이 만들어집니다. 부분 크기를 늘리세요.
+
+# {part} is there already.
+t2577cbb6 = { $part }이(가) 이미 있습니다.
+
+# {path} is not a part of a file cut as 7-Zip cuts it, as name.001.
+t64c1c1d0 = { $path }은(는) 7-Zip 방식으로 나눈 파일의 부분(name.001 등)이 아닙니다.
+
+# {part} is missing: the parts start from it.
+t5e65a10a = { $part }이(가) 없습니다. 부분은 여기서 시작합니다.
+
+# {part} is missing, and the parts after it are there.
+t24165c89 = { $part }이(가) 없는데 그 뒤의 부분은 있습니다.
+
+# {part} holds {got}, not {size} as the first part does: it may not be whole.
+tb472eff0 = { $part }은(는) { $got }로, 첫 부분의 { $size }와 다릅니다. 온전하지 않을 수 있습니다.
+
 # The name is empty.
 t1a9d8e4e = 이름이 비어 있습니다.
 

@@ -2077,6 +2077,30 @@ tc95e3a9c = 沒有可簽署的檔案。
 # {name} is not there any more.
 t07c1f2bc = { $name } 已不在原處。
 
+# A part has to hold at least one byte.
+te779b111 = 每個分割檔至少要有一個位元組。
+
+# {path} is not a file.
+tdfee38b2 = { $path } 不是檔案。
+
+# That would make more parts than can be numbered: make them bigger.
+t7ce88e46 = 這樣分出的分割檔會多到無法編號：請把分割檔設大一些。
+
+# {part} is there already.
+t2577cbb6 = { $part } 已經存在。
+
+# {path} is not a part of a file cut as 7-Zip cuts it, as name.001.
+t64c1c1d0 = { $path } 不是以 7-Zip 方式分割的檔案的分割檔（如 name.001）。
+
+# {part} is missing: the parts start from it.
+t5e65a10a = 缺少 { $part }：分割檔從它開始。
+
+# {part} is missing, and the parts after it are there.
+t24165c89 = 缺少 { $part }，而它之後的分割檔都在。
+
+# {part} holds {got}, not {size} as the first part does: it may not be whole.
+tb472eff0 = { $part } 有 { $got }，不是第一個分割檔的 { $size }：它可能不完整。
+
 # The name is empty.
 t1a9d8e4e = 名稱是空的。
 

@@ -2068,6 +2068,30 @@ tc95e3a9c = 署名するファイルがありません。
 # {name} is not there any more.
 t07c1f2bc = { $name } はもう存在しません。
 
+# A part has to hold at least one byte.
+te779b111 = 各パートは 1 バイト以上必要です。
+
+# {path} is not a file.
+tdfee38b2 = { $path } はファイルではありません。
+
+# That would make more parts than can be numbered: make them bigger.
+t7ce88e46 = 番号を付けられる数より多くのパートになります。パートを大きくしてください。
+
+# {part} is there already.
+t2577cbb6 = { $part } はすでにあります。
+
+# {path} is not a part of a file cut as 7-Zip cuts it, as name.001.
+t64c1c1d0 = { $path } は、7-Zip の方式で分割されたファイルのパート (name.001 など) ではありません。
+
+# {part} is missing: the parts start from it.
+t5e65a10a = { $part } がありません。パートはここから始まります。
+
+# {part} is missing, and the parts after it are there.
+t24165c89 = { $part } がありませんが、その後のパートはあります。
+
+# {part} holds {got}, not {size} as the first part does: it may not be whole.
+tb472eff0 = { $part } は { $got } で、最初のパートの { $size } と違います。完全ではないかもしれません。
+
 # The name is empty.
 t1a9d8e4e = 名前が空です。
 

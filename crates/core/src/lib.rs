@@ -21,6 +21,7 @@ mod passphrase;
 mod rar;
 mod sign;
 mod source;
+mod split;
 mod spool;
 mod storage;
 mod transfer;
@@ -64,6 +65,7 @@ pub use sign::{
     sign_file, signature_name,
 };
 pub use source::{Source, Stored};
+pub use split::{join_parts, parts_of, split_file};
 pub use storage::{
     Counted, Field, Item, Lister, LocalFolder, Storage, StorageKind, StoredFile, Values, bad_name,
     by_name, count, folded_query, name_holds,

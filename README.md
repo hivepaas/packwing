@@ -80,6 +80,8 @@ pkw create -p --hide-names private.7z docs/      # with a password, asked; its n
 pkw create notes.tar.zst docs/ --encrypt-to age1…  # encrypted to a key: notes.tar.zst.age
 pkw create --split 25MB mail.zip photos/          # in parts: mail.zip.001, .002…
 pkw add archive.zip new.txt --into docs  # and delete, rename: a ZIP archive, in place
+pkw split backup.iso --size 4GB         # into parts beside it, as 7-Zip cuts one: backup.iso.001, .002…
+pkw join backup.iso.001                 # back into backup.iso, the parts checked first
 pkw checksum -a sha256 -a blake3 *.iso   # --save beside each, or --check SHA256SUMS
 pkw convert photos.rar photos.tar.zst   # another format, as create makes it, an entry at a time with no folder in between (-p, -l, --split…)
 pkw convert site.zip site.7z --exclude '**/node_modules' --exclude '*.log'   # and --include: what goes in
