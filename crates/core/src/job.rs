@@ -10,9 +10,10 @@ use std::sync::atomic::AtomicU64;
 use std::time::Duration;
 
 use hivepack::extract::{
-    Cancel, Damaged, Links, NameDecoder, OnDamaged, Options, Progress, ProgressFn, RarProblem,
-    Select, Summary, extract_7z, extract_cpio, extract_iso, extract_rar, extract_tar, extract_udf,
-    extract_xar, extract_zip,
+    Cancel, Damaged, Links, NameDecoder, OnDamaged, Options, Permissions, Progress, ProgressFn,
+    RarProblem, Select, Sink, Summary, extract_7z, extract_7z_to, extract_cpio, extract_cpio_to,
+    extract_iso, extract_iso_to, extract_rar, extract_rar_to, extract_tar, extract_tar_to,
+    extract_udf, extract_udf_to, extract_xar, extract_xar_to, extract_zip, extract_zip_to,
 };
 use hivepack::open::{Container, Opened};
 use hivepack::tar::Reader;
@@ -344,6 +345,43 @@ fn extract_picked(
     select: Option<Select>,
     control: &Control,
 ) -> Result<Summary, Error> {
+    extract_into(
+        source,
+        WriteTo::Folder(destination),
+        keys,
+        how,
+        select,
+        control,
+    )
+}
+
+/// Where an extraction writes: a folder, or what takes each entry in its place.
+pub(crate) enum WriteTo<'a> {
+    Folder(&'a Path),
+    Taker(&'a mut dyn Taker),
+}
+
+/// What takes an archive's entries in place of a folder: as a [`Sink`] does, and
+/// the one file that is under layers alone, as `a.sql.gz` is.
+pub(crate) trait Taker: Sink {
+    /// The one file named `name`, its data read from `data`: the bytes read.
+    fn one_file(
+        &mut self,
+        name: &str,
+        data: &mut dyn Read,
+        control: &Control,
+    ) -> Result<u64, Error>;
+}
+
+/// The archive of `source` extracted `into` a folder or a [`Taker`].
+pub(crate) fn extract_into(
+    source: &Source,
+    into: WriteTo<'_>,
+    keys: &Keys,
+    how: &ExtractOptions,
+    select: Option<Select>,
+    control: &Control,
+) -> Result<Summary, Error> {
     let mut options = Options::default();
     options.password = keys.password.clone();
     options.progress = control.progress.clone();
@@ -363,6 +401,21 @@ fn extract_picked(
     } else {
         Links::Inside
     };
+    if let WriteTo::Taker(_) = into {
+        // What takes the links is no folder: they stay links, on every system,
+        // and the permission bits are as the archive has them.
+        options.links = Links::Inside;
+        options.permissions = Permissions::Preserve;
+    }
+    // Each entry to one or the other, as `into` says.
+    macro_rules! into {
+        ($folder:ident, $taker:ident, $from:expr) => {
+            match into {
+                WriteTo::Folder(destination) => $folder($from, destination, &options),
+                WriteTo::Taker(taker) => $taker($from, taker, &options),
+            }
+        };
+    }
     let mut opener = opener(source, keys);
     let mut opened = opener.open()?;
     let layers = opened.layers().to_vec();
@@ -378,94 +431,94 @@ fn extract_picked(
     match opened.container() {
         Container::Tar => {
             drop(opened);
-            Ok(extract_tar(|| Ok(opener.open()?), destination, &options)?)
+            Ok(into!(extract_tar, extract_tar_to, || Ok(opener.open()?))?)
         }
         Container::Zip if layers.is_empty() => {
             drop(opened);
             match source {
                 Source::File(path) => {
                     let archive = zip_archive(Volumes::open(path)?)?;
-                    Ok(extract_zip(&archive, destination, &options)?)
+                    Ok(into!(extract_zip, extract_zip_to, &archive)?)
                 }
                 Source::Stored(stored) => {
                     let archive = zip_archive(stored.stored_reader())?;
-                    Ok(extract_zip(&archive, destination, &options)?)
+                    Ok(into!(extract_zip, extract_zip_to, &archive)?)
                 }
             }
         }
         Container::Zip => {
             let spooled = spool(&mut opened)?;
             let archive = zip_archive(&spooled.file)?;
-            Ok(extract_zip(&archive, destination, &options)?)
+            Ok(into!(extract_zip, extract_zip_to, &archive)?)
         }
         // Read twice, as a tar archive is: once to check, once to write.
         Container::Iso => {
             drop(opened);
-            Ok(extract_iso(|| Ok(opener.open()?), destination, &options)?)
+            Ok(into!(extract_iso, extract_iso_to, || Ok(opener.open()?))?)
         }
         Container::Udf if layers.is_empty() => {
             drop(opened);
             let mut udf = Udf::open(source.reader()?)?;
-            Ok(extract_udf(&mut udf, destination, &options)?)
+            Ok(into!(extract_udf, extract_udf_to, &mut udf)?)
         }
         Container::Udf => {
             let spooled = spool(&mut opened)?;
             let mut udf = Udf::open(&spooled.file)?;
-            Ok(extract_udf(&mut udf, destination, &options)?)
+            Ok(into!(extract_udf, extract_udf_to, &mut udf)?)
         }
         Container::SevenZip if layers.is_empty() => {
             drop(opened);
             let mut seven = seven_zip(|| source.reader(), keys)?;
-            Ok(extract_7z(&mut seven.archive, destination, &options)?)
+            Ok(into!(extract_7z, extract_7z_to, &mut seven.archive)?)
         }
         Container::SevenZip => {
             let spooled = spool(&mut opened)?;
             let mut seven = seven_zip(|| spooled.rewound(), keys)?;
-            Ok(extract_7z(&mut seven.archive, destination, &options)?)
+            Ok(into!(extract_7z, extract_7z_to, &mut seven.archive)?)
         }
         // Read twice, as a tar archive is; an RPM package's payload, its
         // lead and headers taken off, and a macOS package's payloads,
         // expanded into folders of their names.
         Container::Cpio => {
             drop(opened);
-            Ok(extract_cpio(|| Ok(opener.open()?), destination, &options)?)
+            Ok(into!(extract_cpio, extract_cpio_to, || Ok(opener.open()?))?)
         }
         Container::Xar => {
             drop(opened);
-            Ok(extract_xar(|| Ok(opener.open()?), destination, &options)?)
+            Ok(into!(extract_xar, extract_xar_to, || Ok(opener.open()?))?)
         }
         Container::Rar if layers.is_empty() && source.path().is_some() => {
             drop(opened);
             let path = source.path().expect("just looked at");
             let packed = Arc::new(AtomicU64::new(0));
-            let result = extract_rar(
-                |password| rar::open(path, password, packed.clone()),
-                destination,
-                &options,
-            );
+            let result = into!(extract_rar, extract_rar_to, |password| rar::open(
+                path,
+                password,
+                packed.clone()
+            ));
             rar_result(result, keys)
         }
         Container::Rar => {
             let spooled = spool(&mut opened)?;
-            let result = extract_rar(
-                |password| {
-                    hivepack::rar::Archive::open_with_password(spooled.rewound()?, false, password)
-                },
-                destination,
-                &options,
-            );
+            let result = into!(extract_rar, extract_rar_to, |password| {
+                hivepack::rar::Archive::open_with_password(spooled.rewound()?, false, password)
+            });
             rar_result(result, keys)
         }
         Container::Data if layers.is_empty() => Err(Error::NotAnArchive),
         _ => {
-            let name = source.name();
-            extract_one(
-                opened,
-                &without_layers(&name, &layers),
-                destination,
-                how,
-                control,
-            )
+            let name = without_layers(&source.name(), &layers);
+            match into {
+                WriteTo::Folder(destination) => {
+                    extract_one(opened, &name, destination, how, control)
+                }
+                WriteTo::Taker(taker) => {
+                    let mut summary = Summary::default();
+                    summary.bytes = taker.one_file(&name, &mut opened, control)?;
+                    summary.files = 1;
+                    Ok(summary)
+                }
+            }
         }
     }
 }

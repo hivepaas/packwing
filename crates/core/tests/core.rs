@@ -1313,3 +1313,115 @@ fn a_name_that_cannot_be_used_says_which_and_writes_nothing() {
     );
     assert!(!s.0.join("evil.txt").exists());
 }
+
+/// What `out` holds, a file at a time: its path under `out`, and its bytes.
+fn files_under(out: &Path) -> Vec<(String, Vec<u8>)> {
+    fn walk(at: &Path, base: &Path, found: &mut Vec<(String, Vec<u8>)>) {
+        let mut children: Vec<_> = std::fs::read_dir(at)
+            .unwrap()
+            .map(|e| e.unwrap().path())
+            .collect();
+        children.sort();
+        for child in children {
+            if child.is_dir() {
+                walk(&child, base, found);
+            } else {
+                let name = child
+                    .strip_prefix(base)
+                    .unwrap()
+                    .to_string_lossy()
+                    .replace('\\', "/");
+                found.push((name, std::fs::read(&child).unwrap()));
+            }
+        }
+    }
+    let mut found = Vec::new();
+    walk(out, out, &mut found);
+    found
+}
+
+#[test]
+fn converts_an_archive_into_each_format_entry_by_entry() {
+    use packwing_core::{ExtractOptions, Kind, NewArchive, convert};
+    let s = Scratch::new();
+    let from = s.file("a.tar", &tar(&sample()));
+    let mut want: Vec<(String, Vec<u8>)> = sample()
+        .into_iter()
+        .filter(|(name, _)| !name.ends_with('/'))
+        .map(|(name, data)| (name.to_owned(), data.to_vec()))
+        .collect();
+    want.sort();
+    for (kind, name) in [
+        (Kind::Zip, "b.zip"),
+        (Kind::SevenZip, "b.7z"),
+        (Kind::TarZst, "b.tar.zst"),
+        (Kind::TarGz, "b.tar.gz"),
+    ] {
+        let new = NewArchive {
+            kind,
+            ..NewArchive::default()
+        };
+        let done = convert(
+            &from,
+            &Keys::default(),
+            &s.0.join(name),
+            &new,
+            &ExtractOptions::default(),
+            &Control::default(),
+        )
+        .unwrap();
+        assert_eq!(done.made, s.0.join(name));
+        assert_eq!(done.summary.files, 3, "{name}");
+        let out = s.0.join(format!("out-{name}"));
+        extract(&done.made, &out, &Keys::default(), &Control::default()).unwrap();
+        assert_eq!(files_under(&out), want, "{name}");
+    }
+    // A name taken goes to the next that is free, as a new archive's does.
+    let taken = convert(
+        &from,
+        &Keys::default(),
+        &s.0.join("b.zip"),
+        &NewArchive::default(),
+        &ExtractOptions::default(),
+        &Control::default(),
+    )
+    .unwrap();
+    assert_eq!(taken.made, s.0.join("b (2).zip"));
+}
+
+#[test]
+fn a_damaged_file_is_left_out_of_what_is_converted() {
+    use packwing_core::{ExtractOptions, NewArchive, convert};
+    let s = Scratch::new();
+    let mut data = zip(&[("a.txt", b"aaaa"), ("b.txt", b"bbbb"), ("c.txt", b"cccc")]);
+    let at = data.windows(4).position(|w| w == b"bbbb").unwrap();
+    data[at] = b'x';
+    let from = s.file("a.zip", &data);
+    let to = s.0.join("b.7z");
+    let how = ExtractOptions::default();
+    // Stopped, it leaves nothing.
+    let e = convert(
+        &from,
+        &Keys::default(),
+        &to,
+        &NewArchive::default(),
+        &how,
+        &Control::default(),
+    );
+    assert!(matches!(e, Err(Error::Failed(_))), "{e:?}");
+    assert!(std::fs::read_dir(&s.0).unwrap().count() == 1);
+    let control = Control {
+        on_damaged: Some(Arc::new(|_: &Damage| OnDamaged::Skip)),
+        ..Control::default()
+    };
+    let new = packwing_core::NewArchive {
+        kind: packwing_core::Kind::SevenZip,
+        ..packwing_core::NewArchive::default()
+    };
+    let done = convert(&from, &Keys::default(), &to, &new, &how, &control).unwrap();
+    assert_eq!(damages(&done.summary).len(), 1);
+    let out = s.0.join("out");
+    extract(&done.made, &out, &Keys::default(), &Control::default()).unwrap();
+    let names: Vec<String> = files_under(&out).into_iter().map(|(n, _)| n).collect();
+    assert_eq!(names, ["a.txt", "c.txt"]);
+}

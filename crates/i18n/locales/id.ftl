@@ -1915,6 +1915,15 @@ t8b242db1 = Baru
 # There is no file to save it beside.
 ta9906e3b = Tidak ada berkas untuk tempat menyimpannya.
 
+# Nothing to compress.
+t47339885 = Tidak ada yang dikompres.
+
+# {path} is too big.
+te9ab879e = { $path } terlalu besar.
+
+# This format holds one file, and no more.
+t75c197d9 = Format ini hanya memuat satu berkas, tidak lebih.
+
 # Could not read {path}: {e}
 tad0120eb = Tidak dapat membaca { $path }: { $e }
 
@@ -1933,9 +1942,6 @@ t40554bf6 = { $wanted } dan nama setelahnya sudah dipakai.
 # Could not encrypt: {e}
 t485d71ab = Tidak dapat mengenkripsi: { $e }
 
-# Nothing to compress.
-t47339885 = Tidak ada yang dikompres.
-
 # A ZIP or 7z archive takes age keys only when age encrypts it whole.
 t582284c9 = Arsip ZIP atau 7z hanya menerima kunci age jika age mengenkripsinya secara utuh.
 
@@ -1948,17 +1954,11 @@ t500313af = Kunci pascakuantum tidak dapat dipakai bersama kunci lain: kunci lai
 # There are no keys in this file to encrypt to.
 tc2809b2c = Tidak ada kunci di berkas ini untuk mengenkripsi.
 
-# This format holds one file, and no more.
-t75c197d9 = Format ini hanya memuat satu berkas, tidak lebih.
-
 # {path} got shorter while it was being read.
 t2e221d1f = { $path } menjadi lebih pendek saat sedang dibaca.
 
 # A password has to be valid Unicode.
 t5ef729bc = Kata sandi harus berupa Unicode yang valid.
-
-# {path} is too big.
-te9ab879e = { $path } terlalu besar.
 
 # Could not start compressing: {e}
 tc4faa70c = Tidak dapat mulai mengompres: { $e }

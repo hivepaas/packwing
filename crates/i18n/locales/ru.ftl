@@ -1978,6 +1978,15 @@ t8b242db1 = Новый
 # There is no file to save it beside.
 ta9906e3b = Нет файла, рядом с которым сохранить.
 
+# Nothing to compress.
+t47339885 = Нечего сжимать.
+
+# {path} is too big.
+te9ab879e = { $path } слишком большой.
+
+# This format holds one file, and no more.
+t75c197d9 = Этот формат хранит один файл и не более.
+
 # Could not read {path}: {e}
 tad0120eb = Не удалось прочитать { $path }: { $e }
 
@@ -1996,9 +2005,6 @@ t40554bf6 = { $wanted } и следующие за ним имена занят�
 # Could not encrypt: {e}
 t485d71ab = Не удалось зашифровать: { $e }
 
-# Nothing to compress.
-t47339885 = Нечего сжимать.
-
 # A ZIP or 7z archive takes age keys only when age encrypts it whole.
 t582284c9 = Архив ZIP или 7z принимает ключи age, только если age шифрует его целиком.
 
@@ -2011,17 +2017,11 @@ t500313af = Постквантовые ключи нельзя использо�
 # There are no keys in this file to encrypt to.
 tc2809b2c = В этом файле нет ключей, для которых можно шифровать.
 
-# This format holds one file, and no more.
-t75c197d9 = Этот формат хранит один файл и не более.
-
 # {path} got shorter while it was being read.
 t2e221d1f = { $path } стал короче во время чтения.
 
 # A password has to be valid Unicode.
 t5ef729bc = Пароль должен быть допустимым Unicode.
-
-# {path} is too big.
-te9ab879e = { $path } слишком большой.
 
 # Could not start compressing: {e}
 tc4faa70c = Не удалось начать сжатие: { $e }

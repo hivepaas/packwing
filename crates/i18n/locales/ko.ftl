@@ -1906,6 +1906,15 @@ t8b242db1 = 새로 만들기
 # There is no file to save it beside.
 ta9906e3b = 옆에 저장할 파일이 없습니다.
 
+# Nothing to compress.
+t47339885 = 압축할 항목이 없습니다.
+
+# {path} is too big.
+te9ab879e = { $path }이(가) 너무 큽니다.
+
+# This format holds one file, and no more.
+t75c197d9 = 이 형식은 파일 하나만 담을 수 있습니다.
+
 # Could not read {path}: {e}
 tad0120eb = { $path }을(를) 읽을 수 없습니다: { $e }
 
@@ -1924,9 +1933,6 @@ t40554bf6 = { $wanted }와(과) 그 뒤의 이름은 이미 사용 중입니다.
 # Could not encrypt: {e}
 t485d71ab = 암호화할 수 없습니다: { $e }
 
-# Nothing to compress.
-t47339885 = 압축할 항목이 없습니다.
-
 # A ZIP or 7z archive takes age keys only when age encrypts it whole.
 t582284c9 = ZIP 또는 7z 압축 파일은 age로 전체를 암호화할 때만 age 키를 쓸 수 있습니다.
 
@@ -1939,17 +1945,11 @@ t500313af = 양자 내성 키는 다른 키와 함께 쓸 수 없습니다. 다�
 # There are no keys in this file to encrypt to.
 tc2809b2c = 이 파일에는 암호화에 쓸 키가 없습니다.
 
-# This format holds one file, and no more.
-t75c197d9 = 이 형식은 파일 하나만 담을 수 있습니다.
-
 # {path} got shorter while it was being read.
 t2e221d1f = { $path }이(가) 읽는 도중 작아졌습니다.
 
 # A password has to be valid Unicode.
 t5ef729bc = 비밀번호는 올바른 유니코드여야 합니다.
-
-# {path} is too big.
-te9ab879e = { $path }이(가) 너무 큽니다.
 
 # Could not start compressing: {e}
 tc4faa70c = 압축을 시작할 수 없습니다: { $e }

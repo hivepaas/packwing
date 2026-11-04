@@ -81,7 +81,7 @@ pkw create notes.tar.zst docs/ --encrypt-to age1…  # encrypted to a key: notes
 pkw create --split 25MB mail.zip photos/          # in parts: mail.zip.001, .002…
 pkw add archive.zip new.txt --into docs  # and delete, rename: a ZIP archive, in place
 pkw checksum -a sha256 -a blake3 *.iso   # --save beside each, or --check SHA256SUMS
-pkw convert photos.rar photos.tar.zst   # another format, as create makes it (-p, -l, --split…)
+pkw convert photos.rar photos.tar.zst   # another format, as create makes it, an entry at a time with no folder in between (-p, -l, --split…)
 pkw keygen -o ~/keys                     # a key to sign with: Ed25519 and ML-DSA-65, and its .pub
 pkw sign release.zip --by ~/keys/packwing-signing-key   # or an SSH Ed25519 key: release.zip.sig
 pkw verify release.zip --trust their.pub # against the keys the app trusts, and these

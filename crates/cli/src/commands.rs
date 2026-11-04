@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use packwing_core::{
     Algorithm, COMPRESSED_EXTENSIONS, Entry, ExtractOptions, Kind, Listing, LocalFolder,
     NewArchive, OnExisting, Source, Transfer, add_with, algorithms_of, came_from_internet,
-    checksum_line, checksums, create, damages, delete, extract_selected, extract_with,
+    checksum_line, checksums, convert, create, damages, delete, extract_selected, extract_with,
     has_signature, list, read_entry, rename, save_checksum, signature_name, size, stem, test,
     transfer,
 };
@@ -876,35 +876,28 @@ fn convert_cmd(
     cx: &mut Context,
 ) -> Result<(), Exit> {
     let (to, new) = making(to, make, cx)?;
-    let beside = to
-        .parent()
-        .filter(|p| !p.as_os_str().is_empty())
-        .unwrap_or(Path::new("."));
-    let work = beside.join(format!(".pkw-convert-{}", std::process::id()));
-    let _ = std::fs::remove_dir_all(&work);
-    let result = (|| {
-        let name = named(from);
-        let how = ExtractOptions::default();
-        let (control, bar) = crate::progress::control("Reading", cx.progress);
-        let control = damaging.control(control, cx)?;
-        let summary = cx.secrets.unlocking(&name, |keys| {
-            extract_with(Source::from(from), &work, keys, &how, &control)
-        })?;
-        drop(bar);
-        let damaged = damages(&summary);
-        let mut paths: Vec<PathBuf> = std::fs::read_dir(&work)
-            .map_err(|e| Exit::Failed(e.to_string()))?
-            .filter_map(|e| e.ok().map(|e| e.path()))
-            .collect();
-        paths.sort();
-        if paths.is_empty() {
-            return Err(Exit::Failed(format!("{name} holds nothing")));
-        }
-        write_archive(&to, &paths, &new, cx)?;
-        damaging.finish(&damaged)
-    })();
-    let _ = std::fs::remove_dir_all(&work);
-    result
+    let name = named(from);
+    let how = ExtractOptions::default();
+    let (control, bar) = crate::progress::control("Converting", cx.progress);
+    let control = damaging.control(control, cx)?;
+    let converted = cx.secrets.unlocking(&name, |keys| {
+        convert(Source::from(from), keys, &to, &new, &how, &control)
+    })?;
+    drop(bar);
+    let damaged = damages(&converted.summary);
+    let made = &converted.made;
+    let bytes = std::fs::metadata(made).map(|m| m.len()).unwrap_or_default();
+    if cx.json {
+        print_json(&json!({
+            "made": made.display().to_string(),
+            "size": bytes,
+            "files": converted.summary.files,
+            "damaged": crate::damaged::as_json(&damaged),
+        }));
+    } else if !cx.quiet {
+        println!("{} ({})", made.display(), size(bytes));
+    }
+    damaging.finish(&damaged)
 }
 
 fn passphrase_cmd(min: usize, cx: &Context) -> Result<(), Exit> {
