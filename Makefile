@@ -32,7 +32,7 @@ SFTP_UNTRUST := touch $(HOME)/.ssh/known_hosts; \
 	printf '%s\n' "$$lines" >$(HOME)/.ssh/known_hosts
 
 .DEFAULT_GOAL := help
-.PHONY: help debug release build build-debug cli test test-window test-ui lint fmt clean \
+.PHONY: help debug release build build-debug cli cli-slim test test-window test-ui lint fmt clean \
 	s3-start s3-stop webdav-start webdav-stop sftp-start sftp-stop
 
 help: ## List the targets
@@ -50,11 +50,16 @@ build-debug: ## Build the debug version: target/debug/packwing
 cli: ## Build the command line, with no window: target/release/pkw
 	$(CARGO) build --release -p packwing-cli
 
+cli-slim: ## Build pkw without S3, SFTP and WebDAV, a third of the size
+	$(CARGO) build --release -p packwing-cli --no-default-features
+
 build: ## Build the release version: target/release/packwing
 	$(CARGO) build --release $(APP)
 
 test: ## Run every test, without the ones that draw the window
 	$(CARGO) test $(ALL)
+	@# $(ALL) builds pkw without its default `remote`: once more with it.
+	$(CARGO) test -p packwing-cli
 
 test-window: ## Run every test, drawing every screen to target/shots with no display (Linux)
 	$(CARGO) test $(ALL),shots
@@ -66,6 +71,7 @@ lint: ## Check the format and run clippy
 	$(CARGO) fmt --all -- --check
 	$(CARGO) clippy $(ALL) --all-targets -- -D warnings
 	$(CARGO) clippy $(APP),ui-tests --all-targets -- -D warnings
+	$(CARGO) clippy -p packwing-cli --all-targets -- -D warnings
 
 fmt: ## Format the code
 	$(CARGO) fmt --all

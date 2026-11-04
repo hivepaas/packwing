@@ -11,7 +11,7 @@ use packwing_core::{Item, LocalFolder, Source, Storage, Stored};
 
 use crate::Exit;
 use crate::names::entry_path;
-use crate::settings::{Kept, storages, text};
+use crate::settings::{Kept, kinds, storages, text};
 
 /// A file or folder, on this computer or on a storage.
 pub struct Place {
@@ -30,17 +30,18 @@ impl Place {
         if let Some((name, rest)) = typed.split_once(':')
             && let Some(kept) = kept_named(name)?
         {
-            let storage = kept.storage.ok_or_else(|| {
-                Exit::Failed(format!(
-                    "{name} is a {} storage, which pkw cannot open",
-                    kept.kind
-                ))
-            })?;
             if kept.asks_first {
                 return Err(Exit::Failed(format!(
                     "{name} asks for this computer's password before it opens: open it in packwing"
                 )));
             }
+            let storage = kept.storage.ok_or_else(|| {
+                Exit::Failed(format!(
+                    "{name} is a {} storage, which pkw cannot open{}",
+                    kept.kind,
+                    crate::settings::WITHOUT
+                ))
+            })?;
             let here = storage.local_path(&[]);
             let path = entry_path(rest);
             return Ok(Place {
@@ -137,7 +138,7 @@ fn kept_named(name: &str) -> Result<Option<Kept>, Exit> {
     if name.is_empty() {
         return Ok(None);
     }
-    Ok(storages(&text(), &packwing_remote::kinds())
+    Ok(storages(&text(), &kinds())
         .into_iter()
         .find(|k| k.name == name))
 }

@@ -537,7 +537,7 @@ fn on_existing_named(typed: &str) -> Result<OnExisting, Exit> {
 }
 
 fn storages_cmd(cx: &Context) -> Result<(), Exit> {
-    let kept = crate::settings::storages(&crate::settings::text(), &packwing_remote::kinds());
+    let kept = crate::settings::storages(&crate::settings::text(), &crate::settings::kinds());
     if cx.json {
         let rows: Vec<Value> = kept
             .iter()
@@ -573,8 +573,10 @@ fn storages_cmd(cx: &Context) -> Result<(), Exit> {
     for k in &kept {
         let note = if k.asks_first {
             "  (asks for this computer's password: open it in packwing)"
-        } else if k.storage.is_none() {
+        } else if k.storage.is_none() && cfg!(feature = "remote") {
             "  (pkw cannot open this kind)"
+        } else if k.storage.is_none() {
+            "  (this pkw is built without S3, SFTP and WebDAV)"
         } else {
             ""
         };

@@ -61,6 +61,23 @@ pub struct Kept {
     pub storage: Option<Arc<dyn Storage>>,
 }
 
+/// Why a storage of a kind this build has none for is not opened: said after
+/// "pkw cannot open".
+pub const WITHOUT: &str = if cfg!(feature = "remote") {
+    ""
+} else {
+    ": this pkw is built without S3, SFTP and WebDAV (the remote feature)"
+};
+
+/// The kinds of storage this build opens, beside a folder here: none
+/// without the `remote` feature.
+pub fn kinds() -> Vec<Arc<dyn StorageKind>> {
+    #[cfg(feature = "remote")]
+    return packwing_remote::kinds();
+    #[cfg(not(feature = "remote"))]
+    return Vec::new();
+}
+
 /// The storages added to the app, in its order: `storage=local NAME<TAB>PATH`,
 /// and `storage=other KIND<TAB>NAME<TAB>ID<TAB>K=V…`.
 pub fn storages(settings: &str, kinds: &[Arc<dyn StorageKind>]) -> Vec<Kept> {

@@ -65,7 +65,7 @@ packwing refuses a host not in `~/.ssh/known_hosts`, so `make sftp-start` adds t
 
 ## ⌨️ Command line
 
-`pkw` is packwing without the window, for a terminal, a server over SSH or a script. It is a program of its own (`make cli`, then `target/release/pkw`), with no window system in it:
+`pkw` is packwing without the window, for a terminal, a server over SSH or a script. It is a program of its own (`make cli`, then `target/release/pkw`), with no window system in it; `make cli-slim` builds it without S3, SFTP and WebDAV, about a third of the size, for archives on this computer and the app's folder storages:
 
 ```sh
 pkw list backup.7z                      # what it holds (-l: sizes and dates; --json)
