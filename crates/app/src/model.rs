@@ -36,11 +36,25 @@ impl Kind {
         }
     }
 
-    /// What a file is, from its extension.
+    /// What a file is, from its extension. The first part of an archive cut
+    /// as 7-Zip cuts it, `name.7z.001`, is an archive: packwing reads its parts
+    /// as one. Another part of something else is what it is alone.
     pub fn of(name: &str, dir: bool) -> Kind {
         if dir {
             return Kind::Folder;
         }
+        match Kind::of_extension(name) {
+            Kind::Text if without_part_number(name) != name => {
+                match Kind::of_extension(without_part_number(name)) {
+                    Kind::Archive => Kind::Archive,
+                    _ => Kind::Text,
+                }
+            }
+            kind => kind,
+        }
+    }
+
+    fn of_extension(name: &str) -> Kind {
         let ext = name
             .rsplit_once('.')
             .map(|(_, e)| e.to_ascii_lowercase())
@@ -272,10 +286,26 @@ pub fn tag_of(name: &str, kind: Kind) -> String {
     if kind == Kind::Folder {
         return "DIR".into();
     }
-    // A split archive's part number is not its type.
+    // A split archive's part number is not its type: `a.7z.001` is a 7Z.
+    let name = if kind == Kind::Archive {
+        without_part_number(name)
+    } else {
+        name
+    };
     match name.rsplit_once('.') {
         Some((_, ext)) if !ext.is_empty() && ext.len() <= 4 => ext.to_uppercase(),
         _ => "FILE".into(),
+    }
+}
+
+/// `name` without the number of a part, as `.001` (three digits or more, as
+/// the core joins them); `name` itself without one.
+fn without_part_number(name: &str) -> &str {
+    match name.rsplit_once('.') {
+        Some((base, number)) if number.len() >= 3 && number.bytes().all(|b| b.is_ascii_digit()) => {
+            base
+        }
+        _ => name,
     }
 }
 
@@ -374,6 +404,24 @@ impl Selection {
 mod tests {
     use super::*;
     use packwing_i18n::tr_n;
+
+    #[test]
+    fn the_first_part_of_a_cut_archive_is_an_archive() {
+        for name in ["a.7z.001", "Báo cáo.zip.001", "b.tar.zst.002", "c.7Z.0001"] {
+            assert_eq!(Kind::of(name, false), Kind::Archive, "{name}");
+        }
+        assert_eq!(tag_of("a.7z.001", Kind::Archive), "7Z");
+        assert_eq!(tag_of("b.tar.zst.002", Kind::Archive), "ZST");
+        // A part of what is not an archive is not opened as one.
+        assert_eq!(Kind::of("movie.mkv.001", false), Kind::Text);
+        assert_eq!(Kind::of("photo.jpg.001", false), Kind::Text);
+        assert_eq!(tag_of("movie.mkv.001", Kind::Text), "001");
+        // Two digits are not a part's number, nor a name ending in a dot.
+        assert_eq!(Kind::of("a.7z.01", false), Kind::Text);
+        assert_eq!(Kind::of("a.7z.", false), Kind::Text);
+        assert_eq!(Kind::of("a.7z", false), Kind::Archive);
+        assert_eq!(Kind::of("2026.001", false), Kind::Text);
+    }
 
     fn holding(paths: &[(&str, bool)]) -> Archive {
         let entries = paths
