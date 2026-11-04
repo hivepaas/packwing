@@ -1906,6 +1906,9 @@ t8b242db1 = Mới
 # There is no file to save it beside.
 ta9906e3b = Không có tệp nào để lưu cạnh.
 
+# Nothing in the archive matches the patterns given.
+t90b19482 = Không có gì trong archive khớp với các mẫu đã cho.
+
 # Nothing to compress.
 t47339885 = Không có gì để nén.
 
@@ -1995,6 +1998,9 @@ tdb9326d3 = Trước khi tải lên, tệp nén này được tạo trong { $fol
 
 # The upload stopped.
 t528232e6 = Việc tải lên đã dừng.
+
+# “{pattern}” names no file or folder.
+te17b2bfa = “{ $pattern }” không chỉ tới file hay thư mục nào.
 
 # {name} is already in the folder.
 tbe7fab8a = { $name } đã có trong thư mục.

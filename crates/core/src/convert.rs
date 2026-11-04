@@ -13,6 +13,9 @@
 //! link in a ZIP or 7z archive is a symbolic link to its file, as neither holds
 //! one. The new archive keeps the mark of the one read, if it came from the
 //! Internet.
+//!
+//! A [`Filter`] takes only some of its entries. A hard link to a file it leaves
+//! out stops the job, as extracting it would: the file's data is not read.
 
 use packwing_i18n::tr;
 use std::io::{self, Cursor, Read, Write};
@@ -28,6 +31,7 @@ use crate::create::{
     Kind, Level, NewArchive, PIECE, Squeezed, WriteSeek, age_recipients, age_writer,
     has_extension_in, obey_policy, seven_zip_options, with_age, write_new,
 };
+use crate::filter::Filter;
 use crate::job::{ExtractOptions, Taker, WriteTo, extract_into};
 use crate::source::Source;
 use crate::spool::{Spooled, scratch};
@@ -53,19 +57,22 @@ pub struct Converted {
 
 /// Makes an archive of what the archive of `source` holds, as `new` says, named after
 /// `wanted` or the first name after it that is free; see the module's documentation.
-/// `keys` open the one read, and `how` limits what it may come to.
+/// `keys` open the one read, `how` limits what it may come to, and `filter` says
+/// which of its entries go in.
 pub fn convert(
     source: impl Into<Source>,
     keys: &Keys,
     wanted: &Path,
     new: &NewArchive,
     how: &ExtractOptions,
+    filter: &Filter,
     control: &Control,
 ) -> Result<Converted, Error> {
     // Refused before anything is read.
     obey_policy(new)?;
     let recipients = age_recipients(new)?;
     let source: Source = source.into();
+    let filter_given = !filter.is_everything();
     let mut summary = None;
     let (made, files) = write_new(wanted, new, |out| {
         let read =
@@ -78,9 +85,13 @@ pub fn convert(
                     failed: None,
                     taken: 0,
                 };
-                let select = new
-                    .skip_mac_files
-                    .then(|| -> Select { Arc::new(not_mac_file) });
+                let skip_mac = new.skip_mac_files;
+                let filter = filter.clone();
+                let select = (skip_mac || !filter.is_everything()).then(|| -> Select {
+                    Arc::new(move |path: &[String]| {
+                        filter.takes(path) && (!skip_mac || not_mac_file(path))
+                    })
+                });
                 let read = extract_into(
                     &source,
                     WriteTo::Taker(&mut taker),
@@ -94,6 +105,11 @@ pub fn convert(
                     (Err(_), Some(failed)) => return Err(failed),
                     (read, _) => read?,
                 };
+                if taker.taken == 0 && filter_given {
+                    return Err(Error::Failed(tr!(
+                        "Nothing in the archive matches the patterns given."
+                    )));
+                }
                 if taker.taken == 0 {
                     return Err(Error::Failed(tr!("Nothing to compress.")));
                 }

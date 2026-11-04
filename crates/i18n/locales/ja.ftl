@@ -1906,6 +1906,9 @@ t8b242db1 = 新規
 # There is no file to save it beside.
 ta9906e3b = 隣に保存するファイルがありません。
 
+# Nothing in the archive matches the patterns given.
+t90b19482 = アーカイブの中に、指定したパターンに一致するものはありません。
+
 # Nothing to compress.
 t47339885 = 圧縮するものがありません。
 
@@ -1995,6 +1998,9 @@ tdb9326d3 = アップロードの前に、このアーカイブは { $folder } �
 
 # The upload stopped.
 t528232e6 = アップロードが停止しました。
+
+# “{pattern}” names no file or folder.
+te17b2bfa = 「{ $pattern }」はファイルもフォルダも指していません。
 
 # {name} is already in the folder.
 tbe7fab8a = { $name } はすでにフォルダにあります。

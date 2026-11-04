@@ -1915,6 +1915,9 @@ t8b242db1 = Baru
 # There is no file to save it beside.
 ta9906e3b = Tidak ada berkas untuk tempat menyimpannya.
 
+# Nothing in the archive matches the patterns given.
+t90b19482 = Tidak ada isi arsip yang cocok dengan pola yang diberikan.
+
 # Nothing to compress.
 t47339885 = Tidak ada yang dikompres.
 
@@ -2004,6 +2007,9 @@ tdb9326d3 = Sebelum diunggah, arsip ini dibuat di { $folder }, yang mungkin meme
 
 # The upload stopped.
 t528232e6 = Pengunggahan dihentikan.
+
+# “{pattern}” names no file or folder.
+te17b2bfa = “{ $pattern }” tidak menunjuk file atau folder apa pun.
 
 # {name} is already in the folder.
 tbe7fab8a = { $name } sudah ada di folder.

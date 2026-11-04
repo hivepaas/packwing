@@ -12,6 +12,7 @@
 mod checksum;
 mod convert;
 mod create;
+mod filter;
 mod job;
 mod joined;
 mod listing;
@@ -47,6 +48,7 @@ pub use create::{
     age_key_is_post_quantum, age_key_problem, age_keys_in, can_add, create, create_on, delete,
     free_archive_path, measure, refused_by, rename, route,
 };
+pub use filter::Filter;
 pub use hivepack::extract::{Cancel, OnDamaged, Progress, Summary};
 pub use hivepack::open::{Container, Layer};
 pub use job::{

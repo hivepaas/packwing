@@ -1915,6 +1915,9 @@ t8b242db1 = 新增
 # There is no file to save it beside.
 ta9906e3b = 沒有可在其旁邊儲存的檔案。
 
+# Nothing in the archive matches the patterns given.
+t90b19482 = 封存檔中沒有符合所給模式的內容。
+
 # Nothing to compress.
 t47339885 = 沒有可壓縮的內容。
 
@@ -2004,6 +2007,9 @@ tdb9326d3 = 上傳前，這個封存檔會先在 { $folder } 中建立，可能�
 
 # The upload stopped.
 t528232e6 = 上傳已停止。
+
+# “{pattern}” names no file or folder.
+te17b2bfa = 「{ $pattern }」沒有指向任何檔案或資料夾。
 
 # {name} is already in the folder.
 tbe7fab8a = { $name } 已在資料夾中。

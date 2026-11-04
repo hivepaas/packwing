@@ -1978,6 +1978,9 @@ t8b242db1 = Новый
 # There is no file to save it beside.
 ta9906e3b = Нет файла, рядом с которым сохранить.
 
+# Nothing in the archive matches the patterns given.
+t90b19482 = В архиве нет ничего, что подходит под заданные шаблоны.
+
 # Nothing to compress.
 t47339885 = Нечего сжимать.
 
@@ -2067,6 +2070,9 @@ tdb9326d3 = Перед загрузкой этот архив создаётся
 
 # The upload stopped.
 t528232e6 = Загрузка остановлена.
+
+# “{pattern}” names no file or folder.
+te17b2bfa = «{ $pattern }» не указывает ни на файл, ни на папку.
 
 # {name} is already in the folder.
 tbe7fab8a = { $name } уже есть в папке.
