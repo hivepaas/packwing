@@ -303,6 +303,9 @@ t9981f45f = Clave pública
 # Beside the files
 t757989af = Junto a los archivos
 
+# What it holds, from
+teae4ef1a = Contenido de
+
 # Save in
 tf2d34837 = Guardar en
 
@@ -427,6 +430,9 @@ t0dad409a = Fuerte
 
 # Choose what to put in it
 t5461cfa6 = Elige qué incluir
+
+# Convert
+t92e29218 = Convertir
 
 # New archive
 tf352befb = Archivo comprimido nuevo
@@ -625,6 +631,9 @@ t16ec36d9 = Esperando a otras tareas…
 # A file is damaged
 t8b1230ed = Un archivo está dañado
 
+# Converted, but some files are damaged
+t54ef3472 = Convertido, pero algunos archivos están dañados
+
 # Extracted, but some files are damaged
 t8226d624 = Extraído, pero algunos archivos están dañados
 
@@ -657,6 +666,24 @@ t890f7ed1 = Moviendo…
 
 # Signing…
 t7b8f8780 = Firmando…
+
+# Splitting…
+t5452adf5 = Dividiendo…
+
+# Joining…
+taa884c51 = Uniendo…
+
+# Converting…
+ta1b8f4cc = Convirtiendo…
+
+# Couldn’t split the file
+t83d27d26 = No se pudo dividir el archivo
+
+# Couldn’t join the parts
+t1cf67e00 = No se pudieron unir las partes
+
+# Couldn’t convert the archive
+t39f973a9 = No se pudo convertir el archivo comprimido
 
 # Couldn’t sign
 t4489f97c = No se pudo firmar
@@ -863,6 +890,12 @@ t6bba28d5 = Crear la clave…
 # Sign
 t8f6340c4 = Firmar
 
+# {count} parts beside it, {first} and on. Join puts them back together, and packwing and 7-Zip open an archive cut so as it is.
+tab12cc19 = { $count } partes a su lado, desde { $first }. Unir las vuelve a juntar, y packwing y 7-Zip abren tal cual un archivo comprimido cortado así.
+
+# Split
+t16a15383 = Dividir
+
 # Move {what}
 tc168ca56 = Mover { $what }
 
@@ -991,6 +1024,15 @@ td6d61b10 = Firmar…
 
 # Checksums…
 t2891102d = Sumas de comprobación…
+
+# Convert…
+tae85a7c4 = Convertir…
+
+# Split into parts…
+t281db403 = Dividir en partes…
+
+# Join the parts
+t0ad56db8 = Unir las partes
 
 # Copy path
 tf165cb2b = Copiar ruta
@@ -1219,6 +1261,12 @@ t82869bf0 = Movido
 
 # Signed
 t27c3ab35 = Firmado
+
+# Joined
+tf8f2b670 = Unido
+
+# Converted
+tc7b76e99 = Convertido
 
 # Waiting for a password or a key
 t0e83ae32 = Esperando una contraseña o una clave

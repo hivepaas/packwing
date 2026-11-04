@@ -301,6 +301,9 @@ t9981f45f = Khoá công khai
 # Beside the files
 t757989af = Cạnh các tệp
 
+# What it holds, from
+teae4ef1a = Nội dung lấy từ
+
 # Save in
 tf2d34837 = Lưu vào
 
@@ -423,6 +426,9 @@ t0dad409a = Mạnh
 
 # Choose what to put in it
 t5461cfa6 = Chọn thứ cần đưa vào
+
+# Convert
+t92e29218 = Chuyển định dạng
 
 # New archive
 tf352befb = Tệp nén mới
@@ -619,6 +625,9 @@ t16ec36d9 = Đang chờ các tác vụ khác…
 # A file is damaged
 t8b1230ed = Một file bị hỏng
 
+# Converted, but some files are damaged
+t54ef3472 = Đã chuyển, nhưng có file bị hỏng
+
 # Extracted, but some files are damaged
 t8226d624 = Đã giải nén, nhưng có file bị hỏng
 
@@ -651,6 +660,24 @@ t890f7ed1 = Đang di chuyển…
 
 # Signing…
 t7b8f8780 = Đang ký…
+
+# Splitting…
+t5452adf5 = Đang chia…
+
+# Joining…
+taa884c51 = Đang gộp…
+
+# Converting…
+ta1b8f4cc = Đang chuyển…
+
+# Couldn’t split the file
+t83d27d26 = Không chia được file
+
+# Couldn’t join the parts
+t1cf67e00 = Không gộp được các phần
+
+# Couldn’t convert the archive
+t39f973a9 = Không chuyển được archive
 
 # Couldn’t sign
 t4489f97c = Không ký được
@@ -853,6 +880,12 @@ t6bba28d5 = Tạo khoá…
 # Sign
 t8f6340c4 = Ký
 
+# {count} parts beside it, {first} and on. Join puts them back together, and packwing and 7-Zip open an archive cut so as it is.
+tab12cc19 = { $count } phần cạnh file gốc, từ { $first } trở đi. Lệnh Gộp ghép chúng lại; packwing và 7-Zip mở thẳng được archive đã chia như vậy.
+
+# Split
+t16a15383 = Chia
+
 # Move {what}
 tc168ca56 = Di chuyển { $what }
 
@@ -981,6 +1014,15 @@ td6d61b10 = Ký…
 
 # Checksums…
 t2891102d = Checksum…
+
+# Convert…
+tae85a7c4 = Chuyển định dạng…
+
+# Split into parts…
+t281db403 = Chia thành nhiều phần…
+
+# Join the parts
+t0ad56db8 = Gộp các phần
 
 # Copy path
 tf165cb2b = Sao chép đường dẫn
@@ -1203,6 +1245,12 @@ t82869bf0 = Đã di chuyển
 
 # Signed
 t27c3ab35 = Đã ký
+
+# Joined
+tf8f2b670 = Đã gộp
+
+# Converted
+tc7b76e99 = Đã chuyển
 
 # Waiting for a password or a key
 t0e83ae32 = Đang chờ mật khẩu hoặc khoá

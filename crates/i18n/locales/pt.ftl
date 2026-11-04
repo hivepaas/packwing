@@ -303,6 +303,9 @@ t9981f45f = Chave pública
 # Beside the files
 t757989af = Ao lado dos arquivos
 
+# What it holds, from
+teae4ef1a = Conteúdo de
+
 # Save in
 tf2d34837 = Salvar em
 
@@ -427,6 +430,9 @@ t0dad409a = Forte
 
 # Choose what to put in it
 t5461cfa6 = Escolha o que colocar nele
+
+# Convert
+t92e29218 = Converter
 
 # New archive
 tf352befb = Novo arquivo compactado
@@ -625,6 +631,9 @@ t16ec36d9 = Aguardando outras tarefas…
 # A file is damaged
 t8b1230ed = Um arquivo está danificado
 
+# Converted, but some files are damaged
+t54ef3472 = Convertido, mas alguns arquivos estão danificados
+
 # Extracted, but some files are damaged
 t8226d624 = Extraído, mas alguns arquivos estão danificados
 
@@ -657,6 +666,24 @@ t890f7ed1 = Movendo…
 
 # Signing…
 t7b8f8780 = Assinando…
+
+# Splitting…
+t5452adf5 = Dividindo…
+
+# Joining…
+taa884c51 = Juntando…
+
+# Converting…
+ta1b8f4cc = Convertendo…
+
+# Couldn’t split the file
+t83d27d26 = Não foi possível dividir o arquivo
+
+# Couldn’t join the parts
+t1cf67e00 = Não foi possível juntar as partes
+
+# Couldn’t convert the archive
+t39f973a9 = Não foi possível converter o arquivo compactado
 
 # Couldn’t sign
 t4489f97c = Não foi possível assinar
@@ -863,6 +890,12 @@ t6bba28d5 = Criar a chave…
 # Sign
 t8f6340c4 = Assinar
 
+# {count} parts beside it, {first} and on. Join puts them back together, and packwing and 7-Zip open an archive cut so as it is.
+tab12cc19 = { $count } partes ao lado, a partir de { $first }. Juntar as reúne, e o packwing e o 7-Zip abrem como está um arquivo compactado dividido assim.
+
+# Split
+t16a15383 = Dividir
+
 # Move {what}
 tc168ca56 = Mover { $what }
 
@@ -991,6 +1024,15 @@ td6d61b10 = Assinar…
 
 # Checksums…
 t2891102d = Checksums…
+
+# Convert…
+tae85a7c4 = Converter…
+
+# Split into parts…
+t281db403 = Dividir em partes…
+
+# Join the parts
+t0ad56db8 = Juntar as partes
 
 # Copy path
 tf165cb2b = Copiar caminho
@@ -1219,6 +1261,12 @@ t82869bf0 = Movido
 
 # Signed
 t27c3ab35 = Assinado
+
+# Joined
+tf8f2b670 = Juntado
+
+# Converted
+tc7b76e99 = Convertido
 
 # Waiting for a password or a key
 t0e83ae32 = Aguardando uma senha ou uma chave

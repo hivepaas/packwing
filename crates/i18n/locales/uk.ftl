@@ -307,6 +307,9 @@ t9981f45f = Відкритий ключ
 # Beside the files
 t757989af = Поруч із файлами
 
+# What it holds, from
+teae4ef1a = Вміст із
+
 # Save in
 tf2d34837 = Зберегти в
 
@@ -435,6 +438,9 @@ t0dad409a = Надійний
 
 # Choose what to put in it
 t5461cfa6 = Виберіть, що помістити в нього
+
+# Convert
+t92e29218 = Перетворити
 
 # New archive
 tf352befb = Новий архів
@@ -637,6 +643,9 @@ t16ec36d9 = Чекає на інші завдання…
 # A file is damaged
 t8b1230ed = Файл пошкоджено
 
+# Converted, but some files are damaged
+t54ef3472 = Перетворено, але деякі файли пошкоджено
+
 # Extracted, but some files are damaged
 t8226d624 = Видобуто, але деякі файли пошкоджено
 
@@ -669,6 +678,24 @@ t890f7ed1 = Переміщення…
 
 # Signing…
 t7b8f8780 = Підписання…
+
+# Splitting…
+t5452adf5 = Розрізання…
+
+# Joining…
+taa884c51 = Склеювання…
+
+# Converting…
+ta1b8f4cc = Перетворення…
+
+# Couldn’t split the file
+t83d27d26 = Не вдалося розрізати файл
+
+# Couldn’t join the parts
+t1cf67e00 = Не вдалося склеїти частини
+
+# Couldn’t convert the archive
+t39f973a9 = Не вдалося перетворити архів
 
 # Couldn’t sign
 t4489f97c = Не вдалося підписати
@@ -883,6 +910,12 @@ t6bba28d5 = Створити ключ…
 # Sign
 t8f6340c4 = Підписати
 
+# {count} parts beside it, {first} and on. Join puts them back together, and packwing and 7-Zip open an archive cut so as it is.
+tab12cc19 = Частин поруч: { $count }, починаючи з { $first }. «Склеїти» збере їх назад, а packwing і 7-Zip відкривають так розрізаний архів як є.
+
+# Split
+t16a15383 = Розрізати
+
 # Move {what}
 tc168ca56 = Перемістити { $what }
 
@@ -1011,6 +1044,15 @@ td6d61b10 = Підписати…
 
 # Checksums…
 t2891102d = Контрольні суми…
+
+# Convert…
+tae85a7c4 = Перетворити…
+
+# Split into parts…
+t281db403 = Розрізати на частини…
+
+# Join the parts
+t0ad56db8 = Склеїти частини
 
 # Copy path
 tf165cb2b = Копіювати шлях
@@ -1251,6 +1293,12 @@ t82869bf0 = Переміщено
 
 # Signed
 t27c3ab35 = Підписано
+
+# Joined
+tf8f2b670 = Склеєно
+
+# Converted
+tc7b76e99 = Перетворено
 
 # Waiting for a password or a key
 t0e83ae32 = Чекає на пароль або ключ

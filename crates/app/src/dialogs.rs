@@ -18,6 +18,7 @@ mod progress;
 mod quit;
 mod remove_storage;
 mod sign;
+mod split;
 mod transfer;
 mod view_file;
 
@@ -36,6 +37,7 @@ pub use progress::{ProgressDialog, State};
 pub use quit::QuitDialog;
 pub use remove_storage::RemoveStorageDialog;
 pub use sign::SignDialog;
+pub use split::SplitDialog;
 pub use transfer::TransferDialog;
 pub use view_file::ViewDialog;
 
@@ -71,6 +73,12 @@ pub enum Verb {
     Move,
     /// A file signed.
     Sign,
+    /// A file cut into parts, as 7-Zip cuts one.
+    Split,
+    /// The parts of a file joined into it.
+    Join,
+    /// An archive made of what another holds, in another format.
+    Convert,
 }
 
 /// Items to copy or move, and how it went once it is over.
@@ -129,6 +137,15 @@ pub enum Editing {
 pub struct Creating {
     pub paths: Vec<PathBuf>,
     pub to: Saving,
+    pub how: NewArchive,
+}
+
+/// An archive to make of what another holds: the one read, the one to make (named
+/// after this, or the first name after it that is free), and how.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Converting {
+    pub from: Source,
+    pub to: PathBuf,
     pub how: NewArchive,
 }
 
@@ -197,6 +214,12 @@ pub struct Job {
     pub transfer: Option<Transferring>,
     /// The file it signs, if that is what it does.
     pub sign: Option<Signing>,
+    /// The file it cuts into parts, and their size, if that is what it does.
+    pub split: Option<(PathBuf, u64)>,
+    /// A part of the file it joins, if that is what it does.
+    pub join: Option<PathBuf>,
+    /// The archive it converts, if that is what it does.
+    pub convert: Option<Converting>,
 }
 
 impl Job {
@@ -263,6 +286,9 @@ impl Job {
             edit: None,
             transfer: None,
             sign: None,
+            split: None,
+            join: None,
+            convert: None,
         }
     }
 }
