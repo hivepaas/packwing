@@ -321,6 +321,9 @@ impl Workspace {
                     ArchiveEvent::Test => this.test_archive(window, cx),
                     ArchiveEvent::Sign => this.open_sign_archive(window, cx),
                     ArchiveEvent::Checksums => this.open_checksums_archive(window, cx),
+                    ArchiveEvent::Convert => this.archive_file_then(Self::open_convert, window, cx),
+                    ArchiveEvent::Split => this.archive_file_then(Self::open_split, window, cx),
+                    ArchiveEvent::Join => this.archive_file_then(Self::start_join, window, cx),
                     ArchiveEvent::Open => this.choose_archive(window, cx),
                     ArchiveEvent::OpenStored => this.choose_stored_archive(window, cx),
                     ArchiveEvent::Delete => this.open_edit(false, window, cx),
@@ -604,6 +607,51 @@ impl Workspace {
     }
 
     /// Shows the checksums of the file of the archive open.
+    /// Split into parts…, for the file at `path`.
+    fn open_split(&mut self, path: PathBuf, window: &mut Window, cx: &mut Context<Self>) {
+        let bytes = std::fs::metadata(&path)
+            .map(|m| m.len())
+            .unwrap_or_default();
+        let folder = path
+            .parent()
+            .map_or_else(String::new, |p| p.display().to_string());
+        let view = cx.new(|cx| SplitDialog::new(path, bytes, folder, cx));
+        self.show(view, true, window, cx);
+    }
+
+    /// Joins the parts that the one at `path` is of, beside them.
+    fn start_join(&mut self, path: PathBuf, window: &mut Window, cx: &mut Context<Self>) {
+        let named = |p: &Path| {
+            p.file_name()
+                .map_or_else(String::new, |n| n.to_string_lossy().into_owned())
+        };
+        let folder = path
+            .parent()
+            .map_or_else(String::new, |p| p.display().to_string());
+        let whole = named(&path.with_extension(""));
+        let mut job = Job::shown(Verb::Join, whole.into(), Some(folder.into()), 0, 0);
+        job.join = Some(path);
+        self.open_progress(job, window, cx);
+    }
+
+    /// Convert…, for the archive at `path`.
+    fn open_convert(&mut self, path: PathBuf, window: &mut Window, cx: &mut Context<Self>) {
+        let view = cx.new(|cx| CreateDialog::converting(path, cx));
+        self.show(view, true, window, cx);
+    }
+
+    /// One of these, for the archive open, if its file is on this computer.
+    fn archive_file_then(
+        &mut self,
+        then: fn(&mut Self, PathBuf, &mut Window, &mut Context<Self>),
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if let Some(path) = self.archive.read(cx).local_file() {
+            then(self, path, window, cx);
+        }
+    }
+
     fn open_checksums_archive(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let place = self
             .archive
@@ -686,38 +734,18 @@ impl Workspace {
                 }
             }
             ExplorerEvent::Split(name) => {
-                let shown = explorer.read(cx);
-                if let Some(path) = shown.local_path_of(name) {
-                    let bytes = std::fs::metadata(&path)
-                        .map(|m| m.len())
-                        .unwrap_or_default();
-                    let folder = path
-                        .parent()
-                        .map_or_else(String::new, |p| p.display().to_string());
-                    let view = cx.new(|cx| SplitDialog::new(path, bytes, folder, cx));
-                    this.show(view, true, window, cx);
+                if let Some(path) = explorer.read(cx).local_path_of(name) {
+                    this.open_split(path, window, cx);
                 }
             }
             ExplorerEvent::Join(name) => {
                 if let Some(path) = explorer.read(cx).local_path_of(name) {
-                    let whole = path.with_extension("");
-                    let named = |p: &std::path::Path| {
-                        p.file_name()
-                            .map_or_else(String::new, |n| n.to_string_lossy().into_owned())
-                    };
-                    let folder = path
-                        .parent()
-                        .map_or_else(String::new, |p| p.display().to_string());
-                    let mut job =
-                        Job::shown(Verb::Join, named(&whole).into(), Some(folder.into()), 0, 0);
-                    job.join = Some(path);
-                    this.open_progress(job, window, cx);
+                    this.start_join(path, window, cx);
                 }
             }
             ExplorerEvent::Convert(name) => {
                 if let Some(path) = explorer.read(cx).local_path_of(name) {
-                    let view = cx.new(|cx| CreateDialog::converting(path, cx));
-                    this.show(view, true, window, cx);
+                    this.open_convert(path, window, cx);
                 }
             }
             ExplorerEvent::AskDelete(names) => {
@@ -1755,6 +1783,9 @@ impl Workspace {
                 let view = cx.new(|cx| ChecksumDialog::new(storage, path, cx));
                 self.show(view, true, window, cx);
             }
+            RecentEvent::Convert(path) => self.open_convert(path.clone(), window, cx),
+            RecentEvent::Split(path) => self.open_split(path.clone(), window, cx),
+            RecentEvent::Join(path) => self.start_join(path.clone(), window, cx),
             RecentEvent::Forget(path) => {
                 prefs::change(cx, |p| p.forget_opened(path));
                 let rows = prefs::prefs(cx).recent.iter().map(Row::of).collect();

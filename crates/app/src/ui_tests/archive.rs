@@ -356,6 +356,49 @@ scenario!(
     }
 );
 
+scenario!(
+    /// The archive open, from this computer, has Convert…, Split into parts… and,
+    /// for a part, Join the parts in its `…` menu: converted, it holds what it held.
+    the_archive_menu_converts_splits_and_joins,
+    |ui| {
+        let archive = ui.copy_of("sample.7z");
+        let held = listed(&archive, None);
+        ui.open(&archive);
+        let more = |ui: &mut Ui| {
+            ui.ws(|ws, _, cx| {
+                ws.archive_page().update(cx, |p, cx| {
+                    p.open_more_for_shot(gpui::point(gpui::px(600.), gpui::px(200.)), cx)
+                });
+            });
+        };
+        more(ui);
+        assert!(ui.shows("menu-split"));
+        assert!(!ui.shows("menu-join"));
+        ui.click("menu-convert");
+        ui.wait_for("create");
+        ui.choose("format", ".zip");
+        ui.click("create");
+        ui.wait_for_no_dialog();
+        assert_eq!(listed(&ui.work.join("sample.zip"), None), held);
+
+        more(ui);
+        ui.click("menu-split");
+        ui.wait_for("split");
+        ui.click("split");
+        ui.wait_for_no_dialog();
+        let first = ui.work.join("sample.7z.001");
+        assert!(first.exists());
+        ui.open(&first);
+        more(ui);
+        ui.click("menu-join");
+        ui.wait_for_no_dialog();
+        assert_eq!(
+            std::fs::read(ui.work.join("sample (2).7z")).expect("joined"),
+            std::fs::read(&archive).expect("the archive")
+        );
+    }
+);
+
 /// Whether the archive open keeps a secret.
 fn keeps_keys(ui: &mut Ui) -> bool {
     ui.ws(|ws, _, cx| {
