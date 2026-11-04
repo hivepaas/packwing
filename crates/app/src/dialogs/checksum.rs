@@ -242,6 +242,7 @@ impl ChecksumDialog {
                 told.store(p.bytes, Ordering::Relaxed);
             })),
             cancel: Some(cancel.clone()),
+            on_damaged: None,
         };
         let (storage, path, asked) = (self.storage.clone(), self.path.clone(), wanted.clone());
         let work = cx

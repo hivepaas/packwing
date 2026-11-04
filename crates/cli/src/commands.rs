@@ -6,11 +6,13 @@ use std::path::{Path, PathBuf};
 use packwing_core::{
     Algorithm, COMPRESSED_EXTENSIONS, Entry, ExtractOptions, Kind, Listing, LocalFolder,
     NewArchive, OnExisting, Source, Transfer, add_with, algorithms_of, came_from_internet,
-    checksum_line, checksums, create, delete, extract_selected, extract_with, has_signature, list,
-    read_entry, rename, save_checksum, signature_name, size, stem, test, transfer,
+    checksum_line, checksums, create, damages, delete, extract_selected, extract_with,
+    has_signature, list, read_entry, rename, save_checksum, signature_name, size, stem, test,
+    transfer,
 };
 use serde_json::{Value, json};
 
+use crate::damaged::Damaging;
 use crate::names::{
     date, entry_path, format_named, format_of, format_words, level_named, size_typed,
 };
@@ -33,13 +35,14 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
             overwrite,
             limit,
             no_mark,
+            damaging,
         } => {
             let how = ExtractOptions {
                 overwrite,
                 limit: Some(limit_of(&limit)?),
                 keep_mark: keep_mark(no_mark),
             };
-            extract_cmd(&archive, &files, output, here, &how, cx)
+            extract_cmd(&archive, &files, output, here, &how, &damaging, cx)
         }
         Command::Test { archive } => test_cmd(&archive, cx),
         Command::Cat {
@@ -56,7 +59,12 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
             let (archive, new) = making(&archive, make, cx)?;
             write_archive(&archive, &paths, &new, cx)
         }
-        Command::Convert { from, to, make } => convert_cmd(&from, &to, make, cx),
+        Command::Convert {
+            from,
+            to,
+            make,
+            damaging,
+        } => convert_cmd(&from, &to, make, &damaging, cx),
         Command::Keygen { output } => keygen_cmd(&output, cx),
         Command::Sign { files, by } => sign_cmd(&files, &by, cx),
         Command::Verify { files, trust, only } => verify_cmd(&files, &trust, only, cx),
@@ -233,6 +241,7 @@ fn extract_cmd(
     output: Option<PathBuf>,
     here: bool,
     how: &ExtractOptions,
+    damaging: &Damaging,
     cx: &mut Context,
 ) -> Result<(), Exit> {
     let place = Place::of(archive)?;
@@ -246,6 +255,7 @@ fn extract_cmd(
     };
     let picked = picked(files);
     let (control, bar) = crate::progress::control("Extracting", cx.progress);
+    let control = damaging.control(control, cx)?;
     let summary = cx.secrets.unlocking(&name, |keys| {
         if picked.is_empty() {
             extract_with(source.clone(), &destination, keys, how, &control)
@@ -254,6 +264,7 @@ fn extract_cmd(
         }
     })?;
     drop(bar);
+    let damaged = damages(&summary);
     if cx.json {
         print_json(&json!({
             "to": destination.display().to_string(),
@@ -261,6 +272,7 @@ fn extract_cmd(
             "directories": summary.directories,
             "links": summary.links,
             "bytes": summary.bytes,
+            "damaged": crate::damaged::as_json(&damaged),
         }));
     } else if !cx.quiet {
         eprintln!(
@@ -270,7 +282,7 @@ fn extract_cmd(
             destination.display()
         );
     }
-    Ok(())
+    damaging.finish(&damaged)
 }
 
 fn test_cmd(archive: &str, cx: &mut Context) -> Result<(), Exit> {
@@ -856,7 +868,13 @@ fn check_sums(sums: &Path, cx: &mut Context) -> Result<(), Exit> {
 
 /// Reads `from` into a folder of its own beside `to`, makes `to` of what is in
 /// it, and takes the folder away, whatever came of it.
-fn convert_cmd(from: &Path, to: &Path, make: Making, cx: &mut Context) -> Result<(), Exit> {
+fn convert_cmd(
+    from: &Path,
+    to: &Path,
+    make: Making,
+    damaging: &Damaging,
+    cx: &mut Context,
+) -> Result<(), Exit> {
     let (to, new) = making(to, make, cx)?;
     let beside = to
         .parent()
@@ -868,10 +886,12 @@ fn convert_cmd(from: &Path, to: &Path, make: Making, cx: &mut Context) -> Result
         let name = named(from);
         let how = ExtractOptions::default();
         let (control, bar) = crate::progress::control("Reading", cx.progress);
-        cx.secrets.unlocking(&name, |keys| {
+        let control = damaging.control(control, cx)?;
+        let summary = cx.secrets.unlocking(&name, |keys| {
             extract_with(Source::from(from), &work, keys, &how, &control)
         })?;
         drop(bar);
+        let damaged = damages(&summary);
         let mut paths: Vec<PathBuf> = std::fs::read_dir(&work)
             .map_err(|e| Exit::Failed(e.to_string()))?
             .filter_map(|e| e.ok().map(|e| e.path()))
@@ -880,7 +900,8 @@ fn convert_cmd(from: &Path, to: &Path, make: Making, cx: &mut Context) -> Result
         if paths.is_empty() {
             return Err(Exit::Failed(format!("{name} holds nothing")));
         }
-        write_archive(&to, &paths, &new, cx)
+        write_archive(&to, &paths, &new, cx)?;
+        damaging.finish(&damaged)
     })();
     let _ = std::fs::remove_dir_all(&work);
     result

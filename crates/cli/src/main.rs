@@ -5,6 +5,7 @@
 //! error. Its exit code says how it went ([`Exit`]).
 
 mod commands;
+mod damaged;
 mod names;
 mod places;
 mod progress;
@@ -18,6 +19,7 @@ use std::process::ExitCode;
 
 use clap::{Args, CommandFactory as _, Parser, Subcommand};
 
+use crate::damaged::Damaging;
 use crate::secrets::Secrets;
 
 #[derive(Parser)]
@@ -34,7 +36,8 @@ use crate::secrets::Secrets;
         terminal, or reads it from --password-file, --password-stdin or \
         PACKWING_PASSWORD.",
     after_help = "Exit codes: 0 done; 1 failed; 2 not understood; 3 a password or key is \
-        needed, or wrong; 4 not an archive pkw can open."
+        needed, or wrong; 4 not an archive pkw can open; 5 done, but some files' data was \
+        damaged (--on-damaged)."
 )]
 struct Cli {
     #[command(subcommand)]
@@ -107,6 +110,8 @@ enum Command {
         /// the archive has one, as far as the organization's policy allows.
         #[arg(long)]
         no_mark: bool,
+        #[command(flatten)]
+        damaging: Damaging,
     },
     /// Check that an archive reads whole, as it was made.
     #[command(visible_alias = "t")]
@@ -146,6 +151,8 @@ enum Command {
         to: PathBuf,
         #[command(flatten)]
         make: Making,
+        #[command(flatten)]
+        damaging: Damaging,
     },
     /// Make a key to sign files with: Ed25519 and ML-DSA-65 together, its file
     /// encrypted with a passphrase, and its public key beside it, as .pub.
@@ -315,6 +322,8 @@ pub enum Exit {
     Locked(String),
     /// Not an archive pkw opens: 4.
     NotAnArchive(String),
+    /// Done, but some files' data was damaged, and skipped or kept: 5.
+    Damaged(String),
 }
 
 impl Exit {
@@ -324,12 +333,17 @@ impl Exit {
             Exit::Usage(_) => 2,
             Exit::Locked(_) => 3,
             Exit::NotAnArchive(_) => 4,
+            Exit::Damaged(_) => 5,
         }
     }
 
     fn message(&self) -> &str {
         match self {
-            Exit::Failed(m) | Exit::Usage(m) | Exit::Locked(m) | Exit::NotAnArchive(m) => m,
+            Exit::Failed(m)
+            | Exit::Usage(m)
+            | Exit::Locked(m)
+            | Exit::NotAnArchive(m)
+            | Exit::Damaged(m) => m,
         }
     }
 }
@@ -355,6 +369,9 @@ pub struct Context {
     pub quiet: bool,
     /// How far a job is, shown: a person watches, and nothing is asked.
     pub progress: bool,
+    /// A person is at the terminal, to be asked what to do, and standard input
+    /// is theirs.
+    pub can_ask: bool,
     pub secrets: Secrets,
 }
 
@@ -388,6 +405,10 @@ fn main() -> ExitCode {
         json: cli.output.json,
         quiet: cli.output.quiet,
         progress: !cli.output.quiet && std::io::stderr().is_terminal(),
+        can_ask: !cli.output.quiet
+            && !cli.secrets.password_stdin
+            && std::io::stdin().is_terminal()
+            && std::io::stderr().is_terminal(),
         secrets,
     };
     match commands::run(cli.command, &mut cx) {

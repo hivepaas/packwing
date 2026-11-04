@@ -196,6 +196,7 @@ impl ProgressDialog {
                 *told.lock().unwrap_or_else(PoisonError::into_inner) = *p;
             })),
             cancel: Some(cancel.clone()),
+            on_damaged: None,
         };
         let tested = Arc::new(Mutex::new((0, 0)));
         let tested_in_task = tested.clone();

@@ -10,9 +10,9 @@ use std::sync::atomic::AtomicU64;
 use std::time::Duration;
 
 use hivepack::extract::{
-    Cancel, Links, NameDecoder, Options, Progress, ProgressFn, RarProblem, Select, Summary,
-    extract_7z, extract_cpio, extract_iso, extract_rar, extract_tar, extract_udf, extract_xar,
-    extract_zip,
+    Cancel, Damaged, Links, NameDecoder, OnDamaged, Options, Progress, ProgressFn, RarProblem,
+    Select, Summary, extract_7z, extract_cpio, extract_iso, extract_rar, extract_tar, extract_udf,
+    extract_xar, extract_zip,
 };
 use hivepack::open::{Container, Opened};
 use hivepack::tar::Reader;
@@ -30,6 +30,48 @@ use crate::{Error, Keys, opener, seven_zip, without_layers};
 pub struct Control {
     pub progress: Option<ProgressFn>,
     pub cancel: Option<Cancel>,
+    /// Asked, while extracting, about each file whose data is damaged: to
+    /// stop, to leave it out, or to keep what was read of it, and go on.
+    /// None stops. A name, a link or a limit that is refused always stops.
+    pub on_damaged: Option<DamagedFn>,
+}
+
+/// What [`Control::on_damaged`] is: given the file, it says what to do.
+pub type DamagedFn = Arc<dyn Fn(&Damage) -> OnDamaged + Send + Sync>;
+
+/// A file whose data is damaged: a check that fails, data that does not
+/// decompress, or that ends early.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Damage {
+    /// Its path in the archive, as the archive names it.
+    pub path: String,
+    /// What is wrong with it.
+    pub why: String,
+    /// Once gone on from, the bytes of it kept, or None if it was left out.
+    pub kept: Option<u64>,
+}
+
+impl Damage {
+    fn of(error: &hivepack::extract::Error, kept: Option<u64>) -> Damage {
+        Damage {
+            path: error
+                .name
+                .as_deref()
+                .map_or_else(String::new, |raw| String::from_utf8_lossy(raw).into_owned()),
+            why: error.kind.to_string(),
+            kept,
+        }
+    }
+}
+
+/// The files of `summary` whose data was damaged, gone on from, in the order
+/// they were met.
+pub fn damages(summary: &Summary) -> Vec<Damage> {
+    summary
+        .damaged
+        .iter()
+        .map(|d: &Damaged| Damage::of(&d.error, d.kept))
+        .collect()
 }
 
 impl Control {
@@ -324,6 +366,15 @@ fn extract_picked(
     let mut opener = opener(source, keys);
     let mut opened = opener.open()?;
     let layers = opened.layers().to_vec();
+    // RAR 3 and earlier have nothing but data that fails its hash to tell a
+    // wrong password by: with one given, that stops the job, as a wrong
+    // password, rather than be kept.
+    let guessing = opened.container() == Container::Rar && keys.password.is_some();
+    if let Some(asked) = control.on_damaged.clone().filter(|_| !guessing) {
+        options.on_damaged = Some(Arc::new(move |e: &hivepack::extract::Error| {
+            asked(&Damage::of(e, None))
+        }));
+    }
     match opened.container() {
         Container::Tar => {
             drop(opened);
@@ -536,6 +587,7 @@ pub fn test(source: impl Into<Source>, keys: &Keys, control: &Control) -> Result
             let quiet = Control {
                 progress: None,
                 cancel: control.cancel.clone(),
+                on_damaged: None,
             };
             copy(&mut tr.into_inner(), &mut io::sink(), &quiet, &mut done)?;
         }
@@ -658,6 +710,7 @@ fn read_to_end(r: &mut impl Read, control: &Control, done: &mut Progress) -> Res
     let quiet = Control {
         progress: None,
         cancel: control.cancel.clone(),
+        on_damaged: None,
     };
     copy(r, &mut io::sink(), &quiet, done).map(|_| ())
 }

@@ -331,6 +331,7 @@ mod tests {
         let control = Control {
             progress: None,
             cancel: Some(cancel),
+            on_damaged: None,
         };
         assert!(matches!(
             checksums_of(&b"abc"[..], &[Algorithm::Sha256], &control),

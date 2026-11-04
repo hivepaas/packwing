@@ -400,6 +400,7 @@ mod tests {
         Control {
             progress: None,
             cancel: None,
+            on_damaged: None,
         }
     }
 

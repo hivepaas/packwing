@@ -271,6 +271,7 @@ impl ArchivePage {
         let control = Control {
             progress: None,
             cancel: Some(cancel.clone()),
+            on_damaged: None,
         };
         let reading = cx.background_executor().spawn(async move {
             match read_entry(&source, &path, &keys, MOST_PREVIEWED, &control) {

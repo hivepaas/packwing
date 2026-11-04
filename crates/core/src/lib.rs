@@ -45,11 +45,11 @@ pub use create::{
     age_key_is_post_quantum, age_key_problem, age_keys_in, can_add, create, create_on, delete,
     free_archive_path, measure, refused_by, rename, route,
 };
-pub use hivepack::extract::{Cancel, Progress, Summary};
+pub use hivepack::extract::{Cancel, OnDamaged, Progress, Summary};
 pub use hivepack::open::{Container, Layer};
 pub use job::{
-    Control, ExtractOptions, clean_opened_files, extract, extract_selected, extract_to_open,
-    extract_with, image_fits, read_entry, test,
+    Control, Damage, DamagedFn, ExtractOptions, clean_opened_files, damages, extract,
+    extract_selected, extract_to_open, extract_with, image_fits, read_entry, test,
 };
 pub use listing::{Child, Entry, Found, Listing, list};
 pub use mark::came_from_internet;
