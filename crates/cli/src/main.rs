@@ -103,6 +103,10 @@ enum Command {
         /// Write at most this much, as 50GB: what stops an archive bomb.
         #[arg(long, value_name = "SIZE", default_value = "100GB")]
         limit: String,
+        /// On Windows and macOS: no mark that the files came from the Internet, where
+        /// the archive has one, as far as the organization's policy allows.
+        #[arg(long)]
+        no_mark: bool,
     },
     /// Check that an archive reads whole, as it was made.
     #[command(visible_alias = "t")]
@@ -180,6 +184,10 @@ enum Command {
         /// When a name is taken: stop, replace or skip.
         #[arg(long, value_name = "WHAT", default_value = "stop")]
         on_existing: String,
+        /// On Windows and macOS: no mark that the files came from the Internet, for what
+        /// comes from a storage or has one, as far as the organization's policy allows.
+        #[arg(long)]
+        no_mark: bool,
     },
     /// Move files and folders, as copy does, taking them away once they are there.
     #[command(visible_alias = "mv")]
@@ -190,6 +198,10 @@ enum Command {
         /// When a name is taken: stop, replace or skip.
         #[arg(long, value_name = "WHAT", default_value = "stop")]
         on_existing: String,
+        /// On Windows and macOS: no mark that the files came from the Internet, for what
+        /// comes from a storage or has one, as far as the organization's policy allows.
+        #[arg(long)]
+        no_mark: bool,
     },
     /// Write the shell's completions for pkw, to load or keep where it looks.
     #[command(
@@ -286,6 +298,10 @@ pub struct Making {
     /// Compress pictures, video, sound and archives too, not only store them.
     #[arg(long)]
     pub compress_all: bool,
+    /// Keep what only a Mac uses, which is left out otherwise: .DS_Store,
+    /// __MACOSX and ._ files.
+    #[arg(long)]
+    pub keep_mac_files: bool,
 }
 
 /// How it went, as the exit code says.

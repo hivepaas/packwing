@@ -32,7 +32,15 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
             here,
             overwrite,
             limit,
-        } => extract_cmd(&archive, &files, output, here, overwrite, &limit, cx),
+            no_mark,
+        } => {
+            let how = ExtractOptions {
+                overwrite,
+                limit: Some(limit_of(&limit)?),
+                keep_mark: keep_mark(no_mark),
+            };
+            extract_cmd(&archive, &files, output, here, &how, cx)
+        }
         Command::Test { archive } => test_cmd(&archive, cx),
         Command::Cat {
             archive,
@@ -59,11 +67,13 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
         Command::Copy {
             places,
             on_existing,
-        } => transfer_cmd(&places, &on_existing, false, cx),
+            no_mark,
+        } => transfer_cmd(&places, &on_existing, false, keep_mark(no_mark), cx),
         Command::Move {
             places,
             on_existing,
-        } => transfer_cmd(&places, &on_existing, true, cx),
+            no_mark,
+        } => transfer_cmd(&places, &on_existing, true, keep_mark(no_mark), cx),
         Command::Add {
             archive,
             paths,
@@ -222,8 +232,7 @@ fn extract_cmd(
     files: &[String],
     output: Option<PathBuf>,
     here: bool,
-    overwrite: bool,
-    limit: &str,
+    how: &ExtractOptions,
     cx: &mut Context,
 ) -> Result<(), Exit> {
     let place = Place::of(archive)?;
@@ -235,18 +244,13 @@ fn extract_cmd(
         // As the menu's Extract to folder: a folder named after it, here.
         (None, false) => PathBuf::from(stem(&name)),
     };
-    let how = ExtractOptions {
-        overwrite,
-        limit: Some(limit_of(limit)?),
-        ..ExtractOptions::default()
-    };
     let picked = picked(files);
     let (control, bar) = crate::progress::control("Extracting", cx.progress);
     let summary = cx.secrets.unlocking(&name, |keys| {
         if picked.is_empty() {
-            extract_with(source.clone(), &destination, keys, &how, &control)
+            extract_with(source.clone(), &destination, keys, how, &control)
         } else {
-            extract_selected(source.clone(), &destination, &picked, keys, &how, &control)
+            extract_selected(source.clone(), &destination, &picked, keys, how, &control)
         }
     })?;
     drop(bar);
@@ -419,6 +423,8 @@ fn making(archive: &Path, m: Making, cx: &Context) -> Result<(PathBuf, NewArchiv
         age_keys: m.encrypt_to,
         whole_with_age: m.age,
         hide_names: m.hide_names,
+        // As the app does by default: what only a Mac uses is left out.
+        skip_mac_files: !m.keep_mac_files,
         stored_extensions: if m.compress_all {
             Vec::new()
         } else {
@@ -524,6 +530,23 @@ fn rename_cmd(archive: &Path, file: &str, name: &str, cx: &mut Context) -> Resul
 }
 
 /// Says a change was made: in JSON, that it was.
+/// Whether what arrives gets the mark of where it came from, as `--no-mark`
+/// asks: the core keeps to the organization's policy over it, and pkw says
+/// so when the policy keeps the mark asked away.
+fn keep_mark(no_mark: bool) -> bool {
+    let policy = packwing_policy::current();
+    if no_mark
+        && cfg!(any(windows, target_os = "macos"))
+        && policy.locks_mark()
+        && policy.keeps_mark(false)
+    {
+        eprintln!(
+            "pkw: the organization's policy keeps the mark of files from the Internet: --no-mark is not followed"
+        );
+    }
+    !no_mark
+}
+
 /// What `--on-existing` says to do with a name taken.
 fn on_existing_named(typed: &str) -> Result<OnExisting, Exit> {
     match typed {
@@ -593,6 +616,7 @@ fn transfer_cmd(
     places: &[String],
     on_existing: &str,
     moving: bool,
+    keep_mark: bool,
     cx: &Context,
 ) -> Result<(), Exit> {
     let on_existing = on_existing_named(on_existing)?;
@@ -626,7 +650,7 @@ fn transfer_cmd(
                 to_folder: to.path.clone(),
                 moving,
                 on_existing,
-                keep_mark: true,
+                keep_mark,
             },
             &control,
         )?;

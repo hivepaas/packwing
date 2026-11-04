@@ -70,11 +70,11 @@ packwing refuses a host not in `~/.ssh/known_hosts`, so `make sftp-start` adds t
 ```sh
 pkw list backup.7z                      # what it holds (-l: sizes and dates; --json)
 pkw info backup.tar.zst.age             # its format, layers, size and encryption
-pkw extract backup.7z                   # into backup/, here (-o DIR, --here, --overwrite)
+pkw extract backup.7z                   # into backup/, here (-o DIR, --here, --overwrite, --no-mark)
 pkw extract backup.7z docs/report.pdf   # what is picked, straight into where it goes
 pkw test backup.7z                      # it reads whole, as it was made
 pkw cat backup.zip notes.txt            # a file in it, to standard output
-pkw create site.tar.zst site/           # its format by its extension, or -f; -l store…highest
+pkw create site.tar.zst site/           # its format by its extension, or -f; -l store…highest; no .DS_Store (--keep-mac-files)
 pkw create -p --hide-names private.7z docs/      # with a password, asked; its names hidden
 pkw create notes.tar.zst docs/ --encrypt-to age1…  # encrypted to a key: notes.tar.zst.age
 pkw create --split 25MB mail.zip photos/          # in parts: mail.zip.001, .002…
@@ -91,7 +91,7 @@ pkw extract Backups:2026/site.tar.zst    # read where it is, a part at a time
 pkw cp site.tar.zst Backups:2026/        # copy, and mv: files and folders, into a folder
 ```
 
-A password is never put on the command line, where others see it: `pkw` asks for it in a terminal, or reads it from `--password-file FILE`, `--password-stdin` or `PACKWING_PASSWORD`; an age or SSH key file comes with `--key FILE`. Its exit code says how it went: `0` done, `1` failed, `2` not understood, `3` a password or key is needed or wrong, `4` not an archive it opens. `NAME:PATH` is a path on the storage the app calls `NAME` (Storages, in the app), opened with what the app keeps in the system's keychain; `pkw` reads the app's settings and never changes them. One that asks for this computer's password first is opened in the app only. `pkw help <command>` says the rest, and `pkw completions bash|zsh|fish|powershell` writes the shell's completions. The .deb holds them, and its manual pages; on Windows the installer puts `pkw.exe` beside packwing and its folder in the user's PATH.
+A password is never put on the command line, where others see it: `pkw` asks for it in a terminal, or reads it from `--password-file FILE`, `--password-stdin` or `PACKWING_PASSWORD`; an age or SSH key file comes with `--key FILE`. Its exit code says how it went: `0` done, `1` failed, `2` not understood, `3` a password or key is needed or wrong, `4` not an archive it opens. `NAME:PATH` is a path on the storage the app calls `NAME` (Storages, in the app), opened with what the app keeps in the system's keychain; `pkw` reads the app's settings and never changes them. One that asks for this computer's password first is opened in the app only. On Windows and macOS what comes from an archive or a storage marked as from the Internet is marked too, as the app does; `--no-mark` asks not to, which the organization's policy may refuse. `pkw help <command>` says the rest, and `pkw completions bash|zsh|fish|powershell` writes the shell's completions. The .deb holds them, and its manual pages; on Windows the installer puts `pkw.exe` beside packwing and its folder in the user's PATH.
 
 ## 📦 Packaging
 
