@@ -303,6 +303,9 @@ t9981f45f = Clé publique
 # Beside the files
 t757989af = À côté des fichiers
 
+# What it holds, from
+teae4ef1a = Contenu de
+
 # Save in
 tf2d34837 = Enregistrer dans
 
@@ -427,6 +430,9 @@ t0dad409a = Fort
 
 # Choose what to put in it
 t5461cfa6 = Choisir ce qu'il faut y mettre
+
+# Convert
+t92e29218 = Convertir
 
 # New archive
 tf352befb = Nouvelle archive
@@ -625,6 +631,9 @@ t16ec36d9 = En attente d'autres tâches…
 # A file is damaged
 t8b1230ed = Un fichier est endommagé
 
+# Converted, but some files are damaged
+t54ef3472 = Converti, mais certains fichiers sont endommagés
+
 # Extracted, but some files are damaged
 t8226d624 = Extrait, mais certains fichiers sont endommagés
 
@@ -657,6 +666,24 @@ t890f7ed1 = Déplacement…
 
 # Signing…
 t7b8f8780 = Signature…
+
+# Splitting…
+t5452adf5 = Découpage…
+
+# Joining…
+taa884c51 = Assemblage…
+
+# Converting…
+ta1b8f4cc = Conversion…
+
+# Couldn’t split the file
+t83d27d26 = Impossible de découper le fichier
+
+# Couldn’t join the parts
+t1cf67e00 = Impossible d’assembler les parties
+
+# Couldn’t convert the archive
+t39f973a9 = Impossible de convertir l’archive
 
 # Couldn’t sign
 t4489f97c = Signature impossible
@@ -863,6 +890,12 @@ t6bba28d5 = Créer la clé…
 # Sign
 t8f6340c4 = Signer
 
+# {count} parts beside it, {first} and on. Join puts them back together, and packwing and 7-Zip open an archive cut so as it is.
+tab12cc19 = { $count } parties à côté, à partir de { $first }. Assembler les remet ensemble, et packwing et 7-Zip ouvrent telle quelle une archive découpée ainsi.
+
+# Split
+t16a15383 = Découper
+
 # Move {what}
 tc168ca56 = Déplacer { $what }
 
@@ -991,6 +1024,15 @@ td6d61b10 = Signer…
 
 # Checksums…
 t2891102d = Sommes de contrôle…
+
+# Convert…
+tae85a7c4 = Convertir…
+
+# Split into parts…
+t281db403 = Découper en parties…
+
+# Join the parts
+t0ad56db8 = Assembler les parties
 
 # Copy path
 tf165cb2b = Copier le chemin
@@ -1219,6 +1261,12 @@ t82869bf0 = Déplacé
 
 # Signed
 t27c3ab35 = Signé
+
+# Joined
+tf8f2b670 = Assemblé
+
+# Converted
+tc7b76e99 = Converti
 
 # Waiting for a password or a key
 t0e83ae32 = En attente d'un mot de passe ou d'une clé

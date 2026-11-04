@@ -75,6 +75,9 @@ fn done_title(verb: Verb) -> String {
         Verb::Copy => tr!("Copied"),
         Verb::Move => tr!("Moved"),
         Verb::Sign => tr!("Signed"),
+        Verb::Split => tr!("Split into parts"),
+        Verb::Join => tr!("Joined"),
+        Verb::Convert => tr!("Converted"),
         // A test that ends has passed, or failed: neither is done.
         Verb::Test | Verb::Add | Verb::Edit | Verb::Open => tr!("Done"),
     }

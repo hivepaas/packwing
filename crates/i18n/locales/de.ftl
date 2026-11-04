@@ -303,6 +303,9 @@ t9981f45f = Öffentlicher Schlüssel
 # Beside the files
 t757989af = Neben den Dateien
 
+# What it holds, from
+teae4ef1a = Inhalt aus
+
 # Save in
 tf2d34837 = Speichern in
 
@@ -427,6 +430,9 @@ t0dad409a = Stark
 
 # Choose what to put in it
 t5461cfa6 = Auswählen, was hineinkommt
+
+# Convert
+t92e29218 = Umwandeln
 
 # New archive
 tf352befb = Neues Archiv
@@ -625,6 +631,9 @@ t16ec36d9 = Wartet auf andere Aufgaben…
 # A file is damaged
 t8b1230ed = Eine Datei ist beschädigt
 
+# Converted, but some files are damaged
+t54ef3472 = Umgewandelt, aber einige Dateien sind beschädigt
+
 # Extracted, but some files are damaged
 t8226d624 = Entpackt, aber einige Dateien sind beschädigt
 
@@ -657,6 +666,24 @@ t890f7ed1 = Wird verschoben…
 
 # Signing…
 t7b8f8780 = Wird signiert…
+
+# Splitting…
+t5452adf5 = Wird geteilt…
+
+# Joining…
+taa884c51 = Wird zusammengefügt…
+
+# Converting…
+ta1b8f4cc = Wird umgewandelt…
+
+# Couldn’t split the file
+t83d27d26 = Die Datei konnte nicht geteilt werden
+
+# Couldn’t join the parts
+t1cf67e00 = Die Teile konnten nicht zusammengefügt werden
+
+# Couldn’t convert the archive
+t39f973a9 = Das Archiv konnte nicht umgewandelt werden
 
 # Couldn’t sign
 t4489f97c = Signieren fehlgeschlagen
@@ -863,6 +890,12 @@ t6bba28d5 = Schlüssel erstellen…
 # Sign
 t8f6340c4 = Signieren
 
+# {count} parts beside it, {first} and on. Join puts them back together, and packwing and 7-Zip open an archive cut so as it is.
+tab12cc19 = { $count } Teile daneben, ab { $first }. Zusammenfügen setzt sie wieder zusammen, und packwing und 7-Zip öffnen ein so geteiltes Archiv direkt.
+
+# Split
+t16a15383 = Teilen
+
 # Move {what}
 tc168ca56 = { $what } verschieben
 
@@ -991,6 +1024,15 @@ td6d61b10 = Signieren…
 
 # Checksums…
 t2891102d = Prüfsummen…
+
+# Convert…
+tae85a7c4 = Umwandeln…
+
+# Split into parts…
+t281db403 = In Teile teilen…
+
+# Join the parts
+t0ad56db8 = Teile zusammenfügen
 
 # Copy path
 tf165cb2b = Pfad kopieren
@@ -1219,6 +1261,12 @@ t82869bf0 = Verschoben
 
 # Signed
 t27c3ab35 = Signiert
+
+# Joined
+tf8f2b670 = Zusammengefügt
+
+# Converted
+tc7b76e99 = Umgewandelt
 
 # Waiting for a password or a key
 t0e83ae32 = Wartet auf ein Passwort oder einen Schlüssel
