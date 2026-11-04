@@ -610,8 +610,17 @@ t808b85c5 = Nhập cụm mật khẩu của tệp khoá
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Bản thân tệp khoá cũng được bảo vệ. packwing chỉ giữ cụm mật khẩu của nó khi tệp nén còn mở, và không bao giờ ghi lại.
 
+# The job stopped before it was done.
+t57a78885 = Công việc đã dừng trước khi xong.
+
 # Waiting for other jobs…
 t16ec36d9 = Đang chờ các tác vụ khác…
+
+# A file is damaged
+t8b1230ed = Một file bị hỏng
+
+# Extracted, but some files are damaged
+t8226d624 = Đã giải nén, nhưng có file bị hỏng
 
 # Extracting…
 t94279f82 = Đang giải nén…
@@ -705,6 +714,42 @@ tc1421590 =
 
 # Close
 tcd86acc3 = Đóng
+
+# “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
+t145d7a09 = “{ $path }” bị hỏng: { $why }. Dừng lại, bỏ qua file này, hay giữ phần đọc được?
+
+# Do the same for the other damaged files
+t798693ad = Làm như vậy với các file hỏng khác
+
+# Stop
+t4b7f7705 = Dừng
+
+# Leave it out
+taaff8ec9 = Bỏ qua
+
+# Keep what was read
+tc4387d25 = Giữ phần đọc được
+
+# kept, {size}
+t001f6992 = đã giữ, { $size }
+
+# left out
+t73aeedd4 = đã bỏ qua
+
+# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
+t9d82f78b =
+    { $n ->
+       *[other] Dữ liệu của { $count } file bị hỏng. Phần còn lại đã được giải nén.
+    }
+
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+       *[other] và { $count } file nữa
+    }
+
+# Copy the list
+t3c49b269 = Sao chép danh sách
 
 # {count} of {count2} files · {size} of {size2}
 t27f1ab7d = { $count } / { $count2 } tệp · { $size } / { $size2 }
@@ -1167,9 +1212,6 @@ tddb7844a = Nhập…
 
 # Show
 t29742e5c = Xem
-
-# Stop
-t4b7f7705 = Dừng
 
 # Jobs
 t4ae6a79d = Tác vụ

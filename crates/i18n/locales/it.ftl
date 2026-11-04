@@ -616,8 +616,17 @@ t808b85c5 = Inserisci la passphrase del file di chiave
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Il file di chiave è a sua volta protetto. packwing conserva la sua passphrase solo finché l'archivio è aperto e non la scrive mai.
 
+# The job stopped before it was done.
+t57a78885 = Il lavoro si è fermato prima di finire.
+
 # Waiting for other jobs…
 t16ec36d9 = In attesa di altre attività…
+
+# A file is damaged
+t8b1230ed = Un file è danneggiato
+
+# Extracted, but some files are damaged
+t8226d624 = Estratto, ma alcuni file sono danneggiati
 
 # Extracting…
 t94279f82 = Estrazione…
@@ -712,6 +721,44 @@ tc1421590 =
 
 # Close
 tcd86acc3 = Chiudi
+
+# “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
+t145d7a09 = «{ $path }» è danneggiato: { $why }. Fermarsi, saltarlo o tenere ciò che si è potuto leggere?
+
+# Do the same for the other damaged files
+t798693ad = Fai lo stesso per gli altri file danneggiati
+
+# Stop
+t4b7f7705 = Interrompi
+
+# Leave it out
+taaff8ec9 = Saltalo
+
+# Keep what was read
+tc4387d25 = Tieni ciò che è stato letto
+
+# kept, {size}
+t001f6992 = tenuto, { $size }
+
+# left out
+t73aeedd4 = saltato
+
+# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
+t9d82f78b =
+    { $n ->
+        [one] I dati di { $count } file erano danneggiati. Il resto è stato estratto.
+       *[other] I dati di { $count } file erano danneggiati. Il resto è stato estratto.
+    }
+
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+        [one] e altri { $count }
+       *[other] e altri { $count }
+    }
+
+# Copy the list
+t3c49b269 = Copia l’elenco
 
 # {count} of {count2} files · {size} of {size2}
 t27f1ab7d = { $count } di { $count2 } file · { $size } di { $size2 }
@@ -1181,9 +1228,6 @@ tddb7844a = Inseriscila…
 
 # Show
 t29742e5c = Mostra
-
-# Stop
-t4b7f7705 = Interrompi
 
 # Jobs
 t4ae6a79d = Attività

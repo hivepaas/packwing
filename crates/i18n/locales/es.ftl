@@ -616,8 +616,17 @@ t808b85c5 = Introduce la frase de contraseña del archivo de clave
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = El archivo de clave está protegido a su vez. packwing conserva su frase de contraseña solo mientras el archivo comprimido está abierto, y nunca la anota.
 
+# The job stopped before it was done.
+t57a78885 = El trabajo se detuvo antes de terminar.
+
 # Waiting for other jobs…
 t16ec36d9 = Esperando a otras tareas…
+
+# A file is damaged
+t8b1230ed = Un archivo está dañado
+
+# Extracted, but some files are damaged
+t8226d624 = Extraído, pero algunos archivos están dañados
 
 # Extracting…
 t94279f82 = Extrayendo…
@@ -712,6 +721,44 @@ tc1421590 =
 
 # Close
 tcd86acc3 = Cerrar
+
+# “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
+t145d7a09 = «{ $path }» está dañado: { $why }. ¿Detener, omitirlo o conservar lo que se pudo leer?
+
+# Do the same for the other damaged files
+t798693ad = Hacer lo mismo con los demás archivos dañados
+
+# Stop
+t4b7f7705 = Detener
+
+# Leave it out
+taaff8ec9 = Omitirlo
+
+# Keep what was read
+tc4387d25 = Conservar lo leído
+
+# kept, {size}
+t001f6992 = conservado, { $size }
+
+# left out
+t73aeedd4 = omitido
+
+# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
+t9d82f78b =
+    { $n ->
+        [one] Los datos de { $count } archivo estaban dañados. El resto se extrajo.
+       *[other] Los datos de { $count } archivos estaban dañados. El resto se extrajo.
+    }
+
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+        [one] y { $count } más
+       *[other] y { $count } más
+    }
+
+# Copy the list
+t3c49b269 = Copiar la lista
 
 # {count} of {count2} files · {size} of {size2}
 t27f1ab7d = { $count } de { $count2 } archivos · { $size } de { $size2 }
@@ -1181,9 +1228,6 @@ tddb7844a = Introducirla…
 
 # Show
 t29742e5c = Mostrar
-
-# Stop
-t4b7f7705 = Detener
 
 # Jobs
 t4ae6a79d = Tareas

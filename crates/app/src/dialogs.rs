@@ -286,6 +286,9 @@ pub enum DialogEvent {
     Saved,
     /// The job goes on behind, on the Jobs page: its dialog closes, not it.
     Behind,
+    /// The job waits on an answer, or has something to show before it goes: its
+    /// dialog is shown, if it went on behind and nothing else is.
+    Attention,
     /// The job ended, however it did: another may take its turn.
     Ended,
     /// Stop the jobs, and close the window once they have.

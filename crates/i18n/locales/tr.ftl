@@ -616,8 +616,17 @@ t808b85c5 = Anahtar dosyasının parola ifadesini girin
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Anahtar dosyasının kendisi korunuyor. packwing parola ifadesini yalnızca arşiv açıkken tutar ve hiçbir yere yazmaz.
 
+# The job stopped before it was done.
+t57a78885 = İş bitmeden durdu.
+
 # Waiting for other jobs…
 t16ec36d9 = Diğer işler bekleniyor…
+
+# A file is damaged
+t8b1230ed = Bir dosya hasarlı
+
+# Extracted, but some files are damaged
+t8226d624 = Çıkarıldı, ancak bazı dosyalar hasarlı
 
 # Extracting…
 t94279f82 = Çıkarılıyor…
@@ -712,6 +721,44 @@ tc1421590 =
 
 # Close
 tcd86acc3 = Kapat
+
+# “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
+t145d7a09 = “{ $path }” hasarlı: { $why }. Durdurulsun mu, atlansın mı, yoksa okunabilen kısmı tutulsun mu?
+
+# Do the same for the other damaged files
+t798693ad = Diğer hasarlı dosyalar için de aynısını yap
+
+# Stop
+t4b7f7705 = Durdur
+
+# Leave it out
+taaff8ec9 = Atla
+
+# Keep what was read
+tc4387d25 = Okunanı tut
+
+# kept, {size}
+t001f6992 = tutuldu, { $size }
+
+# left out
+t73aeedd4 = atlandı
+
+# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
+t9d82f78b =
+    { $n ->
+        [one] { $count } dosyanın verisi hasarlıydı. Geri kalanı çıkarıldı.
+       *[other] { $count } dosyanın verisi hasarlıydı. Geri kalanı çıkarıldı.
+    }
+
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+        [one] ve { $count } tane daha
+       *[other] ve { $count } tane daha
+    }
+
+# Copy the list
+t3c49b269 = Listeyi kopyala
 
 # {count} of {count2} files · {size} of {size2}
 t27f1ab7d = { $count } / { $count2 } dosya · { $size } / { $size2 }
@@ -1181,9 +1228,6 @@ tddb7844a = Gir…
 
 # Show
 t29742e5c = Göster
-
-# Stop
-t4b7f7705 = Durdur
 
 # Jobs
 t4ae6a79d = İşler

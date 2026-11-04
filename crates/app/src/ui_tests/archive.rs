@@ -91,6 +91,50 @@ scenario!(
 );
 
 scenario!(
+    /// A file whose data is damaged stops the extraction to ask: left out, the rest
+    /// come out, and the dialog says which it was.
+    a_damaged_file_is_asked_about,
+    |ui| {
+        let files = [
+            ui.file("in/a.txt", &"a".repeat(2000)),
+            ui.file("in/b.txt", &"b".repeat(2000)),
+            ui.file("in/c.txt", &"c".repeat(2000)),
+        ];
+        let new = packwing_core::NewArchive {
+            level: packwing_core::Level::Store,
+            ..packwing_core::NewArchive::default()
+        };
+        let made = packwing_core::create(
+            &files,
+            &ui.work.join("damaged.zip"),
+            &new,
+            &packwing_core::Control::default(),
+        )
+        .expect("the archive");
+        let mut bytes = std::fs::read(&made).expect("its bytes");
+        let at = bytes
+            .windows(100)
+            .position(|w| w.iter().all(|&b| b == b'b'))
+            .expect("b.txt's data");
+        bytes[at + 50] = b'x';
+        std::fs::write(&made, bytes).expect("damaged");
+        ui.open(&made);
+        ui.click("extract");
+        ui.wait_for("dest-new");
+        ui.click("dest-new");
+        ui.click("extract");
+        ui.wait_for("skip");
+        ui.click("skip");
+        ui.wait_for("copy-list");
+        let out = ui.work.join("damaged");
+        assert!(out.join("a.txt").exists() && out.join("c.txt").exists());
+        assert!(!out.join("b.txt").exists());
+        ui.click("close");
+        ui.wait_for_no_dialog();
+    }
+);
+
+scenario!(
     /// An archive with a password asks for it, again when it is wrong, and opens with
     /// the right one.
     a_wrong_password_asks_again,

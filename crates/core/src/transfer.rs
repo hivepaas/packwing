@@ -411,6 +411,7 @@ mod tests {
         Control {
             progress: None,
             cancel: None,
+            on_damaged: None,
         }
     }
 
@@ -566,6 +567,7 @@ mod tests {
                 }
             })),
             cancel: Some(cancel),
+            on_damaged: None,
         };
         let e = transfer(&s.t(&["d"], false, OnExisting::Stop), &control).expect_err("stopped");
         assert!(matches!(e, Error::Cancelled), "{e}");

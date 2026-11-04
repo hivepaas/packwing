@@ -11,8 +11,8 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
 use packwing_core::{
-    Asked, Cancel, Child, Container, Control, Error, Keys, Layer, PASSPHRASE, PASSWORD, Progress,
-    extract, list, test,
+    Asked, Cancel, Child, Container, Control, Damage, Error, Keys, Layer, OnDamaged, PASSPHRASE,
+    PASSWORD, Progress, damages, extract, list, test,
 };
 
 /// A folder in the system's temporary one, removed when dropped.
@@ -393,6 +393,7 @@ fn extracts_with_progress() {
         let control = Control {
             progress: Some(Arc::new(move |p: &Progress| *seen.lock().unwrap() = *p)),
             cancel: None,
+            on_damaged: None,
         };
         let summary = extract(&path, &out, &Keys::default(), &control).unwrap();
         assert_eq!(summary.files, 3, "{name}");
@@ -422,6 +423,40 @@ fn a_damaged_archive_fails_and_writes_nothing() {
         test(&path, &Keys::default(), &Control::default()),
         Err(Error::Failed(_))
     ));
+}
+
+#[test]
+fn damaged_files_are_asked_about_and_gone_on_from() {
+    let s = Scratch::new();
+    let mut data = zip(&[("a.txt", b"aaaa"), ("b.txt", b"bbbb"), ("c.txt", b"cccc")]);
+    let at = data.windows(4).position(|w| w == b"bbbb").unwrap();
+    data[at] = b'x';
+    let path = s.file("a.zip", &data);
+    let asked = Arc::new(Mutex::new(Vec::new()));
+    let seen = asked.clone();
+    let control = Control {
+        on_damaged: Some(Arc::new(move |d: &Damage| {
+            seen.lock().unwrap().push(d.path.clone());
+            OnDamaged::Skip
+        })),
+        ..Control::default()
+    };
+    let out = s.0.join("out");
+    let summary = extract(&path, &out, &Keys::default(), &control).unwrap();
+    assert_eq!(*asked.lock().unwrap(), ["b.txt"]);
+    let damaged = damages(&summary);
+    assert_eq!(damaged.len(), 1);
+    assert_eq!((damaged[0].path.as_str(), damaged[0].kept), ("b.txt", None));
+    assert!(out.join("a.txt").exists() && out.join("c.txt").exists());
+    assert!(!out.join("b.txt").exists());
+    // Without the question, it stops.
+    let e = extract(
+        &path,
+        &s.0.join("again"),
+        &Keys::default(),
+        &Control::default(),
+    );
+    assert!(matches!(e, Err(Error::Failed(_))), "{e:?}");
 }
 
 #[test]
@@ -462,6 +497,7 @@ fn cancelled_before_it_starts() {
     let control = Control {
         progress: None,
         cancel: Some(cancel),
+        on_damaged: None,
     };
     let out = s.0.join("out");
     assert!(matches!(
@@ -516,6 +552,7 @@ fn extracts_disc_images_with_progress() {
         let control = Control {
             progress: Some(Arc::new(move |p: &Progress| *seen.lock().unwrap() = *p)),
             cancel: None,
+            on_damaged: None,
         };
         let summary = extract(&path, &out, &Keys::default(), &control).unwrap();
         assert_eq!(summary.files, 3, "{name}");
@@ -574,6 +611,7 @@ fn disc_images_cancelled_before_they_start() {
     let control = Control {
         progress: None,
         cancel: Some(cancel),
+        on_damaged: None,
     };
     for (name, data, _, _) in images() {
         let path = s.file(name, &data);
@@ -626,6 +664,7 @@ fn extracts_and_tests_cpio_rpm_and_7z() {
         let control = Control {
             progress: Some(Arc::new(move |p: &Progress| *seen.lock().unwrap() = *p)),
             cancel: None,
+            on_damaged: None,
         };
         let summary = extract(&path, &out, &Keys::default(), &control).unwrap();
         assert_eq!(summary.files, 3, "{name}");
@@ -783,6 +822,7 @@ fn cpio_and_7z_cancelled_before_they_start() {
     let control = Control {
         progress: None,
         cancel: Some(cancel),
+        on_damaged: None,
     };
     for (name, data, _, _) in more_archives() {
         let path = s.file(name, &data);
@@ -1161,6 +1201,7 @@ fn stopping_a_rar_job_stops_it() {
     let control = Control {
         progress: None,
         cancel: Some(cancel),
+        on_damaged: None,
     };
     assert!(matches!(
         test(&path, &Keys::default(), &control),

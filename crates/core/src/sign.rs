@@ -370,6 +370,7 @@ mod tests {
         Control {
             progress: None,
             cancel: None,
+            on_damaged: None,
         }
     }
 
@@ -459,6 +460,7 @@ mod tests {
         let control = Control {
             progress: None,
             cancel: Some(cancel),
+            on_damaged: None,
         };
         assert!(matches!(
             sign_file(&s.storage(), &file(), &key, &control),

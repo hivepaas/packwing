@@ -616,8 +616,17 @@ t808b85c5 = Passphrase der Schlüsseldatei eingeben
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Die Schlüsseldatei ist selbst geschützt. packwing behält ihre Passphrase nur, solange das Archiv geöffnet ist, und schreibt sie nie auf.
 
+# The job stopped before it was done.
+t57a78885 = Der Auftrag hat aufgehört, bevor er fertig war.
+
 # Waiting for other jobs…
 t16ec36d9 = Wartet auf andere Aufgaben…
+
+# A file is damaged
+t8b1230ed = Eine Datei ist beschädigt
+
+# Extracted, but some files are damaged
+t8226d624 = Entpackt, aber einige Dateien sind beschädigt
 
 # Extracting…
 t94279f82 = Wird entpackt…
@@ -712,6 +721,44 @@ tc1421590 =
 
 # Close
 tcd86acc3 = Schließen
+
+# “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
+t145d7a09 = „{ $path }“ ist beschädigt: { $why }. Anhalten, weglassen oder das Lesbare behalten?
+
+# Do the same for the other damaged files
+t798693ad = Bei den anderen beschädigten Dateien genauso verfahren
+
+# Stop
+t4b7f7705 = Stoppen
+
+# Leave it out
+taaff8ec9 = Weglassen
+
+# Keep what was read
+tc4387d25 = Lesbares behalten
+
+# kept, {size}
+t001f6992 = behalten, { $size }
+
+# left out
+t73aeedd4 = weggelassen
+
+# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
+t9d82f78b =
+    { $n ->
+        [one] Die Daten von { $count } Datei waren beschädigt. Der Rest wurde entpackt.
+       *[other] Die Daten von { $count } Dateien waren beschädigt. Der Rest wurde entpackt.
+    }
+
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+        [one] und { $count } weitere
+       *[other] und { $count } weitere
+    }
+
+# Copy the list
+t3c49b269 = Liste kopieren
 
 # {count} of {count2} files · {size} of {size2}
 t27f1ab7d = { $count } von { $count2 } Dateien · { $size } von { $size2 }
@@ -1181,9 +1228,6 @@ tddb7844a = Eingeben…
 
 # Show
 t29742e5c = Anzeigen
-
-# Stop
-t4b7f7705 = Stoppen
 
 # Jobs
 t4ae6a79d = Aufgaben

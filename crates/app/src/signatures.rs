@@ -36,6 +36,7 @@ pub fn start<T: 'static>(
     let control = Control {
         progress: None,
         cancel: Some(cancel.clone()),
+        on_damaged: None,
     };
     let work = cx.background_spawn(async move {
         if !read_all {
