@@ -74,10 +74,14 @@ pub enum ExplorerEvent {
 
 /// Whether `item` is a part of a file cut as 7-Zip cuts one: `name.001`.
 pub fn is_cut_part(item: &Item) -> bool {
-    !item.dir
-        && item.name.rsplit_once('.').is_some_and(|(base, n)| {
-            !base.is_empty() && n.len() >= 3 && n.bytes().all(|b| b.is_ascii_digit())
-        })
+    !item.dir && is_cut_part_name(&item.name)
+}
+
+/// Whether `name` is a part's, as [`is_cut_part`] says.
+pub fn is_cut_part_name(name: &str) -> bool {
+    name.rsplit_once('.').is_some_and(|(base, n)| {
+        !base.is_empty() && n.len() >= 3 && n.bytes().all(|b| b.is_ascii_digit())
+    })
 }
 
 /// A storage, by what the user calls it.
