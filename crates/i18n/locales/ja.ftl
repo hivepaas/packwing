@@ -2053,6 +2053,33 @@ t528232e6 = アップロードが停止しました。
 # “{pattern}” names no file or folder.
 te17b2bfa = 「{ $pattern }」はファイルもフォルダも指していません。
 
+# a colon, which Windows does not allow
+t3ba6a1aa = Windows で使えないコロン
+
+# a character Windows does not allow (\ < > " | ? *)
+t0b11ab21 = Windows で使えない文字 (\ < > " | ? *)
+
+# a name Windows keeps for a device
+t8cac89ee = Windows がデバイス用に予約している名前
+
+# ends in a space or a dot, which Windows does not allow
+t7ae9a209 = Windows で使えない末尾の空白またはピリオド
+
+# longer than 255 bytes
+t9218e5c0 = 255 バイトを超える長さ
+
+# a control character
+t378bba3a = 制御文字
+
+# not a name this system can read
+t72b79e1d = このシステムで読めない名前
+
+# the same file here as another, its name differing only in case
+t1eead41f = ここでは別のファイルと同じ（名前の大文字・小文字だけが違う）
+
+# a link that leads outside the folder
+t00fdc25e = フォルダーの外を指すリンク
+
 # {name} is already in the folder.
 tbe7fab8a = { $name } はすでにフォルダにあります。
 

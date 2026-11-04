@@ -244,6 +244,7 @@ fn stopping_leaves_nothing() {
             })),
             cancel: Some(cancel),
             on_damaged: None,
+            on_unnamable: None,
         };
         let new = NewArchive {
             part_size,
@@ -276,6 +277,7 @@ fn progress_reaches_every_byte_once() {
         })),
         cancel: None,
         on_damaged: None,
+        on_unnamable: None,
     };
     create(&[root], &s.path("a.zip"), &NewArchive::default(), &control).unwrap();
     assert_eq!(total.load(Ordering::Relaxed), measured.bytes);
@@ -745,6 +747,7 @@ fn stopping_any_kind_leaves_nothing_and_progress_reaches_the_end() {
             })),
             cancel: Some(cancel),
             on_damaged: None,
+            on_unnamable: None,
         };
         let stopped = create(std::slice::from_ref(&root), &path, &new, &control);
         assert!(matches!(stopped, Err(Error::Cancelled)), "{stopped:?}");
@@ -759,6 +762,7 @@ fn stopping_any_kind_leaves_nothing_and_progress_reaches_the_end() {
             })),
             cancel: None,
             on_damaged: None,
+            on_unnamable: None,
         };
         create(std::slice::from_ref(&root), &path, &new, &control).unwrap();
         assert_eq!(bytes.load(Ordering::Relaxed), measured.bytes, "{kind:?}");
@@ -799,7 +803,7 @@ fn every_kind_keeps_a_link_as_a_link() {
 
 #[cfg(unix)]
 #[test]
-fn a_link_out_of_the_folder_stops_the_extraction() {
+fn a_link_out_of_the_folder_is_left_out() {
     use std::os::unix::fs::symlink;
     let s = Scratch::new("link-out");
     let root = s.path("d");
@@ -817,8 +821,12 @@ fn a_link_out_of_the_folder_stops_the_extraction() {
     )
     .unwrap();
     let out = s.path("out");
-    assert!(extract(&made, &out, &Keys::default(), &Control::default()).is_err());
+    let summary = extract(&made, &out, &Keys::default(), &Control::default()).unwrap();
     assert!(fs::symlink_metadata(out.join("d/link")).is_err());
+    assert_eq!(fs::read(out.join("d/file")).unwrap(), b"data");
+    let left = packwing_core::left_out(&summary);
+    assert_eq!(left.len(), 1);
+    assert_eq!(left[0].path, "d/link");
 }
 
 /// Whether `program` is there to be run.
@@ -1095,6 +1103,7 @@ fn stopping_or_failing_leaves_the_archive_as_it_was() {
         })),
         cancel: Some(cancel),
         on_damaged: None,
+        on_unnamable: None,
     };
     let stopped = add(&[big_one], &made, &[], &Keys::default(), &control);
     assert!(matches!(stopped, Err(Error::Cancelled)), "{stopped:?}");
@@ -1372,6 +1381,7 @@ fn stopping_a_picked_extraction_leaves_nothing() {
         })),
         cancel: Some(cancel),
         on_damaged: None,
+        on_unnamable: None,
     };
     let picked = [path_of("Báo cáo/Hình ảnh")];
     let how = ExtractOptions::default();
@@ -1871,6 +1881,7 @@ fn stopped_while_it_looks_through_the_files_nothing_is_left() {
         progress: None,
         cancel: Some(cancel),
         on_damaged: None,
+        on_unnamable: None,
     };
     let e = create_on(
         &[what],
@@ -2039,6 +2050,7 @@ fn stopped_on_its_way_straight_nothing_is_left() {
         })),
         cancel: Some(cancel),
         on_damaged: None,
+        on_unnamable: None,
     };
     across.sends_as_read = true;
     let e = up(&what, &across, "a.tar.gz", &straight(Kind::TarGz), &control);

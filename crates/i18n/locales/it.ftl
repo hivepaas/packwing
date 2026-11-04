@@ -2083,6 +2083,33 @@ t528232e6 = Il caricamento si è interrotto.
 # “{pattern}” names no file or folder.
 te17b2bfa = «{ $pattern }» non indica alcun file o cartella.
 
+# a colon, which Windows does not allow
+t3ba6a1aa = due punti, che Windows non consente
+
+# a character Windows does not allow (\ < > " | ? *)
+t0b11ab21 = un carattere che Windows non consente (\ < > " | ? *)
+
+# a name Windows keeps for a device
+t8cac89ee = un nome che Windows riserva a un dispositivo
+
+# ends in a space or a dot, which Windows does not allow
+t7ae9a209 = finisce con uno spazio o un punto, che Windows non consente
+
+# longer than 255 bytes
+t9218e5c0 = più di 255 byte
+
+# a control character
+t378bba3a = un carattere di controllo
+
+# not a name this system can read
+t72b79e1d = non è un nome che questo sistema sa leggere
+
+# the same file here as another, its name differing only in case
+t1eead41f = qui è lo stesso file di un altro, il nome differisce solo per maiuscole
+
+# a link that leads outside the folder
+t00fdc25e = un collegamento che porta fuori dalla cartella
+
 # {name} is already in the folder.
 tbe7fab8a = { $name } è già nella cartella.
 

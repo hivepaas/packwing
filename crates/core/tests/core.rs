@@ -11,8 +11,9 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
 use packwing_core::{
-    Asked, Cancel, Child, Container, Control, Damage, Error, Keys, Layer, OnDamaged, PASSPHRASE,
-    PASSWORD, Progress, damages, extract, list, test,
+    Asked, BadName, Cancel, Child, Container, Control, Damage, Error, ExtractOptions, Keys, Layer,
+    OnDamaged, OnUnnamable, PASSPHRASE, PASSWORD, Progress, damages, extract, extract_with,
+    left_out, list, renamings, test,
 };
 
 /// A folder in the system's temporary one, removed when dropped.
@@ -394,6 +395,7 @@ fn extracts_with_progress() {
             progress: Some(Arc::new(move |p: &Progress| *seen.lock().unwrap() = *p)),
             cancel: None,
             on_damaged: None,
+            on_unnamable: None,
         };
         let summary = extract(&path, &out, &Keys::default(), &control).unwrap();
         assert_eq!(summary.files, 3, "{name}");
@@ -459,6 +461,99 @@ fn damaged_files_are_asked_about_and_gone_on_from() {
     assert!(matches!(e, Err(Error::Failed(_))), "{e:?}");
 }
 
+/// Names Windows cannot take, and two that differ only in case.
+fn awkward_names() -> Vec<u8> {
+    zip(&[
+        ("good.txt", b"ok"),
+        ("a:b.txt", b"colon"),
+        ("aux.txt", b"device"),
+        ("README", b"upper"),
+        ("readme", b"lower"),
+    ])
+}
+
+/// On Linux, the names Linux takes extract as they are, and nothing is asked.
+#[cfg(all(unix, not(target_os = "macos")))]
+#[test]
+fn names_this_system_takes_extract_as_they_are() {
+    let s = Scratch::new();
+    let path = s.file("a.zip", &awkward_names());
+    let asked = Arc::new(Mutex::new(0));
+    let seen = asked.clone();
+    let control = Control {
+        on_unnamable: Some(Arc::new(move |_: &[BadName]| {
+            *seen.lock().unwrap() += 1;
+            OnUnnamable::Stop
+        })),
+        ..Control::default()
+    };
+    let out = s.0.join("out");
+    let summary = extract(&path, &out, &Keys::default(), &control).unwrap();
+    assert_eq!(summary.files, 5);
+    assert_eq!(*asked.lock().unwrap(), 0);
+    assert_eq!(std::fs::read(out.join("a:b.txt")).unwrap(), b"colon");
+    assert_eq!(std::fs::read(out.join("readme")).unwrap(), b"lower");
+}
+
+/// Names every system cannot take are asked about once, all together, and
+/// left out or renamed as answered.
+#[test]
+fn names_not_every_system_takes_are_asked_about_once() {
+    let s = Scratch::new();
+    let path = s.file("a.zip", &awkward_names());
+    let how = ExtractOptions {
+        portable_names: true,
+        ..ExtractOptions::default()
+    };
+    let asking = |answer: OnUnnamable| {
+        let asked = Arc::new(Mutex::new(Vec::new()));
+        let seen = asked.clone();
+        let control = Control {
+            on_unnamable: Some(Arc::new(move |bad: &[BadName]| {
+                seen.lock().unwrap().push(bad.to_vec());
+                answer
+            })),
+            ..Control::default()
+        };
+        (control, asked)
+    };
+    let (control, asked) = asking(OnUnnamable::Skip);
+    let out = s.0.join("skipped");
+    let summary = extract_with(&path, &out, &Keys::default(), &how, &control).unwrap();
+    let asked = asked.lock().unwrap();
+    assert_eq!(asked.len(), 1);
+    let paths: Vec<&str> = asked[0].iter().map(|b| b.path.as_str()).collect();
+    assert_eq!(paths, ["a:b.txt", "aux.txt", "readme"]);
+    assert!(asked[0].iter().all(|b| !b.why.is_empty()));
+    let left: Vec<String> = left_out(&summary).into_iter().map(|b| b.path).collect();
+    assert_eq!(left, ["a:b.txt", "aux.txt", "readme"]);
+    assert!(out.join("good.txt").exists() && out.join("README").exists());
+    assert!(!out.join("aux.txt").exists());
+
+    let (control, _) = asking(OnUnnamable::Rename);
+    let out = s.0.join("renamed");
+    let summary = extract_with(&path, &out, &Keys::default(), &how, &control).unwrap();
+    let given: Vec<(String, String)> = renamings(&summary)
+        .into_iter()
+        .map(|r| (r.path, r.to))
+        .collect();
+    assert_eq!(
+        given,
+        [
+            ("a:b.txt".into(), "a_b.txt".into()),
+            ("aux.txt".into(), "_aux.txt".into()),
+            ("readme".into(), "readme (2)".into()),
+        ]
+    );
+    assert_eq!(std::fs::read(out.join("readme (2)")).unwrap(), b"lower");
+
+    // Without the question, it stops, and writes nothing.
+    let out = s.0.join("stopped");
+    let e = extract_with(&path, &out, &Keys::default(), &how, &Control::default());
+    assert!(matches!(e, Err(Error::Failed(_))), "{e:?}");
+    assert!(!out.exists());
+}
+
 #[test]
 fn tests_every_file() {
     let s = Scratch::new();
@@ -498,6 +593,7 @@ fn cancelled_before_it_starts() {
         progress: None,
         cancel: Some(cancel),
         on_damaged: None,
+        on_unnamable: None,
     };
     let out = s.0.join("out");
     assert!(matches!(
@@ -553,6 +649,7 @@ fn extracts_disc_images_with_progress() {
             progress: Some(Arc::new(move |p: &Progress| *seen.lock().unwrap() = *p)),
             cancel: None,
             on_damaged: None,
+            on_unnamable: None,
         };
         let summary = extract(&path, &out, &Keys::default(), &control).unwrap();
         assert_eq!(summary.files, 3, "{name}");
@@ -612,6 +709,7 @@ fn disc_images_cancelled_before_they_start() {
         progress: None,
         cancel: Some(cancel),
         on_damaged: None,
+        on_unnamable: None,
     };
     for (name, data, _, _) in images() {
         let path = s.file(name, &data);
@@ -665,6 +763,7 @@ fn extracts_and_tests_cpio_rpm_and_7z() {
             progress: Some(Arc::new(move |p: &Progress| *seen.lock().unwrap() = *p)),
             cancel: None,
             on_damaged: None,
+            on_unnamable: None,
         };
         let summary = extract(&path, &out, &Keys::default(), &control).unwrap();
         assert_eq!(summary.files, 3, "{name}");
@@ -805,12 +904,25 @@ fn xar_archives_list_and_test_alone_and_under_zstd() {
         assert!(l.files > 0, "{name}");
         let summary = test(&path, &Keys::default(), &Control::default()).unwrap();
         assert!(summary.files > 0, "{name}");
-        // It holds a name Windows does not allow, refused everywhere before
-        // anything is written.
+        // It holds a name Windows does not allow: refused before anything is
+        // written where names are to be every system's, and on Windows.
         let out = s.0.join(format!("out-{name}"));
-        let e = extract(&path, &out, &Keys::default(), &Control::default()).unwrap_err();
+        let portable = ExtractOptions {
+            portable_names: true,
+            ..ExtractOptions::default()
+        };
+        let e = extract_with(
+            &path,
+            &out,
+            &Keys::default(),
+            &portable,
+            &Control::default(),
+        )
+        .unwrap_err();
         assert!(e.to_string().contains("name can’t be used"), "{name}: {e}");
         assert!(!out.exists(), "{name}");
+        let native = extract(&path, &out, &Keys::default(), &Control::default());
+        assert_eq!(native.is_ok(), !cfg!(windows), "{name}: {native:?}");
     }
 }
 
@@ -823,6 +935,7 @@ fn cpio_and_7z_cancelled_before_they_start() {
         progress: None,
         cancel: Some(cancel),
         on_damaged: None,
+        on_unnamable: None,
     };
     for (name, data, _, _) in more_archives() {
         let path = s.file(name, &data);
@@ -1202,6 +1315,7 @@ fn stopping_a_rar_job_stops_it() {
         progress: None,
         cancel: Some(cancel),
         on_damaged: None,
+        on_unnamable: None,
     };
     assert!(matches!(
         test(&path, &Keys::default(), &control),

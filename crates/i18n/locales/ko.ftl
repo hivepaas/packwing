@@ -2053,6 +2053,33 @@ t528232e6 = 업로드가 중단되었습니다.
 # “{pattern}” names no file or folder.
 te17b2bfa = “{ $pattern }”은(는) 어떤 파일이나 폴더도 가리키지 않습니다.
 
+# a colon, which Windows does not allow
+t3ba6a1aa = Windows에서 쓸 수 없는 콜론
+
+# a character Windows does not allow (\ < > " | ? *)
+t0b11ab21 = Windows에서 쓸 수 없는 문자 (\ < > " | ? *)
+
+# a name Windows keeps for a device
+t8cac89ee = Windows가 장치용으로 예약한 이름
+
+# ends in a space or a dot, which Windows does not allow
+t7ae9a209 = Windows에서 쓸 수 없는, 공백이나 마침표로 끝나는 이름
+
+# longer than 255 bytes
+t9218e5c0 = 255바이트보다 김
+
+# a control character
+t378bba3a = 제어 문자
+
+# not a name this system can read
+t72b79e1d = 이 시스템이 읽을 수 없는 이름
+
+# the same file here as another, its name differing only in case
+t1eead41f = 여기서는 다른 파일과 같음 (이름이 대소문자만 다름)
+
+# a link that leads outside the folder
+t00fdc25e = 폴더 밖을 가리키는 링크
+
 # {name} is already in the folder.
 tbe7fab8a = { $name }이(가) 이미 폴더에 있습니다.
 

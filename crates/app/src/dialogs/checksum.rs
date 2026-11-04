@@ -243,6 +243,7 @@ impl ChecksumDialog {
             })),
             cancel: Some(cancel.clone()),
             on_damaged: None,
+            on_unnamable: None,
         };
         let (storage, path, asked) = (self.storage.clone(), self.path.clone(), wanted.clone());
         let work = cx

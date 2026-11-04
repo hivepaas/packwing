@@ -10,10 +10,11 @@ use std::sync::atomic::AtomicU64;
 use std::time::Duration;
 
 use hivepack::extract::{
-    Cancel, Damaged, Links, NameDecoder, OnDamaged, Options, Permissions, Progress, ProgressFn,
-    RarProblem, Select, Sink, Summary, extract_7z, extract_7z_to, extract_cpio, extract_cpio_to,
-    extract_iso, extract_iso_to, extract_rar, extract_rar_to, extract_tar, extract_tar_to,
-    extract_udf, extract_udf_to, extract_xar, extract_xar_to, extract_zip, extract_zip_to,
+    Cancel, Damaged, ErrorKind, Links, NameDecoder, NameError, NameRules, OnDamaged, OnRefused,
+    OnUnnamable, Options, Permissions, Progress, ProgressFn, RarProblem, Select, Sink, Summary,
+    extract_7z, extract_7z_to, extract_cpio, extract_cpio_to, extract_iso, extract_iso_to,
+    extract_rar, extract_rar_to, extract_tar, extract_tar_to, extract_udf, extract_udf_to,
+    extract_xar, extract_xar_to, extract_zip, extract_zip_to,
 };
 use hivepack::open::{Container, Opened};
 use hivepack::tar::Reader;
@@ -35,6 +36,93 @@ pub struct Control {
     /// stop, to leave it out, or to keep what was read of it, and go on.
     /// None stops. A name, a link or a limit that is refused always stops.
     pub on_damaged: Option<DamagedFn>,
+    /// Asked once, before anything is written, about every file whose name this
+    /// system (or every system, with [`ExtractOptions::portable_names`]) cannot
+    /// take, all of them together: to stop, to leave them out, or to rename them.
+    /// None stops at the first. A name that leads outside always stops.
+    pub on_unnamable: Option<UnnamableFn>,
+}
+
+/// What [`Control::on_unnamable`] is: given the files, it says what to do.
+pub type UnnamableFn = Arc<dyn Fn(&[BadName]) -> OnUnnamable + Send + Sync>;
+
+/// A file that is not extracted as it is named: a name this system cannot take,
+/// or a link that leads outside.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct BadName {
+    /// Its path in the archive, as the archive names it.
+    pub path: String,
+    /// Why, in a few words.
+    pub why: String,
+}
+
+impl BadName {
+    fn of(error: &hivepack::extract::Error) -> BadName {
+        BadName {
+            path: error
+                .name
+                .as_deref()
+                .map_or_else(String::new, |raw| String::from_utf8_lossy(raw).into_owned()),
+            why: why_unnamable(&error.kind),
+        }
+    }
+}
+
+/// Why a name is not taken, as a person reads it.
+fn why_unnamable(kind: &ErrorKind) -> String {
+    match kind {
+        ErrorKind::Name(NameError::Colon) => tr!("a colon, which Windows does not allow"),
+        ErrorKind::Name(NameError::Backslash | NameError::Reserved) => {
+            tr!("a character Windows does not allow (\\ < > \" | ? *)")
+        }
+        ErrorKind::Name(NameError::Device) => tr!("a name Windows keeps for a device"),
+        ErrorKind::Name(NameError::TrailingSpaceOrDot) => {
+            tr!("ends in a space or a dot, which Windows does not allow")
+        }
+        ErrorKind::Name(NameError::TooLong) => tr!("longer than 255 bytes"),
+        ErrorKind::Name(NameError::Control) => tr!("a control character"),
+        ErrorKind::Name(NameError::NotUtf8) => tr!("not a name this system can read"),
+        ErrorKind::Duplicate { .. } => {
+            tr!("the same file here as another, its name differing only in case")
+        }
+        ErrorKind::LinkTarget(_) | ErrorKind::LinkChain { .. } => {
+            tr!("a link that leads outside the folder")
+        }
+        other => other.to_string(),
+    }
+}
+
+/// A file extracted under another name than its own.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Renaming {
+    /// Its path in the archive, as the archive names it.
+    pub path: String,
+    /// The path it was given.
+    pub to: String,
+    /// Why its own was not taken.
+    pub why: String,
+}
+
+/// The files of `summary` left out, as their names could not be taken or as
+/// they are links that lead outside, in the order they were met.
+pub fn left_out(summary: &Summary) -> Vec<BadName> {
+    summary.skipped.iter().map(BadName::of).collect()
+}
+
+/// The files of `summary` extracted under other names than theirs.
+pub fn renamings(summary: &Summary) -> Vec<Renaming> {
+    summary
+        .renamed
+        .iter()
+        .map(|r| {
+            let BadName { path, why } = BadName::of(&r.error);
+            Renaming {
+                path,
+                to: r.to.join("/"),
+                why,
+            }
+        })
+        .collect()
 }
 
 /// What [`Control::on_damaged`] is: given the file, it says what to do.
@@ -112,6 +200,10 @@ pub struct ExtractOptions {
     pub limit: Option<u64>,
     /// The files keep the archive's mark of where it came from.
     pub keep_mark: bool,
+    /// Names are taken only if every system takes them: Windows' characters
+    /// and device names, and two names that differ only in case, are refused on
+    /// Linux too. Otherwise, as this system and the destination take them.
+    pub portable_names: bool,
 }
 
 impl Default for ExtractOptions {
@@ -120,6 +212,7 @@ impl Default for ExtractOptions {
             overwrite: false,
             limit: Some(100_000_000_000),
             keep_mark: true,
+            portable_names: false,
         }
     }
 }
@@ -396,6 +489,13 @@ pub(crate) fn extract_into(
     // A name in an old encoding is no reason to stop: the file comes out, its
     // name perhaps wrong. What the name then says is checked all the same.
     options.decode_names = Some(NameDecoder::lossy());
+    options.name_rules = if how.portable_names {
+        NameRules::Portable
+    } else {
+        NameRules::Native
+    };
+    // A link that leads outside is left out, and said, rather than stop the rest.
+    options.links_outside = OnRefused::Skip;
     options.links = if cfg!(windows) {
         Links::AsFile
     } else {
@@ -426,6 +526,11 @@ pub(crate) fn extract_into(
     if let Some(asked) = control.on_damaged.clone().filter(|_| !guessing) {
         options.on_damaged = Some(Arc::new(move |e: &hivepack::extract::Error| {
             asked(&Damage::of(e, None))
+        }));
+    }
+    if let Some(asked) = control.on_unnamable.clone() {
+        options.on_unnamable = Some(Arc::new(move |errors: &[hivepack::extract::Error]| {
+            asked(&errors.iter().map(BadName::of).collect::<Vec<_>>())
         }));
     }
     match opened.container() {
@@ -641,6 +746,7 @@ pub fn test(source: impl Into<Source>, keys: &Keys, control: &Control) -> Result
                 progress: None,
                 cancel: control.cancel.clone(),
                 on_damaged: None,
+                on_unnamable: None,
             };
             copy(&mut tr.into_inner(), &mut io::sink(), &quiet, &mut done)?;
         }
@@ -764,6 +870,7 @@ fn read_to_end(r: &mut impl Read, control: &Control, done: &mut Progress) -> Res
         progress: None,
         cancel: control.cancel.clone(),
         on_damaged: None,
+        on_unnamable: None,
     };
     copy(r, &mut io::sink(), &quiet, done).map(|_| ())
 }

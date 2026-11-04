@@ -37,7 +37,7 @@ use crate::secrets::Secrets;
         PACKWING_PASSWORD.",
     after_help = "Exit codes: 0 done; 1 failed; 2 not understood; 3 a password or key is \
         needed, or wrong; 4 not an archive pkw can open; 5 done, but some files' data was \
-        damaged (--on-damaged)."
+        damaged (--on-damaged), or some files were left out (--on-bad-name)."
 )]
 struct Cli {
     #[command(subcommand)]
@@ -344,7 +344,8 @@ pub enum Exit {
     Locked(String),
     /// Not an archive pkw opens: 4.
     NotAnArchive(String),
-    /// Done, but some files' data was damaged, and skipped or kept: 5.
+    /// Done, but some files' data was damaged, and skipped or kept, or some
+    /// files were left out, as their names could not be taken: 5.
     Damaged(String),
 }
 

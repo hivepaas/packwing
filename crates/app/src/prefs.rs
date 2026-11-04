@@ -584,6 +584,7 @@ impl Prefs {
                 .get(self.limit)
                 .map_or(LIMITS[1].1, |(_, limit)| *limit),
             keep_mark: self.keep_mark,
+            portable_names: false,
         }
     }
 }
@@ -884,6 +885,7 @@ mod tests {
                 overwrite: true,
                 limit: None,
                 keep_mark: false,
+                portable_names: false,
             }
         );
     }

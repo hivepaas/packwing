@@ -2125,6 +2125,33 @@ t528232e6 = Вивантаження зупинено.
 # “{pattern}” names no file or folder.
 te17b2bfa = «{ $pattern }» не вказує ні на файл, ні на теку.
 
+# a colon, which Windows does not allow
+t3ba6a1aa = двокрапка, якої Windows не дозволяє
+
+# a character Windows does not allow (\ < > " | ? *)
+t0b11ab21 = символ, якого Windows не дозволяє (\ < > " | ? *)
+
+# a name Windows keeps for a device
+t8cac89ee = ім’я, яке Windows резервує для пристрою
+
+# ends in a space or a dot, which Windows does not allow
+t7ae9a209 = закінчується пробілом або крапкою, чого Windows не дозволяє
+
+# longer than 255 bytes
+t9218e5c0 = довше за 255 байтів
+
+# a control character
+t378bba3a = керівний символ
+
+# not a name this system can read
+t72b79e1d = ім’я, яке ця система не може прочитати
+
+# the same file here as another, its name differing only in case
+t1eead41f = тут той самий файл, що й інший: імена відрізняються лише регістром
+
+# a link that leads outside the folder
+t00fdc25e = посилання, що веде за межі теки
+
 # {name} is already in the folder.
 tbe7fab8a = { $name } уже є в папці.
 

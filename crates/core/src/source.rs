@@ -401,6 +401,7 @@ mod tests {
             progress: None,
             cancel: None,
             on_damaged: None,
+            on_unnamable: None,
         }
     }
 

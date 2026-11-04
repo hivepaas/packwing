@@ -531,6 +531,7 @@ fn sign_for_shot(dir: &std::path::Path, name: &str, trusted: bool, cx: &mut gpui
         progress: None,
         cancel: None,
         on_damaged: None,
+        on_unnamable: None,
     };
     packwing_core::sign_file(
         &packwing_core::LocalFolder::new(dir),
@@ -2410,6 +2411,7 @@ fn zip_of(files: &[(&str, &[u8])]) -> Vec<u8> {
             progress: None,
             cancel: None,
             on_damaged: None,
+            on_unnamable: None,
         },
     )
     .expect("cannot make an archive");
@@ -2487,6 +2489,7 @@ fn free_cannot_sign_but_checks_what_is_signed() {
         progress: None,
         cancel: None,
         on_damaged: None,
+        on_unnamable: None,
     };
     packwing_core::sign_file(
         &packwing_core::LocalFolder::new(&dir),

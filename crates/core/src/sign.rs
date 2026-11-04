@@ -371,6 +371,7 @@ mod tests {
             progress: None,
             cancel: None,
             on_damaged: None,
+            on_unnamable: None,
         }
     }
 
@@ -461,6 +462,7 @@ mod tests {
             progress: None,
             cancel: Some(cancel),
             on_damaged: None,
+            on_unnamable: None,
         };
         assert!(matches!(
             sign_file(&s.storage(), &file(), &key, &control),

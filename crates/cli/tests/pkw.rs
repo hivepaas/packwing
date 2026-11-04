@@ -452,3 +452,41 @@ fn no_mark_is_taken_by_extract_copy_and_move() {
     ok(&s.pkw(&["mv", "-q", "--no-mark", "out/a.zip", "got"]));
     assert!(s.path("got/a.zip").exists());
 }
+
+/// Names Windows cannot take extract as they are where they can, and with
+/// --portable-names are left out by default, or renamed, and said.
+#[cfg(unix)]
+#[test]
+fn names_a_system_cannot_take_are_left_out_or_renamed() {
+    let s = Scratch::new("bad-names");
+    std::fs::write(s.path("src/a:b.txt"), "colon").expect("a file");
+    ok(&s.pkw(&["create", "a.zip", "src"]));
+    // As they are, here.
+    ok(&s.pkw(&["extract", "a.zip", "-o", "native"]));
+    assert!(s.path("native/src/a:b.txt").exists());
+    // Left out, by default, and said: exit 5.
+    let left = s.pkw(&["extract", "a.zip", "-o", "left", "--portable-names"]);
+    assert_eq!(left.status.code(), Some(5));
+    let said = String::from_utf8_lossy(&left.stderr);
+    assert!(said.contains("left out: src/a:b.txt"), "{said}");
+    assert!(s.path("left/src/numbers.txt").exists());
+    assert!(!s.path("left/src/a:b.txt").exists());
+    // Renamed, as JSON says.
+    let json: serde_json::Value = serde_json::from_str(&ok(&s.pkw(&[
+        "--json",
+        "extract",
+        "a.zip",
+        "-o",
+        "renamed",
+        "--portable-names",
+        "--on-bad-name",
+        "rename",
+    ])))
+    .expect("JSON");
+    assert_eq!(json["renamed"][0]["to"], "src/a_b.txt");
+    assert_eq!(json["skipped"], serde_json::json!([]));
+    assert!(s.path("renamed/src/a_b.txt").exists());
+    // Asked, with no terminal: not understood.
+    let asked = s.pkw(&["extract", "a.zip", "-o", "asked", "--on-bad-name", "ask"]);
+    assert_eq!(asked.status.code(), Some(2));
+}

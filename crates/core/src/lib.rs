@@ -50,11 +50,12 @@ pub use create::{
     free_archive_path, measure, refused_by, rename, route,
 };
 pub use filter::Filter;
-pub use hivepack::extract::{Cancel, OnDamaged, Progress, Summary};
+pub use hivepack::extract::{Cancel, OnDamaged, OnUnnamable, Progress, Summary};
 pub use hivepack::open::{Container, Layer};
 pub use job::{
-    Control, Damage, DamagedFn, ExtractOptions, clean_opened_files, damages, extract,
-    extract_selected, extract_to_open, extract_with, image_fits, read_entry, test,
+    BadName, Control, Damage, DamagedFn, ExtractOptions, Renaming, UnnamableFn, clean_opened_files,
+    damages, extract, extract_selected, extract_to_open, extract_with, image_fits, left_out,
+    read_entry, renamings, test,
 };
 pub use listing::{Child, Entry, Found, Listing, list};
 pub use mark::came_from_internet;

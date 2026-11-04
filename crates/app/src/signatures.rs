@@ -37,6 +37,7 @@ pub fn start<T: 'static>(
         progress: None,
         cancel: Some(cancel.clone()),
         on_damaged: None,
+        on_unnamable: None,
     };
     let work = cx.background_spawn(async move {
         if !read_all {

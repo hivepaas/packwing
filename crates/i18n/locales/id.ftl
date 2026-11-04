@@ -2062,6 +2062,33 @@ t528232e6 = Pengunggahan dihentikan.
 # “{pattern}” names no file or folder.
 te17b2bfa = “{ $pattern }” tidak menunjuk file atau folder apa pun.
 
+# a colon, which Windows does not allow
+t3ba6a1aa = titik dua, yang tidak diizinkan Windows
+
+# a character Windows does not allow (\ < > " | ? *)
+t0b11ab21 = karakter yang tidak diizinkan Windows (\ < > " | ? *)
+
+# a name Windows keeps for a device
+t8cac89ee = nama yang dicadangkan Windows untuk perangkat
+
+# ends in a space or a dot, which Windows does not allow
+t7ae9a209 = berakhir dengan spasi atau titik, yang tidak diizinkan Windows
+
+# longer than 255 bytes
+t9218e5c0 = lebih dari 255 byte
+
+# a control character
+t378bba3a = karakter kontrol
+
+# not a name this system can read
+t72b79e1d = bukan nama yang bisa dibaca sistem ini
+
+# the same file here as another, its name differing only in case
+t1eead41f = di sini sama dengan berkas lain, namanya hanya beda huruf besar/kecil
+
+# a link that leads outside the folder
+t00fdc25e = tautan yang mengarah ke luar folder
+
 # {name} is already in the folder.
 tbe7fab8a = { $name } sudah ada di folder.
 

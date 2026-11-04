@@ -2083,6 +2083,33 @@ t528232e6 = La subida se detuvo.
 # “{pattern}” names no file or folder.
 te17b2bfa = «{ $pattern }» no indica ningún archivo ni carpeta.
 
+# a colon, which Windows does not allow
+t3ba6a1aa = dos puntos, que Windows no permite
+
+# a character Windows does not allow (\ < > " | ? *)
+t0b11ab21 = un carácter que Windows no permite (\ < > " | ? *)
+
+# a name Windows keeps for a device
+t8cac89ee = un nombre que Windows reserva para un dispositivo
+
+# ends in a space or a dot, which Windows does not allow
+t7ae9a209 = termina en un espacio o un punto, que Windows no permite
+
+# longer than 255 bytes
+t9218e5c0 = más de 255 bytes
+
+# a control character
+t378bba3a = un carácter de control
+
+# not a name this system can read
+t72b79e1d = no es un nombre que este sistema pueda leer
+
+# the same file here as another, its name differing only in case
+t1eead41f = aquí es el mismo archivo que otro, su nombre solo difiere en mayúsculas
+
+# a link that leads outside the folder
+t00fdc25e = un enlace que lleva fuera de la carpeta
+
 # {name} is already in the folder.
 tbe7fab8a = { $name } ya está en la carpeta.
 

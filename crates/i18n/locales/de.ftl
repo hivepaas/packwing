@@ -2083,6 +2083,33 @@ t528232e6 = Der Upload wurde gestoppt.
 # “{pattern}” names no file or folder.
 te17b2bfa = „{ $pattern }“ bezeichnet keine Datei und keinen Ordner.
 
+# a colon, which Windows does not allow
+t3ba6a1aa = ein Doppelpunkt, den Windows nicht erlaubt
+
+# a character Windows does not allow (\ < > " | ? *)
+t0b11ab21 = ein Zeichen, das Windows nicht erlaubt (\ < > " | ? *)
+
+# a name Windows keeps for a device
+t8cac89ee = ein Name, den Windows für ein Gerät reserviert
+
+# ends in a space or a dot, which Windows does not allow
+t7ae9a209 = endet auf ein Leerzeichen oder einen Punkt, was Windows nicht erlaubt
+
+# longer than 255 bytes
+t9218e5c0 = länger als 255 Bytes
+
+# a control character
+t378bba3a = ein Steuerzeichen
+
+# not a name this system can read
+t72b79e1d = kein Name, den dieses System lesen kann
+
+# the same file here as another, its name differing only in case
+t1eead41f = hier dieselbe Datei wie eine andere, der Name unterscheidet sich nur in Groß-/Kleinschreibung
+
+# a link that leads outside the folder
+t00fdc25e = ein Link, der aus dem Ordner hinausführt
+
 # {name} is already in the folder.
 tbe7fab8a = { $name } ist schon im Ordner.
 
