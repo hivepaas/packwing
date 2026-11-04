@@ -1,0 +1,26 @@
+[package]
+name = "packwing-cli"
+description = "packwing on the command line: open, extract, check and make archives"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+# `pkw`: a program of its own, as packwing.exe is a window's on Windows and
+# has no console to write to. It takes in no window system: it runs where
+# there is no screen, over SSH and in CI.
+[[bin]]
+name = "pkw"
+path = "src/main.rs"
+
+[dependencies]
+packwing-core.workspace = true
+packwing-i18n.workspace = true
+clap = { version = "4.5", features = ["derive", "wrap_help"] }
+# A password typed with nothing shown.
+rpassword = "7"
+serde_json = "1"
+
+[lints]
+workspace = true

@@ -74,7 +74,7 @@ jobs:
 
       # What the system's own marks and paths do, which only these systems can tell.
       - name: Core tests
-        run: cargo test --no-fail-fast -p packwing-core -p packwing-policy -p packwing-license
+        run: cargo test --no-fail-fast -p packwing-core -p packwing-policy -p packwing-license -p packwing-cli
 
       # Whatever the core's tests said: both are worth seeing in one run.
       - name: UI scenarios
