@@ -12,13 +12,14 @@ use packwing_i18n::{tr, tr_n};
 use std::collections::BTreeSet;
 
 use std::sync::Arc;
+use std::time::Duration;
 
 use gpui::{
     ClickEvent, Context, Div, Entity, EventEmitter, FocusHandle, FontWeight, Image, ImageFormat,
     KeyDownEvent, MouseButton, MouseDownEvent, ObjectFit, Pixels, Point, Render, StyledImage,
     Subscription, Task, Window, anchored, deferred, div, img, prelude::*, px, relative, rgb,
 };
-use packwing_core::{Cancel, Control, Error, Signed, image_fits, read_entry};
+use packwing_core::{Cancel, Control, Error, Keys, Signed, Source, image_fits, read_entry};
 
 use super::panel;
 use crate::colors::colors;
@@ -129,6 +130,9 @@ pub struct ArchivePage {
     more_at: Option<Point<Pixels>>,
     /// Where the right-click menu of what is selected is open.
     menu_at: Option<Point<Pixels>>,
+    /// What forgets the secrets of the archive open, [`KEYS_KEPT_FOR`] after
+    /// they were last used: a use puts a new one in its place.
+    forgetting: Option<Task<()>>,
     /// The list's, for its keys: F2 renames, Delete deletes.
     focus: FocusHandle,
     _typing: Subscription,
@@ -136,7 +140,46 @@ pub struct ArchivePage {
 
 impl EventEmitter<ArchiveEvent> for ArchivePage {}
 
+/// How long the password or passphrase of the archive open is kept in
+/// memory after its last use: within it, viewing a file, testing and
+/// extracting ask for it no more. It is never written anywhere.
+pub const KEYS_KEPT_FOR: Duration = Duration::from_secs(10 * 60);
+
 impl ArchivePage {
+    /// `keys` opened `source` (a job with them went through): if it is the
+    /// archive open, they are kept with it, for the next that needs them.
+    pub fn remember_keys(&mut self, source: &Source, keys: &Keys, cx: &mut Context<Self>) {
+        let Shown::Open(a) = &mut self.shown else {
+            return;
+        };
+        if a.source.as_ref() != Some(source) || *keys == Keys::default() {
+            return;
+        }
+        a.keys = keys.clone();
+        self.keys_used(cx);
+        cx.notify();
+    }
+
+    /// The secrets of the archive open were used: they are kept
+    /// [`KEYS_KEPT_FOR`] from now.
+    fn keys_used(&mut self, cx: &mut Context<Self>) {
+        if self.archive().is_none_or(|a| a.keys == Keys::default()) {
+            return;
+        }
+        self.forgetting = Some(cx.spawn(async move |this, cx| {
+            cx.background_executor().timer(KEYS_KEPT_FOR).await;
+            let _ = this.update(cx, |this, cx| this.forget_keys(cx));
+        }));
+    }
+
+    /// Forgets the secrets of the archive open: what needs them asks again.
+    pub fn forget_keys(&mut self, cx: &mut Context<Self>) {
+        if let Shown::Open(a) = &mut self.shown {
+            a.keys = Keys::default();
+        }
+        cx.notify();
+    }
+
     pub fn new(cx: &mut Context<Self>) -> Self {
         let search = cx.new(|cx| TextInput::new(tr!("Search inside this archive"), cx));
         let typing = cx.subscribe(&search, |this: &mut Self, field, _: &Changed, cx| {
@@ -161,6 +204,7 @@ impl ArchivePage {
             looking: None,
             more_at: None,
             menu_at: None,
+            forgetting: None,
             focus: cx.focus_handle(),
             _typing: typing,
         }
@@ -174,6 +218,10 @@ impl ArchivePage {
         };
         self.shown = shown;
         self.menu_at = None;
+        // What it was opened with is kept a while, as what it is proved
+        // with later is; another's go with it.
+        self.forgetting = None;
+        self.keys_used(cx);
         self.stop_preview();
         self.selected.clear();
         self.found.clear();
@@ -280,6 +328,7 @@ impl ArchivePage {
         let mut path = a.folder.clone();
         path.push(entry.name.clone());
         let keys = a.keys.clone();
+        self.keys_used(cx);
         let cancel = Cancel::new();
         let control = Control {
             progress: None,

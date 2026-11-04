@@ -304,6 +304,9 @@ pub enum DialogEvent {
     /// Files went in the archive at this path, in this folder: it is read
     /// again, with these keys.
     Added(PathBuf, Vec<String>, Keys),
+    /// A job went through with these keys on this archive: the one open
+    /// keeps them, if it is it.
+    Proved(packwing_core::Source, Keys),
     /// Items of a storage were copied or moved, and how it went.
     Transferred(Transferred),
     /// A file was signed.
