@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 87] = [
+const SCREENS: [(&str, SetUp); 88] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -201,6 +201,13 @@ const SCREENS: [(&str, SetUp); 87] = [
         ws.select_in_archive(&[1], cx);
         let text = "# Trang của công ty\n\nCách chạy:\n\n    ./deploy.sh --production\n\nHỏi ai nếu có lỗi? Xem docs/.\n";
         ws.preview_in_archive(None, text, cx);
+    }),
+    ("archive-entry-menu", |ws, _, cx| {
+        ws.show_archive(read_named("site-backup-2026-10.zip"), cx);
+        ws.select_in_archive(&[1], cx);
+        ws.archive_page().update(cx, |p, cx| {
+            p.open_menu_for_shot(gpui::point(px(420.), px(330.)), cx)
+        });
     }),
     ("rename", |ws, window, cx| {
         ws.show_archive(read(), cx);
@@ -617,6 +624,7 @@ fn read() -> Shown {
 const LONG_NAME: &str = "Báo-cáo-tài-chính-hợp-nhất-toàn-bộ-công-ty-và-các-đơn-vị-thành-viên-năm-2026-bản-cuối-cùng-đã-được-ban-giám-đốc-phê-duyệt-và-ký-tên-đóng-dấu.tar.zst";
 
 fn read_named(name: &str) -> Shown {
+    let zip = name.ends_with(".zip");
     let entry = |path: &str, dir, size| packwing_core::Entry {
         path: path.split('/').map(str::to_owned).collect(),
         dir,
@@ -629,8 +637,17 @@ fn read_named(name: &str) -> Shown {
         packed: 48_200_000,
         unpacked: 131_000_000,
         files: 6,
-        layers: vec![packwing_core::Layer::Zstd],
-        container: packwing_core::Container::Tar,
+        // A ZIP archive, which packwing changes in place, or a tar.zst one.
+        layers: if zip {
+            Vec::new()
+        } else {
+            vec![packwing_core::Layer::Zstd]
+        },
+        container: if zip {
+            packwing_core::Container::Zip
+        } else {
+            packwing_core::Container::Tar
+        },
         encryption: None,
         entries: vec![
             entry("site", true, 0),
@@ -645,7 +662,7 @@ fn read_named(name: &str) -> Shown {
         ],
     };
     let mut a = Archive::read(
-        PathBuf::from("/home/user/Downloads/site-backup-2026-10.tar.zst").into(),
+        PathBuf::from("/home/user/Downloads").join(name).into(),
         listing,
         packwing_core::Keys::default(),
         false,

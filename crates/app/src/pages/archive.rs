@@ -14,9 +14,9 @@ use std::collections::BTreeSet;
 use std::sync::Arc;
 
 use gpui::{
-    ClickEvent, Context, Div, Entity, EventEmitter, FontWeight, Image, ImageFormat, MouseButton,
-    ObjectFit, Pixels, Point, Render, StyledImage, Subscription, Task, Window, anchored, deferred,
-    div, img, prelude::*, px, relative, rgb,
+    ClickEvent, Context, Div, Entity, EventEmitter, FocusHandle, FontWeight, Image, ImageFormat,
+    KeyDownEvent, MouseButton, MouseDownEvent, ObjectFit, Pixels, Point, Render, StyledImage,
+    Subscription, Task, Window, anchored, deferred, div, img, prelude::*, px, relative, rgb,
 };
 use packwing_core::{Cancel, Control, Error, Signed, image_fits, read_entry};
 
@@ -127,6 +127,10 @@ pub struct ArchivePage {
     looking: Option<Looking>,
     /// Where the `…` menu is open.
     more_at: Option<Point<Pixels>>,
+    /// Where the right-click menu of what is selected is open.
+    menu_at: Option<Point<Pixels>>,
+    /// The list's, for its keys: F2 renames, Delete deletes.
+    focus: FocusHandle,
     _typing: Subscription,
 }
 
@@ -156,6 +160,8 @@ impl ArchivePage {
             signature: None,
             looking: None,
             more_at: None,
+            menu_at: None,
+            focus: cx.focus_handle(),
             _typing: typing,
         }
     }
@@ -167,6 +173,7 @@ impl ArchivePage {
             _ => None,
         };
         self.shown = shown;
+        self.menu_at = None;
         self.stop_preview();
         self.selected.clear();
         self.found.clear();
@@ -207,6 +214,12 @@ impl ArchivePage {
                 cx.notify();
             },
         ));
+        cx.notify();
+    }
+
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn open_menu_for_shot(&mut self, at: Point<Pixels>, cx: &mut Context<Self>) {
+        self.menu_at = Some(at);
         cx.notify();
     }
 
@@ -394,6 +407,7 @@ impl ArchivePage {
         if let Shown::Open(a) = &mut self.shown {
             a.show(folder);
             self.stop_preview();
+            self.menu_at = None;
             self.chosen = None;
             self.selected.clear();
             cx.notify();
@@ -697,6 +711,118 @@ impl ArchivePage {
         .with_priority(1)
     }
 
+    /// Whether what is selected can be renamed or deleted: in a folder shown,
+    /// not a search's, of an archive packwing changes in place.
+    fn changeable(&self, cx: &gpui::App) -> bool {
+        let Some(a) = self.archive() else {
+            return false;
+        };
+        let searching = !self.search.read(cx).text().trim().is_empty() && a.listing.is_some();
+        !searching
+            && !self.selected.is_empty()
+            && a.listing
+                .as_ref()
+                .is_some_and(|l| packwing_core::can_add(l))
+    }
+
+    /// The entry selected, when there is one alone.
+    fn one_selected(&self) -> Option<&Entry> {
+        match (self.archive(), self.selected.len()) {
+            (Some(a), 1) => self.selected.first().and_then(|i| a.entries.get(*i)),
+            _ => None,
+        }
+    }
+
+    /// The right-click menu of what is selected, at `at`.
+    fn entry_menu(&self, at: Point<Pixels>, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let c = colors();
+        let item =
+            |id: &'static str, label: String, key: &'static str, asked: fn() -> ArchiveEvent| {
+                menu_item(id, label, key).on_click(cx.listener(move |this, _, _, cx| {
+                    this.menu_at = None;
+                    cx.emit(asked());
+                    cx.notify();
+                }))
+            };
+        let line = || div().my(ui(4.)).mx(ui(10.)).h(ui(1.)).bg(rgb(c.field));
+        let folder = self.archive().map(|a| a.folder.clone()).unwrap_or_default();
+        // One file opens as a double click does; one folder is gone into.
+        let open = self.one_selected().map(|e| {
+            let mut path = folder.clone();
+            path.push(e.name.clone());
+            (path, e.kind == Kind::Folder)
+        });
+        let changeable = self.changeable(cx);
+        let one = self.selected.len() == 1;
+        deferred(
+            anchored()
+                .position(at)
+                .snap_to_window_with_margin(px(8.))
+                .child(
+                    menu_panel("entry-menu")
+                        .min_w(ui(200.))
+                        .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+                        .on_mouse_down_out(cx.listener(|this, e: &MouseDownEvent, _, cx| {
+                            // A right click opens the next one.
+                            if e.button != MouseButton::Right {
+                                this.menu_at = None;
+                                cx.notify();
+                            }
+                        }))
+                        .when_some(open, |d, (path, dir)| {
+                            d.child(
+                                menu_item("menu-open", tr!("Open"), "").on_click(cx.listener(
+                                    move |this, _, _, cx| {
+                                        this.menu_at = None;
+                                        if dir {
+                                            this.enter(path.clone(), cx);
+                                        } else {
+                                            cx.emit(ArchiveEvent::OpenEntry(path.clone()));
+                                        }
+                                        cx.notify();
+                                    },
+                                )),
+                            )
+                        })
+                        .child(item("menu-extract", tr!("Extract…"), "", || {
+                            ArchiveEvent::Extract
+                        }))
+                        .when(changeable, |d| {
+                            d.child(line())
+                                .when(one, |d| {
+                                    d.child(item("menu-rename", tr!("Rename"), "F2", || {
+                                        ArchiveEvent::Rename
+                                    }))
+                                })
+                                .child(
+                                    item("menu-delete", tr!("Delete"), "Del", || {
+                                        ArchiveEvent::Delete
+                                    })
+                                    .text_color(rgb(c.bad_text)),
+                                )
+                        }),
+                ),
+        )
+        .with_priority(1)
+    }
+
+    /// The list's keys, as the browser's: F2 renames, Delete deletes, Escape
+    /// closes the menu.
+    fn on_key(&mut self, e: &KeyDownEvent, _: &mut Window, cx: &mut Context<Self>) {
+        match e.keystroke.key.as_str() {
+            "escape" if self.menu_at.is_some() => {
+                self.menu_at = None;
+                cx.notify();
+            }
+            "f2" if self.changeable(cx) && self.selected.len() == 1 => {
+                cx.emit(ArchiveEvent::Rename)
+            }
+            "delete" if self.changeable(cx) => cx.emit(ArchiveEvent::Delete),
+            _ => return,
+        }
+        cx.stop_propagation();
+    }
+
     fn contents(&self, a: &Archive, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
         let crumb = self.breadcrumb(a, cx);
@@ -739,8 +865,25 @@ impl ArchivePage {
                 .cursor_pointer()
                 .when(on, |d| d.bg(rgb(c.chosen)))
                 .when(!on, |d| d.hover(|s| s.bg(rgb(c.hover))))
+                // What is selected, or this alone, and its menu; none in a search.
+                .when(found.is_none(), |d| {
+                    d.on_mouse_down(
+                        MouseButton::Right,
+                        cx.listener(move |this, e: &MouseDownEvent, window, cx| {
+                            if !this.selected.contains(&i) {
+                                this.select(i, false, false);
+                                this.start_preview(cx);
+                            }
+                            this.menu_at = Some(e.position);
+                            window.focus(&this.focus, cx);
+                            cx.stop_propagation();
+                            cx.notify();
+                        }),
+                    )
+                })
                 // A click selects; a double click opens.
-                .on_click(cx.listener(move |this, e: &gpui::ClickEvent, _, cx| {
+                .on_click(cx.listener(move |this, e: &gpui::ClickEvent, window, cx| {
+                    window.focus(&this.focus, cx);
                     if let Some(path) = &found {
                         this.reveal(path, dir, cx);
                         return;
@@ -794,13 +937,9 @@ impl ArchivePage {
                 )
         });
         let empty = rows.len() == 0;
-        let changeable = !searching
-            && !self.selected.is_empty()
-            && a.listing
-                .as_ref()
-                .is_some_and(|l| packwing_core::can_add(l));
-        let one = self.selected.len() == 1;
         panel()
+            .track_focus(&self.focus)
+            .on_key_down(cx.listener(Self::on_key))
             .flex_1()
             .min_w_0()
             .max_h_full()
@@ -812,19 +951,7 @@ impl ArchivePage {
                     .flex()
                     .items_center()
                     .gap(ui(8.))
-                    .child(div().flex_1().min_w_0().child(crumb))
-                    .when(changeable && one, |d| {
-                        d.child(
-                            button("rename", tr!("Rename"), Fill::Outline, Size::Medium)
-                                .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Rename))),
-                        )
-                    })
-                    .when(changeable, |d| {
-                        d.child(
-                            button("delete", tr!("Delete"), Fill::Outline, Size::Medium)
-                                .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Delete))),
-                        )
-                    }),
+                    .child(div().flex_1().min_w_0().child(crumb)),
             )
             .child(
                 div()
@@ -1114,9 +1241,11 @@ impl Render for ArchivePage {
             return page.child(self.empty(cx));
         };
         let more = self.more_at.map(|at| self.more_menu(at, cx));
+        let menu = self.menu_at.map(|at| self.entry_menu(at, cx));
         page.child(self.search_bar(cx))
             .child(self.header(a, cx))
             .children(more)
+            .children(menu)
             .child(
                 div()
                     .flex_1()
