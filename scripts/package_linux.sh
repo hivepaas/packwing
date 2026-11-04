@@ -1,13 +1,14 @@
 #!/bin/bash
 #
 # Packages a release build of packwing for Linux into dist/, as a .deb: the
-# program, its launcher and icon, and the native Nautilus extension serving
+# program, its launcher and icon, the command line (pkw, with its manual pages
+# and its completions for bash, zsh and fish), and the native Nautilus extension serving
 # packwing's right-click menu. Nautilus loads extensions from a folder of
 # the system's alone, which only a package can put one in; with it, the
 # items show in Nautilus's own menu rather than its Scripts submenu
 # (crates/app/src/right_click.rs).
 #
-#   cargo build --release -p packwing
+#   cargo build --release -p packwing -p packwing-cli
 #   scripts/package_linux.sh
 #
 #   dist/packwing_0.1.0_amd64.deb
@@ -21,8 +22,12 @@
 #
 #   cargo install cargo-about --locked --features cli
 #
-# Environment: BIN (default target/release/packwing), ARCH (default the
-# machine's: x86_64 or aarch64), DIST (default dist).
+# pkw writes its own pages and completions, so it is run here: a build for
+# this machine's ARCH.
+#
+# Environment: BIN (default target/release/packwing), CLI (default
+# target/release/pkw), ARCH (default the machine's: x86_64 or aarch64), DIST
+# (default dist).
 
 set -euo pipefail
 
@@ -32,6 +37,7 @@ cd "$ROOT"
 VERSION="$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\(.*\)"/\1/p' Cargo.toml)"
 ARCH="${ARCH:-$(uname -m)}"
 BIN="${BIN:-target/release/packwing}"
+CLI="${CLI:-target/release/pkw}"
 DIST="${DIST:-dist}"
 WORK="target/package-linux"
 
@@ -58,6 +64,7 @@ if [ "$LOCKED" != "$CONTEXT_MENU" ]; then
 	exit 1
 fi
 [ -x "$BIN" ] || { echo "no build at $BIN: cargo build --release -p packwing" >&2; exit 1; }
+[ -x "$CLI" ] || { echo "no build at $CLI: cargo build --release -p packwing-cli" >&2; exit 1; }
 cargo about --version >/dev/null 2>&1 || { echo "no cargo-about: cargo install cargo-about --locked --features cli" >&2; exit 1; }
 rm -rf "$WORK"
 mkdir -p "$WORK" "$DIST"
@@ -72,23 +79,38 @@ fetch() {
 DEB="$WORK/deb"
 install -Dm755 "$BIN" "$DEB/usr/bin/packwing"
 strip "$DEB/usr/bin/packwing"
+install -Dm755 "$CLI" "$DEB/usr/bin/pkw"
+strip "$DEB/usr/bin/pkw"
+# pkw's pages, compressed as Debian keeps them, and its completions where
+# each shell looks for a package's.
+"$CLI" man "$WORK/man"
+for page in "$WORK"/man/*.1; do
+	gzip -9n <"$page" >"$page.gz"
+	install -Dm644 "$page.gz" "$DEB/usr/share/man/man1/$(basename "$page").gz"
+done
+"$CLI" completions bash >"$WORK/pkw.bash"
+"$CLI" completions zsh >"$WORK/_pkw"
+"$CLI" completions fish >"$WORK/pkw.fish"
+install -Dm644 "$WORK/pkw.bash" "$DEB/usr/share/bash-completion/completions/pkw"
+install -Dm644 "$WORK/_pkw" "$DEB/usr/share/zsh/vendor-completions/_pkw"
+install -Dm644 "$WORK/pkw.fish" "$DEB/usr/share/fish/vendor_completions.d/pkw.fish"
 install -Dm644 packaging/linux/packwing.desktop "$DEB/usr/share/applications/packwing.desktop"
 install -Dm644 packaging/icons/packwing.svg "$DEB/usr/share/icons/hicolor/scalable/apps/packwing.svg"
 install -Dm644 packaging/linux/copyright "$DEB/usr/share/doc/packwing/copyright"
-# Those of the crates built for this machine; one under a license
-# about.toml does not accept stops here.
-cargo about generate --locked --fail -c about.toml -m crates/app/Cargo.toml \
+# Those of the crates built for this machine, into the program or pkw; one
+# under a license about.toml does not accept stops here.
+cargo about generate --locked --fail -c about.toml -m Cargo.toml --workspace \
 	--target "$ARCH-unknown-linux-gnu" -o "$WORK/THIRD-PARTY-LICENSES" packaging/licenses.hbs
 install -Dm644 "$WORK/THIRD-PARTY-LICENSES" "$DEB/usr/share/doc/packwing/THIRD-PARTY-LICENSES"
 # Named after packwing's menu, which is how the extension knows it.
 fetch "$EXTENSION_URL" "$EXTENSION_SHA" "$WORK/extension.so"
 install -Dm644 "$WORK/extension.so" "$DEB/$EXTENSIONS/libcontext-menu-packwing.so"
 
-# The libraries the program links, as the system names their packages. The
+# The libraries the programs link, as the system names their packages. The
 # extension links none of its own: Nautilus's are there when it is loaded.
 mkdir -p "$WORK/shlibs/debian"
 printf 'Source: packwing\n\nPackage: packwing\nArchitecture: any\n' >"$WORK/shlibs/debian/control"
-DEPENDS="$(cd "$WORK/shlibs" && dpkg-shlibdeps -O "$ROOT/$DEB/usr/bin/packwing" 2>/dev/null | sed -n 's/^shlibs:Depends=//p')"
+DEPENDS="$(cd "$WORK/shlibs" && dpkg-shlibdeps -O "$ROOT/$DEB/usr/bin/packwing" "$ROOT/$DEB/usr/bin/pkw" 2>/dev/null | sed -n 's/^shlibs:Depends=//p')"
 mkdir -p "$DEB/DEBIAN"
 cat >"$DEB/DEBIAN/control" <<EOF
 Package: packwing
@@ -106,7 +128,8 @@ Description: File archiver that opens archives safely
  Opens ZIP, RAR, 7z and tar archives without writing outside the folder
  chosen, and makes smaller files to share. Its items in the right-click
  menu of Nautilus, Dolphin, Nemo and Thunar extract and compress from any
- folder.
+ folder. pkw does the same on the command line, with no window, over SSH
+ and in scripts.
 EOF
 chmod -R go-w "$DEB"
 dpkg-deb --root-owner-group --build "$DEB" "$DIST/packwing_${VERSION}_${DEB_ARCH}.deb"

@@ -6,7 +6,7 @@
 # MSYS2, with NSIS 3 installed (or makensis on PATH; on Linux the nsis
 # package's works too).
 #
-#   cargo build --release -p packwing
+#   cargo build --release -p packwing -p packwing-cli
 #   scripts/package_windows.sh
 #
 #   dist/packwing_0.1.0_windows_x86_64-setup.exe
@@ -18,7 +18,11 @@
 # SmartScreen asks the first time the installer runs (More info > Run anyway),
 # and Windows takes the package only where Developer Mode is on.
 #
-# Environment: EXE (default target/release/packwing.exe), ARCH (default
+# Both hold pkw.exe, the command line, beside packwing.exe; the installer puts
+# its folder in the user's PATH.
+#
+# Environment: EXE (default target/release/packwing.exe), CLI (default
+# target/release/pkw.exe), ARCH (default
 # x86_64), DIST (default dist), MAKENSIS (default: on PATH, else where NSIS
 # installs itself), EXTENSION (the native extension; default: downloaded from
 # context-menu-rs's release, its checksum checked), LICENSES (the third-party
@@ -32,6 +36,7 @@ cd "$ROOT"
 VERSION="$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\(.*\)"/\1/p' Cargo.toml)"
 ARCH="${ARCH:-x86_64}"
 EXE="$(realpath "${EXE:-target/release/packwing.exe}")"
+CLI="$(realpath "${CLI:-target/release/pkw.exe}")"
 DIST="${DIST:-dist}"
 WORK="target/package-windows"
 
@@ -52,6 +57,7 @@ if [ -z "${MAKENSIS:-}" ]; then
 fi
 [ -n "$MAKENSIS" ] || { echo "no makensis: install NSIS 3 (choco install nsis)" >&2; exit 1; }
 [ -f "$EXE" ] || { echo "no build at $EXE: cargo build --release -p packwing" >&2; exit 1; }
+[ -f "$CLI" ] || { echo "no build at $CLI: cargo build --release -p packwing-cli" >&2; exit 1; }
 grep -q "^name = \"context-menu\"\$" Cargo.lock &&
 	grep -A1 "^name = \"context-menu\"\$" Cargo.lock | grep -q "^version = \"$CONTEXT_MENU_VERSION\"\$" ||
 	{ echo "Cargo.lock's context-menu is not $CONTEXT_MENU_VERSION: pin its extension here" >&2; exit 1; }
@@ -70,11 +76,12 @@ if [ -z "${EXTENSION:-}" ]; then
 fi
 EXTENSION="$(realpath "$EXTENSION")"
 
-## The third-party licenses, of the crates built for Windows
+## The third-party licenses, of the crates built for Windows, into the
+## program or pkw
 if [ -z "${LICENSES:-}" ]; then
 	cargo about --version >/dev/null 2>&1 || { echo "no cargo-about: cargo install cargo-about --locked --features cli" >&2; exit 1; }
 	LICENSES="$WORK/THIRD-PARTY-LICENSES.txt"
-	cargo about generate --locked --fail -c about.toml -m crates/app/Cargo.toml \
+	cargo about generate --locked --fail -c about.toml -m Cargo.toml --workspace \
 		--target "$ARCH-pc-windows-msvc" -o "$LICENSES" packaging/licenses.hbs
 fi
 LICENSES="$(realpath "$LICENSES")"
@@ -89,16 +96,17 @@ SETUP="$DIST/packwing_${VERSION}_windows_${ARCH}-setup.exe"
 # The paths are Windows' already: MSYS is not to rewrite them.
 MSYS2_ARG_CONV_EXCL='*' "$MAKENSIS" -V3 \
 	"-DVERSION=$VERSION" "-DFILEVERSION=$FILEVERSION" \
-	"-DEXE=$(native "$EXE")" "-DEXTENSION=$(native "$EXTENSION")" \
+	"-DEXE=$(native "$EXE")" "-DCLI=$(native "$CLI")" "-DEXTENSION=$(native "$EXTENSION")" \
 	"-DMANIFEST=$(native "$MANIFEST")" "-DLICENSES=$(native "$LICENSES")" \
 	"-DOUT=$(native "$SETUP")" \
 	"$(native "$ROOT/packaging/windows/installer.nsi")"
 
-## The zip: the program and its licenses, in a folder of their own. Run from
-## there, packwing's menu is the classic one.
+## The zip: the program, pkw and their licenses, in a folder of their own.
+## Run from there, packwing's menu is the classic one, and pkw is where it is.
 NAME="packwing-${VERSION}-windows-${ARCH}"
 mkdir -p "$WORK/$NAME"
 cp "$EXE" "$WORK/$NAME/packwing.exe"
+cp "$CLI" "$WORK/$NAME/pkw.exe"
 cp LICENSE "$WORK/$NAME/LICENSE.txt"
 cp GPL-ADDITIONAL-PERMISSION.md "$WORK/$NAME/GPL-ADDITIONAL-PERMISSION.txt"
 cp "$LICENSES" "$WORK/$NAME/THIRD-PARTY-LICENSES.txt"

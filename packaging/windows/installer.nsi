@@ -2,6 +2,7 @@
 ; scripts/package_windows.sh, as shellwing's is:
 ;
 ;   makensis /DVERSION=0.1.0 /DFILEVERSION=0.1.0.0 /DEXE=path\to\packwing.exe
+;            /DCLI=path\to\pkw.exe
 ;            /DEXTENSION=path\to\context-menu-windows-x86_64.dll
 ;            /DMANIFEST=path\to\AppxManifest.xml /DLICENSES=path\to\THIRD-PARTY-LICENSES
 ;            /DOUT=setup.exe installer.nsi
@@ -14,6 +15,10 @@
 ; installer's (crates/update/src/install.rs), and runs the next one quietly
 ; (/S) over it. The settings are the user's, under %APPDATA%: neither
 ; installing nor uninstalling touches them.
+;
+; pkw.exe, the command line, goes beside packwing.exe, and the folder in the
+; user's PATH (path.ps1), so a terminal opened after runs `pkw`; uninstalling
+; takes it out again.
 ;
 ; The right-click menu comes in two kinds (context-menu-rs's docs/windows.md).
 ; packwing writes the classic one ("Show more options") itself, when it starts.
@@ -28,6 +33,7 @@ ManifestDPIAware true
 SetCompressor /SOLID lzma
 
 !include "MUI2.nsh"
+!include "WinMessages.nsh"
 
 !ifndef VERSION
   !error "VERSION is not defined"
@@ -37,6 +43,9 @@ SetCompressor /SOLID lzma
 !endif
 !ifndef EXE
   !error "EXE is not defined"
+!endif
+!ifndef CLI
+  !error "CLI is not defined"
 !endif
 !ifndef EXTENSION
   !error "EXTENSION is not defined"
@@ -58,6 +67,8 @@ SetCompressor /SOLID lzma
 !define DLL "context-menu-packwing.dll"
 ; PowerShell, quiet, for the package.
 !define PS 'powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command'
+; path.ps1, with the folder as it is, whatever is in its name.
+!define PATH_PS1 'powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$PLUGINSDIR\path.ps1"'
 
 Name "packwing"
 OutFile "${OUT}"
@@ -123,6 +134,7 @@ Section "packwing"
     Delete /REBOOTOK "$INSTDIR\${DLL}.old"
   File "/oname=${DLL}" "${EXTENSION}"
 
+  File "/oname=pkw.exe" "${CLI}"
   File "logo44.png"
   File "logo50.png"
   File "logo150.png"
@@ -144,6 +156,17 @@ Section "packwing"
 
   CreateShortcut "$SMPROGRAMS\packwing.lnk" "$INSTDIR\packwing.exe"
 
+  ; pkw in the user's PATH, once: the updater's install over it adds none.
+  SetOutPath "$PLUGINSDIR"
+  File "path.ps1"
+  SetOutPath "$INSTDIR"
+  DetailPrint "Putting pkw in the PATH"
+  nsExec::ExecToLog '${PATH_PS1} add "$INSTDIR"'
+  Pop $0
+  StrCmp $0 "0" +2
+    DetailPrint "The PATH was not changed: pkw is in $INSTDIR"
+  SendMessage ${HWND_BROADCAST} ${WM_SETTINGCHANGE} 0 "STR:Environment" /TIMEOUT=5000
+
   WriteRegStr HKCU "${UNINSTALL_KEY}" "DisplayName" "packwing"
   WriteRegStr HKCU "${UNINSTALL_KEY}" "DisplayVersion" "${VERSION}"
   WriteRegStr HKCU "${UNINSTALL_KEY}" "Publisher" "HivePaaS"
@@ -163,8 +186,18 @@ Section "Uninstall"
   Pop $0
   nsExec::ExecToLog '${PS} "Get-AppxPackage -Name ${PACKAGE} | Remove-AppxPackage"'
   Pop $0
+  ; pkw's folder out of the user's PATH.
+  InitPluginsDir
+  SetOutPath "$PLUGINSDIR"
+  File "path.ps1"
+  nsExec::ExecToLog '${PATH_PS1} remove "$INSTDIR"'
+  Pop $0
+  SendMessage ${HWND_BROADCAST} ${WM_SETTINGCHANGE} 0 "STR:Environment" /TIMEOUT=5000
+  ; Out of the folder, which is taken away below.
+  SetOutPath "$TEMP"
 
   Delete "$INSTDIR\packwing.exe"
+  Delete "$INSTDIR\pkw.exe"
   Delete "$INSTDIR\${DLL}.old"
   ClearErrors
   Delete "$INSTDIR\${DLL}"

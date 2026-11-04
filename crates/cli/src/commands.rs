@@ -54,6 +54,8 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
         Command::Verify { files, trust, only } => verify_cmd(&files, &trust, only, cx),
         Command::Passphrase { min } => passphrase_cmd(min, cx),
         Command::Storages => storages_cmd(cx),
+        // Done by main, before anything is read.
+        Command::Completions { .. } | Command::Man { .. } => Ok(()),
         Command::Copy {
             places,
             on_existing,

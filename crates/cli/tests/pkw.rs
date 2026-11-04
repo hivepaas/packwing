@@ -385,3 +385,23 @@ fn a_storage_added_to_the_app_is_named_name_colon_path() {
     // A name no storage has is a path here.
     assert_eq!(s.pkw(&["list", "Không có:a.zip"]).status.code(), Some(1));
 }
+
+#[test]
+fn completions_and_manual_pages_are_written() {
+    let s = Scratch::new("man");
+    for shell in ["bash", "zsh", "fish", "powershell", "elvish"] {
+        let written = ok(&s.pkw(&["completions", shell]));
+        assert!(written.contains("extract"), "{shell}: {written}");
+    }
+    assert_eq!(s.pkw(&["completions", "tcsh"]).status.code(), Some(2));
+    ok(&s.pkw(&["man", "pages"]));
+    let page = std::fs::read_to_string(s.path("pages/pkw.1")).expect("pkw.1");
+    assert!(page.contains("Exit codes"), "{page}");
+    assert!(s.path("pages/pkw-extract.1").exists());
+    assert!(s.path("pages/pkw-storages.1").exists());
+    assert!(!s.path("pages/pkw-help.1").exists());
+    assert!(
+        !s.path("pages/pkw-man.1").exists(),
+        "a hidden command has none"
+    );
+}
