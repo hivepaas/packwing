@@ -412,3 +412,43 @@ fn completions_and_manual_pages_are_written() {
         "a hidden command has none"
     );
 }
+
+#[test]
+fn what_only_a_mac_uses_is_left_out_unless_kept() {
+    let s = Scratch::new("mac");
+    std::fs::create_dir_all(s.path("src/__MACOSX")).expect("a folder");
+    std::fs::write(s.path("src/__MACOSX/._numbers.txt"), "fork").expect("a file");
+    std::fs::write(s.path("src/.DS_Store"), "ds").expect("a file");
+    std::fs::write(s.path("src/docs/._notes.txt"), "fork").expect("a file");
+    let mac = |listed: &str| {
+        listed
+            .lines()
+            .filter(|l| l.contains("__MACOSX") || l.contains(".DS_Store") || l.contains("/._"))
+            .count()
+    };
+    ok(&s.pkw(&["create", "-q", "left.zip", "src"]));
+    let left = ok(&s.pkw(&["list", "left.zip"]));
+    assert_eq!(mac(&left), 0, "{left}");
+    assert!(left.lines().any(|l| l == "src/docs/notes.txt"));
+    ok(&s.pkw(&["create", "-q", "--keep-mac-files", "kept.tar", "src"]));
+    assert_eq!(
+        mac(&ok(&s.pkw(&["list", "kept.tar"]))),
+        4,
+        "the folder, and three files"
+    );
+    // A conversion leaves them out alike.
+    ok(&s.pkw(&["convert", "-q", "kept.tar", "converted.7z"]));
+    assert_eq!(mac(&ok(&s.pkw(&["list", "converted.7z"]))), 0);
+}
+
+#[test]
+fn no_mark_is_taken_by_extract_copy_and_move() {
+    let s = Scratch::new("no-mark");
+    std::fs::create_dir_all(s.path("out")).expect("a folder");
+    ok(&s.pkw(&["create", "-q", "a.zip", "src"]));
+    ok(&s.pkw(&["extract", "-q", "--no-mark", "a.zip", "-o", "got"]));
+    assert!(s.path("got/src/numbers.txt").exists());
+    ok(&s.pkw(&["cp", "-q", "--no-mark", "a.zip", "out"]));
+    ok(&s.pkw(&["mv", "-q", "--no-mark", "out/a.zip", "got"]));
+    assert!(s.path("got/a.zip").exists());
+}
