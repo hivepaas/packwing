@@ -6,8 +6,10 @@
 
 mod commands;
 mod names;
+mod places;
 mod progress;
 mod secrets;
+mod settings;
 mod signing;
 
 use std::io::IsTerminal as _;
@@ -70,10 +72,11 @@ struct SecretArgs {
 
 #[derive(Subcommand)]
 enum Command {
-    /// List what an archive holds.
+    /// List what an archive holds, or a folder, here or on a storage.
     #[command(visible_alias = "ls")]
     List {
-        archive: PathBuf,
+        /// An archive or a folder: a path, or NAME:PATH on a storage added to the app.
+        archive: String,
         /// Only what is under these paths in it.
         paths: Vec<String>,
         /// With each one's size and date.
@@ -83,7 +86,8 @@ enum Command {
     /// Extract an archive, or files from it.
     #[command(visible_alias = "x")]
     Extract {
-        archive: PathBuf,
+        /// A path, or NAME:PATH on a storage added to the app.
+        archive: String,
         /// Only these files or folders in it, each straight into where it goes, as the
         /// app extracts them: `docs/a/b.txt` comes out as `b.txt`, `docs/a` as `a/`.
         files: Vec<String>,
@@ -102,17 +106,24 @@ enum Command {
     },
     /// Check that an archive reads whole, as it was made.
     #[command(visible_alias = "t")]
-    Test { archive: PathBuf },
+    Test {
+        /// A path, or NAME:PATH on a storage added to the app.
+        archive: String,
+    },
     /// Write a file in an archive to standard output.
     Cat {
-        archive: PathBuf,
+        /// A path, or NAME:PATH on a storage added to the app.
+        archive: String,
         file: String,
         /// Read at most this much.
         #[arg(long, value_name = "SIZE", default_value = "10GB")]
         limit: String,
     },
     /// Say what an archive is: its format, layers, size and encryption.
-    Info { archive: PathBuf },
+    Info {
+        /// A path, or NAME:PATH on a storage added to the app.
+        archive: String,
+    },
     /// Make an archive of files and folders.
     #[command(visible_alias = "c")]
     Create {
@@ -142,7 +153,7 @@ enum Command {
     /// Sign files: each one's signature goes beside it, as NAME.sig.
     Sign {
         #[arg(required = true)]
-        files: Vec<PathBuf>,
+        files: Vec<String>,
         /// The key to sign with: an SSH Ed25519 key, or one `pkw keygen` made.
         #[arg(long, value_name = "KEY", required = true)]
         by: PathBuf,
@@ -150,13 +161,35 @@ enum Command {
     /// Check files' signatures against the keys trusted: the app's, and those given.
     Verify {
         #[arg(required = true)]
-        files: Vec<PathBuf>,
+        files: Vec<String>,
         /// Trust this public key too, from a .pub file; again for more.
         #[arg(long, value_name = "KEY.pub")]
         trust: Vec<PathBuf>,
         /// Trust only those given, not the app's.
         #[arg(long)]
         only: bool,
+    },
+    /// The storages added to the app, which NAME:PATH names.
+    Storages,
+    /// Copy files and folders, between this computer and storages, or storages.
+    #[command(visible_alias = "cp")]
+    Copy {
+        /// What to copy, then the folder it goes in: paths, or NAME:PATH.
+        #[arg(required = true, num_args = 2..)]
+        places: Vec<String>,
+        /// When a name is taken: stop, replace or skip.
+        #[arg(long, value_name = "WHAT", default_value = "stop")]
+        on_existing: String,
+    },
+    /// Move files and folders, as copy does, taking them away once they are there.
+    #[command(visible_alias = "mv")]
+    Move {
+        /// What to move, then the folder it goes in: paths, or NAME:PATH.
+        #[arg(required = true, num_args = 2..)]
+        places: Vec<String>,
+        /// When a name is taken: stop, replace or skip.
+        #[arg(long, value_name = "WHAT", default_value = "stop")]
+        on_existing: String,
     },
     /// Suggest a passphrase of random words, stronger than most typed ones.
     Passphrase {
@@ -184,7 +217,6 @@ enum Command {
         files: Vec<String>,
     },
     /// Rename a file or folder in a ZIP archive.
-    #[command(visible_alias = "mv")]
     Rename {
         archive: PathBuf,
         file: String,
@@ -194,7 +226,8 @@ enum Command {
     /// Make or check the checksums of files: sha256, sha512, sha1, md5, blake3.
     #[command(visible_alias = "sum")]
     Checksum {
-        files: Vec<PathBuf>,
+        /// Paths, or NAME:PATH on a storage added to the app.
+        files: Vec<String>,
         /// Which: sha256 by default; again, or `all`, for more.
         #[arg(short, long, value_name = "ALGORITHM")]
         algorithm: Vec<String>,

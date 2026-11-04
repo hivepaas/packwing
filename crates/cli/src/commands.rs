@@ -5,15 +5,16 @@ use std::path::{Path, PathBuf};
 
 use packwing_core::{
     Algorithm, COMPRESSED_EXTENSIONS, Entry, ExtractOptions, Kind, Listing, LocalFolder,
-    NewArchive, OnExisting, Source, add_with, algorithms_of, came_from_internet, checksum_line,
-    checksums, create, delete, extract_selected, extract_with, has_signature, list, read_entry,
-    rename, save_checksum, size, stem, test,
+    NewArchive, OnExisting, Source, Transfer, add_with, algorithms_of, came_from_internet,
+    checksum_line, checksums, create, delete, extract_selected, extract_with, has_signature, list,
+    read_entry, rename, save_checksum, signature_name, size, stem, test, transfer,
 };
 use serde_json::{Value, json};
 
 use crate::names::{
     date, entry_path, format_named, format_of, format_words, level_named, size_typed,
 };
+use crate::places::Place;
 use crate::signing::{keygen_cmd, sign_cmd, verify_cmd};
 use crate::{Command, Context, Exit, Making};
 
@@ -52,6 +53,15 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
         Command::Sign { files, by } => sign_cmd(&files, &by, cx),
         Command::Verify { files, trust, only } => verify_cmd(&files, &trust, only, cx),
         Command::Passphrase { min } => passphrase_cmd(min, cx),
+        Command::Storages => storages_cmd(cx),
+        Command::Copy {
+            places,
+            on_existing,
+        } => transfer_cmd(&places, &on_existing, false, cx),
+        Command::Move {
+            places,
+            on_existing,
+        } => transfer_cmd(&places, &on_existing, true, cx),
         Command::Add {
             archive,
             paths,
@@ -102,19 +112,23 @@ fn limit_of(typed: &str) -> Result<u64, Exit> {
     size_typed(typed).ok_or_else(|| Exit::Usage(format!("not a size: {typed} (as 50GB)")))
 }
 
-fn listed(path: &Path, cx: &mut Context) -> Result<Listing, Exit> {
-    let name = named(path);
+fn listed(place: &Place, cx: &mut Context) -> Result<Listing, Exit> {
+    let source = place.source()?;
     Ok(cx
         .secrets
-        .unlocking(&name, |keys| list(Source::from(path), keys))?)
+        .unlocking(&place.name(), |keys| list(source.clone(), keys))?)
 }
 
 fn print_json(value: &Value) {
     println!("{value:#}");
 }
 
-fn list_cmd(archive: &Path, paths: &[String], long: bool, cx: &mut Context) -> Result<(), Exit> {
-    let listing = listed(archive, cx)?;
+fn list_cmd(typed: &str, paths: &[String], long: bool, cx: &mut Context) -> Result<(), Exit> {
+    let place = Place::of(typed)?;
+    if place.is_folder()? {
+        return list_folder(&place, long, cx);
+    }
+    let listing = listed(&place, cx)?;
     let under: Vec<Vec<String>> = picked(paths);
     let shown: Vec<&Entry> = listing
         .entries
@@ -136,15 +150,58 @@ fn list_cmd(archive: &Path, paths: &[String], long: bool, cx: &mut Context) -> R
         print_json(&json!(entries));
         return Ok(());
     }
+    let rows = shown
+        .iter()
+        .map(|e| (e.path.join("/"), e.dir, e.size, e.modified));
+    print_rows(rows, long);
+    Ok(())
+}
+
+/// A folder's files and folders, here or on a storage, folders first.
+fn list_folder(place: &Place, long: bool, cx: &Context) -> Result<(), Exit> {
+    let failed = |e: std::io::Error| Exit::Failed(format!("{}: {e}", place.shown));
+    let mut lister = place.storage.list(&place.path).map_err(failed)?;
+    let mut items = Vec::new();
+    while !lister.done() {
+        items.extend(lister.next(1000).map_err(failed)?);
+    }
+    items.sort_by(|a, b| b.dir.cmp(&a.dir).then_with(|| a.name.cmp(&b.name)));
+    if cx.json {
+        let rows: Vec<Value> = items
+            .iter()
+            .map(|i| {
+                json!({
+                    "name": i.name,
+                    "dir": i.dir,
+                    "link": i.link,
+                    "size": i.size,
+                    "modified": i.modified,
+                })
+            })
+            .collect();
+        print_json(&json!(rows));
+        return Ok(());
+    }
+    print_rows(
+        items
+            .iter()
+            .map(|i| (i.name.clone(), i.dir, i.size, i.modified)),
+        long,
+    );
+    Ok(())
+}
+
+/// Lines of what is listed: a folder's with a `/`, and with `long` its size and date.
+fn print_rows(rows: impl Iterator<Item = (String, bool, u64, Option<i64>)>, long: bool) {
     let mut out = std::io::stdout().lock();
-    for e in shown {
-        let path = e.path.join("/") + if e.dir { "/" } else { "" };
+    for (path, dir, bytes, modified) in rows {
+        let path = path + if dir { "/" } else { "" };
         let line = if long {
-            let when = e.modified.map(date).unwrap_or_else(|| " ".repeat(16));
-            let bytes = if e.dir {
+            let when = modified.map(date).unwrap_or_else(|| " ".repeat(16));
+            let bytes = if dir {
                 String::new()
             } else {
-                e.size.to_string()
+                bytes.to_string()
             };
             format!("{bytes:>12}  {when}  {path}")
         } else {
@@ -155,12 +212,11 @@ fn list_cmd(archive: &Path, paths: &[String], long: bool, cx: &mut Context) -> R
             break;
         }
     }
-    Ok(())
 }
 
 #[allow(clippy::too_many_arguments)]
 fn extract_cmd(
-    archive: &Path,
+    archive: &str,
     files: &[String],
     output: Option<PathBuf>,
     here: bool,
@@ -168,7 +224,9 @@ fn extract_cmd(
     limit: &str,
     cx: &mut Context,
 ) -> Result<(), Exit> {
-    let name = named(archive);
+    let place = Place::of(archive)?;
+    let source = place.source()?;
+    let name = place.name();
     let destination = match (output, here) {
         (Some(dir), _) => dir,
         (None, true) => PathBuf::from("."),
@@ -184,16 +242,9 @@ fn extract_cmd(
     let (control, bar) = crate::progress::control("Extracting", cx.progress);
     let summary = cx.secrets.unlocking(&name, |keys| {
         if picked.is_empty() {
-            extract_with(Source::from(archive), &destination, keys, &how, &control)
+            extract_with(source.clone(), &destination, keys, &how, &control)
         } else {
-            extract_selected(
-                Source::from(archive),
-                &destination,
-                &picked,
-                keys,
-                &how,
-                &control,
-            )
+            extract_selected(source.clone(), &destination, &picked, keys, &how, &control)
         }
     })?;
     drop(bar);
@@ -216,12 +267,14 @@ fn extract_cmd(
     Ok(())
 }
 
-fn test_cmd(archive: &Path, cx: &mut Context) -> Result<(), Exit> {
-    let name = named(archive);
+fn test_cmd(archive: &str, cx: &mut Context) -> Result<(), Exit> {
+    let place = Place::of(archive)?;
+    let source = place.source()?;
+    let name = place.name();
     let (control, bar) = crate::progress::control("Testing", cx.progress);
     let summary = cx
         .secrets
-        .unlocking(&name, |keys| test(Source::from(archive), keys, &control))?;
+        .unlocking(&name, |keys| test(source.clone(), keys, &control))?;
     drop(bar);
     if cx.json {
         print_json(&json!({ "ok": true, "files": summary.files, "bytes": summary.bytes }));
@@ -235,13 +288,15 @@ fn test_cmd(archive: &Path, cx: &mut Context) -> Result<(), Exit> {
     Ok(())
 }
 
-fn cat_cmd(archive: &Path, file: &str, limit: &str, cx: &mut Context) -> Result<(), Exit> {
-    let name = named(archive);
+fn cat_cmd(archive: &str, file: &str, limit: &str, cx: &mut Context) -> Result<(), Exit> {
+    let place = Place::of(archive)?;
+    let source = place.source()?;
+    let name = place.name();
     let entry = entry_path(file);
     let most = limit_of(limit)?;
     let control = packwing_core::Control::default();
     let bytes = cx.secrets.unlocking(&name, |keys| {
-        read_entry(Source::from(archive), &entry, keys, most, &control)
+        read_entry(source.clone(), &entry, keys, most, &control)
     })?;
     let mut out = std::io::stdout().lock();
     out.write_all(&bytes)
@@ -256,16 +311,28 @@ fn cat_cmd(archive: &Path, file: &str, limit: &str, cx: &mut Context) -> Result<
         .map_err(|e| Exit::Failed(e.to_string()))
 }
 
-fn info_cmd(archive: &Path, cx: &mut Context) -> Result<(), Exit> {
-    let l = listed(archive, cx)?;
+fn info_cmd(archive: &str, cx: &mut Context) -> Result<(), Exit> {
+    let place = Place::of(archive)?;
+    let l = listed(&place, cx)?;
     let layers: Vec<String> = l.layers.iter().map(|x| format!("{x:?}")).collect();
     let format = std::iter::once(format!("{:?}", l.container))
         .chain(layers.iter().rev().cloned())
         .collect::<Vec<_>>()
         .join(" in ");
     let ratio = (l.unpacked > 0).then(|| l.packed as f64 / l.unpacked as f64);
-    let signed = has_signature(archive);
-    let from_internet = came_from_internet(&Source::from(archive));
+    // Its signature beside it, wherever it is; the mark, a file here's alone.
+    let signed = match (&place.here, place.split()) {
+        (Some(here), _) => has_signature(here),
+        (None, Some((folder, name))) => place
+            .storage
+            .stat(folder, &signature_name(name))
+            .is_ok_and(|i| i.is_some()),
+        (None, None) => false,
+    };
+    let from_internet = place
+        .here
+        .as_deref()
+        .is_some_and(|h| came_from_internet(&Source::from(h)));
     if cx.json {
         print_json(&json!({
             "name": l.name,
@@ -418,16 +485,7 @@ fn add_cmd(
     on_existing: &str,
     cx: &mut Context,
 ) -> Result<(), Exit> {
-    let on_existing = match on_existing {
-        "stop" => OnExisting::Stop,
-        "replace" => OnExisting::Replace,
-        "skip" => OnExisting::Skip,
-        other => {
-            return Err(Exit::Usage(format!(
-                "--on-existing is stop, replace or skip, not {other}"
-            )));
-        }
-    };
+    let on_existing = on_existing_named(on_existing)?;
     let folder = entry_path(into);
     let stored: Vec<String> = COMPRESSED_EXTENSIONS
         .iter()
@@ -464,6 +522,144 @@ fn rename_cmd(archive: &Path, file: &str, name: &str, cx: &mut Context) -> Resul
 }
 
 /// Says a change was made: in JSON, that it was.
+/// What `--on-existing` says to do with a name taken.
+fn on_existing_named(typed: &str) -> Result<OnExisting, Exit> {
+    match typed {
+        "stop" => Ok(OnExisting::Stop),
+        "replace" => Ok(OnExisting::Replace),
+        "skip" => Ok(OnExisting::Skip),
+        other => Err(Exit::Usage(format!(
+            "--on-existing is stop, replace or skip, not {other}"
+        ))),
+    }
+}
+
+fn storages_cmd(cx: &Context) -> Result<(), Exit> {
+    let kept = crate::settings::storages(&crate::settings::text(), &packwing_remote::kinds());
+    if cx.json {
+        let rows: Vec<Value> = kept
+            .iter()
+            .map(|k| {
+                json!({
+                    "name": k.name,
+                    "kind": k.kind,
+                    "where": k.describe,
+                    "asks_first": k.asks_first,
+                    "opens": k.storage.is_some() && !k.asks_first,
+                })
+            })
+            .collect();
+        print_json(&json!(rows));
+        return Ok(());
+    }
+    if kept.is_empty() {
+        if !cx.quiet {
+            eprintln!("No storages are added: add them in packwing, in Storages.");
+        }
+        return Ok(());
+    }
+    let wide = kept
+        .iter()
+        .map(|k| k.name.chars().count())
+        .max()
+        .unwrap_or(0);
+    let kind_wide = kept
+        .iter()
+        .map(|k| k.kind.chars().count())
+        .max()
+        .unwrap_or(0);
+    for k in &kept {
+        let note = if k.asks_first {
+            "  (asks for this computer's password: open it in packwing)"
+        } else if k.storage.is_none() {
+            "  (pkw cannot open this kind)"
+        } else {
+            ""
+        };
+        println!(
+            "{:wide$}  {:kind_wide$}  {}{note}",
+            k.name, k.kind, k.describe
+        );
+    }
+    Ok(())
+}
+
+/// `copy` and `move`: files and folders, here or on storages, into a folder.
+fn transfer_cmd(
+    places: &[String],
+    on_existing: &str,
+    moving: bool,
+    cx: &Context,
+) -> Result<(), Exit> {
+    let on_existing = on_existing_named(on_existing)?;
+    let (to, from) = places.split_last().expect("clap asks for two at least");
+    let to = Place::of(to)?;
+    if !to.is_folder()? {
+        return Err(Exit::Usage(format!(
+            "{} is not a folder: what is copied or moved goes into a folder",
+            to.shown
+        )));
+    }
+    let mut all = packwing_core::Transferred::default();
+    for typed in from {
+        let place = Place::of(typed)?;
+        let Some((folder, name)) = place.split() else {
+            return Err(Exit::Usage(format!(
+                "{typed} is a storage's top: name what is in it, as {typed}NAME"
+            )));
+        };
+        if place.stat()?.is_none() {
+            return Err(Exit::Failed(format!("{typed} is not there")));
+        }
+        let verb = if moving { "Moving" } else { "Copying" };
+        let (control, bar) = crate::progress::control(&format!("{verb} {name}"), cx.progress);
+        let did = transfer(
+            &Transfer {
+                from: place.storage.clone(),
+                from_folder: folder.to_vec(),
+                names: vec![name.to_owned()],
+                to: to.storage.clone(),
+                to_folder: to.path.clone(),
+                moving,
+                on_existing,
+                keep_mark: true,
+            },
+            &control,
+        )?;
+        drop(bar);
+        all.files += did.files;
+        all.bytes += did.bytes;
+        all.skipped += did.skipped;
+        all.links_left += did.links_left;
+    }
+    if cx.json {
+        print_json(&json!({
+            "files": all.files,
+            "bytes": all.bytes,
+            "skipped": all.skipped,
+            "links_left": all.links_left,
+        }));
+        return Ok(());
+    }
+    if !cx.quiet {
+        let verb = if moving { "Moved" } else { "Copied" };
+        let mut said = format!(
+            "{verb} {} ({}) into {}",
+            file_count(all.files),
+            size(all.bytes),
+            to.shown
+        );
+        if all.skipped > 0 {
+            said += &format!(", {} skipped as their names were taken", all.skipped);
+        }
+        if all.links_left > 0 {
+            said += &format!(", {} links left where they were", all.links_left);
+        }
+        eprintln!("{said}");
+    }
+    Ok(())
+}
+
 fn done(cx: &Context, said: String) -> Result<(), Exit> {
     if cx.json {
         print_json(&json!({ "ok": true }));
@@ -505,7 +701,7 @@ fn algorithms(typed: &[String]) -> Result<Vec<Algorithm>, Exit> {
 }
 
 fn checksum_cmd(
-    files: &[PathBuf],
+    files: &[String],
     typed: &[String],
     save: bool,
     cx: &mut Context,
@@ -516,16 +712,16 @@ fn checksum_cmd(
     let algorithms = algorithms(typed)?;
     let mut found = Vec::new();
     for file in files {
-        let (storage, path) = local(file);
+        let place = Place::of(file)?;
         let (control, bar) =
-            crate::progress::control(&format!("Reading {}", named(file)), cx.progress);
-        let sums = checksums(&storage, &path, &algorithms, &control)?;
+            crate::progress::control(&format!("Reading {}", place.name()), cx.progress);
+        let sums = checksums(&*place.storage, &place.path, &algorithms, &control)?;
         drop(bar);
         for (algorithm, sum) in sums {
             if save {
-                save_checksum(&storage, &path, algorithm, &sum)?;
+                save_checksum(&*place.storage, &place.path, algorithm, &sum)?;
             }
-            found.push((file.display().to_string(), algorithm, sum));
+            found.push((place.shown.clone(), algorithm, sum));
         }
     }
     if cx.json {

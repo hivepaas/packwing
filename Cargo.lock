@@ -5311,6 +5311,7 @@ dependencies = [
  "packwing-core",
  "packwing-i18n",
  "packwing-policy",
+ "packwing-remote",
  "rpassword",
  "serde_json",
 ]

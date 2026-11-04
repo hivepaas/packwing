@@ -18,6 +18,8 @@ path = "src/main.rs"
 packwing-core.workspace = true
 packwing-i18n.workspace = true
 packwing-policy.workspace = true
+# The storages added to the app: S3, SFTP and WebDAV.
+packwing-remote.workspace = true
 clap = { version = "4.5", features = ["derive", "wrap_help"] }
 # A password typed with nothing shown.
 rpassword = "7"
