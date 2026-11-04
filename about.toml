@@ -31,6 +31,9 @@ private = { ignore = false }
 [packwing]
 accepted = ["GPL-3.0-or-later"]
 
+[packwing-cli]
+accepted = ["GPL-3.0-or-later"]
+
 [packwing-core]
 accepted = ["GPL-3.0-or-later"]
 

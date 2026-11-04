@@ -129,11 +129,13 @@ jobs:
           key: build-${{ matrix.name }}
 
       - name: Build
-        run: cargo build --release --locked -p packwing
+        run: cargo build --release --locked -p packwing -p packwing-cli
 
       - uses: actions/upload-artifact@v4
         with:
           name: packwing-${{ matrix.name }}
-          path: target/release/packwing${{ startsWith(matrix.name, 'windows') && '.exe' || '' }}
+          path: |
+            target/release/packwing${{ startsWith(matrix.name, 'windows') && '.exe' || '' }}
+            target/release/pkw${{ startsWith(matrix.name, 'windows') && '.exe' || '' }}
           if-no-files-found: error
           retention-days: 14

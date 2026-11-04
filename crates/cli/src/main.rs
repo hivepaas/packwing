@@ -16,7 +16,7 @@ use std::io::IsTerminal as _;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use clap::{Args, Parser, Subcommand};
+use clap::{Args, CommandFactory as _, Parser, Subcommand};
 
 use crate::secrets::Secrets;
 
@@ -191,6 +191,23 @@ enum Command {
         #[arg(long, value_name = "WHAT", default_value = "stop")]
         on_existing: String,
     },
+    /// Write the shell's completions for pkw, to load or keep where it looks.
+    #[command(
+        after_help = "bash: pkw completions bash > ~/.local/share/bash-completion/completions/pkw\n\
+        zsh: pkw completions zsh > \"${fpath[1]}/_pkw\"\n\
+        fish: pkw completions fish > ~/.config/fish/completions/pkw.fish\n\
+        PowerShell: pkw completions powershell | Out-String | Invoke-Expression, in $PROFILE"
+    )]
+    Completions {
+        #[arg(value_name = "SHELL")]
+        shell: clap_complete::Shell,
+    },
+    /// Write pkw's manual pages, pkw.1 and one for each command, into a folder.
+    #[command(hide = true)]
+    Man {
+        #[arg(value_name = "DIR")]
+        folder: PathBuf,
+    },
     /// Suggest a passphrase of random words, stronger than most typed ones.
     Passphrase {
         /// At least this many characters; the organization may ask for more.
@@ -327,6 +344,20 @@ pub struct Context {
 
 fn main() -> ExitCode {
     let cli = Cli::parse();
+    // What is written of pkw itself, with nothing to read or ask.
+    match &cli.command {
+        Command::Completions { shell } => {
+            clap_complete::generate(*shell, &mut Cli::command(), "pkw", &mut std::io::stdout());
+            return ExitCode::SUCCESS;
+        }
+        Command::Man { folder } => {
+            return match man_pages(folder) {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(e) => fail(&Exit::Failed(format!("cannot write the pages: {e}"))),
+            };
+        }
+        _ => {}
+    }
     // The core's messages, in the system's language, as the app's are.
     packwing_i18n::set_language(None);
     let secrets = match Secrets::read(
@@ -347,6 +378,26 @@ fn main() -> ExitCode {
         Ok(()) => ExitCode::SUCCESS,
         Err(exit) => fail(&exit),
     }
+}
+
+/// `pkw.1`, and `pkw-COMMAND.1` for each command shown, into `folder`.
+fn man_pages(folder: &std::path::Path) -> std::io::Result<()> {
+    std::fs::create_dir_all(folder)?;
+    let mut pkw = Cli::command().version(env!("CARGO_PKG_VERSION"));
+    pkw.build();
+    let write = |name: &str, command: clap::Command| {
+        let mut page = Vec::new();
+        clap_mangen::Man::new(command.name(name.to_owned()))
+            .render(&mut page)
+            .and_then(|()| std::fs::write(folder.join(format!("{name}.1")), page))
+    };
+    for command in pkw
+        .get_subcommands()
+        .filter(|c| !c.is_hide_set() && c.get_name() != "help")
+    {
+        write(&format!("pkw-{}", command.get_name()), command.clone())?;
+    }
+    write("pkw", pkw)
 }
 
 fn fail(exit: &Exit) -> ExitCode {
