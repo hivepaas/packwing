@@ -3,7 +3,7 @@
 //! check: what was marked stays marked, and what comes from a storage across a network
 //! counts as from the Internet, as a browser's download would.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use hivepack::extract::Origin;
 
@@ -58,6 +58,19 @@ pub(crate) fn for_extracting(source: &Source, keep: bool) -> Result<Option<Origi
 /// Internet, had the user not turned that off.
 pub fn came_from_internet(source: &Source) -> bool {
     origin(source.path()).is_ok_and(|o| o.is_some())
+}
+
+/// Puts on each of `files`, a new archive made of what `source` holds, the mark
+/// `source` has, as the user chose and the organization allows: what is in it came
+/// from where `source` did.
+pub(crate) fn on_new_archive(source: &Source, files: &[PathBuf], keep: bool) -> Result<(), Error> {
+    let Some(origin) = for_extracting(source, keep)? else {
+        return Ok(());
+    };
+    for file in files {
+        write(&origin, file)?;
+    }
+    Ok(())
 }
 
 /// Puts on the file at `to`, just copied here from `path` of `from`, the mark it should

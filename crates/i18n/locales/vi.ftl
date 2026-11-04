@@ -1906,6 +1906,15 @@ t8b242db1 = Mới
 # There is no file to save it beside.
 ta9906e3b = Không có tệp nào để lưu cạnh.
 
+# Nothing to compress.
+t47339885 = Không có gì để nén.
+
+# {path} is too big.
+te9ab879e = { $path } quá lớn.
+
+# This format holds one file, and no more.
+t75c197d9 = Định dạng này chỉ chứa một tệp, không hơn.
+
 # Could not read {path}: {e}
 tad0120eb = Không đọc được { $path }: { $e }
 
@@ -1924,9 +1933,6 @@ t40554bf6 = { $wanted } và các tên sau nó đã có.
 # Could not encrypt: {e}
 t485d71ab = Không mã hoá được: { $e }
 
-# Nothing to compress.
-t47339885 = Không có gì để nén.
-
 # A ZIP or 7z archive takes age keys only when age encrypts it whole.
 t582284c9 = Tệp nén ZIP hoặc 7z chỉ nhận khoá age khi age mã hoá toàn bộ tệp.
 
@@ -1939,17 +1945,11 @@ t500313af = Khoá hậu lượng tử không dùng chung được với khoá kh
 # There are no keys in this file to encrypt to.
 tc2809b2c = Tệp này không có khoá nào để mã hoá cho.
 
-# This format holds one file, and no more.
-t75c197d9 = Định dạng này chỉ chứa một tệp, không hơn.
-
 # {path} got shorter while it was being read.
 t2e221d1f = { $path } ngắn lại trong khi đang đọc.
 
 # A password has to be valid Unicode.
 t5ef729bc = Mật khẩu phải là Unicode hợp lệ.
-
-# {path} is too big.
-te9ab879e = { $path } quá lớn.
 
 # Could not start compressing: {e}
 tc4faa70c = Không bắt đầu nén được: { $e }

@@ -1936,6 +1936,15 @@ t8b242db1 = Yeni
 # There is no file to save it beside.
 ta9906e3b = Yanına kaydedilecek dosya yok.
 
+# Nothing to compress.
+t47339885 = Sıkıştırılacak bir şey yok.
+
+# {path} is too big.
+te9ab879e = { $path } çok büyük.
+
+# This format holds one file, and no more.
+t75c197d9 = Bu biçim tek bir dosya tutar, fazlasını değil.
+
 # Could not read {path}: {e}
 tad0120eb = { $path } okunamadı: { $e }
 
@@ -1954,9 +1963,6 @@ t40554bf6 = { $wanted } ve ondan sonraki adlar kullanımda.
 # Could not encrypt: {e}
 t485d71ab = Şifrelenemedi: { $e }
 
-# Nothing to compress.
-t47339885 = Sıkıştırılacak bir şey yok.
-
 # A ZIP or 7z archive takes age keys only when age encrypts it whole.
 t582284c9 = ZIP veya 7z arşivi age anahtarlarını yalnızca age onu bütünüyle şifrelediğinde alır.
 
@@ -1969,17 +1975,11 @@ t500313af = Kuantum sonrası anahtarlar diğer anahtarlarla kullanılamaz: diğe
 # There are no keys in this file to encrypt to.
 tc2809b2c = Bu dosyada şifrelenecek anahtar yok.
 
-# This format holds one file, and no more.
-t75c197d9 = Bu biçim tek bir dosya tutar, fazlasını değil.
-
 # {path} got shorter while it was being read.
 t2e221d1f = { $path } okunurken kısaldı.
 
 # A password has to be valid Unicode.
 t5ef729bc = Parola geçerli Unicode olmalı.
-
-# {path} is too big.
-te9ab879e = { $path } çok büyük.
 
 # Could not start compressing: {e}
 tc4faa70c = Sıkıştırma başlatılamadı: { $e }

@@ -144,6 +144,10 @@ enum Command {
         make: Making,
     },
     /// Make an archive of what another holds, in another format: `pkw convert a.rar a.tar.zst`.
+    ///
+    /// Each entry goes from one into the other as it is read, with no folder in between,
+    /// through the checks extracting makes. A hard link in a ZIP or 7z archive is a
+    /// symbolic link to its file. The new archive keeps the mark of one from the Internet.
     Convert {
         /// The archive to read.
         from: PathBuf,

@@ -1906,6 +1906,15 @@ t8b242db1 = 新規
 # There is no file to save it beside.
 ta9906e3b = 隣に保存するファイルがありません。
 
+# Nothing to compress.
+t47339885 = 圧縮するものがありません。
+
+# {path} is too big.
+te9ab879e = { $path } は大きすぎます。
+
+# This format holds one file, and no more.
+t75c197d9 = この形式に入れられるのは 1 つのファイルだけです。
+
 # Could not read {path}: {e}
 tad0120eb = { $path } を読み取れませんでした：{ $e }
 
@@ -1924,9 +1933,6 @@ t40554bf6 = { $wanted } とそれ以降の名前はすでに使われていま�
 # Could not encrypt: {e}
 t485d71ab = 暗号化できませんでした：{ $e }
 
-# Nothing to compress.
-t47339885 = 圧縮するものがありません。
-
 # A ZIP or 7z archive takes age keys only when age encrypts it whole.
 t582284c9 = ZIP や 7z のアーカイブで age の鍵を使えるのは、age で全体を暗号化する場合だけです。
 
@@ -1939,17 +1945,11 @@ t500313af = ポスト量子鍵はほかのキーと併用できません。併�
 # There are no keys in this file to encrypt to.
 tc2809b2c = このファイルには、暗号化の宛先にできるキーがありません。
 
-# This format holds one file, and no more.
-t75c197d9 = この形式に入れられるのは 1 つのファイルだけです。
-
 # {path} got shorter while it was being read.
 t2e221d1f = { $path } は読み取り中に小さくなりました。
 
 # A password has to be valid Unicode.
 t5ef729bc = パスワードは有効な Unicode である必要があります。
-
-# {path} is too big.
-te9ab879e = { $path } は大きすぎます。
 
 # Could not start compressing: {e}
 tc4faa70c = 圧縮を開始できませんでした：{ $e }

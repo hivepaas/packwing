@@ -1915,6 +1915,15 @@ t8b242db1 = 新增
 # There is no file to save it beside.
 ta9906e3b = 沒有可在其旁邊儲存的檔案。
 
+# Nothing to compress.
+t47339885 = 沒有可壓縮的內容。
+
+# {path} is too big.
+te9ab879e = { $path } 太大。
+
+# This format holds one file, and no more.
+t75c197d9 = 這種格式只能存放一個檔案。
+
 # Could not read {path}: {e}
 tad0120eb = 無法讀取 { $path }：{ $e }
 
@@ -1933,9 +1942,6 @@ t40554bf6 = { $wanted } 及其後的名稱都已被使用。
 # Could not encrypt: {e}
 t485d71ab = 無法加密：{ $e }
 
-# Nothing to compress.
-t47339885 = 沒有可壓縮的內容。
-
 # A ZIP or 7z archive takes age keys only when age encrypts it whole.
 t582284c9 = ZIP 或 7z 封存檔只有在由 age 整體加密時才能使用 age 金鑰。
 
@@ -1948,17 +1954,11 @@ t500313af = 後量子金鑰無法與其他金鑰並用：其他金鑰會讓檔�
 # There are no keys in this file to encrypt to.
 tc2809b2c = 這個檔案中沒有可用於加密的金鑰。
 
-# This format holds one file, and no more.
-t75c197d9 = 這種格式只能存放一個檔案。
-
 # {path} got shorter while it was being read.
 t2e221d1f = { $path } 在讀取時變小了。
 
 # A password has to be valid Unicode.
 t5ef729bc = 密碼必須是有效的 Unicode。
-
-# {path} is too big.
-te9ab879e = { $path } 太大。
 
 # Could not start compressing: {e}
 tc4faa70c = 無法開始壓縮：{ $e }

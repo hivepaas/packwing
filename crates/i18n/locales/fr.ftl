@@ -1936,6 +1936,15 @@ t8b242db1 = Nouveau
 # There is no file to save it beside.
 ta9906e3b = Il n'y a pas de fichier à côté duquel l'enregistrer.
 
+# Nothing to compress.
+t47339885 = Rien à compresser.
+
+# {path} is too big.
+te9ab879e = { $path } est trop volumineux.
+
+# This format holds one file, and no more.
+t75c197d9 = Ce format contient un seul fichier, pas plus.
+
 # Could not read {path}: {e}
 tad0120eb = Impossible de lire { $path } : { $e }
 
@@ -1954,9 +1963,6 @@ t40554bf6 = { $wanted } et les noms qui suivent sont déjà pris.
 # Could not encrypt: {e}
 t485d71ab = Impossible de chiffrer : { $e }
 
-# Nothing to compress.
-t47339885 = Rien à compresser.
-
 # A ZIP or 7z archive takes age keys only when age encrypts it whole.
 t582284c9 = Une archive ZIP ou 7z n’accepte des clés age que si age la chiffre en entier.
 
@@ -1969,17 +1975,11 @@ t500313af = Les clés post-quantiques ne peuvent pas être utilisées avec d'aut
 # There are no keys in this file to encrypt to.
 tc2809b2c = Ce fichier ne contient aucune clé vers laquelle chiffrer.
 
-# This format holds one file, and no more.
-t75c197d9 = Ce format contient un seul fichier, pas plus.
-
 # {path} got shorter while it was being read.
 t2e221d1f = { $path } a raccourci pendant sa lecture.
 
 # A password has to be valid Unicode.
 t5ef729bc = Un mot de passe doit être de l'Unicode valide.
-
-# {path} is too big.
-te9ab879e = { $path } est trop volumineux.
 
 # Could not start compressing: {e}
 tc4faa70c = Impossible de démarrer la compression : { $e }

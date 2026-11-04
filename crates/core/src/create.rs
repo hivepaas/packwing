@@ -90,7 +90,7 @@ pub enum Level {
 
 impl Level {
     /// The level Deflate is asked for: zlib's own default in the middle.
-    fn deflate(self) -> u32 {
+    pub(crate) fn deflate(self) -> u32 {
         match self {
             Level::Store | Level::Lowest => 1,
             Level::Low => 3,
@@ -101,7 +101,7 @@ impl Level {
     }
 
     /// The preset of LZMA and LZMA2: xz's own default in the middle.
-    fn xz(self) -> u32 {
+    pub(crate) fn xz(self) -> u32 {
         match self {
             Level::Store | Level::Lowest => 1,
             Level::Low => 3,
@@ -198,7 +198,7 @@ pub fn refused_by(policy: &Policy, new: &NewArchive) -> Result<(), Refused> {
 }
 
 /// [`refused_by`] this computer's policy, as an error.
-fn obey_policy(new: &NewArchive) -> Result<(), Error> {
+pub(crate) fn obey_policy(new: &NewArchive) -> Result<(), Error> {
     refused_by(packwing_policy::current(), new).map_err(|why| Error::Failed(why.to_string()))
 }
 
@@ -674,7 +674,7 @@ fn write_unsealed<W: Write>(
 }
 
 /// What encrypts what is written to `out` with age, to `recipients`.
-fn age_writer<W: Write>(
+pub(crate) fn age_writer<W: Write>(
     out: W,
     recipients: &[BoxedRecipient],
 ) -> Result<hivepack::age::Encryptor<W>, Error> {
@@ -744,13 +744,13 @@ fn write_squeezed<W: Write>(
 }
 
 /// Whether what `new` is encrypted with, if anything, is age.
-fn with_age(new: &NewArchive) -> bool {
+pub(crate) fn with_age(new: &NewArchive) -> bool {
     !matches!(new.kind, Kind::Zip | Kind::SevenZip) || new.whole_with_age
 }
 
 /// What a new archive is encrypted to with age, if it is: none for ZIP and 7z, which
 /// have their own encryption, unless they are encrypted whole with age.
-fn age_recipients(new: &NewArchive) -> Result<Option<Vec<BoxedRecipient>>, Error> {
+pub(crate) fn age_recipients(new: &NewArchive) -> Result<Option<Vec<BoxedRecipient>>, Error> {
     let bad = |e: String| Error::Failed(tr!("Could not encrypt: {e}", e = e));
     if !with_age(new) {
         if !new.age_keys.is_empty() {
@@ -877,7 +877,7 @@ pub const COMPRESSED_EXTENSIONS: &[&str] = &[
 ];
 
 /// Whether the file named `name` ends in one of `extensions`, whatever its case.
-fn has_extension_in(name: &str, extensions: &[impl AsRef<str>]) -> bool {
+pub(crate) fn has_extension_in(name: &str, extensions: &[impl AsRef<str>]) -> bool {
     name.rsplit_once('.').is_some_and(|(_, ext)| {
         extensions
             .iter()
@@ -987,12 +987,8 @@ fn ntfs_time(metadata: &Metadata) -> Option<u64> {
     u64::try_from(since_1601).ok()?.checked_mul(10_000_000)
 }
 
-fn write_7z<W: Write + Seek>(
-    items: Vec<Item>,
-    new: &NewArchive,
-    tally: &Tally,
-    out: W,
-) -> Result<(), Error> {
+/// How hivepack::sevenz writes the 7z archive `new` asks for.
+pub(crate) fn seven_zip_options(new: &NewArchive) -> Result<hivepack::sevenz::WriteOptions, Error> {
     let password = match &new.password {
         None => None,
         Some(p) => Some(
@@ -1013,7 +1009,16 @@ fn write_7z<W: Write + Seek>(
         })),
         ..hivepack::sevenz::WriteOptions::default()
     };
-    let mut archive = hivepack::sevenz::Writer::with_options(out, options)?;
+    Ok(options)
+}
+
+fn write_7z<W: Write + Seek>(
+    items: Vec<Item>,
+    new: &NewArchive,
+    tally: &Tally,
+    out: W,
+) -> Result<(), Error> {
+    let mut archive = hivepack::sevenz::Writer::with_options(out, seven_zip_options(new)?)?;
     let mut buf = vec![0; PIECE];
     // What is compressed already comes last, stored in a folder of its own, and
     // the rest stays together in one, which compresses it best.
@@ -1087,7 +1092,7 @@ fn write_tar<W: Write>(items: Vec<Item>, tally: &Tally, out: Squeezed<W>) -> Res
 }
 
 /// How much is read of a file at a time, and made of what compresses.
-const PIECE: usize = 1 << 16;
+pub(crate) const PIECE: usize = 1 << 16;
 
 /// The most xz's threads may take between them, in bytes. Each takes about
 /// three dictionaries, and the highest level's are 64 MiB.
@@ -1106,7 +1111,7 @@ enum Coder {
 }
 
 /// A stream compressed into `out`, whose end [`Squeezed::finish`] writes.
-struct Squeezed<W> {
+pub(crate) struct Squeezed<W> {
     out: W,
     coder: Coder,
     buf: Vec<u8>,
@@ -1118,7 +1123,7 @@ fn threads() -> u32 {
 }
 
 impl<W: Write> Squeezed<W> {
-    fn new(new: &NewArchive, out: W) -> Result<Squeezed<W>, Error> {
+    pub(crate) fn new(new: &NewArchive, out: W) -> Result<Squeezed<W>, Error> {
         let failed = |e: String| Error::Failed(tr!("Could not start compressing: {e}", e = e));
         let coder = match new.kind {
             Kind::Tar => Coder::Plain,
@@ -1285,7 +1290,7 @@ impl<W: Write> Squeezed<W> {
         }
     }
 
-    fn finish(mut self) -> io::Result<W> {
+    pub(crate) fn finish(mut self) -> io::Result<W> {
         self.code(&[], true)?;
         self.out.flush()?;
         Ok(self.out)
@@ -1696,6 +1701,25 @@ fn create_of(
         return Err(Error::Failed(tr!("Nothing to compress.")));
     }
     let tally = tally_of(&items, control);
+    let (made, _) = write_new(wanted, new, |out| {
+        why(write_archive(items, new, &tally, out), &tally)
+    })?;
+    Ok(made)
+}
+
+/// What can be written and gone back over: a new archive's file, or its parts.
+pub(crate) trait WriteSeek: Write + Seek {}
+
+impl<T: Write + Seek> WriteSeek for T {}
+
+/// Writes a new archive with `write`, named after `wanted` or the first name after it
+/// that is free, in parts as `new` says: where it went, the archive or its first part,
+/// and each of its files. What `write` fails to make is taken away.
+pub(crate) fn write_new(
+    wanted: &Path,
+    new: &NewArchive,
+    write: impl FnOnce(&mut dyn WriteSeek) -> Result<(), Error>,
+) -> Result<(PathBuf, Vec<PathBuf>), Error> {
     match new.part_size {
         Some(size) if size > 0 => {
             let (base, mut parts) = free_name(wanted, |base| {
@@ -1713,11 +1737,11 @@ fn create_of(
                 parts.part(0)?;
                 Ok(parts)
             })?;
-            let written = write_archive(items, new, &tally, &mut parts).and_then(|()| {
+            let written = write(&mut parts).and_then(|()| {
                 parts.flush()?;
                 Ok(())
             });
-            if let Err(e) = why(written, &tally) {
+            if let Err(e) = written {
                 parts.remove();
                 return Err(e);
             }
@@ -1725,24 +1749,25 @@ fn create_of(
             // It fitted in one: an archive like any other.
             if parts.made == 1 && !base.exists() {
                 fs::rename(parts.path(0), &base)?;
-                return Ok(base);
+                return Ok((base.clone(), vec![base]));
             }
-            Ok(parts.path(0))
+            let all = (0..parts.made).map(|part| parts.path(part)).collect();
+            Ok((parts.path(0), all))
         }
         _ => {
             let (path, mut file) = free_name(wanted, |path| {
                 OpenOptions::new().write(true).create_new(true).open(path)
             })?;
-            let written = write_archive(items, new, &tally, &mut file).and_then(|()| {
+            let written = write(&mut file).and_then(|()| {
                 file.sync_all()?;
                 Ok(())
             });
-            if let Err(e) = why(written, &tally) {
+            if let Err(e) = written {
                 drop(file);
                 let _ = fs::remove_file(&path);
                 return Err(e);
             }
-            Ok(path)
+            Ok((path.clone(), vec![path]))
         }
     }
 }

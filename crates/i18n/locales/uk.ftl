@@ -1978,6 +1978,15 @@ t8b242db1 = Новий
 # There is no file to save it beside.
 ta9906e3b = Немає файлу, поруч із яким зберегти.
 
+# Nothing to compress.
+t47339885 = Нічого стискати.
+
+# {path} is too big.
+te9ab879e = { $path } завеликий.
+
+# This format holds one file, and no more.
+t75c197d9 = Цей формат містить один файл, не більше.
+
 # Could not read {path}: {e}
 tad0120eb = Не вдалося прочитати { $path }: { $e }
 
@@ -1996,9 +2005,6 @@ t40554bf6 = { $wanted } та наступні за ним назви зайня�
 # Could not encrypt: {e}
 t485d71ab = Не вдалося зашифрувати: { $e }
 
-# Nothing to compress.
-t47339885 = Нічого стискати.
-
 # A ZIP or 7z archive takes age keys only when age encrypts it whole.
 t582284c9 = Архів ZIP або 7z приймає ключі age, лише коли age шифрує його повністю.
 
@@ -2011,17 +2017,11 @@ t500313af = Постквантові ключі не можна поєднува
 # There are no keys in this file to encrypt to.
 tc2809b2c = У цьому файлі немає ключів, для яких можна шифрувати.
 
-# This format holds one file, and no more.
-t75c197d9 = Цей формат містить один файл, не більше.
-
 # {path} got shorter while it was being read.
 t2e221d1f = { $path } став коротшим, поки його читали.
 
 # A password has to be valid Unicode.
 t5ef729bc = Пароль має бути дійсним Unicode.
-
-# {path} is too big.
-te9ab879e = { $path } завеликий.
 
 # Could not start compressing: {e}
 tc4faa70c = Не вдалося почати стиснення: { $e }
