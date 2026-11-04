@@ -28,9 +28,13 @@ pub const ID: &str = "packwing";
 /// one: Java's jar, war and ear, Android's apk, Firefox's xpi, an epub book, a
 /// comic book (cbz, cbr, cb7, cbt). `iso` is a disc image, ISO 9660 or UDF;
 /// `rpm` a package whose payload is a cpio archive; `pkg` a macOS package, a
-/// XAR archive.
+/// XAR archive. The first part of one cut as 7-Zip cuts it, `name.7z.001`,
+/// opens as the whole: each kind it is cut from is named, so a `.001` of a
+/// film is not one. Where a file's type is its last extension alone (Open
+/// With on Windows and macOS, Finder's Quick Actions), they are for every
+/// `.001`; Dolphin, which goes by MIME type, has none for them.
 #[rustfmt::skip]
-pub const ARCHIVES: [&str; 33] = [
+pub const ARCHIVES: [&str; 44] = [
     // ZIP, and what is one under its own name
     "zip", "jar", "war", "ear", "apk", "xpi", "epub", "cbz",
     // RAR and 7z
@@ -40,6 +44,9 @@ pub const ARCHIVES: [&str; 33] = [
     "tlz4", "lz", "lzma", "tlz",
     // Disc images and packages
     "iso", "cpio", "rpm", "xar", "pkg",
+    // The first part of one cut in parts
+    "7z.001", "zip.001", "rar.001", "tar.001", "tgz.001", "tar.gz.001", "tar.zst.001",
+    "tar.xz.001", "tar.bz2.001", "tar.lz4.001", "iso.001",
 ];
 
 /// One of packwing's items.
@@ -516,15 +523,32 @@ mod tests {
                 let mime = parts.next()?;
                 (parts.next()? == glob).then_some(mime)
             });
-            // A type the desktop has no name for (war, ear, tlz4) has no Open
-            // With there: the menu's items, which go by extension, are for it.
+            // A type the desktop has no name for (war, ear, tlz4, a first
+            // part) has no Open With there: the menu's items, which go by
+            // extension, are for it.
             let Some(mime) = mime else {
-                assert!(["war", "ear", "tlz4"].contains(&ext), "no type for .{ext}");
+                assert!(
+                    ["war", "ear", "tlz4"].contains(&ext) || ext.ends_with(".001"),
+                    "no type for .{ext}"
+                );
                 continue;
             };
             assert!(
                 listed.contains(&mime),
                 ".{ext}'s type, {mime}, is not listed"
+            );
+        }
+    }
+
+    /// The first parts the menu's items are for, Browse opens as archives
+    /// too. (jar, apk, epub and the packages are the system's to run there.)
+    #[test]
+    fn the_first_parts_are_archives_in_browse_too() {
+        for ext in ARCHIVES.iter().filter(|e| e.ends_with(".001")) {
+            assert_eq!(
+                crate::model::Kind::of(&format!("a.{ext}"), false),
+                crate::model::Kind::Archive,
+                ".{ext}"
             );
         }
     }
