@@ -1243,6 +1243,9 @@ t95f41ffb = Bạn có thể đổi sau trong Cài đặt.
 # Get started
 te83ca5ee = Bắt đầu
 
+# Remove from Recent
+t26cc8dba = Xoá khỏi Gần đây
+
 # {location} · not there any more
 t7d0c09c7 = { $location } · không còn ở đó
 

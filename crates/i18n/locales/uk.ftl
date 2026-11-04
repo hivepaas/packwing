@@ -1291,6 +1291,9 @@ t95f41ffb = Це можна змінити пізніше в Налаштува�
 # Get started
 te83ca5ee = Почати
 
+# Remove from Recent
+t26cc8dba = Прибрати з недавніх
+
 # {location} · not there any more
 t7d0c09c7 = { $location } · його вже немає
 

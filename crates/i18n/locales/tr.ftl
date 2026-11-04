@@ -1259,6 +1259,9 @@ t95f41ffb = Bunları sonra Ayarlar'dan değiştirebilirsiniz.
 # Get started
 te83ca5ee = Başlayın
 
+# Remove from Recent
+t26cc8dba = Son kullanılanlardan kaldır
+
 # {location} · not there any more
 t7d0c09c7 = { $location } · artık yok
 

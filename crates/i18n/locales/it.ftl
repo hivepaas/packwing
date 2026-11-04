@@ -1259,6 +1259,9 @@ t95f41ffb = Puoi cambiarle in seguito in Impostazioni.
 # Get started
 te83ca5ee = Inizia
 
+# Remove from Recent
+t26cc8dba = Rimuovi da Recenti
+
 # {location} · not there any more
 t7d0c09c7 = { $location } · non c'è più
 

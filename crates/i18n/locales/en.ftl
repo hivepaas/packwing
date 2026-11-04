@@ -463,6 +463,7 @@ t0265387b = Open any archive, make smaller files to share, and stay safe from ha
 t63f9c1cd = Set things up
 t95f41ffb = You can change these later in Settings.
 te83ca5ee = Get started
+t26cc8dba = Remove from Recent
 t7d0c09c7 = { $location } · not there any more
 tc0cc82d5 = The archives you open will show here.
 t3d37483c = Copy version info

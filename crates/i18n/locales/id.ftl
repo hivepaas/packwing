@@ -1243,6 +1243,9 @@ t95f41ffb = Anda dapat mengubahnya nanti di Pengaturan.
 # Get started
 te83ca5ee = Mulai
 
+# Remove from Recent
+t26cc8dba = Hapus dari Terbaru
+
 # {location} · not there any more
 t7d0c09c7 = { $location } · sudah tidak ada
 
