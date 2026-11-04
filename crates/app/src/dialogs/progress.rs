@@ -22,7 +22,9 @@ use gpui::{
     ClipboardItem, Context, EventEmitter, FontWeight, Render, Task, Window, div, prelude::*,
     relative, rgb,
 };
-use packwing_core::{Cancel, Control, Damage, DamagedFn, Error, OnDamaged, Progress, damages};
+use packwing_core::{
+    Cancel, Control, Damage, DamagedFn, Error, Filter, OnDamaged, Progress, damages,
+};
 
 use super::{
     DialogEvent, Editing, Job, Saving, SavingOn, Signing, Transferring, Verb, asked_for, card,
@@ -132,7 +134,10 @@ impl ProgressDialog {
             || job.add.is_some()
             || job.edit.is_some()
             || job.transfer.is_some()
-            || job.sign.is_some();
+            || job.sign.is_some()
+            || job.split.is_some()
+            || job.join.is_some()
+            || job.convert.is_some();
         Self::with(job, runs, cx)
     }
 
@@ -220,7 +225,15 @@ impl ProgressDialog {
             && matches!(self.state(), State::Running | State::Queued)
             && matches!(
                 self.job.verb,
-                Verb::Extract | Verb::Create | Verb::Test | Verb::Copy | Verb::Move | Verb::Sign
+                Verb::Extract
+                    | Verb::Create
+                    | Verb::Test
+                    | Verb::Copy
+                    | Verb::Move
+                    | Verb::Sign
+                    | Verb::Split
+                    | Verb::Join
+                    | Verb::Convert
             )
     }
 
@@ -246,7 +259,7 @@ impl ProgressDialog {
             })),
             cancel: Some(cancel.clone()),
             // Only what is extracted to stay: a file opened, or read, is whole.
-            on_damaged: (job.verb == Verb::Extract).then(|| asking(&damaged)),
+            on_damaged: matches!(job.verb, Verb::Extract | Verb::Convert).then(|| asking(&damaged)),
         };
         let found = damaged.clone();
         let tested = Arc::new(Mutex::new((0, 0)));
@@ -261,7 +274,33 @@ impl ProgressDialog {
         let edit = job.edit.clone();
         let transfer = job.transfer.clone();
         let sign = job.sign.clone();
+        let (split, join, convert) = (job.split.clone(), job.join.clone(), job.convert.clone());
+        let converted = damaged.clone();
         let job_work = move || {
+            if let Some((path, size)) = split {
+                let parts = packwing_core::split_file(&path, size, &control)?;
+                return Ok(parts.into_iter().next());
+            }
+            if let Some(part) = join {
+                return packwing_core::join_parts(&part, &control).map(Some);
+            }
+            if let Some(c) = convert {
+                let done = packwing_core::convert(
+                    c.from,
+                    &keys,
+                    &c.to,
+                    &c.how,
+                    &how,
+                    &Filter::default(),
+                    &control,
+                )?;
+                converted
+                    .lock()
+                    .unwrap_or_else(PoisonError::into_inner)
+                    .found
+                    .extend(damages(&done.summary));
+                return Ok(Some(done.made));
+            }
             if let Some(Signing(storage, path, key)) = sign {
                 packwing_core::sign_file(storage.as_ref(), &path, &key, &control)?;
                 return Ok(None);
@@ -345,7 +384,7 @@ impl ProgressDialog {
         let run_it = move || {
             let _ = done.send(job_work());
         };
-        if verb == Verb::Extract {
+        if matches!(verb, Verb::Extract | Verb::Convert) {
             // An extraction may wait on its dialog's answer about a damaged file,
             // as long as that takes: on a thread of its own, not the executor's.
             // One that cannot start says so, as the job's sender is gone.
@@ -453,7 +492,9 @@ impl ProgressDialog {
             // One archive that needs a passphrase or password: asked for,
             // and run again. Several would extract those before it twice.
             Err(e)
-                if (self.job.work.len() == 1 || self.job.add.is_some())
+                if (self.job.work.len() == 1
+                    || self.job.add.is_some()
+                    || self.job.convert.is_some())
                     && let Some((asked, again)) = asked_for(&e, &self.job.keys) =>
             {
                 let again = again.then(|| e.to_string());
@@ -723,7 +764,10 @@ impl ProgressDialog {
             return tr!("A file is damaged");
         }
         if self.report.is_some() {
-            return tr!("Extracted, but some files are damaged");
+            return match self.job.verb {
+                Verb::Convert => tr!("Converted, but some files are damaged"),
+                _ => tr!("Extracted, but some files are damaged"),
+            };
         }
         match (self.job.verb, self.failed.is_some()) {
             (Verb::Extract, false) => tr!("Extracting…"),
@@ -736,6 +780,12 @@ impl ProgressDialog {
             (Verb::Copy, false) => tr!("Copying…"),
             (Verb::Move, false) => tr!("Moving…"),
             (Verb::Sign, false) => tr!("Signing…"),
+            (Verb::Split, false) => tr!("Splitting…"),
+            (Verb::Join, false) => tr!("Joining…"),
+            (Verb::Convert, false) => tr!("Converting…"),
+            (Verb::Split, true) => tr!("Couldn’t split the file"),
+            (Verb::Join, true) => tr!("Couldn’t join the parts"),
+            (Verb::Convert, true) => tr!("Couldn’t convert the archive"),
             (Verb::Sign, true) => tr!("Couldn’t sign"),
             (Verb::Copy, true) => tr!("Couldn’t copy"),
             (Verb::Move, true) => tr!("Couldn’t move"),
@@ -786,7 +836,8 @@ impl ProgressDialog {
     pub fn icon_name(&self) -> &'static str {
         match self.job.verb {
             Verb::Extract | Verb::Open => "extract",
-            Verb::Create | Verb::Add | Verb::Edit => "logo",
+            Verb::Create | Verb::Add | Verb::Edit | Verb::Convert => "logo",
+            Verb::Split | Verb::Join => "archive",
             Verb::Test => "shield",
             Verb::Copy | Verb::Move => "storages",
             Verb::Sign => "shield",

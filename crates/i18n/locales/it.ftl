@@ -303,6 +303,9 @@ t9981f45f = Chiave pubblica
 # Beside the files
 t757989af = Accanto ai file
 
+# What it holds, from
+teae4ef1a = Contenuto da
+
 # Save in
 tf2d34837 = Salva in
 
@@ -427,6 +430,9 @@ t0dad409a = Forte
 
 # Choose what to put in it
 t5461cfa6 = Scegli cosa metterci
+
+# Convert
+t92e29218 = Converti
 
 # New archive
 tf352befb = Nuovo archivio
@@ -625,6 +631,9 @@ t16ec36d9 = In attesa di altre attività…
 # A file is damaged
 t8b1230ed = Un file è danneggiato
 
+# Converted, but some files are damaged
+t54ef3472 = Convertito, ma alcuni file sono danneggiati
+
 # Extracted, but some files are damaged
 t8226d624 = Estratto, ma alcuni file sono danneggiati
 
@@ -657,6 +666,24 @@ t890f7ed1 = Spostamento…
 
 # Signing…
 t7b8f8780 = Firma…
+
+# Splitting…
+t5452adf5 = Divisione…
+
+# Joining…
+taa884c51 = Unione…
+
+# Converting…
+ta1b8f4cc = Conversione…
+
+# Couldn’t split the file
+t83d27d26 = Impossibile dividere il file
+
+# Couldn’t join the parts
+t1cf67e00 = Impossibile unire le parti
+
+# Couldn’t convert the archive
+t39f973a9 = Impossibile convertire l’archivio
 
 # Couldn’t sign
 t4489f97c = Impossibile firmare
@@ -863,6 +890,12 @@ t6bba28d5 = Crea la chiave…
 # Sign
 t8f6340c4 = Firma
 
+# {count} parts beside it, {first} and on. Join puts them back together, and packwing and 7-Zip open an archive cut so as it is.
+tab12cc19 = { $count } parti accanto, da { $first } in poi. Unisci le rimette insieme, e packwing e 7-Zip aprono così com’è un archivio diviso in questo modo.
+
+# Split
+t16a15383 = Dividi
+
 # Move {what}
 tc168ca56 = Sposta { $what }
 
@@ -991,6 +1024,15 @@ td6d61b10 = Firma…
 
 # Checksums…
 t2891102d = Checksum…
+
+# Convert…
+tae85a7c4 = Converti…
+
+# Split into parts…
+t281db403 = Dividi in parti…
+
+# Join the parts
+t0ad56db8 = Unisci le parti
 
 # Copy path
 tf165cb2b = Copia percorso
@@ -1219,6 +1261,12 @@ t82869bf0 = Spostato
 
 # Signed
 t27c3ab35 = Firmato
+
+# Joined
+tf8f2b670 = Unito
+
+# Converted
+tc7b76e99 = Convertito
 
 # Waiting for a password or a key
 t0e83ae32 = In attesa di una password o di una chiave
@@ -2098,6 +2146,30 @@ tc95e3a9c = Non c'è nessun file da firmare.
 
 # {name} is not there any more.
 t07c1f2bc = { $name } non c'è più.
+
+# A part has to hold at least one byte.
+te779b111 = Una parte deve contenere almeno un byte.
+
+# {path} is not a file.
+tdfee38b2 = { $path } non è un file.
+
+# That would make more parts than can be numbered: make them bigger.
+t7ce88e46 = Verrebbero più parti di quante se ne possano numerare: falle più grandi.
+
+# {part} is there already.
+t2577cbb6 = { $part } c’è già.
+
+# {path} is not a part of a file cut as 7-Zip cuts it, as name.001.
+t64c1c1d0 = { $path } non è una parte di un file diviso come lo divide 7-Zip, come name.001.
+
+# {part} is missing: the parts start from it.
+t5e65a10a = Manca { $part }: le parti cominciano da lì.
+
+# {part} is missing, and the parts after it are there.
+t24165c89 = Manca { $part }, mentre le parti successive ci sono.
+
+# {part} holds {got}, not {size} as the first part does: it may not be whole.
+tb472eff0 = { $part } contiene { $got }, non { $size } come la prima parte: potrebbe non essere completa.
 
 # The name is empty.
 t1a9d8e4e = Il nome è vuoto.

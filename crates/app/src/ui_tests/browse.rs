@@ -151,6 +151,72 @@ scenario!(
     }
 );
 
+/// Opens the menu of `name`, in the folder Browse shows.
+fn menu_of(ui: &mut crate::ui_tests::Ui, name: &str) {
+    let name = name.to_owned();
+    ui.ws(|ws, _, cx| {
+        let explorer = ws.browse_page().read(cx).explorer().clone();
+        explorer.update(cx, |e, cx| {
+            e.list_now(cx);
+            e.choose(&name, cx);
+            e.show_menu(400., 300., false, cx);
+        });
+    });
+}
+
+scenario!(
+    /// A file in Browse is split into parts beside it, and joined back from one of
+    /// them into what it was.
+    a_file_is_split_and_joined_back,
+    |ui| {
+        let docs = ui.work.join("docs");
+        let body = "y".repeat(2_500_000);
+        ui.file("docs/big.txt", &body);
+        ui.click("nav-browse");
+        let at = docs.clone();
+        ui.ws(|ws, _, cx| ws.browse_page().update(cx, |b, cx| b.go_to(&at, cx)));
+        menu_of(ui, "big.txt");
+        ui.click("menu-split");
+        ui.wait_for("split");
+        ui.choose("part-size", "Custom size…");
+        ui.type_in("Size", "1");
+        ui.click("split");
+        ui.wait_for_no_dialog();
+        let part = |n: u32| docs.join(format!("big.txt.{n:03}"));
+        for n in 1..=3 {
+            let size = std::fs::metadata(part(n)).expect("the part").len();
+            assert!(n == 3 || size == 1_000_000, "part {n}: {size}");
+        }
+        assert!(!part(4).exists());
+        std::fs::remove_file(docs.join("big.txt")).expect("the file");
+        menu_of(ui, "big.txt.002");
+        ui.click("menu-join");
+        ui.wait_for_no_dialog();
+        assert_eq!(std::fs::read_to_string(docs.join("big.txt")).expect("joined"), body);
+    }
+);
+
+scenario!(
+    /// An archive in Browse is converted into another format beside it, holding what
+    /// it held.
+    an_archive_is_converted,
+    |ui| {
+        let archive = ui.copy_of("sample.7z");
+        let held = crate::ui_tests::listed(&archive, None);
+        ui.click("nav-browse");
+        let at = ui.work.clone();
+        ui.ws(|ws, _, cx| ws.browse_page().update(cx, |b, cx| b.go_to(&at, cx)));
+        menu_of(ui, "sample.7z");
+        ui.click("menu-convert");
+        ui.wait_for("create");
+        ui.choose("format", ".tar.zst");
+        ui.click("create");
+        ui.wait_for_no_dialog();
+        let made = ui.work.join("sample.tar.zst");
+        assert_eq!(crate::ui_tests::listed(&made, None), held);
+    }
+);
+
 scenario!(
     /// The first part of a 7z archive cut in parts is an archive in Browse, as
     /// on Recent: its menu has Open and Extract…, and Open reads its parts as
@@ -172,16 +238,11 @@ scenario!(
         ui.click("nav-browse");
         let at = parts.clone();
         ui.ws(|ws, _, cx| ws.browse_page().update(cx, |b, cx| b.go_to(&at, cx)));
-        ui.ws(|ws, _, cx| {
-            let explorer = ws.browse_page().read(cx).explorer().clone();
-            explorer.update(cx, |e, cx| {
-                e.list_now(cx);
-                e.choose("cut.7z.001", cx);
-                e.show_menu(400., 300., false, cx);
-            });
-        });
+        menu_of(ui, "cut.7z.001");
         ui.wait_for("menu-open");
         assert!(ui.shows("menu-extract"));
+        // A part is joined, not converted alone.
+        assert!(ui.shows("menu-join") && !ui.shows("menu-convert"));
         ui.click("menu-open");
         ui.wait_until("the archive read", |ui| !ui.archive_names().is_empty());
         assert_eq!(ui.archive_failed(), None);

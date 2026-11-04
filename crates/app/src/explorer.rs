@@ -64,6 +64,20 @@ pub enum ExplorerEvent {
     Sign(String),
     /// Show this file's checksums, by its name in the folder.
     Checksums(String),
+    /// Ask how to cut this file into parts, by its name in the folder.
+    Split(String),
+    /// Join the parts this one is of, by its name in the folder.
+    Join(String),
+    /// Ask how to make an archive of what this one holds, in another format.
+    Convert(String),
+}
+
+/// Whether `item` is a part of a file cut as 7-Zip cuts one: `name.001`.
+pub fn is_cut_part(item: &Item) -> bool {
+    !item.dir
+        && item.name.rsplit_once('.').is_some_and(|(base, n)| {
+            !base.is_empty() && n.len() >= 3 && n.bytes().all(|b| b.is_ascii_digit())
+        })
 }
 
 /// A storage, by what the user calls it.
@@ -1534,6 +1548,36 @@ impl Explorer {
                                 item("menu-checksums", tr!("Checksums…"), "", false)
                                     .on_click(cx.listener(|this, _, _, cx| this.ask_checksums(cx))),
                             )
+                        })
+                        .when(local && !one.dir && !one.link, |d| {
+                            let (split, join, convert) =
+                                (one.name.clone(), one.name.clone(), one.name.clone());
+                            d.when(archive && !is_cut_part(one), |d| {
+                                d.child(item("menu-convert", tr!("Convert…"), "", false).on_click(
+                                    cx.listener(move |this, _, _, cx| {
+                                        this.menu = None;
+                                        cx.emit(ExplorerEvent::Convert(convert.clone()));
+                                    }),
+                                ))
+                            })
+                            .child(
+                                item("menu-split", tr!("Split into parts…"), "", false).on_click(
+                                    cx.listener(move |this, _, _, cx| {
+                                        this.menu = None;
+                                        cx.emit(ExplorerEvent::Split(split.clone()));
+                                    }),
+                                ),
+                            )
+                            .when(is_cut_part(one), |d| {
+                                d.child(
+                                    item("menu-join", tr!("Join the parts"), "", false).on_click(
+                                        cx.listener(move |this, _, _, cx| {
+                                            this.menu = None;
+                                            cx.emit(ExplorerEvent::Join(join.clone()));
+                                        }),
+                                    ),
+                                )
+                            })
                         })
                         .child(line())
                         .child(item("menu-rename", tr!("Rename"), "F2", false).on_click(

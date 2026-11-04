@@ -301,6 +301,9 @@ t9981f45f = 공개 키
 # Beside the files
 t757989af = 파일과 같은 위치
 
+# What it holds, from
+teae4ef1a = 내용을 가져올 곳
+
 # Save in
 tf2d34837 = 저장 위치
 
@@ -423,6 +426,9 @@ t0dad409a = 강함
 
 # Choose what to put in it
 t5461cfa6 = 넣을 항목 선택
+
+# Convert
+t92e29218 = 변환
 
 # New archive
 tf352befb = 새 압축 파일
@@ -619,6 +625,9 @@ t16ec36d9 = 다른 작업을 기다리는 중…
 # A file is damaged
 t8b1230ed = 파일이 손상되었습니다
 
+# Converted, but some files are damaged
+t54ef3472 = 변환했지만 일부 파일이 손상되었습니다
+
 # Extracted, but some files are damaged
 t8226d624 = 압축을 풀었지만 일부 파일이 손상되었습니다
 
@@ -651,6 +660,24 @@ t890f7ed1 = 이동하는 중…
 
 # Signing…
 t7b8f8780 = 서명하는 중…
+
+# Splitting…
+t5452adf5 = 나누는 중…
+
+# Joining…
+taa884c51 = 합치는 중…
+
+# Converting…
+ta1b8f4cc = 변환 중…
+
+# Couldn’t split the file
+t83d27d26 = 파일을 나눌 수 없습니다
+
+# Couldn’t join the parts
+t1cf67e00 = 부분을 합칠 수 없습니다
+
+# Couldn’t convert the archive
+t39f973a9 = 아카이브를 변환할 수 없습니다
 
 # Couldn’t sign
 t4489f97c = 서명하지 못했습니다
@@ -853,6 +880,12 @@ t6bba28d5 = 키 만들기…
 # Sign
 t8f6340c4 = 서명
 
+# {count} parts beside it, {first} and on. Join puts them back together, and packwing and 7-Zip open an archive cut so as it is.
+tab12cc19 = 옆에 { $first }부터 { $count }개 부분이 만들어집니다. 합치기로 다시 붙일 수 있고, packwing과 7-Zip은 이렇게 나눈 아카이브를 그대로 엽니다.
+
+# Split
+t16a15383 = 나누기
+
 # Move {what}
 tc168ca56 = { $what } 이동
 
@@ -981,6 +1014,15 @@ td6d61b10 = 서명…
 
 # Checksums…
 t2891102d = 체크섬…
+
+# Convert…
+tae85a7c4 = 변환…
+
+# Split into parts…
+t281db403 = 여러 부분으로 나누기…
+
+# Join the parts
+t0ad56db8 = 부분 합치기
 
 # Copy path
 tf165cb2b = 경로 복사
@@ -1203,6 +1245,12 @@ t82869bf0 = 이동됨
 
 # Signed
 t27c3ab35 = 서명됨
+
+# Joined
+tf8f2b670 = 합침
+
+# Converted
+tc7b76e99 = 변환함
 
 # Waiting for a password or a key
 t0e83ae32 = 암호 또는 키를 기다리는 중
@@ -2067,6 +2115,30 @@ tc95e3a9c = 서명할 파일이 없습니다.
 
 # {name} is not there any more.
 t07c1f2bc = { $name }이(가) 더 이상 없습니다.
+
+# A part has to hold at least one byte.
+te779b111 = 각 부분은 최소 1바이트여야 합니다.
+
+# {path} is not a file.
+tdfee38b2 = { $path }은(는) 파일이 아닙니다.
+
+# That would make more parts than can be numbered: make them bigger.
+t7ce88e46 = 번호를 매길 수 있는 것보다 많은 부분이 만들어집니다. 부분 크기를 늘리세요.
+
+# {part} is there already.
+t2577cbb6 = { $part }이(가) 이미 있습니다.
+
+# {path} is not a part of a file cut as 7-Zip cuts it, as name.001.
+t64c1c1d0 = { $path }은(는) 7-Zip 방식으로 나눈 파일의 부분(name.001 등)이 아닙니다.
+
+# {part} is missing: the parts start from it.
+t5e65a10a = { $part }이(가) 없습니다. 부분은 여기서 시작합니다.
+
+# {part} is missing, and the parts after it are there.
+t24165c89 = { $part }이(가) 없는데 그 뒤의 부분은 있습니다.
+
+# {part} holds {got}, not {size} as the first part does: it may not be whole.
+tb472eff0 = { $part }은(는) { $got }로, 첫 부분의 { $size }와 다릅니다. 온전하지 않을 수 있습니다.
 
 # The name is empty.
 t1a9d8e4e = 이름이 비어 있습니다.

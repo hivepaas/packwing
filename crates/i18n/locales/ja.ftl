@@ -301,6 +301,9 @@ t9981f45f = 公開鍵
 # Beside the files
 t757989af = ファイルと同じ場所
 
+# What it holds, from
+teae4ef1a = 中身の取得元
+
 # Save in
 tf2d34837 = 保存先
 
@@ -423,6 +426,9 @@ t0dad409a = 強い
 
 # Choose what to put in it
 t5461cfa6 = 入れるものを選択
+
+# Convert
+t92e29218 = 変換
 
 # New archive
 tf352befb = 新規アーカイブ
@@ -619,6 +625,9 @@ t16ec36d9 = 他のジョブを待っています…
 # A file is damaged
 t8b1230ed = ファイルが破損しています
 
+# Converted, but some files are damaged
+t54ef3472 = 変換しましたが、一部のファイルが破損しています
+
 # Extracted, but some files are damaged
 t8226d624 = 展開しましたが、一部のファイルが破損しています
 
@@ -651,6 +660,24 @@ t890f7ed1 = 移動中…
 
 # Signing…
 t7b8f8780 = 署名中…
+
+# Splitting…
+t5452adf5 = 分割しています…
+
+# Joining…
+taa884c51 = 結合しています…
+
+# Converting…
+ta1b8f4cc = 変換しています…
+
+# Couldn’t split the file
+t83d27d26 = ファイルを分割できませんでした
+
+# Couldn’t join the parts
+t1cf67e00 = パートを結合できませんでした
+
+# Couldn’t convert the archive
+t39f973a9 = アーカイブを変換できませんでした
 
 # Couldn’t sign
 t4489f97c = 署名できませんでした
@@ -853,6 +880,12 @@ t6bba28d5 = キーを作成…
 # Sign
 t8f6340c4 = 署名
 
+# {count} parts beside it, {first} and on. Join puts them back together, and packwing and 7-Zip open an archive cut so as it is.
+tab12cc19 = 隣に { $first } から始まる { $count } 個のパートを作ります。「結合」で元に戻せます。packwing と 7-Zip は、このように分割したアーカイブをそのまま開けます。
+
+# Split
+t16a15383 = 分割
+
 # Move {what}
 tc168ca56 = { $what } を移動
 
@@ -981,6 +1014,15 @@ td6d61b10 = 署名…
 
 # Checksums…
 t2891102d = チェックサム…
+
+# Convert…
+tae85a7c4 = 変換…
+
+# Split into parts…
+t281db403 = パートに分割…
+
+# Join the parts
+t0ad56db8 = パートを結合
 
 # Copy path
 tf165cb2b = パスをコピー
@@ -1203,6 +1245,12 @@ t82869bf0 = 移動しました
 
 # Signed
 t27c3ab35 = 署名しました
+
+# Joined
+tf8f2b670 = 結合しました
+
+# Converted
+tc7b76e99 = 変換しました
 
 # Waiting for a password or a key
 t0e83ae32 = パスワードまたは鍵を待っています
@@ -2067,6 +2115,30 @@ tc95e3a9c = 署名するファイルがありません。
 
 # {name} is not there any more.
 t07c1f2bc = { $name } はもう存在しません。
+
+# A part has to hold at least one byte.
+te779b111 = 各パートは 1 バイト以上必要です。
+
+# {path} is not a file.
+tdfee38b2 = { $path } はファイルではありません。
+
+# That would make more parts than can be numbered: make them bigger.
+t7ce88e46 = 番号を付けられる数より多くのパートになります。パートを大きくしてください。
+
+# {part} is there already.
+t2577cbb6 = { $part } はすでにあります。
+
+# {path} is not a part of a file cut as 7-Zip cuts it, as name.001.
+t64c1c1d0 = { $path } は、7-Zip の方式で分割されたファイルのパート (name.001 など) ではありません。
+
+# {part} is missing: the parts start from it.
+t5e65a10a = { $part } がありません。パートはここから始まります。
+
+# {part} is missing, and the parts after it are there.
+t24165c89 = { $part } がありませんが、その後のパートはあります。
+
+# {part} holds {got}, not {size} as the first part does: it may not be whole.
+tb472eff0 = { $part } は { $got } で、最初のパートの { $size } と違います。完全ではないかもしれません。
 
 # The name is empty.
 t1a9d8e4e = 名前が空です。

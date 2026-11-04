@@ -1,6 +1,9 @@
 //! New archive: what goes in it and where it goes, its name and format, and
 //! under Advanced, how hard it is squeezed, whether it is split into parts,
 //! and a password.
+//!
+//! Convert is the same dialog, for an archive made of what another holds: the
+//! one read is all that goes in, and the new one is made on this computer.
 
 use packwing_i18n::{tr, tr_n};
 use std::path::{Path, PathBuf};
@@ -11,12 +14,14 @@ use gpui::{
     ScrollHandle, Stateful, Subscription, Task, UniformListScrollHandle, Window, div, prelude::*,
     relative, rgb,
 };
-use packwing_core::{Kind, NewArchive, Route};
+use packwing_core::{Kind, NewArchive, Route, Source};
 
 pub(crate) use packwing_core::Level;
 
 use super::chosen::{self, Choosing};
-use super::{Creating, DialogEvent, Job, Saving, SavingOn, Verb, footer, header, places};
+use super::{
+    Converting, Creating, DialogEvent, Job, Saving, SavingOn, Verb, footer, header, places,
+};
 use crate::colors::colors;
 use crate::explorer::{Explorer, Place};
 use crate::input::{Changed, TextInput};
@@ -210,7 +215,7 @@ fn splits() -> [String; 4] {
 const CUSTOM: usize = 3;
 
 /// The units a part's size is typed in, as the app counts sizes (`model::size`).
-const UNITS: [(&str, u64); 2] = [("MB", 1_000_000), ("GB", 1_000_000_000)];
+pub(super) const UNITS: [(&str, u64); 2] = [("MB", 1_000_000), ("GB", 1_000_000_000)];
 
 /// The smallest part: a ZIP's parts are 64 KB or more, and parts this small
 /// help nobody.
@@ -218,7 +223,7 @@ const SMALLEST_PART: u64 = 1_000_000;
 
 /// The size of a part typed in, in bytes: a number of `unit`s, a comma
 /// working as the decimal point, of [`SMALLEST_PART`] or more.
-fn part_size(typed: &str, unit: u64) -> Option<u64> {
+pub(super) fn part_size(typed: &str, unit: u64) -> Option<u64> {
     let n: f64 = typed.trim().replace(',', ".").parse().ok()?;
     let bytes = n * unit as f64;
     (bytes.is_finite() && bytes >= SMALLEST_PART as f64).then(|| bytes.round() as u64)
@@ -274,6 +279,8 @@ struct KeysFile {
 
 pub struct CreateDialog {
     selection: Selection,
+    /// It makes an archive of what the one archive chosen holds, not of the file.
+    converting: bool,
     /// The list of what goes in is open.
     list_shown: bool,
     list_scroll: UniformListScrollHandle,
@@ -398,6 +405,7 @@ impl CreateDialog {
             cx.subscribe(&key, |_, _, _: &Changed, cx| cx.notify()),
         ];
         CreateDialog {
+            converting: false,
             folder: selection.folder(),
             on: None,
             places: Vec::new(),
@@ -588,7 +596,19 @@ impl CreateDialog {
     }
 
     /// Adds `paths` to what goes in the archive, and counts what is in them.
+    /// Convert: an archive of what the archive at `path` holds, beside it.
+    pub fn converting(path: PathBuf, cx: &mut Context<Self>) -> Self {
+        let mut dialog = CreateDialog::new(Selection::default(), cx);
+        dialog.converting = true;
+        dialog.add(vec![path], cx);
+        dialog
+    }
+
     pub fn add(&mut self, paths: Vec<PathBuf>, cx: &mut Context<Self>) {
+        // What is converted is the one archive.
+        if self.converting && !self.selection.paths.is_empty() {
+            return;
+        }
         self.selection.add(paths);
         if self.folder.is_none() {
             self.folder = self.selection.folder();
@@ -599,7 +619,8 @@ impl CreateDialog {
     /// Offers the formats that fit what goes in. One for a single file that no longer
     /// fits gives way to the one new archives start with.
     fn follow_formats(&mut self, cx: &mut Context<Self>) {
-        let one_file = self.selection.one_file();
+        // What an archive holds is not one file, as far as is known.
+        let one_file = self.selection.one_file() && !self.converting;
         let format = self.format(cx);
         let format = if format.one_file() && !one_file {
             crate::prefs::prefs(cx).format
@@ -620,6 +641,8 @@ impl CreateDialog {
     fn follow_name(&mut self, cx: &mut Context<Self>) {
         let suggested = if self.selection.paths.is_empty() {
             String::new()
+        } else if self.converting {
+            packwing_core::stem(&self.selection.whole_name()).to_owned()
         } else if self.format(cx).one_file() {
             self.selection.whole_name()
         } else {
@@ -948,7 +971,11 @@ impl CreateDialog {
             (None, None) => return,
         };
         let mut job = Job::shown(
-            Verb::Create,
+            if self.converting {
+                Verb::Convert
+            } else {
+                Verb::Create
+            },
             name.into(),
             Some(shown.into()),
             self.selection.files,
@@ -970,6 +997,20 @@ impl CreateDialog {
                 stream_above: Some(crate::prefs::prefs(cx).stream_above),
             },
         });
+        if self.converting
+            && let Some(Creating {
+                paths,
+                to: Saving::Here(to),
+                how,
+            }) = job.create.take()
+            && let Some(from) = paths.into_iter().next()
+        {
+            job.convert = Some(Converting {
+                from: Source::from(from.as_path()),
+                to,
+                how,
+            });
+        }
         cx.emit(DialogEvent::Start(job));
     }
 
@@ -1014,7 +1055,24 @@ impl CreateDialog {
             .flex()
             .flex_col()
             .gap(ui(10.))
-            .child(chosen::section(self, self.checked, cx))
+            .when(!self.converting, |d| {
+                d.child(chosen::section(self, self.checked, cx))
+            })
+            .when(self.converting, |d| {
+                d.child(
+                    div()
+                        .flex()
+                        .flex_col()
+                        .child(legend(tr!("What it holds, from")))
+                        .child(
+                            div()
+                                .truncate()
+                                .text_size(ui(13.))
+                                .text_color(rgb(c.muted))
+                                .child(self.selection.whole_name()),
+                        ),
+                )
+            })
             .child(
                 div()
                     .flex()
@@ -1702,7 +1760,9 @@ impl Render for CreateDialog {
             .id("create-dialog")
             .drag_over::<ExternalPaths>(|style, _, _, _| style.bg(rgb(colors().tonal)))
             .on_drop(cx.listener(|this, dropped: &ExternalPaths, _, cx| {
-                this.add(dropped.paths().to_vec(), cx)
+                if !this.converting {
+                    this.add(dropped.paths().to_vec(), cx)
+                }
             }))
             .p(ui(0.))
             .gap(ui(0.))
@@ -1710,7 +1770,11 @@ impl Render for CreateDialog {
             .child(div().px(ui(28.)).pt(ui(24.)).pb(ui(8.)).child(header(
                 "logo",
                 tonal_tint(),
-                tr!("New archive"),
+                if self.converting {
+                    tr!("Convert")
+                } else {
+                    tr!("New archive")
+                },
                 detail,
                 Some(close),
             )))
@@ -1750,9 +1814,18 @@ impl Render for CreateDialog {
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close))),
                     )
                     .child(
-                        button("create", tr!("Create"), Fill::Accent, Size::Medium)
-                            .px(ui(28.))
-                            .on_click(cx.listener(|this, _, _, cx| this.start(cx))),
+                        button(
+                            "create",
+                            if self.converting {
+                                tr!("Convert")
+                            } else {
+                                tr!("Create")
+                            },
+                            Fill::Accent,
+                            Size::Medium,
+                        )
+                        .px(ui(28.))
+                        .on_click(cx.listener(|this, _, _, cx| this.start(cx))),
                     ),
             )
     }

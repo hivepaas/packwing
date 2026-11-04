@@ -7,8 +7,8 @@ use packwing_core::{
     Algorithm, COMPRESSED_EXTENSIONS, Entry, ExtractOptions, Filter, Kind, Listing, LocalFolder,
     NewArchive, OnExisting, Source, Transfer, add_with, algorithms_of, came_from_internet,
     checksum_line, checksums, convert, create, damages, delete, extract_selected, extract_with,
-    has_signature, list, read_entry, rename, save_checksum, signature_name, size, stem, test,
-    transfer,
+    has_signature, join_parts, list, read_entry, rename, save_checksum, signature_name, size,
+    split_file, stem, test, transfer,
 };
 use serde_json::{Value, json};
 
@@ -70,6 +70,8 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
             let filter = Filter::new(&include, &exclude)?;
             convert_cmd(&from, &to, make, &filter, &damaging, cx)
         }
+        Command::Split { file, size } => split_cmd(&file, &size, cx),
+        Command::Join { part } => join_cmd(&part, cx),
         Command::Keygen { output } => keygen_cmd(&output, cx),
         Command::Sign { files, by } => sign_cmd(&files, &by, cx),
         Command::Verify { files, trust, only } => verify_cmd(&files, &trust, only, cx),
@@ -914,6 +916,45 @@ fn convert_cmd(
         }
     }
     damaging.finish(&damaged)
+}
+
+fn split_cmd(file: &Path, typed: &str, cx: &Context) -> Result<(), Exit> {
+    let part = size_typed(typed)
+        .filter(|&n| n > 0)
+        .ok_or_else(|| Exit::Usage(format!("not a size: {typed} (as 25MB)")))?;
+    let (control, bar) = crate::progress::control("Splitting", cx.progress);
+    let parts = split_file(file, part, &control)?;
+    drop(bar);
+    if cx.json {
+        let names: Vec<String> = parts.iter().map(|p| p.display().to_string()).collect();
+        print_json(&json!({ "parts": names }));
+    } else if !cx.quiet
+        && let (Some(first), Some(last)) = (parts.first(), parts.last())
+    {
+        println!(
+            "{} parts of {}: {} to {}",
+            parts.len(),
+            size(part),
+            first.display(),
+            named(last)
+        );
+    }
+    Ok(())
+}
+
+fn join_cmd(part: &Path, cx: &Context) -> Result<(), Exit> {
+    let (control, bar) = crate::progress::control("Joining", cx.progress);
+    let made = join_parts(part, &control)?;
+    drop(bar);
+    let bytes = std::fs::metadata(&made)
+        .map(|m| m.len())
+        .unwrap_or_default();
+    if cx.json {
+        print_json(&json!({ "made": made.display().to_string(), "size": bytes }));
+    } else if !cx.quiet {
+        println!("{} ({})", made.display(), size(bytes));
+    }
+    Ok(())
 }
 
 fn passphrase_cmd(min: usize, cx: &Context) -> Result<(), Exit> {

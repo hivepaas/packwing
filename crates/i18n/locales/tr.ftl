@@ -303,6 +303,9 @@ t9981f45f = Genel anahtar
 # Beside the files
 t757989af = Dosyaların yanına
 
+# What it holds, from
+teae4ef1a = İçeriğin kaynağı
+
 # Save in
 tf2d34837 = Kaydedilecek yer
 
@@ -427,6 +430,9 @@ t0dad409a = Güçlü
 
 # Choose what to put in it
 t5461cfa6 = İçine konacakları seçin
+
+# Convert
+t92e29218 = Dönüştür
 
 # New archive
 tf352befb = Yeni arşiv
@@ -625,6 +631,9 @@ t16ec36d9 = Diğer işler bekleniyor…
 # A file is damaged
 t8b1230ed = Bir dosya hasarlı
 
+# Converted, but some files are damaged
+t54ef3472 = Dönüştürüldü, ancak bazı dosyalar hasarlı
+
 # Extracted, but some files are damaged
 t8226d624 = Çıkarıldı, ancak bazı dosyalar hasarlı
 
@@ -657,6 +666,24 @@ t890f7ed1 = Taşınıyor…
 
 # Signing…
 t7b8f8780 = İmzalanıyor…
+
+# Splitting…
+t5452adf5 = Bölünüyor…
+
+# Joining…
+taa884c51 = Birleştiriliyor…
+
+# Converting…
+ta1b8f4cc = Dönüştürülüyor…
+
+# Couldn’t split the file
+t83d27d26 = Dosya bölünemedi
+
+# Couldn’t join the parts
+t1cf67e00 = Parçalar birleştirilemedi
+
+# Couldn’t convert the archive
+t39f973a9 = Arşiv dönüştürülemedi
 
 # Couldn’t sign
 t4489f97c = İmzalanamadı
@@ -863,6 +890,12 @@ t6bba28d5 = Anahtarı oluştur…
 # Sign
 t8f6340c4 = İmzala
 
+# {count} parts beside it, {first} and on. Join puts them back together, and packwing and 7-Zip open an archive cut so as it is.
+tab12cc19 = Yanında { $first } ile başlayan { $count } parça. Birleştir onları yeniden bir araya getirir; packwing ve 7-Zip böyle bölünmüş bir arşivi olduğu gibi açar.
+
+# Split
+t16a15383 = Böl
+
 # Move {what}
 tc168ca56 = Taşı: { $what }
 
@@ -991,6 +1024,15 @@ td6d61b10 = İmzala…
 
 # Checksums…
 t2891102d = Sağlama toplamları…
+
+# Convert…
+tae85a7c4 = Dönüştür…
+
+# Split into parts…
+t281db403 = Parçalara böl…
+
+# Join the parts
+t0ad56db8 = Parçaları birleştir
 
 # Copy path
 tf165cb2b = Yolu kopyala
@@ -1219,6 +1261,12 @@ t82869bf0 = Taşındı
 
 # Signed
 t27c3ab35 = İmzalandı
+
+# Joined
+tf8f2b670 = Birleştirildi
+
+# Converted
+tc7b76e99 = Dönüştürüldü
 
 # Waiting for a password or a key
 t0e83ae32 = Bir parola ya da anahtar bekliyor
@@ -2098,6 +2146,30 @@ tc95e3a9c = İmzalanacak dosya yok.
 
 # {name} is not there any more.
 t07c1f2bc = { $name } artık yok.
+
+# A part has to hold at least one byte.
+te779b111 = Bir parça en az bir bayt içermelidir.
+
+# {path} is not a file.
+tdfee38b2 = { $path } bir dosya değil.
+
+# That would make more parts than can be numbered: make them bigger.
+t7ce88e46 = Bu, numaralandırılabilecekten çok parça çıkarır: parçaları büyütün.
+
+# {part} is there already.
+t2577cbb6 = { $part } zaten var.
+
+# {path} is not a part of a file cut as 7-Zip cuts it, as name.001.
+t64c1c1d0 = { $path }, 7-Zip’in böldüğü gibi bölünmüş bir dosyanın parçası değil (name.001 gibi).
+
+# {part} is missing: the parts start from it.
+t5e65a10a = { $part } eksik: parçalar ondan başlar.
+
+# {part} is missing, and the parts after it are there.
+t24165c89 = { $part } eksik, ama ondan sonraki parçalar duruyor.
+
+# {part} holds {got}, not {size} as the first part does: it may not be whole.
+tb472eff0 = { $part } { $got } içeriyor, ilk parça gibi { $size } değil: eksik olabilir.
 
 # The name is empty.
 t1a9d8e4e = Ad boş.

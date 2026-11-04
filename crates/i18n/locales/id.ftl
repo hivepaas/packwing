@@ -301,6 +301,9 @@ t9981f45f = Kunci publik
 # Beside the files
 t757989af = Di samping berkasnya
 
+# What it holds, from
+teae4ef1a = Isi dari
+
 # Save in
 tf2d34837 = Simpan di
 
@@ -423,6 +426,9 @@ t0dad409a = Kuat
 
 # Choose what to put in it
 t5461cfa6 = Pilih yang akan dimasukkan
+
+# Convert
+t92e29218 = Konversi
 
 # New archive
 tf352befb = Arsip baru
@@ -619,6 +625,9 @@ t16ec36d9 = Menunggu tugas lain…
 # A file is damaged
 t8b1230ed = Sebuah file rusak
 
+# Converted, but some files are damaged
+t54ef3472 = Sudah dikonversi, tetapi beberapa file rusak
+
 # Extracted, but some files are damaged
 t8226d624 = Sudah diekstrak, tetapi beberapa file rusak
 
@@ -651,6 +660,24 @@ t890f7ed1 = Memindahkan…
 
 # Signing…
 t7b8f8780 = Menandatangani…
+
+# Splitting…
+t5452adf5 = Memotong…
+
+# Joining…
+taa884c51 = Menggabungkan…
+
+# Converting…
+ta1b8f4cc = Mengonversi…
+
+# Couldn’t split the file
+t83d27d26 = Tidak dapat memotong file
+
+# Couldn’t join the parts
+t1cf67e00 = Tidak dapat menggabungkan bagian
+
+# Couldn’t convert the archive
+t39f973a9 = Tidak dapat mengonversi arsip
 
 # Couldn’t sign
 t4489f97c = Tidak dapat menandatangani
@@ -853,6 +880,12 @@ t6bba28d5 = Buat kunci…
 # Sign
 t8f6340c4 = Tandatangani
 
+# {count} parts beside it, {first} and on. Join puts them back together, and packwing and 7-Zip open an archive cut so as it is.
+tab12cc19 = { $count } bagian di sebelahnya, mulai dari { $first }. Gabungkan menyatukannya kembali, dan packwing serta 7-Zip langsung membuka arsip yang dipotong seperti ini.
+
+# Split
+t16a15383 = Potong
+
 # Move {what}
 tc168ca56 = Pindahkan { $what }
 
@@ -981,6 +1014,15 @@ td6d61b10 = Tandatangani…
 
 # Checksums…
 t2891102d = Checksum…
+
+# Convert…
+tae85a7c4 = Konversi…
+
+# Split into parts…
+t281db403 = Potong menjadi beberapa bagian…
+
+# Join the parts
+t0ad56db8 = Gabungkan bagian
 
 # Copy path
 tf165cb2b = Salin jalur
@@ -1203,6 +1245,12 @@ t82869bf0 = Dipindahkan
 
 # Signed
 t27c3ab35 = Ditandatangani
+
+# Joined
+tf8f2b670 = Digabungkan
+
+# Converted
+tc7b76e99 = Dikonversi
 
 # Waiting for a password or a key
 t0e83ae32 = Menunggu kata sandi atau kunci
@@ -2076,6 +2124,30 @@ tc95e3a9c = Tidak ada berkas untuk ditandatangani.
 
 # {name} is not there any more.
 t07c1f2bc = { $name } sudah tidak ada.
+
+# A part has to hold at least one byte.
+te779b111 = Setiap bagian harus berisi setidaknya satu byte.
+
+# {path} is not a file.
+tdfee38b2 = { $path } bukan file.
+
+# That would make more parts than can be numbered: make them bigger.
+t7ce88e46 = Itu akan menghasilkan lebih banyak bagian daripada yang bisa diberi nomor: buat bagiannya lebih besar.
+
+# {part} is there already.
+t2577cbb6 = { $part } sudah ada.
+
+# {path} is not a part of a file cut as 7-Zip cuts it, as name.001.
+t64c1c1d0 = { $path } bukan bagian dari file yang dipotong seperti cara 7-Zip, seperti name.001.
+
+# {part} is missing: the parts start from it.
+t5e65a10a = { $part } tidak ada: bagian-bagian dimulai darinya.
+
+# {part} is missing, and the parts after it are there.
+t24165c89 = { $part } tidak ada, padahal bagian setelahnya ada.
+
+# {part} holds {got}, not {size} as the first part does: it may not be whole.
+tb472eff0 = { $part } berisi { $got }, bukan { $size } seperti bagian pertama: mungkin tidak utuh.
 
 # The name is empty.
 t1a9d8e4e = Nama kosong.

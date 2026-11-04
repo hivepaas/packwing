@@ -1445,3 +1445,30 @@ fn a_damaged_file_is_left_out_of_what_is_converted() {
     let names: Vec<String> = files_under(&out).into_iter().map(|(n, _)| n).collect();
     assert_eq!(names, ["a.txt", "c.txt"]);
 }
+
+#[test]
+fn a_file_split_joins_back_as_it_was() {
+    use packwing_core::{join_parts, parts_of, split_file};
+    let s = Scratch::new();
+    let data: Vec<u8> = (0..10_000u32).flat_map(|n| n.to_le_bytes()).collect();
+    let file = s.file("a.bin", &data);
+    let parts = split_file(&file, 15_000, &Control::default()).unwrap();
+    let names: Vec<String> = parts
+        .iter()
+        .map(|p| p.file_name().unwrap().to_string_lossy().into_owned())
+        .collect();
+    assert_eq!(names, ["a.bin.001", "a.bin.002", "a.bin.003"]);
+    assert_eq!(std::fs::metadata(&parts[2]).unwrap().len(), 10_000);
+    // Never over what is there.
+    assert!(split_file(&file, 15_000, &Control::default()).is_err());
+    // From any part, beside the file it was, under a name that is free.
+    let joined = join_parts(&parts[1], &Control::default()).unwrap();
+    assert_eq!(joined, s.0.join("a (2).bin"));
+    assert_eq!(std::fs::read(&joined).unwrap(), data);
+    // One missing, or cut short, is said.
+    std::fs::rename(&parts[1], s.0.join("held")).unwrap();
+    assert!(matches!(parts_of(&parts[0]), Err(Error::Failed(_))));
+    std::fs::write(&parts[1], b"short").unwrap();
+    assert!(matches!(parts_of(&parts[0]), Err(Error::Failed(_))));
+    assert!(matches!(parts_of(&file), Err(Error::Failed(_))));
+}

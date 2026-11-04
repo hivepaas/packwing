@@ -307,6 +307,9 @@ t9981f45f = Открытый ключ
 # Beside the files
 t757989af = Рядом с файлами
 
+# What it holds, from
+teae4ef1a = Содержимое из
+
 # Save in
 tf2d34837 = Сохранить в
 
@@ -435,6 +438,9 @@ t0dad409a = Надёжный
 
 # Choose what to put in it
 t5461cfa6 = Выберите, что положить в архив
+
+# Convert
+t92e29218 = Преобразовать
 
 # New archive
 tf352befb = Новый архив
@@ -637,6 +643,9 @@ t16ec36d9 = Ждёт другие задачи…
 # A file is damaged
 t8b1230ed = Файл повреждён
 
+# Converted, but some files are damaged
+t54ef3472 = Преобразовано, но некоторые файлы повреждены
+
 # Extracted, but some files are damaged
 t8226d624 = Извлечено, но некоторые файлы повреждены
 
@@ -669,6 +678,24 @@ t890f7ed1 = Перемещение…
 
 # Signing…
 t7b8f8780 = Подписание…
+
+# Splitting…
+t5452adf5 = Разрезание…
+
+# Joining…
+taa884c51 = Склеивание…
+
+# Converting…
+ta1b8f4cc = Преобразование…
+
+# Couldn’t split the file
+t83d27d26 = Не удалось разрезать файл
+
+# Couldn’t join the parts
+t1cf67e00 = Не удалось склеить части
+
+# Couldn’t convert the archive
+t39f973a9 = Не удалось преобразовать архив
 
 # Couldn’t sign
 t4489f97c = Не удалось подписать
@@ -883,6 +910,12 @@ t6bba28d5 = Создать ключ…
 # Sign
 t8f6340c4 = Подписать
 
+# {count} parts beside it, {first} and on. Join puts them back together, and packwing and 7-Zip open an archive cut so as it is.
+tab12cc19 = Частей рядом: { $count }, начиная с { $first }. «Склеить» соберёт их обратно, а packwing и 7-Zip открывают так разрезанный архив как есть.
+
+# Split
+t16a15383 = Разрезать
+
 # Move {what}
 tc168ca56 = Переместить { $what }
 
@@ -1011,6 +1044,15 @@ td6d61b10 = Подписать…
 
 # Checksums…
 t2891102d = Контрольные суммы…
+
+# Convert…
+tae85a7c4 = Преобразовать…
+
+# Split into parts…
+t281db403 = Разрезать на части…
+
+# Join the parts
+t0ad56db8 = Склеить части
 
 # Copy path
 tf165cb2b = Копировать путь
@@ -1251,6 +1293,12 @@ t82869bf0 = Перемещено
 
 # Signed
 t27c3ab35 = Подписано
+
+# Joined
+tf8f2b670 = Склеено
+
+# Converted
+tc7b76e99 = Преобразовано
 
 # Waiting for a password or a key
 t0e83ae32 = Ждёт пароль или ключ
@@ -2142,6 +2190,30 @@ tc95e3a9c = Нет файла для подписи.
 
 # {name} is not there any more.
 t07c1f2bc = { $name } больше не существует.
+
+# A part has to hold at least one byte.
+te779b111 = Часть должна содержать хотя бы один байт.
+
+# {path} is not a file.
+tdfee38b2 = { $path } — не файл.
+
+# That would make more parts than can be numbered: make them bigger.
+t7ce88e46 = Так получится больше частей, чем можно пронумеровать: сделайте их больше.
+
+# {part} is there already.
+t2577cbb6 = { $part } уже есть.
+
+# {path} is not a part of a file cut as 7-Zip cuts it, as name.001.
+t64c1c1d0 = { $path } — не часть файла, разрезанного так, как режет 7-Zip, например name.001.
+
+# {part} is missing: the parts start from it.
+t5e65a10a = Нет { $part }: с неё начинаются части.
+
+# {part} is missing, and the parts after it are there.
+t24165c89 = Нет { $part }, а части после неё есть.
+
+# {part} holds {got}, not {size} as the first part does: it may not be whole.
+tb472eff0 = В { $part } { $got }, а не { $size }, как в первой части: возможно, она неполная.
 
 # The name is empty.
 t1a9d8e4e = Имя пусто.

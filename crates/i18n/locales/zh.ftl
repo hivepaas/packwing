@@ -301,6 +301,9 @@ t9981f45f = 公钥
 # Beside the files
 t757989af = 与文件放在一起
 
+# What it holds, from
+teae4ef1a = 内容来自
+
 # Save in
 tf2d34837 = 保存到
 
@@ -423,6 +426,9 @@ t0dad409a = 强
 
 # Choose what to put in it
 t5461cfa6 = 选择要放入的内容
+
+# Convert
+t92e29218 = 转换
 
 # New archive
 tf352befb = 新建压缩包
@@ -619,6 +625,9 @@ t16ec36d9 = 正在等待其他任务…
 # A file is damaged
 t8b1230ed = 有文件已损坏
 
+# Converted, but some files are damaged
+t54ef3472 = 已转换，但有些文件已损坏
+
 # Extracted, but some files are damaged
 t8226d624 = 已解压，但有些文件已损坏
 
@@ -651,6 +660,24 @@ t890f7ed1 = 正在移动…
 
 # Signing…
 t7b8f8780 = 正在签名…
+
+# Splitting…
+t5452adf5 = 正在切分…
+
+# Joining…
+taa884c51 = 正在合并…
+
+# Converting…
+ta1b8f4cc = 正在转换…
+
+# Couldn’t split the file
+t83d27d26 = 无法切分文件
+
+# Couldn’t join the parts
+t1cf67e00 = 无法合并分卷
+
+# Couldn’t convert the archive
+t39f973a9 = 无法转换归档
 
 # Couldn’t sign
 t4489f97c = 无法签名
@@ -853,6 +880,12 @@ t6bba28d5 = 生成密钥…
 # Sign
 t8f6340c4 = 签名
 
+# {count} parts beside it, {first} and on. Join puts them back together, and packwing and 7-Zip open an archive cut so as it is.
+tab12cc19 = 在旁边生成 { $count } 个分卷，从 { $first } 开始。“合并”可把它们拼回去；packwing 和 7-Zip 可直接打开这样切分的归档。
+
+# Split
+t16a15383 = 切分
+
 # Move {what}
 tc168ca56 = 移动 { $what }
 
@@ -981,6 +1014,15 @@ td6d61b10 = 签名…
 
 # Checksums…
 t2891102d = 校验和…
+
+# Convert…
+tae85a7c4 = 转换…
+
+# Split into parts…
+t281db403 = 切分为多个分卷…
+
+# Join the parts
+t0ad56db8 = 合并分卷
 
 # Copy path
 tf165cb2b = 复制路径
@@ -1203,6 +1245,12 @@ t82869bf0 = 已移动
 
 # Signed
 t27c3ab35 = 已签名
+
+# Joined
+tf8f2b670 = 已合并
+
+# Converted
+tc7b76e99 = 已转换
 
 # Waiting for a password or a key
 t0e83ae32 = 正在等待密码或密钥
@@ -2067,6 +2115,30 @@ tc95e3a9c = 没有可签名的文件。
 
 # {name} is not there any more.
 t07c1f2bc = { $name } 已不存在。
+
+# A part has to hold at least one byte.
+te779b111 = 每个分卷至少要有一个字节。
+
+# {path} is not a file.
+tdfee38b2 = { $path } 不是文件。
+
+# That would make more parts than can be numbered: make them bigger.
+t7ce88e46 = 这样分出的分卷会多到无法编号：请把分卷设大一些。
+
+# {part} is there already.
+t2577cbb6 = { $part } 已存在。
+
+# {path} is not a part of a file cut as 7-Zip cuts it, as name.001.
+t64c1c1d0 = { $path } 不是按 7-Zip 方式切分的文件的分卷（如 name.001）。
+
+# {part} is missing: the parts start from it.
+t5e65a10a = 缺少 { $part }：分卷从它开始。
+
+# {part} is missing, and the parts after it are there.
+t24165c89 = 缺少 { $part }，而它之后的分卷都在。
+
+# {part} holds {got}, not {size} as the first part does: it may not be whole.
+tb472eff0 = { $part } 有 { $got }，不是第一个分卷的 { $size }：它可能不完整。
 
 # The name is empty.
 t1a9d8e4e = 名称为空。

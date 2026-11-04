@@ -19,8 +19,8 @@ use crate::demo;
 use crate::dialogs::{
     AddDialog, AddStorageDialog, ChecksumDialog, CreateDialog, Creating, DeleteDialog, DialogEvent,
     EditDialog, ExtractDialog, Job, OpenFileDialog, OpenStoredDialog, PasswordDialog,
-    PasswordEvent, ProgressDialog, QuitDialog, RemoveStorageDialog, Saving, SignDialog, State,
-    TransferDialog, Verb, ViewDialog, asked_for,
+    PasswordEvent, ProgressDialog, QuitDialog, RemoveStorageDialog, Saving, SignDialog,
+    SplitDialog, State, TransferDialog, Verb, ViewDialog, asked_for,
 };
 use crate::explorer::ExplorerEvent;
 use crate::model::{Archive, Kind, Selection, stem};
@@ -682,6 +682,41 @@ impl Workspace {
                 if let Some(place) = shown.place() {
                     let (storage, path) = (place.storage.clone(), shown.path_of_name(name));
                     let view = cx.new(|cx| ChecksumDialog::new(storage, path, cx));
+                    this.show(view, true, window, cx);
+                }
+            }
+            ExplorerEvent::Split(name) => {
+                let shown = explorer.read(cx);
+                if let Some(path) = shown.local_path_of(name) {
+                    let bytes = std::fs::metadata(&path)
+                        .map(|m| m.len())
+                        .unwrap_or_default();
+                    let folder = path
+                        .parent()
+                        .map_or_else(String::new, |p| p.display().to_string());
+                    let view = cx.new(|cx| SplitDialog::new(path, bytes, folder, cx));
+                    this.show(view, true, window, cx);
+                }
+            }
+            ExplorerEvent::Join(name) => {
+                if let Some(path) = explorer.read(cx).local_path_of(name) {
+                    let whole = path.with_extension("");
+                    let named = |p: &std::path::Path| {
+                        p.file_name()
+                            .map_or_else(String::new, |n| n.to_string_lossy().into_owned())
+                    };
+                    let folder = path
+                        .parent()
+                        .map_or_else(String::new, |p| p.display().to_string());
+                    let mut job =
+                        Job::shown(Verb::Join, named(&whole).into(), Some(folder.into()), 0, 0);
+                    job.join = Some(path);
+                    this.open_progress(job, window, cx);
+                }
+            }
+            ExplorerEvent::Convert(name) => {
+                if let Some(path) = explorer.read(cx).local_path_of(name) {
+                    let view = cx.new(|cx| CreateDialog::converting(path, cx));
                     this.show(view, true, window, cx);
                 }
             }
