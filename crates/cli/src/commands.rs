@@ -14,7 +14,8 @@ use serde_json::{Value, json};
 use crate::names::{
     date, entry_path, format_named, format_of, format_words, level_named, size_typed,
 };
-use crate::{Command, Context, Exit};
+use crate::signing::{keygen_cmd, sign_cmd, verify_cmd};
+use crate::{Command, Context, Exit, Making};
 
 pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
     match command {
@@ -41,29 +42,16 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
         Command::Create {
             archive,
             paths,
-            format,
-            level,
-            password,
-            encrypt_to,
-            age,
-            hide_names,
-            split,
-            compress_all,
-        } => create_cmd(
-            &archive,
-            &paths,
-            Making {
-                format,
-                level,
-                password,
-                encrypt_to,
-                age,
-                hide_names,
-                split,
-                compress_all,
-            },
-            cx,
-        ),
+            make,
+        } => {
+            let (archive, new) = making(&archive, make, cx)?;
+            write_archive(&archive, &paths, &new, cx)
+        }
+        Command::Convert { from, to, make } => convert_cmd(&from, &to, make, cx),
+        Command::Keygen { output } => keygen_cmd(&output, cx),
+        Command::Sign { files, by } => sign_cmd(&files, &by, cx),
+        Command::Verify { files, trust, only } => verify_cmd(&files, &trust, only, cx),
+        Command::Passphrase { min } => passphrase_cmd(min, cx),
         Command::Add {
             archive,
             paths,
@@ -317,19 +305,9 @@ fn info_cmd(archive: &Path, cx: &mut Context) -> Result<(), Exit> {
     Ok(())
 }
 
-/// How `pkw create` was asked to make it.
-struct Making {
-    format: Option<String>,
-    level: String,
-    password: bool,
-    encrypt_to: Vec<String>,
-    age: bool,
-    hide_names: bool,
-    split: Option<String>,
-    compress_all: bool,
-}
-
-fn create_cmd(archive: &Path, paths: &[PathBuf], m: Making, cx: &mut Context) -> Result<(), Exit> {
+/// What `m` asks for, of an archive to make at `archive`: the path it is made
+/// at, an age file's `.age` added as the app adds it, and how it is made.
+fn making(archive: &Path, m: Making, cx: &Context) -> Result<(PathBuf, NewArchive), Exit> {
     let kind: Kind = match &m.format {
         Some(word) => format_named(word).ok_or_else(|| {
             Exit::Usage(format!("no format {word}: it is one of {}", format_words()))
@@ -350,7 +328,7 @@ fn create_cmd(archive: &Path, paths: &[PathBuf], m: Making, cx: &mut Context) ->
     let password = if m.password {
         Some(match cx.secrets.password() {
             Some(p) => p,
-            None if cx.secrets.can_ask() => ask_new_password()?,
+            None if cx.secrets.can_ask() => ask_new_secret("New password")?,
             None => {
                 return Err(Exit::Usage(
                     "--password needs one: from a terminal, --password-file, --password-stdin or PACKWING_PASSWORD".into(),
@@ -394,8 +372,18 @@ fn create_cmd(archive: &Path, paths: &[PathBuf], m: Making, cx: &mut Context) ->
     } else {
         archive.to_path_buf()
     };
+    Ok((archive, new))
+}
+
+/// Makes the archive `new` at `archive`, of `paths`, and says what it made.
+fn write_archive(
+    archive: &Path,
+    paths: &[PathBuf],
+    new: &NewArchive,
+    cx: &Context,
+) -> Result<(), Exit> {
     let (control, bar) = crate::progress::control("Compressing", cx.progress);
-    let made = create(paths, &archive, &new, &control)?;
+    let made = create(paths, archive, new, &control)?;
     drop(bar);
     let bytes = std::fs::metadata(&made)
         .map(|m| m.len())
@@ -408,14 +396,14 @@ fn create_cmd(archive: &Path, paths: &[PathBuf], m: Making, cx: &mut Context) ->
     Ok(())
 }
 
-/// A new password, typed twice, the same.
-fn ask_new_password() -> Result<Vec<u8>, Exit> {
+/// A new secret, `what`, typed twice, the same.
+pub fn ask_new_secret(what: &str) -> Result<Vec<u8>, Exit> {
     let typed = |what: &str| {
         rpassword::prompt_password(what).map_err(|e| Exit::Failed(format!("cannot ask: {e}")))
     };
-    let first = typed("New password: ")?;
+    let first = typed(&format!("{what}: "))?;
     if first.is_empty() {
-        return Err(Exit::Usage("no password typed".into()));
+        return Err(Exit::Usage(format!("no {} typed", what.to_lowercase())));
     }
     if typed("Again: ")? != first {
         return Err(Exit::Usage("the two passwords are not the same".into()));
@@ -633,13 +621,59 @@ fn check_sums(sums: &Path, cx: &mut Context) -> Result<(), Exit> {
         }
     }
     if failed > 0 {
-        Err(Exit::Failed(format!(
-            "{failed} of {} files did not match",
-            results.len()
-        )))
+        Err(Exit::Failed(match (failed, results.len()) {
+            (1, 1) => "it did not match".into(),
+            (failed, all) => format!("{failed} of {all} did not match"),
+        }))
     } else {
         Ok(())
     }
+}
+
+/// Reads `from` into a folder of its own beside `to`, makes `to` of what is in
+/// it, and takes the folder away, whatever came of it.
+fn convert_cmd(from: &Path, to: &Path, make: Making, cx: &mut Context) -> Result<(), Exit> {
+    let (to, new) = making(to, make, cx)?;
+    let beside = to
+        .parent()
+        .filter(|p| !p.as_os_str().is_empty())
+        .unwrap_or(Path::new("."));
+    let work = beside.join(format!(".pkw-convert-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&work);
+    let result = (|| {
+        let name = named(from);
+        let how = ExtractOptions::default();
+        let (control, bar) = crate::progress::control("Reading", cx.progress);
+        cx.secrets.unlocking(&name, |keys| {
+            extract_with(Source::from(from), &work, keys, &how, &control)
+        })?;
+        drop(bar);
+        let mut paths: Vec<PathBuf> = std::fs::read_dir(&work)
+            .map_err(|e| Exit::Failed(e.to_string()))?
+            .filter_map(|e| e.ok().map(|e| e.path()))
+            .collect();
+        paths.sort();
+        if paths.is_empty() {
+            return Err(Exit::Failed(format!("{name} holds nothing")));
+        }
+        write_archive(&to, &paths, &new, cx)
+    })();
+    let _ = std::fs::remove_dir_all(&work);
+    result
+}
+
+fn passphrase_cmd(min: usize, cx: &Context) -> Result<(), Exit> {
+    // Never shorter than what the organization asks of a password.
+    let least = packwing_policy::current()
+        .least_password_length()
+        .map_or(0, |n| n as usize);
+    let made = packwing_core::suggest_passphrase(min.max(least))?;
+    if cx.json {
+        print_json(&json!({ "passphrase": made }));
+    } else {
+        println!("{made}");
+    }
+    Ok(())
 }
 
 #[cfg(test)]

@@ -5310,6 +5310,7 @@ dependencies = [
  "clap",
  "packwing-core",
  "packwing-i18n",
+ "packwing-policy",
  "rpassword",
  "serde_json",
 ]
