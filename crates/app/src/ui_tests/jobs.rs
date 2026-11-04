@@ -212,3 +212,57 @@ scenario!(
         );
     }
 );
+
+scenario!(
+    /// A job waiting for its turn is sent to the background by its dialog's own button,
+    /// shown again from its row, and stopped from it, as the user does.
+    a_job_s_buttons_send_it_back_show_it_and_stop_it,
+    |ui| {
+        use crate::dialogs::State;
+        hold(ui, "one.zip");
+        hold(ui, "two.zip");
+        let archive = ui.copy_of("sample.7z");
+        extract(ui, &archive);
+        assert!(ui.dialog_open(), "its dialog shows it waiting");
+        ui.click("background");
+        assert!(!ui.dialog_open());
+        ui.click("nav-jobs");
+        ui.click("job-show-2");
+        assert!(ui.dialog_open(), "Show brings its dialog back");
+        ui.click("background");
+        assert!(!ui.dialog_open());
+        assert!(ui.shows("job-2"), "it is on the page still");
+        ui.click("job-stop-2");
+        assert!(!ui.shows("job-2"));
+        assert_eq!(
+            ui.ws(|ws, _, cx| ws.job_states(cx)),
+            [State::Running, State::Running]
+        );
+        assert!(!ui.work.join("sample").exists(), "it never ran");
+    }
+);
+
+scenario!(
+    /// A job sent to the background by its button runs when its turn comes, and its
+    /// row says where it went.
+    a_job_sent_back_by_its_button_runs_in_its_turn,
+    |ui| {
+        let archive = ui.copy_of("sample.7z");
+        let held = listed(&archive, None);
+        hold(ui, "one.zip");
+        hold(ui, "two.zip");
+        extract(ui, &archive);
+        ui.click("background");
+        ui.click("nav-jobs");
+        ui.click("job-stop-0");
+        let out = ui.work.join("sample");
+        ui.wait_until("the files out", |_| {
+            held.iter()
+                .filter(|n| !n.ends_with('/'))
+                .all(|n| out.join(n).exists())
+        });
+        ui.wait_for("job-file-manager-1");
+        ui.click("job-file-manager-1");
+        assert_eq!(crate::file_manager::asked_for_test(), [("show", out)]);
+    }
+);

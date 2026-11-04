@@ -134,6 +134,101 @@ scenario!(
 );
 
 scenario!(
+    /// Across a network, checksums wait for Read it, as reading may cost; Copy copies
+    /// one, and a list of them pasted is compared by the file's line.
+    checksums_across_a_network,
+    |ui| {
+        let sha256 = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
+        let far = ui.work.join("far");
+        ui.file("far/a.txt", "abc");
+        add_far(ui, "Far", &far);
+        ui.wait_for_no_dialog();
+        ui.click("nav-storages");
+        assert_eq!(ui.explorer_names(), ["a.txt"]);
+        ui.ws(|ws, _, cx| {
+            ws.explorer(cx).update(cx, |e, cx| {
+                e.choose("a.txt", cx);
+                e.show_menu(400., 300., false, cx);
+            });
+        });
+        ui.click("menu-checksums");
+        assert!(ui.shows("checksum-read"));
+        assert!(!ui.shows("checksum-copy-0"), "nothing is read before it is asked");
+        ui.click("checksum-read");
+        ui.wait_for("checksum-copy-0");
+        ui.cx
+            .write_to_clipboard(gpui::ClipboardItem::new_string(String::new()));
+        ui.click("checksum-copy-0");
+        assert_eq!(
+            ui.cx.read_from_clipboard().and_then(|c| c.text()).as_deref(),
+            Some(sha256)
+        );
+        ui.click("checksum-compare");
+        let list = format!("{}  other.txt\n{sha256}  a.txt\n", "1".repeat(64));
+        ui.type_in("Paste the checksum given with the file", &list);
+        assert!(ui.shows("checksum-matches"));
+        // Kept beside it there, as across a network files are.
+        ui.click("checksum-save");
+        ui.wait_for("checksum-saved");
+        assert!(far.join("a.txt.sha256").exists());
+    }
+);
+
+scenario!(
+    /// The checksums Settings chooses are the ones a file's Checksums… shows.
+    the_checksums_shown_follow_settings,
+    |ui| {
+        let folder = ui.work.join("place");
+        ui.file("place/a.txt", "abc");
+        ui.settings(3);
+        ui.click("checksum-1");
+        ui.click("checksum-2");
+        ui.storage(&folder);
+        ui.explorer_names();
+        ui.ws(|ws, _, cx| {
+            ws.explorer(cx).update(cx, |e, cx| {
+                e.choose("a.txt", cx);
+                e.show_menu(400., 300., false, cx);
+            });
+        });
+        ui.click("menu-checksums");
+        ui.wait_for("checksum: sha512");
+        assert!(ui.shows("checksum: sha256"));
+        assert!(!ui.shows("checksum: sha1"), "turned off");
+    }
+);
+
+scenario!(
+    /// A text file viewed has the right-click menu of text to read: Copy all, with
+    /// nothing chosen.
+    a_text_viewed_has_a_copy_menu,
+    |ui| {
+        let folder = ui.work.join("place");
+        let text = "xin chào\nthế giới\n";
+        ui.file("place/a.txt", text);
+        ui.storage(&folder);
+        ui.explorer_names();
+        ui.ws(|ws, _, cx| {
+            ws.explorer(cx).update(cx, |e, cx| {
+                let item = e.selection_of("a.txt");
+                e.open(&item, cx);
+            });
+        });
+        ui.wait_for("field: ");
+        ui.cx
+            .write_to_clipboard(gpui::ClipboardItem::new_string(String::new()));
+        ui.right_click("field: ");
+        assert!(!ui.shows("text-copy"), "nothing is chosen");
+        ui.click("text-copy-all");
+        assert_eq!(
+            ui.cx.read_from_clipboard().and_then(|c| c.text()).as_deref(),
+            Some(text)
+        );
+        assert!(ui.dialog_open(), "the file is still shown");
+    }
+);
+
+scenario!(
     /// Copying leaves the original, moving does not.
     copy_and_move_between_folders,
     |ui| {
