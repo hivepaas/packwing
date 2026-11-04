@@ -22,15 +22,33 @@ impl Scratch {
     }
 
     /// `pkw args…`, run in the folder, with no password from the test's own
-    /// environment and nothing to read.
+    /// environment, nothing to read, and the app's settings the test's own:
+    /// `config/packwing/settings`, which [`Scratch::settings`] writes.
     fn pkw(&self, args: &[&str]) -> Output {
-        Command::new(env!("CARGO_BIN_EXE_pkw"))
-            .args(args)
+        let config = self.path("config");
+        let mut pkw = Command::new(env!("CARGO_BIN_EXE_pkw"));
+        pkw.args(args)
             .current_dir(&self.0)
             .env_remove("PACKWING_PASSWORD")
-            .stdin(std::process::Stdio::null())
-            .output()
-            .expect("pkw runs")
+            .env("XDG_CONFIG_HOME", &config)
+            .env("APPDATA", &config)
+            .stdin(std::process::Stdio::null());
+        if cfg!(target_os = "macos") {
+            // Its settings are under HOME, in Library/Application Support.
+            pkw.env("HOME", self.path("home"));
+        }
+        pkw.output().expect("pkw runs")
+    }
+
+    /// The app's settings, as it writes them.
+    fn settings(&self, text: &str) {
+        let folder = if cfg!(target_os = "macos") {
+            self.path("home/Library/Application Support/packwing")
+        } else {
+            self.path("config/packwing")
+        };
+        std::fs::create_dir_all(&folder).expect("a folder");
+        std::fs::write(folder.join("settings"), text).expect("the settings");
     }
 }
 
@@ -238,8 +256,8 @@ fn what_is_not_an_archive_or_not_understood_says_so_by_its_code() {
 fn a_file_is_signed_and_its_signature_checked() {
     let s = Scratch::new("sign");
     std::fs::write(s.path("kp"), "k3y pass\n").expect("the file");
-    std::fs::create_dir_all(s.path("keys")).expect("a folder");
-    let made = ok(&s.pkw(&["--password-file", "kp", "keygen", "-o", "keys"]));
+    // The folder is made if it is not there.
+    let made = ok(&s.pkw(&["--password-file", "kp", "keygen", "-o", "keys/mine"]));
     let mut lines = made.lines();
     let key = lines.next().expect("the key's file").to_owned();
     let public = lines.next().expect("its public key").to_owned();
@@ -286,4 +304,84 @@ fn an_archive_is_converted_and_a_passphrase_suggested() {
     let suggested = suggested.trim();
     assert!(suggested.len() >= 50, "{suggested}");
     assert!(suggested.split('-').count() >= 6, "{suggested}");
+}
+
+#[test]
+fn a_folder_is_listed_and_files_copied_and_moved() {
+    let s = Scratch::new("folders");
+    std::fs::create_dir_all(s.path("out")).expect("a folder");
+    let listed = ok(&s.pkw(&["list", "src"]));
+    assert_eq!(listed, "docs/\nnumbers.txt\n", "folders first");
+    ok(&s.pkw(&["copy", "-q", "src/docs", "src/numbers.txt", "out"]));
+    assert_eq!(
+        std::fs::read_to_string(s.path("out/docs/notes.txt")).expect("copied"),
+        "xin chào\n"
+    );
+    assert!(s.path("src/numbers.txt").exists(), "a copy leaves it");
+    // The name is taken now: stop, with code 1; skip, and nothing changes.
+    assert_eq!(
+        s.pkw(&["cp", "src/numbers.txt", "out"]).status.code(),
+        Some(1)
+    );
+    let skipped = ok(&s.pkw(&[
+        "--json",
+        "cp",
+        "--on-existing",
+        "skip",
+        "src/numbers.txt",
+        "out",
+    ]));
+    let skipped: serde_json::Value = serde_json::from_str(&skipped).expect("JSON");
+    assert_eq!(skipped["skipped"], 1);
+    std::fs::create_dir_all(s.path("moved")).expect("a folder");
+    ok(&s.pkw(&["mv", "-q", "out/docs", "moved"]));
+    assert!(s.path("moved/docs/notes.txt").exists());
+    assert!(!s.path("out/docs").exists(), "a move takes it away");
+    // Into what is not a folder, a usage error.
+    assert_eq!(
+        s.pkw(&["cp", "src/docs", "src/numbers.txt"]).status.code(),
+        Some(2)
+    );
+}
+
+#[test]
+fn a_storage_added_to_the_app_is_named_name_colon_path() {
+    let s = Scratch::new("storages");
+    let kept = s.path("kept");
+    std::fs::create_dir_all(kept.join("in")).expect("a folder");
+    s.settings(&format!(
+        "storage=local Tải về\t{}\nstorage=other s3\tSao lưu\ts3-1\tbucket=b\tregion=r\tasks_first=yes\n",
+        kept.display()
+    ));
+    let storages = ok(&s.pkw(&["--json", "storages"]));
+    let storages: serde_json::Value = serde_json::from_str(&storages).expect("JSON");
+    assert_eq!(storages[0]["name"], "Tải về");
+    assert_eq!(storages[0]["opens"], true);
+    assert_eq!(storages[1]["asks_first"], true);
+    assert_eq!(storages[1]["opens"], false);
+    // An archive made here, copied there, and read where it is.
+    ok(&s.pkw(&["create", "-q", "a.zip", "src"]));
+    ok(&s.pkw(&["cp", "-q", "a.zip", "Tải về:in"]));
+    assert!(kept.join("in/a.zip").exists());
+    assert_eq!(ok(&s.pkw(&["list", "Tải về:"])), "in/\n");
+    assert!(
+        ok(&s.pkw(&["list", "Tải về:in/a.zip"]))
+            .lines()
+            .any(|l| l == "src/numbers.txt")
+    );
+    assert_eq!(
+        ok(&s.pkw(&["cat", "Tải về:in/a.zip", "src/numbers.txt"])),
+        "1\n2\n3\n"
+    );
+    ok(&s.pkw(&["test", "-q", "Tải về:in/a.zip"]));
+    ok(&s.pkw(&["extract", "-q", "Tải về:in/a.zip", "-o", "got"]));
+    assert!(s.path("got/src/docs/notes.txt").exists());
+    let sum = ok(&s.pkw(&["checksum", "Tải về:in/a.zip"]));
+    assert!(sum.ends_with("  Tải về:in/a.zip\n"), "{sum}");
+    // One that asks for this computer's password first is not opened.
+    let refused = s.pkw(&["list", "Sao lưu:x.zip"]);
+    assert_eq!(refused.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&refused.stderr).contains("open it in packwing"));
+    // A name no storage has is a path here.
+    assert_eq!(s.pkw(&["list", "Không có:a.zip"]).status.code(), Some(1));
 }

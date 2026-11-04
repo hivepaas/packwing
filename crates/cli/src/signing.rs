@@ -6,25 +6,14 @@
 use std::path::{Path, PathBuf};
 
 use packwing_core::{
-    KeyRefused, LocalFolder, PublicKey, Signed, SigningKey, check_signature, make_signing_key,
-    read_public_key, read_signing_key, sign_file, signature_name,
+    KeyRefused, PublicKey, Signed, SigningKey, check_signature, make_signing_key, read_public_key,
+    read_signing_key, sign_file, signature_name,
 };
 use serde_json::{Value, json};
 
 use crate::commands::ask_new_secret;
+use crate::places::Place;
 use crate::{Context, Exit};
-
-/// The storage a local file is in, and its path there.
-fn local(file: &Path) -> (LocalFolder, Vec<String>) {
-    let folder = file
-        .parent()
-        .filter(|p| !p.as_os_str().is_empty())
-        .unwrap_or(Path::new("."));
-    let name = file
-        .file_name()
-        .map_or_else(String::new, |n| n.to_string_lossy().into_owned());
-    (LocalFolder::new(folder), vec![name])
-}
 
 pub fn keygen_cmd(folder: &Path, cx: &mut Context) -> Result<(), Exit> {
     let passphrase = match cx.secrets.password() {
@@ -36,6 +25,8 @@ pub fn keygen_cmd(folder: &Path, cx: &mut Context) -> Result<(), Exit> {
             ));
         }
     };
+    std::fs::create_dir_all(folder)
+        .map_err(|e| Exit::Failed(format!("cannot make {}: {e}", folder.display())))?;
     let (key, file) = make_signing_key(folder, &passphrase)?;
     let mut public = file.clone().into_os_string();
     public.push(".pub");
@@ -89,66 +80,36 @@ fn signing_key(file: &Path, cx: &Context) -> Result<SigningKey, Exit> {
     }
 }
 
-pub fn sign_cmd(files: &[PathBuf], by: &Path, cx: &mut Context) -> Result<(), Exit> {
+pub fn sign_cmd(files: &[String], by: &Path, cx: &mut Context) -> Result<(), Exit> {
     let key = signing_key(by, cx)?;
     let mut made = Vec::new();
     for file in files {
-        let (storage, path) = local(file);
+        let place = Place::of(file)?;
         let (control, bar) =
-            crate::progress::control(&format!("Signing {}", path.join("/")), cx.progress);
-        sign_file(&storage, &path, &key, &control)?;
+            crate::progress::control(&format!("Signing {}", place.name()), cx.progress);
+        sign_file(&*place.storage, &place.path, &key, &control)?;
         drop(bar);
-        let name = signature_name(&path.join("/"));
-        made.push(file.with_file_name(name));
+        // Beside it, said as it was typed.
+        let name = place.name();
+        let signature = signature_name(&name);
+        let shown = match file.strip_suffix(name.as_str()) {
+            Some(before) => format!("{before}{signature}"),
+            None => signature,
+        };
+        made.push((file.clone(), shown));
     }
     if cx.json {
-        let rows: Vec<Value> = files
+        let rows: Vec<Value> = made
             .iter()
-            .zip(&made)
-            .map(|(f, s)| json!({ "file": f.display().to_string(), "signature": s.display().to_string() }))
+            .map(|(f, s)| json!({ "file": f, "signature": s }))
             .collect();
         println!("{:#}", json!(rows));
     } else if !cx.quiet {
-        for signature in &made {
-            println!("{}", signature.display());
+        for (_, signature) in &made {
+            println!("{signature}");
         }
     }
     Ok(())
-}
-
-/// The app's settings file, where it keeps the keys it trusts, as its
-/// `prefs.rs` finds it.
-fn app_settings() -> Option<PathBuf> {
-    let env = |name: &str| {
-        std::env::var_os(name)
-            .filter(|v| !v.is_empty())
-            .map(PathBuf::from)
-    };
-    let folder = if cfg!(windows) {
-        env("APPDATA")?
-    } else if cfg!(target_os = "macos") {
-        env("HOME")?.join("Library/Application Support")
-    } else {
-        env("XDG_CONFIG_HOME").or_else(|| Some(env("HOME")?.join(".config")))?
-    };
-    Some(folder.join("packwing").join("settings"))
-}
-
-/// The keys the app trusts, by the names it gives them, in its settings'
-/// `trusted_key=NAME<TAB>LINE` lines.
-fn app_trusted(settings: &str) -> Vec<(String, PublicKey)> {
-    settings
-        .lines()
-        .filter_map(|l| l.strip_prefix("trusted_key="))
-        .filter_map(|v| v.split_once('\t'))
-        .filter_map(|(name, line)| {
-            let name = name
-                .replace("%0A", "\n")
-                .replace("%09", "\t")
-                .replace("%25", "%");
-            Some((name, read_public_key(line).ok()?))
-        })
-        .collect()
 }
 
 /// What a signature is found to be, as a word, and whether it proves the file.
@@ -165,14 +126,14 @@ fn verdict(signed: &Signed) -> (&'static str, bool) {
 }
 
 pub fn verify_cmd(
-    files: &[PathBuf],
+    files: &[String],
     trust: &[PathBuf],
     only: bool,
     cx: &mut Context,
 ) -> Result<(), Exit> {
     let mut trusted: Vec<(String, PublicKey)> = Vec::new();
-    if !only && let Some(text) = app_settings().and_then(|f| std::fs::read_to_string(f).ok()) {
-        trusted.extend(app_trusted(&text));
+    if !only {
+        trusted.extend(crate::settings::trusted(&crate::settings::text()));
     }
     for file in trust {
         let text = std::fs::read_to_string(file)
@@ -193,10 +154,10 @@ pub fn verify_cmd(
     };
     let mut rows = Vec::new();
     for file in files {
-        let (storage, path) = local(file);
+        let place = Place::of(file)?;
         let (control, bar) =
-            crate::progress::control(&format!("Checking {}", path.join("/")), cx.progress);
-        let signed = check_signature(&storage, &path, &keys, &control)
+            crate::progress::control(&format!("Checking {}", place.name()), cx.progress);
+        let signed = check_signature(&*place.storage, &place.path, &keys, &control)
             .unwrap_or_else(|e| Signed::Failed(e.to_string()));
         drop(bar);
         let fingerprint = match &signed {
@@ -210,7 +171,7 @@ pub fn verify_cmd(
             Signed::Unreadable(why) | Signed::Failed(why) => Some(why.clone()),
             _ => None,
         };
-        rows.push((file.display().to_string(), signed, fingerprint, why));
+        rows.push((file.clone(), signed, fingerprint, why));
     }
     let bad = rows.iter().filter(|(_, s, _, _)| !verdict(s).1).count();
     if cx.json {
@@ -252,28 +213,5 @@ pub fn verify_cmd(
         }))
     } else {
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn the_app_s_trusted_keys_are_read_from_its_settings() {
-        let dir = std::env::temp_dir().join(format!("pkw-trusted-{}", std::process::id()));
-        let _ = std::fs::remove_dir_all(&dir);
-        std::fs::create_dir_all(&dir).expect("a folder");
-        let pass = "khoá".as_bytes();
-        let (key, _) = make_signing_key(&dir, pass).expect("a key");
-        let line = key.public().to_string();
-        let settings = format!(
-            "language=vi\ntrusted_key=Máy%09ở nhà\t{line}\ntrusted_key=broken\tnot a key\n"
-        );
-        let found = app_trusted(&settings);
-        assert_eq!(found.len(), 1, "the broken one is left out");
-        assert_eq!(found[0].0, "Máy\tở nhà");
-        assert_eq!(found[0].1.fingerprint(), key.public().fingerprint());
-        let _ = std::fs::remove_dir_all(dir);
     }
 }
