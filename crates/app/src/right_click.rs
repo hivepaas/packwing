@@ -154,14 +154,10 @@ pub struct Choice {
 }
 
 impl Default for Choice {
-    /// What the first run puts in the menu: every item but Extract…, which
-    /// the others and Open with packwing cover.
+    /// What the first run puts in the menu: every item.
     fn default() -> Self {
         Choice {
-            items: Action::ALL
-                .into_iter()
-                .filter(|a| *a != Action::Extract)
-                .collect(),
+            items: Action::ALL.to_vec(),
             submenu: false,
         }
     }
@@ -554,10 +550,9 @@ mod tests {
     }
 
     #[test]
-    fn the_first_run_puts_all_but_extract_in() {
+    fn the_first_run_puts_every_item_in() {
         let c = Choice::default();
-        assert!(!c.has(Action::Extract));
-        assert_eq!(c.items.len(), Action::ALL.len() - 1);
+        assert_eq!(c.items, Action::ALL);
         assert!(!c.submenu);
     }
 
@@ -590,6 +585,7 @@ mod tests {
             [
                 "extract-here",
                 "extract-to-folder",
+                "extract",
                 "open",
                 "compress-zip",
                 "compress"
