@@ -1116,6 +1116,9 @@ tcfba8fd5 = Depuis un stockage…
 # Safe to extract
 t3c93bb70 = Sans risque à extraire
 
+# Reading… {percent}%
+t83223c27 = Lecture… { $percent } %
+
 # Read {fetched} of {whole}
 t613dd932 = { $fetched } lus sur { $whole }
 
@@ -1125,6 +1128,9 @@ tdd45c7bb = Ajouter des fichiers
 # Test
 t2ffcbe05 = Tester
 
+# Reading what’s inside…
+t1bbda9f5 = Lecture du contenu…
+
 # Nothing in this archive matches “{query}”.
 t36c3e2f5 = Rien dans cette archive ne correspond à « { $query } ».
 
@@ -1133,9 +1139,6 @@ teecdfa3d = Rien dans ce dossier ne correspond à « { $query } ».
 
 # And {more} more. Type more to narrow it down.
 t843253d0 = Et { $more } de plus. Tapez davantage pour affiner.
-
-# Reading what’s inside…
-t1bbda9f5 = Lecture du contenu…
 
 # Open an archive
 t8382bd3e = Ouvrir une archive

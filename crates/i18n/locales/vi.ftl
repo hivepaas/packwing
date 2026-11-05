@@ -1105,6 +1105,9 @@ tcfba8fd5 = Từ nơi lưu trữ…
 # Safe to extract
 t3c93bb70 = An toàn để giải nén
 
+# Reading… {percent}%
+t83223c27 = Đang đọc… { $percent }%
+
 # Read {fetched} of {whole}
 t613dd932 = Đã đọc { $fetched } / { $whole }
 
@@ -1114,6 +1117,9 @@ tdd45c7bb = Thêm tệp
 # Test
 t2ffcbe05 = Kiểm tra
 
+# Reading what’s inside…
+t1bbda9f5 = Đang đọc nội dung bên trong…
+
 # Nothing in this archive matches “{query}”.
 t36c3e2f5 = Không có gì trong tệp nén này khớp với “{ $query }”.
 
@@ -1122,9 +1128,6 @@ teecdfa3d = Không có gì trong thư mục này khớp với “{ $query }”.
 
 # And {more} more. Type more to narrow it down.
 t843253d0 = Và { $more } mục nữa. Gõ thêm để thu hẹp.
-
-# Reading what’s inside…
-t1bbda9f5 = Đang đọc nội dung bên trong…
 
 # Open an archive
 t8382bd3e = Mở tệp nén

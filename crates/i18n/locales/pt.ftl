@@ -1116,6 +1116,9 @@ tcfba8fd5 = De um armazenamento…
 # Safe to extract
 t3c93bb70 = Seguro para extrair
 
+# Reading… {percent}%
+t83223c27 = Lendo… { $percent }%
+
 # Read {fetched} of {whole}
 t613dd932 = Lidos { $fetched } de { $whole }
 
@@ -1125,6 +1128,9 @@ tdd45c7bb = Adicionar arquivos
 # Test
 t2ffcbe05 = Testar
 
+# Reading what’s inside…
+t1bbda9f5 = Lendo o que há dentro…
+
 # Nothing in this archive matches “{query}”.
 t36c3e2f5 = Nada neste arquivo compactado corresponde a “{ $query }”.
 
@@ -1133,9 +1139,6 @@ teecdfa3d = Nada nesta pasta corresponde a “{ $query }”.
 
 # And {more} more. Type more to narrow it down.
 t843253d0 = E mais { $more }. Digite mais para refinar.
-
-# Reading what’s inside…
-t1bbda9f5 = Lendo o que há dentro…
 
 # Open an archive
 t8382bd3e = Abrir um arquivo compactado

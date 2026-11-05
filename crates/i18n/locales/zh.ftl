@@ -1105,6 +1105,9 @@ tcfba8fd5 = 从存储…
 # Safe to extract
 t3c93bb70 = 可安全解压
 
+# Reading… {percent}%
+t83223c27 = 正在读取… { $percent }%
+
 # Read {fetched} of {whole}
 t613dd932 = 已读取 { $fetched } / { $whole }
 
@@ -1114,6 +1117,9 @@ tdd45c7bb = 添加文件
 # Test
 t2ffcbe05 = 测试
 
+# Reading what’s inside…
+t1bbda9f5 = 正在读取内容…
+
 # Nothing in this archive matches “{query}”.
 t36c3e2f5 = 此压缩包中没有与“{ $query }”匹配的内容。
 
@@ -1122,9 +1128,6 @@ teecdfa3d = 此文件夹中没有与“{ $query }”匹配的内容。
 
 # And {more} more. Type more to narrow it down.
 t843253d0 = 还有 { $more } 项。多输入几个字可缩小范围。
-
-# Reading what’s inside…
-t1bbda9f5 = 正在读取内容…
 
 # Open an archive
 t8382bd3e = 打开压缩包

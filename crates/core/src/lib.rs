@@ -57,7 +57,7 @@ pub use job::{
     damages, extract, extract_selected, extract_to_open, extract_with, image_fits, left_out,
     read_entry, renamings, test,
 };
-pub use listing::{Child, Entry, Found, Listing, list};
+pub use listing::{Child, Entry, Found, Listen, Listing, list, list_as_read};
 pub use mark::came_from_internet;
 pub use passphrase::suggest_passphrase;
 pub use sign::{
@@ -447,6 +447,15 @@ fn opener<'a>(
     source: &'a Source,
     keys: &Keys,
 ) -> Opener<impl FnMut() -> io::Result<SourceReader> + use<'a>> {
+    opener_of(&source.name(), keys, move || source.reader())
+}
+
+/// [`opener`], of what `open` reads: the file named `name`, from its start.
+fn opener_of<F, R>(name: &str, keys: &Keys, open: F) -> Opener<F>
+where
+    F: FnMut() -> io::Result<R>,
+    R: io::Read + Send,
+{
     let (passphrase, key_passphrase) = (keys.passphrase.clone(), keys.key_passphrase.clone());
     let prompt: PassphrasePrompt = Arc::new(move |what| {
         let (secret, none) = match what {
@@ -468,10 +477,7 @@ fn opener<'a>(
     {
         identities.extend(found);
     }
-    let name = source.name();
-    Opener::new(move || source.reader())
-        .name(&name)
-        .identities(identities)
+    Opener::new(open).name(name).identities(identities)
 }
 
 /// A 7z archive, opened, and whether its names are encrypted.

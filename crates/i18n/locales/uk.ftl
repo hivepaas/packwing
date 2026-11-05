@@ -1138,6 +1138,9 @@ tcfba8fd5 = Зі сховища…
 # Safe to extract
 t3c93bb70 = Безпечно видобувати
 
+# Reading… {percent}%
+t83223c27 = Читання… { $percent }%
+
 # Read {fetched} of {whole}
 t613dd932 = Прочитано { $fetched } із { $whole }
 
@@ -1147,6 +1150,9 @@ tdd45c7bb = Додати файли
 # Test
 t2ffcbe05 = Перевірити
 
+# Reading what’s inside…
+t1bbda9f5 = Читання вмісту…
+
 # Nothing in this archive matches “{query}”.
 t36c3e2f5 = У цьому архіві немає нічого за запитом «{ $query }».
 
@@ -1155,9 +1161,6 @@ teecdfa3d = У цій папці немає нічого за запитом «{
 
 # And {more} more. Type more to narrow it down.
 t843253d0 = І ще { $more }. Введіть більше, щоб звузити пошук.
-
-# Reading what’s inside…
-t1bbda9f5 = Читання вмісту…
 
 # Open an archive
 t8382bd3e = Відкрити архів

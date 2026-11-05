@@ -1105,6 +1105,9 @@ tcfba8fd5 = 스토리지에서…
 # Safe to extract
 t3c93bb70 = 안전하게 압축을 풀 수 있음
 
+# Reading… {percent}%
+t83223c27 = 읽는 중… { $percent }%
+
 # Read {fetched} of {whole}
 t613dd932 = { $whole } 중 { $fetched } 읽음
 
@@ -1114,6 +1117,9 @@ tdd45c7bb = 파일 추가
 # Test
 t2ffcbe05 = 테스트
 
+# Reading what’s inside…
+t1bbda9f5 = 내용을 읽는 중…
+
 # Nothing in this archive matches “{query}”.
 t36c3e2f5 = 이 압축 파일에서 “{ $query }”와(과) 일치하는 항목이 없습니다.
 
@@ -1122,9 +1128,6 @@ teecdfa3d = 이 폴더에서 “{ $query }”와(과) 일치하는 항목이 없
 
 # And {more} more. Type more to narrow it down.
 t843253d0 = 그 외 { $more }개가 더 있습니다. 더 입력하여 좁혀 보세요.
-
-# Reading what’s inside…
-t1bbda9f5 = 내용을 읽는 중…
 
 # Open an archive
 t8382bd3e = 압축 파일 열기

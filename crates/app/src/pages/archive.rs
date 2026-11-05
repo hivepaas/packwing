@@ -9,15 +9,18 @@
 use packwing_core::Found;
 use packwing_i18n::{tr, tr_n};
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashSet};
 
-use std::sync::Arc;
-use std::time::Duration;
+use std::ops::Range;
+use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::{Arc, Mutex, PoisonError};
+use std::time::{Duration, Instant};
 
 use gpui::{
     ClickEvent, Context, Div, Entity, EventEmitter, FocusHandle, FontWeight, Image, ImageFormat,
-    KeyDownEvent, MouseButton, MouseDownEvent, ObjectFit, Pixels, Point, Render, StyledImage,
-    Subscription, Task, Window, anchored, deferred, div, img, prelude::*, px, relative, rgb,
+    KeyDownEvent, MouseButton, MouseDownEvent, ObjectFit, Pixels, Point, Render, ScrollStrategy,
+    StyledImage, Subscription, Task, UniformListScrollHandle, Window, anchored, deferred, div, img,
+    prelude::*, px, relative, rgb, uniform_list,
 };
 use packwing_core::{Cancel, Control, Error, Keys, Signed, Source, image_fits, read_entry};
 
@@ -95,22 +98,65 @@ pub(crate) fn picture_format(name: &str) -> Option<ImageFormat> {
     }
 }
 
+/// How tall a row of the list is, in rems' pixels: each the same, so
+/// that only those in sight are made.
+const ROW_H: f32 = 56.;
+
 /// The most a search lists: more is not read, and takes long to draw.
 const MOST_FOUND: usize = 500;
+
+/// A row of the list: its index, among the folder's entries or what the
+/// search found, the entry, and where it was found.
+type Row = (usize, Entry, Option<Vec<String>>);
+
+/// What the list holds.
+enum Listed {
+    /// The folder's entries, so many.
+    Folder(usize),
+    /// Those of them whose names have what was typed, by their indexes: the
+    /// samples', which have no listing to search.
+    Matching(Vec<usize>),
+    /// What the search found, so many.
+    Found(usize),
+}
+
+impl Listed {
+    fn len(&self) -> usize {
+        match self {
+            Listed::Folder(n) | Listed::Found(n) => *n,
+            Listed::Matching(at) => at.len(),
+        }
+    }
+}
+
+/// What a reading of an archive found that its page has not shown yet, and
+/// how far in it is, in thousandths of its file: what packwing-core is told
+/// as it reads.
+#[derive(Clone, Default)]
+pub struct Heard {
+    pub found: Arc<Mutex<Vec<packwing_core::Entry>>>,
+    pub read: Arc<AtomicU32>,
+}
+
+/// How often the page shows what a reading found, at most.
+const HEAR_EVERY: Duration = Duration::from_millis(150);
+
+/// An archive being read, as its page shows it.
+struct Reading {
+    heard: Heard,
+    /// What shows what it found, now and then.
+    _hearing: Task<()>,
+}
 
 /// What the page shows.
 #[derive(Clone, Debug)]
 pub enum Shown {
     /// Nothing opened yet.
     Nothing,
-    /// The file named, being read.
-    Opening(String),
+    /// An archive, read through or being read.
     Open(Box<Archive>),
     /// The file named could not be opened, and why.
-    Failed {
-        name: String,
-        why: String,
-    },
+    Failed { name: String, why: String },
 }
 
 pub struct ArchivePage {
@@ -141,6 +187,11 @@ pub struct ArchivePage {
     forgetting: Option<Task<()>>,
     /// The list's, for its keys: F2 renames, Delete deletes.
     focus: FocusHandle,
+    /// The archive shown is being read: what was found so far shows, and
+    /// what is done with it waits.
+    reading: Option<Reading>,
+    /// Where the list is scrolled to.
+    scroll: UniformListScrollHandle,
     _typing: Subscription,
 }
 
@@ -169,7 +220,7 @@ impl ArchivePage {
     /// The secrets of the archive open were used: they are kept
     /// [`KEYS_KEPT_FOR`] from now.
     fn keys_used(&mut self, cx: &mut Context<Self>) {
-        if self.archive().is_none_or(|a| a.keys == Keys::default()) {
+        if self.current().is_none_or(|a| a.keys == Keys::default()) {
             return;
         }
         self.forgetting = Some(cx.spawn(async move |this, cx| {
@@ -212,6 +263,8 @@ impl ArchivePage {
             menu_at: None,
             forgetting: None,
             focus: cx.focus_handle(),
+            reading: None,
+            scroll: UniformListScrollHandle::new(),
             _typing: typing,
         }
     }
@@ -223,6 +276,8 @@ impl ArchivePage {
             _ => None,
         };
         self.shown = shown;
+        self.reading = None;
+        self.scroll.scroll_to_item(0, ScrollStrategy::Top);
         self.menu_at = None;
         // What it was opened with is kept a while, as what it is proved
         // with later is; another's go with it.
@@ -234,6 +289,131 @@ impl ArchivePage {
         self.search.update(cx, |s, cx| s.set_text("", 0..0, cx));
         self.more_at = None;
         self.look_at_signature(cx);
+        cx.notify();
+    }
+
+    /// Shows the archive at `source`, being read with `keys`: what `heard`
+    /// is told it found shows as it is, and what is done with it waits for
+    /// [`ArchivePage::read_through`].
+    pub fn start_reading(
+        &mut self,
+        source: Source,
+        keys: Keys,
+        heard: Heard,
+        cx: &mut Context<Self>,
+    ) {
+        self.show(Shown::Open(Box::new(Archive::being_read(source, keys))), cx);
+        let hearing = cx.spawn(async move |this, cx| {
+            let mut wait = HEAR_EVERY;
+            loop {
+                cx.background_executor().timer(wait).await;
+                let Ok(took) = this.update(cx, |this, cx| {
+                    let at = Instant::now();
+                    this.hear(cx);
+                    at.elapsed()
+                }) else {
+                    return;
+                };
+                // A folder of many takes a while to show again: it waits
+                // longer, so that the window still answers.
+                wait = HEAR_EVERY.max(took * 4);
+            }
+        });
+        self.reading = Some(Reading {
+            heard,
+            _hearing: hearing,
+        });
+    }
+
+    /// Shows what the reading found since it last did.
+    fn hear(&mut self, cx: &mut Context<Self>) {
+        let Some(reading) = &self.reading else {
+            return;
+        };
+        let found = std::mem::take(
+            &mut *reading
+                .heard
+                .found
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner),
+        );
+        cx.notify();
+        if found.is_empty() {
+            return;
+        }
+        self.keep_selection(cx, move |a| {
+            let Some(listing) = &mut a.listing else {
+                return;
+            };
+            let listing = Arc::make_mut(listing);
+            let folder = a.folder.clone();
+            let here = found
+                .iter()
+                .any(|e| e.path.len() > folder.len() && e.path.starts_with(&folder));
+            for e in found.iter().filter(|e| !e.dir) {
+                listing.files += 1;
+                listing.unpacked += e.size;
+            }
+            listing.entries.extend(found);
+            a.files = listing.files;
+            a.unpacked = listing.unpacked;
+            if here {
+                a.show(folder);
+            }
+        });
+    }
+
+    /// The archive being read was read through, and is `archive`: the folder
+    /// shown, what is selected and searched for stay as they are.
+    pub fn read_through(&mut self, archive: Archive, cx: &mut Context<Self>) {
+        if self.reading.take().is_none() || self.current().is_none() {
+            self.show(Shown::Open(Box::new(archive)), cx);
+            return;
+        }
+        let chosen = self.chosen.is_some();
+        self.keep_selection(cx, move |a| {
+            let folder = std::mem::take(&mut a.folder);
+            *a = archive;
+            // It comes with its top shown.
+            if !folder.is_empty() {
+                a.show(folder);
+            }
+        });
+        self.keys_used(cx);
+        if chosen {
+            self.start_preview(cx);
+        } else {
+            self.chosen = self
+                .current()
+                .and_then(|a| a.entries.iter().position(|e| e.kind == Kind::Image));
+        }
+        cx.notify();
+    }
+
+    /// Changes the archive shown with `change`: what is selected and chosen
+    /// in its folder stays so, by their names, and the search finds again.
+    fn keep_selection(&mut self, cx: &mut Context<Self>, change: impl FnOnce(&mut Archive)) {
+        let Shown::Open(a) = &mut self.shown else {
+            return;
+        };
+        let name = |i: &usize| a.entries.get(*i).map(|e| e.name.clone());
+        let selected: HashSet<String> = self.selected.iter().filter_map(name).collect();
+        let chosen = self.chosen.as_ref().and_then(name);
+        change(a);
+        self.selected = a
+            .entries
+            .iter()
+            .enumerate()
+            .filter(|(_, e)| !selected.is_empty() && selected.contains(&e.name))
+            .map(|(i, _)| i)
+            .collect();
+        self.chosen = chosen.and_then(|n| a.entries.iter().position(|e| e.name == n));
+        let query = self.search.read(cx).text().to_owned();
+        if !query.trim().is_empty()
+            && let Some(listing) = &a.listing
+        {
+            self.found = listing.search(&query);
+        }
         cx.notify();
     }
 
@@ -314,7 +494,11 @@ impl ArchivePage {
     /// Reads the file chosen for the preview, if it is one that shows.
     fn start_preview(&mut self, cx: &mut Context<Self>) {
         self.stop_preview();
-        let Some(a) = self.archive() else {
+        // It waits for the archive to be read through.
+        if self.reading.is_some() {
+            return;
+        }
+        let Some(a) = self.current() else {
             return;
         };
         let Some(entry) = self.chosen.and_then(|i| a.entries.get(i)) else {
@@ -391,7 +575,7 @@ impl ArchivePage {
     /// The names the list shows, searched or not, for tests.
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn shown_names(&self, cx: &gpui::App) -> Vec<String> {
-        self.archive()
+        self.current()
             .map(|a| {
                 self.shown(a, cx)
                     .into_iter()
@@ -401,10 +585,29 @@ impl ArchivePage {
             .unwrap_or_default()
     }
 
+    /// Shows what the reading found, as the screenshots draw it.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn hear_for_shot(&mut self, cx: &mut Context<Self>) {
+        self.hear(cx);
+    }
+
+    /// The names of the entries selected, for tests.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn selected_names(&self) -> Vec<String> {
+        let Some(a) = self.current() else {
+            return Vec::new();
+        };
+        self.selected
+            .iter()
+            .filter_map(|i| a.entries.get(*i))
+            .map(|e| e.name.clone())
+            .collect()
+    }
+
     /// Where in the archive the list is, for tests.
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn shown_folder(&self) -> Vec<String> {
-        self.archive().map(|a| a.folder.clone()).unwrap_or_default()
+        self.current().map(|a| a.folder.clone()).unwrap_or_default()
     }
 
     /// The text the preview shows, and whether it is still reading, for tests.
@@ -450,18 +653,31 @@ impl ArchivePage {
         self.chosen = Some(i);
     }
 
-    /// The archive open, if one is.
+    /// The archive open, if one is, read through: what is done with it waits
+    /// for that.
     pub fn archive(&self) -> Option<&Archive> {
+        self.current().filter(|_| self.reading.is_none())
+    }
+
+    /// The archive shown, read through or being read.
+    fn current(&self) -> Option<&Archive> {
         match &self.shown {
             Shown::Open(a) => Some(a.as_ref()),
             _ => None,
         }
     }
 
+    /// Whether the archive shown is still being read.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn is_reading(&self) -> bool {
+        self.reading.is_some()
+    }
+
     /// Shows `folder` of the open archive.
     pub fn enter(&mut self, folder: Vec<String>, cx: &mut Context<Self>) {
         if let Shown::Open(a) = &mut self.shown {
             a.show(folder);
+            self.scroll.scroll_to_item(0, ScrollStrategy::Top);
             self.stop_preview();
             self.menu_at = None;
             self.chosen = None;
@@ -486,30 +702,55 @@ impl ArchivePage {
             .archive()
             .and_then(|a| a.entries.iter().position(|e| &e.name == name));
         self.selected.extend(self.chosen);
+        if let Some(i) = self.chosen {
+            self.scroll.scroll_to_item(i, ScrollStrategy::Center);
+        }
         self.start_preview(cx);
         cx.notify();
     }
 
     /// What to list: the folder's entries; with something typed, what the
     /// search found, each with where it is.
-    fn shown(&self, a: &Archive, cx: &gpui::App) -> Vec<(usize, Entry, Option<Vec<String>>)> {
+    #[cfg(all(test, feature = "test-hooks"))]
+    fn shown(&self, a: &Archive, cx: &gpui::App) -> Vec<Row> {
+        let listed = self.listed(a, cx);
+        (0..listed.len())
+            .filter_map(|n| self.listed_at(a, &listed, n))
+            .collect()
+    }
+
+    /// What the list holds, without making its rows.
+    fn listed(&self, a: &Archive, cx: &gpui::App) -> Listed {
         let query = self.search.read(cx).text().trim().to_lowercase();
         if !query.is_empty() && a.listing.is_some() {
-            return self
-                .found
-                .iter()
-                .take(MOST_FOUND)
-                .enumerate()
-                .map(|(i, f)| (i, Entry::of(&f.child), Some(f.path.clone())))
-                .collect();
+            return Listed::Found(self.found.len().min(MOST_FOUND));
         }
-        a.entries
-            .iter()
-            .cloned()
-            .enumerate()
-            .filter(|(_, e)| query.is_empty() || e.name.to_lowercase().contains(&query))
-            .map(|(i, e)| (i, e, None))
-            .collect()
+        if query.is_empty() {
+            return Listed::Folder(a.entries.len());
+        }
+        Listed::Matching(
+            a.entries
+                .iter()
+                .enumerate()
+                .filter(|(_, e)| e.name.to_lowercase().contains(&query))
+                .map(|(i, _)| i)
+                .collect(),
+        )
+    }
+
+    /// The `n`th the list holds: its index, among the folder's entries or
+    /// what was found, the entry, and where it was found.
+    fn listed_at(&self, a: &Archive, listed: &Listed, n: usize) -> Option<Row> {
+        match listed {
+            Listed::Found(_) => self
+                .found
+                .get(n)
+                .map(|f| (n, Entry::of(&f.child), Some(f.path.clone()))),
+            Listed::Folder(_) => a.entries.get(n).map(|e| (n, e.clone(), None)),
+            Listed::Matching(at) => at
+                .get(n)
+                .and_then(|i| a.entries.get(*i).map(|e| (*i, e.clone(), None))),
+        }
     }
 
     /// Selects the entries at `at`, as the screenshots do.
@@ -576,6 +817,19 @@ impl ArchivePage {
     fn header(&self, a: &Archive, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
         let signature = self.signature_chip(cx);
+        // How far into its file the reading is, in thousandths, while it is read.
+        let reading = self
+            .reading
+            .as_ref()
+            .map(|r| r.heard.read.load(Ordering::Relaxed));
+        // What needs it read through waits, its button there but dim.
+        let waits = |b: gpui::Stateful<Div>, asked: fn() -> ArchiveEvent| {
+            if reading.is_some() {
+                b.opacity(0.5).cursor_default()
+            } else {
+                b.on_click(cx.listener(move |_, _, _, cx| cx.emit(asked())))
+            }
+        };
         let safe = div()
             .flex()
             .flex_shrink_0()
@@ -622,11 +876,21 @@ impl ArchivePage {
                             .flex()
                             .flex_wrap()
                             .gap(ui(8.))
-                            .child(chip(
-                                format!("{} · {}%", size(a.packed), a.ratio()),
-                                c.surface,
-                                c.on_tonal,
-                            ))
+                            .child(match reading {
+                                Some(0) => chip(tr!("Reading…"), c.accent, c.on_accent)
+                                    .debug_selector(|| "archive-reading".to_owned()),
+                                Some(thousandths) => chip(
+                                    tr!("Reading… {percent}%", percent = thousandths / 10),
+                                    c.accent,
+                                    c.on_accent,
+                                )
+                                .debug_selector(|| "archive-reading".to_owned()),
+                                None => chip(
+                                    format!("{} · {}%", size(a.packed), a.ratio()),
+                                    c.surface,
+                                    c.on_tonal,
+                                ),
+                            })
                             .child(chip(
                                 tr_n!(
                                     a.files,
@@ -662,17 +926,17 @@ impl ArchivePage {
                     .flex()
                     .flex_wrap()
                     .gap(ui(10.))
-                    .child(
-                        button("extract", tr!("Extract"), Fill::Accent, Size::Large)
-                            .px(ui(28.))
-                            .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Extract))),
-                    )
+                    .child(waits(
+                        button("extract", tr!("Extract"), Fill::Accent, Size::Large).px(ui(28.)),
+                        || ArchiveEvent::Extract,
+                    ))
                     // A 7z or tar archive has to be written whole again, and
                     // packwing does not do that yet.
                     .when(
-                        a.listing
-                            .as_ref()
-                            .is_none_or(|l| packwing_core::can_add(l) && a.path.is_some()),
+                        reading.is_none()
+                            && a.listing
+                                .as_ref()
+                                .is_none_or(|l| packwing_core::can_add(l) && a.path.is_some()),
                         |d| {
                             d.child(
                                 button("add-files", tr!("Add files"), Fill::Raised, Size::Large)
@@ -682,17 +946,20 @@ impl ArchivePage {
                             )
                         },
                     )
-                    .child(
-                        button("test", tr!("Test"), Fill::Raised, Size::Large)
-                            .on_click(cx.listener(|_, _, _, cx| cx.emit(ArchiveEvent::Test))),
-                    )
+                    .child(waits(
+                        button("test", tr!("Test"), Fill::Raised, Size::Large),
+                        || ArchiveEvent::Test,
+                    ))
                     .child(
                         icon_button("archive-more", "more", 48.)
                             .bg(rgb(c.surface))
-                            .on_click(cx.listener(|this, e: &ClickEvent, _, cx| {
-                                this.more_at = Some(e.position());
-                                cx.notify();
-                            })),
+                            .when(reading.is_some(), |d| d.opacity(0.5).cursor_default())
+                            .when(reading.is_none(), |d| {
+                                d.on_click(cx.listener(|this, e: &ClickEvent, _, cx| {
+                                    this.more_at = Some(e.position());
+                                    cx.notify();
+                                }))
+                            }),
                     ),
             )
     }
@@ -809,7 +1076,7 @@ impl ArchivePage {
 
     /// The entry selected, when there is one alone.
     fn one_selected(&self) -> Option<&Entry> {
-        match (self.archive(), self.selected.len()) {
+        match (self.current(), self.selected.len()) {
             (Some(a), 1) => self.selected.first().and_then(|i| a.entries.get(*i)),
             _ => None,
         }
@@ -827,7 +1094,7 @@ impl ArchivePage {
                 }))
             };
         let line = || div().my(ui(4.)).mx(ui(10.)).h(ui(1.)).bg(rgb(c.field));
-        let folder = self.archive().map(|a| a.folder.clone()).unwrap_or_default();
+        let folder = self.current().map(|a| a.folder.clone()).unwrap_or_default();
         // One file opens as a double click does; one folder is gone into.
         let open = self.one_selected().map(|e| {
             let mut path = folder.clone();
@@ -905,14 +1172,16 @@ impl ArchivePage {
         cx.stop_propagation();
     }
 
-    fn contents(&self, a: &Archive, cx: &mut Context<Self>) -> impl IntoElement {
+    /// A row of the list, of the entry at `i`, or what was found there.
+    fn row(
+        &self,
+        a: &Archive,
+        (i, e, found): Row,
+        cx: &mut Context<Self>,
+    ) -> impl IntoElement + use<> {
         let c = colors();
-        let crumb = self.breadcrumb(a, cx);
-        let shown = self.shown(a, cx);
-        let query = self.search.read(cx).text().trim().to_string();
-        let more = self.found.len().saturating_sub(MOST_FOUND);
-        let searching = !query.is_empty() && a.listing.is_some();
-        let rows = shown.into_iter().map(|(i, e, found)| {
+        let searching = found.is_some();
+        {
             let on = !searching && self.selected.contains(&i);
             let file_path = (e.kind != Kind::Folder && found.is_none()).then(|| {
                 let mut path = a.folder.clone();
@@ -937,17 +1206,19 @@ impl ArchivePage {
             div()
                 .debug_selector(|| format!("entry-{i}"))
                 .id(("entry", i))
+                .w_full()
                 .flex()
                 .items_center()
                 .gap(ui(14.))
-                .min_h(ui(56.))
+                .h(ui(ROW_H))
                 .px(ui(14.))
                 .py(ui(6.))
                 .rounded(ui(18.))
                 .cursor_pointer()
                 .when(on, |d| d.bg(rgb(c.chosen)))
                 .when(!on, |d| d.hover(|s| s.bg(rgb(c.hover))))
-                // What is selected, or this alone, and its menu; none in a search.
+                // What is selected, or this alone, and its menu; none in a
+                // search, nor while the archive is read.
                 .when(found.is_none(), |d| {
                     d.on_mouse_down(
                         MouseButton::Right,
@@ -956,7 +1227,9 @@ impl ArchivePage {
                                 this.select(i, false, false);
                                 this.start_preview(cx);
                             }
-                            this.menu_at = Some(e.position);
+                            if this.reading.is_none() {
+                                this.menu_at = Some(e.position);
+                            }
                             window.focus(&this.focus, cx);
                             cx.stop_propagation();
                             cx.notify();
@@ -972,7 +1245,7 @@ impl ArchivePage {
                     }
                     match (&inside, &file_path) {
                         (Some(folder), _) if e.click_count() >= 2 => this.enter(folder.clone(), cx),
-                        (_, Some(path)) if e.click_count() >= 2 => {
+                        (_, Some(path)) if e.click_count() >= 2 && this.reading.is_none() => {
                             cx.emit(ArchiveEvent::OpenEntry(path.clone()));
                         }
                         _ => {
@@ -1017,8 +1290,39 @@ impl ArchivePage {
                         .text_color(rgb(c.muted))
                         .child(size(e.size)),
                 )
-        });
-        let empty = rows.len() == 0;
+        }
+    }
+
+    fn contents(&self, a: &Archive, cx: &mut Context<Self>) -> impl IntoElement {
+        let c = colors();
+        let crumb = self.breadcrumb(a, cx);
+        let query = self.search.read(cx).text().trim().to_string();
+        let more = self.found.len().saturating_sub(MOST_FOUND);
+        let searching = !query.is_empty() && a.listing.is_some();
+        let count = self.listed(a, cx).len();
+        // Only the rows in sight are made: a folder can hold many thousands.
+        let rows = uniform_list(
+            "entries",
+            count,
+            cx.processor(|this, range: Range<usize>, _, cx| {
+                let Some(a) = this.current() else {
+                    return Vec::new();
+                };
+                let listed = this.listed(a, cx);
+                range
+                    .filter_map(|n| this.listed_at(a, &listed, n))
+                    .map(|row| this.row(a, row, cx).into_any_element())
+                    .collect::<Vec<_>>()
+            }),
+        )
+        .track_scroll(&self.scroll)
+        // As tall as its rows, a row's [`ROW_H`], while the panel has room:
+        // a list that scrolls says nothing of its height itself.
+        .h(ui(ROW_H * count as f32))
+        .flex_shrink(1.)
+        .min_h_0();
+        let empty = count == 0;
+        let reading = self.reading.is_some();
         panel()
             .track_focus(&self.focus)
             .on_key_down(cx.listener(Self::on_key))
@@ -1035,42 +1339,38 @@ impl ArchivePage {
                     .gap(ui(8.))
                     .child(div().flex_1().min_w_0().child(crumb)),
             )
-            .child(
-                div()
-                    .id("entries")
-                    .min_h_0()
-                    .flex()
-                    .flex_col()
-                    .overflow_y_scroll()
-                    .children(rows)
-                    .when(empty, |d| {
-                        d.child(
-                            div()
-                                .px(ui(14.))
-                                .py(ui(12.))
-                                .text_size(ui(14.))
-                                .text_color(rgb(c.muted))
-                                .child(if searching {
-                                    tr!("Nothing in this archive matches “{query}”.", query = query)
-                                } else {
-                                    tr!("Nothing in this folder matches “{query}”.", query = query)
-                                }),
-                        )
-                    })
-                    .when(searching && more > 0, |d| {
-                        d.child(
-                            div()
-                                .px(ui(14.))
-                                .py(ui(12.))
-                                .text_size(ui(14.))
-                                .text_color(rgb(c.muted))
-                                .child(tr!(
-                                    "And {more} more. Type more to narrow it down.",
-                                    more = more
-                                )),
-                        )
-                    }),
-            )
+            .child(rows)
+            .when(empty, |d| {
+                d.child(
+                    div()
+                        .px(ui(14.))
+                        .py(ui(12.))
+                        .text_size(ui(14.))
+                        .text_color(rgb(c.muted))
+                        .child(if reading && query.is_empty() {
+                            tr!("Reading what’s inside…").to_owned()
+                        } else if searching {
+                            tr!("Nothing in this archive matches “{query}”.", query = query)
+                        } else if query.is_empty() {
+                            tr!("This folder is empty.").to_owned()
+                        } else {
+                            tr!("Nothing in this folder matches “{query}”.", query = query)
+                        }),
+                )
+            })
+            .when(searching && more > 0, |d| {
+                d.child(
+                    div()
+                        .px(ui(14.))
+                        .py(ui(12.))
+                        .text_size(ui(14.))
+                        .text_color(rgb(c.muted))
+                        .child(tr!(
+                            "And {more} more. Type more to narrow it down.",
+                            more = more
+                        )),
+                )
+            })
     }
 
     /// The folder shown, from the archive's top: each step leads back to
@@ -1117,7 +1417,7 @@ impl ArchivePage {
                                     .hover(|s| s.text_color(rgb(c.text)))
                                     .on_click(cx.listener(move |this, _, _, cx| {
                                         let folder = this
-                                            .archive()
+                                            .current()
                                             .map(|a| a.folder[..i].to_vec())
                                             .unwrap_or_default();
                                         this.enter(folder, cx);
@@ -1133,7 +1433,6 @@ impl ArchivePage {
     fn empty(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
         let (title, line, offer) = match &self.shown {
-            Shown::Opening(name) => (name.clone(), tr!("Reading what’s inside…").to_owned(), false),
             Shown::Failed { name, why } => (name.clone(), why.clone(), true),
             _ => (
                 tr!("Open an archive").to_owned(),
@@ -1319,7 +1618,7 @@ impl ArchivePage {
 impl Render for ArchivePage {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let page = div().size_full().flex().flex_col().gap(ui(18.));
-        let Some(a) = self.archive() else {
+        let Some(a) = self.current() else {
             return page.child(self.empty(cx));
         };
         let more = self.more_at.map(|at| self.more_menu(at, cx));

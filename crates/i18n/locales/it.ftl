@@ -1116,6 +1116,9 @@ tcfba8fd5 = Da uno spazio di archiviazione…
 # Safe to extract
 t3c93bb70 = Sicuro da estrarre
 
+# Reading… {percent}%
+t83223c27 = Lettura… { $percent }%
+
 # Read {fetched} of {whole}
 t613dd932 = Letti { $fetched } di { $whole }
 
@@ -1125,6 +1128,9 @@ tdd45c7bb = Aggiungi file
 # Test
 t2ffcbe05 = Verifica
 
+# Reading what’s inside…
+t1bbda9f5 = Lettura del contenuto…
+
 # Nothing in this archive matches “{query}”.
 t36c3e2f5 = Nulla in questo archivio corrisponde a «{ $query }».
 
@@ -1133,9 +1139,6 @@ teecdfa3d = Nulla in questa cartella corrisponde a «{ $query }».
 
 # And {more} more. Type more to narrow it down.
 t843253d0 = E altri { $more }. Digita di più per restringere.
-
-# Reading what’s inside…
-t1bbda9f5 = Lettura del contenuto…
 
 # Open an archive
 t8382bd3e = Apri un archivio

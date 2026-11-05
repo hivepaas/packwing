@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 89] = [
+const SCREENS: [(&str, SetUp); 90] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -167,6 +167,31 @@ const SCREENS: [(&str, SetUp); 89] = [
     ("archive", |_, _, _| {}),
     ("archive-opened", |ws, window, cx| {
         ws.open_archive(sample_tar(), false, window, cx)
+    }),
+    // Being read: what was found so far, and how far in it is.
+    ("archive-reading", |ws, _, cx| {
+        let source = packwing_core::Source::from(sample_tar().as_path());
+        let heard = crate::pages::archive::Heard::default();
+        let found = [
+            ("photos/beach.jpg", 2_400_000),
+            ("photos/hills.jpg", 3_100_000),
+            ("docs/plan.md", 12_000),
+            ("notes.txt", 23),
+            ("budget.xlsx", 48_000),
+        ]
+        .map(|(path, size)| packwing_core::Entry {
+            path: path.split('/').map(String::from).collect(),
+            dir: false,
+            size,
+            modified: Some(1_760_000_000),
+        });
+        heard.found.lock().expect("not poisoned").extend(found);
+        heard.read.store(420, std::sync::atomic::Ordering::Relaxed);
+        ws.archive_page().update(cx, |p, cx| {
+            p.start_reading(source, packwing_core::Keys::default(), heard, cx);
+            p.hear_for_shot(cx);
+        });
+        ws.show_page(Page::Archive, cx);
     }),
     ("archive-search", |ws, _, cx| {
         ws.show_archive(read(), cx);

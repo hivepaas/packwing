@@ -13,7 +13,7 @@ use hivepack::extract::{Progress, Summary};
 use hivepack::rar::{Archive, ExitCode, Extract, HEAD_FILE, ReadAt, name};
 
 use crate::job::{Control, copy_progress};
-use crate::listing::{Entry, components};
+use crate::listing::{Entry, Gather, components};
 use crate::{Error, Keys, PASSWORD};
 
 /// The password of `keys`, as RAR takes it: nothing for none.
@@ -46,8 +46,8 @@ pub(crate) fn open(
 pub(crate) fn entries<R: ReadAt>(
     mut arc: Archive<R>,
     keys: &Keys,
+    gather: &mut Gather,
 ) -> Result<(Vec<Entry>, bool), Error> {
-    let mut entries = Vec::new();
     let mut encrypted = false;
     // Through it, as it moves to the next volume where seeking does not.
     let mut extract = Extract::new();
@@ -59,7 +59,7 @@ pub(crate) fn entries<R: ReadAt>(
             encrypted |= head.encrypted;
             let path = components(&name::to_string_lossy(&head.file_name));
             if !path.is_empty() {
-                entries.push(Entry {
+                gather.push(Entry {
                     path,
                     dir: head.dir,
                     size: if head.dir {
@@ -72,7 +72,7 @@ pub(crate) fn entries<R: ReadAt>(
                             .ok()
                             .map(|d| d.as_secs() as i64)
                     }),
-                });
+                })?;
             }
         }
         if !extract.current_file(&mut arc, size, &mut |_| Ok(()))? {
@@ -83,10 +83,10 @@ pub(crate) fn entries<R: ReadAt>(
         }
     }
     // Headers that do not decrypt read as none, which is no empty archive.
-    if entries.is_empty() && arc.exit_code() != ExitCode::Success {
+    if gather.entries.is_empty() && arc.exit_code() != ExitCode::Success {
         return Err(failed(arc.exit_code(), keys));
     }
-    Ok((entries, encrypted))
+    Ok((std::mem::take(&mut gather.entries), encrypted))
 }
 
 /// Reads every file through, its hash checked, nothing written.

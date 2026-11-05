@@ -1116,6 +1116,9 @@ tcfba8fd5 = Bir depolama alanından…
 # Safe to extract
 t3c93bb70 = Çıkarmak güvenli
 
+# Reading… {percent}%
+t83223c27 = Okunuyor… %{ $percent }
+
 # Read {fetched} of {whole}
 t613dd932 = { $whole } içinden { $fetched } okundu
 
@@ -1125,6 +1128,9 @@ tdd45c7bb = Dosya ekle
 # Test
 t2ffcbe05 = Sına
 
+# Reading what’s inside…
+t1bbda9f5 = İçindekiler okunuyor…
+
 # Nothing in this archive matches “{query}”.
 t36c3e2f5 = Bu arşivde “{ $query }” ile eşleşen bir şey yok.
 
@@ -1133,9 +1139,6 @@ teecdfa3d = Bu klasörde “{ $query }” ile eşleşen bir şey yok.
 
 # And {more} more. Type more to narrow it down.
 t843253d0 = Ve { $more } tane daha. Daraltmak için daha fazla yazın.
-
-# Reading what’s inside…
-t1bbda9f5 = İçindekiler okunuyor…
 
 # Open an archive
 t8382bd3e = Bir arşiv açın
