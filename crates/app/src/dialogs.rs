@@ -326,6 +326,9 @@ pub enum DialogEvent {
     Open(Source),
     /// A license key is to be entered: Settings › License.
     ShowLicense,
+    /// Which checksums are shown is to be chosen: Settings › Security, at
+    /// its Checksums.
+    ShowChecksumSettings,
     /// A new archive went in this folder of this storage: shown, if `show`.
     Stored {
         place: Place,

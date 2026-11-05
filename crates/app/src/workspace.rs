@@ -838,6 +838,11 @@ impl Workspace {
                     });
                     this.show_page(Page::Settings, cx);
                 }
+                DialogEvent::ShowChecksumSettings => {
+                    this.close_dialog(cx);
+                    this.settings.update(cx, |s, cx| s.show_checksums(cx));
+                    this.show_page(Page::Settings, cx);
+                }
                 DialogEvent::Saved => this.refresh_explorers(cx),
                 DialogEvent::Quit => this.stop_and_quit(window, cx),
                 // Only a job's dialog says these, and they are heard in job_event.
@@ -1707,6 +1712,7 @@ impl Workspace {
             DialogEvent::Start(_)
             | DialogEvent::Open(_)
             | DialogEvent::ShowLicense
+            | DialogEvent::ShowChecksumSettings
             | DialogEvent::Saved
             | DialogEvent::Attention
             | DialogEvent::Quit => {}

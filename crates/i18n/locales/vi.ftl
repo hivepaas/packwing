@@ -181,6 +181,9 @@ tbd79b37d = Đang lưu…
 # Save beside it
 t7f4d85e3 = Lưu cạnh tệp
 
+# Choose the checksums shown
+teec532fe = Chọn checksum được hiển thị
+
 # Read it
 t80fb8482 = Đọc tệp
 

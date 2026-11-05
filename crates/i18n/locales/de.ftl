@@ -183,6 +183,9 @@ tbd79b37d = Wird gespeichert…
 # Save beside it
 t7f4d85e3 = Daneben speichern
 
+# Choose the checksums shown
+teec532fe = Angezeigte Prüfsummen wählen
+
 # Read it
 t80fb8482 = Lesen
 

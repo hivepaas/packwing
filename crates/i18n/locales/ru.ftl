@@ -187,6 +187,9 @@ tbd79b37d = Сохранение…
 # Save beside it
 t7f4d85e3 = Сохранить рядом
 
+# Choose the checksums shown
+teec532fe = Выбрать показываемые контрольные суммы
+
 # Read it
 t80fb8482 = Прочитать
 

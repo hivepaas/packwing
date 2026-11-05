@@ -183,6 +183,9 @@ tbd79b37d = Salvando…
 # Save beside it
 t7f4d85e3 = Salvar ao lado
 
+# Choose the checksums shown
+teec532fe = Escolher os checksums mostrados
+
 # Read it
 t80fb8482 = Ler
 

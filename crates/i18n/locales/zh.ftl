@@ -181,6 +181,9 @@ tbd79b37d = 正在保存…
 # Save beside it
 t7f4d85e3 = 保存在旁边
 
+# Choose the checksums shown
+teec532fe = 选择显示的校验和
+
 # Read it
 t80fb8482 = 读取
 

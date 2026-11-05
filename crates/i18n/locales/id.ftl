@@ -181,6 +181,9 @@ tbd79b37d = Menyimpan…
 # Save beside it
 t7f4d85e3 = Simpan di sampingnya
 
+# Choose the checksums shown
+teec532fe = Pilih checksum yang ditampilkan
+
 # Read it
 t80fb8482 = Baca
 

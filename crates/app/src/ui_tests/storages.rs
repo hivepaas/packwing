@@ -89,6 +89,38 @@ scenario!(
 );
 
 scenario!(
+    /// The button beside Save beside it shows Settings › Security, scrolled down to its
+    /// Checksums, where which are shown is chosen.
+    the_checksums_shown_are_chosen_from_their_dialog,
+    |ui| {
+        let folder = ui.work.join("place");
+        ui.file("place/a.txt", "abc");
+        ui.storage(&folder);
+        ui.explorer_names();
+        ui.ws(|ws, _, cx| {
+            ws.explorer(cx).update(cx, |e, cx| {
+                e.choose("a.txt", cx);
+                e.show_menu(400., 300., false, cx);
+            });
+        });
+        ui.click("menu-checksums");
+        ui.wait_for("checksum-copy-0");
+        // Too low to show Security whole.
+        ui.resize(1100., 400.);
+        ui.click("checksum-settings");
+        assert!(!ui.dialog_open());
+        assert_eq!(ui.ws(|ws, _, _| ws.page()), crate::workspace::Page::Settings);
+        assert_eq!(
+            ui.ws(|ws, _, cx| ws.settings_section(cx)),
+            crate::pages::settings::Section::Security
+        );
+        let row = ui.find("checksum-0").expect("the checksums");
+        let window = ui.ws(|_, window, _| window.viewport_size().height);
+        assert!(row.bottom() <= window, "{row:?} below {window:?}");
+    }
+);
+
+scenario!(
     /// An item of a folder on this computer is shown in the system's file manager, and
     /// the folder opened in it.
     the_file_manager_shows_an_item_and_opens_the_folder,
