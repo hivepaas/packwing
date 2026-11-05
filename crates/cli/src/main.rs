@@ -19,7 +19,7 @@ use std::process::ExitCode;
 
 use clap::{Args, CommandFactory as _, Parser, Subcommand};
 
-use crate::damaged::Damaging;
+use crate::damaged::{Damaging, Naming};
 use crate::secrets::Secrets;
 
 #[derive(Parser)]
@@ -37,7 +37,7 @@ use crate::secrets::Secrets;
         PACKWING_PASSWORD.",
     after_help = "Exit codes: 0 done; 1 failed; 2 not understood; 3 a password or key is \
         needed, or wrong; 4 not an archive pkw can open; 5 done, but some files' data was \
-        damaged (--on-damaged), or some files were left out (--on-bad-name)."
+        damaged (--on-damaged), or some files were left out (extract --on-bad-name)."
 )]
 struct Cli {
     #[command(subcommand)]
@@ -112,6 +112,8 @@ enum Command {
         no_mark: bool,
         #[command(flatten)]
         damaging: Damaging,
+        #[command(flatten)]
+        naming: Naming,
     },
     /// Check that an archive reads whole, as it was made.
     #[command(visible_alias = "t")]

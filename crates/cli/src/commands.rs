@@ -12,7 +12,7 @@ use packwing_core::{
 };
 use serde_json::{Value, json};
 
-use crate::damaged::{Damaging, Outcome};
+use crate::damaged::{Damaging, Naming, Outcome};
 use crate::names::{
     date, entry_path, format_named, format_of, format_words, level_named, size_typed,
 };
@@ -36,14 +36,15 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
             limit,
             no_mark,
             damaging,
+            naming,
         } => {
             let how = ExtractOptions {
                 overwrite,
                 limit: Some(limit_of(&limit)?),
                 keep_mark: keep_mark(no_mark),
-                portable_names: damaging.portable_names,
+                portable_names: naming.portable_names,
             };
-            extract_cmd(&archive, &files, output, here, &how, &damaging, cx)
+            extract_cmd(&archive, &files, output, here, &how, &damaging, &naming, cx)
         }
         Command::Test { archive } => test_cmd(&archive, cx),
         Command::Cat {
@@ -250,6 +251,7 @@ fn extract_cmd(
     here: bool,
     how: &ExtractOptions,
     damaging: &Damaging,
+    naming: &Naming,
     cx: &mut Context,
 ) -> Result<(), Exit> {
     let place = Place::of(archive)?;
@@ -263,7 +265,7 @@ fn extract_cmd(
     };
     let picked = picked(files);
     let (control, bar) = crate::progress::control("Extracting", cx.progress);
-    let control = damaging.control(control, cx)?;
+    let control = naming.control(damaging.control(control, cx)?, cx)?;
     let summary = cx.secrets.unlocking(&name, |keys| {
         if picked.is_empty() {
             extract_with(source.clone(), &destination, keys, how, &control)
@@ -897,10 +899,8 @@ fn convert_cmd(
 ) -> Result<(), Exit> {
     let (to, new) = making(to, make, cx)?;
     let name = named(from);
-    let how = ExtractOptions {
-        portable_names: damaging.portable_names,
-        ..ExtractOptions::default()
-    };
+    // An archive holds any name: none is asked about, but what leads outside.
+    let how = ExtractOptions::default();
     let (control, bar) = crate::progress::control("Converting", cx.progress);
     let control = damaging.control(control, cx)?;
     let converted = cx.secrets.unlocking(&name, |keys| {

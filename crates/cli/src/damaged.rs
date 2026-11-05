@@ -35,6 +35,16 @@ pub struct Damaging {
     /// it. By default asked in a terminal, and stop otherwise.
     #[arg(long, value_name = "WHAT", value_enum)]
     pub on_damaged: Option<Choice>,
+    /// Write each file damaged, left out or renamed, and why, to this file: a line
+    /// each, tab-separated.
+    #[arg(long, value_name = "FILE")]
+    pub report: Option<PathBuf>,
+}
+
+/// What `extract` does with files whose names this system cannot take. Not
+/// `convert`'s: an archive holds any name.
+#[derive(Args)]
+pub struct Naming {
     /// When files' names cannot be used on this system (as a:b.txt on Windows,
     /// or README beside readme on macOS): ask, stop, skip them, or rename them.
     /// By default asked in a terminal, and skipped otherwise.
@@ -44,10 +54,29 @@ pub struct Damaging {
     /// device names, and names differing only in case, on Linux too.
     #[arg(long)]
     pub portable_names: bool,
-    /// Write each file damaged, left out or renamed, and why, to this file: a line
-    /// each, tab-separated.
-    #[arg(long, value_name = "FILE")]
-    pub report: Option<PathBuf>,
+}
+
+impl Naming {
+    /// `control`, which asks or does as was said.
+    pub fn control(&self, mut control: Control, cx: &Context) -> Result<Control, Exit> {
+        let names = match self.on_bad_name {
+            Some(NameChoice::Ask) if !cx.can_ask => {
+                return Err(Exit::Usage(
+                    "--on-bad-name ask needs a terminal: give stop, skip or rename".into(),
+                ));
+            }
+            Some(choice) => choice,
+            None if cx.can_ask => NameChoice::Ask,
+            None => NameChoice::Skip,
+        };
+        control.on_unnamable = match names {
+            NameChoice::Stop => None,
+            NameChoice::Skip => Some(Arc::new(|_: &[BadName]| OnUnnamable::Skip)),
+            NameChoice::Rename => Some(Arc::new(|_: &[BadName]| OnUnnamable::Rename)),
+            NameChoice::Ask => Some(Arc::new(ask_names)),
+        };
+        Ok(control)
+    }
 }
 
 /// What to do with files whose names this system cannot take.
@@ -105,22 +134,6 @@ impl Damaging {
                     chosen
                 }))
             }
-        };
-        let names = match self.on_bad_name {
-            Some(NameChoice::Ask) if !cx.can_ask => {
-                return Err(Exit::Usage(
-                    "--on-bad-name ask needs a terminal: give stop, skip or rename".into(),
-                ));
-            }
-            Some(choice) => choice,
-            None if cx.can_ask => NameChoice::Ask,
-            None => NameChoice::Skip,
-        };
-        control.on_unnamable = match names {
-            NameChoice::Stop => None,
-            NameChoice::Skip => Some(Arc::new(|_: &[BadName]| OnUnnamable::Skip)),
-            NameChoice::Rename => Some(Arc::new(|_: &[BadName]| OnUnnamable::Rename)),
-            NameChoice::Ask => Some(Arc::new(ask_names)),
         };
         Ok(control)
     }
