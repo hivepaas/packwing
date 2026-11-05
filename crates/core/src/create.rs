@@ -729,6 +729,9 @@ fn new_zip(
     if new.password.is_some() {
         za.set_default_password(new.password.as_deref());
     }
+    // Files compressed in threads ahead of the one written, the archive the
+    // same whatever the threads.
+    za.set_threads(crate::threads());
     let how = Squeeze {
         level: new.level,
         stored: &new.stored_extensions,
