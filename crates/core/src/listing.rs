@@ -5,8 +5,10 @@ use std::collections::BTreeMap;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
+use std::time::{Duration, Instant};
 
+use hivepack::extract::Cancel;
 use hivepack::open::{Container, Layer, Opener};
 use hivepack::tar::{Reader, TYPE_DIR, TYPE_X_GLOBAL_HEADER};
 use hivepack::udf::{Udf, VType};
@@ -18,7 +20,7 @@ use crate::rar;
 use crate::source::Source;
 use crate::spool::spool;
 use crate::volume::walk;
-use crate::{Error, Keys, SevenZip, opener, seven_zip, without_layers};
+use crate::{Error, Keys, SevenZip, opener_of, seven_zip, without_layers};
 
 /// The names of a macOS package's payloads, which hivepack::extract expands
 /// into folders of their names, as `pkgutil --expand-full` does: a
@@ -183,31 +185,145 @@ fn zip_size(path: &Path) -> io::Result<u64> {
 
 /// What the archive at `source` holds, opened with `keys`.
 pub fn list(source: impl Into<Source>, keys: &Keys) -> Result<Listing, Error> {
-    let source: Source = source.into();
+    list_as_read(source, keys, Listen::default())
+}
+
+/// What [`list_as_read`] tells of an archive as it is read, and what stops it.
+#[derive(Default)]
+pub struct Listen<'a> {
+    /// Given what is found, some at a time, as it is: an archive read in
+    /// order (tar, cpio, ZIP, RAR, ISO 9660) shows before it is read through.
+    /// What is given is in the listing too.
+    pub found: Option<&'a mut (dyn FnMut(Vec<Entry>) + Send)>,
+    /// Kept at how much of the archive's file has been read, in thousandths:
+    /// of one read in order; one read from its end goes there at once.
+    pub read: Option<Arc<AtomicU32>>,
+    /// Stops it, with [`Error::Cancelled`].
+    pub cancel: Option<Cancel>,
+}
+
+/// How often what is found is given, at most.
+const TELL_EVERY: Duration = Duration::from_millis(100);
+
+/// The entries of an archive, gathered as it is read: those found given, now
+/// and then, to whom listens.
+pub(crate) struct Gather<'a> {
+    pub(crate) entries: Vec<Entry>,
+    /// How many were given.
+    told: usize,
+    at: Instant,
+    found: Option<&'a mut (dyn FnMut(Vec<Entry>) + Send)>,
+    cancel: Option<Cancel>,
+}
+
+impl<'a> Gather<'a> {
+    fn new(listen: Listen<'a>) -> Gather<'a> {
+        Gather {
+            entries: Vec::new(),
+            told: 0,
+            at: Instant::now(),
+            found: listen.found,
+            cancel: listen.cancel,
+        }
+    }
+
+    /// One that tells nobody, and stops when it is told to.
+    pub(crate) fn quiet() -> Gather<'static> {
+        Gather::new(Listen::default())
+    }
+
+    pub(crate) fn push(&mut self, entry: Entry) -> Result<(), Error> {
+        if self.cancel.as_ref().is_some_and(Cancel::is_cancelled) {
+            return Err(Error::Cancelled);
+        }
+        self.entries.push(entry);
+        if let Some(found) = &mut self.found
+            && self.at.elapsed() >= TELL_EVERY
+        {
+            found(self.entries[self.told..].to_vec());
+            self.told = self.entries.len();
+            self.at = Instant::now();
+        }
+        Ok(())
+    }
+}
+
+/// What an archive's file is read through, counting: how far in it is, in
+/// thousandths, and stopped when it is to be.
+struct Counted<R> {
+    inner: R,
+    at: u64,
+    whole: u64,
+    read: Option<Arc<AtomicU32>>,
+    cancel: Option<Cancel>,
+}
+
+impl<R: Read> Read for Counted<R> {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        if self.cancel.as_ref().is_some_and(Cancel::is_cancelled) {
+            return Err(io::Error::other(Error::Cancelled.to_string()));
+        }
+        let n = self.inner.read(buf)?;
+        self.at += n as u64;
+        if let Some(read) = &self.read {
+            let thousandths = (self.at.saturating_mul(1000) / self.whole.max(1)).min(1000);
+            read.store(thousandths as u32, Ordering::Relaxed);
+        }
+        Ok(n)
+    }
+}
+
+/// [`list`], telling `listen` of it as it is read.
+pub fn list_as_read(
+    source: impl Into<Source>,
+    keys: &Keys,
+    listen: Listen<'_>,
+) -> Result<Listing, Error> {
+    let cancel = listen.cancel.clone();
+    let listed = listed(source.into(), keys, listen);
+    // What stopped reading it, it was told to.
+    match listed {
+        Err(_) if cancel.as_ref().is_some_and(Cancel::is_cancelled) => Err(Error::Cancelled),
+        listed => listed,
+    }
+}
+
+fn listed(source: Source, keys: &Keys, listen: Listen<'_>) -> Result<Listing, Error> {
     let source = &source;
     let mut packed = source.size()?;
     let name = source.name();
     let folder = source.folder();
-    let mut opener = opener(source, keys);
+    let whole = packed;
+    let (read, cancel) = (listen.read.clone(), listen.cancel.clone());
+    let mut opener = opener_of(&name, keys, move || {
+        source.reader().map(|inner| Counted {
+            inner,
+            at: 0,
+            whole,
+            read: read.clone(),
+            cancel: cancel.clone(),
+        })
+    });
+    let mut gather = Gather::new(listen);
     let mut opened = opener.open()?;
     let layers = opened.layers().to_vec();
     let container = opened.container();
     let mut encryption = layers.contains(&Layer::Age).then(|| "age".to_owned());
     let entries = match container {
-        Container::Tar => tar_entries(&mut opened)?,
+        Container::Tar => tar_entries(&mut opened, &mut gather)?,
         Container::Zip => {
             let (entries, zip_encryption) = if layers.is_empty() {
                 drop(opened);
                 match source {
                     Source::File(path) => {
                         packed = zip_size(path)?;
-                        zip_entries(Volumes::open(path)?)?
+                        zip_entries(Volumes::open(path)?, &mut gather)?
                     }
-                    Source::Stored(stored) => zip_entries(stored.stored_reader())?,
+                    Source::Stored(stored) => zip_entries(stored.stored_reader(), &mut gather)?,
                 }
             } else {
                 let spooled = spool(&mut opened)?;
-                zip_entries(&spooled.file)?
+                zip_entries(&spooled.file, &mut gather)?
             };
             encryption = encryption.or(zip_encryption);
             entries
@@ -216,9 +332,12 @@ pub fn list(source: impl Into<Source>, keys: &Keys) -> Result<Listing, Error> {
         // its directory is read by going back.
         Container::Iso if layers.is_empty() => {
             drop(opened);
-            iso_entries(hivepack::iso::Reader::seekable(source.reader()?))?
+            iso_entries(
+                hivepack::iso::Reader::seekable(source.reader()?),
+                &mut gather,
+            )?
         }
-        Container::Iso => iso_entries(hivepack::iso::Reader::new(&mut opened))?,
+        Container::Iso => iso_entries(hivepack::iso::Reader::new(&mut opened), &mut gather)?,
         Container::Udf if layers.is_empty() => {
             drop(opened);
             udf_entries(source.reader()?)?
@@ -244,7 +363,8 @@ pub fn list(source: impl Into<Source>, keys: &Keys) -> Result<Listing, Error> {
             {
                 drop(opened);
                 let more = Arc::new(AtomicU64::new(0));
-                let found = rar::entries(rar::open(path, &password, more.clone())?, keys)?;
+                let found =
+                    rar::entries(rar::open(path, &password, more.clone())?, keys, &mut gather)?;
                 packed += more.load(Ordering::Relaxed);
                 found
             } else {
@@ -256,6 +376,7 @@ pub fn list(source: impl Into<Source>, keys: &Keys) -> Result<Listing, Error> {
                         &password,
                     )?,
                     keys,
+                    &mut gather,
                 )?
             };
             if encrypted {
@@ -265,7 +386,7 @@ pub fn list(source: impl Into<Source>, keys: &Keys) -> Result<Listing, Error> {
         }
         // An RPM package is its payload: the package's lead and headers
         // are a layer.
-        Container::Cpio => cpio_entries(&mut opened)?,
+        Container::Cpio => cpio_entries(&mut opened, &mut gather)?,
         Container::Xar => xar_entries(&mut opened)?,
         Container::Data if layers.is_empty() => return Err(Error::NotAnArchive),
         _ => {
@@ -293,9 +414,8 @@ pub fn list(source: impl Into<Source>, keys: &Keys) -> Result<Listing, Error> {
     })
 }
 
-fn tar_entries(r: impl Read) -> Result<Vec<Entry>, Error> {
+fn tar_entries(r: impl Read, gather: &mut Gather) -> Result<Vec<Entry>, Error> {
     let mut tr = Reader::new(r);
-    let mut entries = Vec::new();
     while let Some(h) = tr.next()? {
         if matches!(h.typeflag, TYPE_X_GLOBAL_HEADER | TYPE_GNU_VOLUME) {
             continue;
@@ -305,19 +425,21 @@ fn tar_entries(r: impl Read) -> Result<Vec<Entry>, Error> {
             continue;
         }
         let dir = matches!(h.typeflag, TYPE_DIR | TYPE_GNU_DUMPDIR) || h.name.ends_with(b"/");
-        entries.push(Entry {
+        gather.push(Entry {
             path,
             dir,
             size: if dir { 0 } else { h.size.max(0) as u64 },
             modified: h.mod_time.map(|t| t.secs),
-        });
+        })?;
     }
-    Ok(entries)
+    Ok(std::mem::take(&mut gather.entries))
 }
 
-fn zip_entries<R: hivepack::zip::ReadAt>(source: R) -> Result<(Vec<Entry>, Option<String>), Error> {
+fn zip_entries<R: hivepack::zip::ReadAt>(
+    source: R,
+    gather: &mut Gather,
+) -> Result<(Vec<Entry>, Option<String>), Error> {
     let archive = Archive::open(source, OpenFlags::CHECKCONS | OpenFlags::RDONLY)?;
-    let mut entries = Vec::new();
     let mut encryption = None;
     for i in 0..archive.get_num_entries(Flags::NONE) {
         let stat = archive.stat_index(i, Flags::NONE)?;
@@ -337,21 +459,23 @@ fn zip_entries<R: hivepack::zip::ReadAt>(source: R) -> Result<(Vec<Entry>, Optio
             };
         }
         let dir = name.ends_with('/');
-        entries.push(Entry {
+        gather.push(Entry {
             path,
             dir,
             size: if dir { 0 } else { stat.size },
             modified: Some(stat.mtime),
-        });
+        })?;
     }
-    Ok((entries, encryption))
+    Ok((std::mem::take(&mut gather.entries), encryption))
 }
 
 /// An ISO 9660 image's entries: Rock Ridge's names, else Joliet's, else
 /// ISO 9660's. The root directory, `.`, is not one, nor is an entry
 /// whose name could not be made.
-fn iso_entries<R: Read>(mut iso: hivepack::iso::Reader<R>) -> Result<Vec<Entry>, Error> {
-    let mut entries = Vec::new();
+fn iso_entries<R: Read>(
+    mut iso: hivepack::iso::Reader<R>,
+    gather: &mut Gather,
+) -> Result<Vec<Entry>, Error> {
     while let Some(h) = iso.next()? {
         let Some(name) = &h.path else {
             continue;
@@ -361,16 +485,16 @@ fn iso_entries<R: Read>(mut iso: hivepack::iso::Reader<R>) -> Result<Vec<Entry>,
             continue;
         }
         let dir = h.is_dir();
-        entries.push(Entry {
+        gather.push(Entry {
             path,
             dir,
             // A hard link has no size: its data, the entry's before it, is
             // counted there, once.
             size: if dir { 0 } else { h.size.unwrap_or(0) },
             modified: h.mod_time,
-        });
+        })?;
     }
-    Ok(entries)
+    Ok(std::mem::take(&mut gather.entries))
 }
 
 /// A 7z archive's entries, and `AES-256` if its files or names are
@@ -402,9 +526,8 @@ fn ntfs_to_unix(ntfs: u64) -> i64 {
 
 /// A cpio archive's entries: Linux's initramfs, an RPM package's payload.
 /// The root, `.`, is not one.
-fn cpio_entries(r: impl Read) -> Result<Vec<Entry>, Error> {
+fn cpio_entries(r: impl Read, gather: &mut Gather) -> Result<Vec<Entry>, Error> {
     let mut cpio = hivepack::cpio::Reader::new(r);
-    let mut entries = Vec::new();
     while let Some(h) = cpio.next()? {
         let path = components(&String::from_utf8_lossy(&h.path));
         if path.is_empty() {
@@ -412,7 +535,7 @@ fn cpio_entries(r: impl Read) -> Result<Vec<Entry>, Error> {
         }
         let kind = h.file_type();
         let dir = kind == hivepack::cpio::AE_IFDIR;
-        entries.push(Entry {
+        gather.push(Entry {
             path,
             dir,
             size: if kind == hivepack::cpio::AE_IFREG {
@@ -421,9 +544,9 @@ fn cpio_entries(r: impl Read) -> Result<Vec<Entry>, Error> {
                 0
             },
             modified: Some(h.mod_time),
-        });
+        })?;
     }
-    Ok(entries)
+    Ok(std::mem::take(&mut gather.entries))
 }
 
 /// A XAR archive's entries. A macOS package's payloads (`Payload`,
@@ -489,7 +612,7 @@ fn payload_entries<R: Read + Send>(
     if opened.container() != Container::Cpio {
         return Ok(None);
     }
-    cpio_entries(opened).map(Some)
+    cpio_entries(opened, &mut Gather::quiet()).map(Some)
 }
 
 /// A UDF volume's entries, as its directories list them.
@@ -516,6 +639,73 @@ fn udf_entries<R: Read + io::Seek>(image: R) -> Result<Vec<Entry>, Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn entry(name: &str) -> Entry {
+        Entry {
+            path: vec![name.to_owned()],
+            dir: false,
+            size: 1,
+            modified: None,
+        }
+    }
+
+    fn data(name: &str) -> PathBuf {
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/data")
+            .join(name)
+    }
+
+    #[test]
+    fn what_is_found_is_told_now_and_then() {
+        let mut told: Vec<Entry> = Vec::new();
+        let mut tell = |more: Vec<Entry>| told.extend(more);
+        let mut gather = Gather::new(Listen {
+            found: Some(&mut tell),
+            ..Listen::default()
+        });
+        gather.push(entry("a")).expect("not stopped");
+        std::thread::sleep(TELL_EVERY);
+        // What was not told yet goes with it.
+        gather.push(entry("b")).expect("not stopped");
+        gather.push(entry("c")).expect("not stopped");
+        let entries = std::mem::take(&mut gather.entries);
+        drop(gather);
+        assert_eq!(told, [entry("a"), entry("b")]);
+        assert_eq!(entries, [entry("a"), entry("b"), entry("c")]);
+    }
+
+    #[test]
+    fn a_reading_stops_when_told_to() {
+        for name in ["notes.tlz", "sample.7z", "rar5_multiple_files.rar"] {
+            let cancel = Cancel::new();
+            cancel.cancel();
+            let listen = Listen {
+                cancel: Some(cancel),
+                ..Listen::default()
+            };
+            let listed = list_as_read(data(name), &Keys::default(), listen);
+            assert!(
+                matches!(listed, Err(Error::Cancelled)),
+                "{name}: {listed:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_reading_says_how_far_in_it_is() {
+        let read = Arc::new(AtomicU32::new(0));
+        let listen = Listen {
+            read: Some(read.clone()),
+            ..Listen::default()
+        };
+        let listing = list_as_read(data("notes.tlz"), &Keys::default(), listen).expect("read");
+        assert_eq!(
+            listing,
+            list(data("notes.tlz"), &Keys::default()).expect("read")
+        );
+        let read = read.load(Ordering::Relaxed);
+        assert!(read > 0 && read <= 1000, "{read}");
+    }
 
     #[test]
     fn components_of_names() {

@@ -1144,6 +1144,9 @@ tcfba8fd5 = Dari penyimpanan…
 # Safe to extract
 t3c93bb70 = Aman diekstrak
 
+# Reading… {percent}%
+t83223c27 = Membaca… { $percent }%
+
 # Read {fetched} of {whole}
 t613dd932 = Dibaca { $fetched } dari { $whole }
 
@@ -1153,6 +1156,9 @@ tdd45c7bb = Tambah berkas
 # Test
 t2ffcbe05 = Uji
 
+# Reading what’s inside…
+t1bbda9f5 = Membaca isinya…
+
 # Nothing in this archive matches “{query}”.
 t36c3e2f5 = Tidak ada di arsip ini yang cocok dengan “{ $query }”.
 
@@ -1161,9 +1167,6 @@ teecdfa3d = Tidak ada di folder ini yang cocok dengan “{ $query }”.
 
 # And {more} more. Type more to narrow it down.
 t843253d0 = Dan { $more } lainnya. Ketik lebih banyak untuk mempersempit.
-
-# Reading what’s inside…
-t1bbda9f5 = Membaca isinya…
 
 # Open an archive
 t8382bd3e = Buka arsip

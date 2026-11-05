@@ -1144,6 +1144,9 @@ tcfba8fd5 = 從儲存位置…
 # Safe to extract
 t3c93bb70 = 可安全解壓縮
 
+# Reading… {percent}%
+t83223c27 = 讀取中… { $percent }%
+
 # Read {fetched} of {whole}
 t613dd932 = 已讀取 { $fetched }，共 { $whole }
 
@@ -1153,6 +1156,9 @@ tdd45c7bb = 加入檔案
 # Test
 t2ffcbe05 = 測試
 
+# Reading what’s inside…
+t1bbda9f5 = 正在讀取內容…
+
 # Nothing in this archive matches “{query}”.
 t36c3e2f5 = 此封存檔中沒有符合「{ $query }」的項目。
 
@@ -1161,9 +1167,6 @@ teecdfa3d = 此資料夾中沒有符合「{ $query }」的項目。
 
 # And {more} more. Type more to narrow it down.
 t843253d0 = 另外還有 { $more } 項。請多輸入一些字以縮小範圍。
-
-# Reading what’s inside…
-t1bbda9f5 = 正在讀取內容…
 
 # Open an archive
 t8382bd3e = 開啟封存檔

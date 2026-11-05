@@ -217,6 +217,22 @@ impl Archive {
         archive
     }
 
+    /// The archive at `source`, being read: nothing found in it yet.
+    pub fn being_read(source: Source, keys: Keys) -> Archive {
+        let listing = Listing {
+            name: source.name(),
+            folder: source.folder(),
+            packed: 0,
+            unpacked: 0,
+            files: 0,
+            layers: Vec::new(),
+            container: packwing_core::Container::Data,
+            encryption: None,
+            entries: Vec::new(),
+        };
+        Archive::read(source, listing, keys, false)
+    }
+
     /// Shows `folder`, from the archive's top: what it holds, its folders
     /// first. Nothing changes for a sample, which has one folder.
     pub fn show(&mut self, folder: Vec<String>) {

@@ -1186,6 +1186,9 @@ tcfba8fd5 = Из хранилища…
 # Safe to extract
 t3c93bb70 = Безопасно извлекать
 
+# Reading… {percent}%
+t83223c27 = Чтение… { $percent }%
+
 # Read {fetched} of {whole}
 t613dd932 = Прочитано { $fetched } из { $whole }
 
@@ -1195,6 +1198,9 @@ tdd45c7bb = Добавить файлы
 # Test
 t2ffcbe05 = Проверить
 
+# Reading what’s inside…
+t1bbda9f5 = Чтение содержимого…
+
 # Nothing in this archive matches “{query}”.
 t36c3e2f5 = В этом архиве нет совпадений с «{ $query }».
 
@@ -1203,9 +1209,6 @@ teecdfa3d = В этой папке нет совпадений с «{ $query }»
 
 # And {more} more. Type more to narrow it down.
 t843253d0 = И ещё { $more }. Введите больше, чтобы сузить поиск.
-
-# Reading what’s inside…
-t1bbda9f5 = Чтение содержимого…
 
 # Open an archive
 t8382bd3e = Открыть архив

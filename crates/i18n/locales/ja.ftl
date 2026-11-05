@@ -1144,6 +1144,9 @@ tcfba8fd5 = ストレージから…
 # Safe to extract
 t3c93bb70 = 安全に展開できます
 
+# Reading… {percent}%
+t83223c27 = 読み込み中… { $percent }%
+
 # Read {fetched} of {whole}
 t613dd932 = { $whole } のうち { $fetched } を読み取り済み
 
@@ -1153,6 +1156,9 @@ tdd45c7bb = ファイルを追加
 # Test
 t2ffcbe05 = テスト
 
+# Reading what’s inside…
+t1bbda9f5 = 中身を読み取っています…
+
 # Nothing in this archive matches “{query}”.
 t36c3e2f5 = このアーカイブに「{ $query }」に一致するものはありません。
 
@@ -1161,9 +1167,6 @@ teecdfa3d = このフォルダに「{ $query }」に一致するものはあり�
 
 # And {more} more. Type more to narrow it down.
 t843253d0 = ほか { $more } 件あります。入力を増やして絞り込んでください。
-
-# Reading what’s inside…
-t1bbda9f5 = 中身を読み取っています…
 
 # Open an archive
 t8382bd3e = アーカイブを開く

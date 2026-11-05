@@ -504,3 +504,112 @@ scenario!(
         ui.wait_for("field: The archive’s password");
     }
 );
+
+/// An entry found by a reading, as packwing-core tells it.
+fn found(path: &str, dir: bool) -> packwing_core::Entry {
+    packwing_core::Entry {
+        path: path.split('/').map(str::to_owned).collect(),
+        dir,
+        size: if dir { 0 } else { 1 },
+        modified: None,
+    }
+}
+
+scenario!(
+    /// An archive being read shows at once, what is found in it as it is,
+    /// with how far in the reading is; what needs it all waits, and what
+    /// is selected stays so as more comes, and when it is read through.
+    an_archive_shows_as_it_is_read,
+    |ui| {
+        let paths = vec![ui.file("a.txt", "a"), ui.file("c.txt", "c")];
+        let zip = packwing_core::create(
+            &paths,
+            &ui.work.join("two.zip"),
+            &packwing_core::NewArchive::default(),
+            &packwing_core::Control::default(),
+        )
+        .expect("the archive");
+        let source = packwing_core::Source::from(zip.as_path());
+        let heard = crate::pages::archive::Heard::default();
+        let (from, told) = (source.clone(), heard.clone());
+        ui.ws(move |ws, _, cx| {
+            ws.archive_page().update(cx, |p, cx| {
+                p.start_reading(from, packwing_core::Keys::default(), told, cx)
+            });
+            ws.show_page(crate::workspace::Page::Archive, cx);
+        });
+        let reading = |ui: &mut Ui| ui.ws(|ws, _, cx| ws.archive_page().read(cx).is_reading());
+        assert!(reading(ui));
+        assert!(ui.shows("archive-reading"));
+        assert!(ui.shown_in_archive().is_empty());
+
+        let hear = |ui: &mut Ui, more: Vec<packwing_core::Entry>, read: u32| {
+            heard.found.lock().expect("not poisoned").extend(more);
+            heard.read.store(read, std::sync::atomic::Ordering::Relaxed);
+            ui.cx
+                .executor()
+                .advance_clock(std::time::Duration::from_millis(500));
+            ui.cx.run_until_parked();
+        };
+        hear(ui, vec![found("c.txt", false)], 420);
+        assert_eq!(ui.shown_in_archive(), ["c.txt"]);
+        ui.click("entry-0");
+        // Neither extracted nor changed before it is all read.
+        ui.click("extract");
+        assert!(!ui.dialog_open());
+        ui.right_click("entry-0");
+        assert!(!ui.shows("entry-menu"));
+
+        // More comes before it: what was selected stays so.
+        hear(ui, vec![found("a.txt", false), found("b/d.txt", false)], 900);
+        assert_eq!(ui.shown_in_archive(), ["b", "a.txt", "c.txt"]);
+        let selected = |ui: &mut Ui| ui.ws(|ws, _, cx| ws.archive_page().read(cx).selected_names());
+        assert_eq!(selected(ui), ["c.txt"]);
+        assert!(reading(ui));
+
+        let listing = packwing_core::list(source.clone(), &packwing_core::Keys::default())
+            .expect("the listing");
+        let archive = crate::model::Archive::read(source, listing, Default::default(), false);
+        ui.ws(move |ws, _, cx| {
+            ws.archive_page().update(cx, |p, cx| p.read_through(archive, cx));
+        });
+        assert!(!reading(ui));
+        assert!(!ui.shows("archive-reading"));
+        assert_eq!(ui.shown_in_archive(), ["a.txt", "c.txt"]);
+        assert_eq!(selected(ui), ["c.txt"]);
+        ui.click("extract");
+        assert!(ui.dialog_open());
+    }
+);
+
+scenario!(
+    /// A folder of many shows only the rows in sight; one found by a search is
+    /// scrolled to.
+    a_folder_of_many_draws_what_is_in_sight,
+    |ui| {
+        let paths: Vec<_> = (0..400)
+            .map(|i| ui.file(&format!("many/f{i:03}.txt"), "x"))
+            .collect();
+        let zip = packwing_core::create(
+            &paths,
+            &ui.work.join("many.zip"),
+            &packwing_core::NewArchive::default(),
+            &packwing_core::Control::default(),
+        )
+        .expect("the archive");
+        ui.open(&zip);
+        assert_eq!(ui.shown_in_archive().len(), 400);
+        assert!(ui.shows("entry-0"));
+        assert!(!ui.shows("entry-399"));
+        ui.ws(|ws, _, cx| {
+            ws.archive_page()
+                .update(cx, |p, cx| p.search_for("f399", cx))
+        });
+        ui.click("entry-0");
+        assert_eq!(
+            ui.ws(|ws, _, cx| ws.archive_page().read(cx).selected_names()),
+            ["f399.txt"]
+        );
+        assert!(ui.shows("entry-399"));
+    }
+);

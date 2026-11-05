@@ -10,7 +10,7 @@ use gpui::{
     KeyDownEvent, PathPromptOptions, Render, Subscription, WeakEntity, Window, WindowAppearance,
     div, prelude::*, rgb, rgba,
 };
-use packwing_core::{Asked, Keys, NewArchive, Source};
+use packwing_core::{Asked, Cancel, Keys, Listen, NewArchive, Source};
 
 use crate::chrome;
 use crate::colors::{self, colors};
@@ -24,7 +24,7 @@ use crate::dialogs::{
 };
 use crate::explorer::ExplorerEvent;
 use crate::model::{Archive, Kind, Selection, stem};
-use crate::pages::archive::{ArchiveEvent, ArchivePage, Shown};
+use crate::pages::archive::{ArchiveEvent, ArchivePage, Heard, Shown};
 use crate::pages::browse::BrowsePage;
 use crate::pages::jobs::{JobsEvent, JobsPage, Summary};
 use crate::pages::onboarding::{Done, Onboarding};
@@ -115,9 +115,11 @@ pub struct Workspace {
     right_click: Entity<RightClickMenu>,
     /// The first run's welcome, shown instead of the pages.
     welcome: Option<(Entity<Onboarding>, Subscription)>,
-    /// The file being read: a reading that ends after another began is
-    /// not shown.
-    reading: Option<Source>,
+    /// The reading of a file going on, and what stops it: one that ends
+    /// after another began is not shown, and is stopped when it does.
+    reading: Option<(u64, Cancel)>,
+    /// The number of the next reading.
+    readings: u64,
     /// The folder to show when what is being read is read: the one files
     /// were just added to.
     folder_after_reading: Option<Vec<String>>,
@@ -387,6 +389,7 @@ impl Workspace {
             right_click,
             welcome: None,
             reading: None,
+            readings: 0,
             folder_after_reading: None,
             unsaved_place: None,
             place_change: 0,
@@ -992,7 +995,7 @@ impl Workspace {
     /// Shows the sample archive, as the screenshots draw it.
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn show_sample(&mut self, cx: &mut Context<Self>) {
-        self.reading = None;
+        self.stop_reading();
         self.archive.update(cx, |p, cx| {
             p.show(Shown::Open(Box::new(demo::project())), cx)
         });
@@ -1010,9 +1013,16 @@ impl Workspace {
         self.read_archive(path.into(), Keys::default(), then_extract, window, cx);
     }
 
-    /// Reads the archive at `source` with `keys`. One that turns out to need
-    /// a passphrase or a password asks for it, and is read again with it;
-    /// a wrong one asks again, saying so.
+    /// Stops the reading going on, if one is.
+    fn stop_reading(&mut self) {
+        if let Some((_, cancel)) = self.reading.take() {
+            cancel.cancel();
+        }
+    }
+
+    /// Reads the archive at `source` with `keys`, its page showing what is
+    /// found as it is. One that turns out to need a passphrase or a password
+    /// asks for it, and is read again with it; a wrong one asks again, saying so.
     fn read_archive(
         &mut self,
         source: Source,
@@ -1022,33 +1032,54 @@ impl Workspace {
         cx: &mut Context<Self>,
     ) {
         let name = source.name();
-        self.archive
-            .update(cx, |p, cx| p.show(Shown::Opening(name.clone()), cx));
+        self.stop_reading();
+        let (number, cancel) = (self.readings, Cancel::new());
+        self.readings += 1;
+        self.reading = Some((number, cancel.clone()));
+        let heard = Heard::default();
+        self.archive.update(cx, |p, cx| {
+            p.start_reading(source.clone(), keys.clone(), heard.clone(), cx)
+        });
         self.show_page(Page::Archive, cx);
-        self.reading = Some(source.clone());
         let (read, with) = (source.clone(), keys.clone());
         let task = cx.background_executor().spawn(async move {
-            let listing = packwing_core::list(&read, &with);
-            let marked = packwing_core::came_from_internet(&read);
-            listing.map(|l| (l, marked))
+            let made = (read.clone(), with.clone());
+            let found = heard.found.clone();
+            let mut tell = move |more: Vec<packwing_core::Entry>| {
+                found
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner)
+                    .extend(more);
+            };
+            let listen = Listen {
+                found: Some(&mut tell),
+                read: Some(heard.read.clone()),
+                cancel: Some(cancel),
+            };
+            let listing = packwing_core::list_as_read(&read, &with, listen);
+            let marked = listing.is_ok() && packwing_core::came_from_internet(&read);
+            // Its top folder made here too: one of many takes a while.
+            listing.map(|l| Archive::read(made.0, l, made.1, marked))
         });
         cx.spawn_in(window, async move |this, cx| {
             let result = task.await;
             let _ = this.update_in(cx, |this, window, cx| {
-                if this.reading.as_ref() != Some(&source) {
+                if this.reading.as_ref().map(|(n, _)| *n) != Some(number) {
                     return;
                 }
                 this.reading = None;
                 let shown = match result {
-                    Ok((listing, marked)) => {
+                    Ok(archive) => {
                         // Only what is on this computer: Recent opens it by its path.
                         if let Some(path) = source.path() {
                             prefs::change(cx, |p| p.opened(path));
                         }
                         let rows = prefs::prefs(cx).recent.iter().map(Row::of).collect();
                         this.recent.update(cx, |r, cx| r.show(rows, cx));
-                        Shown::Open(Box::new(Archive::read(source, listing, keys, marked)))
+                        Shown::Open(Box::new(archive))
                     }
+                    // Another was opened; what it shows stays.
+                    Err(packwing_core::Error::Cancelled) => return,
                     Err(e) => match asked_for(&e, &keys) {
                         Some((asked, again)) => {
                             let then = Then::Read {
@@ -1069,7 +1100,10 @@ impl Workspace {
                 let opened = matches!(shown, Shown::Open(_));
                 let folder = this.folder_after_reading.take();
                 this.archive.update(cx, |p, cx| {
-                    p.show(shown, cx);
+                    match shown {
+                        Shown::Open(archive) => p.read_through(*archive, cx),
+                        shown => p.show(shown, cx),
+                    }
                     if let Some(folder) = folder {
                         p.enter(folder, cx);
                     }
