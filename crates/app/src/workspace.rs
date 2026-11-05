@@ -37,7 +37,7 @@ use crate::prefs::{self, KeptStorage, TrustedKey};
 use crate::right_click::{Action, Request, RightClickMenu};
 use crate::text_size::ui;
 use crate::updates::{Badge, Updates};
-use crate::widgets::{accent_tint, icon, logo, tile};
+use crate::widgets::{accent_tint, icon, logo, tile, tip};
 
 /// The pages the menu leads to.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -2204,10 +2204,19 @@ impl Workspace {
             .px(ui(4.))
             .pt(ui(top))
             .pb(ui(20.))
+            // The logo leads to About.
             .child(
                 tile(48., 16., accent_tint())
+                    .debug_selector(|| "nav-about".to_owned())
+                    .id("nav-about")
                     .mb(ui(12.))
-                    .child(logo(24., accent_tint())),
+                    .cursor_pointer()
+                    .tooltip(tip(tr!("About")))
+                    .child(logo(24., accent_tint()))
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.settings.update(cx, |s, cx| s.show_updates(cx));
+                        this.show_page(Page::Settings, cx);
+                    })),
             )
             .child(
                 item(

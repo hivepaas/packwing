@@ -154,3 +154,16 @@ scenario!(
         assert!(held(ui), "in again without a submenu");
     }
 );
+
+scenario!(
+    /// The logo atop the menu shows Settings › About.
+    the_logo_shows_about,
+    |ui| {
+        ui.click("nav-about");
+        assert_eq!(ui.ws(|ws, _, _| ws.page()), crate::workspace::Page::Settings);
+        assert_eq!(
+            ui.ws(|ws, _, cx| ws.settings_section(cx)),
+            crate::pages::settings::Section::About
+        );
+    }
+);
