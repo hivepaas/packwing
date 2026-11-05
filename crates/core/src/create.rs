@@ -1017,6 +1017,12 @@ pub(crate) fn seven_zip_options(new: &NewArchive) -> Result<hivepack::sevenz::Wr
         random_source: Some(Arc::new(|buffer: &mut [u8]| {
             getrandom::fill(buffer).map_err(io::Error::other)
         })),
+        // Blocks of 4 times the dictionary, each compressed in a thread and
+        // decoded so, by packwing and 7-Zip alike: about 2% larger, and as
+        // many times sooner as there are blocks and threads. The same
+        // archive whatever the threads.
+        lzma2_blocks: hivepack::sevenz::Lzma2Blocks::Auto,
+        threads: crate::threads(),
         ..hivepack::sevenz::WriteOptions::default()
     };
     Ok(options)
@@ -1115,7 +1121,9 @@ enum Coder {
     Gzip(Box<Deflate>),
     Xz(Box<Stream>),
     Zstd(Box<hivepack::zstd::CCtx>),
-    Bzip2(Box<hivepack::bzip2::Compress>),
+    /// In streams of a block each, one after another, which `bzip2 -d`
+    /// reads as one and packwing reads a stream in each thread.
+    Bzip2(Box<hivepack::bzip2::CompressMt>),
     /// What it makes waits in its `Vec`. None once it has ended.
     Lz4(Option<Box<hivepack::lz4::Encoder<Vec<u8>>>>),
 }
@@ -1138,7 +1146,7 @@ impl<W: Write> Squeezed<W> {
         let coder = match new.kind {
             Kind::Tar => Coder::Plain,
             Kind::TarBz2 | Kind::Bz2 => Coder::Bzip2(Box::new(
-                hivepack::bzip2::Compress::new(new.level.bzip2(), 0)
+                hivepack::bzip2::CompressMt::new(new.level.bzip2(), 0, crate::threads())
                     .map_err(|e| failed(e.to_string()))?,
             )),
             Kind::TarLz4 | Kind::Lz4 => {

@@ -494,7 +494,7 @@ fn names_a_system_cannot_take_are_left_out_or_renamed() {
 #[test]
 fn threads_change_how_soon_not_what_is_made_or_read() {
     let s = Scratch::new("threads");
-    for name in ["a.tar.xz", "a.tar.zst"] {
+    for name in ["a.tar.xz", "a.tar.zst", "a.tar.bz2", "a.7z", "a.zip"] {
         let made: Vec<Vec<u8>> = [&["-T", "1"][..], &["--threads", "3"], &[]]
             .iter()
             .enumerate()

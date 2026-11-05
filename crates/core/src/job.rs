@@ -486,6 +486,8 @@ pub(crate) fn extract_into(
     options.limits.max_entry_size = limit;
     options.limits.max_total_size = limit;
     options.select = select;
+    // ZIP's files written at once, and 7z's LZMA2 blocks decoded so.
+    options.threads = crate::threads();
     // A name in an old encoding is no reason to stop: the file comes out, its
     // name perhaps wrong. What the name then says is checked all the same.
     options.decode_names = Some(NameDecoder::lossy());
