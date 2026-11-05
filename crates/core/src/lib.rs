@@ -17,6 +17,7 @@ mod job;
 mod joined;
 mod listing;
 mod mark;
+pub mod memory;
 mod passphrase;
 mod rar;
 mod sign;

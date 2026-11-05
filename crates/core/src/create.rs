@@ -1110,10 +1110,6 @@ fn write_tar<W: Write>(items: Vec<Item>, tally: &Tally, out: Squeezed<W>) -> Res
 /// How much is read of a file at a time, and made of what compresses.
 pub(crate) const PIECE: usize = 1 << 16;
 
-/// The most xz's threads may take between them, in bytes. Each takes about
-/// three dictionaries, and the highest level's are 64 MiB.
-const XZ_MEMORY: u64 = 4 << 30;
-
 /// What compresses a tar archive.
 enum Coder {
     /// Written as it is.
@@ -1133,6 +1129,8 @@ pub(crate) struct Squeezed<W> {
     out: W,
     coder: Coder,
     buf: Vec<u8>,
+    /// The memory its threads hold, until it is dropped.
+    _held: Option<crate::memory::Held>,
 }
 
 /// As many threads as [`crate::use_threads`] allows.
@@ -1143,6 +1141,7 @@ fn threads() -> u32 {
 impl<W: Write> Squeezed<W> {
     pub(crate) fn new(new: &NewArchive, out: W) -> Result<Squeezed<W>, Error> {
         let failed = |e: String| Error::Failed(tr!("Could not start compressing: {e}", e = e));
+        let mut held = None;
         let coder = match new.kind {
             Kind::Tar => Coder::Plain,
             Kind::TarBz2 | Kind::Bz2 => Coder::Bzip2(Box::new(
@@ -1166,9 +1165,16 @@ impl<W: Write> Squeezed<W> {
                     check: hivepack::xz::Check::CRC64,
                     ..MtOptions::default()
                 };
-                while options.threads > 1 && stream_encoder_mt_memusage(&options) > XZ_MEMORY {
-                    options.threads -= 1;
-                }
+                // As many threads as the memory there is takes: each takes
+                // about three dictionaries, the highest level's 64 MiB.
+                let (threads, holds) = crate::memory::hold_threads(options.threads, |n| {
+                    stream_encoder_mt_memusage(&MtOptions {
+                        threads: n,
+                        ..options.clone()
+                    })
+                });
+                options.threads = threads;
+                held = Some(holds);
                 Coder::Xz(Box::new(
                     Stream::stream_encoder_mt(&options).map_err(|e| failed(e.to_string()))?,
                 ))
@@ -1200,6 +1206,7 @@ impl<W: Write> Squeezed<W> {
             out,
             coder,
             buf: vec![0; PIECE],
+            _held: held,
         })
     }
 
