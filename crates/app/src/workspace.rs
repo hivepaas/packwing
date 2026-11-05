@@ -935,7 +935,7 @@ impl Workspace {
         let ask = Ask {
             asked,
             then: Then::Read {
-                source: PathBuf::from("/home/user/Downloads/Tài liệu dự án 2026.7z").into(),
+                source: PathBuf::from("/home/user/Downloads/Project files 2026.7z").into(),
                 keys: Keys::default(),
                 then_extract: false,
             },
@@ -1443,14 +1443,14 @@ impl Workspace {
         let samples = [
             (
                 Verb::Extract,
-                "Tài liệu dự án 2026.7z",
-                "~/Downloads/Tài liệu dự án 2026",
+                "Project files 2026.7z",
+                "~/Downloads/Project files 2026",
                 State::Running,
             ),
             (
                 Verb::Extract,
-                "Hợp đồng 2025.zip",
-                "~/Documents/Hợp đồng 2025",
+                "Contracts 2025.zip",
+                "~/Documents/Contracts 2025",
                 State::Running,
             ),
             (Verb::Test, "photos-2026.7z", "", State::Queued),

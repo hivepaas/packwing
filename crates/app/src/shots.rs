@@ -224,7 +224,7 @@ const SCREENS: [(&str, SetUp); 90] = [
     ("preview-text", |ws, _, cx| {
         ws.show_archive(read(), cx);
         ws.select_in_archive(&[1], cx);
-        let text = "# Trang của công ty\n\nCách chạy:\n\n    ./deploy.sh --production\n\nHỏi ai nếu có lỗi? Xem docs/.\n";
+        let text = "# The company site\n\nTo run it:\n\n    ./deploy.sh --production\n\nSomething went wrong? See docs/.\n";
         ws.preview_in_archive(None, text, cx);
     }),
     ("archive-entry-menu", |ws, _, cx| {
@@ -342,7 +342,7 @@ const SCREENS: [(&str, SetUp); 90] = [
         crate::prefs::change(cx, |p| {
             p.trusted_keys = vec![
                 crate::prefs::TrustedKey {
-                    name: "An Nguyễn".into(),
+                    name: "Alex Morgan".into(),
                     line: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJIhr5+zPZF9Kv0Y9Q1mXyXn1Mc3Q9sVZ3wVdN1m7Mqk"
                         .into(),
                 },
@@ -509,7 +509,7 @@ fn sample_storage() -> PathBuf {
     let dir = out_dir().join("sample-storage");
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(dir.join("assets")).expect("cannot make a folder");
-    std::fs::create_dir_all(dir.join("Báo cáo")).expect("cannot make a folder");
+    std::fs::create_dir_all(dir.join("Reports")).expect("cannot make a folder");
     std::fs::write(dir.join("assets/logo.svg"), "<svg/>").expect("cannot write");
     for (name, bytes) in [
         ("site-2026-10.zip", 42_000_000usize),
@@ -566,7 +566,7 @@ fn sign_for_shot(dir: &std::path::Path, name: &str, trusted: bool, cx: &mut gpui
     )
     .expect("cannot sign");
     if trusted {
-        crate::prefs::change(cx, |p| p.trust("An Nguyễn".to_owned(), key.public()));
+        crate::prefs::change(cx, |p| p.trust("Alex Morgan".to_owned(), key.public()));
     }
 }
 
@@ -651,7 +651,7 @@ fn read() -> Shown {
 }
 
 /// A name too long for anything it is shown in.
-const LONG_NAME: &str = "Báo-cáo-tài-chính-hợp-nhất-toàn-bộ-công-ty-và-các-đơn-vị-thành-viên-năm-2026-bản-cuối-cùng-đã-được-ban-giám-đốc-phê-duyệt-và-ký-tên-đóng-dấu.tar.zst";
+const LONG_NAME: &str = "Consolidated-financial-statements-of-the-whole-company-and-every-member-unit-for-2026-final-version-approved-signed-and-stamped-by-the-board.tar.zst";
 
 fn read_named(name: &str) -> Shown {
     let zip = name.ends_with(".zip");
@@ -898,8 +898,8 @@ fn a_click_on_a_file_shows_it_in_the_preview() {
     let folder = std::env::temp_dir().join(format!("packwing-preview-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&folder);
     std::fs::create_dir_all(&folder).expect("cannot make a folder");
-    let note = folder.join("ghi chú.txt");
-    std::fs::write(&note, "xin chào\n").expect("cannot write a file");
+    let note = folder.join("notes.txt");
+    std::fs::write(&note, "hello\n").expect("cannot write a file");
     let archive = packwing_core::create(
         &[note],
         &folder.join("a.zip"),
@@ -950,8 +950,8 @@ fn a_click_on_a_file_shows_it_in_the_preview() {
         !reading.read_with(cx, |p, _| p.previewed().1)
     });
     let (shown, picked) = page.read_with(&cx, |p, _| (p.previewed().0, p.picked()));
-    assert_eq!(shown.as_deref(), Some("xin chào\n"));
-    assert_eq!(picked, [vec!["ghi chú.txt".to_owned()]]);
+    assert_eq!(shown.as_deref(), Some("hello\n"));
+    assert_eq!(picked, [vec!["notes.txt".to_owned()]]);
     let _ = std::fs::remove_dir_all(&folder);
 }
 
@@ -1138,17 +1138,17 @@ fn a_name_typed_makes_a_folder_and_renames_a_file() {
         .update(&mut cx, |_, window, cx| {
             explorer.update(cx, |e, cx| {
                 e.type_new_folder(window, cx);
-                e.type_name("Thư mục", cx);
+                e.type_name("Projects", cx);
                 e.commit_name(window, cx);
             })
         })
         .expect("the window");
     cx.run_until_parked();
-    assert!(dir.join("Thư mục").is_dir());
+    assert!(dir.join("Projects").is_dir());
     window
         .update(&mut cx, |_, window, cx| {
             explorer.update(cx, |e, cx| {
-                assert_eq!(e.selection().remove(0).name, "Thư mục");
+                assert_eq!(e.selection().remove(0).name, "Projects");
                 e.choose("file1.txt", cx);
                 e.type_rename(window, cx);
                 // Taken: it says so, and the name can be typed again.
@@ -1173,16 +1173,16 @@ fn a_name_typed_makes_a_folder_and_renames_a_file() {
     window
         .update(&mut cx, |_, window, cx| {
             explorer.update(cx, |e, cx| {
-                e.type_name("đổi tên.txt", cx);
+                e.type_name("renamed.txt", cx);
                 e.commit_name(window, cx);
             })
         })
         .expect("the window");
     cx.run_until_parked();
-    assert!(dir.join("đổi tên.txt").exists());
+    assert!(dir.join("renamed.txt").exists());
     assert!(!dir.join("file1.txt").exists());
     let shown = explorer.read_with(&cx, |e, _| e.shown_names());
-    assert!(shown.contains(&"đổi tên.txt".to_owned()), "{shown:?}");
+    assert!(shown.contains(&"renamed.txt".to_owned()), "{shown:?}");
 }
 
 #[test]
@@ -1298,17 +1298,17 @@ fn moving_runs_as_a_job_and_lists_again() {
     let (a, b) = (top.join("a"), top.join("b"));
     std::fs::create_dir_all(&a).expect("cannot make a folder");
     std::fs::create_dir_all(&b).expect("cannot make a folder");
-    std::fs::write(a.join("đi.txt"), "x").expect("cannot write");
+    std::fs::write(a.join("plan.txt"), "x").expect("cannot write");
     let (mut cx, window, explorer) = explorer_on(a.clone());
     window
         .update(&mut cx, |ws, window, cx| {
-            explorer.update(cx, |e, cx| e.choose("đi.txt", cx));
+            explorer.update(cx, |e, cx| e.choose("plan.txt", cx));
             ws.start_transfer_to(true, &b, window, cx);
         })
         .expect("the window");
     cx.run_until_parked();
-    assert!(b.join("đi.txt").exists());
-    assert!(!a.join("đi.txt").exists());
+    assert!(b.join("plan.txt").exists());
+    assert!(!a.join("plan.txt").exists());
     window
         .update(&mut cx, |ws, _, _| assert!(!ws.dialog_open()))
         .expect("the window");
@@ -2458,7 +2458,7 @@ fn folder_with_file(test: &str) -> PathBuf {
     let dir = out_dir().join(format!("sign-{test}"));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).expect("cannot make a folder");
-    std::fs::write(dir.join("đi.txt"), "x").expect("cannot write");
+    std::fs::write(dir.join("plan.txt"), "x").expect("cannot write");
     dir
 }
 
@@ -2470,8 +2470,8 @@ fn pro_signs_a_file_and_the_panel_says_who() {
     let dialog = window
         .update(&mut cx, |ws, window, cx| {
             pro_license(cx);
-            explorer.update(cx, |e, cx| e.choose("đi.txt", cx));
-            ws.open_sign_of("đi.txt", window, cx)
+            explorer.update(cx, |e, cx| e.choose("plan.txt", cx));
+            ws.open_sign_of("plan.txt", window, cx)
         })
         .expect("the window");
     cx.run_until_parked();
@@ -2481,13 +2481,13 @@ fn pro_signs_a_file_and_the_panel_says_who() {
     cx.capture_screenshot(window.into())
         .expect("cannot draw the window");
     cx.run_until_parked();
-    assert!(dir.join("đi.txt.sig").is_file());
+    assert!(dir.join("plan.txt.sig").is_file());
     window
         .update(&mut cx, |ws, _, _| assert!(!ws.dialog_open()))
         .expect("the window");
     // Whoever signs trusts their own key, so it says they signed it.
     assert_eq!(
-        signature_shown(&cx, &explorer, "đi.txt"),
+        signature_shown(&cx, &explorer, "plan.txt"),
         Some(packwing_core::Signed::Good {
             fingerprint: key.public().fingerprint()
         })
@@ -2501,14 +2501,14 @@ fn free_cannot_sign_but_checks_what_is_signed() {
     let key = test_key("free");
     let dialog = window
         .update(&mut cx, |ws, window, cx| {
-            ws.open_sign_of("đi.txt", window, cx)
+            ws.open_sign_of("plan.txt", window, cx)
         })
         .expect("the window");
     cx.run_until_parked();
     dialog.update(&mut cx, |d, cx| d.use_key_for_test(key.clone(), cx));
     dialog.update(&mut cx, |d, cx| d.start_for_test(cx));
     cx.run_until_parked();
-    assert!(!dir.join("đi.txt.sig").exists(), "Free signed");
+    assert!(!dir.join("plan.txt.sig").exists(), "Free signed");
     // What another signed, with a key this user trusts, is checked all the same.
     let control = packwing_core::Control {
         progress: None,
@@ -2518,7 +2518,7 @@ fn free_cannot_sign_but_checks_what_is_signed() {
     };
     packwing_core::sign_file(
         &packwing_core::LocalFolder::new(&dir),
-        &["đi.txt".to_owned()],
+        &["plan.txt".to_owned()],
         &key,
         &control,
     )
@@ -2527,7 +2527,7 @@ fn free_cannot_sign_but_checks_what_is_signed() {
         .update(&mut cx, |ws, _, cx| {
             crate::prefs::change(cx, |p| p.trust("An".to_owned(), key.public()));
             ws.refresh_explorers_for_test(cx);
-            explorer.update(cx, |e, cx| e.choose("đi.txt", cx));
+            explorer.update(cx, |e, cx| e.choose("plan.txt", cx));
         })
         .expect("the window");
     cx.run_until_parked();
@@ -2535,7 +2535,7 @@ fn free_cannot_sign_but_checks_what_is_signed() {
         .expect("cannot draw the window");
     cx.run_until_parked();
     assert!(matches!(
-        signature_shown(&cx, &explorer, "đi.txt"),
+        signature_shown(&cx, &explorer, "plan.txt"),
         Some(packwing_core::Signed::Good { .. })
     ));
 }
@@ -2546,14 +2546,14 @@ fn a_key_no_longer_trusted_proves_nothing_once_back_on_the_page() {
     let (mut cx, window, explorer) = explorer_on(dir);
     window
         .update(&mut cx, |_, _, cx| {
-            let path = explorer.read(cx).local_path_of("đi.txt").expect("a path");
-            sign_for_shot(path.parent().expect("a folder"), "đi.txt", true, cx);
+            let path = explorer.read(cx).local_path_of("plan.txt").expect("a path");
+            sign_for_shot(path.parent().expect("a folder"), "plan.txt", true, cx);
         })
         .expect("the window");
     window
         .update(&mut cx, |ws, _, cx| {
             ws.refresh_explorers_for_test(cx);
-            explorer.update(cx, |e, cx| e.choose("đi.txt", cx));
+            explorer.update(cx, |e, cx| e.choose("plan.txt", cx));
         })
         .expect("the window");
     cx.run_until_parked();
@@ -2561,7 +2561,7 @@ fn a_key_no_longer_trusted_proves_nothing_once_back_on_the_page() {
         .expect("cannot draw the window");
     cx.run_until_parked();
     assert!(matches!(
-        signature_shown(&cx, &explorer, "đi.txt"),
+        signature_shown(&cx, &explorer, "plan.txt"),
         Some(packwing_core::Signed::Good { .. })
     ));
     window
@@ -2576,7 +2576,7 @@ fn a_key_no_longer_trusted_proves_nothing_once_back_on_the_page() {
         .expect("cannot draw the window");
     cx.run_until_parked();
     assert!(matches!(
-        signature_shown(&cx, &explorer, "đi.txt"),
+        signature_shown(&cx, &explorer, "plan.txt"),
         Some(packwing_core::Signed::Stranger { .. })
     ));
 }
@@ -2653,7 +2653,7 @@ fn a_file_across_a_network_is_checked_only_when_asked() {
     let (mut cx, window, explorer) = explorer_on(out_dir());
     window
         .update(&mut cx, |_, _, cx| {
-            sign_for_shot(&dir, "đi.txt", true, cx);
+            sign_for_shot(&dir, "plan.txt", true, cx);
             let place = crate::explorer::Place {
                 name: "Far".into(),
                 tag: "FAR",
@@ -2666,7 +2666,7 @@ fn a_file_across_a_network_is_checked_only_when_asked() {
     cx.run_until_parked();
     window
         .update(&mut cx, |_, _, cx| {
-            explorer.update(cx, |e, cx| e.choose("đi.txt", cx))
+            explorer.update(cx, |e, cx| e.choose("plan.txt", cx))
         })
         .expect("the window");
     cx.run_until_parked();
@@ -2674,7 +2674,7 @@ fn a_file_across_a_network_is_checked_only_when_asked() {
         .expect("cannot draw the window");
     cx.run_until_parked();
     assert!(matches!(
-        signature_shown(&cx, &explorer, "đi.txt"),
+        signature_shown(&cx, &explorer, "plan.txt"),
         Some(packwing_core::Signed::NotChecked { .. })
     ));
     window
@@ -2684,7 +2684,7 @@ fn a_file_across_a_network_is_checked_only_when_asked() {
         .expect("the window");
     cx.run_until_parked();
     assert!(matches!(
-        signature_shown(&cx, &explorer, "đi.txt"),
+        signature_shown(&cx, &explorer, "plan.txt"),
         Some(packwing_core::Signed::Good { .. })
     ));
 }
@@ -2692,8 +2692,8 @@ fn a_file_across_a_network_is_checked_only_when_asked() {
 #[test]
 fn only_one_file_is_offered_for_signing() {
     let dir = folder_with_file("offered");
-    std::fs::create_dir(dir.join("thư mục")).expect("cannot make a folder");
-    std::fs::write(dir.join("đi.txt.sig"), "x").expect("cannot write");
+    std::fs::create_dir(dir.join("folder")).expect("cannot make a folder");
+    std::fs::write(dir.join("plan.txt.sig"), "x").expect("cannot write");
     let (mut cx, window, explorer) = explorer_on(dir);
     let asks = |cx: &mut HeadlessAppContext, name: &str| {
         window
@@ -2710,7 +2710,7 @@ fn only_one_file_is_offered_for_signing() {
             .update(cx, |ws, _, _| ws.dialog_open())
             .expect("the window")
     };
-    assert!(!asks(&mut cx, "thư mục"));
-    assert!(!asks(&mut cx, "đi.txt.sig"));
-    assert!(asks(&mut cx, "đi.txt"));
+    assert!(!asks(&mut cx, "folder"));
+    assert!(!asks(&mut cx, "plan.txt.sig"));
+    assert!(asks(&mut cx, "plan.txt"));
 }

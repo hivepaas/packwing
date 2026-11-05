@@ -22,30 +22,30 @@ pub fn project() -> Archive {
         unpacked: 1_240_000_000,
         files: 1284,
         encryption: Some("AES-256".into()),
-        folder: vec!["Thiết kế".into(), "Hồ sơ thi công".into()],
+        folder: vec!["Design".into(), "Construction docs".into()],
         entries: vec![
-            entry("Ảnh hiện trạng", Kind::Folder, 86_200_000, "2026-10-15"),
+            entry("Site photos", Kind::Folder, 86_200_000, "2026-10-15"),
             entry(
-                "Bản vẽ mặt bằng tầng 1.pdf",
+                "Floor plan, level 1.pdf",
                 Kind::Pdf,
                 14_800_000,
                 "2026-10-12",
             ),
             entry(
-                "Phối cảnh mặt tiền.jpg",
+                "Front elevation.jpg",
                 Kind::Image,
                 6_400_000,
                 "2026-10-15",
             ),
             entry(
-                "Hợp đồng thi công – bản ký.docx",
+                "Construction contract – signed.docx",
                 Kind::Document,
                 2_100_000,
                 "2026-10-09",
             ),
-            entry("Dự toán chi phí.xlsx", Kind::Sheet, 880_000, "2026-10-14"),
+            entry("Cost estimate.xlsx", Kind::Sheet, 880_000, "2026-10-14"),
             entry(
-                "Ghi chú họp ngày 14-10.txt",
+                "Meeting notes 14-10.txt",
                 Kind::Text,
                 12_000,
                 "2026-10-14",
@@ -58,7 +58,7 @@ pub fn project() -> Archive {
     }
 }
 
-const PROJECT_NAME: &str = "Tài liệu dự án 2026.7z";
+const PROJECT_NAME: &str = "Project files 2026.7z";
 const PROJECT_LOCATION: &str = "Downloads";
 const PROJECT_PACKED: u64 = 412_000_000;
 
@@ -85,13 +85,13 @@ pub const RECENT: &[Recent] = &[
         opened: "Today, 09:12",
     },
     Recent {
-        name: "Báo cáo thuế Q3.part1.rar",
+        name: "Tax report Q3.part1.rar",
         location: "Desktop",
         size: 2_300_000_000,
         opened: "Yesterday, 17:40",
     },
     Recent {
-        name: "Ảnh cưới – bản gốc.zip",
+        name: "Wedding photos – originals.zip",
         location: "Pictures",
         size: 3_800_000_000,
         opened: "2026-10-20",
@@ -108,7 +108,7 @@ pub const RECENT: &[Recent] = &[
 #[cfg(all(test, feature = "test-hooks"))]
 pub fn selection() -> crate::model::Selection {
     crate::model::Selection {
-        paths: vec!["/home/you/Documents/Báo cáo quý 3".into()],
+        paths: vec!["/home/you/Documents/Quarterly report Q3".into()],
         files: 6,
         bytes: 1_800_000_000,
         ..Default::default()
@@ -118,14 +118,14 @@ pub fn selection() -> crate::model::Selection {
 /// More chosen than the list of them shows at once.
 pub fn many_chosen() -> crate::model::Selection {
     let names = [
-        "Báo cáo quý 3",
-        "Hợp đồng thi công – bản ký.docx",
-        "Phối cảnh mặt tiền.jpg",
-        "Dự toán chi phí.xlsx",
-        "Ghi chú họp ngày 14-10.txt",
+        "Quarterly report Q3",
+        "Construction contract – signed.docx",
+        "Front elevation.jpg",
+        "Cost estimate.xlsx",
+        "Meeting notes 14-10.txt",
         "setup_tool.exe",
-        "Bản vẽ mặt bằng tầng 1.pdf",
-        "Ảnh hiện trạng",
+        "Floor plan, level 1.pdf",
+        "Site photos",
         "backup-2026-10.tar.zst",
     ];
     let paths: Vec<std::path::PathBuf> = names
