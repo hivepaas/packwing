@@ -119,6 +119,7 @@ td7627e48 = Choose a storage, and a folder in it
 t1926d127 = New folder
 ta598b15b = Give it a name, without / or \ in it.
 t9451c3b1 = A file of that name is there already: this one will be { $name }.
+t0da27ae4 = Some names can’t be used on Windows or macOS, such as “{ $name }”. There, those files may not extract as they are.
 tae2a96e9 = Hide advanced
 t701d5ed9 = Advanced options
 td386c9ef = Compression level
@@ -224,11 +225,17 @@ t6ed7c612 = Key file
 tcda9a50a = This file is encrypted with age to a key: an age key file or an SSH key. packwing keeps what it reads from it only while the archive is open, and never writes it down.
 t808b85c5 = Enter the key file’s passphrase
 t2a39d1e8 = The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
+t001f6992 = kept, { $size }
+t73aeedd4 = left out
+t7aa9b778 = renamed { $to }
 t57a78885 = The job stopped before it was done.
 t16ec36d9 = Waiting for other jobs…
 t8b1230ed = A file is damaged
+t26835ec8 = Some names can’t be used here
 t54ef3472 = Converted, but some files are damaged
 t8226d624 = Extracted, but some files are damaged
+t5cce0e50 = Converted, with some files left out or renamed
+t5dc002d6 = Extracted, with some files left out or renamed
 t94279f82 = Extracting…
 tc75fe478 = Uploading…
 t01fcd896 = Creating…
@@ -262,6 +269,11 @@ t3045da16 = About { $secs } seconds left
 tf727815c = About a minute left
 tbd7a3305 = About { $div_ceil } minutes left
 t0d56ec7c = { $name } · checking that every file reads
+te728628b =
+    { $n ->
+        [one] and { $count } more
+       *[other] and { $count } more
+    }
 tdf0ce240 = The test passed
 tc1421590 =
     { $n ->
@@ -274,18 +286,28 @@ t798693ad = Do the same for the other damaged files
 t4b7f7705 = Stop
 taaff8ec9 = Leave it out
 tc4387d25 = Keep what was read
-t001f6992 = kept, { $size }
-t73aeedd4 = left out
-t9d82f78b =
+tb75acfb1 =
     { $n ->
-        [one] { $count } file’s data was damaged. The rest was extracted.
-       *[other] { $count } files’ data was damaged. The rest was extracted.
+        [one] { $count } file can’t be extracted under its name here. Nothing is written yet: stop, leave it out, or rename it?
+       *[other] { $count } files can’t be extracted under their names here. Nothing is written yet: stop, leave them out, or rename them?
     }
-te728628b =
+ta50cc084 = Leave out
+t85469b0f =
     { $n ->
-        [one] and { $count } more
-       *[other] and { $count } more
+        [one] { $count } file’s data was damaged.
+       *[other] { $count } files’ data was damaged.
     }
+t2f0042b8 =
+    { $n ->
+        [one] { $count } file was left out.
+       *[other] { $count } files were left out.
+    }
+tec751fa9 =
+    { $n ->
+        [one] { $count } file was renamed, as its name can’t be used here.
+       *[other] { $count } files were renamed, as their names can’t be used here.
+    }
+ta7833fcb = The rest was extracted.
 t3c49b269 = Copy the list
 t27f1ab7d = { $count } of { $count2 } files · { $size } of { $size2 }
 tf0f1017b = Open the folder when it’s done
@@ -568,6 +590,8 @@ tca514dda = When a file is already there
 t296ad686 = A file of the same name in the folder the files go to
 t5957c426 = Largest an archive may unpack to
 t87a41242 = Stops archive bombs: small files that unpack to fill the disk
+tf47f4968 = Only names every system can use
+t44f108af = Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t8ad2f8cf = Light
 t45570065 = Dark
 t8f3184bc = System

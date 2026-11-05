@@ -1,5 +1,5 @@
-//! Extracting: where the files go, what happens to a file already there, and
-//! how big an archive may unpack.
+//! Extracting: where the files go, what happens to a file already there, how
+//! big an archive may unpack, and whose names it takes.
 
 use gpui::{Context, Entity, Render, Subscription, Window, div, prelude::*, rgb};
 use packwing_i18n::tr;
@@ -8,7 +8,7 @@ use super::{group, heading, rows, section, setting};
 use crate::colors::colors;
 use crate::prefs::{ExtractTo, LIMITS, change, prefs};
 use crate::text_size::ui;
-use crate::widgets::{Chosen, Select, SelectLook, option_card, titled};
+use crate::widgets::{Chosen, Select, SelectLook, option_card, switch, titled};
 
 /// What hivepack can do with a file that is there, the first what it does
 /// unless told.
@@ -20,6 +20,7 @@ pub struct Extracting {
     extract_to: ExtractTo,
     existing: Entity<Select>,
     limit: Entity<Select>,
+    portable_names: bool,
     _chosen: Vec<Subscription>,
 }
 
@@ -54,6 +55,7 @@ impl Extracting {
             extract_to: kept.extract_to,
             existing,
             limit,
+            portable_names: kept.portable_names,
             _chosen: chosen,
         }
     }
@@ -118,6 +120,21 @@ impl Render for Extracting {
                     tr!("Largest an archive may unpack to"),
                     tr!("Stops archive bombs: small files that unpack to fill the disk"),
                     self.limit.clone(),
+                ),
+                setting(
+                    tr!("Only names every system can use"),
+                    tr!(
+                        "Names Windows can’t use, such as a:b.txt, and names differing only \
+                         in case are asked about on this computer too"
+                    ),
+                    switch("portable-names", self.portable_names).on_click(cx.listener(
+                        |this, _, _, cx| {
+                            this.portable_names = !this.portable_names;
+                            let on = this.portable_names;
+                            change(cx, |p| p.portable_names = on);
+                            cx.notify();
+                        },
+                    )),
                 ),
             ]))
     }

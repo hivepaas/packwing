@@ -801,6 +801,24 @@ fn every_kind_keeps_a_link_as_a_link() {
     }
 }
 
+/// What goes in is measured with the names some system can't use: Windows'
+/// characters, and a name differing from another only in case.
+#[cfg(unix)]
+#[test]
+fn names_some_system_cannot_use_are_found_when_measured() {
+    let s = Scratch::new("not-portable");
+    let root = s.path("d");
+    fs::create_dir_all(&root).unwrap();
+    for name in ["a:b.txt", "README", "readme", "fine.txt"] {
+        fs::write(root.join(name), name).unwrap();
+    }
+    let measured = measure(std::slice::from_ref(&root)).unwrap();
+    assert_eq!(measured.files, 4);
+    assert_eq!(measured.not_portable, ["d/a:b.txt", "d/readme"]);
+    let fine = measure(&[s.tree()]).unwrap();
+    assert!(fine.not_portable.is_empty());
+}
+
 #[cfg(unix)]
 #[test]
 fn a_link_out_of_the_folder_is_left_out() {

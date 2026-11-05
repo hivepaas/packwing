@@ -339,6 +339,9 @@ ta598b15b = Gib einen Namen ohne / oder \ an.
 # A file of that name is there already: this one will be {name}.
 t9451c3b1 = Eine Datei dieses Namens ist schon da: diese wird { $name }.
 
+# Some names can’t be used on Windows or macOS, such as “{name}”. There, those files may not extract as they are.
+t0da27ae4 = Einige Namen sind unter Windows oder macOS nicht möglich, etwa „{ $name }“. Dort werden diese Dateien womöglich nicht so entpackt, wie sie sind.
+
 # Hide advanced
 tae2a96e9 = Erweitert ausblenden
 
@@ -622,6 +625,15 @@ t808b85c5 = Passphrase der Schlüsseldatei eingeben
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Die Schlüsseldatei ist selbst geschützt. packwing behält ihre Passphrase nur, solange das Archiv geöffnet ist, und schreibt sie nie auf.
 
+# kept, {size}
+t001f6992 = behalten, { $size }
+
+# left out
+t73aeedd4 = weggelassen
+
+# renamed {to}
+t7aa9b778 = umbenannt in { $to }
+
 # The job stopped before it was done.
 t57a78885 = Der Auftrag hat aufgehört, bevor er fertig war.
 
@@ -631,11 +643,20 @@ t16ec36d9 = Wartet auf andere Aufgaben…
 # A file is damaged
 t8b1230ed = Eine Datei ist beschädigt
 
+# Some names can’t be used here
+t26835ec8 = Einige Namen sind hier nicht möglich
+
 # Converted, but some files are damaged
 t54ef3472 = Umgewandelt, aber einige Dateien sind beschädigt
 
 # Extracted, but some files are damaged
 t8226d624 = Entpackt, aber einige Dateien sind beschädigt
+
+# Converted, with some files left out or renamed
+t5cce0e50 = Konvertiert, einige Dateien ausgelassen oder umbenannt
+
+# Extracted, with some files left out or renamed
+t5dc002d6 = Entpackt, einige Dateien ausgelassen oder umbenannt
 
 # Extracting…
 t94279f82 = Wird entpackt…
@@ -736,6 +757,13 @@ tbd7a3305 = Noch etwa { $div_ceil } Minuten
 # {name} · checking that every file reads
 t0d56ec7c = { $name } · es wird geprüft, ob sich jede Datei lesen lässt
 
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+        [one] und { $count } weitere
+       *[other] und { $count } weitere
+    }
+
 # The test passed
 tdf0ce240 = Der Test war erfolgreich
 
@@ -764,25 +792,39 @@ taaff8ec9 = Weglassen
 # Keep what was read
 tc4387d25 = Lesbares behalten
 
-# kept, {size}
-t001f6992 = behalten, { $size }
-
-# left out
-t73aeedd4 = weggelassen
-
-# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
-t9d82f78b =
+# {count} file can’t be extracted under its name here. Nothing is written yet: stop, leave it out, or rename it? | {count} files can’t be extracted under their names here. Nothing is written yet: stop, leave them out, or rename them?
+tb75acfb1 =
     { $n ->
-        [one] Die Daten von { $count } Datei waren beschädigt. Der Rest wurde entpackt.
-       *[other] Die Daten von { $count } Dateien waren beschädigt. Der Rest wurde entpackt.
+        [one] { $count } Datei kann hier nicht unter ihrem Namen entpackt werden. Noch ist nichts geschrieben: anhalten, auslassen oder umbenennen?
+       *[other] { $count } Dateien können hier nicht unter ihren Namen entpackt werden. Noch ist nichts geschrieben: anhalten, auslassen oder umbenennen?
     }
 
-# and {count} more | and {count} more
-te728628b =
+# Leave out
+ta50cc084 = Auslassen
+
+# {count} file’s data was damaged. | {count} files’ data was damaged.
+t85469b0f =
     { $n ->
-        [one] und { $count } weitere
-       *[other] und { $count } weitere
+        [one] Die Daten von { $count } Datei waren beschädigt.
+       *[other] Die Daten von { $count } Dateien waren beschädigt.
     }
+
+# {count} file was left out. | {count} files were left out.
+t2f0042b8 =
+    { $n ->
+        [one] { $count } Datei wurde ausgelassen.
+       *[other] { $count } Dateien wurden ausgelassen.
+    }
+
+# {count} file was renamed, as its name can’t be used here. | {count} files were renamed, as their names can’t be used here.
+tec751fa9 =
+    { $n ->
+        [one] { $count } Datei wurde umbenannt, da ihr Name hier nicht möglich ist.
+       *[other] { $count } Dateien wurden umbenannt, da ihre Namen hier nicht möglich sind.
+    }
+
+# The rest was extracted.
+ta7833fcb = Der Rest wurde entpackt.
 
 # Copy the list
 t3c49b269 = Liste kopieren
@@ -1573,6 +1615,12 @@ t5957c426 = Größe, auf die ein Archiv höchstens entpackt werden darf
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = Schützt vor Archivbomben: kleine Dateien, die entpackt den Datenträger füllen
+
+# Only names every system can use
+tf47f4968 = Nur Namen, die jedes System verwenden kann
+
+# Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
+t44f108af = Namen, die Windows nicht erlaubt, etwa a:b.txt, und Namen, die sich nur in Groß-/Kleinschreibung unterscheiden, werden auch auf diesem Computer abgefragt
 
 # Light
 t8ad2f8cf = Hell

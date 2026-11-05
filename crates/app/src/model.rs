@@ -336,6 +336,8 @@ pub struct Selection {
     pub folders: BTreeSet<PathBuf>,
     pub files: u64,
     pub bytes: u64,
+    /// Names in it that some system can't use, as they go in the archive.
+    pub not_portable: Vec<String>,
 }
 
 impl Selection {

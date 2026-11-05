@@ -337,6 +337,9 @@ ta598b15b = / や \ を含まない名前を付けてください。
 # A file of that name is there already: this one will be {name}.
 t9451c3b1 = 同じ名前のファイルがすでにあります。このファイルは { $name } になります。
 
+# Some names can’t be used on Windows or macOS, such as “{name}”. There, those files may not extract as they are.
+t0da27ae4 = Windows や macOS で使えない名前があります（例: “{ $name }”）。そこではこれらのファイルがそのまま展開されないことがあります。
+
 # Hide advanced
 tae2a96e9 = 詳細設定を隠す
 
@@ -616,6 +619,15 @@ t808b85c5 = キーファイルのパスフレーズを入力
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = このキーファイル自体が保護されています。packwing はそのパスフレーズをアーカイブを開いている間だけ保持し、書き留めることはありません。
 
+# kept, {size}
+t001f6992 = 残しました、{ $size }
+
+# left out
+t73aeedd4 = 除外しました
+
+# renamed {to}
+t7aa9b778 = { $to } に名前を変更
+
 # The job stopped before it was done.
 t57a78885 = ジョブが完了する前に止まりました。
 
@@ -625,11 +637,20 @@ t16ec36d9 = 他のジョブを待っています…
 # A file is damaged
 t8b1230ed = ファイルが破損しています
 
+# Some names can’t be used here
+t26835ec8 = ここでは使えない名前があります
+
 # Converted, but some files are damaged
 t54ef3472 = 変換しましたが、一部のファイルが破損しています
 
 # Extracted, but some files are damaged
 t8226d624 = 展開しましたが、一部のファイルが破損しています
+
+# Converted, with some files left out or renamed
+t5cce0e50 = 変換しました（一部のファイルは除外または名前を変更）
+
+# Extracted, with some files left out or renamed
+t5dc002d6 = 展開しました（一部のファイルは除外または名前を変更）
 
 # Extracting…
 t94279f82 = 展開中…
@@ -730,6 +751,12 @@ tbd7a3305 = 残り約 { $div_ceil } 分
 # {name} · checking that every file reads
 t0d56ec7c = { $name } · すべてのファイルが読み取れるか確認中
 
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+       *[other] ほか { $count } 個
+    }
+
 # The test passed
 tdf0ce240 = テストに合格しました
 
@@ -757,23 +784,35 @@ taaff8ec9 = 除外する
 # Keep what was read
 tc4387d25 = 読み取れた部分を残す
 
-# kept, {size}
-t001f6992 = 残しました、{ $size }
-
-# left out
-t73aeedd4 = 除外しました
-
-# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
-t9d82f78b =
+# {count} file can’t be extracted under its name here. Nothing is written yet: stop, leave it out, or rename it? | {count} files can’t be extracted under their names here. Nothing is written yet: stop, leave them out, or rename them?
+tb75acfb1 =
     { $n ->
-       *[other] { $count } 個のファイルのデータが破損していました。残りは展開しました。
+       *[other] { $count } 個のファイルは、ここではその名前で展開できません。まだ何も書き込んでいません。中止、除外、名前の変更のどれにしますか?
     }
 
-# and {count} more | and {count} more
-te728628b =
+# Leave out
+ta50cc084 = 除外
+
+# {count} file’s data was damaged. | {count} files’ data was damaged.
+t85469b0f =
     { $n ->
-       *[other] ほか { $count } 個
+       *[other] { $count } 個のファイルのデータが壊れていました。
     }
+
+# {count} file was left out. | {count} files were left out.
+t2f0042b8 =
+    { $n ->
+       *[other] { $count } 個のファイルを除外しました。
+    }
+
+# {count} file was renamed, as its name can’t be used here. | {count} files were renamed, as their names can’t be used here.
+tec751fa9 =
+    { $n ->
+       *[other] { $count } 個のファイルは、名前がここで使えないため名前を変更しました。
+    }
+
+# The rest was extracted.
+ta7833fcb = 残りは展開しました。
 
 # Copy the list
 t3c49b269 = リストをコピー
@@ -1557,6 +1596,12 @@ t5957c426 = アーカイブを展開できる最大サイズ
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = アーカイブ爆弾（展開するとディスクを埋め尽くす小さなファイル）を防ぎます
+
+# Only names every system can use
+tf47f4968 = すべてのシステムで使える名前だけ
+
+# Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
+t44f108af = a:b.txt など Windows で使えない名前や、大文字・小文字だけが違う名前も、このコンピューターで確認します
 
 # Light
 t8ad2f8cf = ライト

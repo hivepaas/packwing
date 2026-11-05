@@ -670,6 +670,7 @@ impl CreateDialog {
             let _ = this.update(cx, |this, cx| {
                 this.selection.files = measured.files;
                 this.selection.bytes = measured.bytes;
+                this.selection.not_portable = measured.not_portable;
                 cx.notify();
             });
         }));
@@ -1300,6 +1301,16 @@ impl CreateDialog {
                     .caveat()
                     .map(|caveat| note(Tone::Warn).mt(ui(4.)).child(caveat)),
             )
+            .children(self.selection.not_portable.first().map(|name| {
+                // What it holds is no reason not to make it: said, not refused.
+                note(Tone::Warn)
+                    .mt(ui(4.))
+                    .debug_selector(|| "not-portable".to_owned())
+                    .child(tr!(
+                        "Some names can’t be used on Windows or macOS, such as “{name}”. There, those files may not extract as they are.",
+                        name = name.trim_end_matches('/')
+                    ))
+            }))
     }
 
     fn advanced_toggle(&self, cx: &mut Context<Self>) -> impl IntoElement {

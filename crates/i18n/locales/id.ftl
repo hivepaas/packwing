@@ -337,6 +337,9 @@ ta598b15b = Beri nama, tanpa / atau \ di dalamnya.
 # A file of that name is there already: this one will be {name}.
 t9451c3b1 = Sudah ada berkas dengan nama itu: yang ini akan menjadi { $name }.
 
+# Some names can’t be used on Windows or macOS, such as “{name}”. There, those files may not extract as they are.
+t0da27ae4 = Beberapa nama tidak bisa dipakai di Windows atau macOS, seperti “{ $name }”. Di sana, berkas itu mungkin tidak terekstrak apa adanya.
+
 # Hide advanced
 tae2a96e9 = Sembunyikan opsi lanjutan
 
@@ -616,6 +619,15 @@ t808b85c5 = Masukkan frasa sandi berkas kunci
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Berkas kunci itu sendiri dilindungi. packwing menyimpan frasa sandinya hanya selama arsip terbuka, dan tidak pernah menuliskannya.
 
+# kept, {size}
+t001f6992 = disimpan, { $size }
+
+# left out
+t73aeedd4 = dilewati
+
+# renamed {to}
+t7aa9b778 = diganti nama menjadi { $to }
+
 # The job stopped before it was done.
 t57a78885 = Pekerjaan berhenti sebelum selesai.
 
@@ -625,11 +637,20 @@ t16ec36d9 = Menunggu tugas lain…
 # A file is damaged
 t8b1230ed = Sebuah file rusak
 
+# Some names can’t be used here
+t26835ec8 = Beberapa nama tidak bisa dipakai di sini
+
 # Converted, but some files are damaged
 t54ef3472 = Sudah dikonversi, tetapi beberapa file rusak
 
 # Extracted, but some files are damaged
 t8226d624 = Sudah diekstrak, tetapi beberapa file rusak
+
+# Converted, with some files left out or renamed
+t5cce0e50 = Dikonversi, dengan beberapa berkas dilewati atau diganti nama
+
+# Extracted, with some files left out or renamed
+t5dc002d6 = Diekstrak, dengan beberapa berkas dilewati atau diganti nama
 
 # Extracting…
 t94279f82 = Mengekstrak…
@@ -730,6 +751,12 @@ tbd7a3305 = Sekitar { $div_ceil } menit lagi
 # {name} · checking that every file reads
 t0d56ec7c = { $name } · memeriksa bahwa setiap berkas terbaca
 
+# and {count} more | and {count} more
+te728628b =
+    { $n ->
+       *[other] dan { $count } lainnya
+    }
+
 # The test passed
 tdf0ce240 = Pengujian berhasil
 
@@ -757,23 +784,35 @@ taaff8ec9 = Lewati
 # Keep what was read
 tc4387d25 = Simpan yang terbaca
 
-# kept, {size}
-t001f6992 = disimpan, { $size }
-
-# left out
-t73aeedd4 = dilewati
-
-# {count} file’s data was damaged. The rest was extracted. | {count} files’ data was damaged. The rest was extracted.
-t9d82f78b =
+# {count} file can’t be extracted under its name here. Nothing is written yet: stop, leave it out, or rename it? | {count} files can’t be extracted under their names here. Nothing is written yet: stop, leave them out, or rename them?
+tb75acfb1 =
     { $n ->
-       *[other] Data { $count } file rusak. Sisanya sudah diekstrak.
+       *[other] { $count } berkas tidak bisa diekstrak dengan namanya di sini. Belum ada yang ditulis: hentikan, lewati, atau ganti nama?
     }
 
-# and {count} more | and {count} more
-te728628b =
+# Leave out
+ta50cc084 = Lewati
+
+# {count} file’s data was damaged. | {count} files’ data was damaged.
+t85469b0f =
     { $n ->
-       *[other] dan { $count } lainnya
+       *[other] Data { $count } berkas rusak.
     }
+
+# {count} file was left out. | {count} files were left out.
+t2f0042b8 =
+    { $n ->
+       *[other] { $count } berkas dilewati.
+    }
+
+# {count} file was renamed, as its name can’t be used here. | {count} files were renamed, as their names can’t be used here.
+tec751fa9 =
+    { $n ->
+       *[other] { $count } berkas diganti nama, karena namanya tidak bisa dipakai di sini.
+    }
+
+# The rest was extracted.
+ta7833fcb = Sisanya sudah diekstrak.
 
 # Copy the list
 t3c49b269 = Salin daftar
@@ -1557,6 +1596,12 @@ t5957c426 = Ukuran terbesar hasil ekstrak sebuah arsip
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = Mencegah bom arsip: berkas kecil yang saat diekstrak memenuhi disk
+
+# Only names every system can use
+tf47f4968 = Hanya nama yang bisa dipakai di semua sistem
+
+# Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
+t44f108af = Nama yang tidak diizinkan Windows, seperti a:b.txt, dan nama yang hanya beda huruf besar/kecil juga ditanyakan di komputer ini
 
 # Light
 t8ad2f8cf = Terang
