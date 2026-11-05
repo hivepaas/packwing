@@ -445,9 +445,10 @@ static THREADS: AtomicU32 = AtomicU32::new(0);
 
 /// Lets compressing and decompressing take up to `count` threads from now on:
 /// 0 for as many as the machine has, which is how it starts. Where a format
-/// can be read or written in pieces (xz's blocks, zstd's as it is written),
-/// each piece goes to a thread; what is made is the same however many there
-/// are.
+/// can be read or written in pieces (xz's blocks, bzip2's streams, 7z's LZMA2
+/// blocks, zstd's as it is written, a ZIP archive's files as they are
+/// extracted), each piece goes to a thread; what is made is the same however
+/// many there are.
 pub fn use_threads(count: u32) {
     THREADS.store(count, Ordering::Relaxed);
 }
@@ -543,6 +544,7 @@ pub(crate) fn seven_zip<R: io::Read + io::Seek>(
             if let Some(password) = &password {
                 archive.set_password(password);
             }
+            archive.set_threads(threads());
             Ok(SevenZip {
                 archive,
                 headers_encrypted: false,
