@@ -1646,6 +1646,9 @@ ta391dade = Personalizado…
 # The system’s ({size} px)
 ta51f1877 = La del sistema ({ $size } px)
 
+# All ({count})
+tf65ec196 = Todos ({ $count })
+
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = p. ej., code -n, o /path/to/editor --flag
 
@@ -1663,6 +1666,9 @@ t31018b9f = Apariencia
 
 # Text size
 t2c041143 = Tamaño del texto
+
+# Processor cores to use
+t2f9c3d17 = Núcleos del procesador a usar
 
 # Text editor
 t1ca82aab = Editor de texto

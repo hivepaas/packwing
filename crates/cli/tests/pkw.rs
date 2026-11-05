@@ -490,3 +490,35 @@ fn names_a_system_cannot_take_are_left_out_or_renamed() {
     let asked = s.pkw(&["extract", "a.zip", "-o", "asked", "--on-bad-name", "ask"]);
     assert_eq!(asked.status.code(), Some(2));
 }
+
+#[test]
+fn threads_change_how_soon_not_what_is_made_or_read() {
+    let s = Scratch::new("threads");
+    for name in ["a.tar.xz", "a.tar.zst"] {
+        let made: Vec<Vec<u8>> = [&["-T", "1"][..], &["--threads", "3"], &[]]
+            .iter()
+            .enumerate()
+            .map(|(i, threads)| {
+                let file = format!("{i}-{name}");
+                let mut args = vec!["create", "-q", file.as_str(), "src"];
+                args.extend_from_slice(threads);
+                ok(&s.pkw(&args));
+                std::fs::read(s.path(&file)).expect("what was made")
+            })
+            .collect();
+        assert!(made.windows(2).all(|w| w[0] == w[1]), "{name}");
+        let file = format!("0-{name}");
+        let in_one = ok(&s.pkw(&["list", "-l", "-T", "1", &file]));
+        assert!(in_one.contains("src/docs/notes.txt"), "{in_one}");
+        assert_eq!(in_one, ok(&s.pkw(&["list", "-l", "-T", "0", &file])));
+    }
+    // The app's setting, when none is given; one not understood is all.
+    s.settings("threads=2\n");
+    ok(&s.pkw(&["test", "-q", "0-a.tar.xz"]));
+    s.settings("threads=lots\n");
+    ok(&s.pkw(&["test", "-q", "0-a.tar.xz"]));
+    assert_eq!(
+        s.pkw(&["list", "-T", "some", "0-a.tar.xz"]).status.code(),
+        Some(2)
+    );
+}

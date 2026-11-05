@@ -1127,9 +1127,9 @@ pub(crate) struct Squeezed<W> {
     buf: Vec<u8>,
 }
 
-/// As many threads as the machine has.
+/// As many threads as [`crate::use_threads`] allows.
 fn threads() -> u32 {
-    std::thread::available_parallelism().map_or(1, |n| n.get() as u32)
+    crate::threads().count()
 }
 
 impl<W: Write> Squeezed<W> {

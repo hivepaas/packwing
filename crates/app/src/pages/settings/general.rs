@@ -1,4 +1,5 @@
-//! General: the language, light or dark, and whether packwing is in the right-click menu.
+//! General: the language, light or dark, the text's size, how many cores to use,
+//! and whether packwing is in the right-click menu.
 
 use gpui::{Context, Entity, EventEmitter, Render, Subscription, Window, div, prelude::*, rgb};
 use packwing_i18n::tr;
@@ -82,12 +83,28 @@ fn editor_option(kept: Option<&str>, found: &[(String, String)]) -> usize {
     }
 }
 
+/// The thread counts offered on a computer of `cores`: all of them (0), then
+/// 1 and each power of 2 below it, and `kept` too if it is none of those.
+fn thread_choices(cores: u32, kept: u32) -> Vec<u32> {
+    let mut choices: Vec<u32> = std::iter::once(0)
+        .chain(std::iter::successors(Some(1u32), |n| n.checked_mul(2)).take_while(|n| *n < cores))
+        .collect();
+    if !choices.contains(&kept) {
+        choices.push(kept);
+        choices.sort_unstable();
+    }
+    choices
+}
+
 pub struct General {
     language: Entity<Select>,
     _language_chosen: Subscription,
     /// Body text's size: the system's, then [`text_size::CHOICES`].
     text_size: Entity<Select>,
     _text_size_chosen: Subscription,
+    /// How many threads may be taken, as [`thread_choices`] offers them.
+    threads: Entity<Select>,
+    _threads_chosen: Subscription,
     /// The editors found on this system: (name, command).
     editors: Vec<(String, String)>,
     editor: Entity<Select>,
@@ -144,6 +161,22 @@ impl General {
             // Every window draws at the new size now.
             cx.refresh_windows();
         });
+        let cores = packwing_core::Threads::Auto.count();
+        let kept_threads = crate::prefs::prefs(cx).threads;
+        let choices = thread_choices(cores, kept_threads);
+        let names: Vec<String> = choices
+            .iter()
+            .map(|n| match n {
+                0 => tr!("All ({count})", count = cores),
+                n => n.to_string(),
+            })
+            .collect();
+        let chosen = choices.iter().position(|n| *n == kept_threads).unwrap_or(0);
+        let threads = cx.new(|_| Select::new(&names, chosen, SelectLook::Field).marked("threads"));
+        let threads_chosen = cx.subscribe(&threads, move |_, select, _: &Chosen, cx| {
+            let count = choices.get(select.read(cx).chosen()).copied().unwrap_or(0);
+            crate::prefs::change(cx, |p| p.threads = count);
+        });
         let editors = crate::editors::installed();
         let kept_editor = crate::prefs::prefs(cx).editor;
         let chosen_editor = editor_option(kept_editor.as_deref(), &editors);
@@ -179,6 +212,8 @@ impl General {
             _language_chosen: language_chosen,
             text_size,
             _text_size_chosen: text_size_chosen,
+            threads,
+            _threads_chosen: threads_chosen,
             editors,
             editor,
             editor_command,
@@ -236,6 +271,11 @@ impl Render for General {
                         group()
                             .child(label(tr!("Text size")))
                             .child(self.text_size.clone()),
+                    )
+                    .child(
+                        group()
+                            .child(label(tr!("Processor cores to use")))
+                            .child(self.threads.clone()),
                     ),
             )
             .child(
@@ -266,6 +306,16 @@ impl Render for General {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn all_cores_come_first_then_powers_of_two_below_them() {
+        assert_eq!(thread_choices(1, 0), [0]);
+        assert_eq!(thread_choices(8, 0), [0, 1, 2, 4]);
+        assert_eq!(thread_choices(12, 0), [0, 1, 2, 4, 8]);
+        // What was kept is offered, though it is none of them.
+        assert_eq!(thread_choices(8, 6), [0, 1, 2, 4, 6]);
+        assert_eq!(thread_choices(4, 16), [0, 1, 2, 16]);
+    }
 
     #[test]
     fn the_first_option_is_the_system_and_the_others_each_language() {

@@ -1627,6 +1627,9 @@ ta391dade = 自訂…
 # The system’s ({size} px)
 ta51f1877 = 跟隨系統（{ $size } px）
 
+# All ({count})
+tf65ec196 = 全部 ({ $count })
+
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = 例如 code -n，或 /path/to/editor --flag
 
@@ -1644,6 +1647,9 @@ t31018b9f = 外觀
 
 # Text size
 t2c041143 = 文字大小
+
+# Processor cores to use
+t2f9c3d17 = 使用的處理器核心數
 
 # Text editor
 t1ca82aab = 文字編輯器

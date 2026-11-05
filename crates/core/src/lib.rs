@@ -31,7 +31,9 @@ use packwing_i18n::{tr, tr_n};
 use std::fmt;
 use std::io;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU32, Ordering};
 
+pub use hivepack::Threads;
 use hivepack::age::{
     BoxedIdentity, LazyScryptIdentity, PassphraseFor, PassphrasePrompt, parse_identities_file,
 };
@@ -437,6 +439,24 @@ impl From<hivepack::udf::Error> for Error {
     }
 }
 
+/// How many threads compressing and decompressing may take, as
+/// [`use_threads`] was last told: 0 for as many as the machine has.
+static THREADS: AtomicU32 = AtomicU32::new(0);
+
+/// Lets compressing and decompressing take up to `count` threads from now on:
+/// 0 for as many as the machine has, which is how it starts. Where a format
+/// can be read or written in pieces (xz's blocks, zstd's as it is written),
+/// each piece goes to a thread; what is made is the same however many there
+/// are.
+pub fn use_threads(count: u32) {
+    THREADS.store(count, Ordering::Relaxed);
+}
+
+/// The threads [`use_threads`] allows.
+pub fn threads() -> Threads {
+    Threads::of(THREADS.load(Ordering::Relaxed))
+}
+
 /// The file at `path`, to be opened through its layers as often as asked.
 /// An age layer encrypted with a passphrase takes the one of `keys`; with
 /// none, it says so, and opening fails with [`Error::Locked`], so that the
@@ -477,7 +497,10 @@ where
     {
         identities.extend(found);
     }
-    Opener::new(open).name(name).identities(identities)
+    Opener::new(open)
+        .name(name)
+        .identities(identities)
+        .threads(threads())
 }
 
 /// A 7z archive, opened, and whether its names are encrypted.

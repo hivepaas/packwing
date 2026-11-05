@@ -1,6 +1,6 @@
 //! What the app keeps that pkw uses too, read from its settings file as its
-//! `prefs.rs` writes it: the keys it trusts, and the storages added to it. pkw
-//! never writes it.
+//! `prefs.rs` writes it: the keys it trusts, the storages added to it, and how
+//! many threads it takes. pkw never writes it.
 
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -37,6 +37,16 @@ fn unescaped(text: &str) -> String {
     text.replace("%0A", "\n")
         .replace("%09", "\t")
         .replace("%25", "%")
+}
+
+/// How many threads the app may take: `threads=N`, 0 for all, as it is
+/// without the line.
+pub fn threads(settings: &str) -> u32 {
+    settings
+        .lines()
+        .filter_map(|l| l.strip_prefix("threads="))
+        .find_map(|v| v.parse().ok())
+        .unwrap_or(0)
 }
 
 /// The keys the app trusts, by the names it gives them: `trusted_key=NAME<TAB>LINE`.
@@ -146,5 +156,12 @@ mod tests {
         assert!(kept[1].asks_first);
         assert!(kept[2].storage.is_none(), "no kind for it in this build");
         let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn the_app_s_threads_are_read_and_none_is_all() {
+        assert_eq!(threads("language=vi\nthreads=4\n"), 4);
+        assert_eq!(threads("language=vi\n"), 0);
+        assert_eq!(threads("threads=many\n"), 0);
     }
 }

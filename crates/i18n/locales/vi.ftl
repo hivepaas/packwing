@@ -1627,6 +1627,9 @@ ta391dade = Tuỳ chỉnh…
 # The system’s ({size} px)
 ta51f1877 = Theo hệ thống ({ $size } px)
 
+# All ({count})
+tf65ec196 = Tất cả ({ $count })
+
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = ví dụ code -n, hoặc /đường/dẫn/trình-soạn-thảo --flag
 
@@ -1644,6 +1647,9 @@ t31018b9f = Giao diện
 
 # Text size
 t2c041143 = Cỡ chữ
+
+# Processor cores to use
+t2f9c3d17 = Số nhân xử lý được dùng
 
 # Text editor
 t1ca82aab = Trình soạn thảo văn bản

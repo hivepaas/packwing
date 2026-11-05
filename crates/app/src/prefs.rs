@@ -168,6 +168,9 @@ pub struct Prefs {
     pub signing_key: Option<PathBuf>,
     /// The checksums Checksums shows, in [`Algorithm::ALL`]'s order; never none.
     pub checksums: Vec<Algorithm>,
+    /// How many threads compressing and decompressing may take: 0 for as many
+    /// as the computer has. pkw reads it too.
+    pub threads: u32,
 }
 
 impl Global for Prefs {}
@@ -203,6 +206,7 @@ impl Default for Prefs {
             trusted_keys: Vec::new(),
             signing_key: None,
             checksums: vec![Algorithm::Sha256, Algorithm::Sha1],
+            threads: 0,
         }
     }
 }
@@ -293,6 +297,7 @@ impl Prefs {
                 "keep_mark" => p.keep_mark = on(value, p.keep_mark),
                 "portable_names" => p.portable_names = on(value, p.portable_names),
                 "ask_before_open" => p.ask_before_open = on(value, p.ask_before_open),
+                "threads" => p.threads = value.parse().unwrap_or(p.threads),
                 "limit" => {
                     if let Some(i) = LIMITS.iter().position(|(name, _)| *name == value) {
                         p.limit = i;
@@ -405,7 +410,7 @@ impl Prefs {
         text += &format!(
             "appearance={appearance}\nformat={}\nlevel={level}\nhide_names={}\n\
              skip_mac_files={}\nstore_compressed={}\nstream_above={}\nextract_to={}\noverwrite={}\nlimit={limit}\nkeep_mark={}\n\
-             portable_names={}\nask_before_open={}\n",
+             portable_names={}\nask_before_open={}\nthreads={}\n",
             self.format.ext(),
             self.hide_names,
             self.skip_mac_files,
@@ -416,6 +421,7 @@ impl Prefs {
             self.keep_mark,
             self.portable_names,
             self.ask_before_open,
+            self.threads,
         );
         if let Some(extensions) = &self.stored_extensions {
             text += &format!("stored_extensions={}\n", extensions.join(" "));
@@ -657,6 +663,7 @@ pub fn extensions_in(text: &str) -> Vec<String> {
 pub fn change(cx: &mut App, f: impl FnOnce(&mut Prefs)) {
     let prefs = cx.default_global::<Prefs>();
     f(prefs);
+    packwing_core::use_threads(prefs.threads);
     if let Err(e) = prefs.save() {
         eprintln!("packwing: cannot keep the settings: {e}");
     }
@@ -678,6 +685,17 @@ mod tests {
         assert!(p.store_compressed && p.stored_extensions.is_none());
         let p = Prefs::parse("stored_extensions=\n");
         assert_eq!(p.stored_extensions, Some(Vec::new()));
+    }
+
+    #[test]
+    fn the_threads_chosen_come_back_and_none_kept_is_all() {
+        assert_eq!(Prefs::parse("language=en\n").threads, 0);
+        assert_eq!(Prefs::parse("threads=lots\n").threads, 0);
+        let p = Prefs {
+            threads: 4,
+            ..Prefs::default()
+        };
+        assert_eq!(Prefs::parse(&p.text()).threads, 4);
     }
 
     #[test]

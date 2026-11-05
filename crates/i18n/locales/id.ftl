@@ -1627,6 +1627,9 @@ ta391dade = Kustom…
 # The system’s ({size} px)
 ta51f1877 = Bawaan sistem ({ $size } px)
 
+# All ({count})
+tf65ec196 = Semua ({ $count })
+
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = mis. code -n, atau /path/to/editor --flag
 
@@ -1644,6 +1647,9 @@ t31018b9f = Tampilan
 
 # Text size
 t2c041143 = Ukuran teks
+
+# Processor cores to use
+t2f9c3d17 = Inti prosesor yang dipakai
 
 # Text editor
 t1ca82aab = Editor teks

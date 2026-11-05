@@ -1684,6 +1684,9 @@ ta391dade = Другой…
 # The system’s ({size} px)
 ta51f1877 = Как в системе ({ $size } px)
 
+# All ({count})
+tf65ec196 = Все ({ $count })
+
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = например, code -n или /path/to/editor --flag
 
@@ -1701,6 +1704,9 @@ t31018b9f = Внешний вид
 
 # Text size
 t2c041143 = Размер текста
+
+# Processor cores to use
+t2f9c3d17 = Сколько ядер процессора использовать
 
 # Text editor
 t1ca82aab = Текстовый редактор

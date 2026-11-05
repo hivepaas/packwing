@@ -250,6 +250,7 @@ pub fn run(extensions: Extensions) {
             cx.set_global(extensions);
             let kept = prefs::Prefs::load();
             packwing_i18n::set_language(kept.language.as_deref());
+            packwing_core::use_threads(kept.threads);
             let window_bounds = placement::initial(kept.window, cx);
             cx.set_global(kept);
             cx.set_global(licensing::Licensed::load());

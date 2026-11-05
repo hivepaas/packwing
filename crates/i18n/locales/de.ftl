@@ -1646,6 +1646,9 @@ ta391dade = Benutzerdefiniert…
 # The system’s ({size} px)
 ta51f1877 = Wie im System ({ $size } px)
 
+# All ({count})
+tf65ec196 = Alle ({ $count })
+
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = z. B. code -n oder /path/to/editor --flag
 
@@ -1663,6 +1666,9 @@ t31018b9f = Darstellung
 
 # Text size
 t2c041143 = Textgröße
+
+# Processor cores to use
+t2f9c3d17 = Zu nutzende Prozessorkerne
 
 # Text editor
 t1ca82aab = Texteditor
