@@ -1627,6 +1627,9 @@ ta391dade = 사용자 지정…
 # The system’s ({size} px)
 ta51f1877 = 시스템 설정({ $size } px)
 
+# All ({count})
+tf65ec196 = 모두 ({ $count })
+
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = 예: code -n 또는 /path/to/editor --flag
 
@@ -1644,6 +1647,9 @@ t31018b9f = 모양
 
 # Text size
 t2c041143 = 글자 크기
+
+# Processor cores to use
+t2f9c3d17 = 사용할 프로세서 코어
 
 # Text editor
 t1ca82aab = 텍스트 편집기

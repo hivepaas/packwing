@@ -1646,6 +1646,9 @@ ta391dade = Özel…
 # The system’s ({size} px)
 ta51f1877 = Sistemin boyutu ({ $size } px)
 
+# All ({count})
+tf65ec196 = Tümü ({ $count })
+
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = örn. code -n veya /path/to/editor --flag
 
@@ -1663,6 +1666,9 @@ t31018b9f = Görünüm
 
 # Text size
 t2c041143 = Yazı boyutu
+
+# Processor cores to use
+t2f9c3d17 = Kullanılacak işlemci çekirdekleri
 
 # Text editor
 t1ca82aab = Metin düzenleyici

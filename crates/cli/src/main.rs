@@ -57,6 +57,11 @@ struct Output {
     /// Say nothing but errors, and show no progress.
     #[arg(short, long, global = true)]
     quiet: bool,
+    /// Compress and decompress in up to N threads, where the format allows it
+    /// (xz; zstd as it compresses): 0 for as many as the computer has. By
+    /// default, as the app's Settings say, or 0.
+    #[arg(short = 'T', long, global = true, value_name = "N")]
+    threads: Option<u32>,
 }
 
 /// Where secrets come from.
@@ -418,6 +423,11 @@ fn main() -> ExitCode {
     }
     // The core's messages, in the system's language, as the app's are.
     packwing_i18n::set_language(None);
+    packwing_core::use_threads(
+        cli.output
+            .threads
+            .unwrap_or_else(|| settings::threads(&settings::text())),
+    );
     let secrets = match Secrets::read(
         cli.secrets.password_file.as_deref(),
         cli.secrets.password_stdin,
