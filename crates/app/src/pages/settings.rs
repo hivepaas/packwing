@@ -116,7 +116,6 @@ impl SettingsPage {
         cx.notify();
     }
 
-    #[cfg(all(test, feature = "test-hooks"))]
     pub fn section(&self) -> Section {
         self.section
     }

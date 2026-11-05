@@ -196,6 +196,27 @@ impl StoragesPage {
             .filter(|s| self.locked(s))
     }
 
+    /// The storage chosen, if any.
+    pub fn chosen(&self) -> Option<&KeptStorage> {
+        self.chosen.and_then(|i| self.storages.get(i))
+    }
+
+    /// Browses `storage`, if it is still one of them: whether it is.
+    pub fn choose_storage(&mut self, storage: &KeptStorage, cx: &mut Context<Self>) -> bool {
+        let Some(i) = self.storages.iter().position(|s| s == storage) else {
+            return false;
+        };
+        if self.chosen != Some(i) {
+            self.choose(i, cx);
+        }
+        true
+    }
+
+    /// Whether `storage` is still one of them.
+    pub fn has(&self, storage: &KeptStorage) -> bool {
+        self.storages.contains(storage)
+    }
+
     /// Browses the storage at `i`, if there is one; if it asks first, nothing
     /// of it is shown until it has.
     pub fn choose(&mut self, i: usize, cx: &mut Context<Self>) {

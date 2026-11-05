@@ -3,8 +3,8 @@
 use std::path::{Component, Path, PathBuf};
 
 use gpui::{
-    Context, Div, Entity, FontWeight, Render, SharedString, Stateful, Subscription, Window, div,
-    prelude::*, rgb,
+    App, Context, Div, Entity, FontWeight, Render, SharedString, Stateful, Subscription, Window,
+    div, prelude::*, rgb,
 };
 use packwing_i18n::tr;
 
@@ -89,7 +89,12 @@ impl BrowsePage {
     }
 
     /// The folder shown, on this computer.
-    fn here(&self, cx: &Context<Self>) -> Option<PathBuf> {
+    pub fn tab(&self) -> Tab {
+        self.tab
+    }
+
+    /// The folder shown, on this computer.
+    pub fn here(&self, cx: &App) -> Option<PathBuf> {
         let explorer = self.explorer.read(cx);
         explorer.place()?.storage.local_path(explorer.folder())
     }
