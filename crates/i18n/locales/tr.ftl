@@ -2083,6 +2083,33 @@ t528232e6 = Yükleme durdu.
 # “{pattern}” names no file or folder.
 te17b2bfa = “{ $pattern }” hiçbir dosya ya da klasörü belirtmiyor.
 
+# a colon, which Windows does not allow
+t3ba6a1aa = Windows'un izin vermediği iki nokta
+
+# a character Windows does not allow (\ < > " | ? *)
+t0b11ab21 = Windows'un izin vermediği bir karakter (\ < > " | ? *)
+
+# a name Windows keeps for a device
+t8cac89ee = Windows'un bir aygıt için ayırdığı ad
+
+# ends in a space or a dot, which Windows does not allow
+t7ae9a209 = Windows'un izin vermediği şekilde boşluk ya da noktayla bitiyor
+
+# longer than 255 bytes
+t9218e5c0 = 255 bayttan uzun
+
+# a control character
+t378bba3a = bir denetim karakteri
+
+# not a name this system can read
+t72b79e1d = bu sistemin okuyabildiği bir ad değil
+
+# the same file here as another, its name differing only in case
+t1eead41f = burada başka bir dosyayla aynı, adı yalnızca büyük/küçük harfle farklı
+
+# a link that leads outside the folder
+t00fdc25e = klasörün dışına giden bir bağlantı
+
 # {name} is already in the folder.
 tbe7fab8a = { $name } klasörde zaten var.
 

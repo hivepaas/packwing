@@ -2125,6 +2125,33 @@ t528232e6 = Загрузка остановлена.
 # “{pattern}” names no file or folder.
 te17b2bfa = «{ $pattern }» не указывает ни на файл, ни на папку.
 
+# a colon, which Windows does not allow
+t3ba6a1aa = двоеточие, которое Windows не допускает
+
+# a character Windows does not allow (\ < > " | ? *)
+t0b11ab21 = символ, который Windows не допускает (\ < > " | ? *)
+
+# a name Windows keeps for a device
+t8cac89ee = имя, зарезервированное Windows для устройства
+
+# ends in a space or a dot, which Windows does not allow
+t7ae9a209 = оканчивается пробелом или точкой, чего Windows не допускает
+
+# longer than 255 bytes
+t9218e5c0 = длиннее 255 байт
+
+# a control character
+t378bba3a = управляющий символ
+
+# not a name this system can read
+t72b79e1d = имя, которое эта система не может прочитать
+
+# the same file here as another, its name differing only in case
+t1eead41f = здесь тот же файл, что и другой: имена отличаются только регистром
+
+# a link that leads outside the folder
+t00fdc25e = ссылка, ведущая за пределы папки
+
 # {name} is already in the folder.
 tbe7fab8a = { $name } уже есть в папке.
 

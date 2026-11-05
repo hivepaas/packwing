@@ -2083,6 +2083,33 @@ t528232e6 = Le téléversement s'est arrêté.
 # “{pattern}” names no file or folder.
 te17b2bfa = « { $pattern } » ne désigne aucun fichier ni dossier.
 
+# a colon, which Windows does not allow
+t3ba6a1aa = deux-points, que Windows n’accepte pas
+
+# a character Windows does not allow (\ < > " | ? *)
+t0b11ab21 = un caractère que Windows n’accepte pas (\ < > " | ? *)
+
+# a name Windows keeps for a device
+t8cac89ee = un nom que Windows réserve à un périphérique
+
+# ends in a space or a dot, which Windows does not allow
+t7ae9a209 = se termine par une espace ou un point, que Windows n’accepte pas
+
+# longer than 255 bytes
+t9218e5c0 = plus de 255 octets
+
+# a control character
+t378bba3a = un caractère de contrôle
+
+# not a name this system can read
+t72b79e1d = pas un nom que ce système sait lire
+
+# the same file here as another, its name differing only in case
+t1eead41f = ici le même fichier qu’un autre, son nom ne différant que par la casse
+
+# a link that leads outside the folder
+t00fdc25e = un lien qui mène hors du dossier
+
 # {name} is already in the folder.
 tbe7fab8a = { $name } est déjà dans le dossier.
 

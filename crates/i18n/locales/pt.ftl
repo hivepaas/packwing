@@ -2083,6 +2083,33 @@ t528232e6 = O envio parou.
 # “{pattern}” names no file or folder.
 te17b2bfa = “{ $pattern }” não indica nenhum arquivo nem pasta.
 
+# a colon, which Windows does not allow
+t3ba6a1aa = dois-pontos, que o Windows não permite
+
+# a character Windows does not allow (\ < > " | ? *)
+t0b11ab21 = um caractere que o Windows não permite (\ < > " | ? *)
+
+# a name Windows keeps for a device
+t8cac89ee = um nome que o Windows reserva para um dispositivo
+
+# ends in a space or a dot, which Windows does not allow
+t7ae9a209 = termina em espaço ou ponto, que o Windows não permite
+
+# longer than 255 bytes
+t9218e5c0 = mais de 255 bytes
+
+# a control character
+t378bba3a = um caractere de controle
+
+# not a name this system can read
+t72b79e1d = não é um nome que este sistema consiga ler
+
+# the same file here as another, its name differing only in case
+t1eead41f = aqui é o mesmo arquivo que outro, o nome difere só em maiúsculas
+
+# a link that leads outside the folder
+t00fdc25e = um link que leva para fora da pasta
+
 # {name} is already in the folder.
 tbe7fab8a = { $name } já está na pasta.
 

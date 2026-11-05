@@ -110,6 +110,7 @@ fn none() -> Control {
         progress: None,
         cancel: None,
         on_damaged: None,
+        on_unnamable: None,
     }
 }
 
@@ -586,6 +587,7 @@ fn stopped_on_its_way_straight_it_leaves_nothing_on_the_server() {
             })),
             cancel: Some(cancel),
             on_damaged: None,
+            on_unnamable: None,
         };
         let how = NewArchive {
             kind: Kind::TarZst,

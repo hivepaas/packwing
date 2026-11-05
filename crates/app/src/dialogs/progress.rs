@@ -260,6 +260,7 @@ impl ProgressDialog {
             cancel: Some(cancel.clone()),
             // Only what is extracted to stay: a file opened, or read, is whole.
             on_damaged: matches!(job.verb, Verb::Extract | Verb::Convert).then(|| asking(&damaged)),
+            on_unnamable: None,
         };
         let found = damaged.clone();
         let tested = Arc::new(Mutex::new((0, 0)));

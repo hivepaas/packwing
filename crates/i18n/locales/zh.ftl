@@ -2053,6 +2053,33 @@ t528232e6 = 上传已停止。
 # “{pattern}” names no file or folder.
 te17b2bfa = “{ $pattern }”没有指向任何文件或文件夹。
 
+# a colon, which Windows does not allow
+t3ba6a1aa = 含有 Windows 不允许的冒号
+
+# a character Windows does not allow (\ < > " | ? *)
+t0b11ab21 = 含有 Windows 不允许的字符 (\ < > " | ? *)
+
+# a name Windows keeps for a device
+t8cac89ee = 是 Windows 为设备保留的名称
+
+# ends in a space or a dot, which Windows does not allow
+t7ae9a209 = 以空格或句点结尾，Windows 不允许
+
+# longer than 255 bytes
+t9218e5c0 = 长于 255 字节
+
+# a control character
+t378bba3a = 含有控制字符
+
+# not a name this system can read
+t72b79e1d = 不是本系统能读取的名称
+
+# the same file here as another, its name differing only in case
+t1eead41f = 在这里与另一个文件相同，名称仅大小写不同
+
+# a link that leads outside the folder
+t00fdc25e = 指向文件夹外的链接
+
 # {name} is already in the folder.
 tbe7fab8a = { $name } 已在该文件夹中。
 

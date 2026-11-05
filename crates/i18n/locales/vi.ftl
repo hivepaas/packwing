@@ -2053,6 +2053,33 @@ t528232e6 = Việc tải lên đã dừng.
 # “{pattern}” names no file or folder.
 te17b2bfa = “{ $pattern }” không chỉ tới file hay thư mục nào.
 
+# a colon, which Windows does not allow
+t3ba6a1aa = có dấu hai chấm, Windows không cho phép
+
+# a character Windows does not allow (\ < > " | ? *)
+t0b11ab21 = có ký tự Windows không cho phép (\ < > " | ? *)
+
+# a name Windows keeps for a device
+t8cac89ee = là tên Windows dành cho thiết bị
+
+# ends in a space or a dot, which Windows does not allow
+t7ae9a209 = kết thúc bằng dấu cách hoặc dấu chấm, Windows không cho phép
+
+# longer than 255 bytes
+t9218e5c0 = dài hơn 255 byte
+
+# a control character
+t378bba3a = có ký tự điều khiển
+
+# not a name this system can read
+t72b79e1d = không phải tên hệ thống này đọc được
+
+# the same file here as another, its name differing only in case
+t1eead41f = trùng với một tệp khác ở đây, tên chỉ khác chữ hoa/thường
+
+# a link that leads outside the folder
+t00fdc25e = là liên kết trỏ ra ngoài thư mục
+
 # {name} is already in the folder.
 tbe7fab8a = { $name } đã có trong thư mục.
 

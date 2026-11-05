@@ -7,12 +7,12 @@ use packwing_core::{
     Algorithm, COMPRESSED_EXTENSIONS, Entry, ExtractOptions, Filter, Kind, Listing, LocalFolder,
     NewArchive, OnExisting, Source, Transfer, add_with, algorithms_of, came_from_internet,
     checksum_line, checksums, convert, create, damages, delete, extract_selected, extract_with,
-    has_signature, join_parts, list, read_entry, rename, save_checksum, signature_name, size,
-    split_file, stem, test, transfer,
+    has_signature, join_parts, left_out, list, read_entry, rename, renamings, save_checksum,
+    signature_name, size, split_file, stem, test, transfer,
 };
 use serde_json::{Value, json};
 
-use crate::damaged::Damaging;
+use crate::damaged::{Damaging, Naming, Outcome};
 use crate::names::{
     date, entry_path, format_named, format_of, format_words, level_named, size_typed,
 };
@@ -36,13 +36,15 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
             limit,
             no_mark,
             damaging,
+            naming,
         } => {
             let how = ExtractOptions {
                 overwrite,
                 limit: Some(limit_of(&limit)?),
                 keep_mark: keep_mark(no_mark),
+                portable_names: naming.portable_names,
             };
-            extract_cmd(&archive, &files, output, here, &how, &damaging, cx)
+            extract_cmd(&archive, &files, output, here, &how, &damaging, &naming, cx)
         }
         Command::Test { archive } => test_cmd(&archive, cx),
         Command::Cat {
@@ -249,6 +251,7 @@ fn extract_cmd(
     here: bool,
     how: &ExtractOptions,
     damaging: &Damaging,
+    naming: &Naming,
     cx: &mut Context,
 ) -> Result<(), Exit> {
     let place = Place::of(archive)?;
@@ -262,7 +265,7 @@ fn extract_cmd(
     };
     let picked = picked(files);
     let (control, bar) = crate::progress::control("Extracting", cx.progress);
-    let control = damaging.control(control, cx)?;
+    let control = naming.control(damaging.control(control, cx)?, cx)?;
     let summary = cx.secrets.unlocking(&name, |keys| {
         if picked.is_empty() {
             extract_with(source.clone(), &destination, keys, how, &control)
@@ -271,7 +274,7 @@ fn extract_cmd(
         }
     })?;
     drop(bar);
-    let damaged = damages(&summary);
+    let outcome = outcome_of(&summary);
     if cx.json {
         print_json(&json!({
             "to": destination.display().to_string(),
@@ -279,7 +282,9 @@ fn extract_cmd(
             "directories": summary.directories,
             "links": summary.links,
             "bytes": summary.bytes,
-            "damaged": crate::damaged::as_json(&damaged),
+            "damaged": crate::damaged::as_json(&outcome.damaged),
+            "skipped": crate::damaged::left_out_json(&outcome.left_out),
+            "renamed": crate::damaged::renamed_json(&outcome.renamed),
         }));
     } else if !cx.quiet {
         eprintln!(
@@ -289,7 +294,16 @@ fn extract_cmd(
             destination.display()
         );
     }
-    damaging.finish(&damaged)
+    damaging.finish(&outcome)
+}
+
+/// What came of extracting, as `summary` says.
+fn outcome_of(summary: &packwing_core::Summary) -> Outcome {
+    Outcome {
+        damaged: damages(summary),
+        left_out: left_out(summary),
+        renamed: renamings(summary),
+    }
 }
 
 fn test_cmd(archive: &str, cx: &mut Context) -> Result<(), Exit> {
@@ -885,6 +899,7 @@ fn convert_cmd(
 ) -> Result<(), Exit> {
     let (to, new) = making(to, make, cx)?;
     let name = named(from);
+    // An archive holds any name: none is asked about, but what leads outside.
     let how = ExtractOptions::default();
     let (control, bar) = crate::progress::control("Converting", cx.progress);
     let control = damaging.control(control, cx)?;
@@ -892,7 +907,7 @@ fn convert_cmd(
         convert(Source::from(from), keys, &to, &new, &how, filter, &control)
     })?;
     drop(bar);
-    let damaged = damages(&converted.summary);
+    let outcome = outcome_of(&converted.summary);
     let made = &converted.made;
     let bytes = std::fs::metadata(made).map(|m| m.len()).unwrap_or_default();
     // What signed the one read signed its bytes: the new archive's are others.
@@ -902,7 +917,9 @@ fn convert_cmd(
             "made": made.display().to_string(),
             "size": bytes,
             "files": converted.summary.files,
-            "damaged": crate::damaged::as_json(&damaged),
+            "damaged": crate::damaged::as_json(&outcome.damaged),
+            "skipped": crate::damaged::left_out_json(&outcome.left_out),
+            "renamed": crate::damaged::renamed_json(&outcome.renamed),
             "signature_left_behind": unsigned,
         }));
     } else if !cx.quiet {
@@ -915,7 +932,7 @@ fn convert_cmd(
             );
         }
     }
-    damaging.finish(&damaged)
+    damaging.finish(&outcome)
 }
 
 fn split_cmd(file: &Path, typed: &str, cx: &Context) -> Result<(), Exit> {
