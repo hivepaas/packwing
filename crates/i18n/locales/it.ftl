@@ -183,6 +183,9 @@ tbd79b37d = Salvataggio…
 # Save beside it
 t7f4d85e3 = Salva accanto
 
+# Choose the checksums shown
+teec532fe = Scegli i checksum mostrati
+
 # Read it
 t80fb8482 = Leggilo
 

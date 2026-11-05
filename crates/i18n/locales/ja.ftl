@@ -181,6 +181,9 @@ tbd79b37d = 保存中…
 # Save beside it
 t7f4d85e3 = 隣に保存
 
+# Choose the checksums shown
+teec532fe = 表示するチェックサムを選ぶ
+
 # Read it
 t80fb8482 = 読み取る
 

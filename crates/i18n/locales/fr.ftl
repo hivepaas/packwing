@@ -183,6 +183,9 @@ tbd79b37d = Enregistrement…
 # Save beside it
 t7f4d85e3 = Enregistrer à côté
 
+# Choose the checksums shown
+teec532fe = Choisir les sommes de contrôle affichées
+
 # Read it
 t80fb8482 = Le lire
 

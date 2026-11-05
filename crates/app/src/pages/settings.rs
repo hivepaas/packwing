@@ -127,6 +127,12 @@ impl SettingsPage {
         self.show_section(Section::About, cx);
     }
 
+    /// Shows Security at its end, where its Checksums are.
+    pub fn show_checksums(&mut self, cx: &mut Context<Self>) {
+        self.scroll.scroll_to_bottom();
+        self.show_section(Section::Security, cx);
+    }
+
     /// Shows `a` as chosen, when it was chosen elsewhere.
     pub fn show_appearance(&mut self, a: Appearance, cx: &mut Context<Self>) {
         self.general.update(cx, |g, cx| g.show_appearance(a, cx));

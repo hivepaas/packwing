@@ -181,6 +181,9 @@ tbd79b37d = 저장 중…
 # Save beside it
 t7f4d85e3 = 옆에 저장
 
+# Choose the checksums shown
+teec532fe = 표시할 체크섬 선택
+
 # Read it
 t80fb8482 = 읽기
 

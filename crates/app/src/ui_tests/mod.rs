@@ -247,6 +247,13 @@ impl Ui {
         vcx.debug_bounds(selector)
     }
 
+    /// Makes the window this size, as a user drags it.
+    pub fn resize(&mut self, width: f32, height: f32) {
+        let vcx = VisualTestContext::from_window(self.window().into(), &self.cx);
+        vcx.simulate_resize(gpui::size(gpui::px(width), gpui::px(height)));
+        self.draw();
+    }
+
     pub fn shows(&mut self, selector: &str) -> bool {
         self.find(selector).is_some()
     }

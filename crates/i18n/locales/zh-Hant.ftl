@@ -181,6 +181,9 @@ tbd79b37d = 正在儲存…
 # Save beside it
 t7f4d85e3 = 儲存在旁邊
 
+# Choose the checksums shown
+teec532fe = 選擇顯示的檢查碼
+
 # Read it
 t80fb8482 = 讀取
 

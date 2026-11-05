@@ -23,7 +23,7 @@ use crate::model::size;
 use crate::prefs;
 use crate::text_size::ui;
 use crate::widgets::{
-    Fill, Size, Tone, button, icon, icon_button, legend, mono_font, note, tonal_tint,
+    Fill, Size, Tone, button, icon, icon_button, legend, mono_font, note, tip, tonal_tint,
 };
 
 /// How often the bytes read are shown again.
@@ -647,6 +647,13 @@ impl Render for ChecksumDialog {
                                 })),
                         )
                     })
+                    .child(
+                        icon_button("checksum-settings", "sliders", 40.)
+                            .tooltip(tip(tr!("Choose the checksums shown")))
+                            .on_click(cx.listener(|_, _, _, cx| {
+                                cx.emit(DialogEvent::ShowChecksumSettings)
+                            })),
+                    )
                     .child(div().flex_1())
                     .when(far && !self.started(), |d| {
                         d.child(

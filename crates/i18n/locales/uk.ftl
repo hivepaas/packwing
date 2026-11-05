@@ -187,6 +187,9 @@ tbd79b37d = Збереження…
 # Save beside it
 t7f4d85e3 = Зберегти поруч
 
+# Choose the checksums shown
+teec532fe = Вибрати показувані контрольні суми
+
 # Read it
 t80fb8482 = Прочитати
 

@@ -183,6 +183,9 @@ tbd79b37d = Guardando…
 # Save beside it
 t7f4d85e3 = Guardar junto a él
 
+# Choose the checksums shown
+teec532fe = Elegir las sumas de comprobación que se muestran
+
 # Read it
 t80fb8482 = Leerlo
 

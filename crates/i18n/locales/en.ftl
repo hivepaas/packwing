@@ -67,6 +67,7 @@ t1d91952b = Saved beside it as { $files }, where sha256sum -c and the like check
 tec85be80 = Compare…
 tbd79b37d = Saving…
 t7f4d85e3 = Save beside it
+teec532fe = Choose the checksums shown
 t80fb8482 = Read it
 t8dd31791 = Done
 tcf390b0a = Nothing chosen yet

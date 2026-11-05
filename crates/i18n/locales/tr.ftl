@@ -183,6 +183,9 @@ tbd79b37d = Kaydediliyor…
 # Save beside it
 t7f4d85e3 = Yanına kaydet
 
+# Choose the checksums shown
+teec532fe = Gösterilen sağlama toplamlarını seç
+
 # Read it
 t80fb8482 = Oku
 
