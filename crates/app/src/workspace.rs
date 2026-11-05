@@ -6,9 +6,9 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use gpui::{
-    AnyView, Context, Entity, EventEmitter, ExternalPaths, FocusHandle, Focusable, FontWeight,
-    KeyDownEvent, PathPromptOptions, Render, Subscription, WeakEntity, Window, WindowAppearance,
-    div, prelude::*, rgb, rgba,
+    AnyView, App, Context, Entity, EventEmitter, ExternalPaths, FocusHandle, Focusable, FontWeight,
+    KeyDownEvent, MouseButton, NavigationDirection, PathPromptOptions, Render, Subscription,
+    WeakEntity, Window, WindowAppearance, div, prelude::*, rgb, rgba,
 };
 use packwing_core::{Asked, Cancel, Keys, Listen, NewArchive, Source};
 
@@ -23,16 +23,17 @@ use crate::dialogs::{
     SplitDialog, State, TransferDialog, Verb, ViewDialog, asked_for,
 };
 use crate::explorer::ExplorerEvent;
+use crate::history::History;
 use crate::model::{Archive, Kind, Selection, stem};
 use crate::pages::archive::{ArchiveEvent, ArchivePage, Heard, Shown};
-use crate::pages::browse::BrowsePage;
+use crate::pages::browse::{BrowsePage, Tab};
 use crate::pages::jobs::{JobsEvent, JobsPage, Summary};
 use crate::pages::onboarding::{Done, Onboarding};
 use crate::pages::recent::{RecentEvent, RecentPage, Row};
-use crate::pages::settings::{Appearance, AppearanceChosen, SettingsPage};
+use crate::pages::settings::{Appearance, AppearanceChosen, Section, SettingsPage};
 use crate::pages::storages::{AddStorageAsked, EditStorageAsked, RemoveStorageAsked, StoragesPage};
 use crate::placement::{self, WindowPlace};
-use crate::prefs::{self, TrustedKey};
+use crate::prefs::{self, KeptStorage, TrustedKey};
 use crate::right_click::{Action, Request, RightClickMenu};
 use crate::text_size::ui;
 use crate::updates::{Badge, Updates};
@@ -47,6 +48,21 @@ pub enum Page {
     /// What runs in the background: in the menu only while there is some.
     Jobs,
     Settings,
+}
+
+/// Where the user is, to go back to: a page, and what it shows.
+#[derive(Clone, PartialEq)]
+enum Location {
+    /// The archive open, by where it is and its name, and its folder shown;
+    /// none for none.
+    Archive(Option<(Option<Source>, String, Vec<String>)>),
+    /// The storage chosen and its folder shown.
+    Storages(Option<KeptStorage>, Vec<String>),
+    /// A folder of this computer.
+    Browse(Option<PathBuf>),
+    Recent,
+    Jobs,
+    Settings(Section),
 }
 
 /// An archive that needs a passphrase or a password: what is asked, and
@@ -140,6 +156,8 @@ pub struct Workspace {
     /// a scenario's job ends before a click on it could.
     #[cfg(all(test, feature = "test-hooks"))]
     behind_at_once: bool,
+    /// Where the user has been, to go back and forward through.
+    history: Option<History<Location>>,
     _subscriptions: Vec<Subscription>,
 }
 
@@ -299,6 +317,11 @@ impl Workspace {
         let jobs = cx.new(|_| JobsPage::new());
         let subscriptions = vec![
             cx.observe(&updates, |_, _, cx| cx.notify()),
+            // Where the user goes in a page.
+            cx.observe(&archive, |this, _, cx| this.went(cx)),
+            cx.observe(&storages, |this, _, cx| this.went(cx)),
+            cx.observe(&browse, |this, _, cx| this.went(cx)),
+            cx.observe(&settings, |this, _, cx| this.went(cx)),
             cx.subscribe_in(
                 &jobs,
                 window,
@@ -401,8 +424,10 @@ impl Workspace {
             quitting: false,
             #[cfg(all(test, feature = "test-hooks"))]
             behind_at_once: false,
+            history: None,
             _subscriptions: subscriptions,
         };
+        ws.history = Some(History::new(ws.here(cx)));
         if first_run {
             ws.show_welcome(window, cx);
         }
@@ -529,6 +554,7 @@ impl Workspace {
 
     pub fn show_page(&mut self, page: Page, cx: &mut Context<Self>) {
         self.page = page;
+        self.went(cx);
         self.jobs
             .update(cx, |j, cx| j.set_shown(page == Page::Jobs, cx));
         let trusted = prefs::prefs(cx).trusted_keys;
@@ -1974,7 +2000,148 @@ impl Workspace {
         if e.keystroke.key == "escape" && self.dialog.as_ref().is_some_and(|d| d.dismissable) {
             self.close_dialog(cx);
             cx.stop_propagation();
+            return;
         }
+        // Back and forward, as browsers and file managers take them. A field
+        // typed in has Alt+Left and Alt+Right first.
+        let m = &e.keystroke.modifiers;
+        let back = if cfg!(target_os = "macos") {
+            let only_cmd = m.platform && !(m.alt || m.control || m.shift);
+            match e.keystroke.key.as_str() {
+                "[" if only_cmd => Some(true),
+                "]" if only_cmd => Some(false),
+                _ => None,
+            }
+        } else {
+            let only_alt = m.alt && !(m.platform || m.control || m.shift);
+            match e.keystroke.key.as_str() {
+                "left" if only_alt => Some(true),
+                "right" if only_alt => Some(false),
+                _ => None,
+            }
+        };
+        if let Some(back) = back {
+            self.go(back, cx);
+            cx.stop_propagation();
+        }
+    }
+
+    /// Where the user is.
+    fn here(&self, cx: &App) -> Location {
+        match self.page {
+            Page::Archive => Location::Archive(self.archive.read(cx).at()),
+            Page::Storages => {
+                let page = self.storages.read(cx);
+                let folder = page.explorer().read(cx).folder().to_vec();
+                Location::Storages(page.chosen().cloned(), folder)
+            }
+            Page::Browse => {
+                let page = self.browse.read(cx);
+                match page.tab() {
+                    Tab::Browse => Location::Browse(page.here(cx)),
+                    Tab::Recent => Location::Recent,
+                }
+            }
+            Page::Jobs => Location::Jobs,
+            Page::Settings => Location::Settings(self.settings.read(cx).section()),
+        }
+    }
+
+    /// The user may have gone somewhere: it is kept, for Back to come to.
+    fn went(&mut self, cx: &mut Context<Self>) {
+        if self.history.is_none() || self.welcome.is_some() {
+            return;
+        }
+        let here = self.here(cx);
+        if let Some(history) = &mut self.history {
+            history.went(here);
+        }
+    }
+
+    /// Whether `to` can be shown again: its archive still open, its storage
+    /// still there, jobs still in the menu.
+    fn can_go(&self, to: &Location, cx: &App) -> bool {
+        match to {
+            Location::Archive(at) => {
+                let open = self.archive.read(cx).at();
+                let key = |a: &Option<(Option<Source>, String, Vec<String>)>| {
+                    a.as_ref()
+                        .map(|(source, name, _)| (source.clone(), name.clone()))
+                };
+                key(at) == key(&open)
+            }
+            Location::Storages(Some(storage), _) => self.storages.read(cx).has(storage),
+            Location::Jobs => self.jobs.read(cx).summary().jobs > 0,
+            _ => true,
+        }
+    }
+
+    /// Goes back, or forward, to the nearest place that can be shown again;
+    /// not while a dialog or the welcome is up.
+    pub fn go(&mut self, back: bool, cx: &mut Context<Self>) {
+        if self.dialog.is_some() || self.welcome.is_some() {
+            return;
+        }
+        let Some(history) = &self.history else {
+            return;
+        };
+        let Some((i, to)) = history.next(back, |to| self.can_go(to, cx)) else {
+            return;
+        };
+        self.page = match &to {
+            Location::Archive(at) => {
+                if let Some((_, _, folder)) = at {
+                    let folder = folder.clone();
+                    self.archive.update(cx, |p, cx| {
+                        if p.at().is_some_and(|(_, _, f)| f != folder) {
+                            p.enter(folder, cx);
+                        }
+                    });
+                }
+                Page::Archive
+            }
+            Location::Storages(storage, folder) => {
+                let folder = folder.clone();
+                self.storages.update(cx, |p, cx| {
+                    if let Some(storage) = storage {
+                        p.choose_storage(storage, cx);
+                    }
+                    p.explorer().clone().update(cx, |e, cx| {
+                        if e.place().is_some() && e.folder() != folder.as_slice() {
+                            e.open_folder(folder, cx);
+                        }
+                    });
+                });
+                Page::Storages
+            }
+            Location::Browse(path) => {
+                self.browse.update(cx, |p, cx| match path {
+                    Some(path) if p.here(cx).as_ref() != Some(path) => p.go_to(path, cx),
+                    _ => p.show_tab(Tab::Browse, cx),
+                });
+                Page::Browse
+            }
+            Location::Recent => {
+                self.browse.update(cx, |p, cx| p.show_tab(Tab::Recent, cx));
+                Page::Browse
+            }
+            Location::Jobs => Page::Jobs,
+            Location::Settings(section) => {
+                let section = *section;
+                self.settings
+                    .update(cx, |s, cx| s.show_section(section, cx));
+                Page::Settings
+            }
+        };
+        let here = self.here(cx);
+        if let Some(history) = &mut self.history {
+            history.moved(i, here);
+        }
+        // What show_page does besides, without keeping it as a place gone to.
+        let page = self.page;
+        self.jobs
+            .update(cx, |j, cx| j.set_shown(page == Page::Jobs, cx));
+        cx.notify();
     }
 
     /// The menu down the window's left side, [`MENU_W`] wide.
@@ -2206,6 +2373,14 @@ impl Render for Workspace {
             .size_full()
             .track_focus(&self.focus)
             .on_key_down(cx.listener(Self::on_key))
+            .on_mouse_down(
+                MouseButton::Navigate(NavigationDirection::Back),
+                cx.listener(|this, _, _, cx| this.go(true, cx)),
+            )
+            .on_mouse_down(
+                MouseButton::Navigate(NavigationDirection::Forward),
+                cx.listener(|this, _, _, cx| this.go(false, cx)),
+            )
             .drag_over::<ExternalPaths>(|style, _, _, _| style.opacity(0.85))
             .on_drop(cx.listener(|this, dropped: &ExternalPaths, window, cx| {
                 this.dropped(dropped.paths().to_vec(), window, cx)

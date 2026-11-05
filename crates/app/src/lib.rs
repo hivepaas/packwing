@@ -24,6 +24,7 @@ mod dialogs;
 mod editors;
 mod explorer;
 mod file_manager;
+mod history;
 mod input;
 mod licensing;
 mod managed;

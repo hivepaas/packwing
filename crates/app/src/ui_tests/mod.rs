@@ -26,6 +26,7 @@ mod browse;
 mod create;
 mod edit;
 mod far;
+mod history;
 mod jobs;
 mod policy;
 mod settings;
@@ -337,6 +338,23 @@ impl Ui {
         self.keys(select_all);
         let window = self.window();
         self.cx.simulate_input(window.into(), text);
+        self.cx.run_until_parked();
+    }
+
+    /// Presses the mouse's back button, or its forward one, over the window.
+    pub fn mouse_back(&mut self, back: bool) {
+        let size = self.ws(|_, window, _| window.viewport_size());
+        let at = gpui::point(size.width / 2., size.height / 2.);
+        let direction = if back {
+            gpui::NavigationDirection::Back
+        } else {
+            gpui::NavigationDirection::Forward
+        };
+        let button = gpui::MouseButton::Navigate(direction);
+        let none = gpui::Modifiers::none();
+        let mut vcx = VisualTestContext::from_window(self.window().into(), &self.cx);
+        vcx.simulate_mouse_down(at, button, none);
+        vcx.simulate_mouse_up(at, button, none);
         self.cx.run_until_parked();
     }
 

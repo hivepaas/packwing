@@ -673,6 +673,15 @@ impl ArchivePage {
         self.reading.is_some()
     }
 
+    /// The archive open, told apart by where it is and its name, and the folder
+    /// shown in it.
+    pub fn at(&self) -> Option<(Option<Source>, String, Vec<String>)> {
+        match &self.shown {
+            Shown::Open(a) => Some((a.source.clone(), a.name.clone(), a.folder.clone())),
+            _ => None,
+        }
+    }
+
     /// Shows `folder` of the open archive.
     pub fn enter(&mut self, folder: Vec<String>, cx: &mut Context<Self>) {
         if let Shown::Open(a) = &mut self.shown {
