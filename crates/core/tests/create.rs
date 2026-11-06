@@ -813,8 +813,15 @@ fn names_some_system_cannot_use_are_found_when_measured() {
         fs::write(root.join(name), name).unwrap();
     }
     let measured = measure(std::slice::from_ref(&root)).unwrap();
-    assert_eq!(measured.files, 4);
-    assert_eq!(measured.not_portable, ["d/a:b.txt", "d/readme"]);
+    // A file system that takes `README` and `readme` for one, as macOS's does
+    // by default, holds one of them: written twice, under the first name.
+    if fs::read_dir(&root).unwrap().count() == 3 {
+        assert_eq!(measured.files, 3);
+        assert_eq!(measured.not_portable, ["d/a:b.txt"]);
+    } else {
+        assert_eq!(measured.files, 4);
+        assert_eq!(measured.not_portable, ["d/a:b.txt", "d/readme"]);
+    }
     let fine = measure(&[s.tree()]).unwrap();
     assert!(fine.not_portable.is_empty());
 }
