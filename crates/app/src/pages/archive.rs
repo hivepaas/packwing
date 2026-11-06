@@ -504,6 +504,11 @@ impl ArchivePage {
         let Some(entry) = self.chosen.and_then(|i| a.entries.get(i)) else {
             return;
         };
+        // A link's data is where it leads, which the preview says, if the
+        // archive does.
+        if entry.kind == Kind::Link {
+            return;
+        }
         let format = picture_format(&entry.name);
         if format.is_none() && entry.kind != Kind::Text {
             return;
@@ -619,6 +624,13 @@ impl ArchivePage {
             Preview::Reading => (None, true),
             _ => (None, false),
         }
+    }
+
+    /// Whether the preview has nothing to show of the file chosen but its tag,
+    /// and is not reading it, for tests.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn previews_nothing(&self) -> bool {
+        matches!(self.preview, Preview::Nothing)
     }
 
     /// Shows `preview`, as the screenshots draw it.
@@ -1106,11 +1118,15 @@ impl ArchivePage {
         let line = || div().my(ui(4.)).mx(ui(10.)).h(ui(1.)).bg(rgb(c.field));
         let folder = self.current().map(|a| a.folder.clone()).unwrap_or_default();
         // One file opens as a double click does; one folder is gone into.
-        let open = self.one_selected().map(|e| {
-            let mut path = folder.clone();
-            path.push(e.name.clone());
-            (path, e.kind == Kind::Folder)
-        });
+        // A link has nothing of its own to open.
+        let open = self
+            .one_selected()
+            .filter(|e| e.kind != Kind::Link)
+            .map(|e| {
+                let mut path = folder.clone();
+                path.push(e.name.clone());
+                (path, e.kind == Kind::Folder)
+            });
         let changeable = self.changeable(cx);
         let one = self.selected.len() == 1;
         deferred(
@@ -1193,11 +1209,12 @@ impl ArchivePage {
         let searching = found.is_some();
         {
             let on = !searching && self.selected.contains(&i);
-            let file_path = (e.kind != Kind::Folder && found.is_none()).then(|| {
-                let mut path = a.folder.clone();
-                path.push(e.name.clone());
-                path
-            });
+            let file_path =
+                (!matches!(e.kind, Kind::Folder | Kind::Link) && found.is_none()).then(|| {
+                    let mut path = a.folder.clone();
+                    path.push(e.name.clone());
+                    path
+                });
             let under = found.as_ref().map(|path| {
                 let folders = &path[..path.len().saturating_sub(1)];
                 if folders.is_empty() {
@@ -1298,7 +1315,8 @@ impl ArchivePage {
                         .flex_shrink_0()
                         .text_size(ui(13.))
                         .text_color(rgb(c.muted))
-                        .child(size(e.size)),
+                        // A link's size is its target's length.
+                        .when(e.kind != Kind::Link, |d| d.child(size(e.size))),
                 )
         }
     }
@@ -1601,12 +1619,21 @@ impl ArchivePage {
                             .child(e.name),
                     )
                     .child(div().text_size(ui(13.)).text_color(rgb(c.muted)).child(
-                        if e.modified.is_empty() {
-                            size(e.size)
-                        } else {
-                            format!("{} · {}", size(e.size), e.modified)
+                        match (e.kind, e.modified.is_empty()) {
+                            (Kind::Link, true) => tr!("Symbolic link"),
+                            (Kind::Link, false) => format!("{} · {}", tr!("Symbolic link"), e.modified),
+                            (_, true) => size(e.size),
+                            (_, false) => format!("{} · {}", size(e.size), e.modified),
                         },
                     ))
+                    .children(e.target.map(|target| {
+                        div()
+                            .debug_selector(|| "link-target".to_owned())
+                            .mt(ui(8.))
+                            .text_size(ui(13.))
+                            .text_color(rgb(c.soft))
+                            .child(tr!("Leads to {target}", target = target))
+                    }))
             }))
             .when(marked > 0, |d| {
                 d.child(

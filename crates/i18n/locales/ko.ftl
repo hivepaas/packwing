@@ -1174,6 +1174,12 @@ t2cf2a8ee = 압축 파일 열기…
 # Choose a file to see it here
 t37854216 = 파일을 선택하면 여기에 표시됩니다
 
+# Symbolic link
+tc7c20187 = 심볼릭 링크
+
+# Leads to {target}
+te7ddae48 = 연결 대상: { $target }
+
 # {count} executable in this folder will keep its Internet mark when extracted. | {count} executables in this folder will keep their Internet mark when extracted.
 td7688f56 =
     { $n ->

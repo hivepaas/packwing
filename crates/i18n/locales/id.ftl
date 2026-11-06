@@ -1174,6 +1174,12 @@ t2cf2a8ee = Buka arsip…
 # Choose a file to see it here
 t37854216 = Pilih berkas untuk melihatnya di sini
 
+# Symbolic link
+tc7c20187 = Tautan simbolis
+
+# Leads to {target}
+te7ddae48 = Mengarah ke { $target }
+
 # {count} executable in this folder will keep its Internet mark when extracted. | {count} executables in this folder will keep their Internet mark when extracted.
 td7688f56 =
     { $n ->

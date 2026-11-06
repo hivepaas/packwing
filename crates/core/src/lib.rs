@@ -61,7 +61,7 @@ pub use job::{
     UnnamableFn, clean_opened_files, damages, extract, extract_selected, extract_to_open,
     extract_with, image_fits, left_out, read_entry, renamings, test,
 };
-pub use listing::{Child, Entry, Found, Listen, Listing, list, list_as_read};
+pub use listing::{Child, Entry, Found, Link, Listen, Listing, list, list_as_read};
 pub use mark::came_from_internet;
 pub use passphrase::suggest_passphrase;
 pub use sign::{

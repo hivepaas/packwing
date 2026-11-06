@@ -12,6 +12,7 @@ pub fn project() -> Archive {
         kind,
         size,
         modified: modified.into(),
+        target: None,
     };
     Archive {
         name: PROJECT_NAME.into(),

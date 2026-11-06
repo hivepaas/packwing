@@ -22,6 +22,8 @@ pub enum Kind {
     Text,
     Program,
     Archive,
+    /// A symbolic link, whatever its name.
+    Link,
 }
 
 impl Kind {
@@ -33,6 +35,7 @@ impl Kind {
             Kind::Sheet | Kind::Archive => c.green_tag,
             Kind::Text => c.plain_tag,
             Kind::Program => c.orange_tag,
+            Kind::Link => c.link_tag,
         }
     }
 
@@ -92,6 +95,8 @@ pub struct Entry {
     /// The day it was last changed, `2026-10-15`, or nothing if the archive
     /// does not say.
     pub modified: String,
+    /// Where a link leads, if the archive says without its data being read.
+    pub target: Option<String>,
 }
 
 impl Entry {
@@ -103,9 +108,13 @@ impl Entry {
     pub fn of(child: &Child) -> Entry {
         Entry {
             name: child.name.clone(),
-            kind: Kind::of(&child.name, child.dir),
+            kind: match &child.link {
+                Some(_) => Kind::Link,
+                None => Kind::of(&child.name, child.dir),
+            },
             size: child.size,
             modified: child.modified.map(date).unwrap_or_default(),
+            target: child.link.as_ref().and_then(|l| l.target.clone()),
         }
     }
 }
@@ -296,11 +305,13 @@ pub fn date(secs: i64) -> String {
     format!("{year:04}-{month:02}-{day:02}")
 }
 
-/// The letters on a file's tag: DIR for a folder, else its last extension in
-/// capitals (`tar.zst` gives ZST), at most four.
+/// The letters on a file's tag: DIR for a folder, LINK for a symbolic link,
+/// else its last extension in capitals (`tar.zst` gives ZST), at most four.
 pub fn tag_of(name: &str, kind: Kind) -> String {
-    if kind == Kind::Folder {
-        return "DIR".into();
+    match kind {
+        Kind::Folder => return "DIR".into(),
+        Kind::Link => return "LINK".into(),
+        _ => {}
     }
     // A split archive's part number is not its type: `a.7z.001` is a 7Z.
     let name = if kind == Kind::Archive {
@@ -449,6 +460,7 @@ mod tests {
                 dir: *dir,
                 size: 0,
                 modified: None,
+                link: None,
             })
             .collect();
         Archive::read(
@@ -609,8 +621,10 @@ mod tests {
             kind,
             size: 0,
             modified: String::new(),
+            target: None,
         };
         assert_eq!(e("Ảnh", Kind::Folder).tag(), "DIR");
+        assert_eq!(e("latest.tar.gz", Kind::Link).tag(), "LINK");
         assert_eq!(e("a.pdf", Kind::Pdf).tag(), "PDF");
         assert_eq!(e("b.docx", Kind::Document).tag(), "DOCX");
         assert_eq!(tag_of("x.tar.zst", Kind::Archive), "ZST");

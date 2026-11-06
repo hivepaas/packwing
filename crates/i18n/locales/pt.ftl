@@ -1189,6 +1189,12 @@ t2cf2a8ee = Abrir um arquivo compactado…
 # Choose a file to see it here
 t37854216 = Escolha um arquivo para vê-lo aqui
 
+# Symbolic link
+tc7c20187 = Link simbólico
+
+# Leads to {target}
+te7ddae48 = Leva a { $target }
+
 # {count} executable in this folder will keep its Internet mark when extracted. | {count} executables in this folder will keep their Internet mark when extracted.
 td7688f56 =
     { $n ->
