@@ -1,0 +1,34 @@
+{
+  "channels": {
+    "stable": "v0.1.0"
+  },
+  "releases": {
+    "v0.1.0": {
+      "releaseDate": "2026-11-06",
+      "archives": {
+        "macos_aarch64": {
+          "file": "packwing_0.1.0_macos_aarch64.app.tar.gz",
+          "sha256": "8e324b4d0c76e6600dcba2b50a3c310e5dcb653d80d51ac44645c7f29f967475"
+        },
+        "macos_x86_64": {
+          "file": "packwing_0.1.0_macos_x86_64.app.tar.gz",
+          "sha256": "2967fdf6a4e1bc0959eed4b278442e4833a7ada65c85b9222b6357870bb9d5b4"
+        },
+        "windows_x86_64": {
+          "file": "packwing_0.1.0_windows_x86_64-setup.exe",
+          "sha256": "d2b98e675acb8dc63f6f1ca88760e6dd8ffde99743993df28165c33527c297ee"
+        }
+      },
+      "packages": {
+        "deb_x86_64": {
+          "file": "packwing_0.1.0_amd64.deb",
+          "sha256": "72404f0df57e033ad18763f54ebec1138a09da737fc491693b6e304a0bf75518"
+        },
+        "deb_aarch64": {
+          "file": "packwing_0.1.0_arm64.deb",
+          "sha256": "4ad1ab0d70232440e4452727e86ec2f4e61433f3cb37522d6cc5104a82007e58"
+        }
+      }
+    }
+  }
+}
