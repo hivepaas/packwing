@@ -1627,12 +1627,6 @@ tf65ec196 = Semua ({ $count })
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = mis. code -n, atau /path/to/editor --flag
 
-# Show packwing in the right-click menu
-t5d0d23cc = Tampilkan packwing di menu klik kanan
-
-# Extract and compress from any folder
-t94a46acb = Ekstrak dan kompres dari folder mana pun
-
 # Language
 t9a73db9b = Bahasa
 
@@ -1725,6 +1719,12 @@ t8d7b3a90 = Perlu diketahui
 
 # The menu could not be changed: {why}
 t9fac5c06 = Menu tidak dapat diubah: { $why }
+
+# Show packwing in the right-click menu
+t5d0d23cc = Tampilkan packwing di menu klik kanan
+
+# Extract and compress from any folder
+t94a46acb = Ekstrak dan kompres dari folder mana pun
 
 # Items in the menu
 t67537dc4 = Item di menu

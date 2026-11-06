@@ -1647,12 +1647,6 @@ tf65ec196 = Tous ({ $count })
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = p. ex. code -n, ou /path/to/editor --flag
 
-# Show packwing in the right-click menu
-t5d0d23cc = Afficher packwing dans le menu contextuel
-
-# Extract and compress from any folder
-t94a46acb = Extraire et compresser depuis n'importe quel dossier
-
 # Language
 t9a73db9b = Langue
 
@@ -1745,6 +1739,12 @@ t8d7b3a90 = Bon à savoir
 
 # The menu could not be changed: {why}
 t9fac5c06 = Impossible de modifier le menu : { $why }
+
+# Show packwing in the right-click menu
+t5d0d23cc = Afficher packwing dans le menu contextuel
+
+# Extract and compress from any folder
+t94a46acb = Extraire et compresser depuis n'importe quel dossier
 
 # Items in the menu
 t67537dc4 = Éléments du menu

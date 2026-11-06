@@ -1627,12 +1627,6 @@ tf65ec196 = すべて ({ $count })
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = 例：code -n、または /path/to/editor --flag
 
-# Show packwing in the right-click menu
-t5d0d23cc = 右クリックメニューに packwing を表示
-
-# Extract and compress from any folder
-t94a46acb = どのフォルダからでも展開・圧縮
-
 # Language
 t9a73db9b = 言語
 
@@ -1725,6 +1719,12 @@ t8d7b3a90 = ご注意
 
 # The menu could not be changed: {why}
 t9fac5c06 = メニューを変更できませんでした：{ $why }
+
+# Show packwing in the right-click menu
+t5d0d23cc = 右クリックメニューに packwing を表示
+
+# Extract and compress from any folder
+t94a46acb = どのフォルダからでも展開・圧縮
 
 # Items in the menu
 t67537dc4 = メニューの項目

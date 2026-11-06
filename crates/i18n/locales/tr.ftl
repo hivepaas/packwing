@@ -1647,12 +1647,6 @@ tf65ec196 = Tümü ({ $count })
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = örn. code -n veya /path/to/editor --flag
 
-# Show packwing in the right-click menu
-t5d0d23cc = packwing'i sağ tık menüsünde göster
-
-# Extract and compress from any folder
-t94a46acb = Herhangi bir klasörden çıkarın ve sıkıştırın
-
 # Language
 t9a73db9b = Dil
 
@@ -1745,6 +1739,12 @@ t8d7b3a90 = Bilmekte fayda var
 
 # The menu could not be changed: {why}
 t9fac5c06 = Menü değiştirilemedi: { $why }
+
+# Show packwing in the right-click menu
+t5d0d23cc = packwing'i sağ tık menüsünde göster
+
+# Extract and compress from any folder
+t94a46acb = Herhangi bir klasörden çıkarın ve sıkıştırın
 
 # Items in the menu
 t67537dc4 = Menüdeki öğeler

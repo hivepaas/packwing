@@ -78,7 +78,7 @@ impl SettingsPage {
         updates: Entity<Updates>,
         cx: &mut Context<Self>,
     ) -> Self {
-        let general = cx.new(|cx| general::General::new(appearance, menu.clone(), cx));
+        let general = cx.new(|cx| general::General::new(appearance, cx));
         let appearance = cx.subscribe(&general, |_, _, e: &AppearanceChosen, cx| {
             cx.emit(AppearanceChosen(e.0))
         });

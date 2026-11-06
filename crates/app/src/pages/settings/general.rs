@@ -1,15 +1,14 @@
 //! General: the language, light or dark, the text's size, how many cores to use,
-//! and whether packwing is in the right-click menu.
+//! and the text editor.
 
 use gpui::{Context, Entity, EventEmitter, Render, Subscription, Window, div, prelude::*, rgb};
 use packwing_i18n::tr;
 
-use super::{explain, group, heading, label, rows, section, setting};
+use super::{explain, group, heading, label, section};
 use crate::colors::colors;
 use crate::input::{Changed, TextInput};
-use crate::right_click::RightClickMenu;
 use crate::text_size::ui;
-use crate::widgets::{Chosen, Select, SelectLook, segment, segments, switch};
+use crate::widgets::{Chosen, Select, SelectLook, segment, segments};
 
 /// Light, dark, or as the system is.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -112,19 +111,12 @@ pub struct General {
     editor_command: Entity<TextInput>,
     _editor_chosen: [Subscription; 2],
     appearance: Appearance,
-    /// The right-click menu: whether packwing is in it.
-    menu: Entity<RightClickMenu>,
 }
 
 impl EventEmitter<AppearanceChosen> for General {}
 
 impl General {
-    pub fn new(
-        appearance: Appearance,
-        menu: Entity<RightClickMenu>,
-        cx: &mut Context<Self>,
-    ) -> Self {
-        cx.observe(&menu, |_, _, cx| cx.notify()).detach();
+    pub fn new(appearance: Appearance, cx: &mut Context<Self>) -> Self {
         let kept = crate::prefs::prefs(cx).language;
         let chosen = packwing_i18n::LANGUAGES
             .iter()
@@ -219,7 +211,6 @@ impl General {
             editor_command,
             _editor_chosen: editor_chosen,
             appearance,
-            menu,
         }
     }
 
@@ -243,14 +234,6 @@ impl Render for General {
                 ))
             });
         let custom = self.editor.read(cx).chosen() == self.editors.len() + 1;
-        let shown = self.menu.read(cx).shown();
-        let menu = setting(
-            tr!("Show packwing in the right-click menu"),
-            tr!("Extract and compress from any folder"),
-            switch("right-click", shown).on_click(cx.listener(move |this, _, _, cx| {
-                this.menu.update(cx, |m, cx| m.show(!shown, cx));
-            })),
-        );
         section()
             .child(
                 div()
@@ -299,7 +282,6 @@ impl Render for General {
                         .child(explain(tr!("The file’s path is added at the end.")))
                     }),
             )
-            .child(rows([menu]))
     }
 }
 

@@ -1627,12 +1627,6 @@ tf65ec196 = 모두 ({ $count })
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = 예: code -n 또는 /path/to/editor --flag
 
-# Show packwing in the right-click menu
-t5d0d23cc = 마우스 오른쪽 버튼 메뉴에 packwing 표시
-
-# Extract and compress from any folder
-t94a46acb = 어느 폴더에서나 압축을 풀고 압축할 수 있습니다
-
 # Language
 t9a73db9b = 언어
 
@@ -1725,6 +1719,12 @@ t8d7b3a90 = 알아 두세요
 
 # The menu could not be changed: {why}
 t9fac5c06 = 메뉴를 바꿀 수 없습니다: { $why }
+
+# Show packwing in the right-click menu
+t5d0d23cc = 마우스 오른쪽 버튼 메뉴에 packwing 표시
+
+# Extract and compress from any folder
+t94a46acb = 어느 폴더에서나 압축을 풀고 압축할 수 있습니다
 
 # Items in the menu
 t67537dc4 = 메뉴 항목

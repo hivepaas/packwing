@@ -1627,12 +1627,6 @@ tf65ec196 = 全部 ({ $count })
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = 例如 code -n，或 /path/to/editor --flag
 
-# Show packwing in the right-click menu
-t5d0d23cc = 在右键菜单中显示 packwing
-
-# Extract and compress from any folder
-t94a46acb = 在任意文件夹中解压和压缩
-
 # Language
 t9a73db9b = 语言
 
@@ -1725,6 +1719,12 @@ t8d7b3a90 = 须知
 
 # The menu could not be changed: {why}
 t9fac5c06 = 无法修改菜单：{ $why }
+
+# Show packwing in the right-click menu
+t5d0d23cc = 在右键菜单中显示 packwing
+
+# Extract and compress from any folder
+t94a46acb = 在任意文件夹中解压和压缩
 
 # Items in the menu
 t67537dc4 = 菜单中的项目
