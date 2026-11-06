@@ -66,16 +66,18 @@ runs:
 
 | installed as | the app |
 |---|---|
-| from the release's `.deb` (`/usr/bin/packwing`, and dpkg lists the package) | shows the commands that install the next one, to copy |
+| from the release's `.deb` (`/usr/bin/packwing`, and dpkg lists the package) | shows the commands that install the next one with apt, to copy |
+| from the release's `.rpm` (`/usr/bin/packwing`, no dpkg, and zypper or dnf there) | the same, with zypper or dnf |
 | an AppImage (`$APPIMAGE`) | downloads the release's AppImage and puts it in place of this one |
 | `Packwing.app` on macOS | downloads the `.app` (tarred), checks it with `codesign` (valid, signed by the team that signed this one), and swaps the two |
 | by its installer on Windows (`…\AppData\Local\Programs\packwing\`, `…\Program Files\packwing\`) | downloads the installer and runs it, quiet (`/S`), once the app has quit |
 | by Homebrew, Scoop, Flatpak, Snap, a distribution's package, a store | says what updates it |
 | by hand (a binary in a folder) | opens the release's page |
 
-A release makes the `.deb`, `Packwing.app` (tarred) and the Windows installer
-([releasing.md](releasing.md)). No AppImage is made yet, so on Linux only the `.deb`'s row
-runs.
+A release makes the `.deb`, the `.rpm`, `Packwing.app` (tarred) and the Windows installer
+([releasing.md](releasing.md)). No AppImage is made yet, so on Linux only the packages' rows
+run. `pkw` alone (`pkw_<v>_<os>_<arch>`) does not update itself, and the list does not name
+it.
 
 A release has one file for each platform, named so (`v0.2.0`):
 
@@ -91,6 +93,8 @@ and these packages:
 |---|---|
 | `deb_x86_64` | `packwing_0.2.0_amd64.deb` |
 | `deb_aarch64` | `packwing_0.2.0_arm64.deb` |
+| `rpm_x86_64` | `packwing_0.2.0_x86_64.rpm` |
+| `rpm_aarch64` | `packwing_0.2.0_aarch64.rpm` |
 
 They are the release's assets on GitHub
 (`https://github.com/hivepaas/packwing/releases/download/v0.2.0/<file>`); the list names
@@ -103,10 +107,12 @@ and the like), and says the release is ready. It is installed as the app quits: 
 by an earlier run is still ready at the next start; once the app running is that version
 or newer, its file goes.
 
-### The release's `.deb`
+### The release's `.deb` or `.rpm`
 
 Installing a package takes root, so the app does not do it: it shows the commands and the
-user runs them, with the SHA-256 from the signed list:
+user runs them, with the SHA-256 from the signed list. The last is the tool's:
+`sudo dnf install ./packwing_0.2.1_x86_64.rpm`, or with zypper, which takes an unsigned
+package only with `--no-gpg-checks` (the SHA-256 is what vouches for it):
 
 ```sh
 cd "$(mktemp -d)" &&

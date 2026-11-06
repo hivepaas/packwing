@@ -83,7 +83,7 @@ jobs:
             build-essential pkg-config libfontconfig-dev libfreetype-dev \
             libwayland-dev libxkbcommon-dev libxkbcommon-x11-dev \
             libx11-xcb-dev libxcb1-dev libxcb-xkb-dev libxcb-shape0-dev libxcb-xfixes0-dev \
-            libvulkan-dev libdbus-1-dev libzstd-dev libpam0g-dev dpkg-dev
+            libvulkan-dev libdbus-1-dev libzstd-dev libpam0g-dev dpkg-dev rpm cpio
 
       - name: NSIS
         if: runner.os == 'Windows'
@@ -157,10 +157,14 @@ jobs:
           security delete-keychain "$RUNNER_TEMP/signing.keychain-db" || true
           rm -f "$RUNNER_TEMP/notary.p8"
 
-      # What the .deb holds, then installed and pkw run from it.
+      # What each holds, then the .deb installed here, the .rpm in Fedora, and
+      # pkw run from each and from its own tar.gz.
       - name: Check, install and run (Linux)
         if: runner.os == 'Linux'
-        run: scripts/check_linux_package.sh --install dist/packwing_*.deb
+        run: |
+          scripts/check_linux_package.sh --install dist/packwing_*.deb
+          scripts/check_linux_package.sh --install dist/packwing_*.rpm
+          scripts/check_linux_package.sh dist/pkw_*.tar.gz
 
       - uses: actions/upload-artifact@v4
         with:

@@ -2,13 +2,15 @@
 #
 # Packages a release build of packwing for macOS into dist/, as shellwing's
 # script does: Packwing.app, tarred for the updater, and in a disk image for
-# people (docs/releasing.md).
+# people (docs/releasing.md); and pkw alone, signed and notarized as the app's,
+# in a tar.gz with its pages and completions, for a terminal with no app.
 #
 #   cargo build --release -p packwing -p packwing-cli
 #   scripts/package_macos.sh
 #
 #   dist/packwing_0.1.0_macos_aarch64.app.tar.gz
 #   dist/packwing_0.1.0_macos_aarch64.dmg
+#   dist/pkw_0.1.0_macos_aarch64.tar.gz
 #
 # The app holds pkw, the command line, beside packwing, and context-menu-rs's
 # native Finder extension, which puts packwing's items in Finder's own
@@ -205,5 +207,28 @@ fi
 
 ## For the updater: the .app, tarred
 tar -C "$WORK" -czf "$DIST/packwing_${VERSION}_macos_${ARCH}.app.tar.gz" Packwing.app
+
+## pkw alone: the app's, signed as it is there, with its pages, completions
+## and the licenses of the crates it is built with (packaging/cli). A program
+## on its own takes no stapled ticket: Gatekeeper finds it notarized online.
+CLI_NAME="pkw_${VERSION}_macos_${ARCH}"
+CLI_DIR="$WORK/cli/$CLI_NAME"
+mkdir -p "$CLI_DIR/man" "$CLI_DIR/completions"
+cp "$APP/Contents/MacOS/pkw" "$CLI_DIR/pkw"
+codesign --verify --strict "$CLI_DIR/pkw"
+if [ -n "$NOTARIZE" ]; then
+	ditto -c -k "$CLI_DIR/pkw" "$WORK/pkw.zip"
+	notarize "$WORK/pkw.zip"
+fi
+"$CLI_DIR/pkw" man "$CLI_DIR/man"
+"$CLI_DIR/pkw" completions bash >"$CLI_DIR/completions/pkw.bash"
+"$CLI_DIR/pkw" completions zsh >"$CLI_DIR/completions/_pkw"
+"$CLI_DIR/pkw" completions fish >"$CLI_DIR/completions/pkw.fish"
+cp packaging/cli/README.txt "$CLI_DIR/README.txt"
+cp LICENSE "$CLI_DIR/LICENSE"
+cp GPL-ADDITIONAL-PERMISSION.md "$CLI_DIR/GPL-ADDITIONAL-PERMISSION.md"
+cargo about generate --locked --fail -c about.toml -m crates/cli/Cargo.toml \
+	--target "$TARGET" -o "$CLI_DIR/THIRD-PARTY-LICENSES" packaging/licenses.hbs
+COPYFILE_DISABLE=1 tar -C "$WORK/cli" -czf "$DIST/$CLI_NAME.tar.gz" "$CLI_NAME"
 
 ls -l "$DIST"

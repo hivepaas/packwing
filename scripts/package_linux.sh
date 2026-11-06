@@ -1,17 +1,20 @@
 #!/bin/bash
 #
-# Packages a release build of packwing for Linux into dist/, as a .deb: the
-# program, its launcher and icon, the command line (pkw, with its manual pages
-# and its completions for bash, zsh and fish), and the native Nautilus extension serving
-# packwing's right-click menu. Nautilus loads extensions from a folder of
-# the system's alone, which only a package can put one in; with it, the
-# items show in Nautilus's own menu rather than its Scripts submenu
-# (crates/app/src/right_click.rs).
+# Packages a release build of packwing for Linux into dist/, as a .deb and an
+# .rpm: the program, its launcher and icon, the command line (pkw, with its
+# manual pages and its completions for bash, zsh and fish), and the native
+# Nautilus extension serving packwing's right-click menu. Nautilus loads
+# extensions from a folder of the system's alone, which only a package can put
+# one in; with it, the items show in Nautilus's own menu rather than its
+# Scripts submenu (crates/app/src/right_click.rs). And pkw alone, in a tar.gz,
+# for servers and scripts: no window system in it.
 #
 #   cargo build --release -p packwing -p packwing-cli
 #   scripts/package_linux.sh
 #
 #   dist/packwing_0.1.0_amd64.deb
+#   dist/packwing_0.1.0_x86_64.rpm
+#   dist/pkw_0.1.0_linux_x86_64.tar.gz
 #
 # The extension is context-menu-rs's, downloaded from the release of the
 # context-menu crate packwing builds with (it reads the menu's definition
@@ -46,8 +49,10 @@ x86_64) DEB_ARCH=amd64 ;;
 aarch64) DEB_ARCH=arm64 ;;
 *) echo "no Linux package for $ARCH" >&2; exit 1 ;;
 esac
-# Where Debian and Ubuntu's Nautilus loads its extensions from.
+# Where Debian and Ubuntu's Nautilus loads its extensions from, and Fedora
+# and openSUSE's.
 EXTENSIONS="usr/lib/$ARCH-linux-gnu/nautilus/extensions-4"
+RPM_EXTENSIONS="usr/lib64/nautilus/extensions-4"
 
 # context-menu-rs 0.2.1's Nautilus extension.
 CONTEXT_MENU=0.2.1
@@ -133,5 +138,85 @@ Description: File archiver that opens archives safely
 EOF
 chmod -R go-w "$DEB"
 dpkg-deb --root-owner-group --build "$DEB" "$DIST/packwing_${VERSION}_${DEB_ARCH}.deb"
+
+## The .rpm, for Fedora and openSUSE: the .deb's files where those systems
+## keep them. rpmbuild works out what the programs need from them, the glibc
+## version included, so a system too old for them refuses the package at
+## install rather than packwing failing when it starts. The extension is
+## left out of that: what it uses is Nautilus's, there when Nautilus loads it.
+RPM="$WORK/rpm"
+RPMROOT="$ROOT/$WORK/rpm-root"
+install -Dm755 "$DEB/usr/bin/packwing" "$RPMROOT/usr/bin/packwing"
+install -Dm755 "$DEB/usr/bin/pkw" "$RPMROOT/usr/bin/pkw"
+for page in "$WORK"/man/*.1.gz; do
+	install -Dm644 "$page" "$RPMROOT/usr/share/man/man1/$(basename "$page")"
+done
+install -Dm644 "$WORK/pkw.bash" "$RPMROOT/usr/share/bash-completion/completions/pkw"
+install -Dm644 "$WORK/_pkw" "$RPMROOT/usr/share/zsh/site-functions/_pkw"
+install -Dm644 "$WORK/pkw.fish" "$RPMROOT/usr/share/fish/vendor_completions.d/pkw.fish"
+install -Dm644 packaging/linux/packwing.desktop "$RPMROOT/usr/share/applications/packwing.desktop"
+install -Dm644 packaging/icons/packwing.svg "$RPMROOT/usr/share/icons/hicolor/scalable/apps/packwing.svg"
+install -Dm644 LICENSE "$RPMROOT/usr/share/licenses/packwing/LICENSE"
+install -Dm644 GPL-ADDITIONAL-PERMISSION.md "$RPMROOT/usr/share/licenses/packwing/GPL-ADDITIONAL-PERMISSION.md"
+install -Dm644 "$WORK/THIRD-PARTY-LICENSES" "$RPMROOT/usr/share/licenses/packwing/THIRD-PARTY-LICENSES"
+install -Dm644 "$WORK/extension.so" "$RPMROOT/$RPM_EXTENSIONS/libcontext-menu-packwing.so"
+mkdir -p "$RPM"
+cat >"$RPM/packwing.spec" <<SPEC
+%global debug_package %{nil}
+%global _build_id_links none
+%global __brp_strip %{nil}
+%global __requires_exclude_from ^/usr/lib64/nautilus/.*\$
+%global __provides_exclude_from ^/usr/lib64/nautilus/.*\$
+Name: packwing
+# An RPM version has no hyphen; ~ sorts a beta before its release.
+Version: ${VERSION/-/\~}
+Release: 1
+Summary: File archiver that opens archives safely
+License: GPL-3.0-or-later
+URL: https://github.com/hivepaas/packwing
+Recommends: libwayland-client, libxcb, libX11-xcb, vulkan-loader, mesa-vulkan-drivers
+Enhances: nautilus
+
+%description
+Opens ZIP, RAR, 7z and tar archives without writing outside the folder
+chosen, and makes smaller files to share. Its items in the right-click
+menu of Nautilus, Dolphin, Nemo and Thunar extract and compress from any
+folder. pkw does the same on the command line, with no window, over SSH
+and in scripts.
+
+%install
+cp -a "$RPMROOT/." "%{buildroot}/"
+
+%files
+/usr/bin/packwing
+/usr/bin/pkw
+/usr/share/man/man1/pkw*.1*
+/usr/share/bash-completion/completions/pkw
+/usr/share/zsh/site-functions/_pkw
+/usr/share/fish/vendor_completions.d/pkw.fish
+/usr/share/applications/packwing.desktop
+/usr/share/icons/hicolor/scalable/apps/packwing.svg
+/$RPM_EXTENSIONS/libcontext-menu-packwing.so
+%license /usr/share/licenses/packwing/LICENSE
+%license /usr/share/licenses/packwing/GPL-ADDITIONAL-PERMISSION.md
+%license /usr/share/licenses/packwing/THIRD-PARTY-LICENSES
+SPEC
+rpmbuild -bb --quiet --target "$ARCH" --define "_topdir $ROOT/$RPM" "$RPM/packwing.spec"
+cp "$RPM/RPMS/$ARCH/"*.rpm "$DIST/packwing_${VERSION}_${ARCH}.rpm"
+
+## pkw alone: the program, its pages and completions, and the licenses of
+## the crates it is built with, in a folder of its own (packaging/cli).
+CLI_NAME="pkw_${VERSION}_linux_${ARCH}"
+CLI_DIR="$WORK/cli/$CLI_NAME"
+install -Dm755 "$DEB/usr/bin/pkw" "$CLI_DIR/pkw"
+mkdir -p "$CLI_DIR/man" "$CLI_DIR/completions"
+cp "$WORK"/man/*.1 "$CLI_DIR/man/"
+cp "$WORK/pkw.bash" "$WORK/_pkw" "$WORK/pkw.fish" "$CLI_DIR/completions/"
+cp packaging/cli/README.txt "$CLI_DIR/README.txt"
+cp LICENSE "$CLI_DIR/LICENSE"
+cp GPL-ADDITIONAL-PERMISSION.md "$CLI_DIR/GPL-ADDITIONAL-PERMISSION.md"
+cargo about generate --locked --fail -c about.toml -m crates/cli/Cargo.toml \
+	--target "$ARCH-unknown-linux-gnu" -o "$CLI_DIR/THIRD-PARTY-LICENSES" packaging/licenses.hbs
+tar -C "$WORK/cli" --owner=0 --group=0 --numeric-owner -czf "$DIST/$CLI_NAME.tar.gz" "$CLI_NAME"
 
 ls -l "$DIST"

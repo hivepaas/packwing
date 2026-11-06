@@ -8,15 +8,24 @@ app is told of it.
 
 | Platform | Files | Made by |
 | --- | --- | --- |
-| Linux x86_64, aarch64 | `packwing_<v>_<amd64\|arm64>.deb` | `scripts/package_linux.sh` |
-| macOS aarch64, x86_64 | `packwing_<v>_macos_<arch>.dmg`, `.app.tar.gz` | `scripts/package_macos.sh` |
-| Windows x86_64 | `packwing_<v>_windows_x86_64-setup.exe`, `.zip` | `scripts/package_windows.sh` |
+| Linux x86_64, aarch64 | `packwing_<v>_<amd64\|arm64>.deb`, `packwing_<v>_<x86_64\|aarch64>.rpm`, `pkw_<v>_linux_<arch>.tar.gz` | `scripts/package_linux.sh` |
+| macOS aarch64, x86_64 | `packwing_<v>_macos_<arch>.dmg`, `.app.tar.gz`, `pkw_<v>_macos_<arch>.tar.gz` | `scripts/package_macos.sh` |
+| Windows x86_64 | `packwing_<v>_windows_x86_64-setup.exe`, `.zip`, `pkw_<v>_windows_x86_64.zip` | `scripts/package_windows.sh` |
 
 and `SHA256SUMS`. The updater installs the `.app.tar.gz` and the installer, and
-shows the commands that install the `.deb`; the others are for people.
+shows the commands that install the `.deb` or the `.rpm`; the others are for
+people.
 
-- **Linux**: the `.deb` is built on Ubuntu 22.04, so it runs on glibc 2.35 and
-  newer, and holds context-menu-rs's Nautilus extension.
+- **Linux**: the packages are built on Ubuntu 22.04, so they run on glibc 2.35
+  and newer, and hold context-menu-rs's Nautilus extension: the `.deb` for
+  Debian and Ubuntu, the `.rpm` for Fedora and openSUSE (in `/usr/lib64`, where
+  their Nautilus looks). The `.rpm` is made with `rpmbuild` on Ubuntu, so it
+  names the glibc it needs, and an older system refuses it at install.
+- **pkw alone** (`pkw_<v>_<os>_<arch>`): the command line with no app, for
+  servers and scripts, with its manual pages, completions, licenses and a
+  README (`packaging/cli/README.txt`). On Linux it links only the C library; on
+  macOS it is the app's `pkw`, signed with the Developer ID and notarized on its
+  own. It does not update itself.
 - **macOS**: `Packwing.app`, with `pkw` beside the program and context-menu-rs's
   Finder extension and its helper, which put packwing's items in Finder's own
   right-click menu. Signed with the Developer ID and notarized when the
@@ -73,7 +82,7 @@ scripts/package_macos.sh
 4. **Check the draft** ([Checking a release](#checking-a-release)), and publish it.
 5. **The list.** Add the release to `release.json` with the SHA-256 of the
    `.app.tar.gz` files and the installer under `archives`, and of the `.deb`
-   files under `packages` (never `archives`: [updates.md](updates.md#the-list-of-releases)),
+   and `.rpm` files under `packages` (never `archives`: [updates.md](updates.md#the-list-of-releases)),
    all from `SHA256SUMS`, and merge it. Sign what is on `main`
    ([updates.md › Signing](updates.md#signing)); commit `release.signed.json`,
    then move the `release` branch ([updates.md › Publishing a release's list](updates.md#publishing-a-releases-list)).
@@ -101,5 +110,10 @@ packages on a real desktop. On a rehearsal's artifacts or the draft's files:
 `pkw` in a new terminal; the right-click menu's items run packwing; the
 uninstaller leaves no program folder.
 
-**Linux**: the `.deb` installs; after `nautilus -q`, packwing's items are in
-Nautilus's own menu.
+**Linux**: the `.deb` installs on Ubuntu and the `.rpm` on Fedora (CI installs
+each, the `.rpm` in a Fedora container, and runs `pkw` from it); after
+`nautilus -q`, packwing's items are in Nautilus's own menu.
+
+**pkw alone**: unpacked, `pkw --version` runs; on macOS, downloaded with a
+browser, it runs from Terminal with no question (`spctl -a -t install -vv pkw`
+says `Notarized Developer ID`).
