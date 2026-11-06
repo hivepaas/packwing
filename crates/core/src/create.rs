@@ -90,6 +90,30 @@ pub enum Level {
 
 impl Level {
     /// The level Deflate is asked for: zlib's own default in the middle.
+    /// What the user calls it.
+    pub fn name(self) -> String {
+        match self {
+            Level::Store => tr!("Store"),
+            Level::Lowest => tr!("Lowest"),
+            Level::Low => tr!("Low"),
+            Level::Medium => tr!("Medium"),
+            Level::High => tr!("High"),
+            Level::Highest => tr!("Highest"),
+        }
+    }
+
+    /// The level below, where there is one that compresses: Lowest is the
+    /// last, as Store is not taken for it.
+    fn lower(self) -> Option<Level> {
+        match self {
+            Level::Highest => Some(Level::High),
+            Level::High => Some(Level::Medium),
+            Level::Medium => Some(Level::Low),
+            Level::Low => Some(Level::Lowest),
+            Level::Lowest | Level::Store => None,
+        }
+    }
+
     pub(crate) fn deflate(self) -> u32 {
         match self {
             Level::Store | Level::Lowest => 1,
@@ -675,7 +699,8 @@ fn write_unsealed<W: Write>(
         ..new.clone()
     };
     if new.kind == Kind::Zip {
-        return zip_closed(new_zip(items, &plain, tally)?.close_to_stream(out)?);
+        let (mut za, _held) = new_zip(items, &plain, tally)?;
+        return zip_closed(za.close_to_stream(out)?);
     }
     let scratch = crate::spool::scratch()?;
     write_7z(items, &plain, tally, &scratch.file)?;
@@ -705,7 +730,8 @@ fn write_zip<W: Write + Seek>(
     tally: &Arc<Tally>,
     out: W,
 ) -> Result<(), Error> {
-    zip_closed(new_zip(items, new, tally)?.close_to(out)?)
+    let (mut za, _held) = new_zip(items, new, tally)?;
+    zip_closed(za.close_to(out)?)
 }
 
 /// What closing a new ZIP archive came to.
@@ -716,12 +742,107 @@ fn zip_closed(closed: Closed) -> Result<(), Error> {
     }
 }
 
-/// A new ZIP archive of `items`, to close.
+/// What each thread compressing a ZIP archive may take: hivepack's 32 MiB of
+/// what waits to be written, the compressor, and what encrypting adds.
+const ZIP_THREAD_MEMORY: u64 = 34 << 20;
+
+/// The memory making `new` takes with one thread, in bytes: what it takes
+/// however little memory there is, as fewer threads cannot take less. Close
+/// enough for what takes much: the levels of xz, 7z and zstd that take
+/// hundreds of MiB, and more.
+pub fn memory_needed(new: &NewArchive) -> u64 {
+    match new.kind {
+        Kind::SevenZip => seven_zip_options(&NewArchive {
+            password: None,
+            ..new.clone()
+        })
+        .ok()
+        .and_then(|(options, _)| options.memory_usage(1).ok())
+        .unwrap_or(0),
+        Kind::TarXz | Kind::Xz => stream_encoder_mt_memusage(&MtOptions {
+            threads: 1,
+            preset: new.level.xz(),
+            check: hivepack::xz::Check::CRC64,
+            ..MtOptions::default()
+        }),
+        Kind::TarZst | Kind::Zst => {
+            let mut cctx = hivepack::zstd::CCtx::new();
+            let set = cctx
+                .set_parameter(hivepack::zstd::CParameter::CompressionLevel(
+                    new.level.zstd(),
+                ))
+                .is_ok();
+            if set {
+                cctx.estimate_memory(1).unwrap_or(0)
+            } else {
+                0
+            }
+        }
+        Kind::TarBz2 | Kind::Bz2 => hivepack::bzip2::MtOptions {
+            block_size_100k: new.level.bzip2(),
+            ..hivepack::bzip2::MtOptions::default()
+        }
+        .memory_usage(1)
+        .unwrap_or(0),
+        Kind::Zip => ZIP_THREAD_MEMORY,
+        _ => 0,
+    }
+}
+
+/// `new` at the highest level, at most its own, whose one thread takes no
+/// more than `available`: its own where that fits, and the lowest where none
+/// does. The archive is made so, so that it is made at all where a level
+/// would take more memory than there is: the system would end packwing.
+fn within(new: &NewArchive, available: u64) -> NewArchive {
+    let mut fitted = new.clone();
+    while memory_needed(&fitted) > available
+        && let Some(lower) = fitted.level.lower()
+    {
+        fitted.level = lower;
+    }
+    fitted
+}
+
+/// [`within`] the memory available now.
+pub fn within_memory(new: &NewArchive) -> NewArchive {
+    within(new, crate::memory::available())
+}
+
+/// What to say before making `new` where even one thread of its level would
+/// take more memory than is available now: the lower level it is made at,
+/// or that none fits. Nothing where it fits.
+pub fn memory_warning(new: &NewArchive) -> Option<String> {
+    let available = crate::memory::available();
+    let needed = memory_needed(new);
+    if needed <= available {
+        return None;
+    }
+    let fitted = within(new, available);
+    Some(if fitted.level != new.level {
+        tr!(
+            "{level} takes about {needed} of memory, and {available} is free: it is made at {lower}, which takes about {less}.",
+            level = new.level.name(),
+            needed = crate::size(needed),
+            available = crate::size(available),
+            lower = fitted.level.name(),
+            less = crate::size(memory_needed(&fitted))
+        )
+    } else {
+        tr!(
+            "This level takes about {needed} of memory, and {available} is free: the computer may slow down, or packwing stop.",
+            needed = crate::size(needed),
+            available = crate::size(available)
+        )
+    })
+}
+
+/// A new ZIP archive of `items`, to close, and the memory its threads hold
+/// until then.
 fn new_zip(
     items: Vec<Item>,
     new: &NewArchive,
     tally: &Arc<Tally>,
-) -> Result<Archive<&'static [u8]>, Error> {
+) -> Result<(Archive<&'static [u8]>, crate::memory::Held), Error> {
     let mut za = Archive::open(&[][..], OpenFlags(0))?;
     za.set_random_source(Some(Arc::new(|buffer: &mut [u8]| {
         getrandom::fill(buffer).map_err(io::Error::other)
@@ -730,14 +851,17 @@ fn new_zip(
         za.set_default_password(new.password.as_deref());
     }
     // Files compressed in threads ahead of the one written, the archive the
-    // same whatever the threads.
-    za.set_threads(crate::threads());
+    // same whatever the threads: as many as the memory there is takes.
+    let (threads, held) = crate::memory::hold_threads(crate::threads().count(), |n| {
+        u64::from(n) * ZIP_THREAD_MEMORY
+    });
+    za.set_threads(hivepack::Threads::of(threads));
     let how = Squeeze {
         level: new.level,
         stored: &new.stored_extensions,
     };
     add_items(&mut za, items, how, new.password.is_some(), tally)?;
-    Ok(za)
+    Ok((za, held))
 }
 
 /// Writes a tar archive of `items`, or the one file that is, to `out`, compressed as
@@ -1001,7 +1125,9 @@ fn ntfs_time(metadata: &Metadata) -> Option<u64> {
 }
 
 /// How hivepack::sevenz writes the 7z archive `new` asks for.
-pub(crate) fn seven_zip_options(new: &NewArchive) -> Result<hivepack::sevenz::WriteOptions, Error> {
+pub(crate) fn seven_zip_options(
+    new: &NewArchive,
+) -> Result<(hivepack::sevenz::WriteOptions, crate::memory::Held), Error> {
     let password = match &new.password {
         None => None,
         Some(p) => Some(
@@ -1013,7 +1139,7 @@ pub(crate) fn seven_zip_options(new: &NewArchive) -> Result<hivepack::sevenz::Wr
         Level::Store => hivepack::sevenz::Method::Copy,
         level => hivepack::sevenz::Method::Lzma2 { preset: level.xz() },
     };
-    let options = hivepack::sevenz::WriteOptions {
+    let mut options = hivepack::sevenz::WriteOptions {
         method,
         encrypt_headers: new.hide_names && password.is_some(),
         password,
@@ -1025,10 +1151,17 @@ pub(crate) fn seven_zip_options(new: &NewArchive) -> Result<hivepack::sevenz::Wr
         // many times sooner as there are blocks and threads. The same
         // archive whatever the threads.
         lzma2_blocks: hivepack::sevenz::Lzma2Blocks::Auto,
-        threads: crate::threads(),
         ..hivepack::sevenz::WriteOptions::default()
     };
-    Ok(options)
+    // As many threads as the memory there is takes: at the highest level,
+    // each takes more than a GiB.
+    // Options it refuses are refused when it is made: nothing is held for them.
+    let (threads, held) = crate::memory::hold_threads(crate::threads().count(), |n| {
+        options.memory_usage(n).unwrap_or(0)
+    });
+    options.threads = hivepack::Threads::of(threads);
+    options.memory_limit = held.bytes();
+    Ok((options, held))
 }
 
 fn write_7z<W: Write + Seek>(
@@ -1037,7 +1170,8 @@ fn write_7z<W: Write + Seek>(
     tally: &Tally,
     out: W,
 ) -> Result<(), Error> {
-    let mut archive = hivepack::sevenz::Writer::with_options(out, seven_zip_options(new)?)?;
+    let (options, _held) = seven_zip_options(new)?;
+    let mut archive = hivepack::sevenz::Writer::with_options(out, options)?;
     let mut buf = vec![0; PIECE];
     // What is compressed already comes last, stored in a folder of its own, and
     // the rest stays together in one, which compresses it best.
@@ -1147,10 +1281,22 @@ impl<W: Write> Squeezed<W> {
         let mut held = None;
         let coder = match new.kind {
             Kind::Tar => Coder::Plain,
-            Kind::TarBz2 | Kind::Bz2 => Coder::Bzip2(Box::new(
-                hivepack::bzip2::CompressMt::new(new.level.bzip2(), 0, crate::threads())
-                    .map_err(|e| failed(e.to_string()))?,
-            )),
+            Kind::TarBz2 | Kind::Bz2 => {
+                let mut options = hivepack::bzip2::MtOptions {
+                    block_size_100k: new.level.bzip2(),
+                    ..hivepack::bzip2::MtOptions::default()
+                };
+                let (threads, holds) = crate::memory::hold_threads(threads(), |n| {
+                    options.memory_usage(n).unwrap_or(0)
+                });
+                options.threads = hivepack::Threads::of(threads);
+                options.memory_limit = holds.bytes();
+                held = Some(holds);
+                Coder::Bzip2(Box::new(
+                    hivepack::bzip2::CompressMt::with_options(&options)
+                        .map_err(|e| failed(e.to_string()))?,
+                ))
+            }
             Kind::TarLz4 | Kind::Lz4 => {
                 let prefs = hivepack::lz4::frame::Preferences {
                     compression_level: new.level.lz4(),
@@ -1192,6 +1338,15 @@ impl<W: Write> Squeezed<W> {
                     cctx.set_parameter(parameter)
                         .map_err(|e| failed(e.to_string()))?;
                 }
+                // As many workers as the memory there is takes: at the
+                // highest level, each takes about 220 MiB.
+                let (workers, holds) = crate::memory::hold_threads(threads(), |n| {
+                    cctx.estimate_memory(n).unwrap_or(0)
+                });
+                cctx.set_parameter(hivepack::zstd::CParameter::NbWorkers(workers))
+                    .map_err(|e| failed(e.to_string()))?;
+                cctx.set_workers_memory_limit(holds.bytes());
+                held = Some(holds);
                 Coder::Zstd(Box::new(cctx))
             }
             // 16 more than the window's 15 asks for gzip's header and end.
@@ -1686,6 +1841,8 @@ pub fn create(
     // Refused before anything is read.
     obey_policy(new)?;
     age_recipients(new)?;
+    // At a level whose one thread the memory there is takes.
+    let new = &within_memory(new);
     // Before the archive is made, so that it is not among them.
     create_of(chosen_items(paths, new, control)?, wanted, new, control)
 }
@@ -1976,7 +2133,7 @@ fn straight(
                 write_sealed(items, new, &tally, out)
             }
             Kind::Zip => new_zip(items, new, &tally)
-                .and_then(|mut za| Ok(za.close_to_stream(out)?))
+                .and_then(|(mut za, _held)| Ok(za.close_to_stream(out)?))
                 .and_then(zip_closed),
             _ => write_squeezed(items, new, &tally, out),
         };
@@ -2021,6 +2178,8 @@ pub fn create_on(
     // Refused before anything is read.
     obey_policy(new)?;
     age_recipients(new)?;
+    // At a level whose one thread the memory there is takes.
+    let new = &within_memory(new);
     let failed = |e: io::Error| Error::Failed(e.to_string());
     // Asked before anything is compressed: what stops it soon stops it first.
     let name = free_name_on(to, folder, name, new.part_size.is_some())?;
@@ -2099,6 +2258,38 @@ pub fn create_on(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_level_too_large_for_the_memory_is_lowered_until_it_fits() {
+        const MB: u64 = 1_000_000;
+        let new = |kind, level| NewArchive {
+            kind,
+            level,
+            ..NewArchive::default()
+        };
+        for kind in [Kind::SevenZip, Kind::TarXz, Kind::TarZst] {
+            let highest = new(kind, Level::Highest);
+            assert_eq!(within(&highest, u64::MAX).level, Level::Highest, "{kind:?}");
+            let fitted = within(&highest, 300 * MB);
+            assert_ne!(fitted.level, Level::Highest, "{kind:?}");
+            assert!(
+                memory_needed(&fitted) <= 300 * MB,
+                "{kind:?} at {:?}",
+                fitted.level
+            );
+            // Where none fits, the lowest: it is made all the same.
+            assert_eq!(within(&highest, 0).level, Level::Lowest, "{kind:?}");
+        }
+        // What takes little is left as it is.
+        assert_eq!(
+            within(&new(Kind::Zip, Level::Highest), 100 * MB).level,
+            Level::Highest
+        );
+        assert_eq!(
+            within(&new(Kind::SevenZip, Level::Store), 0).level,
+            Level::Store
+        );
+    }
 
     #[test]
     fn what_is_compressed_already_is_known_by_its_extension() {

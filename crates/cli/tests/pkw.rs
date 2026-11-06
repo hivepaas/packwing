@@ -25,11 +25,18 @@ impl Scratch {
     /// environment, nothing to read, and the app's settings the test's own:
     /// `config/packwing/settings`, which [`Scratch::settings`] writes.
     fn pkw(&self, args: &[&str]) -> Output {
+        self.pkw_with(args, &[])
+    }
+
+    /// [`Scratch::pkw`], with these in its environment too.
+    fn pkw_with(&self, args: &[&str], env: &[(&str, &str)]) -> Output {
         let config = self.path("config");
         let mut pkw = Command::new(env!("CARGO_BIN_EXE_pkw"));
         pkw.args(args)
             .current_dir(&self.0)
             .env_remove("PACKWING_PASSWORD")
+            .env_remove("PACKWING_MEMORY")
+            .envs(env.iter().copied())
             .env("XDG_CONFIG_HOME", &config)
             .env("APPDATA", &config)
             .stdin(std::process::Stdio::null());
@@ -521,4 +528,34 @@ fn threads_change_how_soon_not_what_is_made_or_read() {
         s.pkw(&["list", "-T", "some", "0-a.tar.xz"]).status.code(),
         Some(2)
     );
+}
+
+#[test]
+fn a_level_too_large_for_the_memory_free_is_lowered_and_said() {
+    let s = Scratch::new("memory");
+    // 300 MB free: 7z's and xz's highest level take more than a GB in one
+    // thread, which would have the system end pkw.
+    let little = [("PACKWING_MEMORY", "300000000")];
+    for name in ["a.7z", "a.tar.xz"] {
+        let made = s.pkw_with(
+            &["create", "-l", "highest", "-T", "0", name, "src"],
+            &little,
+        );
+        let said = String::from_utf8_lossy(&made.stderr).into_owned();
+        assert!(made.status.success(), "{name}: {said}");
+        assert!(said.contains("it is made at"), "{name}: {said}");
+        ok(&s.pkw(&["test", "-q", name]));
+    }
+    // With memory enough, nothing is said.
+    let made = s.pkw(&["create", "-l", "highest", "b.7z", "src"]);
+    assert!(made.status.success());
+    assert!(
+        made.stderr.is_empty(),
+        "{}",
+        String::from_utf8_lossy(&made.stderr)
+    );
+    // Nor when quiet.
+    let made = s.pkw_with(&["create", "-q", "-l", "highest", "c.7z", "src"], &little);
+    assert!(made.status.success());
+    assert!(made.stderr.is_empty());
 }

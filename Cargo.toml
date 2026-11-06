@@ -25,7 +25,7 @@ gpui_platform = { package = "gpui-pre-platform", version = "=0.3.9", default-fea
 # `unsafe-fast`, which hivepack leaves off by default: the processor's CRC-32
 # instructions, and the unchecked fast loops of zstd, LZ4 and Deflate. What
 # each does is in hivepack's docs/unsafe.md.
-hivepack = { version = "0.6.0", features = ["rar", "unsafe-fast"] }
+hivepack = { version = "0.7.0", features = ["rar", "unsafe-fast"] }
 packwing-core = { path = "crates/core" }
 packwing-remote = { path = "crates/remote" }
 packwing-i18n = { path = "crates/i18n" }

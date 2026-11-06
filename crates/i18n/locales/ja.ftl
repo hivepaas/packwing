@@ -235,24 +235,6 @@ te9afe1c2 = ほとんどのコンピューターで、開くにはアーカイ�
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = 1 つのファイルだけを格納します。コマンドラインツールで開けます。Windows と macOS ではアーカイバアプリが必要な場合があります。誰とでも共有するには .zip を選んでください。
 
-# Store
-t6da32dce = 無圧縮
-
-# Lowest
-t5d7dbfdb = 最低
-
-# Low
-tb1dd9521 = 低
-
-# Medium
-t09be5f96 = 中
-
-# High
-tbe0a061d = 高
-
-# Highest
-t9487b22f = 最高
-
 # Don’t split
 t56ee6829 = 分割しない
 
@@ -2026,6 +2008,24 @@ te9ab879e = { $path } は大きすぎます。
 # This format holds one file, and no more.
 t75c197d9 = この形式に入れられるのは 1 つのファイルだけです。
 
+# Store
+t6da32dce = 無圧縮
+
+# Lowest
+t5d7dbfdb = 最低
+
+# Low
+tb1dd9521 = 低
+
+# Medium
+t09be5f96 = 中
+
+# High
+tbe0a061d = 高
+
+# Highest
+t9487b22f = 最高
+
 # Could not read {path}: {e}
 tad0120eb = { $path } を読み取れませんでした：{ $e }
 
@@ -2043,6 +2043,12 @@ t40554bf6 = { $wanted } とそれ以降の名前はすでに使われていま�
 
 # Could not encrypt: {e}
 t485d71ab = 暗号化できませんでした：{ $e }
+
+# {level} takes about {needed} of memory, and {available} is free: it is made at {lower}, which takes about {less}.
+t87cf6e96 = { $level } には約 { $needed } のメモリが必要ですが、空きは { $available } です。約 { $less } で済む { $lower } で作成します。
+
+# This level takes about {needed} of memory, and {available} is free: the computer may slow down, or packwing stop.
+tbee8032a = このレベルには約 { $needed } のメモリが必要ですが、空きは { $available } です。コンピュータが遅くなるか、packwing が止まるおそれがあります。
 
 # A ZIP or 7z archive takes age keys only when age encrypts it whole.
 t582284c9 = ZIP や 7z のアーカイブで age の鍵を使えるのは、age で全体を暗号化する場合だけです。

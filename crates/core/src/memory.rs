@@ -76,7 +76,45 @@ fn measured() -> u64 {
     if let Some(group) = system.cgroup_limits() {
         available = available.min(group.free_memory);
     }
+    if let Some(left) = control_group_left() {
+        available = available.min(left);
+    }
     if available == 0 { LEAST * 2 } else { available }
+}
+
+/// What the control groups packwing runs in let it take still, on Linux:
+/// the least, between each group's limit (`memory.max`) and what it holds
+/// (`memory.current`), from its own group up to the root. sysinfo reads only
+/// the root's, which is the group's own in a container but not under
+/// systemd's slices and scopes. None where no group has a limit.
+#[cfg(target_os = "linux")]
+fn control_group_left() -> Option<u64> {
+    let mine = std::fs::read_to_string("/proc/self/cgroup").ok()?;
+    // cgroup v2's line: `0::/user.slice/…/app.scope`.
+    let path = mine.lines().find_map(|line| line.strip_prefix("0::"))?;
+    let read = |dir: &std::path::Path, name: &str| -> Option<u64> {
+        std::fs::read_to_string(dir.join(name))
+            .ok()?
+            .trim()
+            .parse()
+            .ok()
+    };
+    let mut dir = std::path::Path::new("/sys/fs/cgroup").join(path.trim_start_matches('/'));
+    let mut least: Option<u64> = None;
+    loop {
+        if let Some(max) = read(&dir, "memory.max") {
+            let left = max.saturating_sub(read(&dir, "memory.current").unwrap_or(0));
+            least = Some(least.map_or(left, |l| l.min(left)));
+        }
+        if dir == std::path::Path::new("/sys/fs/cgroup") || !dir.pop() {
+            return least;
+        }
+    }
+}
+
+#[cfg(not(target_os = "linux"))]
+fn control_group_left() -> Option<u64> {
+    None
 }
 
 /// Makes [`available`] say `bytes` from now on: 0 measures again.

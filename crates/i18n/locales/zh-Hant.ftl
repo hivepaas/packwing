@@ -235,24 +235,6 @@ te9afe1c2 = 多數電腦需要封存檔應用程式或 lz4 工具才能開啟。
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = 僅能存放這一個檔案。命令列工具可開啟；Windows 和 macOS 可能需要封存檔應用程式。若要與任何人分享，請選擇 .zip。
 
-# Store
-t6da32dce = 僅儲存
-
-# Lowest
-t5d7dbfdb = 最低
-
-# Low
-tb1dd9521 = 低
-
-# Medium
-t09be5f96 = 中
-
-# High
-tbe0a061d = 高
-
-# Highest
-t9487b22f = 最高
-
 # Don’t split
 t56ee6829 = 不分割
 
@@ -2035,6 +2017,24 @@ te9ab879e = { $path } 太大。
 # This format holds one file, and no more.
 t75c197d9 = 這種格式只能存放一個檔案。
 
+# Store
+t6da32dce = 僅儲存
+
+# Lowest
+t5d7dbfdb = 最低
+
+# Low
+tb1dd9521 = 低
+
+# Medium
+t09be5f96 = 中
+
+# High
+tbe0a061d = 高
+
+# Highest
+t9487b22f = 最高
+
 # Could not read {path}: {e}
 tad0120eb = 無法讀取 { $path }：{ $e }
 
@@ -2052,6 +2052,12 @@ t40554bf6 = { $wanted } 及其後的名稱都已被使用。
 
 # Could not encrypt: {e}
 t485d71ab = 無法加密：{ $e }
+
+# {level} takes about {needed} of memory, and {available} is free: it is made at {lower}, which takes about {less}.
+t87cf6e96 = { $level } 約需 { $needed } 記憶體，目前可用 { $available }：將以約需 { $less } 的 { $lower } 建立。
+
+# This level takes about {needed} of memory, and {available} is free: the computer may slow down, or packwing stop.
+tbee8032a = 此層級約需 { $needed } 記憶體，目前可用 { $available }：電腦可能變慢，或 packwing 停止。
 
 # A ZIP or 7z archive takes age keys only when age encrypts it whole.
 t582284c9 = ZIP 或 7z 封存檔只有在由 age 整體加密時才能使用 age 金鑰。

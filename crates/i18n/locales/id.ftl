@@ -235,24 +235,6 @@ te9afe1c2 = Sebagian besar komputer memerlukan aplikasi arsip atau alat lz4 untu
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = Berisi satu berkas ini saja. Alat baris perintah dapat membukanya; Windows dan macOS mungkin memerlukan aplikasi arsip. Untuk dibagikan ke siapa saja, pilih .zip.
 
-# Store
-t6da32dce = Simpan
-
-# Lowest
-t5d7dbfdb = Terendah
-
-# Low
-tb1dd9521 = Rendah
-
-# Medium
-t09be5f96 = Sedang
-
-# High
-tbe0a061d = Tinggi
-
-# Highest
-t9487b22f = Tertinggi
-
 # Don’t split
 t56ee6829 = Jangan dipecah
 
@@ -2035,6 +2017,24 @@ te9ab879e = { $path } terlalu besar.
 # This format holds one file, and no more.
 t75c197d9 = Format ini hanya memuat satu berkas, tidak lebih.
 
+# Store
+t6da32dce = Simpan
+
+# Lowest
+t5d7dbfdb = Terendah
+
+# Low
+tb1dd9521 = Rendah
+
+# Medium
+t09be5f96 = Sedang
+
+# High
+tbe0a061d = Tinggi
+
+# Highest
+t9487b22f = Tertinggi
+
 # Could not read {path}: {e}
 tad0120eb = Tidak dapat membaca { $path }: { $e }
 
@@ -2052,6 +2052,12 @@ t40554bf6 = { $wanted } dan nama setelahnya sudah dipakai.
 
 # Could not encrypt: {e}
 t485d71ab = Tidak dapat mengenkripsi: { $e }
+
+# {level} takes about {needed} of memory, and {available} is free: it is made at {lower}, which takes about {less}.
+t87cf6e96 = { $level } butuh sekitar { $needed } memori, dan yang kosong { $available }: dibuat dengan { $lower }, yang butuh sekitar { $less }.
+
+# This level takes about {needed} of memory, and {available} is free: the computer may slow down, or packwing stop.
+tbee8032a = Level ini butuh sekitar { $needed } memori, dan yang kosong { $available }: komputer bisa melambat, atau packwing berhenti.
 
 # A ZIP or 7z archive takes age keys only when age encrypts it whole.
 t582284c9 = Arsip ZIP atau 7z hanya menerima kunci age jika age mengenkripsinya secara utuh.

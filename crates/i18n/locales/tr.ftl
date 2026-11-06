@@ -237,24 +237,6 @@ te9afe1c2 = Çoğu bilgisayarda açmak için bir arşivleme uygulaması veya lz4
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = Yalnızca bu tek dosyayı tutar. Komut satırı araçları açar; Windows ve macOS için bir arşivleme uygulaması gerekebilir. Herkesle paylaşmak için .zip seçin.
 
-# Store
-t6da32dce = Sakla
-
-# Lowest
-t5d7dbfdb = En düşük
-
-# Low
-tb1dd9521 = Düşük
-
-# Medium
-t09be5f96 = Orta
-
-# High
-tbe0a061d = Yüksek
-
-# Highest
-t9487b22f = En yüksek
-
 # Don’t split
 t56ee6829 = Bölme
 
@@ -2059,6 +2041,24 @@ te9ab879e = { $path } çok büyük.
 # This format holds one file, and no more.
 t75c197d9 = Bu biçim tek bir dosya tutar, fazlasını değil.
 
+# Store
+t6da32dce = Sakla
+
+# Lowest
+t5d7dbfdb = En düşük
+
+# Low
+tb1dd9521 = Düşük
+
+# Medium
+t09be5f96 = Orta
+
+# High
+tbe0a061d = Yüksek
+
+# Highest
+t9487b22f = En yüksek
+
 # Could not read {path}: {e}
 tad0120eb = { $path } okunamadı: { $e }
 
@@ -2076,6 +2076,12 @@ t40554bf6 = { $wanted } ve ondan sonraki adlar kullanımda.
 
 # Could not encrypt: {e}
 t485d71ab = Şifrelenemedi: { $e }
+
+# {level} takes about {needed} of memory, and {available} is free: it is made at {lower}, which takes about {less}.
+t87cf6e96 = { $level } yaklaşık { $needed } bellek ister ve boşta { $available } var: yaklaşık { $less } isteyen { $lower } ile oluşturulur.
+
+# This level takes about {needed} of memory, and {available} is free: the computer may slow down, or packwing stop.
+tbee8032a = Bu düzey yaklaşık { $needed } bellek ister ve boşta { $available } var: bilgisayar yavaşlayabilir ya da packwing durabilir.
 
 # A ZIP or 7z archive takes age keys only when age encrypts it whole.
 t582284c9 = ZIP veya 7z arşivi age anahtarlarını yalnızca age onu bütünüyle şifrelediğinde alır.

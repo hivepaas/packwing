@@ -235,24 +235,6 @@ te9afe1c2 = Hầu hết máy tính cần ứng dụng giải nén hoặc công c
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = Nó chỉ chứa một tệp. Công cụ dòng lệnh mở được; Windows và macOS có thể cần ứng dụng giải nén. Để chia sẻ cho mọi người, hãy chọn .zip.
 
-# Store
-t6da32dce = Không nén
-
-# Lowest
-t5d7dbfdb = Thấp nhất
-
-# Low
-tb1dd9521 = Thấp
-
-# Medium
-t09be5f96 = Vừa
-
-# High
-tbe0a061d = Cao
-
-# Highest
-t9487b22f = Cao nhất
-
 # Don’t split
 t56ee6829 = Không chia nhỏ
 
@@ -2026,6 +2008,24 @@ te9ab879e = { $path } quá lớn.
 # This format holds one file, and no more.
 t75c197d9 = Định dạng này chỉ chứa một tệp, không hơn.
 
+# Store
+t6da32dce = Không nén
+
+# Lowest
+t5d7dbfdb = Thấp nhất
+
+# Low
+tb1dd9521 = Thấp
+
+# Medium
+t09be5f96 = Vừa
+
+# High
+tbe0a061d = Cao
+
+# Highest
+t9487b22f = Cao nhất
+
 # Could not read {path}: {e}
 tad0120eb = Không đọc được { $path }: { $e }
 
@@ -2043,6 +2043,12 @@ t40554bf6 = { $wanted } và các tên sau nó đã có.
 
 # Could not encrypt: {e}
 t485d71ab = Không mã hoá được: { $e }
+
+# {level} takes about {needed} of memory, and {available} is free: it is made at {lower}, which takes about {less}.
+t87cf6e96 = Mức { $level } cần khoảng { $needed } bộ nhớ, trong khi chỉ còn trống { $available }: archive sẽ được tạo ở mức { $lower }, cần khoảng { $less }.
+
+# This level takes about {needed} of memory, and {available} is free: the computer may slow down, or packwing stop.
+tbee8032a = Mức này cần khoảng { $needed } bộ nhớ, trong khi chỉ còn trống { $available }: máy có thể chậm đi, hoặc packwing dừng lại.
 
 # A ZIP or 7z archive takes age keys only when age encrypts it whole.
 t582284c9 = Tệp nén ZIP hoặc 7z chỉ nhận khoá age khi age mã hoá toàn bộ tệp.
