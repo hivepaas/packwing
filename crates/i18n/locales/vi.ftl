@@ -1627,12 +1627,6 @@ tf65ec196 = Tất cả ({ $count })
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = ví dụ code -n, hoặc /đường/dẫn/trình-soạn-thảo --flag
 
-# Show packwing in the right-click menu
-t5d0d23cc = Hiện packwing trong menu chuột phải
-
-# Extract and compress from any folder
-t94a46acb = Giải nén và nén từ mọi thư mục
-
 # Language
 t9a73db9b = Ngôn ngữ
 
@@ -1725,6 +1719,12 @@ t8d7b3a90 = Nên biết
 
 # The menu could not be changed: {why}
 t9fac5c06 = Không đổi được menu: { $why }
+
+# Show packwing in the right-click menu
+t5d0d23cc = Hiện packwing trong menu chuột phải
+
+# Extract and compress from any folder
+t94a46acb = Giải nén và nén từ mọi thư mục
 
 # Items in the menu
 t67537dc4 = Các mục trong menu

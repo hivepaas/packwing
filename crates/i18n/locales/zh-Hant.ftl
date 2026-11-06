@@ -1627,12 +1627,6 @@ tf65ec196 = 全部 ({ $count })
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = 例如 code -n，或 /path/to/editor --flag
 
-# Show packwing in the right-click menu
-t5d0d23cc = 在右鍵選單中顯示 packwing
-
-# Extract and compress from any folder
-t94a46acb = 可在任何資料夾中解壓縮與壓縮
-
 # Language
 t9a73db9b = 語言
 
@@ -1725,6 +1719,12 @@ t8d7b3a90 = 注意事項
 
 # The menu could not be changed: {why}
 t9fac5c06 = 無法變更選單：{ $why }
+
+# Show packwing in the right-click menu
+t5d0d23cc = 在右鍵選單中顯示 packwing
+
+# Extract and compress from any folder
+t94a46acb = 可在任何資料夾中解壓縮與壓縮
 
 # Items in the menu
 t67537dc4 = 選單中的項目

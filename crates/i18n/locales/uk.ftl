@@ -1687,12 +1687,6 @@ tf65ec196 = Усі ({ $count })
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = наприклад, code -n або /path/to/editor --flag
 
-# Show packwing in the right-click menu
-t5d0d23cc = Показувати packwing у контекстному меню
-
-# Extract and compress from any folder
-t94a46acb = Видобувайте й стискайте з будь-якої папки
-
 # Language
 t9a73db9b = Мова
 
@@ -1785,6 +1779,12 @@ t8d7b3a90 = Варто знати
 
 # The menu could not be changed: {why}
 t9fac5c06 = Не вдалося змінити меню: { $why }
+
+# Show packwing in the right-click menu
+t5d0d23cc = Показувати packwing у контекстному меню
+
+# Extract and compress from any folder
+t94a46acb = Видобувайте й стискайте з будь-якої папки
 
 # Items in the menu
 t67537dc4 = Пункти меню
