@@ -241,24 +241,6 @@ te9afe1c2 = На большинстве компьютеров для его о�
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = В нём один файл. Открывается утилитами командной строки; в Windows и macOS может понадобиться архиватор. Чтобы поделиться с кем угодно, выберите .zip.
 
-# Store
-t6da32dce = Без сжатия
-
-# Lowest
-t5d7dbfdb = Минимум
-
-# Low
-tb1dd9521 = Низкий
-
-# Medium
-t09be5f96 = Средний
-
-# High
-tbe0a061d = Высокий
-
-# Highest
-t9487b22f = Максимум
-
 # Don’t split
 t56ee6829 = Не делить
 
@@ -2107,6 +2089,24 @@ te9ab879e = { $path } слишком большой.
 # This format holds one file, and no more.
 t75c197d9 = Этот формат хранит один файл и не более.
 
+# Store
+t6da32dce = Без сжатия
+
+# Lowest
+t5d7dbfdb = Минимум
+
+# Low
+tb1dd9521 = Низкий
+
+# Medium
+t09be5f96 = Средний
+
+# High
+tbe0a061d = Высокий
+
+# Highest
+t9487b22f = Максимум
+
 # Could not read {path}: {e}
 tad0120eb = Не удалось прочитать { $path }: { $e }
 
@@ -2124,6 +2124,12 @@ t40554bf6 = { $wanted } и следующие за ним имена занят�
 
 # Could not encrypt: {e}
 t485d71ab = Не удалось зашифровать: { $e }
+
+# {level} takes about {needed} of memory, and {available} is free: it is made at {lower}, which takes about {less}.
+t87cf6e96 = Уровню «{ $level }» нужно около { $needed } памяти, а свободно { $available }: архив создаётся на уровне «{ $lower }», которому нужно около { $less }.
+
+# This level takes about {needed} of memory, and {available} is free: the computer may slow down, or packwing stop.
+tbee8032a = Этому уровню нужно около { $needed } памяти, а свободно { $available }: компьютер может замедлиться или packwing остановиться.
 
 # A ZIP or 7z archive takes age keys only when age encrypts it whole.
 t582284c9 = Архив ZIP или 7z принимает ключи age, только если age шифрует его целиком.

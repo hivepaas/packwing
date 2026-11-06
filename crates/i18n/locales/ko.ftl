@@ -235,24 +235,6 @@ te9afe1c2 = 대부분의 컴퓨터에서 열려면 압축 앱이나 lz4 도구�
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = 파일 하나만 담습니다. 명령줄 도구로 열 수 있으며, Windows와 macOS는 압축 앱이 필요할 수 있습니다. 누구에게나 공유하려면 .zip을 선택하세요.
 
-# Store
-t6da32dce = 저장만
-
-# Lowest
-t5d7dbfdb = 최저
-
-# Low
-tb1dd9521 = 낮음
-
-# Medium
-t09be5f96 = 보통
-
-# High
-tbe0a061d = 높음
-
-# Highest
-t9487b22f = 최고
-
 # Don’t split
 t56ee6829 = 나누지 않음
 
@@ -2026,6 +2008,24 @@ te9ab879e = { $path }이(가) 너무 큽니다.
 # This format holds one file, and no more.
 t75c197d9 = 이 형식은 파일 하나만 담을 수 있습니다.
 
+# Store
+t6da32dce = 저장만
+
+# Lowest
+t5d7dbfdb = 최저
+
+# Low
+tb1dd9521 = 낮음
+
+# Medium
+t09be5f96 = 보통
+
+# High
+tbe0a061d = 높음
+
+# Highest
+t9487b22f = 최고
+
 # Could not read {path}: {e}
 tad0120eb = { $path }을(를) 읽을 수 없습니다: { $e }
 
@@ -2043,6 +2043,12 @@ t40554bf6 = { $wanted }와(과) 그 뒤의 이름은 이미 사용 중입니다.
 
 # Could not encrypt: {e}
 t485d71ab = 암호화할 수 없습니다: { $e }
+
+# {level} takes about {needed} of memory, and {available} is free: it is made at {lower}, which takes about {less}.
+t87cf6e96 = { $level }에는 메모리가 약 { $needed } 필요하지만 남은 메모리는 { $available }입니다. 약 { $less }만 쓰는 { $lower }(으)로 만듭니다.
+
+# This level takes about {needed} of memory, and {available} is free: the computer may slow down, or packwing stop.
+tbee8032a = 이 수준은 메모리가 약 { $needed } 필요하지만 남은 메모리는 { $available }입니다. 컴퓨터가 느려지거나 packwing이 멈출 수 있습니다.
 
 # A ZIP or 7z archive takes age keys only when age encrypts it whole.
 t582284c9 = ZIP 또는 7z 압축 파일은 age로 전체를 암호화할 때만 age 키를 쓸 수 있습니다.

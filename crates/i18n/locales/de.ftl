@@ -237,24 +237,6 @@ te9afe1c2 = Die meisten Computer brauchen eine Archiv-App oder das lz4-Tool, um 
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = Es enthält nur diese eine Datei. Kommandozeilen-Tools öffnen es; Windows und macOS brauchen womöglich eine Archiv-App. Zum Teilen mit jedem wähle .zip.
 
-# Store
-t6da32dce = Speichern
-
-# Lowest
-t5d7dbfdb = Niedrigste
-
-# Low
-tb1dd9521 = Niedrig
-
-# Medium
-t09be5f96 = Mittel
-
-# High
-tbe0a061d = Hoch
-
-# Highest
-t9487b22f = Höchste
-
 # Don’t split
 t56ee6829 = Nicht teilen
 
@@ -2059,6 +2041,24 @@ te9ab879e = { $path } ist zu groß.
 # This format holds one file, and no more.
 t75c197d9 = Dieses Format enthält eine Datei und nicht mehr.
 
+# Store
+t6da32dce = Speichern
+
+# Lowest
+t5d7dbfdb = Niedrigste
+
+# Low
+tb1dd9521 = Niedrig
+
+# Medium
+t09be5f96 = Mittel
+
+# High
+tbe0a061d = Hoch
+
+# Highest
+t9487b22f = Höchste
+
 # Could not read {path}: {e}
 tad0120eb = { $path } konnte nicht gelesen werden: { $e }
 
@@ -2076,6 +2076,12 @@ t40554bf6 = { $wanted } und die Namen danach sind vergeben.
 
 # Could not encrypt: {e}
 t485d71ab = Verschlüsseln nicht möglich: { $e }
+
+# {level} takes about {needed} of memory, and {available} is free: it is made at {lower}, which takes about {less}.
+t87cf6e96 = { $level } braucht etwa { $needed } Arbeitsspeicher, frei sind { $available }: Es wird mit { $lower } erstellt, das etwa { $less } braucht.
+
+# This level takes about {needed} of memory, and {available} is free: the computer may slow down, or packwing stop.
+tbee8032a = Diese Stufe braucht etwa { $needed } Arbeitsspeicher, frei sind { $available }: Der Computer kann langsamer werden oder packwing anhalten.
 
 # A ZIP or 7z archive takes age keys only when age encrypts it whole.
 t582284c9 = Ein ZIP- oder 7z-Archiv nimmt age-Schlüssel nur, wenn age es als Ganzes verschlüsselt.

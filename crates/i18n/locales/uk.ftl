@@ -241,24 +241,6 @@ te9afe1c2 = Більшості комп’ютерів, щоб його відк
 # It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
 t16463509 = Він містить лише цей один файл. Його відкривають інструменти командного рядка; у Windows і macOS може знадобитися програма-архіватор. Щоб поділитися з будь-ким, виберіть .zip.
 
-# Store
-t6da32dce = Без стиснення
-
-# Lowest
-t5d7dbfdb = Мінімум
-
-# Low
-tb1dd9521 = Низький
-
-# Medium
-t09be5f96 = Середній
-
-# High
-tbe0a061d = Високий
-
-# Highest
-t9487b22f = Максимум
-
 # Don’t split
 t56ee6829 = Не ділити
 
@@ -2107,6 +2089,24 @@ te9ab879e = { $path } завеликий.
 # This format holds one file, and no more.
 t75c197d9 = Цей формат містить один файл, не більше.
 
+# Store
+t6da32dce = Без стиснення
+
+# Lowest
+t5d7dbfdb = Мінімум
+
+# Low
+tb1dd9521 = Низький
+
+# Medium
+t09be5f96 = Середній
+
+# High
+tbe0a061d = Високий
+
+# Highest
+t9487b22f = Максимум
+
 # Could not read {path}: {e}
 tad0120eb = Не вдалося прочитати { $path }: { $e }
 
@@ -2124,6 +2124,12 @@ t40554bf6 = { $wanted } та наступні за ним назви зайня�
 
 # Could not encrypt: {e}
 t485d71ab = Не вдалося зашифрувати: { $e }
+
+# {level} takes about {needed} of memory, and {available} is free: it is made at {lower}, which takes about {less}.
+t87cf6e96 = Рівню «{ $level }» потрібно близько { $needed } пам’яті, а вільно { $available }: архів створюється на рівні «{ $lower }», якому потрібно близько { $less }.
+
+# This level takes about {needed} of memory, and {available} is free: the computer may slow down, or packwing stop.
+tbee8032a = Цьому рівню потрібно близько { $needed } пам’яті, а вільно { $available }: комп’ютер може сповільнитися або packwing зупинитися.
 
 # A ZIP or 7z archive takes age keys only when age encrypts it whole.
 t582284c9 = Архів ZIP або 7z приймає ключі age, лише коли age шифрує його повністю.

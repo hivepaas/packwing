@@ -193,14 +193,7 @@ pub(crate) const LEVELS: [(Level, &str); 6] = [
 
 /// A level as the user reads it.
 pub(crate) fn level_name(level: Level) -> String {
-    match level {
-        Level::Store => tr!("Store"),
-        Level::Lowest => tr!("Lowest"),
-        Level::Low => tr!("Low"),
-        Level::Medium => tr!("Medium"),
-        Level::High => tr!("High"),
-        Level::Highest => tr!("Highest"),
-    }
+    level.name()
 }
 
 /// How the archive is split: the last takes a size typed in.
@@ -277,6 +270,9 @@ struct KeysFile {
     left_out: usize,
 }
 
+/// A format and level, and what was said of the memory they take.
+type MemorySaid = ((Kind, Level), Option<String>);
+
 pub struct CreateDialog {
     selection: Selection,
     /// It makes an archive of what the one archive chosen holds, not of the file.
@@ -327,6 +323,9 @@ pub struct CreateDialog {
     checked: bool,
     /// Why it did not start: another job makes an archive of that name there now.
     busy: Option<String>,
+    /// What [`packwing_core::memory_warning`] said of a format and level, kept
+    /// so that the memory is not measured each time the dialog is drawn.
+    memory_said: std::cell::RefCell<Option<MemorySaid>>,
     _follow: Vec<Subscription>,
 }
 
@@ -437,6 +436,7 @@ impl CreateDialog {
             hide_names: kept.hide_names,
             checked: false,
             busy: None,
+            memory_said: std::cell::RefCell::new(None),
             _follow: follow,
         }
     }
@@ -896,6 +896,26 @@ impl CreateDialog {
         });
         self.passphrase_made = true;
         cx.notify();
+    }
+
+    /// What to say of the memory the format and level chosen take, if even
+    /// one thread takes more than is free: measured again only when they
+    /// change.
+    fn memory_warning(&self, cx: &App) -> Option<String> {
+        let chosen = (self.format(cx).kind(), self.level(cx));
+        let mut said = self.memory_said.borrow_mut();
+        if let Some((was, warning)) = said.as_ref()
+            && *was == chosen
+        {
+            return warning.clone();
+        }
+        let warning = packwing_core::memory_warning(&NewArchive {
+            kind: chosen.0,
+            level: chosen.1,
+            ..NewArchive::default()
+        });
+        *said = Some((chosen, warning.clone()));
+        warning
     }
 
     /// How encrypted the archive would be, for what a policy says of it.
@@ -1402,7 +1422,16 @@ impl CreateDialog {
                         } else {
                             tr!("Higher makes a smaller archive, which takes longer to make, not to open.")
                         },
-                    )),
+                    ))
+                    .when_some(self.memory_warning(cx), |d, warning| {
+                        d.child(
+                            div()
+                                .debug_selector(|| "create-memory".into())
+                                .text_size(ui(13.))
+                                .text_color(rgb(c.warn_text))
+                                .child(warning),
+                        )
+                    }),
             )
             .child(
                 div()

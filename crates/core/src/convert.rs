@@ -71,6 +71,8 @@ pub fn convert(
     // Refused before anything is read.
     obey_policy(new)?;
     let recipients = age_recipients(new)?;
+    // At a level whose one thread the memory there is takes.
+    let new = &crate::create::within_memory(new);
     let source: Source = source.into();
     let filter_given = !filter.is_everything();
     let mut summary = None;
@@ -200,6 +202,8 @@ enum Format<'a> {
         archive: Box<hivepack::sevenz::Writer<&'a mut dyn WriteSeek>>,
         /// Its files are stored now, not compressed.
         storing: bool,
+        /// The memory its threads hold, until it is written.
+        _held: crate::memory::Held,
     },
     Tar(hivepack::tar::Writer<Squeezed<Sealed<&'a mut dyn WriteSeek>>>),
     /// One file compressed by itself: whether it has been written.
@@ -229,13 +233,14 @@ impl<'a> Format<'a> {
                 }
                 Format::Zip(Box::new(zip))
             }
-            Kind::SevenZip => Format::SevenZip {
-                archive: Box::new(hivepack::sevenz::Writer::with_options(
-                    out,
-                    seven_zip_options(new)?,
-                )?),
-                storing: new.level == Level::Store,
-            },
+            Kind::SevenZip => {
+                let (options, held) = seven_zip_options(new)?;
+                Format::SevenZip {
+                    archive: Box::new(hivepack::sevenz::Writer::with_options(out, options)?),
+                    storing: new.level == Level::Store,
+                    _held: held,
+                }
+            }
             kind if kind.one_file() => Format::One(Squeezed::new(new, sealed(out)?)?, false),
             _ => Format::Tar(hivepack::tar::Writer::new(Squeezed::new(
                 new,
@@ -287,7 +292,9 @@ impl<'a> Format<'a> {
                 }
                 zip.add_file(&zip_entry(name, mtime, mode, Some(len)), data)?;
             }
-            Format::SevenZip { archive, storing } => {
+            Format::SevenZip {
+                archive, storing, ..
+            } => {
                 // Each change of method starts a folder of its own.
                 if stored != *storing {
                     archive.set_method(match stored {

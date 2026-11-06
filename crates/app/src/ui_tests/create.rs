@@ -392,3 +392,23 @@ scenario!(
         ui.wait_for("save-here");
     }
 );
+
+scenario!(
+    /// A level that takes more memory than is free, even in one thread, is
+    /// said under the levels; the archive is made all the same.
+    a_level_that_takes_more_memory_than_is_free_is_said,
+    |ui| {
+        packwing_core::memory::set_available(300_000_000);
+        let work = new_archive(ui);
+        ui.click("advanced");
+        ui.choose("format", ".7z");
+        ui.click("Medium");
+        assert!(!ui.shows("create-memory"));
+        ui.click("Highest");
+        ui.wait_for("create-memory");
+        ui.click("create");
+        ui.wait_for_no_dialog();
+        packwing_core::memory::set_available(0);
+        assert_eq!(listed(&work.join("a.7z"), None), ["a.txt"]);
+    }
+);

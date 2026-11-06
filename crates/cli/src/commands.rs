@@ -480,6 +480,12 @@ fn making(archive: &Path, m: Making, cx: &Context) -> Result<(PathBuf, NewArchiv
     } else {
         archive.to_path_buf()
     };
+    // Even one thread taking more memory than is free is said before it starts.
+    if !cx.quiet
+        && let Some(warning) = packwing_core::memory_warning(&new)
+    {
+        eprintln!("pkw: {warning}");
+    }
     Ok((archive, new))
 }
 

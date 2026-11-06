@@ -17,6 +17,7 @@ mod job;
 mod joined;
 mod listing;
 mod mark;
+pub mod memory;
 mod passphrase;
 mod rar;
 mod sign;
@@ -49,7 +50,8 @@ pub use convert::{Converted, convert};
 pub use create::{
     COMPRESSED_EXTENSIONS, Kind, Level, Measured, NewArchive, OnExisting, Route, add, add_with,
     age_key_is_post_quantum, age_key_problem, age_keys_in, can_add, create, create_on, delete,
-    free_archive_path, measure, refused_by, rename, route,
+    free_archive_path, measure, memory_needed, memory_warning, refused_by, rename, route,
+    within_memory,
 };
 pub use filter::Filter;
 pub use hivepack::extract::{Cancel, OnDamaged, OnUnnamable, Progress, Summary};
@@ -502,6 +504,13 @@ where
         .name(name)
         .identities(identities)
         .threads(threads())
+        // bzip2's threads, about 20 MiB each, as many as the memory there
+        // is takes; xz's within its 1 GiB, as before.
+        .limits({
+            let mut limits = hivepack::open::Limits::default();
+            limits.bzip2_memlimit = memory::budget();
+            limits
+        })
 }
 
 /// A 7z archive, opened, and whether its names are encrypted.
