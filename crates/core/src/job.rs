@@ -524,8 +524,11 @@ pub(crate) fn extract_into(
     options.limits.max_entry_size = limit;
     options.limits.max_total_size = limit;
     options.select = select;
-    // ZIP's files written at once, and 7z's LZMA2 blocks decoded so.
+    // ZIP's and RAR's files written at once, and 7z's LZMA2 blocks decoded
+    // so. RAR's threads each hold a window as large as the archive's
+    // dictionary: as many as fit the budget, held once its headers are read.
     options.threads = crate::threads();
+    options.memory_budget = Some(crate::memory::shared_budget());
     // A name in an old encoding is no reason to stop: the file comes out, its
     // name perhaps wrong. What the name then says is checked all the same.
     options.decode_names = Some(NameDecoder::lossy());

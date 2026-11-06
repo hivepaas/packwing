@@ -58,8 +58,9 @@ struct Output {
     #[arg(short, long, global = true)]
     quiet: bool,
     /// Compress and decompress in up to N threads, where the format allows it
-    /// (xz, bzip2, 7z, zstd as it compresses, ZIP as it extracts): 0 for as
-    /// many as the computer has. By default, as the app's Settings say, or 0.
+    /// (xz, bzip2, 7z, zstd as it compresses, ZIP and RAR as they extract):
+    /// 0 for as many as the computer has. By default, as the app's Settings
+    /// say, or 0.
     #[arg(short = 'T', long, global = true, value_name = "N")]
     threads: Option<u32>,
 }
