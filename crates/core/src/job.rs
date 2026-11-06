@@ -10,11 +10,11 @@ use std::sync::atomic::AtomicU64;
 use std::time::Duration;
 
 use hivepack::extract::{
-    Cancel, Damaged, ErrorKind, Links, NameDecoder, NameError, NameRules, OnDamaged, OnRefused,
-    OnUnnamable, Options, Permissions, Progress, ProgressFn, RarProblem, Select, Sink, Summary,
-    extract_7z, extract_7z_to, extract_cpio, extract_cpio_to, extract_iso, extract_iso_to,
-    extract_rar, extract_rar_to, extract_tar, extract_tar_to, extract_udf, extract_udf_to,
-    extract_xar, extract_xar_to, extract_zip, extract_zip_to,
+    Cancel, Damaged, ErrorKind, LinkOutside, Links, NameDecoder, NameError, NameRules, OnDamaged,
+    OnLinksOutside, OnRefused, OnUnnamable, Options, Permissions, Progress, ProgressFn, RarProblem,
+    Select, Sink, Summary, extract_7z, extract_7z_to, extract_cpio, extract_cpio_to, extract_iso,
+    extract_iso_to, extract_rar, extract_rar_to, extract_tar, extract_tar_to, extract_udf,
+    extract_udf_to, extract_xar, extract_xar_to, extract_zip, extract_zip_to,
 };
 use hivepack::open::{Container, Opened};
 use hivepack::tar::Reader;
@@ -41,10 +41,42 @@ pub struct Control {
     /// take, all of them together: to stop, to leave them out, or to rename them.
     /// None stops at the first. A name that leads outside always stops.
     pub on_unnamable: Option<UnnamableFn>,
+    /// Asked once, before anything is written, about every symbolic link whose
+    /// target leads outside the folder extracted to (an absolute path, a climb
+    /// out, or through another link), all of them together: to stop, to leave
+    /// them out, or to create them as they are. None does as
+    /// [`ExtractOptions::links_outside`] says. Never asked on Windows, where
+    /// links are written as files holding their targets.
+    pub on_links_outside: Option<LinksOutsideFn>,
 }
 
 /// What [`Control::on_unnamable`] is: given the files, it says what to do.
 pub type UnnamableFn = Arc<dyn Fn(&[BadName]) -> OnUnnamable + Send + Sync>;
+
+/// What [`Control::on_links_outside`] is: given the links, it says what to do.
+pub type LinksOutsideFn = Arc<dyn Fn(&[OutsideLink]) -> OnLinksOutside + Send + Sync>;
+
+/// A symbolic link whose target leads outside the folder extracted to.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct OutsideLink {
+    /// Its path in the archive, as the archive names it.
+    pub path: String,
+    /// Where it leads, as the archive has it.
+    pub target: String,
+}
+
+impl OutsideLink {
+    fn of(link: &LinkOutside) -> OutsideLink {
+        OutsideLink {
+            path: link
+                .error
+                .name
+                .as_deref()
+                .map_or_else(String::new, |raw| String::from_utf8_lossy(raw).into_owned()),
+            target: link.target.clone(),
+        }
+    }
+}
 
 /// A file that is not extracted as it is named: a name this system cannot take,
 /// or a link that leads outside.
@@ -204,6 +236,11 @@ pub struct ExtractOptions {
     /// and device names, and two names that differ only in case, are refused on
     /// Linux too. Otherwise, as this system and the destination take them.
     pub portable_names: bool,
+    /// What becomes of the symbolic links whose targets lead outside the folder,
+    /// when nothing asks ([`Control::on_links_outside`]): left out and said (the
+    /// default), created as they are, or the job stopped before anything is
+    /// written. Links are written as files on Windows, whatever this says.
+    pub links_outside: OnLinksOutside,
 }
 
 impl Default for ExtractOptions {
@@ -213,6 +250,7 @@ impl Default for ExtractOptions {
             limit: Some(100_000_000_000),
             keep_mark: true,
             portable_names: false,
+            links_outside: OnLinksOutside::Skip,
         }
     }
 }
@@ -496,17 +534,29 @@ pub(crate) fn extract_into(
     } else {
         NameRules::Native
     };
-    // A link that leads outside is left out, and said, rather than stop the rest.
-    options.links_outside = OnRefused::Skip;
+    // A link that leads outside is asked about, or as the options say: left
+    // out and said, by default, rather than stop the rest.
     options.links = if cfg!(windows) {
         Links::AsFile
     } else {
         Links::Inside
     };
+    match how.links_outside {
+        OnLinksOutside::Stop => options.links_outside = OnRefused::Stop,
+        OnLinksOutside::Create if !cfg!(windows) => options.links = Links::Any,
+        _ => options.links_outside = OnRefused::Skip,
+    }
+    if let (Some(asked), Links::Inside) = (control.on_links_outside.clone(), options.links) {
+        options.on_links_outside = Some(Arc::new(move |links: &[LinkOutside]| {
+            asked(&links.iter().map(OutsideLink::of).collect::<Vec<_>>())
+        }));
+    }
     if let WriteTo::Taker(_) = into {
-        // What takes the links is no folder: they stay links, on every system,
-        // and the permission bits are as the archive has them.
-        options.links = Links::Inside;
+        // What takes the links is no folder but an archive: they stay links, on
+        // every system, wherever they lead, as in the archive converted; and
+        // the permission bits are as the archive has them.
+        options.links = Links::Any;
+        options.on_links_outside = None;
         options.permissions = Permissions::Preserve;
     }
     // Each entry to one or the other, as `into` says.
@@ -749,6 +799,7 @@ pub fn test(source: impl Into<Source>, keys: &Keys, control: &Control) -> Result
                 cancel: control.cancel.clone(),
                 on_damaged: None,
                 on_unnamable: None,
+                on_links_outside: None,
             };
             copy(&mut tr.into_inner(), &mut io::sink(), &quiet, &mut done)?;
         }
@@ -873,6 +924,7 @@ fn read_to_end(r: &mut impl Read, control: &Control, done: &mut Progress) -> Res
         cancel: control.cancel.clone(),
         on_damaged: None,
         on_unnamable: None,
+        on_links_outside: None,
     };
     copy(r, &mut io::sink(), &quiet, done).map(|_| ())
 }

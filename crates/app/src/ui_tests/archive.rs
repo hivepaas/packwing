@@ -171,6 +171,45 @@ scenario!(
 );
 
 scenario!(
+    /// A link that leads outside the folder (as ~/snap's to ~/.config) is asked
+    /// about before anything is written, and created as it is when asked.
+    a_link_that_leads_outside_is_asked_about,
+    |ui| {
+        let file = ui.file("in/a.txt", "a");
+        #[cfg(unix)]
+        std::os::unix::fs::symlink("/etc/hostname", ui.work.join("in/outside"))
+            .expect("the link");
+        let made = packwing_core::create(
+            &[file.parent().expect("in").to_path_buf()],
+            &ui.work.join("links.tar"),
+            &packwing_core::NewArchive::default(),
+            &packwing_core::Control::default(),
+        )
+        .expect("the archive");
+        // Links are written as files on Windows: nothing is asked.
+        if cfg!(windows) {
+            return;
+        }
+        ui.open(&made);
+        ui.click("extract");
+        ui.wait_for("dest-new");
+        ui.click("dest-new");
+        ui.click("extract");
+        ui.wait_for("create-links");
+        assert!(ui.shows("skip") && ui.shows("stop"));
+        let out = ui.work.join("links");
+        assert!(!out.exists(), "written before it was answered");
+        ui.click("create-links");
+        ui.wait_for_no_dialog();
+        assert_eq!(std::fs::read(out.join("in/a.txt")).expect("a.txt"), b"a");
+        assert_eq!(
+            std::fs::read_link(out.join("in/outside")).expect("the link"),
+            std::path::Path::new("/etc/hostname")
+        );
+    }
+);
+
+scenario!(
     /// An archive with a password asks for it, again when it is wrong, and opens with
     /// the right one.
     a_wrong_password_asks_again,

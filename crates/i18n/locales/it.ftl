@@ -787,6 +787,16 @@ tb75acfb1 =
 # Leave out
 ta50cc084 = Escludi
 
+# {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
+t0eeaf0b8 =
+    { $n ->
+        [one] { $count } collegamento porta fuori dalla cartella, altrove su questo computer. Non è ancora stato scritto nulla: escluderlo, o crearlo così com’è se ti fidi di questo archivio?
+       *[other] { $count } collegamenti portano fuori dalla cartella, altrove su questo computer. Non è ancora stato scritto nulla: escluderli, o crearli così come sono se ti fidi di questo archivio?
+    }
+
+# Create them
+t9a4d6e7d = Creali
+
 # {count} file’s data was damaged. | {count} files’ data was damaged.
 t85469b0f =
     { $n ->

@@ -43,6 +43,7 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
                 limit: Some(limit_of(&limit)?),
                 keep_mark: keep_mark(no_mark),
                 portable_names: naming.portable_names,
+                links_outside: naming.links_outside(cx)?,
             };
             extract_cmd(&archive, &files, output, here, &how, &damaging, &naming, cx)
         }

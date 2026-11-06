@@ -25,8 +25,9 @@ use gpui::{
     relative, rgb,
 };
 use packwing_core::{
-    BadName, Cancel, Control, Damage, DamagedFn, Error, Filter, OnDamaged, OnUnnamable, Progress,
-    Renaming, Summary, UnnamableFn, damages, left_out, renamings,
+    BadName, Cancel, Control, Damage, DamagedFn, Error, Filter, LinksOutsideFn, OnDamaged,
+    OnLinksOutside, OnUnnamable, OutsideLink, Progress, Renaming, Summary, UnnamableFn, damages,
+    left_out, renamings,
 };
 
 use super::{
@@ -68,6 +69,9 @@ struct Damaged {
     /// The files whose names can't be used that it waits on an answer about,
     /// and where the answer goes.
     named: Option<(Vec<BadName>, Sender<OnUnnamable>)>,
+    /// The links that lead outside the folder that it waits on an answer about,
+    /// and where the answer goes.
+    linked: Option<(Vec<OutsideLink>, Sender<OnLinksOutside>)>,
     /// What came of each archive extracted.
     found: Report,
 }
@@ -146,6 +150,21 @@ fn asking_names(damaged: &Arc<Mutex<Damaged>>) -> UnnamableFn {
             answered
         };
         answered.recv().unwrap_or(OnUnnamable::Stop)
+    })
+}
+
+/// What asks the dialog, once, about the links that lead outside the folder, and
+/// waits for its answer: none, if nothing answers, stops.
+fn asking_links(damaged: &Arc<Mutex<Damaged>>) -> LinksOutsideFn {
+    let damaged = damaged.clone();
+    Arc::new(move |links: &[OutsideLink]| {
+        let answered = {
+            let mut d = damaged.lock().unwrap_or_else(PoisonError::into_inner);
+            let (answer, answered) = channel();
+            d.linked = Some((links.to_vec(), answer));
+            answered
+        };
+        answered.recv().unwrap_or(OnLinksOutside::Stop)
     })
 }
 
@@ -329,6 +348,8 @@ impl ProgressDialog {
             on_damaged: matches!(job.verb, Verb::Extract | Verb::Convert).then(|| asking(&damaged)),
             on_unnamable: matches!(job.verb, Verb::Extract | Verb::Convert)
                 .then(|| asking_names(&damaged)),
+            // Converting keeps every link: the new archive holds it.
+            on_links_outside: (job.verb == Verb::Extract).then(|| asking_links(&damaged)),
         };
         let found = damaged.clone();
         let tested = Arc::new(Mutex::new((0, 0)));
@@ -625,6 +646,30 @@ impl ProgressDialog {
         d.named.as_ref().map(|(bad, _)| bad.clone())
     }
 
+    /// The links that lead outside the folder that it waits on an answer about,
+    /// if it does.
+    pub fn asked_links(&self) -> Option<Vec<OutsideLink>> {
+        let r = self.running.as_ref()?;
+        let d = r.damaged.lock().unwrap_or_else(PoisonError::into_inner);
+        d.linked.as_ref().map(|(links, _)| links.clone())
+    }
+
+    /// Answers about the links that lead outside the folder.
+    fn answer_links(&mut self, chosen: OnLinksOutside, cx: &mut Context<Self>) {
+        if let Some(r) = &self.running
+            && let Some((_, answer)) = r
+                .damaged
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner)
+                .linked
+                .take()
+        {
+            let _ = answer.send(chosen);
+        }
+        self.called = false;
+        cx.notify();
+    }
+
     /// Answers about the files whose names can't be used.
     fn answer_names(&mut self, chosen: OnUnnamable, cx: &mut Context<Self>) {
         if let Some(r) = &self.running
@@ -853,6 +898,9 @@ impl ProgressDialog {
                 }
                 if let Some((_, answer)) = d.named.take() {
                     let _ = answer.send(OnUnnamable::Skip);
+                }
+                if let Some((_, answer)) = d.linked.take() {
+                    let _ = answer.send(OnLinksOutside::Skip);
                 }
             }
             _ => {
@@ -1118,6 +1166,48 @@ impl Render for ProgressDialog {
                                 .px(ui(20.))
                                 .on_click(cx.listener(|this, _, _, cx| {
                                     this.answer_names(OnUnnamable::Rename, cx)
+                                })),
+                        ),
+                );
+        }
+        if let Some(links) = self.asked_links() {
+            let n = links.len() as u64;
+            let rows: Vec<(String, String, String)> = links
+                .iter()
+                .map(|l| (l.path.clone(), format!("→ {}", l.target), String::new()))
+                .collect();
+            return card()
+                .gap(ui(22.))
+                .child(header)
+                .child(note(Tone::Warn).child(tr_n!(
+                    n,
+                    "{count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive?",
+                    "{count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?",
+                    count = count(n)
+                )))
+                .child(listing(&rows))
+                .child(
+                    footer()
+                        .child(
+                            button("stop", tr!("Stop"), Fill::Outline, Size::Medium).on_click(
+                                cx.listener(|this, _, _, cx| {
+                                    this.answer_links(OnLinksOutside::Stop, cx)
+                                }),
+                            ),
+                        )
+                        .child(div().flex_1())
+                        .child(
+                            button("create-links", tr!("Create them"), Fill::Tonal, Size::Medium)
+                                .px(ui(20.))
+                                .on_click(cx.listener(|this, _, _, cx| {
+                                    this.answer_links(OnLinksOutside::Create, cx)
+                                })),
+                        )
+                        .child(
+                            button("skip", tr!("Leave out"), Fill::Accent, Size::Medium)
+                                .px(ui(20.))
+                                .on_click(cx.listener(|this, _, _, cx| {
+                                    this.answer_links(OnLinksOutside::Skip, cx)
                                 })),
                         ),
                 );

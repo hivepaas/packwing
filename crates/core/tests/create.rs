@@ -245,6 +245,7 @@ fn stopping_leaves_nothing() {
             cancel: Some(cancel),
             on_damaged: None,
             on_unnamable: None,
+            on_links_outside: None,
         };
         let new = NewArchive {
             part_size,
@@ -278,6 +279,7 @@ fn progress_reaches_every_byte_once() {
         cancel: None,
         on_damaged: None,
         on_unnamable: None,
+        on_links_outside: None,
     };
     create(&[root], &s.path("a.zip"), &NewArchive::default(), &control).unwrap();
     assert_eq!(total.load(Ordering::Relaxed), measured.bytes);
@@ -748,6 +750,7 @@ fn stopping_any_kind_leaves_nothing_and_progress_reaches_the_end() {
             cancel: Some(cancel),
             on_damaged: None,
             on_unnamable: None,
+            on_links_outside: None,
         };
         let stopped = create(std::slice::from_ref(&root), &path, &new, &control);
         assert!(matches!(stopped, Err(Error::Cancelled)), "{stopped:?}");
@@ -763,6 +766,7 @@ fn stopping_any_kind_leaves_nothing_and_progress_reaches_the_end() {
             cancel: None,
             on_damaged: None,
             on_unnamable: None,
+            on_links_outside: None,
         };
         create(std::slice::from_ref(&root), &path, &new, &control).unwrap();
         assert_eq!(bytes.load(Ordering::Relaxed), measured.bytes, "{kind:?}");
@@ -1129,6 +1133,7 @@ fn stopping_or_failing_leaves_the_archive_as_it_was() {
         cancel: Some(cancel),
         on_damaged: None,
         on_unnamable: None,
+        on_links_outside: None,
     };
     let stopped = add(&[big_one], &made, &[], &Keys::default(), &control);
     assert!(matches!(stopped, Err(Error::Cancelled)), "{stopped:?}");
@@ -1407,6 +1412,7 @@ fn stopping_a_picked_extraction_leaves_nothing() {
         cancel: Some(cancel),
         on_damaged: None,
         on_unnamable: None,
+        on_links_outside: None,
     };
     let picked = [path_of("Báo cáo/Hình ảnh")];
     let how = ExtractOptions::default();
@@ -1907,6 +1913,7 @@ fn stopped_while_it_looks_through_the_files_nothing_is_left() {
         cancel: Some(cancel),
         on_damaged: None,
         on_unnamable: None,
+        on_links_outside: None,
     };
     let e = create_on(
         &[what],
@@ -2076,6 +2083,7 @@ fn stopped_on_its_way_straight_nothing_is_left() {
         cancel: Some(cancel),
         on_damaged: None,
         on_unnamable: None,
+        on_links_outside: None,
     };
     across.sends_as_read = true;
     let e = up(&what, &across, "a.tar.gz", &straight(Kind::TarGz), &control);
