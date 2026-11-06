@@ -94,6 +94,8 @@ pub struct Palette {
     pub green_tag: Tint,
     pub plain_tag: Tint,
     pub orange_tag: Tint,
+    /// A symbolic link's.
+    pub link_tag: Tint,
 }
 
 pub const LIGHT: Palette = Palette {
@@ -157,6 +159,10 @@ pub const LIGHT: Palette = Palette {
     orange_tag: Tint {
         ground: 0xffe1cc,
         ink: 0x5a2e0c,
+    },
+    link_tag: Tint {
+        ground: 0xe8defc,
+        ink: 0x3d2470,
     },
 };
 
@@ -223,6 +229,10 @@ pub const DARK: Palette = Palette {
     orange_tag: Tint {
         ground: 0x55391f,
         ink: 0xffdcc2,
+    },
+    link_tag: Tint {
+        ground: 0x352a57,
+        ink: 0xe4dbff,
     },
 };
 
@@ -316,6 +326,7 @@ mod tests {
                 p.green_tag,
                 p.plain_tag,
                 p.orange_tag,
+                p.link_tag,
             ] {
                 assert!(contrast(t.ink, t.ground) >= 4.5, "{t:?}");
             }

@@ -805,6 +805,63 @@ fn every_kind_keeps_a_link_as_a_link() {
     }
 }
 
+/// A link is listed as one, with where it leads when the archive says without
+/// its data being decompressed: tar and ZIP do, 7z does not; nor does a ZIP
+/// archive whose link is encrypted.
+#[cfg(unix)]
+#[test]
+fn a_link_is_listed_as_one_with_its_target_where_the_archive_says() {
+    use std::os::unix::fs::symlink;
+    let s = Scratch::new("list-links");
+    let root = s.path("d");
+    fs::create_dir_all(&root).unwrap();
+    fs::write(root.join("file"), "data").unwrap();
+    symlink("file", root.join("link")).unwrap();
+    let locked = NewArchive {
+        kind: Kind::Zip,
+        password: Some(b"pw".to_vec()),
+        ..NewArchive::default()
+    };
+    let kinds = KINDS.map(|(kind, extension)| {
+        let new = NewArchive {
+            kind,
+            ..NewArchive::default()
+        };
+        let target = (kind != Kind::SevenZip).then(|| "file".to_owned());
+        (new, extension, target)
+    });
+    for (new, extension, target) in kinds.into_iter().chain([(locked, "locked.zip", None)]) {
+        let path = s.path(&format!("a.{extension}"));
+        let made = create(
+            std::slice::from_ref(&root),
+            &path,
+            &new,
+            &Control::default(),
+        )
+        .unwrap();
+        let listing = list(made, &Keys::default()).unwrap();
+        let found = |name: &str| {
+            listing
+                .entries
+                .iter()
+                .find(|e| e.path == ["d", name])
+                .unwrap_or_else(|| panic!("{extension}: no {name}"))
+        };
+        assert_eq!(found("file").link, None, "{extension}");
+        let link = found("link").link.clone().expect(extension);
+        assert_eq!(link.target, target, "{extension}");
+        let shown = listing.children(&["d".to_owned()]);
+        assert_eq!(
+            shown
+                .iter()
+                .find(|c| c.name == "link")
+                .and_then(|c| c.link.clone()),
+            Some(link),
+            "{extension}"
+        );
+    }
+}
+
 /// What goes in is measured with the names some system can't use: Windows'
 /// characters, and a name differing from another only in case.
 #[cfg(unix)]

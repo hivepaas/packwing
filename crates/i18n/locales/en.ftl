@@ -437,6 +437,8 @@ t8382bd3e = Open an archive
 t4a498ac8 = ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
 t2cf2a8ee = Open an archive…
 t37854216 = Choose a file to see it here
+tc7c20187 = Symbolic link
+te7ddae48 = Leads to { $target }
 td7688f56 =
     { $n ->
         [one] { $count } executable in this folder will keep its Internet mark when extracted.

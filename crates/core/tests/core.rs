@@ -1341,6 +1341,7 @@ fn a_search_finds_names_at_any_depth_whatever_their_case_and_accents() {
         dir,
         size,
         modified: None,
+        link: None,
     };
     let listing = packwing_core::Listing {
         name: "a.zip".into(),

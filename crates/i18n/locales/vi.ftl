@@ -1174,6 +1174,12 @@ t2cf2a8ee = Mở tệp nén…
 # Choose a file to see it here
 t37854216 = Chọn một tệp để xem ở đây
 
+# Symbolic link
+tc7c20187 = Liên kết tượng trưng
+
+# Leads to {target}
+te7ddae48 = Trỏ tới { $target }
+
 # {count} executable in this folder will keep its Internet mark when extracted. | {count} executables in this folder will keep their Internet mark when extracted.
 td7688f56 =
     { $n ->

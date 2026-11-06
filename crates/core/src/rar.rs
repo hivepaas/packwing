@@ -10,10 +10,10 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use hivepack::extract::{Progress, Summary};
-use hivepack::rar::{Archive, ExitCode, Extract, HEAD_FILE, ReadAt, name};
+use hivepack::rar::{Archive, ExitCode, Extract, HEAD_FILE, ReadAt, Redirection, name};
 
 use crate::job::{Control, copy_progress};
-use crate::listing::{Entry, Gather, components};
+use crate::listing::{Entry, Gather, Link, components};
 use crate::{Error, Keys, PASSWORD};
 
 /// The password of `keys`, as RAR takes it: nothing for none.
@@ -71,6 +71,18 @@ pub(crate) fn entries<R: ReadAt>(
                         t.duration_since(std::time::UNIX_EPOCH)
                             .ok()
                             .map(|d| d.as_secs() as i64)
+                    }),
+                    // RAR 5 keeps a link's target in its header; RAR 4, a
+                    // Unix link's in its data, compressed.
+                    link: matches!(
+                        head.redir_type,
+                        Redirection::UnixSymlink
+                            | Redirection::WindowsSymlink
+                            | Redirection::Junction
+                    )
+                    .then(|| Link {
+                        target: (!head.redir_name.is_empty())
+                            .then(|| name::to_string_lossy(&head.redir_name)),
                     }),
                 })?;
             }

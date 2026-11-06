@@ -184,6 +184,7 @@ const SCREENS: [(&str, SetUp); 90] = [
             dir: false,
             size,
             modified: Some(1_760_000_000),
+            link: None,
         });
         heard.found.lock().expect("not poisoned").extend(found);
         heard.read.store(420, std::sync::atomic::Ordering::Relaxed);
@@ -661,6 +662,7 @@ fn read_named(name: &str) -> Shown {
         dir,
         size,
         modified: Some(1_760_000_000),
+        link: None,
     };
     let listing = packwing_core::Listing {
         name: name.into(),

@@ -10,9 +10,9 @@ use std::time::{Duration, Instant};
 
 use hivepack::extract::Cancel;
 use hivepack::open::{Container, Layer, Opener};
-use hivepack::tar::{Reader, TYPE_DIR, TYPE_X_GLOBAL_HEADER};
+use hivepack::tar::{Reader, TYPE_DIR, TYPE_SYMLINK, TYPE_X_GLOBAL_HEADER};
 use hivepack::udf::{Udf, VType};
-use hivepack::zip::{Archive, Flags, OpenFlags, Volumes, em, volume_paths};
+use hivepack::zip::{Archive, Flags, OpenFlags, Volumes, em, opsys, volume_paths};
 use unicode_normalization::UnicodeNormalization;
 use unicode_normalization::char::is_combining_mark;
 
@@ -31,6 +31,35 @@ const PAYLOADS: [&str; 3] = ["Payload", "Scripts", "Content"];
 const TYPE_GNU_VOLUME: u8 = b'V';
 const TYPE_GNU_DUMPDIR: u8 = b'D';
 
+/// A symbolic link's mode, in Unix's `st_mode`, as ZIP and 7z keep it.
+const S_IFMT: u32 = 0o170_000;
+const S_IFLNK: u32 = 0o120_000;
+
+/// The longest link target read from a ZIP archive, as Linux's `PATH_MAX`.
+const MOST_ZIP_TARGET: u64 = 4096;
+
+/// 7-Zip's mark that the high half of an entry's attributes is a Unix mode.
+const UNIX_EXTENSION: u32 = 0x8000;
+
+/// A symbolic link in an archive.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Link {
+    /// Where it leads, if the archive says without the link's data being
+    /// decompressed: tar, RAR 5, ISO 9660 (Rock Ridge), XAR, cpio and UDF do,
+    /// and ZIP when the link is not encrypted; 7z and RAR 4 keep it in their
+    /// compressed data, read when the link is extracted.
+    pub target: Option<String>,
+}
+
+impl Link {
+    /// A link to `target`, as the archive has it; none if it is empty.
+    fn to(target: &[u8]) -> Link {
+        Link {
+            target: (!target.is_empty()).then(|| String::from_utf8_lossy(target).into_owned()),
+        }
+    }
+}
+
 /// A file or folder in an archive.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Entry {
@@ -41,6 +70,8 @@ pub struct Entry {
     pub size: u64,
     /// Seconds since 1970, when the archive says.
     pub modified: Option<i64>,
+    /// If it is a symbolic link.
+    pub link: Option<Link>,
 }
 
 /// What a folder of an archive shows: a file, or a folder with what is in
@@ -55,6 +86,8 @@ pub struct Child {
     pub files: u64,
     /// The latest time among what it holds.
     pub modified: Option<i64>,
+    /// If it is a symbolic link.
+    pub link: Option<Link>,
 }
 
 /// What a search of an archive found.
@@ -121,11 +154,15 @@ impl Listing {
                         size: 0,
                         files: 0,
                         modified: None,
+                        link: None,
                     },
                 });
                 if !e.dir {
                     hit.child.size += e.size;
                     hit.child.files += 1;
+                }
+                if depth == e.path.len() && !dir {
+                    hit.child.link = e.link.clone();
                 }
                 hit.child.modified = hit.child.modified.max(e.modified);
             }
@@ -152,10 +189,14 @@ impl Listing {
                     size: 0,
                     files: 0,
                     modified: None,
+                    link: None,
                 });
             if !e.dir {
                 child.size += e.size;
                 child.files += 1;
+            }
+            if !dir {
+                child.link = e.link.clone();
             }
             child.modified = child.modified.max(e.modified);
         }
@@ -396,6 +437,7 @@ fn listed(source: Source, keys: &Keys, listen: Listen<'_>) -> Result<Listing, Er
                 dir: false,
                 size,
                 modified: None,
+                link: None,
             }]
         }
     };
@@ -425,11 +467,13 @@ fn tar_entries(r: impl Read, gather: &mut Gather) -> Result<Vec<Entry>, Error> {
             continue;
         }
         let dir = matches!(h.typeflag, TYPE_DIR | TYPE_GNU_DUMPDIR) || h.name.ends_with(b"/");
+        let link = (h.typeflag == TYPE_SYMLINK && !dir).then(|| Link::to(&h.linkname));
         gather.push(Entry {
             path,
             dir,
             size: if dir { 0 } else { h.size.max(0) as u64 },
             modified: h.mod_time.map(|t| t.secs),
+            link,
         })?;
     }
     Ok(std::mem::take(&mut gather.entries))
@@ -459,14 +503,37 @@ fn zip_entries<R: hivepack::zip::ReadAt>(
             };
         }
         let dir = name.ends_with('/');
+        // Unix keeps the mode in the high half of the external attributes;
+        // the link's target is its data.
+        let (system, attributes) = archive.file_get_external_attributes(i, Flags::NONE)?;
+        let link =
+            (system == opsys::UNIX && (attributes >> 16) & S_IFMT == S_IFLNK && !dir).then(|| {
+                Link {
+                    target: (stat.encryption_method == em::NONE && stat.size <= MOST_ZIP_TARGET)
+                        .then(|| zip_target(&archive, i))
+                        .flatten(),
+                }
+            });
         gather.push(Entry {
             path,
             dir,
             size: if dir { 0 } else { stat.size },
             modified: Some(stat.mtime),
+            link,
         })?;
     }
     Ok((std::mem::take(&mut gather.entries), encryption))
+}
+
+/// The target of the ZIP archive's link at `index`, its data; none if it
+/// cannot be read.
+fn zip_target<R: hivepack::zip::ReadAt>(archive: &Archive<R>, index: u64) -> Option<String> {
+    let mut data = Vec::new();
+    let file = archive.fopen_index(index, Flags::NONE).ok()?;
+    file.take(MOST_ZIP_TARGET + 1).read_to_end(&mut data).ok()?;
+    (data.len() as u64 <= MOST_ZIP_TARGET)
+        .then(|| Link::to(&data).target)
+        .flatten()
 }
 
 /// An ISO 9660 image's entries: Rock Ridge's names, else Joliet's, else
@@ -485,6 +552,8 @@ fn iso_entries<R: Read>(
             continue;
         }
         let dir = h.is_dir();
+        let link = (h.mode & hivepack::iso::AE_IFMT == hivepack::iso::AE_IFLNK)
+            .then(|| Link::to(h.symlink.as_deref().unwrap_or_default()));
         gather.push(Entry {
             path,
             dir,
@@ -492,6 +561,7 @@ fn iso_entries<R: Read>(
             // counted there, once.
             size: if dir { 0 } else { h.size.unwrap_or(0) },
             modified: h.mod_time,
+            link,
         })?;
     }
     Ok(std::mem::take(&mut gather.entries))
@@ -509,11 +579,17 @@ fn seven_zip_entries<R: Read + io::Seek>(archive: SevenZip<R>) -> (Vec<Entry>, O
         if path.is_empty() {
             continue;
         }
+        // Its target is its data, compressed.
+        let link = e
+            .attributes
+            .filter(|a| a & UNIX_EXTENSION != 0 && (a >> 16) & S_IFMT == S_IFLNK && !e.is_dir)
+            .map(|_| Link::default());
         entries.push(Entry {
             path,
             dir: e.is_dir,
             size: if e.is_dir { 0 } else { e.size },
             modified: e.mtime.map(ntfs_to_unix),
+            link,
         });
     }
     (entries, encrypted.then(|| "AES-256".to_owned()))
@@ -544,6 +620,8 @@ fn cpio_entries(r: impl Read, gather: &mut Gather) -> Result<Vec<Entry>, Error> 
                 0
             },
             modified: Some(h.mod_time),
+            link: (kind == hivepack::cpio::AE_IFLNK)
+                .then(|| Link::to(h.symlink.as_deref().unwrap_or_default())),
         })?;
     }
     Ok(std::mem::take(&mut gather.entries))
@@ -575,6 +653,7 @@ fn xar_entries(r: impl Read + Send) -> Result<Vec<Entry>, Error> {
                 dir: true,
                 size: 0,
                 modified: h.mtime,
+                link: None,
             });
             entries.extend(inside.into_iter().map(|mut e| {
                 e.path.splice(0..0, path.iter().cloned());
@@ -592,6 +671,8 @@ fn xar_entries(r: impl Read + Send) -> Result<Vec<Entry>, Error> {
                 0
             },
             modified: h.mtime,
+            link: (kind == hivepack::xar::AE_IFLNK)
+                .then(|| Link::to(h.symlink.as_deref().unwrap_or_default())),
         });
     }
     Ok(entries)
@@ -619,8 +700,12 @@ fn payload_entries<R: Read + Send>(
 fn udf_entries<R: Read + io::Seek>(image: R) -> Result<Vec<Entry>, Error> {
     let mut udf = Udf::open(image)?;
     let mut entries = Vec::new();
-    walk(&mut udf, |_, path, _, stat| {
+    walk(&mut udf, |udf, path, node, stat| {
         let dir = stat.kind == VType::VDIR;
+        // Its target is its data, most often in its node.
+        let link = (stat.kind == VType::VLNK).then(|| Link {
+            target: udf.read_link(node).ok().and_then(|t| Link::to(&t).target),
+        });
         entries.push(Entry {
             path: path.to_vec(),
             dir,
@@ -630,6 +715,7 @@ fn udf_entries<R: Read + io::Seek>(image: R) -> Result<Vec<Entry>, Error> {
                 0
             },
             modified: Some(stat.mtime.sec),
+            link,
         });
         Ok(())
     })?;
@@ -646,6 +732,7 @@ mod tests {
             dir: false,
             size: 1,
             modified: None,
+            link: None,
         }
     }
 

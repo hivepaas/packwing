@@ -340,6 +340,46 @@ scenario!(
     }
 );
 
+#[cfg(unix)]
+scenario!(
+    /// A symbolic link shows as a LINK, with where it leads in the preview,
+    /// which never reads it.
+    a_link_shows_as_one_with_where_it_leads,
+    |ui| {
+        let notes = ui.file("notes.txt", "hello");
+        // Named as a picture, which the preview would read.
+        let link = ui.work.join("cover.png");
+        std::os::unix::fs::symlink("notes.txt", &link).expect("the link");
+        let made = packwing_core::create(
+            &[link, notes],
+            &ui.work.join("links.zip"),
+            &packwing_core::NewArchive::default(),
+            &packwing_core::Control::default(),
+        )
+        .expect("the archive");
+        ui.open(&made);
+        assert_eq!(ui.shown_in_archive(), ["cover.png", "notes.txt"]);
+        let shown = |ui: &mut Ui| {
+            ui.ws(|ws, _, cx| {
+                let page = ws.archive_page().read(cx);
+                let entries = page.archive().map(|a| a.entries.clone()).unwrap_or_default();
+                let tags = entries.iter().map(|e| e.tag()).collect::<Vec<_>>();
+                (tags, entries[0].target.clone(), page.previews_nothing())
+            })
+        };
+        assert_eq!(shown(ui).0, ["LINK", "TXT"]);
+        assert_eq!(shown(ui).1.as_deref(), Some("notes.txt"));
+        ui.click("entry-0");
+        ui.wait_for("link-target");
+        assert!(shown(ui).2, "the link is not read");
+        assert!(!ui.shows("preview-text"));
+        // The file beside it still shows.
+        ui.click("entry-1");
+        ui.wait_for("preview-text");
+        assert!(!ui.shows("link-target"));
+    }
+);
+
 /// A ZIP archive of `a.txt`, `b.txt` and `docs/deep/needle.txt`, made by the core, and opened.
 fn opened_tree(ui: &mut Ui) -> std::path::PathBuf {
     ui.file("docs/deep/needle.txt", "found");
@@ -551,6 +591,7 @@ fn found(path: &str, dir: bool) -> packwing_core::Entry {
         dir,
         size: if dir { 0 } else { 1 },
         modified: None,
+        link: None,
     }
 }
 
