@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+	<string>Packwing</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.hivepaas.packwing.context-menu</string>
+	<key>CFBundleExecutable</key>
+	<string>context-menu-finder</string>
+	<key>CFBundleName</key>
+	<string>context-menu-finder</string>
+	<key>CFBundlePackageType</key>
+	<string>XPC!</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>@VERSION@</string>
+	<key>CFBundleVersion</key>
+	<string>@VERSION@</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>11.0</string>
+	<key>ContextMenuRsMenu</key>
+	<string>packwing</string>
+	<key>ContextMenuRsGroup</key>
+	<string>@TEAM@.com.hivepaas.packwing.context-menu</string>
+	<key>NSExtension</key>
+	<dict>
+		<key>NSExtensionAttributes</key>
+		<dict/>
+		<key>NSExtensionPointIdentifier</key>
+		<string>com.apple.FinderSync</string>
+		<key>NSExtensionPrincipalClass</key>
+		<string>ContextMenuRsFinderSync</string>
+	</dict>
+</dict>
+</plist>

@@ -73,8 +73,9 @@ runs:
 | by Homebrew, Scoop, Flatpak, Snap, a distribution's package, a store | says what updates it |
 | by hand (a binary in a folder) | opens the release's page |
 
-Only the `.deb` is made so far (`scripts/package_linux.sh`). The other rows are shellwing's
-code, waiting for packages of those kinds: they have run in no release of packwing.
+A release makes the `.deb`, `Packwing.app` (tarred) and the Windows installer
+([releasing.md](releasing.md)). No AppImage is made yet, so on Linux only the `.deb`'s row
+runs.
 
 A release has one file for each platform, named so (`v0.2.0`):
 

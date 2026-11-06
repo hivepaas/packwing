@@ -464,6 +464,50 @@ mod tests {
         );
     }
 
+    /// Packwing.app holds the native extension and its helper as context-menu-rs
+    /// writes them for this menu, with the team and the version left for
+    /// scripts/package_macos.sh to put in.
+    #[test]
+    fn the_macos_bundle_holds_the_menu_s_extension() {
+        let info = include_str!("../../../packaging/macos/Info.plist");
+        let app = "com.hivepaas.packwing";
+        assert!(
+            info.contains(&format!("<string>{app}</string>")),
+            "packaging/macos/Info.plist's CFBundleIdentifier is not {app}"
+        );
+        let mut extension =
+            context_menu::macos::FinderExtension::new(ID, app, "@TEAM@", "Packwing");
+        extension.version = "@VERSION@".into();
+        let packaged = [
+            (
+                "extension.plist",
+                include_str!("../../../packaging/macos/ContextMenu/extension.plist"),
+                extension.extension_plist(),
+            ),
+            (
+                "helper.plist",
+                include_str!("../../../packaging/macos/ContextMenu/helper.plist"),
+                extension.helper_plist(),
+            ),
+            (
+                "extension.entitlements",
+                include_str!("../../../packaging/macos/ContextMenu/extension.entitlements"),
+                extension.extension_entitlements(),
+            ),
+            (
+                "helper.entitlements",
+                include_str!("../../../packaging/macos/ContextMenu/helper.entitlements"),
+                extension.helper_entitlements(),
+            ),
+        ];
+        for (name, had, wanted) in packaged {
+            assert_eq!(
+                had, wanted,
+                "packaging/macos/ContextMenu/{name} is not context-menu-rs's"
+            );
+        }
+    }
+
     fn chosen(name: &str, folder: bool) -> Chosen<'_> {
         Chosen { name, folder }
     }
