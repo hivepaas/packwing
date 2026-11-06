@@ -3345,9 +3345,9 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 
 [[package]]
 name = "hivepack"
-version = "0.6.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3091be6f223c1c20c5fe9dd8a16a9bf1d5567fa74a236988078a3065adb17c21"
+checksum = "c290ce0a652e655ffdcbff74cfb97eaf602a1ab49128dd97441d458ce38d5bab"
 dependencies = [
  "aes 0.9.3",
  "blake2s_simd",
@@ -5346,6 +5346,7 @@ dependencies = [
  "packwing-remote",
  "rpassword",
  "serde_json",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -5357,6 +5358,7 @@ dependencies = [
  "getrandom 0.4.3",
  "hivepack",
  "imagesize",
+ "libc",
  "md-5 0.11.0",
  "packwing-i18n",
  "packwing-policy",
@@ -5365,6 +5367,7 @@ dependencies = [
  "sysinfo 0.40.1",
  "trash",
  "unicode-normalization",
+ "windows-sys 0.61.2",
  "xattr",
 ]
 

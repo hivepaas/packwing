@@ -18,6 +18,7 @@ mod joined;
 mod listing;
 mod mark;
 pub mod memory;
+mod memory_limits;
 mod passphrase;
 mod rar;
 mod sign;

@@ -12,6 +12,10 @@
 //! once as no longer available: jobs at once get fewer threads than they
 //! could, never too many. The threads change only how soon a job is done:
 //! what is made is the same.
+//!
+//! What is available is the least of what the system has free and what its
+//! limits on packwing leave: a control group's on Linux, `ulimit`'s too, and
+//! a job object's on Windows (`memory_limits.rs`).
 
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -23,6 +27,20 @@ static HELD: Mutex<u64> = Mutex::new(0);
 
 /// What [`available`] says, if set: for tests, and for `PACKWING_MEMORY`.
 static AVAILABLE: AtomicU64 = AtomicU64::new(0);
+
+/// The address space a thread takes besides what it allocates: its stack
+/// (2 MiB), and the allocator's arena it may make (64 MiB on glibc).
+const THREAD_ADDRESS_SPACE: u64 = 66 << 20;
+
+#[cfg(target_os = "linux")]
+fn address_space_limited() -> bool {
+    crate::memory_limits::address_space_limited()
+}
+
+#[cfg(not(target_os = "linux"))]
+fn address_space_limited() -> bool {
+    false
+}
 
 /// The least a job is let take, whatever is available: what one thread of
 /// most coders needs, so that a busy system is not told nothing at all.
@@ -77,6 +95,14 @@ fn measured() -> u64 {
         available = available.min(group.free_memory);
     }
     if let Some(left) = control_group_left() {
+        available = available.min(left);
+    }
+    #[cfg(windows)]
+    if let Some(left) = crate::memory_limits::job_left() {
+        available = available.min(left);
+    }
+    #[cfg(target_os = "linux")]
+    if let Some(left) = crate::memory_limits::ulimit_left() {
         available = available.min(left);
     }
     if available == 0 { LEAST * 2 } else { available }
@@ -134,6 +160,14 @@ pub fn budget() -> u64 {
 /// fits the [`budget`], and that memory, held until the job ends. One thread
 /// is always given, holding what it needs, even past the budget.
 pub fn hold_threads(wanted: u32, need: impl Fn(u32) -> u64) -> (u32, Held) {
+    // Under `ulimit -v`, each thread takes address space besides what it
+    // allocates: its stack, and the allocator's arena it may take.
+    let more = if address_space_limited() {
+        THREAD_ADDRESS_SPACE
+    } else {
+        0
+    };
+    let need = |n: u32| need(n).saturating_add(u64::from(n) * more);
     let mut held = HELD.lock().unwrap_or_else(|e| e.into_inner());
     let budget = (available() / 2).saturating_sub(*held).max(LEAST);
     let threads = threads_within(wanted, budget, &need);
@@ -144,7 +178,7 @@ pub fn hold_threads(wanted: u32, need: impl Fn(u32) -> u64) -> (u32, Held) {
 
 /// The most threads, up to `wanted`, whose `need` is within `budget`; one if
 /// none is.
-fn threads_within(wanted: u32, budget: u64, need: impl Fn(u32) -> u64) -> u32 {
+fn threads_within(wanted: u32, budget: u64, need: &dyn Fn(u32) -> u64) -> u32 {
     // What threads need grows with their number: the most that fit are
     // found by halving.
     let (mut fits, mut over) = (1, wanted.max(1) + 1);
@@ -168,11 +202,11 @@ mod tests {
     #[test]
     fn as_many_threads_as_fit_and_never_none() {
         let need = |n: u32| 100 * MIB + u64::from(n) * 200 * MIB;
-        assert_eq!(threads_within(32, 1100 * MIB, need), 5);
-        assert_eq!(threads_within(4, 1100 * MIB, need), 4);
-        assert_eq!(threads_within(32, 10 * MIB, need), 1);
-        assert_eq!(threads_within(0, 10_000 * MIB, need), 1);
-        assert_eq!(threads_within(1, u64::MAX, need), 1);
+        assert_eq!(threads_within(32, 1100 * MIB, &need), 5);
+        assert_eq!(threads_within(4, 1100 * MIB, &need), 4);
+        assert_eq!(threads_within(32, 10 * MIB, &need), 1);
+        assert_eq!(threads_within(0, 10_000 * MIB, &need), 1);
+        assert_eq!(threads_within(1, u64::MAX, &need), 1);
     }
 
     #[test]

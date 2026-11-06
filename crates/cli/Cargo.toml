@@ -35,5 +35,14 @@ default = ["remote"]
 #   cargo build --release -p packwing-cli --no-default-features
 remote = ["dep:packwing-remote"]
 
-[lints]
-workspace = true
+# A test puts itself and pkw in a job object of little memory (tests/memory_job.rs).
+[target.'cfg(windows)'.dev-dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_System_JobObjects", "Win32_System_Threading"] }
+
+# As the workspace's, but that tests/memory_job.rs may make that job object.
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+unwrap_used = "warn"
+dbg_macro = "deny"

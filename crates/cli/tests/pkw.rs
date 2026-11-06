@@ -559,3 +559,29 @@ fn a_level_too_large_for_the_memory_free_is_lowered_and_said() {
     assert!(made.status.success());
     assert!(made.stderr.is_empty());
 }
+
+/// Under `ulimit -v`, as under too little memory free: a level whose one
+/// thread would take more address space than is left is lowered, and said,
+/// where it would have been refused memory part way.
+#[cfg(target_os = "linux")]
+#[test]
+fn under_ulimit_a_level_too_large_is_lowered_and_said() {
+    let s = Scratch::new("ulimit");
+    for name in ["a.7z", "a.tar.xz"] {
+        let made = Command::new("sh")
+            .arg("-c")
+            .arg("ulimit -v 900000 && exec \"$0\" \"$@\"")
+            .arg(env!("CARGO_BIN_EXE_pkw"))
+            .args(["create", "-l", "highest", "-T", "0", name, "src"])
+            .current_dir(&s.0)
+            .env_remove("PACKWING_MEMORY")
+            .env("XDG_CONFIG_HOME", s.path("config"))
+            .stdin(std::process::Stdio::null())
+            .output()
+            .expect("sh runs");
+        let said = String::from_utf8_lossy(&made.stderr).into_owned();
+        assert!(made.status.success(), "{name}: {said}");
+        assert!(said.contains("it is made at"), "{name}: {said}");
+        ok(&s.pkw(&["test", "-q", name]));
+    }
+}
