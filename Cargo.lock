@@ -3345,9 +3345,9 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 
 [[package]]
 name = "hivepack"
-version = "0.7.0"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c290ce0a652e655ffdcbff74cfb97eaf602a1ab49128dd97441d458ce38d5bab"
+checksum = "43c523cdf2205110960d780a6bfd4a42d2b76f0b14d8dd26ab80f895ff2fffb3"
 dependencies = [
  "aes 0.9.3",
  "blake2s_simd",
@@ -3359,6 +3359,7 @@ dependencies = [
  "hkdf 0.13.0",
  "hmac 0.13.0",
  "hpke",
+ "libc",
  "md-5 0.11.0",
  "ml-dsa",
  "pbkdf2 0.13.0",
@@ -3368,6 +3369,7 @@ dependencies = [
  "sha1",
  "sha2 0.11.1",
  "subtle",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -4903,16 +4905,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "objc2-io-kit"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33fafba39597d6dc1fb709123dfa8289d39406734be322956a69f0931c73bb15"
-dependencies = [
- "libc",
- "objc2-core-foundation",
-]
-
-[[package]]
 name = "objc2-io-surface"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5358,16 +5350,13 @@ dependencies = [
  "getrandom 0.4.3",
  "hivepack",
  "imagesize",
- "libc",
  "md-5 0.11.0",
  "packwing-i18n",
  "packwing-policy",
  "sha1",
  "sha2 0.11.1",
- "sysinfo 0.40.1",
  "trash",
  "unicode-normalization",
- "windows-sys 0.61.2",
  "xattr",
 ]
 
@@ -7727,20 +7716,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sysinfo"
-version = "0.40.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e8a3edbe0394ce115f3917a00349dd242be09eb5a091ed509eaf67b55cfb8a8"
-dependencies = [
- "libc",
- "memchr",
- "ntapi",
- "objc2-core-foundation",
- "objc2-io-kit",
- "windows 0.62.2",
-]
-
-[[package]]
 name = "taffy"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9912,7 +9887,7 @@ dependencies = [
  "rand 0.8.8",
  "screencapturekit",
  "screencapturekit-sys",
- "sysinfo 0.31.4",
+ "sysinfo",
  "tao-core-video-sys",
  "windows 0.61.3",
  "windows-capture",
