@@ -38,7 +38,7 @@ On Debian and Ubuntu, building needs `libpam0g-dev` too, to check the login pass
 
 On Linux, `make` builds for Wayland alone, which needs no X11 development libraries (`libxkbcommon-x11-dev` and the like). For X11 too: `make release FEATURES=wayland,x11`. `cargo run -p packwing` builds for both; add `-- --first-run` for the welcome.
 
-The welcome, or Settings › Right-click menu, puts packwing's items in the file manager's right-click menu for the user, through [context-menu-rs](https://github.com/hivepaas/context-menu-rs). Each runs the program that put it there, so a menu put in by `cargo run` runs that build; the next start of another build points it at that one. On Linux the items are in the menus of Dolphin, Nemo and Thunar; in Nautilus's own menu with the .deb's extension (below), and otherwise in its Scripts submenu, or its own menu with nautilus-python. On Windows they are under "Show more options", and on macOS in Finder's Quick Actions, until packwing's packages there hold the native extensions.
+The welcome, or Settings › Right-click menu, puts packwing's items in the file manager's right-click menu for the user, through [context-menu-rs](https://github.com/hivepaas/context-menu-rs). Each runs the program that put it there, so a menu put in by `cargo run` runs that build; the next start of another build points it at that one. On Linux the items are in the menus of Dolphin, Nemo and Thunar; in Nautilus's own menu with the .deb's extension (below), and otherwise in its Scripts submenu, or its own menu with nautilus-python. On Windows they are under "Show more options" for a build run by hand, and in Windows 11's own menu with the installer's extension, where Windows takes its package (with Developer Mode on, until the package is signed); on macOS in Finder's own menu with Packwing.app's extension, and in its Quick Actions for a build run by hand.
 
 To see every screen, light and dark, without opening the app (Linux, with a Vulkan driver such as Mesa's lavapipe):
 
@@ -110,6 +110,8 @@ nautilus -q   # Nautilus loads extensions when it starts
 ```
 
 `scripts/check_linux_package.sh` checks a package holds what it should, and with `--install` installs it and runs `pkw` from it, as CI does after each merge.
+
+On macOS, `scripts/package_macos.sh` makes `Packwing.app`, with `pkw` beside the program and context-menu-rs's native Finder extension and its helper, downloaded from its release and checked alike, in a disk image and a `.app.tar.gz` for the updater. The extension is signed with the team's Developer ID, so it is in the app only when one is given; then the app is notarized too ([docs/releasing.md](docs/releasing.md)). Windows' installer, from `scripts/package_windows.sh`, holds the extension for Windows 11's menu. A release builds them all from a tag ([docs/releasing.md](docs/releasing.md)).
 
 packwing's next start moves its items for Nautilus out of the Scripts submenu, into Nautilus's own menu. The package depends on the glibc of the system it was built on, so a .deb for every supported Ubuntu is built on the oldest one. Removing the package leaves each user's items for Dolphin, Nemo and Thunar, which Settings takes away before.
 

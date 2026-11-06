@@ -31,12 +31,7 @@ pub fn project() -> Archive {
                 14_800_000,
                 "2026-10-12",
             ),
-            entry(
-                "Front elevation.jpg",
-                Kind::Image,
-                6_400_000,
-                "2026-10-15",
-            ),
+            entry("Front elevation.jpg", Kind::Image, 6_400_000, "2026-10-15"),
             entry(
                 "Construction contract – signed.docx",
                 Kind::Document,
@@ -44,12 +39,7 @@ pub fn project() -> Archive {
                 "2026-10-09",
             ),
             entry("Cost estimate.xlsx", Kind::Sheet, 880_000, "2026-10-14"),
-            entry(
-                "Meeting notes 14-10.txt",
-                Kind::Text,
-                12_000,
-                "2026-10-14",
-            ),
+            entry("Meeting notes 14-10.txt", Kind::Text, 12_000, "2026-10-14"),
             entry("setup_tool.exe", Kind::Program, 3_200_000, "2026-09-30"),
         ],
         marked: vec!["setup_tool.exe".into()],
