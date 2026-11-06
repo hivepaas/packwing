@@ -402,6 +402,7 @@ mod tests {
             cancel: None,
             on_damaged: None,
             on_unnamable: None,
+            on_links_outside: None,
         }
     }
 

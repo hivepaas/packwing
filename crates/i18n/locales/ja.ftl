@@ -778,6 +778,15 @@ tb75acfb1 =
 # Leave out
 ta50cc084 = 除外
 
+# {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
+t0eeaf0b8 =
+    { $n ->
+       *[other] { $count } 個のリンクがフォルダーの外、このコンピューター上の別の場所を指しています。まだ何も書き込んでいません。除外しますか？ それとも、このアーカイブを信頼するなら、そのまま作成しますか？
+    }
+
+# Create them
+t9a4d6e7d = 作成
+
 # {count} file’s data was damaged. | {count} files’ data was damaged.
 t85469b0f =
     { $n ->

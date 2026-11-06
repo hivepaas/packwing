@@ -372,6 +372,7 @@ mod tests {
             cancel: None,
             on_damaged: None,
             on_unnamable: None,
+            on_links_outside: None,
         }
     }
 
@@ -463,6 +464,7 @@ mod tests {
             cancel: Some(cancel),
             on_damaged: None,
             on_unnamable: None,
+            on_links_outside: None,
         };
         assert!(matches!(
             sign_file(&s.storage(), &file(), &key, &control),

@@ -333,6 +333,7 @@ mod tests {
             cancel: Some(cancel),
             on_damaged: None,
             on_unnamable: None,
+            on_links_outside: None,
         };
         assert!(matches!(
             checksums_of(&b"abc"[..], &[Algorithm::Sha256], &control),

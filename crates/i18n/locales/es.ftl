@@ -787,6 +787,16 @@ tb75acfb1 =
 # Leave out
 ta50cc084 = Omitir
 
+# {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
+t0eeaf0b8 =
+    { $n ->
+        [one] { $count } enlace lleva fuera de la carpeta, a otro lugar de este equipo. Aún no se ha escrito nada: ¿omitirlo, o crearlo tal cual si confías en este archivo?
+       *[other] { $count } enlaces llevan fuera de la carpeta, a otros lugares de este equipo. Aún no se ha escrito nada: ¿omitirlos, o crearlos tal cual si confías en este archivo?
+    }
+
+# Create them
+t9a4d6e7d = Crearlos
+
 # {count} file’s data was damaged. | {count} files’ data was damaged.
 t85469b0f =
     { $n ->

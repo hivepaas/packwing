@@ -525,6 +525,7 @@ impl ArchivePage {
             cancel: Some(cancel.clone()),
             on_damaged: None,
             on_unnamable: None,
+            on_links_outside: None,
         };
         let reading = cx.background_executor().spawn(async move {
             match read_entry(&source, &path, &keys, MOST_PREVIEWED, &control) {

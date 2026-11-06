@@ -778,6 +778,15 @@ tb75acfb1 =
 # Leave out
 ta50cc084 = Bỏ qua
 
+# {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
+t0eeaf0b8 =
+    { $n ->
+       *[other] { $count } liên kết trỏ ra ngoài thư mục, tới nơi khác trên máy này. Chưa có gì được ghi: bỏ qua, hay tạo nguyên như vậy nếu bạn tin tệp nén này?
+    }
+
+# Create them
+t9a4d6e7d = Vẫn tạo
+
 # {count} file’s data was damaged. | {count} files’ data was damaged.
 t85469b0f =
     { $n ->

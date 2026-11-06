@@ -787,6 +787,16 @@ tb75acfb1 =
 # Leave out
 ta50cc084 = Ignorar
 
+# {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
+t0eeaf0b8 =
+    { $n ->
+        [one] { $count } link leva para fora da pasta, para outro lugar deste computador. Nada foi gravado ainda: ignorá-lo, ou criá-lo como está se você confia neste arquivo?
+       *[other] { $count } links levam para fora da pasta, para outros lugares deste computador. Nada foi gravado ainda: ignorá-los, ou criá-los como estão se você confia neste arquivo?
+    }
+
+# Create them
+t9a4d6e7d = Criá-los
+
 # {count} file’s data was damaged. | {count} files’ data was damaged.
 t85469b0f =
     { $n ->

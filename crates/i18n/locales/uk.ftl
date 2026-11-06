@@ -805,6 +805,18 @@ tb75acfb1 =
 # Leave out
 ta50cc084 = Пропустити
 
+# {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
+t0eeaf0b8 =
+    { $n ->
+        [one] { $count } посилання веде за межі теки, в інше місце на цьому комп’ютері. Ще нічого не записано: пропустити його чи створити як є, якщо ви довіряєте цьому архіву?
+        [few] { $count } посилання ведуть за межі теки, в інші місця на цьому комп’ютері. Ще нічого не записано: пропустити їх чи створити як є, якщо ви довіряєте цьому архіву?
+        [many] { $count } посилань ведуть за межі теки, в інші місця на цьому комп’ютері. Ще нічого не записано: пропустити їх чи створити як є, якщо ви довіряєте цьому архіву?
+       *[other] { $count } посилання ведуть за межі теки, в інші місця на цьому комп’ютері. Ще нічого не записано: пропустити їх чи створити як є, якщо ви довіряєте цьому архіву?
+    }
+
+# Create them
+t9a4d6e7d = Створити
+
 # {count} file’s data was damaged. | {count} files’ data was damaged.
 t85469b0f =
     { $n ->

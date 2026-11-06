@@ -778,6 +778,15 @@ tb75acfb1 =
 # Leave out
 ta50cc084 = Lewati
 
+# {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
+t0eeaf0b8 =
+    { $n ->
+       *[other] { $count } tautan mengarah ke luar folder, ke tempat lain di komputer ini. Belum ada yang ditulis: lewati, atau buat apa adanya jika Anda memercayai arsip ini?
+    }
+
+# Create them
+t9a4d6e7d = Buat
+
 # {count} file’s data was damaged. | {count} files’ data was damaged.
 t85469b0f =
     { $n ->

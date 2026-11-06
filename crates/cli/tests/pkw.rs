@@ -498,6 +498,64 @@ fn names_a_system_cannot_take_are_left_out_or_renamed() {
     assert_eq!(asked.status.code(), Some(2));
 }
 
+/// Links that lead outside the folder are left out by default and said,
+/// created as they are with --links-outside create, and stop it with stop;
+/// converting keeps them, as the new archive holds any link.
+#[cfg(unix)]
+#[test]
+fn links_that_lead_outside_are_left_out_created_or_stop() {
+    let s = Scratch::new("links-outside");
+    std::os::unix::fs::symlink("/etc/hostname", s.path("src/outside")).expect("a link");
+    std::os::unix::fs::symlink("numbers.txt", s.path("src/inside")).expect("a link");
+    ok(&s.pkw(&["create", "a.tar", "src"]));
+    let target = |link: &str| std::fs::read_link(s.path(link)).ok();
+    // Left out, by default with no terminal, and said: exit 5.
+    let left = s.pkw(&["extract", "a.tar", "-o", "left"]);
+    assert_eq!(left.status.code(), Some(5));
+    let said = String::from_utf8_lossy(&left.stderr);
+    assert!(said.contains("left out: src/outside"), "{said}");
+    assert_eq!(target("left/src/inside"), Some("numbers.txt".into()));
+    assert_eq!(target("left/src/outside"), None);
+    // Created as they are.
+    ok(&s.pkw(&[
+        "extract",
+        "a.tar",
+        "-o",
+        "made",
+        "--links-outside",
+        "create",
+    ]));
+    assert_eq!(target("made/src/outside"), Some("/etc/hostname".into()));
+    // Stopped: nothing written.
+    let stopped = s.pkw(&[
+        "extract",
+        "a.tar",
+        "-o",
+        "stopped",
+        "--links-outside",
+        "stop",
+    ]);
+    assert!(!stopped.status.success());
+    assert!(!s.path("stopped").exists());
+    // Asked, with no terminal: not understood.
+    let asked = s.pkw(&["extract", "a.tar", "-o", "asked", "--links-outside", "ask"]);
+    assert_eq!(asked.status.code(), Some(2));
+    // Converted, the link kept.
+    ok(&s.pkw(&["convert", "a.tar", "b.tar.zst"]));
+    ok(&s.pkw(&[
+        "extract",
+        "b.tar.zst",
+        "-o",
+        "converted",
+        "--links-outside",
+        "create",
+    ]));
+    assert_eq!(
+        target("converted/src/outside"),
+        Some("/etc/hostname".into())
+    );
+}
+
 #[test]
 fn threads_change_how_soon_not_what_is_made_or_read() {
     let s = Scratch::new("threads");

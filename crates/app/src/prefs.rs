@@ -11,7 +11,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use gpui::{App, Global};
 use packwing_core::{
-    Algorithm, COMPRESSED_EXTENSIONS, ExtractOptions, Level, PublicKey, Values, read_public_key,
+    Algorithm, COMPRESSED_EXTENSIONS, ExtractOptions, Level, OnLinksOutside, PublicKey, Values,
+    read_public_key,
 };
 
 use crate::dialogs::Format;
@@ -596,6 +597,8 @@ impl Prefs {
                 .map_or(LIMITS[1].1, |(_, limit)| *limit),
             keep_mark: self.keep_mark,
             portable_names: self.portable_names,
+            // Asked about while extracting; left out where nothing asks.
+            links_outside: OnLinksOutside::Skip,
         }
     }
 }
@@ -909,6 +912,7 @@ mod tests {
                 limit: None,
                 keep_mark: false,
                 portable_names: false,
+                links_outside: OnLinksOutside::Skip,
             }
         );
     }

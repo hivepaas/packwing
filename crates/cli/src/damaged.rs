@@ -1,15 +1,19 @@
 //! Files whose data is damaged, while extracting: asked about in a terminal, or
 //! done with as `--on-damaged` says. Files whose names this system cannot take:
 //! asked about once, all together, in a terminal, or done with as
-//! `--on-bad-name` says. Then each one said, and written to `--report`. A name
-//! that leads outside, or a limit, always stops.
+//! `--on-bad-name` says. Symbolic links that lead outside the folder: asked
+//! about once, all together, in a terminal, or done with as `--links-outside`
+//! says. Then each one said, and written to `--report`. A name that leads
+//! outside, or a limit, always stops.
 
 use std::io::{BufRead as _, Write as _};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 use clap::{Args, ValueEnum};
-use packwing_core::{BadName, Control, Damage, OnDamaged, OnUnnamable, Renaming, size};
+use packwing_core::{
+    BadName, Control, Damage, OnDamaged, OnLinksOutside, OnUnnamable, OutsideLink, Renaming, size,
+};
 use serde_json::{Value, json};
 
 use crate::{Context, Exit};
@@ -54,11 +58,44 @@ pub struct Naming {
     /// device names, and names differing only in case, on Linux too.
     #[arg(long)]
     pub portable_names: bool,
+    /// When symbolic links lead outside the folder extracted to (to an absolute
+    /// path, as ~/snap's to ~/.config, or climbing out): ask, stop, skip them,
+    /// or create them as they are, for an archive you trust. By default asked
+    /// in a terminal, and skipped otherwise. On Windows links are written as
+    /// files holding their targets, whatever this says.
+    #[arg(long, value_name = "WHAT", value_enum)]
+    pub links_outside: Option<LinkChoice>,
 }
 
 impl Naming {
+    /// What `--links-outside` says, or its default here.
+    fn link_choice(&self, cx: &Context) -> Result<LinkChoice, Exit> {
+        Ok(match self.links_outside {
+            Some(LinkChoice::Ask) if !cx.can_ask => {
+                return Err(Exit::Usage(
+                    "--links-outside ask needs a terminal: give stop, skip or create".into(),
+                ));
+            }
+            Some(choice) => choice,
+            None if cx.can_ask => LinkChoice::Ask,
+            None => LinkChoice::Skip,
+        })
+    }
+
+    /// What becomes of the links that lead outside when nothing asks.
+    pub fn links_outside(&self, cx: &Context) -> Result<OnLinksOutside, Exit> {
+        Ok(match self.link_choice(cx)? {
+            LinkChoice::Stop => OnLinksOutside::Stop,
+            LinkChoice::Create => OnLinksOutside::Create,
+            LinkChoice::Skip | LinkChoice::Ask => OnLinksOutside::Skip,
+        })
+    }
+
     /// `control`, which asks or does as was said.
     pub fn control(&self, mut control: Control, cx: &Context) -> Result<Control, Exit> {
+        if self.link_choice(cx)? == LinkChoice::Ask {
+            control.on_links_outside = Some(Arc::new(ask_links));
+        }
         let names = match self.on_bad_name {
             Some(NameChoice::Ask) if !cx.can_ask => {
                 return Err(Exit::Usage(
@@ -90,6 +127,19 @@ pub enum NameChoice {
     Skip,
     /// Give them names this system takes, as a_b.txt or readme (2).
     Rename,
+}
+
+/// What to do with symbolic links that lead outside the folder extracted to.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
+pub enum LinkChoice {
+    /// Ask, once for all of them: in a terminal only.
+    Ask,
+    /// Stop, and write nothing.
+    Stop,
+    /// Leave them out, and extract the rest.
+    Skip,
+    /// Create them as the archive has them.
+    Create,
 }
 
 /// What came of an extraction, to be said.
@@ -253,6 +303,49 @@ fn ask_names(bad: &[BadName]) -> OnUnnamable {
     }
 }
 
+/// Asks once what to do with `links`, which lead outside the folder.
+fn ask_links(links: &[OutsideLink]) -> OnLinksOutside {
+    let mut err = std::io::stderr().lock();
+    // Over the progress line, if one is shown.
+    let _ = writeln!(
+        err,
+        "\r\x1b[Kpkw: {} outside the folder:",
+        if links.len() == 1 {
+            "1 link leads".to_owned()
+        } else {
+            format!("{} links lead", links.len())
+        }
+    );
+    for link in links {
+        let _ = writeln!(err, "  {} -> {}", link.path, link.target);
+    }
+    loop {
+        let _ = write!(
+            err,
+            "  Skip them (s), create them as they are (c), or stop (q)? Nothing is written yet. [s] "
+        );
+        let _ = err.flush();
+        let mut line = String::new();
+        if !matches!(std::io::stdin().lock().read_line(&mut line), Ok(n) if n > 0) {
+            let _ = writeln!(err);
+            return OnLinksOutside::Stop;
+        }
+        if let Some(chosen) = link_answer(line.trim()) {
+            return chosen;
+        }
+    }
+}
+
+/// What `typed` answers about links that lead outside, if it does.
+fn link_answer(typed: &str) -> Option<OnLinksOutside> {
+    Some(match typed {
+        "" | "s" | "S" => OnLinksOutside::Skip,
+        "c" | "C" => OnLinksOutside::Create,
+        "q" | "Q" => OnLinksOutside::Stop,
+        _ => return None,
+    })
+}
+
 /// What `typed` answers about bad names, if it does.
 fn name_answer(typed: &str) -> Option<OnUnnamable> {
     Some(match typed {
@@ -325,5 +418,9 @@ mod tests {
         assert_eq!(name_answer("r"), Some(OnUnnamable::Rename));
         assert_eq!(name_answer("S"), Some(OnUnnamable::Skip));
         assert_eq!(name_answer("k"), None);
+        assert_eq!(link_answer(""), Some(OnLinksOutside::Skip));
+        assert_eq!(link_answer("C"), Some(OnLinksOutside::Create));
+        assert_eq!(link_answer("q"), Some(OnLinksOutside::Stop));
+        assert_eq!(link_answer("r"), None);
     }
 }

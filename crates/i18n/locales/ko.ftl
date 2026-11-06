@@ -778,6 +778,15 @@ tb75acfb1 =
 # Leave out
 ta50cc084 = 제외
 
+# {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
+t0eeaf0b8 =
+    { $n ->
+       *[other] 링크 { $count }개가 폴더 밖, 이 컴퓨터의 다른 곳을 가리킵니다. 아직 아무것도 쓰지 않았습니다. 제외할까요, 아니면 이 압축 파일을 신뢰한다면 그대로 만들까요?
+    }
+
+# Create them
+t9a4d6e7d = 만들기
+
 # {count} file’s data was damaged. | {count} files’ data was damaged.
 t85469b0f =
     { $n ->

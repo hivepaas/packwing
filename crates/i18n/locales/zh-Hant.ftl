@@ -778,6 +778,15 @@ tb75acfb1 =
 # Leave out
 ta50cc084 = 略過
 
+# {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
+t0eeaf0b8 =
+    { $n ->
+       *[other] { $count } 個連結指向資料夾之外、這台電腦上的其他位置。尚未寫入任何內容：略過，還是在你信任此壓縮檔時照原樣建立？
+    }
+
+# Create them
+t9a4d6e7d = 建立
+
 # {count} file’s data was damaged. | {count} files’ data was damaged.
 t85469b0f =
     { $n ->

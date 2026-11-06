@@ -287,6 +287,12 @@ tb75acfb1 =
        *[other] { $count } files can’t be extracted under their names here. Nothing is written yet: stop, leave them out, or rename them?
     }
 ta50cc084 = Leave out
+t0eeaf0b8 =
+    { $n ->
+        [one] { $count } link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive?
+       *[other] { $count } links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
+    }
+t9a4d6e7d = Create them
 t85469b0f =
     { $n ->
         [one] { $count } file’s data was damaged.
