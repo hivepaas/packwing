@@ -2178,7 +2178,7 @@ fn a_newer_version_shows_on_the_title_bar_and_leads_to_about() {
     assert!(problem(&mut cx).is_some());
 
     // A signed list: the release shows, and the click leads to About.
-    packwing_update::set_test_install(Install::Package);
+    packwing_update::set_test_install(Install::Package(packwing_update::PackageTool::Apt));
     look(&mut cx, &serve("200 OK", SIGNED), &KEYS);
     assert_eq!(problem(&mut cx), None);
     let offered = Version::parse("v99.0.0").expect("version");

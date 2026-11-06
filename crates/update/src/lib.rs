@@ -8,7 +8,7 @@
 //! A copy the app can replace (an AppImage, an `.app`, one its installer put
 //! on Windows) downloads the release's file for its platform, checks it
 //! against the list's SHA-256, and installs it as it quits (`apply`). A copy
-//! from the release's `.deb` is given the commands that install the
+//! from the release's `.deb` or `.rpm` is given the commands that install the
 //! next one. Any other copy is told where the release is, or what updates it.
 
 pub mod apply;
@@ -22,7 +22,7 @@ pub mod version;
 use std::time::Duration;
 
 pub use envelope::{PublicKeys, SignatureError};
-pub use install::{Install, install_of};
+pub use install::{Install, PackageTool, install_of};
 pub use manifest::{Manifest, ManifestError};
 pub use version::{Channel, Version};
 
@@ -172,17 +172,18 @@ pub fn release_file(envelope: &[u8], version: &Version) -> Result<ReleaseFile, C
     })
 }
 
-/// The `.deb` `version` has for this computer, from a signed list: its file and
-/// SHA-256. `None` when the list has none.
+/// The system package `version` has for `tool` on this computer, from a
+/// signed list: its file and SHA-256. `None` when the list has none.
 pub fn package_file(
     envelope: &[u8],
     version: &Version,
+    tool: PackageTool,
 ) -> Result<Option<(String, String)>, CheckError> {
     let data = envelope::open(&trusted_keys()?, envelope, CONTEXT)?;
     Ok(Manifest::parse(&data)?
         .releases
         .get(&version.to_string())
-        .and_then(|r| r.packages.get(&platform::package_key()))
+        .and_then(|r| r.packages.get(&platform::package_key(tool)))
         .map(|a| (a.file.clone(), a.sha256.clone())))
 }
 
@@ -193,12 +194,23 @@ pub fn package_file(
 /// `file` and `sha256` are what the list holds: [`Manifest::parse`] takes only
 /// a file named as the release's and a SHA-256 in hex, so nothing in them means
 /// anything to a shell.
-pub fn package_steps(version: &Version, file: &str, sha256: &str) -> Vec<String> {
+pub fn package_steps(
+    version: &Version,
+    tool: PackageTool,
+    file: &str,
+    sha256: &str,
+) -> Vec<String> {
+    let install = match tool {
+        PackageTool::Apt => format!("sudo apt install ./{file}"),
+        PackageTool::Dnf => format!("sudo dnf install ./{file}"),
+        // Not signed: the SHA-256 is what vouches for it, and zypper stops without this.
+        PackageTool::Zypper => format!("sudo zypper --no-gpg-checks install ./{file}"),
+    };
     vec![
         "cd \"$(mktemp -d)\"".to_string(),
         format!("curl -fLO {}", platform::download_url(version, file)),
         format!("echo '{sha256}  {file}' | sha256sum -c"),
-        format!("sudo apt install ./{file}"),
+        install,
     ]
 }
 
@@ -285,13 +297,23 @@ mod tests {
     fn the_steps_name_the_release_and_its_hash() {
         let v = Version::parse("v0.2.1").expect("version");
         assert_eq!(
-            package_steps(&v, "packwing_0.2.1_amd64.deb", "abc"),
+            package_steps(&v, PackageTool::Apt, "packwing_0.2.1_amd64.deb", "abc"),
             [
                 "cd \"$(mktemp -d)\"",
                 "curl -fLO https://github.com/hivepaas/packwing/releases/download/v0.2.1/packwing_0.2.1_amd64.deb",
                 "echo 'abc  packwing_0.2.1_amd64.deb' | sha256sum -c",
                 "sudo apt install ./packwing_0.2.1_amd64.deb",
             ]
+        );
+        let last = |tool| {
+            package_steps(&v, tool, "x.rpm", "abc")
+                .pop()
+                .expect("a step")
+        };
+        assert_eq!(last(PackageTool::Dnf), "sudo dnf install ./x.rpm");
+        assert_eq!(
+            last(PackageTool::Zypper),
+            "sudo zypper --no-gpg-checks install ./x.rpm"
         );
     }
 }

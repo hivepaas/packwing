@@ -11,6 +11,7 @@
 #
 #   dist/packwing_0.1.0_windows_x86_64-setup.exe
 #   dist/packwing_0.1.0_windows_x86_64.zip
+#   dist/pkw_0.1.0_windows_x86_64.zip
 #
 # The installer holds context-menu-rs's native extension for Windows 11's own
 # right-click menu, and the package that declares it (packaging/windows): see
@@ -19,14 +20,16 @@
 # and Windows takes the package only where Developer Mode is on.
 #
 # Both hold pkw.exe, the command line, beside packwing.exe; the installer puts
-# its folder in the user's PATH.
+# its folder in the user's PATH. pkw.exe also comes alone, in a zip with the
+# licenses of the crates it is built with (packaging/cli).
 #
 # Environment: EXE (default target/release/packwing.exe), CLI (default
 # target/release/pkw.exe), ARCH (default
 # x86_64), DIST (default dist), MAKENSIS (default: on PATH, else where NSIS
 # installs itself), EXTENSION (the native extension; default: downloaded from
-# context-menu-rs's release, its checksum checked), LICENSES (the third-party
-# licenses; default: made by cargo-about).
+# context-menu-rs's release, its checksum checked), LICENSES and CLI_LICENSES
+# (the third-party licenses of the app and pkw, and of pkw alone; default: made
+# by cargo-about).
 
 set -euo pipefail
 
@@ -110,12 +113,32 @@ cp "$CLI" "$WORK/$NAME/pkw.exe"
 cp LICENSE "$WORK/$NAME/LICENSE.txt"
 cp GPL-ADDITIONAL-PERMISSION.md "$WORK/$NAME/GPL-ADDITIONAL-PERMISSION.txt"
 cp "$LICENSES" "$WORK/$NAME/THIRD-PARTY-LICENSES.txt"
-ZIP="$DIST/packwing_${VERSION}_windows_${ARCH}.zip"
-rm -f "$ZIP"
-if command -v 7z >/dev/null; then
-	(cd "$WORK" && 7z a -tzip -bso0 "$(native "$ZIP")" "$NAME")
+# A folder in $WORK, zipped into $DIST.
+zip_dir() {
+	local zip="$DIST/$1.zip"
+	rm -f "$zip"
+	if command -v 7z >/dev/null; then
+		(cd "$WORK" && 7z a -tzip -bso0 "$(native "$zip")" "$2")
+	else
+		(cd "$WORK" && zip -qr "$zip" "$2")
+	fi
+}
+zip_dir "packwing_${VERSION}_windows_${ARCH}" "$NAME"
+
+## pkw alone, with its licenses
+CLI_NAME="pkw_${VERSION}_windows_${ARCH}"
+mkdir -p "$WORK/$CLI_NAME"
+cp "$CLI" "$WORK/$CLI_NAME/pkw.exe"
+cp packaging/cli/README.txt "$WORK/$CLI_NAME/README.txt"
+cp LICENSE "$WORK/$CLI_NAME/LICENSE.txt"
+cp GPL-ADDITIONAL-PERMISSION.md "$WORK/$CLI_NAME/GPL-ADDITIONAL-PERMISSION.txt"
+if [ -z "${CLI_LICENSES:-}" ]; then
+	CLI_LICENSES="$WORK/$CLI_NAME/THIRD-PARTY-LICENSES.txt"
+	cargo about generate --locked --fail -c about.toml -m crates/cli/Cargo.toml \
+		--target "$ARCH-pc-windows-msvc" -o "$CLI_LICENSES" packaging/licenses.hbs
 else
-	(cd "$WORK" && zip -qr "$ZIP" "$NAME")
+	cp "$CLI_LICENSES" "$WORK/$CLI_NAME/THIRD-PARTY-LICENSES.txt"
 fi
+zip_dir "$CLI_NAME" "$CLI_NAME"
 
 ls -l "$DIST"

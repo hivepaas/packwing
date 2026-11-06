@@ -6,6 +6,7 @@
 //! | `macos_aarch64`, `macos_x86_64` | `packwing_0.2.0_macos_aarch64.app.tar.gz` (`Packwing.app`, tarred) |
 //! | `windows_x86_64`, `windows_aarch64` | `packwing_0.2.0_windows_x86_64-setup.exe` (an installer, quiet with `/S`) |
 
+use crate::install::PackageTool;
 use crate::version::Version;
 
 pub const PLATFORMS: [&str; 6] = [
@@ -50,12 +51,17 @@ pub fn archive_file(v: &Version, platform: &str) -> Option<String> {
 }
 
 /// The system packages a release has, by name in the list's `packages`:
-/// `deb_x86_64` is `packwing_0.2.0_amd64.deb`.
-pub const PACKAGES: [&str; 2] = ["deb_x86_64", "deb_aarch64"];
+/// `deb_x86_64` is `packwing_0.2.0_amd64.deb`, `rpm_x86_64` is
+/// `packwing_0.2.0_x86_64.rpm`.
+pub const PACKAGES: [&str; 4] = ["deb_x86_64", "deb_aarch64", "rpm_x86_64", "rpm_aarch64"];
 
-/// This build's system package, by its name in the list.
-pub fn package_key() -> String {
-    format!("deb_{}", std::env::consts::ARCH)
+/// This build's system package for `tool`, by its name in the list.
+pub fn package_key(tool: PackageTool) -> String {
+    let kind = match tool {
+        PackageTool::Apt => "deb",
+        PackageTool::Dnf | PackageTool::Zypper => "rpm",
+    };
+    format!("{kind}_{}", std::env::consts::ARCH)
 }
 
 /// The file a release has for the system package `key`.
@@ -65,6 +71,8 @@ pub fn package_file(v: &Version, key: &str) -> Option<String> {
     Some(match key {
         "deb_x86_64" => format!("packwing_{plain}_amd64.deb"),
         "deb_aarch64" => format!("packwing_{plain}_arm64.deb"),
+        "rpm_x86_64" => format!("packwing_{plain}_x86_64.rpm"),
+        "rpm_aarch64" => format!("packwing_{plain}_aarch64.rpm"),
         _ => return None,
     })
 }
@@ -103,6 +111,10 @@ mod tests {
         assert_eq!(
             package_file(&v, "deb_aarch64").as_deref(),
             Some("packwing_0.3.0-beta2_arm64.deb")
+        );
+        assert_eq!(
+            package_file(&v, "rpm_x86_64").as_deref(),
+            Some("packwing_0.3.0-beta2_x86_64.rpm")
         );
         assert_eq!(package_file(&v, "snap_x86_64"), None);
         assert_eq!(

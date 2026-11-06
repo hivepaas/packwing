@@ -142,9 +142,10 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  # The .deb, made as a release's is and checked: what it holds, then
-  # installed and pkw run from it (scripts/check_linux_package.sh). After each
-  # merge, and when the app is built on demand.
+  # The .deb, the .rpm and pkw alone, made as a release's are and checked:
+  # what each holds, then the packages installed (the .rpm in Fedora) and pkw
+  # run from each (scripts/check_linux_package.sh). After each merge, and when
+  # the app is built on demand.
   package-linux:
     if: >-
       github.event_name == 'push' ||
@@ -161,7 +162,7 @@ jobs:
             build-essential pkg-config libfontconfig-dev libfreetype-dev \
             libwayland-dev libxkbcommon-dev libxkbcommon-x11-dev \
             libx11-xcb-dev libxcb1-dev libxcb-xkb-dev libxcb-shape0-dev libxcb-xfixes0-dev \
-            libvulkan-dev libdbus-1-dev libzstd-dev libpam0g-dev
+            libvulkan-dev libdbus-1-dev libzstd-dev libpam0g-dev rpm cpio
 
       - name: Rust
         run: rustup toolchain install
@@ -181,11 +182,17 @@ jobs:
         run: scripts/package_linux.sh
 
       - name: Check, install and run
-        run: scripts/check_linux_package.sh --install dist/packwing_*_amd64.deb
+        run: |
+          scripts/check_linux_package.sh --install dist/packwing_*_amd64.deb
+          scripts/check_linux_package.sh --install dist/packwing_*_x86_64.rpm
+          scripts/check_linux_package.sh dist/pkw_*_linux_x86_64.tar.gz
 
       - uses: actions/upload-artifact@v4
         with:
-          name: packwing-deb
-          path: dist/*.deb
+          name: packwing-linux-packages
+          path: |
+            dist/*.deb
+            dist/*.rpm
+            dist/*.tar.gz
           if-no-files-found: error
           retention-days: 14

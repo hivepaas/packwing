@@ -38,7 +38,7 @@ pub struct UpdateState {
     pub offered: Option<String>,
     /// The release not to offer again.
     pub skipped: Option<String>,
-    /// The offered release's `.deb`: its file and SHA-256.
+    /// The offered release's `.deb` or `.rpm`: its file and SHA-256.
     pub package: Option<(String, String)>,
     /// A release downloaded and checked: its version, and where it is.
     pub staged: Option<(String, PathBuf)>,
@@ -116,7 +116,7 @@ type Found = (Option<Version>, Option<(String, String)>);
 fn found_in(list: &[u8]) -> Result<Found, CheckError> {
     let offered = packwing_update::offer(list, &packwing_update::current())?;
     let package = match (&offered, install()) {
-        (Some(v), Install::Package) => packwing_update::package_file(list, v)?,
+        (Some(v), Install::Package(tool)) => packwing_update::package_file(list, v, tool)?,
         _ => None,
     };
     Ok((offered, package))
@@ -338,12 +338,12 @@ impl Updates {
     /// The commands that install the offered release's package, when this copy came from
     /// one and the list names it.
     pub fn steps(&self) -> Option<Vec<String>> {
-        if install() != Install::Package {
+        let Install::Package(tool) = install() else {
             return None;
-        }
+        };
         let v = self.offered()?;
         let (file, sha256) = self.state.package.as_ref()?;
-        Some(packwing_update::package_steps(&v, file, sha256))
+        Some(packwing_update::package_steps(&v, tool, file, sha256))
     }
 
     /// Downloads `v`'s file for this platform, as the signed list (read again, and
