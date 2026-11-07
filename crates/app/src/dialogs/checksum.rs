@@ -245,6 +245,7 @@ impl ChecksumDialog {
             on_damaged: None,
             on_unnamable: None,
             on_links_outside: None,
+            on_gone: None,
         };
         let (storage, path, asked) = (self.storage.clone(), self.path.clone(), wanted.clone());
         let work = cx

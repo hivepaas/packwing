@@ -655,6 +655,9 @@ t73aeedd4 = saltato
 # renamed {to}
 t7aa9b778 = rinominato in { $to }
 
+# It was gone by the time it was read.
+t93fb1e03 = Non c’era più quando doveva essere letto.
+
 # The job stopped before it was done.
 t57a78885 = Il lavoro si è fermato prima di finire.
 
@@ -853,6 +856,16 @@ tec751fa9 =
         [one] { $count } file è stato rinominato, perché il suo nome non è utilizzabile qui.
        *[other] { $count } file sono stati rinominati, perché i loro nomi non sono utilizzabili qui.
     }
+
+# {count} file was gone by the time it was read, and left out. | {count} files were gone by the time they were read, and left out.
+ta9bd0a7d =
+    { $n ->
+        [one] { $count } file non c’era più quando doveva essere letto ed è stato escluso.
+       *[other] { $count } file non c’erano più quando dovevano essere letti e sono stati esclusi.
+    }
+
+# The rest is in the archive.
+t977a5572 = Il resto è nell’archivio.
 
 # The rest was extracted.
 ta7833fcb = Il resto è stato estratto.

@@ -48,7 +48,14 @@ pub struct Control {
     /// [`ExtractOptions::links_outside`] says. Never asked on Windows, where
     /// links are written as files holding their targets.
     pub on_links_outside: Option<LinksOutsideFn>,
+    /// Told, while an archive is made, of each file or folder that was gone
+    /// by the time it was to be read, as another program's files may go
+    /// while it runs: it is left out, and the archive made of the rest.
+    pub on_gone: Option<GoneFn>,
 }
+
+/// What [`Control::on_gone`] is: given the path that was gone.
+pub type GoneFn = Arc<dyn Fn(&Path) + Send + Sync>;
 
 /// What [`Control::on_unnamable`] is: given the files, it says what to do.
 pub type UnnamableFn = Arc<dyn Fn(&[BadName]) -> OnUnnamable + Send + Sync>;
@@ -206,6 +213,12 @@ impl Control {
     pub(crate) fn report(&self, p: &Progress) {
         if let Some(progress) = &self.progress {
             progress(p);
+        }
+    }
+
+    pub(crate) fn gone(&self, path: &Path) {
+        if let Some(gone) = &self.on_gone {
+            gone(path);
         }
     }
 }
@@ -800,6 +813,7 @@ pub fn test(source: impl Into<Source>, keys: &Keys, control: &Control) -> Result
                 on_damaged: None,
                 on_unnamable: None,
                 on_links_outside: None,
+                on_gone: None,
             };
             copy(&mut tr.into_inner(), &mut io::sink(), &quiet, &mut done)?;
         }
@@ -925,6 +939,7 @@ fn read_to_end(r: &mut impl Read, control: &Control, done: &mut Progress) -> Res
         on_damaged: None,
         on_unnamable: None,
         on_links_outside: None,
+        on_gone: None,
     };
     copy(r, &mut io::sink(), &quiet, done).map(|_| ())
 }

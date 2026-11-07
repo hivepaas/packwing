@@ -403,6 +403,7 @@ mod tests {
             on_damaged: None,
             on_unnamable: None,
             on_links_outside: None,
+            on_gone: None,
         }
     }
 
