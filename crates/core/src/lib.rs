@@ -505,10 +505,13 @@ where
         .identities(identities)
         .threads(threads())
         // bzip2's threads, about 20 MiB each, as many as the memory there
-        // is takes; xz's within its 1 GiB, as before.
+        // is takes; zstd's frames in flight, as many as it takes too, within
+        // hivepack's 1 GiB; xz's within its 1 GiB, as before.
         .limits({
             let mut limits = hivepack::open::Limits::default();
-            limits.bzip2_memlimit = memory::budget();
+            let budget = memory::budget();
+            limits.bzip2_memlimit = budget;
+            limits.zstd_memlimit = limits.zstd_memlimit.min(budget);
             limits
         })
 }
