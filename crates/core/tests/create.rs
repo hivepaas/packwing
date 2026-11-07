@@ -11,11 +11,11 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use packwing_core::{
-    COMPRESSED_EXTENSIONS, Cancel, Control, Error, ExtractOptions, Item, Keys, Kind, Level, Lister,
-    LocalFolder, NewArchive, OnExisting, Progress, Route, Source, Storage, StoredFile, add,
-    add_with, age_key_is_post_quantum, age_key_problem, age_keys_in, can_add, create, create_on,
-    delete, extract, extract_selected, extract_to_open, extract_with, image_fits, list, measure,
-    read_entry, rename, route, test,
+    COMPRESSED_EXTENSIONS, Cancel, Control, Error, ExtractOptions, Frames, Item, Keys, Kind, Level,
+    Lister, LocalFolder, NewArchive, OnExisting, Progress, Route, SEVERAL_FRAMES_FROM, Source,
+    Storage, StoredFile, add, add_with, age_key_is_post_quantum, age_key_problem, age_keys_in,
+    can_add, create, create_on, delete, extract, extract_selected, extract_to_open, extract_with,
+    image_fits, list, measure, read_entry, rename, route, test,
 };
 
 /// A folder of a test's own, gone when it ends.
@@ -2746,6 +2746,75 @@ fn a_tar_lzma_under_its_short_name_opens() {
     let listing = list(&tlz, &Keys::default()).unwrap();
     assert_eq!(listing.files, 3);
     test(&tlz, &Keys::default(), &Control::default()).unwrap();
+}
+
+/// How many frames the seek table at the end of a zstd stream says it has, if
+/// it has one: zstd's seekable format's.
+fn frames_in_seek_table(made: &[u8]) -> Option<u32> {
+    let footer = made.get(made.len().checked_sub(9)?..)?;
+    (footer[5..] == 0x8F92_EAB1u32.to_le_bytes())
+        .then(|| u32::from_le_bytes([footer[0], footer[1], footer[2], footer[3]]))
+}
+
+/// A `.tar.zst` or `.zst` in several frames, as asked or for a large input, has
+/// a frame for each 32 MiB and a seek table, and comes back as it went in; in
+/// one, it has neither.
+#[test]
+fn zstd_goes_in_frames_as_asked_or_as_the_size_says() {
+    let s = Scratch::new("frames");
+    let root = s.path("big");
+    fs::create_dir_all(&root).unwrap();
+    // 70 MiB: three frames.
+    let piece = big();
+    let mut data = Vec::with_capacity(70 << 20);
+    while data.len() < 70 << 20 {
+        data.extend_from_slice(&piece);
+        data.push(data.len() as u8);
+    }
+    data.truncate(70 << 20);
+    fs::write(root.join("data.bin"), &data).unwrap();
+    fs::write(root.join("small.txt"), "xin chào\n").unwrap();
+    for (kind, extension, from) in [
+        (Kind::TarZst, "tar.zst", root.clone()),
+        (Kind::Zst, "zst", root.join("data.bin")),
+    ] {
+        for (frames, want) in [
+            (Frames::Several, Some(3)),
+            (Frames::One, None),
+            // 70 MiB is under what makes several.
+            (Frames::Auto, None),
+        ] {
+            let name = format!("{frames:?}.{extension}");
+            let new = NewArchive {
+                kind,
+                level: Level::Lowest,
+                frames,
+                ..NewArchive::default()
+            };
+            let made = create(
+                std::slice::from_ref(&from),
+                &s.path(&name),
+                &new,
+                &Control::default(),
+            )
+            .unwrap();
+            let bytes = fs::read(&made).unwrap();
+            assert_eq!(frames_in_seek_table(&bytes), want, "{name}");
+            test(&made, &Keys::default(), &Control::default()).unwrap();
+            let out = s.path(&format!("out-{name}"));
+            extract(&made, &out, &Keys::default(), &Control::default()).unwrap();
+            // A file alone comes back named after the archive.
+            let back = if kind == Kind::Zst {
+                out.join(format!("{frames:?}"))
+            } else {
+                out.join("big/data.bin")
+            };
+            assert!(fs::read(back).unwrap() == data, "{name}");
+        }
+    }
+    assert!(Frames::Auto.several(Some(SEVERAL_FRAMES_FROM)));
+    assert!(!Frames::Auto.several(Some(SEVERAL_FRAMES_FROM - 1)));
+    assert!(!Frames::Auto.several(None));
 }
 
 /// The headers of the plain tar archive at `path`, by name.

@@ -176,6 +176,38 @@ impl Level {
     }
 }
 
+/// How a zstd stream is cut: one frame, which compresses best, or frames of
+/// [`hivepack::zstd::FRAME_SIZE`] (32 MiB) each, which a reader decodes on every
+/// core, a frame in each thread, and whose seek table says where each starts.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Frames {
+    /// Several where what goes in comes to [`SEVERAL_FRAMES_FROM`] or more, as
+    /// far as it is known; one otherwise.
+    #[default]
+    Auto,
+    One,
+    Several,
+}
+
+/// What each of several zstd frames holds: 32 MiB.
+pub const FRAME_SIZE: u64 = hivepack::zstd::FRAME_SIZE as u64;
+
+/// What goes in from which [`Frames::Auto`] makes several frames: 256 MiB, eight
+/// frames, where decoding on several cores starts to tell.
+pub const SEVERAL_FRAMES_FROM: u64 = 256 << 20;
+
+impl Frames {
+    /// Whether a stream of `bytes`, if they are known, is cut into several
+    /// frames.
+    pub fn several(self, bytes: Option<u64>) -> bool {
+        match self {
+            Frames::Auto => bytes.is_some_and(|b| b >= SEVERAL_FRAMES_FROM),
+            Frames::One => false,
+            Frames::Several => true,
+        }
+    }
+}
+
 /// What a tar archive keeps of each file for a backup, to be restored on the computer
 /// it came from: each is left out by default, as an archive to share has no use for
 /// it and would tell others the names of the users.
@@ -261,6 +293,8 @@ pub struct NewArchive {
     /// come to more than this many bytes and the storage can take it that way. It
     /// goes through a temporary file otherwise, and if this is none.
     pub stream_above: Option<u64>,
+    /// How a `.tar.zst` or `.zst` is cut into frames.
+    pub frames: Frames,
 }
 
 /// Why `policy` stops `new` being made, if it does: what the window asks before
@@ -325,6 +359,7 @@ impl fmt::Debug for NewArchive {
             .field("stream_above", &self.stream_above)
             .field("skip_mac_files", &self.skip_mac_files)
             .field("part_size", &self.part_size)
+            .field("frames", &self.frames)
             .field("keep", &self.keep)
             .field("times", &self.times)
             .finish()
@@ -832,6 +867,9 @@ pub fn memory_needed(new: &NewArchive) -> u64 {
             check: hivepack::xz::Check::CRC64,
             ..MtOptions::default()
         }),
+        Kind::TarZst | Kind::Zst if new.frames == Frames::Several => {
+            frames_options(new).memory_usage(1).unwrap_or(0)
+        }
         Kind::TarZst | Kind::Zst => {
             let mut cctx = hivepack::zstd::CCtx::new();
             let set = cctx
@@ -1046,7 +1084,12 @@ fn squeeze<W: Write>(
     tally: &Tally,
     out: W,
 ) -> Result<W, Error> {
-    let mut out = Squeezed::new(new, out)?;
+    let bytes = items
+        .iter()
+        .filter(|item| item.metadata.is_file())
+        .map(|item| item.metadata.len())
+        .sum();
+    let mut out = Squeezed::new(new, Some(bytes), out)?;
     if !new.kind.one_file() {
         return write_tar(items, new.keep, tally, out);
     }
@@ -1466,6 +1509,8 @@ enum Coder {
     Gzip(Box<DeflateMt>),
     Xz(Box<Stream>),
     Zstd(Box<hivepack::zstd::CCtx>),
+    /// In frames of 32 MiB each, compressed in threads, and their seek table.
+    ZstdFrames(Box<hivepack::zstd::CompressFrames>),
     /// In streams of a block each, one after another, which `bzip2 -d`
     /// reads as one and packwing reads a stream in each thread.
     Bzip2(Box<hivepack::bzip2::CompressMt>),
@@ -1487,8 +1532,19 @@ fn threads() -> u32 {
     crate::threads().count()
 }
 
+/// The frames of `new`'s zstd, at its level, with a checksum each.
+fn frames_options(new: &NewArchive) -> hivepack::zstd::FramesOptions {
+    hivepack::zstd::FramesOptions {
+        level: new.level.zstd(),
+        checksum: true,
+        ..hivepack::zstd::FramesOptions::default()
+    }
+}
+
 impl<W: Write> Squeezed<W> {
-    pub(crate) fn new(new: &NewArchive, out: W) -> Result<Squeezed<W>, Error> {
+    /// A stream of `new`'s kind into `out`, of `bytes` if they are known: as
+    /// [`Frames::several`] says of them, in frames.
+    pub(crate) fn new(new: &NewArchive, bytes: Option<u64>, out: W) -> Result<Squeezed<W>, Error> {
         let failed = |e: String| Error::Failed(tr!("Could not start compressing: {e}", e = e));
         let mut held = None;
         let coder = match new.kind {
@@ -1538,6 +1594,21 @@ impl<W: Write> Squeezed<W> {
                 held = Some(holds);
                 Coder::Xz(Box::new(
                     Stream::stream_encoder_mt(&options).map_err(|e| failed(e.to_string()))?,
+                ))
+            }
+            Kind::TarZst | Kind::Zst if new.frames.several(bytes) => {
+                let mut options = frames_options(new);
+                // As many threads as the memory there is takes: each holds a
+                // frame and what it compresses to, and a context.
+                let (threads, holds) = crate::memory::hold_threads(threads(), |n| {
+                    options.memory_usage(n).unwrap_or(0)
+                });
+                options.threads = hivepack::Threads::of(threads);
+                options.memory_limit = holds.bytes();
+                held = Some(holds);
+                Coder::ZstdFrames(Box::new(
+                    hivepack::zstd::CompressFrames::new(&options)
+                        .map_err(|e| failed(e.to_string()))?,
                 ))
             }
             Kind::TarZst | Kind::Zst => {
@@ -1657,6 +1728,22 @@ impl<W: Write> Squeezed<W> {
                     let done =
                         status == Status::StreamEnd || (!finish && at == input.len() && !full);
                     (made, done)
+                }
+                Coder::ZstdFrames(frames) => {
+                    use hivepack::zstd::{EndDirective, InBuffer, OutBuffer};
+                    let mut output = OutBuffer::new(&mut self.buf);
+                    let mut from = InBuffer::new(&input[at..]);
+                    let directive = if finish {
+                        EndDirective::End
+                    } else {
+                        EndDirective::Continue
+                    };
+                    let left = frames
+                        .compress_stream(&mut output, &mut from, directive)
+                        .map_err(|e| failed(e.to_string()))?;
+                    at += from.pos;
+                    let done = if finish { left == 0 } else { at == input.len() };
+                    (output.pos, done)
                 }
                 Coder::Zstd(cctx) => {
                     use hivepack::zstd::{EndDirective, InBuffer, OutBuffer};

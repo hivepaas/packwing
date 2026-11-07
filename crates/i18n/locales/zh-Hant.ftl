@@ -268,6 +268,12 @@ t2e9c9e78 = 不壓縮
 # {name} compression
 te2db10f6 = { $name } 壓縮
 
+# Several frames
+t84cc41f7 = 多幀
+
+# One frame
+tc6ef759e = 單幀
+
 # Parts of 25 MB
 ta999efe2 = 每份 25 MB
 
@@ -360,6 +366,15 @@ t076ef350 = 僅儲存會原樣放入檔案：建立最快，體積最大。
 
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = 等級越高，封存檔越小，建立時間越長，但開啟時間不變。
+
+# Frames
+tf03e266f = 幀
+
+# Several frames open on every core, and make the archive a little larger: under half a percent.
+tf461cde7 = 多幀可在所有核心上開啟，封存檔會稍大一些：不到百分之零點五。
+
+# One frame makes the smallest archive, which opens on one core.
+ta097b317 = 單幀產生最小的封存檔，只在一個核心上開啟。
 
 # Split into parts
 tca4436bd = 分割成多個部分

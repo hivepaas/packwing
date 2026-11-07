@@ -270,6 +270,12 @@ t2e9c9e78 = Sem compressão
 # {name} compression
 te2db10f6 = Compactação { $name }
 
+# Several frames
+t84cc41f7 = Vários quadros
+
+# One frame
+tc6ef759e = Um quadro
+
 # Parts of 25 MB
 ta999efe2 = Partes de 25 MB
 
@@ -362,6 +368,15 @@ t076ef350 = Armazenar coloca os arquivos como estão: o mais rápido de criar, e
 
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = Um nível mais alto gera um arquivo menor, que leva mais tempo para criar, não para abrir.
+
+# Frames
+tf03e266f = Quadros
+
+# Several frames open on every core, and make the archive a little larger: under half a percent.
+tf461cde7 = Vários quadros abrem em todos os núcleos e deixam o arquivo compactado um pouco maior: menos de meio por cento.
+
+# One frame makes the smallest archive, which opens on one core.
+ta097b317 = Um quadro gera o arquivo compactado menor, que abre em um só núcleo.
 
 # Split into parts
 tca4436bd = Dividir em partes
