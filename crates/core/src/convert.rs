@@ -74,12 +74,15 @@ pub fn convert(
     // At a level whose one thread the memory there is takes.
     let new = &crate::create::within_memory(new);
     let source: Source = source.into();
+    // What it holds is not known before it is read: at least what the archive
+    // comes to, as a rule, which is enough to tell several frames from one.
+    let bytes = source.size().ok();
     let filter_given = !filter.is_everything();
     let mut summary = None;
     let (made, files) = write_new(wanted, new, |out| {
         let read =
             |new: &NewArchive, to: &mut dyn WriteSeek, recipients: Option<Vec<BoxedRecipient>>| {
-                let format = Format::open(new, to, recipients)?;
+                let format = Format::open(new, bytes, to, recipients)?;
                 let mut taker = Converter {
                     format,
                     new,
@@ -213,6 +216,7 @@ enum Format<'a> {
 impl<'a> Format<'a> {
     fn open(
         new: &NewArchive,
+        bytes: Option<u64>,
         out: &'a mut dyn WriteSeek,
         recipients: Option<Vec<BoxedRecipient>>,
     ) -> Result<Format<'a>, Error> {
@@ -241,9 +245,10 @@ impl<'a> Format<'a> {
                     _held: held,
                 }
             }
-            kind if kind.one_file() => Format::One(Squeezed::new(new, sealed(out)?)?, false),
+            kind if kind.one_file() => Format::One(Squeezed::new(new, bytes, sealed(out)?)?, false),
             _ => Format::Tar(hivepack::tar::Writer::new(Squeezed::new(
                 new,
+                bytes,
                 sealed(out)?,
             )?)),
         })

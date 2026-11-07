@@ -270,6 +270,12 @@ t2e9c9e78 = Nessuna compressione
 # {name} compression
 te2db10f6 = Compressione { $name }
 
+# Several frames
+t84cc41f7 = Più frame
+
+# One frame
+tc6ef759e = Un frame
+
 # Parts of 25 MB
 ta999efe2 = Parti da 25 MB
 
@@ -362,6 +368,15 @@ t076ef350 = Archivia inserisce i file così come sono: il più rapido da creare,
 
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = Più è alto, più l'archivio è piccolo e più tempo richiede crearlo, non aprirlo.
+
+# Frames
+tf03e266f = Frame
+
+# Several frames open on every core, and make the archive a little larger: under half a percent.
+tf461cde7 = Più frame si aprono su ogni core e rendono l’archivio un po’ più grande: meno dello 0,5%.
+
+# One frame makes the smallest archive, which opens on one core.
+ta097b317 = Un frame dà l’archivio più piccolo, che si apre su un solo core.
 
 # Split into parts
 tca4436bd = Dividi in parti

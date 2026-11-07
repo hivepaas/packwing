@@ -270,6 +270,12 @@ t2e9c9e78 = Aucune compression
 # {name} compression
 te2db10f6 = Compression { $name }
 
+# Several frames
+t84cc41f7 = Plusieurs trames
+
+# One frame
+tc6ef759e = Une trame
+
 # Parts of 25 MB
 ta999efe2 = Volumes de 25 Mo
 
@@ -362,6 +368,15 @@ t076ef350 = Stocker met les fichiers tels quels : le plus rapide à créer, et l
 
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = Plus il est élevé, plus l'archive est petite, et plus elle est longue à créer, mais pas à ouvrir.
+
+# Frames
+tf03e266f = Trames
+
+# Several frames open on every core, and make the archive a little larger: under half a percent.
+tf461cde7 = Plusieurs trames s’ouvrent sur tous les cœurs et rendent l’archive un peu plus grande : de moins d’un demi pour cent.
+
+# One frame makes the smallest archive, which opens on one core.
+ta097b317 = Une trame donne l’archive la plus petite, qui s’ouvre sur un seul cœur.
 
 # Split into parts
 tca4436bd = Découper en volumes

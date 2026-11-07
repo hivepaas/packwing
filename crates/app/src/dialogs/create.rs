@@ -14,7 +14,7 @@ use gpui::{
     ScrollHandle, Stateful, Subscription, Task, UniformListScrollHandle, Window, div, prelude::*,
     relative, rgb,
 };
-use packwing_core::{Keep, Kind, NewArchive, Route, Source};
+use packwing_core::{Frames, Keep, Kind, NewArchive, Route, Source};
 
 pub(crate) use packwing_core::Level;
 
@@ -277,7 +277,7 @@ struct KeysFile {
 }
 
 /// A format and level, and what was said of the memory they take.
-type MemorySaid = ((Kind, Level), Option<String>);
+type MemorySaid = ((Kind, Level, Frames), Option<String>);
 
 pub struct CreateDialog {
     selection: Selection,
@@ -306,6 +306,8 @@ pub struct CreateDialog {
     name: Entity<TextInput>,
     format: Entity<Select>,
     level: Level,
+    /// How a zstd stream is cut, if the user chose: as its size says if not.
+    frames: Option<Frames>,
     advanced: bool,
     split: Entity<Select>,
     part: Entity<TextInput>,
@@ -429,6 +431,7 @@ impl CreateDialog {
             name,
             format,
             level: kept.level,
+            frames: None,
             // What has to be typed is not hidden.
             advanced: crate::managed::policy(cx).requires_encryption(),
             split,
@@ -478,6 +481,23 @@ impl CreateDialog {
             Some((storages, _)) => places::open_place(&self.places, i, storages, cx),
             None => self.places.get(i).cloned(),
         }
+    }
+
+    /// Chooses several zstd frames, or one, as a user would.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn choose_frames(&mut self, several: bool, cx: &mut Context<Self>) {
+        self.frames = Some(if several {
+            Frames::Several
+        } else {
+            Frames::One
+        });
+        cx.notify();
+    }
+
+    /// How the archive would be cut into frames, for tests.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn frames_chosen(&self, cx: &App) -> Frames {
+        self.frames(cx)
     }
 
     #[cfg(all(test, feature = "test-hooks"))]
@@ -815,6 +835,28 @@ impl CreateDialog {
         }
     }
 
+    /// Whether the choice of frames is shown: for zstd, of more than a frame.
+    fn frames_shown(&self, cx: &App) -> bool {
+        matches!(self.format(cx).kind(), Kind::TarZst | Kind::Zst)
+            && self.selection.bytes > packwing_core::FRAME_SIZE
+    }
+
+    /// Whether the frames shown are several: as chosen, or as the size says.
+    fn several_frames(&self) -> bool {
+        self.frames
+            .unwrap_or_default()
+            .several(Some(self.selection.bytes))
+    }
+
+    /// How it is cut into frames: as chosen where the choice is shown, as the
+    /// size says otherwise, which is then counted again.
+    fn frames(&self, cx: &App) -> Frames {
+        match self.frames {
+            Some(frames) if self.frames_shown(cx) => frames,
+            _ => Frames::Auto,
+        }
+    }
+
     /// Whether what it is protected with is age: always, but for a ZIP or 7z
     /// archive left to its own AES-256.
     fn with_age(&self, cx: &App) -> bool {
@@ -923,7 +965,7 @@ impl CreateDialog {
     /// one thread takes more than is free: measured again only when they
     /// change.
     fn memory_warning(&self, cx: &App) -> Option<String> {
-        let chosen = (self.format(cx).kind(), self.level(cx));
+        let chosen = (self.format(cx).kind(), self.level(cx), self.frames(cx));
         let mut said = self.memory_said.borrow_mut();
         if let Some((was, warning)) = said.as_ref()
             && *was == chosen
@@ -933,6 +975,7 @@ impl CreateDialog {
         let warning = packwing_core::memory_warning(&NewArchive {
             kind: chosen.0,
             level: chosen.1,
+            frames: chosen.2,
             ..NewArchive::default()
         });
         *said = Some((chosen, warning.clone()));
@@ -1037,6 +1080,7 @@ impl CreateDialog {
                 skip_mac_files: crate::prefs::prefs(cx).skip_mac_files,
                 part_size: self.parts(cx),
                 stream_above: Some(crate::prefs::prefs(cx).stream_above),
+                frames: self.frames(cx),
                 keep: self.kept(cx),
                 times: Default::default(),
             },
@@ -1066,6 +1110,17 @@ impl CreateDialog {
             Level::Medium => {}
             Level::Store => said.push(tr!("No compression")),
             level => said.push(tr!("{name} compression", name = level_name(level))),
+        }
+        // The frames, if chosen other than the size says.
+        if let Some(chosen) = self.frames
+            && self.frames_shown(cx)
+            && (chosen == Frames::Several) != Frames::Auto.several(Some(self.selection.bytes))
+        {
+            said.push(if chosen == Frames::Several {
+                tr!("Several frames")
+            } else {
+                tr!("One frame")
+            });
         }
         match self.split.read(cx).chosen() {
             0 => {}
@@ -1492,6 +1547,18 @@ impl CreateDialog {
                     },
                 ))
             });
+        let several = self.several_frames();
+        let frames = [(true, "frames-several"), (false, "frames-one")].map(|(many, id)| {
+            let label = if many {
+                tr!("Several frames")
+            } else {
+                tr!("One frame")
+            };
+            segment(id, label, many == several).on_click(cx.listener(move |this, _, _, cx| {
+                this.frames = Some(if many { Frames::Several } else { Frames::One });
+                cx.notify();
+            }))
+        });
         let custom = self.custom_split(cx);
         let typed = !self.part.read(cx).text().trim().is_empty();
         let bad_part = custom && self.part_size(cx).is_none() && (typed || self.checked);
@@ -1532,6 +1599,29 @@ impl CreateDialog {
                         )
                     }),
             )
+            .when(self.frames_shown(cx), |d| {
+                d.child(
+                    div()
+                        .debug_selector(|| "frames".into())
+                        .flex()
+                        .flex_col()
+                        .gap(ui(6.))
+                        .child(
+                            div()
+                                .text_size(ui(13.))
+                                .font_weight(FontWeight::SEMIBOLD)
+                                .child(tr!("Frames")),
+                        )
+                        .child(segments(frames))
+                        .child(div().text_size(ui(13.)).text_color(rgb(c.muted)).child(
+                            if several {
+                                tr!("Several frames open on every core, and make the archive a little larger: under half a percent.")
+                            } else {
+                                tr!("One frame makes the smallest archive, which opens on one core.")
+                            },
+                        )),
+                )
+            })
             .child(
                 div()
                     .flex()

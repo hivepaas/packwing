@@ -333,6 +333,10 @@ pub struct Making {
     /// Cut it into parts of this size, as 25MB.
     #[arg(long, value_name = "SIZE")]
     pub split: Option<String>,
+    /// zst and tar.zst: one frame, the smallest, or several of 32 MiB each,
+    /// which open on every core. Several from 256 MiB of files by default.
+    #[arg(long, value_name = "one|several")]
+    pub frames: Option<String>,
     /// Compress pictures, video, sound and archives too, not only store them.
     #[arg(long)]
     pub compress_all: bool,
