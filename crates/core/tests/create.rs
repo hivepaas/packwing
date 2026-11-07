@@ -3113,18 +3113,23 @@ fn gzip_goes_in_blocks_compressed_in_threads() {
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 #[test]
 fn owners_come_back_when_asked() {
-    use nix::unistd::{Gid, Group, getgroups};
+    use nix::unistd::{Gid, Group};
     use packwing_core::Owners;
     use std::os::unix::fs::MetadataExt;
     let s = Scratch::new("owners-back");
     let file = s.path("f");
     fs::write(&file, "x").unwrap();
     let mine = fs::metadata(&file).unwrap();
-    // Another of the user's groups, which a file extracted is not given unasked.
-    let Some(other) = getgroups()
-        .unwrap_or_default()
-        .into_iter()
-        .map(Gid::as_raw)
+    // Another of the user's groups, which a file extracted is not given unasked:
+    // as `id -G` says them, since nix has no getgroups on macOS.
+    let groups = Command::new("id")
+        .arg("-G")
+        .output()
+        .map(|o| String::from_utf8_lossy(&o.stdout).into_owned())
+        .unwrap_or_default();
+    let Some(other) = groups
+        .split_whitespace()
+        .filter_map(|g| g.parse::<u32>().ok())
         .find(|&g| g != mine.gid() && Group::from_gid(Gid::from_raw(g)).is_ok_and(|g| g.is_some()))
     else {
         eprintln!("skipping: the user has one group");
