@@ -29,7 +29,7 @@ use hivepack::age::{
     BoxedRecipient, RandomSource, Recipient, ScryptRecipient, parse_recipient,
     parse_recipients_file,
 };
-use hivepack::deflate::{DEF_MEM_LEVEL, Deflate, Flush, Z_DEFAULT_STRATEGY};
+use hivepack::deflate::{DeflateMt, Flush};
 use hivepack::extract::{NameRules, Progress, check_name_for};
 use hivepack::open::Container;
 use hivepack::xz::{MtOptions, Stream, stream_encoder_mt_memusage};
@@ -852,7 +852,16 @@ pub fn memory_needed(new: &NewArchive) -> u64 {
         .memory_usage(1)
         .unwrap_or(0),
         Kind::Zip => ZIP_THREAD_MEMORY,
+        Kind::TarGz | Kind::Gz => gzip_options(new).memory_usage(1).unwrap_or(0),
         _ => 0,
+    }
+}
+
+/// `new`'s gzip, at its level, in one thread.
+fn gzip_options(new: &NewArchive) -> hivepack::deflate::MtOptions {
+    hivepack::deflate::MtOptions {
+        level: new.level.deflate() as i32,
+        ..hivepack::deflate::MtOptions::default()
     }
 }
 
@@ -1451,7 +1460,9 @@ pub(crate) const PIECE: usize = 1 << 16;
 enum Coder {
     /// Written as it is.
     Plain,
-    Gzip(Box<Deflate>),
+    /// In blocks compressed in threads, as pigz writes them: one stream,
+    /// the same whatever the threads.
+    Gzip(Box<DeflateMt>),
     Xz(Box<Stream>),
     Zstd(Box<hivepack::zstd::CCtx>),
     /// In streams of a block each, one after another, which `bzip2 -d`
@@ -1549,16 +1560,18 @@ impl<W: Write> Squeezed<W> {
                 held = Some(holds);
                 Coder::Zstd(Box::new(cctx))
             }
-            // 16 more than the window's 15 asks for gzip's header and end.
-            _ => Coder::Gzip(Box::new(
-                Deflate::new(
-                    new.level.deflate() as i32,
-                    15 + 16,
-                    DEF_MEM_LEVEL,
-                    Z_DEFAULT_STRATEGY,
-                )
-                .map_err(|e| failed(e.to_string()))?,
-            )),
+            _ => {
+                let mut options = gzip_options(new);
+                let (threads, holds) = crate::memory::hold_threads(threads(), |n| {
+                    options.memory_usage(n).unwrap_or(0)
+                });
+                options.threads = hivepack::Threads::of(threads);
+                options.memory_limit = holds.bytes();
+                held = Some(holds);
+                Coder::Gzip(Box::new(
+                    DeflateMt::new(&options).map_err(|e| failed(e.to_string()))?,
+                ))
+            }
         };
         Ok(Squeezed {
             out,
@@ -1620,17 +1633,12 @@ impl<W: Write> Squeezed<W> {
                     } else {
                         Flush::NoFlush
                     };
-                    let status = stream.deflate(&mut output, &mut from, flush);
+                    // It reads all of the input, or fills the output.
+                    let status = stream
+                        .deflate(&mut output, &mut from, flush)
+                        .map_err(|e| failed(e.to_string()))?;
                     at += from.pos;
                     let (made, full) = (output.pos, output.pos == output.dst.len());
-                    let status = match status {
-                        Ok(status) => status,
-                        // Nothing to do: no more input, and nothing held back.
-                        Err(e) if !finish && e.code() == hivepack::deflate::ErrorCode::Buf => {
-                            Status::Ok
-                        }
-                        Err(e) => return Err(failed(e.to_string())),
-                    };
                     let done =
                         status == Status::StreamEnd || (!finish && at == input.len() && !full);
                     (made, done)
