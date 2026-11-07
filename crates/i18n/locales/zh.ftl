@@ -1600,6 +1600,15 @@ t93ff7715 = 用密码隐藏文件名
 # For 7z: nobody sees what is inside without it
 t0f5354d7 = 适用于 7z：没有密码就看不到里面有什么
 
+# Yours
+t2635ea3b = 你的
+
+# By name
+t983e37f7 = 按名称
+
+# By number
+tcbbada8d = 按编号
+
 # No limit
 t6de7f47d = 不限制
 
@@ -1641,6 +1650,18 @@ tf47f4968 = 仅接受所有系统都能使用的名称
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = Windows 无法使用的名称（如 a:b.txt）以及仅大小写不同的名称，在这台电脑上也会询问
+
+# Owners from a backup
+t38a7cf66 = 备份中的所有者
+
+# Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
+t46908bee = tar 归档有保留时：你的，或按名称或编号采用归档中的。只有管理员能把文件交给他人
+
+# Extended attributes from a backup
+t764eed3a = 备份中的扩展属性
+
+# Where a tar archive kept them, ACLs among them
+ta28f3ae5 = tar 归档有保留时，包括 ACL
 
 # Light
 t8ad2f8cf = 浅色

@@ -1600,6 +1600,15 @@ t93ff7715 = 以密碼隱藏檔名
 # For 7z: nobody sees what is inside without it
 t0f5354d7 = 適用於 7z：沒有密碼就看不到裡面的內容
 
+# Yours
+t2635ea3b = 你的
+
+# By name
+t983e37f7 = 依名稱
+
+# By number
+tcbbada8d = 依編號
+
 # No limit
 t6de7f47d = 不限制
 
@@ -1641,6 +1650,18 @@ tf47f4968 = 僅接受所有系統都能使用的名稱
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = Windows 無法使用的名稱（如 a:b.txt）以及僅大小寫不同的名稱，在這台電腦上也會詢問
+
+# Owners from a backup
+t38a7cf66 = 備份中的擁有者
+
+# Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
+t46908bee = tar 封存檔有保留時：你的，或依名稱或編號採用封存檔中的。只有管理員能把檔案交給他人
+
+# Extended attributes from a backup
+t764eed3a = 備份中的延伸屬性
+
+# Where a tar archive kept them, ACLs among them
+ta28f3ae5 = tar 封存檔有保留時，包括 ACL
 
 # Light
 t8ad2f8cf = 淺色
