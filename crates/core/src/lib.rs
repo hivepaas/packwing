@@ -48,10 +48,10 @@ pub use checksum::{
 };
 pub use convert::{Converted, convert};
 pub use create::{
-    COMPRESSED_EXTENSIONS, Keep, Kind, Level, Measured, NewArchive, OnExisting, Route, Times, add,
-    add_with, age_key_is_post_quantum, age_key_problem, age_keys_in, can_add, create, create_on,
-    delete, free_archive_path, measure, memory_needed, memory_warning, refused_by, rename, route,
-    within_memory,
+    COMPRESSED_EXTENSIONS, FRAME_SIZE, Frames, Keep, Kind, Level, Measured, NewArchive, OnExisting,
+    Route, SEVERAL_FRAMES_FROM, Times, add, add_with, age_key_is_post_quantum, age_key_problem,
+    age_keys_in, can_add, create, create_on, delete, free_archive_path, measure, memory_needed,
+    memory_warning, refused_by, rename, route, within_memory,
 };
 pub use filter::Filter;
 pub use hivepack::extract::{
@@ -507,10 +507,13 @@ where
         .identities(identities)
         .threads(threads())
         // bzip2's threads, about 20 MiB each, as many as the memory there
-        // is takes; xz's within its 1 GiB, as before.
+        // is takes; zstd's frames in flight, as many as it takes too, within
+        // hivepack's 1 GiB; xz's within its 1 GiB, as before.
         .limits({
             let mut limits = hivepack::open::Limits::default();
-            limits.bzip2_memlimit = memory::budget();
+            let budget = memory::budget();
+            limits.bzip2_memlimit = budget;
+            limits.zstd_memlimit = limits.zstd_memlimit.min(budget);
             limits
         })
 }

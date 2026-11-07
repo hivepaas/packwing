@@ -537,8 +537,15 @@ pub(crate) fn extract_into(
     options.limits.max_entry_size = limit;
     options.limits.max_total_size = limit;
     options.select = select;
-    // ZIP's files written at once, and 7z's LZMA2 blocks decoded so.
+    // ZIP's and RAR's files written at once, 7z's folders and LZMA2 blocks
+    // decoded so, a solid RAR archive's Huffman blocks, a macOS package's
+    // payloads, and a tar or cpio archive's files written by threads as it is
+    // read. What they hold is counted from the shared budget once the archive
+    // says it: a RAR thread a window as large as its dictionary, a 7z thread
+    // its folder's decoders, tar's and cpio's the data handed to them; as
+    // many threads as fit, one always.
     options.threads = crate::threads();
+    options.memory_budget = Some(crate::memory::shared_budget());
     // A name in an old encoding is no reason to stop: the file comes out, its
     // name perhaps wrong. What the name then says is checked all the same.
     options.decode_names = Some(NameDecoder::lossy());

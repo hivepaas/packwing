@@ -94,6 +94,15 @@ pub fn budget() -> u64 {
     refreshed().left()
 }
 
+/// The budget itself, its bytes measured now, for a job that knows what its
+/// threads need only once it has started, and holds them from it then:
+/// extracting RAR, each thread with a window as large as the archive's
+/// dictionary, once its headers are read. What it holds is given back when
+/// the job ends, as with [`hold_threads`].
+pub fn shared_budget() -> Budget {
+    refreshed().clone()
+}
+
 /// The most threads, up to `wanted`, whose memory (`need` of their number)
 /// fits the [`budget`], and that memory, held until the job ends. One thread
 /// is always given, holding what it needs, even past the budget.

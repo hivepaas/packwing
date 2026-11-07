@@ -58,8 +58,9 @@ struct Output {
     #[arg(short, long, global = true)]
     quiet: bool,
     /// Compress and decompress in up to N threads, where the format allows it
-    /// (xz, bzip2, 7z, zstd as it compresses, ZIP as it extracts): 0 for as
-    /// many as the computer has. By default, as the app's Settings say, or 0.
+    /// (gzip, xz, bzip2, zstd, 7z and ZIP; RAR, tar and cpio as they extract;
+    /// macOS packages): 0 for as many as the computer has. By default, as the
+    /// app's Settings say, or 0.
     #[arg(short = 'T', long, global = true, value_name = "N")]
     threads: Option<u32>,
 }
@@ -335,6 +336,10 @@ pub struct Making {
     /// Cut it into parts of this size, as 25MB.
     #[arg(long, value_name = "SIZE")]
     pub split: Option<String>,
+    /// zst and tar.zst: one frame, the smallest, or several of 32 MiB each,
+    /// which open on every core. Several from 256 MiB of files by default.
+    #[arg(long, value_name = "one|several")]
+    pub frames: Option<String>,
     /// Compress pictures, video, sound and archives too, not only store them.
     #[arg(long)]
     pub compress_all: bool,

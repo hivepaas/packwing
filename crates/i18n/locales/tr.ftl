@@ -270,6 +270,12 @@ t2e9c9e78 = Sıkıştırma yok
 # {name} compression
 te2db10f6 = { $name } sıkıştırma
 
+# Several frames
+t84cc41f7 = Birkaç çerçeve
+
+# One frame
+tc6ef759e = Tek çerçeve
+
 # Parts of 25 MB
 ta999efe2 = 25 MB'lık parçalar
 
@@ -362,6 +368,15 @@ t076ef350 = Sakla dosyaları olduğu gibi koyar: en hızlı oluşturulan ve en b
 
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = Daha yüksek düzey daha küçük bir arşiv üretir; arşivin oluşması uzun sürer, açılması değil.
+
+# Frames
+tf03e266f = Çerçeveler
+
+# Several frames open on every core, and make the archive a little larger: under half a percent.
+tf461cde7 = Birkaç çerçeve her çekirdekte açılır ve arşivi biraz büyütür: yüzde yarımdan az.
+
+# One frame makes the smallest archive, which opens on one core.
+ta097b317 = Tek çerçeve en küçük arşivi verir; tek çekirdekte açılır.
 
 # Split into parts
 tca4436bd = Parçalara böl
