@@ -649,6 +649,9 @@ t73aeedd4 = dilewati
 # renamed {to}
 t7aa9b778 = diganti nama menjadi { $to }
 
+# It was gone by the time it was read.
+t93fb1e03 = Berkas sudah tidak ada saat akan dibaca.
+
 # The job stopped before it was done.
 t57a78885 = Pekerjaan berhenti sebelum selesai.
 
@@ -840,6 +843,15 @@ tec751fa9 =
     { $n ->
        *[other] { $count } berkas diganti nama, karena namanya tidak bisa dipakai di sini.
     }
+
+# {count} file was gone by the time it was read, and left out. | {count} files were gone by the time they were read, and left out.
+ta9bd0a7d =
+    { $n ->
+       *[other] { $count } berkas sudah tidak ada saat akan dibaca, jadi dilewati.
+    }
+
+# The rest is in the archive.
+t977a5572 = Sisanya ada di arsip.
 
 # The rest was extracted.
 ta7833fcb = Sisanya sudah diekstrak.

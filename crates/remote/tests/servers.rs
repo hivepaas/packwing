@@ -112,6 +112,7 @@ fn none() -> Control {
         on_damaged: None,
         on_unnamable: None,
         on_links_outside: None,
+        on_gone: None,
     }
 }
 
@@ -590,6 +591,7 @@ fn stopped_on_its_way_straight_it_leaves_nothing_on_the_server() {
             on_damaged: None,
             on_unnamable: None,
             on_links_outside: None,
+            on_gone: None,
         };
         let how = NewArchive {
             kind: Kind::TarZst,

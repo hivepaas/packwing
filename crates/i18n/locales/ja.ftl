@@ -649,6 +649,9 @@ t73aeedd4 = 除外しました
 # renamed {to}
 t7aa9b778 = { $to } に名前を変更
 
+# It was gone by the time it was read.
+t93fb1e03 = 読み込もうとした時点で、すでに存在しませんでした。
+
 # The job stopped before it was done.
 t57a78885 = ジョブが完了する前に止まりました。
 
@@ -840,6 +843,15 @@ tec751fa9 =
     { $n ->
        *[other] { $count } 個のファイルは、名前がここで使えないため名前を変更しました。
     }
+
+# {count} file was gone by the time it was read, and left out. | {count} files were gone by the time they were read, and left out.
+ta9bd0a7d =
+    { $n ->
+       *[other] { $count } 個のファイルは読み込む時点で存在しなかったため、除外しました。
+    }
+
+# The rest is in the archive.
+t977a5572 = 残りはアーカイブに入っています。
 
 # The rest was extracted.
 ta7833fcb = 残りは展開しました。

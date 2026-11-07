@@ -57,8 +57,8 @@ pub use filter::Filter;
 pub use hivepack::extract::{Cancel, OnDamaged, OnLinksOutside, OnUnnamable, Progress, Summary};
 pub use hivepack::open::{Container, Layer};
 pub use job::{
-    BadName, Control, Damage, DamagedFn, ExtractOptions, LinksOutsideFn, OutsideLink, Renaming,
-    UnnamableFn, clean_opened_files, damages, extract, extract_selected, extract_to_open,
+    BadName, Control, Damage, DamagedFn, ExtractOptions, GoneFn, LinksOutsideFn, OutsideLink,
+    Renaming, UnnamableFn, clean_opened_files, damages, extract, extract_selected, extract_to_open,
     extract_with, image_fits, left_out, read_entry, renamings, test,
 };
 pub use listing::{Child, Entry, Found, Link, Listen, Listing, list, list_as_read};
