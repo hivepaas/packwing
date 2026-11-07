@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 90] = [
+const SCREENS: [(&str, SetUp); 91] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -415,6 +415,13 @@ const SCREENS: [(&str, SetUp); 90] = [
     ("create-advanced", |ws, window, cx| {
         ws.open_create_sample(window, cx)
             .update(cx, |d, cx| d.show_advanced(cx));
+    }),
+    ("create-frames", |ws, window, cx| {
+        ws.open_create_sample(window, cx).update(cx, |d, cx| {
+            d.choose_format(crate::dialogs::Format::TarZst, cx);
+            d.set_counted(600 << 20, cx);
+            d.show_advanced(cx);
+        });
     }),
     ("create-7z", |ws, window, cx| {
         ws.open_create_sample(window, cx).update(cx, |d, cx| {

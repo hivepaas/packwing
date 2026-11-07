@@ -340,6 +340,21 @@ t076ef350 = Simpan memasukkan file apa adanya: paling cepat dibuat, dan paling b
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = Makin tinggi, arsip makin kecil, dan makin lama dibuat, bukan dibuka.
 
+# Frames
+tf03e266f = Frame
+
+# Several frames
+t84cc41f7 = Beberapa frame
+
+# One frame
+tc6ef759e = Satu frame
+
+# Several frames open on every core, and make the archive a little larger: under half a percent.
+tf461cde7 = Beberapa frame dibuka di setiap inti, dan membuat arsip sedikit lebih besar: kurang dari setengah persen.
+
+# One frame makes the smallest archive, which opens on one core.
+ta097b317 = Satu frame menghasilkan arsip terkecil, yang dibuka di satu inti.
+
 # Split into parts
 tca4436bd = Pecah menjadi bagian
 

@@ -340,6 +340,21 @@ t076ef350 = 저장만은 파일을 그대로 넣습니다. 만들기는 가장 �
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = 높을수록 압축 파일이 작아지며, 만드는 시간이 길어지지만 여는 시간은 그대로입니다.
 
+# Frames
+tf03e266f = 프레임
+
+# Several frames
+t84cc41f7 = 여러 프레임
+
+# One frame
+tc6ef759e = 한 프레임
+
+# Several frames open on every core, and make the archive a little larger: under half a percent.
+tf461cde7 = 여러 프레임은 모든 코어에서 열리며, 압축 파일이 조금 커집니다: 0.5% 미만.
+
+# One frame makes the smallest archive, which opens on one core.
+ta097b317 = 한 프레임은 가장 작은 압축 파일을 만들며, 하나의 코어에서 열립니다.
+
 # Split into parts
 tca4436bd = 분할
 

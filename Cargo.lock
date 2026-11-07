@@ -3346,8 +3346,7 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 [[package]]
 name = "hivepack"
 version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1f036ce2a4c12f047cf12ec8b6a281b4334e5be885cb3affaf87388e558d679"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=105ee456a091747e49cbb2ecf6fc7c483b30bf5c#105ee456a091747e49cbb2ecf6fc7c483b30bf5c"
 dependencies = [
  "aes 0.9.3",
  "blake2s_simd",
@@ -3362,6 +3361,7 @@ dependencies = [
  "libc",
  "md-5 0.11.0",
  "ml-dsa",
+ "nix",
  "pbkdf2 0.13.0",
  "rand_core 0.10.1",
  "rustix",

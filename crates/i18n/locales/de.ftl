@@ -342,6 +342,21 @@ t076ef350 = Speichern legt die Dateien unverändert ab: am schnellsten erstellt 
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = Höher ergibt ein kleineres Archiv, dessen Erstellung länger dauert, nicht das Öffnen.
 
+# Frames
+tf03e266f = Frames
+
+# Several frames
+t84cc41f7 = Mehrere Frames
+
+# One frame
+tc6ef759e = Ein Frame
+
+# Several frames open on every core, and make the archive a little larger: under half a percent.
+tf461cde7 = Mehrere Frames öffnen sich auf jedem Kern und machen das Archiv etwas größer: um weniger als ein halbes Prozent.
+
+# One frame makes the smallest archive, which opens on one core.
+ta097b317 = Ein Frame ergibt das kleinste Archiv, das sich auf einem Kern öffnet.
+
 # Split into parts
 tca4436bd = In Teile aufteilen
 

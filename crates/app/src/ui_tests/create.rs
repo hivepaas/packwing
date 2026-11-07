@@ -412,3 +412,34 @@ scenario!(
         assert_eq!(listed(&work.join("a.7z"), None), ["a.txt"]);
     }
 );
+
+scenario!(
+    /// A .tar.zst of more than a frame offers frames: one for under 256 MiB, as
+    /// the size says, and several when chosen, which end in a seek table.
+    zstd_frames_are_offered_and_chosen,
+    |ui| {
+        let small = vec![ui.file("a.txt", "a")];
+        ui.ws(|ws, window, cx| ws.open_create(small, window, cx));
+        ui.wait_for("create");
+        ui.click("advanced");
+        ui.choose("format", ".tar.zst");
+        assert!(!ui.shows("frames"), "a file of a byte has one frame");
+        ui.click("cancel");
+
+        let big = ui.work.join("big.bin");
+        std::fs::write(&big, vec![7u8; 40 << 20]).expect("the big file");
+        ui.ws(|ws, window, cx| ws.open_create(vec![big], window, cx));
+        ui.wait_for("create");
+        ui.click("advanced");
+        ui.choose("format", ".tar.zst");
+        // Once the files are counted, it is shown.
+        ui.wait_for("frames");
+        ui.click("frames-several");
+        ui.click("create");
+        ui.wait_for_no_dialog();
+        let made = made(ui, ".tar.zst");
+        let bytes = std::fs::read(&made).expect("the archive");
+        assert!(bytes.ends_with(&0x8F92_EAB1u32.to_le_bytes()), "a seek table");
+        assert_eq!(listed(&made, None), ["big.bin"]);
+    }
+);

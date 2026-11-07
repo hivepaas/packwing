@@ -340,6 +340,21 @@ t076ef350 = 仅存储会原样放入文件：创建最快，体积最大。
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = 级别越高，压缩包越小，但生成时间更长，打开时间不变。
 
+# Frames
+tf03e266f = 帧
+
+# Several frames
+t84cc41f7 = 多帧
+
+# One frame
+tc6ef759e = 单帧
+
+# Several frames open on every core, and make the archive a little larger: under half a percent.
+tf461cde7 = 多帧可在所有核心上打开，压缩包会稍大一些：不到百分之零点五。
+
+# One frame makes the smallest archive, which opens on one core.
+ta097b317 = 单帧生成最小的压缩包，只在一个核心上打开。
+
 # Split into parts
 tca4436bd = 分卷
 

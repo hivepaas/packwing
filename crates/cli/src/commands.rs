@@ -4,11 +4,11 @@ use std::io::Write as _;
 use std::path::{Path, PathBuf};
 
 use packwing_core::{
-    Algorithm, COMPRESSED_EXTENSIONS, Entry, ExtractOptions, Filter, Kind, Listing, LocalFolder,
-    NewArchive, OnExisting, Source, Transfer, add_with, algorithms_of, came_from_internet,
-    checksum_line, checksums, convert, create, damages, delete, extract_selected, extract_with,
-    has_signature, join_parts, left_out, list, read_entry, rename, renamings, save_checksum,
-    signature_name, size, split_file, stem, test, transfer,
+    Algorithm, COMPRESSED_EXTENSIONS, Entry, ExtractOptions, Filter, Frames, Kind, Listing,
+    LocalFolder, NewArchive, OnExisting, Source, Transfer, add_with, algorithms_of,
+    came_from_internet, checksum_line, checksums, convert, create, damages, delete,
+    extract_selected, extract_with, has_signature, join_parts, left_out, list, read_entry, rename,
+    renamings, save_checksum, signature_name, size, split_file, stem, test, transfer,
 };
 use serde_json::{Value, json};
 
@@ -450,9 +450,11 @@ fn making(archive: &Path, m: Making, cx: &Context) -> Result<(PathBuf, NewArchiv
         .as_deref()
         .map(|s| size_typed(s).ok_or_else(|| Exit::Usage(format!("not a size: {s} (as 25MB)"))))
         .transpose()?;
+    let frames = frames_named(m.frames.as_deref(), kind)?;
     let new = NewArchive {
         kind,
         level,
+        frames,
         password,
         age_keys: m.encrypt_to,
         whole_with_age: m.age,
@@ -488,6 +490,24 @@ fn making(archive: &Path, m: Making, cx: &Context) -> Result<(PathBuf, NewArchiv
         eprintln!("pkw: {warning}");
     }
     Ok((archive, new))
+}
+
+/// How `--frames` cuts a zstd stream: as the size says if it is not given, and
+/// only for a format of zstd's.
+fn frames_named(word: Option<&str>, kind: Kind) -> Result<Frames, Exit> {
+    let Some(word) = word else {
+        return Ok(Frames::Auto);
+    };
+    if !matches!(kind, Kind::TarZst | Kind::Zst) {
+        return Err(Exit::Usage(
+            "--frames is for zst and tar.zst, which are cut into frames".into(),
+        ));
+    }
+    match word.to_ascii_lowercase().as_str() {
+        "one" | "1" => Ok(Frames::One),
+        "several" | "many" => Ok(Frames::Several),
+        _ => Err(Exit::Usage(format!("no --frames {word}: one or several"))),
+    }
 }
 
 /// Makes the archive `new` at `archive`, of `paths`, and says what it made.

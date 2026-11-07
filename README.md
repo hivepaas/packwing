@@ -6,7 +6,7 @@ Built in Rust on [hivepack](https://github.com/hivepaas/hivepack-rs).
 
 ## 🌟 Key Features
 
-* **Every core at work:** ZIP, 7z, `.tar.xz`, `.tar.zst` and `.tar.bz2` are compressed on all of the computer's cores at once, and what is written in pieces (by packwing, `xz -T`, pbzip2 or 7-Zip) is read on all of them too; a ZIP archive's files are extracted several at once. The archive is the same, byte for byte, however many cores made it. The threads take no more than half of the memory free, so a big job never runs the computer out of memory, and Settings › General, or `pkw --threads N`, sets how many.
+* **Every core at work:** ZIP, 7z, `.tar.xz`, `.tar.zst` and `.tar.bz2` are compressed on all of the computer's cores at once, and what is written in pieces (by packwing, `xz -T`, pbzip2 or 7-Zip) is read on all of them too; a ZIP archive's files are extracted several at once. A `.tar.zst` of 256 MiB or more goes in frames of 32 MiB, which every core opens at once, with zstd's seek table at the end; New archive and `pkw --frames` choose one frame, the smallest, or several. The archive is the same, byte for byte, however many cores made it. The threads take no more than half of the memory free, so a big job never runs the computer out of memory, and Settings › General, or `pkw --threads N`, sets how many.
 * **Safe by default:** nothing is written outside the destination folder or through links, archive bombs stop at a size limit, and an existing file is never written over unless you say so. A file opens as a copy in a temporary folder, after asking, and a program always asks.
 * **Opens what you come across:** ZIP (split archives too), RAR 1.4 to 7 (volumes too), 7z, tar, cpio, disc images (ISO 9660 and UDF), RPM packages and macOS packages, inside any of the layers around them: gzip, zstd, xz, bzip2 and more.
 * **Writes archives:** ZIP, 7z, `.tar.gz`, `.tar.xz` and `.tar.zst`, with five levels, AES-256 on ZIP and 7z (7z can hide the names too), and parts as 7-Zip cuts them.
@@ -82,6 +82,7 @@ pkw create site.tar.zst site/           # its format by its extension, or -f; -l
 pkw create -p --hide-names private.7z docs/      # with a password, asked; its names hidden
 pkw create notes.tar.zst docs/ --encrypt-to age1…  # encrypted to a key: notes.tar.zst.age
 pkw create --split 25MB mail.zip photos/          # in parts: mail.zip.001, .002…
+pkw create --frames one backup.tar.zst home/      # zstd in one frame, the smallest; several open on every core
 pkw add archive.zip new.txt --into docs  # and delete, rename: a ZIP archive, in place
 pkw split backup.iso --size 4GB         # into parts beside it, as 7-Zip cuts one: backup.iso.001, .002…
 pkw join backup.iso.001                 # back into backup.iso, the parts checked first

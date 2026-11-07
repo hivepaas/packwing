@@ -346,6 +346,21 @@ t076ef350 = «Без стиснення» кладе файли як є: най�
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = Вищий рівень дає менший архів, який довше створюється, але не довше відкривається.
 
+# Frames
+tf03e266f = Фрейми
+
+# Several frames
+t84cc41f7 = Кілька фреймів
+
+# One frame
+tc6ef759e = Один фрейм
+
+# Several frames open on every core, and make the archive a little larger: under half a percent.
+tf461cde7 = Кілька фреймів відкриваються на всіх ядрах і роблять архів трохи більшим: менш ніж на пів відсотка.
+
+# One frame makes the smallest archive, which opens on one core.
+ta097b317 = Один фрейм дає найменший архів, який відкривається на одному ядрі.
+
 # Split into parts
 tca4436bd = Ділити на частини
 

@@ -340,6 +340,21 @@ t076ef350 = Không nén đưa tệp vào nguyên trạng: tạo nhanh nhất, v�
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = Mức cao hơn cho tệp nén nhỏ hơn, tạo lâu hơn nhưng mở không chậm hơn.
 
+# Frames
+tf03e266f = Khung
+
+# Several frames
+t84cc41f7 = Nhiều khung
+
+# One frame
+tc6ef759e = Một khung
+
+# Several frames open on every core, and make the archive a little larger: under half a percent.
+tf461cde7 = Nhiều khung mở được trên mọi lõi, và làm tệp nén lớn hơn một chút: dưới nửa phần trăm.
+
+# One frame makes the smallest archive, which opens on one core.
+ta097b317 = Một khung cho tệp nén nhỏ nhất, mở trên một lõi.
+
 # Split into parts
 tca4436bd = Chia thành nhiều phần
 

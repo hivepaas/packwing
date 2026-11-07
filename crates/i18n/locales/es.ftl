@@ -342,6 +342,21 @@ t076ef350 = Almacenar guarda los archivos tal cual: lo más rápido de crear y l
 # Higher makes a smaller archive, which takes longer to make, not to open.
 t273a832f = Un nivel más alto da un archivo comprimido más pequeño, que tarda más en crearse, no en abrirse.
 
+# Frames
+tf03e266f = Tramas
+
+# Several frames
+t84cc41f7 = Varias tramas
+
+# One frame
+tc6ef759e = Una trama
+
+# Several frames open on every core, and make the archive a little larger: under half a percent.
+tf461cde7 = Varias tramas se abren en todos los núcleos y hacen el archivo comprimido un poco más grande: menos de medio por ciento.
+
+# One frame makes the smallest archive, which opens on one core.
+ta097b317 = Una trama da el archivo comprimido más pequeño, que se abre en un solo núcleo.
+
 # Split into parts
 tca4436bd = Dividir en partes
 

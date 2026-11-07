@@ -643,3 +643,26 @@ fn under_ulimit_a_level_too_large_is_lowered_and_said() {
         ok(&s.pkw(&["test", "-q", name]));
     }
 }
+
+/// `--frames several` writes a zstd stream in frames, with zstd's seek table at
+/// its end; one frame has none; and the option is for zstd alone.
+#[test]
+fn frames_are_chosen_for_zstd() {
+    let s = Scratch::new("frames");
+    let seek_table = |name: &str| {
+        let made = std::fs::read(s.path(name)).expect(name);
+        made.ends_with(&0x8F92_EAB1u32.to_le_bytes())
+    };
+    ok(&s.pkw(&["create", "-q", "--frames", "several", "a.tar.zst", "src"]));
+    assert!(seek_table("a.tar.zst"));
+    ok(&s.pkw(&["extract", "-q", "a.tar.zst", "-o", "a"]));
+    assert!(s.path("a/src/numbers.txt").is_file());
+    ok(&s.pkw(&["create", "-q", "--frames", "one", "b.tar.zst", "src"]));
+    assert!(!seek_table("b.tar.zst"));
+    // Small, it is one frame unless asked.
+    ok(&s.pkw(&["create", "-q", "c.tar.zst", "src"]));
+    assert!(!seek_table("c.tar.zst"));
+    let usage = |o: Output| assert_eq!(o.status.code(), Some(2), "{o:?}");
+    usage(s.pkw(&["create", "-q", "--frames", "several", "d.zip", "src"]));
+    usage(s.pkw(&["create", "-q", "--frames", "two", "d.tar.zst", "src"]));
+}
