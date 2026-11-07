@@ -397,6 +397,7 @@ fn extracts_with_progress() {
             on_damaged: None,
             on_unnamable: None,
             on_links_outside: None,
+            on_gone: None,
         };
         let summary = extract(&path, &out, &Keys::default(), &control).unwrap();
         assert_eq!(summary.files, 3, "{name}");
@@ -596,6 +597,7 @@ fn cancelled_before_it_starts() {
         on_damaged: None,
         on_unnamable: None,
         on_links_outside: None,
+        on_gone: None,
     };
     let out = s.0.join("out");
     assert!(matches!(
@@ -653,6 +655,7 @@ fn extracts_disc_images_with_progress() {
             on_damaged: None,
             on_unnamable: None,
             on_links_outside: None,
+            on_gone: None,
         };
         let summary = extract(&path, &out, &Keys::default(), &control).unwrap();
         assert_eq!(summary.files, 3, "{name}");
@@ -714,6 +717,7 @@ fn disc_images_cancelled_before_they_start() {
         on_damaged: None,
         on_unnamable: None,
         on_links_outside: None,
+        on_gone: None,
     };
     for (name, data, _, _) in images() {
         let path = s.file(name, &data);
@@ -769,6 +773,7 @@ fn extracts_and_tests_cpio_rpm_and_7z() {
             on_damaged: None,
             on_unnamable: None,
             on_links_outside: None,
+            on_gone: None,
         };
         let summary = extract(&path, &out, &Keys::default(), &control).unwrap();
         assert_eq!(summary.files, 3, "{name}");
@@ -942,6 +947,7 @@ fn cpio_and_7z_cancelled_before_they_start() {
         on_damaged: None,
         on_unnamable: None,
         on_links_outside: None,
+        on_gone: None,
     };
     for (name, data, _, _) in more_archives() {
         let path = s.file(name, &data);
@@ -1323,6 +1329,7 @@ fn stopping_a_rar_job_stops_it() {
         on_damaged: None,
         on_unnamable: None,
         on_links_outside: None,
+        on_gone: None,
     };
     assert!(matches!(
         test(&path, &Keys::default(), &control),

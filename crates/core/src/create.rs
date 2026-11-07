@@ -14,7 +14,6 @@
 
 use packwing_i18n::tr;
 use packwing_policy::{Method, Policy, Refused};
-use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::fs::{self, File, Metadata, OpenOptions};
@@ -378,6 +377,7 @@ pub struct Measured {
 }
 
 /// What goes in the archive, with the name it has there.
+#[derive(Clone)]
 struct Item {
     name: String,
     path: PathBuf,
@@ -389,8 +389,16 @@ struct Item {
 
 /// `path` and what is under it, its names under `name`, in order of name;
 /// links are not followed, and what is neither a file, a folder nor a link
-/// is left out.
-fn walk(path: &Path, name: String, items: &mut Vec<Item>, control: &Control) -> Result<(), Error> {
+/// is left out. So is what was listed in a folder and is gone by the time it
+/// is looked at, as another program's files may go while it runs: not a
+/// path that was chosen (`chosen`), which is an error.
+fn walk(
+    path: &Path,
+    name: String,
+    items: &mut Vec<Item>,
+    control: &Control,
+    chosen: bool,
+) -> Result<(), Error> {
     control.check()?;
     let read = |e: io::Error| {
         Error::Failed(tr!(
@@ -399,13 +407,25 @@ fn walk(path: &Path, name: String, items: &mut Vec<Item>, control: &Control) -> 
             e = e
         ))
     };
-    let metadata = fs::symlink_metadata(path).map_err(read)?;
+    let metadata = match fs::symlink_metadata(path) {
+        Ok(metadata) => metadata,
+        Err(e) if !chosen && is_gone(&e) => {
+            control.gone(path);
+            return Ok(());
+        }
+        Err(e) => return Err(read(e)),
+    };
     let kind = metadata.file_type();
     if kind.is_dir() {
-        let mut children = fs::read_dir(path)
-            .map_err(read)?
-            .collect::<io::Result<Vec<_>>>()
-            .map_err(read)?;
+        let listed = match fs::read_dir(path) {
+            Ok(listed) => listed,
+            Err(e) if !chosen && is_gone(&e) => {
+                control.gone(path);
+                return Ok(());
+            }
+            Err(e) => return Err(read(e)),
+        };
+        let mut children = listed.collect::<io::Result<Vec<_>>>().map_err(read)?;
         children.sort_by_key(|c| c.file_name());
         items.push(Item {
             name: format!("{name}/"),
@@ -415,7 +435,7 @@ fn walk(path: &Path, name: String, items: &mut Vec<Item>, control: &Control) -> 
         });
         for child in children {
             let under = format!("{name}/{}", unicode_name(&child.path())?);
-            walk(&child.path(), under, items, control)?;
+            walk(&child.path(), under, items, control, false)?;
         }
     } else if kind.is_file() || (cfg!(unix) && kind.is_symlink()) {
         items.push(Item {
@@ -426,6 +446,12 @@ fn walk(path: &Path, name: String, items: &mut Vec<Item>, control: &Control) -> 
         });
     }
     Ok(())
+}
+
+/// Whether `e` says that what was to be read is gone: removed, or a folder
+/// above it removed, since it was listed.
+fn is_gone(e: &io::Error) -> bool {
+    e.kind() == io::ErrorKind::NotFound
 }
 
 /// The last part of `path`, which an archive names it by. A name that is not
@@ -445,7 +471,7 @@ fn unicode_name(path: &Path) -> Result<String, Error> {
 fn items_of(paths: &[PathBuf], control: &Control) -> Result<Vec<Item>, Error> {
     let mut items = Vec::new();
     for path in paths {
-        walk(path, unicode_name(path)?, &mut items, control)?;
+        walk(path, unicode_name(path)?, &mut items, control, true)?;
     }
     Ok(items)
 }
@@ -514,9 +540,45 @@ struct Tally {
     control: Control,
     progress: Mutex<Progress>,
     failed: Mutex<Option<String>>,
+    /// What was gone by the time it was to be read, and left out.
+    gone: Mutex<Vec<PathBuf>>,
+    /// A ZIP archive's file was gone when it was read, which the archive
+    /// cannot leave out once it is being written: it is made again without.
+    zip_gone: AtomicBool,
 }
 
 impl Tally {
+    /// `item` left out, gone by the time it was to be read: told, and
+    /// counted as done, as the total counted it.
+    fn gone(&self, item: &Item) {
+        let bytes = if item.metadata.is_file() {
+            item.metadata.len()
+        } else {
+            0
+        };
+        self.gone_at(&item.path, bytes);
+    }
+
+    /// The file at `path`, of `bytes`, gone by the time it was to be read.
+    fn gone_at(&self, path: &Path, bytes: u64) {
+        self.gone
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .push(path.to_path_buf());
+        self.control.gone(path);
+        self.advance(1, bytes);
+    }
+
+    /// What was gone so far.
+    fn gone_paths(&self) -> HashSet<PathBuf> {
+        self.gone
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .iter()
+            .cloned()
+            .collect()
+    }
+
     fn advance(&self, entries: u64, bytes: u64) {
         let mut progress = self.progress.lock().unwrap_or_else(PoisonError::into_inner);
         progress.entries += entries;
@@ -584,7 +646,16 @@ impl DataSource for DiskFile {
         }
         let mut file = self.file.lock().unwrap_or_else(PoisonError::into_inner);
         if file.is_none() {
-            *file = Some(File::open(&self.path).map_err(|e| self.failed(&e))?);
+            match File::open(&self.path) {
+                Ok(opened) => *file = Some(opened),
+                Err(e) if is_gone(&e) && offset == 0 => {
+                    // Its entry is written already: the archive is made again.
+                    self.tally.zip_gone.store(true, Ordering::Relaxed);
+                    self.tally.gone_at(&self.path, self.size);
+                    return Err(self.failed(&e));
+                }
+                Err(e) => return Err(self.failed(&e)),
+            }
         }
         let Some(open) = file.as_ref() else {
             return Ok(0);
@@ -1103,7 +1174,8 @@ fn squeeze<W: Write>(
             "This format holds one file, and no more."
         )));
     }
-    pump(item, &mut out, tally, &mut vec![0; PIECE])?;
+    let file = File::open(&item.path).map_err(|e| read_failed(&item.path, &e))?;
+    pump(item, file, &mut out, tally, &mut vec![0; PIECE])?;
     Ok(out.finish()?)
 }
 
@@ -1156,9 +1228,12 @@ fn add_items<R: ReadAt>(
         let index = if item.metadata.is_dir() {
             za.dir_add(name, Flags::ENC_UTF_8)?
         } else if item.metadata.file_type().is_symlink() {
+            let Some(target) = target_of(&item, tally)? else {
+                continue;
+            };
             let index = za.file_add(
                 name,
-                BufferSource::with_mtime(link_target(&item.path)?, mtime),
+                BufferSource::with_mtime(target, mtime),
                 Flags::ENC_UTF_8,
             )?;
             za.set_file_compression(index, i32::from(cm::STORE), 0)?;
@@ -1201,18 +1276,51 @@ fn add_items<R: ReadAt>(
     Ok(())
 }
 
-/// The data of `item`, a file, into `out`, a piece at a time: the size it had
-/// when it was counted, as a tar archive has said already by then. Reading it
-/// counts towards the progress, and is where a job stops.
-fn pump(item: &Item, out: &mut impl Write, tally: &Tally, buf: &mut [u8]) -> Result<(), Error> {
-    let read = |e: io::Error| {
-        Error::Failed(tr!(
-            "Could not read {path}: {e}",
-            path = item.path.display(),
-            e = e
-        ))
-    };
-    let mut file = File::open(&item.path).map_err(read)?;
+/// `item`, a file, opened to be read: none if it is gone, which `tally` is
+/// told, so that it is left out before anything of it is written.
+fn open_item(item: &Item, tally: &Tally) -> Result<Option<File>, Error> {
+    match File::open(&item.path) {
+        Ok(file) => Ok(Some(file)),
+        Err(e) if is_gone(&e) => {
+            tally.gone(item);
+            Ok(None)
+        }
+        Err(e) => Err(read_failed(&item.path, &e)),
+    }
+}
+
+/// `item`, a symbolic link, its target: none if it is gone, as
+/// [`open_item`] says.
+fn target_of(item: &Item, tally: &Tally) -> Result<Option<Vec<u8>>, Error> {
+    match link_target(&item.path) {
+        Ok(target) => Ok(Some(target)),
+        Err(_) if fs::symlink_metadata(&item.path).is_err_and(|e| is_gone(&e)) => {
+            tally.gone(item);
+            Ok(None)
+        }
+        Err(e) => Err(e),
+    }
+}
+
+fn read_failed(path: &Path, e: &io::Error) -> Error {
+    Error::Failed(tr!(
+        "Could not read {path}: {e}",
+        path = path.display(),
+        e = e
+    ))
+}
+
+/// The data of `item`, a file, from `file` into `out`, a piece at a time: the
+/// size it had when it was counted, as a tar archive has said already by then.
+/// Reading it counts towards the progress, and is where a job stops.
+fn pump(
+    item: &Item,
+    mut file: File,
+    out: &mut impl Write,
+    tally: &Tally,
+    buf: &mut [u8],
+) -> Result<(), Error> {
+    let read = |e: io::Error| read_failed(&item.path, &e);
     let mut left = item.metadata.len();
     while left > 0 {
         tally.control.check()?;
@@ -1315,12 +1423,18 @@ fn write_7z<W: Write + Seek>(
         if item.metadata.is_dir() {
             archive.add_directory(entry)?;
         } else if item.metadata.file_type().is_symlink() {
+            let Some(target) = target_of(item, tally)? else {
+                continue;
+            };
             archive.start_file(entry)?;
-            archive.write_all(&link_target(&item.path)?)?;
+            archive.write_all(&target)?;
             tally.advance(1, 0);
         } else {
+            let Some(file) = open_item(item, tally)? else {
+                continue;
+            };
             archive.start_file(entry)?;
-            pump(item, &mut archive, tally, &mut buf)?;
+            pump(item, file, &mut archive, tally, &mut buf)?;
         }
     }
     archive.finish()?;
@@ -1353,20 +1467,30 @@ fn write_tar<W: Write>(
             }),
             ..hivepack::tar::Header::default()
         };
+        let key = hard_link_key(&item.metadata);
+        let hard_link = key.and_then(|key| first_names.get(&key).copied());
+        // What is read of it, before anything of it is written: nothing if it
+        // is gone, as another program's files may go while it runs.
+        let mut file = None;
+        if link {
+            let Some(target) = target_of(item, tally)? else {
+                continue;
+            };
+            header.linkname = target;
+        } else if kind.is_file() && hard_link.is_none() {
+            let Some(opened) = open_item(item, tally)? else {
+                continue;
+            };
+            file = Some(opened);
+        }
         kept.add(item, keep, &mut header)?;
-        let hard_link =
-            hard_link_key(&item.metadata).and_then(|key| match first_names.entry(key) {
-                Entry::Occupied(first) => Some(*first.get()),
-                Entry::Vacant(free) => {
-                    free.insert(&item.name);
-                    None
-                }
-            });
+        if let (Some(key), None) = (key, hard_link) {
+            first_names.insert(key, &item.name);
+        }
         if kind.is_dir() {
             header.typeflag = hivepack::tar::TYPE_DIR;
         } else if link {
             header.typeflag = hivepack::tar::TYPE_SYMLINK;
-            header.linkname = link_target(&item.path)?;
         } else if let Some(first) = hard_link {
             header.typeflag = hivepack::tar::TYPE_LINK;
             header.linkname = first.as_bytes().to_vec();
@@ -1382,8 +1506,8 @@ fn write_tar<W: Write>(
         } else if hard_link.is_some() {
             // Its bytes were counted with the files', and are in the first name's.
             tally.advance(1, item.metadata.len());
-        } else if !kind.is_dir() {
-            pump(item, &mut tar, tally, &mut buf)?;
+        } else if let Some(file) = file {
+            pump(item, file, &mut tar, tally, &mut buf)?;
         }
     }
     tar.close()?;
@@ -2107,6 +2231,8 @@ pub fn add_with(
         control: control.clone(),
         progress: Mutex::new(progress),
         failed: Mutex::new(None),
+        gone: Mutex::new(Vec::new()),
+        zip_gone: AtomicBool::new(false),
     });
     control.report(&progress);
 
@@ -2171,6 +2297,8 @@ fn tally_of(items: &[Item], control: &Control) -> Arc<Tally> {
         control: control.clone(),
         progress: Mutex::new(progress),
         failed: Mutex::new(None),
+        gone: Mutex::new(Vec::new()),
+        zip_gone: AtomicBool::new(false),
     })
 }
 
@@ -2181,15 +2309,37 @@ fn create_of(
     new: &NewArchive,
     control: &Control,
 ) -> Result<PathBuf, Error> {
-    if items.is_empty() {
-        return Err(Error::Failed(tr!("Nothing to compress.")));
+    let mut items = items;
+    let mut attempt = 0;
+    loop {
+        attempt += 1;
+        if items.is_empty() {
+            return Err(Error::Failed(tr!("Nothing to compress.")));
+        }
+        let tally = tally_of(&items, control);
+        // A ZIP archive may be made again, without what was gone.
+        let again = new.kind == Kind::Zip && attempt < ZIP_ATTEMPTS;
+        let these = if again {
+            items.clone()
+        } else {
+            std::mem::take(&mut items)
+        };
+        let made = write_new(wanted, new, |out| {
+            why(write_archive(these, new, &tally, out), &tally)
+        });
+        match made {
+            Err(_) if again && tally.zip_gone.load(Ordering::Relaxed) => {
+                let gone = tally.gone_paths();
+                items.retain(|item| !gone.contains(&item.path));
+            }
+            made => return made.map(|(made, _)| made),
+        }
     }
-    let tally = tally_of(&items, control);
-    let (made, _) = write_new(wanted, new, |out| {
-        why(write_archive(items, new, &tally, out), &tally)
-    })?;
-    Ok(made)
 }
+
+/// How many times a ZIP archive is made at most, each time without the files
+/// that were gone when it was read: another program's files may keep going.
+const ZIP_ATTEMPTS: u32 = 3;
 
 /// What can be written and gone back over: a new archive's file, or its parts.
 pub(crate) trait WriteSeek: Write + Seek {}

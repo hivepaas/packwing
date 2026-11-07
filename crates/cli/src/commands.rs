@@ -2,6 +2,7 @@
 
 use std::io::Write as _;
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex, PoisonError};
 
 use packwing_core::{
     Algorithm, COMPRESSED_EXTENSIONS, Entry, ExtractOptions, Filter, Frames, Keep, Kind, Listing,
@@ -656,15 +657,30 @@ fn write_archive(
     new: &NewArchive,
     cx: &Context,
 ) -> Result<(), Exit> {
-    let (control, bar) = crate::progress::control("Compressing", cx.progress);
+    let (mut control, bar) = crate::progress::control("Compressing", cx.progress);
+    // What another program removed while it ran is left out, and said.
+    let gone = Arc::new(Mutex::new(Vec::new()));
+    let noted = gone.clone();
+    control.on_gone = Some(Arc::new(move |path: &Path| {
+        noted
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .push(path.display().to_string());
+    }));
     let made = create(paths, archive, new, &control)?;
     drop(bar);
+    let gone = std::mem::take(&mut *gone.lock().unwrap_or_else(PoisonError::into_inner));
     let bytes = std::fs::metadata(&made)
         .map(|m| m.len())
         .unwrap_or_default();
     if cx.json {
-        print_json(&json!({ "made": made.display().to_string(), "size": bytes }));
-    } else if !cx.quiet {
+        print_json(&json!({ "made": made.display().to_string(), "size": bytes, "gone": gone }));
+        return Ok(());
+    }
+    for path in &gone {
+        eprintln!("pkw: left out, gone by the time it was read: {path}");
+    }
+    if !cx.quiet {
         println!("{} ({})", made.display(), size(bytes));
     }
     Ok(())

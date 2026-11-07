@@ -649,6 +649,9 @@ t73aeedd4 = đã bỏ qua
 # renamed {to}
 t7aa9b778 = đổi thành { $to }
 
+# It was gone by the time it was read.
+t93fb1e03 = Tệp đã không còn khi được đọc tới.
+
 # The job stopped before it was done.
 t57a78885 = Công việc đã dừng trước khi xong.
 
@@ -840,6 +843,15 @@ tec751fa9 =
     { $n ->
        *[other] { $count } tệp đã được đổi tên, vì tên của chúng không dùng được ở đây.
     }
+
+# {count} file was gone by the time it was read, and left out. | {count} files were gone by the time they were read, and left out.
+ta9bd0a7d =
+    { $n ->
+       *[other] { $count } tệp đã không còn khi được đọc tới nên bị bỏ qua.
+    }
+
+# The rest is in the archive.
+t977a5572 = Phần còn lại đã nằm trong tệp nén.
 
 # The rest was extracted.
 ta7833fcb = Phần còn lại đã được giải nén.

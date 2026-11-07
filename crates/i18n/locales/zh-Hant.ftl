@@ -649,6 +649,9 @@ t73aeedd4 = 已略過
 # renamed {to}
 t7aa9b778 = 重新命名為 { $to }
 
+# It was gone by the time it was read.
+t93fb1e03 = 讀取時該檔案已不存在。
+
 # The job stopped before it was done.
 t57a78885 = 工作在完成前停止了。
 
@@ -840,6 +843,15 @@ tec751fa9 =
     { $n ->
        *[other] { $count } 個檔案已重新命名，因為其名稱在這裡無法使用。
     }
+
+# {count} file was gone by the time it was read, and left out. | {count} files were gone by the time they were read, and left out.
+ta9bd0a7d =
+    { $n ->
+       *[other] 有 { $count } 個檔案在讀取時已不存在，已略過。
+    }
+
+# The rest is in the archive.
+t977a5572 = 其餘內容已放入壓縮檔。
 
 # The rest was extracted.
 ta7833fcb = 其餘已解壓縮。

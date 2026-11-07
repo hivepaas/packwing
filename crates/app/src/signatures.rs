@@ -39,6 +39,7 @@ pub fn start<T: 'static>(
         on_damaged: None,
         on_unnamable: None,
         on_links_outside: None,
+        on_gone: None,
     };
     let work = cx.background_spawn(async move {
         if !read_all {

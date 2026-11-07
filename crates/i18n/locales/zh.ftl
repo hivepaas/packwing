@@ -649,6 +649,9 @@ t73aeedd4 = 已跳过
 # renamed {to}
 t7aa9b778 = 重命名为 { $to }
 
+# It was gone by the time it was read.
+t93fb1e03 = 读取时该文件已不存在。
+
 # The job stopped before it was done.
 t57a78885 = 任务在完成前停止了。
 
@@ -840,6 +843,15 @@ tec751fa9 =
     { $n ->
        *[other] { $count } 个文件已重命名，因为其名称在这里无法使用。
     }
+
+# {count} file was gone by the time it was read, and left out. | {count} files were gone by the time they were read, and left out.
+ta9bd0a7d =
+    { $n ->
+       *[other] 有 { $count } 个文件在读取时已不存在，已略过。
+    }
+
+# The rest is in the archive.
+t977a5572 = 其余内容已放入压缩包。
 
 # The rest was extracted.
 ta7833fcb = 其余已解压。

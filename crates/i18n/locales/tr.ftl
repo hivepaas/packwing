@@ -655,6 +655,9 @@ t73aeedd4 = atlandı
 # renamed {to}
 t7aa9b778 = { $to } olarak yeniden adlandırıldı
 
+# It was gone by the time it was read.
+t93fb1e03 = Okunacağı sırada artık yoktu.
+
 # The job stopped before it was done.
 t57a78885 = İş bitmeden durdu.
 
@@ -853,6 +856,16 @@ tec751fa9 =
         [one] { $count } dosya, adı burada kullanılamadığı için yeniden adlandırıldı.
        *[other] { $count } dosya, adları burada kullanılamadığı için yeniden adlandırıldı.
     }
+
+# {count} file was gone by the time it was read, and left out. | {count} files were gone by the time they were read, and left out.
+ta9bd0a7d =
+    { $n ->
+        [one] { $count } dosya okunacağı sırada artık yoktu ve atlandı.
+       *[other] { $count } dosya okunacağı sırada artık yoktu ve atlandı.
+    }
+
+# The rest is in the archive.
+t977a5572 = Geri kalanı arşivde.
 
 # The rest was extracted.
 ta7833fcb = Geri kalanı çıkarıldı.

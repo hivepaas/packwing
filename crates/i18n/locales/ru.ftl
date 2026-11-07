@@ -667,6 +667,9 @@ t73aeedd4 = пропущен
 # renamed {to}
 t7aa9b778 = переименован в { $to }
 
+# It was gone by the time it was read.
+t93fb1e03 = К моменту чтения его уже не было.
+
 # The job stopped before it was done.
 t57a78885 = Задание остановилось, не завершившись.
 
@@ -879,6 +882,18 @@ tec751fa9 =
         [many] { $count } файлов переименовано, так как их имена здесь нельзя использовать.
        *[other] { $count } файла переименовано, так как их имена здесь нельзя использовать.
     }
+
+# {count} file was gone by the time it was read, and left out. | {count} files were gone by the time they were read, and left out.
+ta9bd0a7d =
+    { $n ->
+        [one] { $count } файл к моменту чтения уже исчез и был пропущен.
+        [few] { $count } файла к моменту чтения уже исчезли и были пропущены.
+        [many] { $count } файлов к моменту чтения уже исчезли и были пропущены.
+       *[other] { $count } файла к моменту чтения уже исчезли и были пропущены.
+    }
+
+# The rest is in the archive.
+t977a5572 = Остальное — в архиве.
 
 # The rest was extracted.
 ta7833fcb = Остальное извлечено.

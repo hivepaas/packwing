@@ -235,6 +235,7 @@ t2a39d1e8 = The key file is itself protected. packwing keeps its passphrase only
 t001f6992 = kept, { $size }
 t73aeedd4 = left out
 t7aa9b778 = renamed { $to }
+t93fb1e03 = It was gone by the time it was read.
 t57a78885 = The job stopped before it was done.
 t16ec36d9 = Waiting for other jobs…
 t8b1230ed = A file is damaged
@@ -320,6 +321,12 @@ tec751fa9 =
         [one] { $count } file was renamed, as its name can’t be used here.
        *[other] { $count } files were renamed, as their names can’t be used here.
     }
+ta9bd0a7d =
+    { $n ->
+        [one] { $count } file was gone by the time it was read, and left out.
+       *[other] { $count } files were gone by the time they were read, and left out.
+    }
+t977a5572 = The rest is in the archive.
 ta7833fcb = The rest was extracted.
 t3c49b269 = Copy the list
 t27f1ab7d = { $count } of { $count2 } files · { $size } of { $size2 }

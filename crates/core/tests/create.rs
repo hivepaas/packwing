@@ -246,6 +246,7 @@ fn stopping_leaves_nothing() {
             on_damaged: None,
             on_unnamable: None,
             on_links_outside: None,
+            on_gone: None,
         };
         let new = NewArchive {
             part_size,
@@ -280,6 +281,7 @@ fn progress_reaches_every_byte_once() {
         on_damaged: None,
         on_unnamable: None,
         on_links_outside: None,
+        on_gone: None,
     };
     create(&[root], &s.path("a.zip"), &NewArchive::default(), &control).unwrap();
     assert_eq!(total.load(Ordering::Relaxed), measured.bytes);
@@ -751,6 +753,7 @@ fn stopping_any_kind_leaves_nothing_and_progress_reaches_the_end() {
             on_damaged: None,
             on_unnamable: None,
             on_links_outside: None,
+            on_gone: None,
         };
         let stopped = create(std::slice::from_ref(&root), &path, &new, &control);
         assert!(matches!(stopped, Err(Error::Cancelled)), "{stopped:?}");
@@ -767,6 +770,7 @@ fn stopping_any_kind_leaves_nothing_and_progress_reaches_the_end() {
             on_damaged: None,
             on_unnamable: None,
             on_links_outside: None,
+            on_gone: None,
         };
         create(std::slice::from_ref(&root), &path, &new, &control).unwrap();
         assert_eq!(bytes.load(Ordering::Relaxed), measured.bytes, "{kind:?}");
@@ -1191,6 +1195,7 @@ fn stopping_or_failing_leaves_the_archive_as_it_was() {
         on_damaged: None,
         on_unnamable: None,
         on_links_outside: None,
+        on_gone: None,
     };
     let stopped = add(&[big_one], &made, &[], &Keys::default(), &control);
     assert!(matches!(stopped, Err(Error::Cancelled)), "{stopped:?}");
@@ -1470,6 +1475,7 @@ fn stopping_a_picked_extraction_leaves_nothing() {
         on_damaged: None,
         on_unnamable: None,
         on_links_outside: None,
+        on_gone: None,
     };
     let picked = [path_of("Báo cáo/Hình ảnh")];
     let how = ExtractOptions::default();
@@ -1971,6 +1977,7 @@ fn stopped_while_it_looks_through_the_files_nothing_is_left() {
         on_damaged: None,
         on_unnamable: None,
         on_links_outside: None,
+        on_gone: None,
     };
     let e = create_on(
         &[what],
@@ -2141,6 +2148,7 @@ fn stopped_on_its_way_straight_nothing_is_left() {
         on_damaged: None,
         on_unnamable: None,
         on_links_outside: None,
+        on_gone: None,
     };
     across.sends_as_read = true;
     let e = up(&what, &across, "a.tar.gz", &straight(Kind::TarGz), &control);
@@ -3186,4 +3194,109 @@ fn extended_attributes_come_back_when_asked() {
     };
     assert_eq!(attribute_of(false, "unasked"), None);
     assert_eq!(attribute_of(true, "asked").as_deref(), Some(&b"kept"[..]));
+}
+
+/// A Control that removes `doomed` once the files are found and before any is
+/// read, as another program's files may go while an archive is made, and
+/// keeps what it is told was gone.
+fn removing(doomed: Vec<PathBuf>) -> (Control, Arc<std::sync::Mutex<Vec<PathBuf>>>) {
+    let gone = Arc::new(std::sync::Mutex::new(Vec::new()));
+    let told = gone.clone();
+    let control = Control {
+        progress: Some(Arc::new(move |_: &Progress| {
+            for path in &doomed {
+                if path.is_dir() {
+                    let _ = fs::remove_dir_all(path);
+                } else {
+                    let _ = fs::remove_file(path);
+                }
+            }
+        })),
+        on_gone: Some(Arc::new(move |path: &Path| {
+            told.lock().unwrap().push(path.to_path_buf());
+        })),
+        ..Control::default()
+    };
+    (control, gone)
+}
+
+#[test]
+fn a_file_gone_before_it_is_read_is_left_out() {
+    let s = Scratch::new("gone");
+    for (kind, extension) in KINDS {
+        let root = s.path(&format!("in-{extension}"));
+        fs::create_dir_all(root.join("sub")).unwrap();
+        for name in ["a.txt", "b.txt", "c.txt", "sub/d.txt"] {
+            fs::write(root.join(name), format!("{name}\n").repeat(1000)).unwrap();
+        }
+        #[cfg(unix)]
+        std::os::unix::fs::symlink("a.txt", root.join("link")).unwrap();
+        let mut doomed = vec![root.join("b.txt")];
+        if cfg!(unix) {
+            doomed.push(root.join("link"));
+        }
+        let (control, gone) = removing(doomed.clone());
+        let new = NewArchive {
+            kind,
+            ..NewArchive::default()
+        };
+        let made = create(
+            std::slice::from_ref(&root),
+            &s.path(&format!("a.{extension}")),
+            &new,
+            &control,
+        )
+        .unwrap_or_else(|e| panic!("{kind:?}: {e}"));
+        let mut told = gone.lock().unwrap().clone();
+        told.sort();
+        assert_eq!(told, doomed, "{kind:?}");
+        test(&made, &Keys::default(), &Control::default()).unwrap();
+        let out = s.path(&format!("out-{extension}"));
+        extract(&made, &out, &Keys::default(), &Control::default()).unwrap();
+        let back = out.join(format!("in-{extension}"));
+        assert_eq!(
+            fs::read(back.join("a.txt")).unwrap(),
+            fs::read(root.join("a.txt")).unwrap()
+        );
+        assert!(back.join("c.txt").exists(), "{kind:?}");
+        assert!(back.join("sub/d.txt").exists(), "{kind:?}");
+        assert!(!back.join("b.txt").exists(), "{kind:?}");
+        assert!(fs::symlink_metadata(back.join("link")).is_err(), "{kind:?}");
+    }
+}
+
+#[test]
+fn a_folder_gone_before_it_is_read_leaves_its_files_out() {
+    let s = Scratch::new("gone-folder");
+    let root = s.path("in");
+    fs::create_dir_all(root.join("sub")).unwrap();
+    fs::write(root.join("a.txt"), "a").unwrap();
+    fs::write(root.join("sub/b.txt"), "b").unwrap();
+    let (control, gone) = removing(vec![root.join("sub")]);
+    let new = NewArchive {
+        kind: Kind::SevenZip,
+        ..NewArchive::default()
+    };
+    let made = create(std::slice::from_ref(&root), &s.path("a.7z"), &new, &control).unwrap();
+    assert_eq!(*gone.lock().unwrap(), [root.join("sub/b.txt")]);
+    let out = s.path("out");
+    extract(&made, &out, &Keys::default(), &Control::default()).unwrap();
+    assert!(out.join("in/a.txt").exists());
+    assert!(!out.join("in/sub/b.txt").exists());
+}
+
+#[test]
+fn a_chosen_path_that_is_gone_is_an_error() {
+    let s = Scratch::new("gone-chosen");
+    let err = create(
+        &[s.path("not-there")],
+        &s.path("a.7z"),
+        &NewArchive {
+            kind: Kind::SevenZip,
+            ..NewArchive::default()
+        },
+        &Control::default(),
+    )
+    .unwrap_err();
+    assert!(err.to_string().contains("not-there"), "{err}");
 }

@@ -373,6 +373,7 @@ mod tests {
             on_damaged: None,
             on_unnamable: None,
             on_links_outside: None,
+            on_gone: None,
         }
     }
 
@@ -465,6 +466,7 @@ mod tests {
             on_damaged: None,
             on_unnamable: None,
             on_links_outside: None,
+            on_gone: None,
         };
         assert!(matches!(
             sign_file(&s.storage(), &file(), &key, &control),

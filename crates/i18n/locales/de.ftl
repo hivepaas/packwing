@@ -655,6 +655,9 @@ t73aeedd4 = weggelassen
 # renamed {to}
 t7aa9b778 = umbenannt in { $to }
 
+# It was gone by the time it was read.
+t93fb1e03 = Sie war nicht mehr da, als sie gelesen werden sollte.
+
 # The job stopped before it was done.
 t57a78885 = Der Auftrag hat aufgehört, bevor er fertig war.
 
@@ -853,6 +856,16 @@ tec751fa9 =
         [one] { $count } Datei wurde umbenannt, da ihr Name hier nicht möglich ist.
        *[other] { $count } Dateien wurden umbenannt, da ihre Namen hier nicht möglich sind.
     }
+
+# {count} file was gone by the time it was read, and left out. | {count} files were gone by the time they were read, and left out.
+ta9bd0a7d =
+    { $n ->
+        [one] { $count } Datei war nicht mehr da, als sie gelesen werden sollte, und wurde ausgelassen.
+       *[other] { $count } Dateien waren nicht mehr da, als sie gelesen werden sollten, und wurden ausgelassen.
+    }
+
+# The rest is in the archive.
+t977a5572 = Der Rest ist im Archiv.
 
 # The rest was extracted.
 ta7833fcb = Der Rest wurde entpackt.

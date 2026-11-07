@@ -649,6 +649,9 @@ t73aeedd4 = 건너뜀
 # renamed {to}
 t7aa9b778 = { $to }(으)로 이름 바꿈
 
+# It was gone by the time it was read.
+t93fb1e03 = 읽으려는 시점에 이미 없었습니다.
+
 # The job stopped before it was done.
 t57a78885 = 작업이 끝나기 전에 멈췄습니다.
 
@@ -840,6 +843,15 @@ tec751fa9 =
     { $n ->
        *[other] 이름을 여기서 쓸 수 없어 파일 { $count }개의 이름을 바꿨습니다.
     }
+
+# {count} file was gone by the time it was read, and left out. | {count} files were gone by the time they were read, and left out.
+ta9bd0a7d =
+    { $n ->
+       *[other] 파일 { $count }개가 읽으려는 시점에 이미 없어서 제외했습니다.
+    }
+
+# The rest is in the archive.
+t977a5572 = 나머지는 아카이브에 들어 있습니다.
 
 # The rest was extracted.
 ta7833fcb = 나머지는 압축을 풀었습니다.

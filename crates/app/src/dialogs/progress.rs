@@ -14,7 +14,7 @@
 //! Once it ends, the dialog stays to say which files they were.
 
 use packwing_i18n::{tr, tr_n};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::sync::mpsc::{Sender, channel};
 use std::sync::{Arc, Mutex, PoisonError};
@@ -25,7 +25,7 @@ use gpui::{
     relative, rgb,
 };
 use packwing_core::{
-    BadName, Cancel, Control, Damage, DamagedFn, Error, Filter, LinksOutsideFn, OnDamaged,
+    BadName, Cancel, Control, Damage, DamagedFn, Error, Filter, GoneFn, LinksOutsideFn, OnDamaged,
     OnLinksOutside, OnUnnamable, OutsideLink, Progress, Renaming, Summary, UnnamableFn, damages,
     left_out, renamings,
 };
@@ -77,12 +77,14 @@ struct Damaged {
 }
 
 /// What an extraction went on from: files whose data was damaged, and files left
-/// out or renamed.
+/// out or renamed; or what a new archive went on from: files gone by the time
+/// they were read, as another program's files may go while it runs.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Report {
     pub damaged: Vec<Damage>,
     pub left_out: Vec<BadName>,
     pub renamed: Vec<Renaming>,
+    pub gone: Vec<String>,
 }
 
 impl Report {
@@ -93,7 +95,10 @@ impl Report {
     }
 
     fn is_empty(&self) -> bool {
-        self.damaged.is_empty() && self.left_out.is_empty() && self.renamed.is_empty()
+        self.damaged.is_empty()
+            && self.left_out.is_empty()
+            && self.renamed.is_empty()
+            && self.gone.is_empty()
     }
 
     /// Each file, what became of it, and why, in the order said.
@@ -116,8 +121,28 @@ impl Report {
                 r.why.clone(),
             )
         });
-        damaged.chain(left).chain(renamed).collect()
+        let gone = self.gone.iter().map(|path| {
+            (
+                path.clone(),
+                tr!("left out"),
+                tr!("It was gone by the time it was read."),
+            )
+        });
+        damaged.chain(left).chain(renamed).chain(gone).collect()
     }
+}
+
+/// What notes each file or folder gone by the time a new archive read it.
+fn noting_gone(damaged: &Arc<Mutex<Damaged>>) -> GoneFn {
+    let damaged = damaged.clone();
+    Arc::new(move |path: &Path| {
+        damaged
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .found
+            .gone
+            .push(path.display().to_string());
+    })
 }
 
 /// What asks the dialog about each file whose data is damaged, and waits for its
@@ -350,6 +375,7 @@ impl ProgressDialog {
                 .then(|| asking_names(&damaged)),
             // Converting keeps every link: the new archive holds it.
             on_links_outside: (job.verb == Verb::Extract).then(|| asking_links(&damaged)),
+            on_gone: job.create.is_some().then(|| noting_gone(&damaged)),
         };
         let found = damaged.clone();
         let tested = Arc::new(Mutex::new((0, 0)));
@@ -562,8 +588,10 @@ impl ProgressDialog {
                     show,
                 });
             }
-            Ok(_) if !self.found().is_empty() => {
-                if self.open_folder
+            Ok(made) if !self.found().is_empty() => {
+                if let Some(made) = made.filter(|_| self.open_folder) {
+                    cx.reveal_path(&made);
+                } else if self.open_folder
                     && let Some((_, Some(to))) = self.job.work.first()
                 {
                     cx.open_with_system(to);
@@ -1246,7 +1274,20 @@ impl Render for ProgressDialog {
                     count = count(renamed)
                 ));
             }
-            said.push(tr!("The rest was extracted."));
+            let gone = report.gone.len() as u64;
+            if gone > 0 {
+                said.push(tr_n!(
+                    gone,
+                    "{count} file was gone by the time it was read, and left out.",
+                    "{count} files were gone by the time they were read, and left out.",
+                    count = count(gone)
+                ));
+            }
+            said.push(if self.job.create.is_some() {
+                tr!("The rest is in the archive.")
+            } else {
+                tr!("The rest was extracted.")
+            });
             let what = rows
                 .iter()
                 .map(|(path, what, _)| (path.clone(), what.clone(), String::new()))

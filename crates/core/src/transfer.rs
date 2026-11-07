@@ -414,6 +414,7 @@ mod tests {
             on_damaged: None,
             on_unnamable: None,
             on_links_outside: None,
+            on_gone: None,
         }
     }
 
@@ -572,6 +573,7 @@ mod tests {
             on_damaged: None,
             on_unnamable: None,
             on_links_outside: None,
+            on_gone: None,
         };
         let e = transfer(&s.t(&["d"], false, OnExisting::Stop), &control).expect_err("stopped");
         assert!(matches!(e, Error::Cancelled), "{e}");
