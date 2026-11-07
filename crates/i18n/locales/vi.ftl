@@ -1585,6 +1585,15 @@ t93ff7715 = Ẩn tên tệp sau mật khẩu
 # For 7z: nobody sees what is inside without it
 t0f5354d7 = Với 7z: không có mật khẩu thì không ai thấy bên trong có gì
 
+# Yours
+t2635ea3b = Của bạn
+
+# By name
+t983e37f7 = Theo tên
+
+# By number
+tcbbada8d = Theo số
+
 # No limit
 t6de7f47d = Không giới hạn
 
@@ -1626,6 +1635,18 @@ tf47f4968 = Chỉ nhận tên dùng được trên mọi hệ điều hành
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = Tên Windows không dùng được, như a:b.txt, và tên chỉ khác chữ hoa/thường cũng sẽ được hỏi trên máy này
+
+# Owners from a backup
+t38a7cf66 = Chủ sở hữu từ bản sao lưu
+
+# Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
+t46908bee = Khi tệp nén tar có lưu: của bạn, hoặc của tệp nén theo tên hay theo số. Chỉ quản trị viên mới giao được tệp cho người khác
+
+# Extended attributes from a backup
+t764eed3a = Thuộc tính mở rộng từ bản sao lưu
+
+# Where a tar archive kept them, ACLs among them
+ta28f3ae5 = Khi tệp nén tar có lưu, kể cả ACL
 
 # Light
 t8ad2f8cf = Sáng

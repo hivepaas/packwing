@@ -54,7 +54,9 @@ pub use create::{
     within_memory,
 };
 pub use filter::Filter;
-pub use hivepack::extract::{Cancel, OnDamaged, OnLinksOutside, OnUnnamable, Progress, Summary};
+pub use hivepack::extract::{
+    Cancel, OnDamaged, OnLinksOutside, OnUnnamable, Owners, Progress, Summary,
+};
 pub use hivepack::open::{Container, Layer};
 pub use job::{
     BadName, Control, Damage, DamagedFn, ExtractOptions, LinksOutsideFn, OutsideLink, Renaming,

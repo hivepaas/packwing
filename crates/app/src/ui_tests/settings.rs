@@ -167,3 +167,25 @@ scenario!(
         );
     }
 );
+
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+scenario!(
+    /// What a backup gives back, owners by number and extended attributes, is
+    /// chosen in Extracting, stays through a restart, and goes to extracting.
+    what_a_backup_gives_back_is_chosen,
+    |ui| {
+        let kept = |ui: &mut Ui| {
+            ui.ws(|_, _, cx| {
+                let how = crate::prefs::prefs(cx).extract_options();
+                (how.owners, how.xattrs)
+            })
+        };
+        ui.settings(1);
+        assert_eq!(kept(ui), (packwing_core::Owners::Ignore, false));
+        ui.choose("restore-owners", "By number");
+        ui.click("restore-xattrs");
+        assert_eq!(kept(ui), (packwing_core::Owners::ByNumber, true));
+        ui.start();
+        assert_eq!(kept(ui), (packwing_core::Owners::ByNumber, true));
+    }
+);

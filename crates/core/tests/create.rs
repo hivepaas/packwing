@@ -3029,3 +3029,92 @@ fn gzip_goes_in_blocks_compressed_in_threads() {
     want.truncate(n);
     assert_eq!(fs::read(&made).unwrap(), want);
 }
+
+/// What a tar archive kept for a backup comes back only when asked: a file's
+/// group, here another of the user's where there is one, by number and by name;
+/// the user's own otherwise.
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[test]
+fn owners_come_back_when_asked() {
+    use nix::unistd::{Gid, Group, getgroups};
+    use packwing_core::Owners;
+    use std::os::unix::fs::MetadataExt;
+    let s = Scratch::new("owners-back");
+    let file = s.path("f");
+    fs::write(&file, "x").unwrap();
+    let mine = fs::metadata(&file).unwrap();
+    // Another of the user's groups, which a file extracted is not given unasked.
+    let Some(other) = getgroups()
+        .unwrap_or_default()
+        .into_iter()
+        .map(Gid::as_raw)
+        .find(|&g| g != mine.gid() && Group::from_gid(Gid::from_raw(g)).is_ok_and(|g| g.is_some()))
+    else {
+        eprintln!("skipping: the user has one group");
+        return;
+    };
+    std::os::unix::fs::chown(&file, None, Some(other)).unwrap();
+    let keep = packwing_core::Keep {
+        owners: true,
+        ..Default::default()
+    };
+    let made = create(
+        std::slice::from_ref(&file),
+        &s.path("kept.tar"),
+        &plain_tar(keep, Default::default()),
+        &Control::default(),
+    )
+    .unwrap();
+    let group_of = |owners, name: &str| {
+        let how = ExtractOptions {
+            owners,
+            ..ExtractOptions::default()
+        };
+        let out = s.path(name);
+        let summary =
+            extract_with(&made, &out, &Keys::default(), &how, &Control::default()).unwrap();
+        assert_eq!(
+            summary.owners_left, 0,
+            "{owners:?}: the user's own and their group"
+        );
+        fs::metadata(out.join("f")).unwrap().gid()
+    };
+    assert_eq!(group_of(Owners::Ignore, "unasked"), mine.gid());
+    assert_eq!(group_of(Owners::ByNumber, "by-number"), other);
+    assert_eq!(group_of(Owners::ByName, "by-name"), other);
+}
+
+/// The extended attributes a tar archive kept come back only when asked.
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[test]
+fn extended_attributes_come_back_when_asked() {
+    let s = Scratch::new("xattrs-back");
+    let file = s.path("f");
+    fs::write(&file, "x").unwrap();
+    if let Err(e) = xattr::set(&file, "user.packwing", b"kept") {
+        eprintln!("skipping: this file system takes no extended attributes ({e})");
+        return;
+    }
+    let keep = packwing_core::Keep {
+        xattrs: true,
+        ..Default::default()
+    };
+    let made = create(
+        std::slice::from_ref(&file),
+        &s.path("kept.tar"),
+        &plain_tar(keep, Default::default()),
+        &Control::default(),
+    )
+    .unwrap();
+    let attribute_of = |xattrs, name: &str| {
+        let how = ExtractOptions {
+            xattrs,
+            ..ExtractOptions::default()
+        };
+        let out = s.path(name);
+        extract_with(&made, &out, &Keys::default(), &how, &Control::default()).unwrap();
+        xattr::get(out.join("f"), "user.packwing").unwrap()
+    };
+    assert_eq!(attribute_of(false, "unasked"), None);
+    assert_eq!(attribute_of(true, "asked").as_deref(), Some(&b"kept"[..]));
+}
