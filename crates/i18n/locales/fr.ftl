@@ -270,6 +270,12 @@ t2e9c9e78 = Aucune compression
 # {name} compression
 te2db10f6 = Compression { $name }
 
+# Several frames
+t84cc41f7 = Plusieurs trames
+
+# One frame
+tc6ef759e = Une trame
+
 # Parts of 25 MB
 ta999efe2 = Volumes de 25 Mo
 
@@ -284,6 +290,27 @@ tafd4b17d = Volumes d'une taille à saisir
 
 # Public key
 t9981f45f = Clé publique
+
+# Owners kept
+t63e8a0df = Propriétaires conservés
+
+# Attributes kept
+te9e8289c = Attributs conservés
+
+# To keep owners and extended attributes for a backup, pick a .tar format.
+tcf2585da = Pour conserver propriétaires et attributs étendus dans une sauvegarde, choisissez un format .tar.
+
+# Keep for a backup
+t6a2bcc1a = Conserver pour une sauvegarde
+
+# Owners: user and group
+t5350e3fe = Propriétaires : utilisateur et groupe
+
+# Extended attributes and ACLs
+t35aff4d1 = Attributs étendus et ACL
+
+# For a backup to restore on this computer. Whoever opens the archive sees the names of the users.
+ta47cc163 = Pour une sauvegarde à restaurer sur cet ordinateur. Quiconque ouvre l’archive voit les noms des utilisateurs.
 
 # Beside the files
 t757989af = À côté des fichiers
@@ -344,12 +371,6 @@ t273a832f = Plus il est élevé, plus l'archive est petite, et plus elle est lon
 
 # Frames
 tf03e266f = Trames
-
-# Several frames
-t84cc41f7 = Plusieurs trames
-
-# One frame
-tc6ef759e = Une trame
 
 # Several frames open on every core, and make the archive a little larger: under half a percent.
 tf461cde7 = Plusieurs trames s’ouvrent sur tous les cœurs et rendent l’archive un peu plus grande : de moins d’un demi pour cent.
@@ -2131,6 +2152,9 @@ t2e221d1f = { $path } a raccourci pendant sa lecture.
 
 # A password has to be valid Unicode.
 t5ef729bc = Un mot de passe doit être de l'Unicode valide.
+
+# Could not read the extended attributes of {path}: {e}
+t4f1421d7 = Impossible de lire les attributs étendus de { $path } : { $e }
 
 # Could not start compressing: {e}
 tc4faa70c = Impossible de démarrer la compression : { $e }

@@ -274,6 +274,12 @@ t2e9c9e78 = Без стиснення
 # {name} compression
 te2db10f6 = Стиснення { $name }
 
+# Several frames
+t84cc41f7 = Кілька фреймів
+
+# One frame
+tc6ef759e = Один фрейм
+
 # Parts of 25 MB
 ta999efe2 = Частини по 25 MB
 
@@ -288,6 +294,27 @@ tafd4b17d = Частини вказаного розміру
 
 # Public key
 t9981f45f = Відкритий ключ
+
+# Owners kept
+t63e8a0df = Власників збережено
+
+# Attributes kept
+te9e8289c = Атрибути збережено
+
+# To keep owners and extended attributes for a backup, pick a .tar format.
+tcf2585da = Щоб зберегти власників і розширені атрибути для резервної копії, виберіть формат .tar.
+
+# Keep for a backup
+t6a2bcc1a = Зберегти для резервної копії
+
+# Owners: user and group
+t5350e3fe = Власники: користувач і група
+
+# Extended attributes and ACLs
+t35aff4d1 = Розширені атрибути та ACL
+
+# For a backup to restore on this computer. Whoever opens the archive sees the names of the users.
+ta47cc163 = Для резервної копії, яку відновлюють на цьому комп’ютері. Будь-хто, хто відкриє архів, побачить імена користувачів.
 
 # Beside the files
 t757989af = Поруч із файлами
@@ -348,12 +375,6 @@ t273a832f = Вищий рівень дає менший архів, який д�
 
 # Frames
 tf03e266f = Фрейми
-
-# Several frames
-t84cc41f7 = Кілька фреймів
-
-# One frame
-tc6ef759e = Один фрейм
 
 # Several frames open on every core, and make the archive a little larger: under half a percent.
 tf461cde7 = Кілька фреймів відкриваються на всіх ядрах і роблять архів трохи більшим: менш ніж на пів відсотка.
@@ -2181,6 +2202,9 @@ t2e221d1f = { $path } став коротшим, поки його читали.
 
 # A password has to be valid Unicode.
 t5ef729bc = Пароль має бути дійсним Unicode.
+
+# Could not read the extended attributes of {path}: {e}
+t4f1421d7 = Не вдалося прочитати розширені атрибути { $path }: { $e }
 
 # Could not start compressing: {e}
 tc4faa70c = Не вдалося почати стиснення: { $e }

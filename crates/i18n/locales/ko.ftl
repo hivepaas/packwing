@@ -268,6 +268,12 @@ t2e9c9e78 = 압축 안 함
 # {name} compression
 te2db10f6 = { $name } 압축
 
+# Several frames
+t84cc41f7 = 여러 프레임
+
+# One frame
+tc6ef759e = 한 프레임
+
 # Parts of 25 MB
 ta999efe2 = 25MB 단위로 분할
 
@@ -282,6 +288,27 @@ tafd4b17d = 직접 입력한 크기로 분할
 
 # Public key
 t9981f45f = 공개 키
+
+# Owners kept
+t63e8a0df = 소유자 유지
+
+# Attributes kept
+te9e8289c = 속성 유지
+
+# To keep owners and extended attributes for a backup, pick a .tar format.
+tcf2585da = 백업에서 소유자와 확장 속성을 유지하려면 .tar 형식을 선택하세요.
+
+# Keep for a backup
+t6a2bcc1a = 백업용으로 유지
+
+# Owners: user and group
+t5350e3fe = 소유자: 사용자와 그룹
+
+# Extended attributes and ACLs
+t35aff4d1 = 확장 속성과 ACL
+
+# For a backup to restore on this computer. Whoever opens the archive sees the names of the users.
+ta47cc163 = 이 컴퓨터에서 복원할 백업용입니다. 아카이브를 여는 사람은 사용자 이름을 볼 수 있습니다.
 
 # Beside the files
 t757989af = 파일과 같은 위치
@@ -342,12 +369,6 @@ t273a832f = 높을수록 압축 파일이 작아지며, 만드는 시간이 길�
 
 # Frames
 tf03e266f = 프레임
-
-# Several frames
-t84cc41f7 = 여러 프레임
-
-# One frame
-tc6ef759e = 한 프레임
 
 # Several frames open on every core, and make the archive a little larger: under half a percent.
 tf461cde7 = 여러 프레임은 모든 코어에서 열리며, 압축 파일이 조금 커집니다: 0.5% 미만.
@@ -2097,6 +2118,9 @@ t2e221d1f = { $path }이(가) 읽는 도중 작아졌습니다.
 
 # A password has to be valid Unicode.
 t5ef729bc = 비밀번호는 올바른 유니코드여야 합니다.
+
+# Could not read the extended attributes of {path}: {e}
+t4f1421d7 = { $path }의 확장 속성을 읽을 수 없습니다: { $e }
 
 # Could not start compressing: {e}
 tc4faa70c = 압축을 시작할 수 없습니다: { $e }

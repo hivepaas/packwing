@@ -268,6 +268,12 @@ t2e9c9e78 = 不壓縮
 # {name} compression
 te2db10f6 = { $name } 壓縮
 
+# Several frames
+t84cc41f7 = 多幀
+
+# One frame
+tc6ef759e = 單幀
+
 # Parts of 25 MB
 ta999efe2 = 每份 25 MB
 
@@ -282,6 +288,27 @@ tafd4b17d = 自行輸入每份大小
 
 # Public key
 t9981f45f = 公鑰
+
+# Owners kept
+t63e8a0df = 保留擁有者
+
+# Attributes kept
+te9e8289c = 保留屬性
+
+# To keep owners and extended attributes for a backup, pick a .tar format.
+tcf2585da = 要在備份中保留擁有者與延伸屬性，請選擇 .tar 格式。
+
+# Keep for a backup
+t6a2bcc1a = 為備份保留
+
+# Owners: user and group
+t5350e3fe = 擁有者：使用者與群組
+
+# Extended attributes and ACLs
+t35aff4d1 = 延伸屬性與 ACL
+
+# For a backup to restore on this computer. Whoever opens the archive sees the names of the users.
+ta47cc163 = 用於在這台電腦上還原的備份。開啟封存的人都能看到使用者名稱。
 
 # Beside the files
 t757989af = 與檔案放在一起
@@ -342,12 +369,6 @@ t273a832f = 等級越高，封存檔越小，建立時間越長，但開啟時�
 
 # Frames
 tf03e266f = 幀
-
-# Several frames
-t84cc41f7 = 多幀
-
-# One frame
-tc6ef759e = 單幀
 
 # Several frames open on every core, and make the archive a little larger: under half a percent.
 tf461cde7 = 多幀可在所有核心上開啟，封存檔會稍大一些：不到百分之零點五。
@@ -2106,6 +2127,9 @@ t2e221d1f = { $path } 在讀取時變小了。
 
 # A password has to be valid Unicode.
 t5ef729bc = 密碼必須是有效的 Unicode。
+
+# Could not read the extended attributes of {path}: {e}
+t4f1421d7 = 無法讀取 { $path } 的延伸屬性：{ $e }
 
 # Could not start compressing: {e}
 tc4faa70c = 無法開始壓縮：{ $e }

@@ -270,6 +270,12 @@ t2e9c9e78 = Sem compressão
 # {name} compression
 te2db10f6 = Compactação { $name }
 
+# Several frames
+t84cc41f7 = Vários quadros
+
+# One frame
+tc6ef759e = Um quadro
+
 # Parts of 25 MB
 ta999efe2 = Partes de 25 MB
 
@@ -284,6 +290,27 @@ tafd4b17d = Partes de um tamanho a digitar
 
 # Public key
 t9981f45f = Chave pública
+
+# Owners kept
+t63e8a0df = Proprietários mantidos
+
+# Attributes kept
+te9e8289c = Atributos mantidos
+
+# To keep owners and extended attributes for a backup, pick a .tar format.
+tcf2585da = Para manter proprietários e atributos estendidos num backup, escolha um formato .tar.
+
+# Keep for a backup
+t6a2bcc1a = Manter para um backup
+
+# Owners: user and group
+t5350e3fe = Proprietários: usuário e grupo
+
+# Extended attributes and ACLs
+t35aff4d1 = Atributos estendidos e ACLs
+
+# For a backup to restore on this computer. Whoever opens the archive sees the names of the users.
+ta47cc163 = Para um backup a restaurar neste computador. Quem abrir o arquivo verá os nomes dos usuários.
 
 # Beside the files
 t757989af = Ao lado dos arquivos
@@ -344,12 +371,6 @@ t273a832f = Um nível mais alto gera um arquivo menor, que leva mais tempo para 
 
 # Frames
 tf03e266f = Quadros
-
-# Several frames
-t84cc41f7 = Vários quadros
-
-# One frame
-tc6ef759e = Um quadro
 
 # Several frames open on every core, and make the archive a little larger: under half a percent.
 tf461cde7 = Vários quadros abrem em todos os núcleos e deixam o arquivo compactado um pouco maior: menos de meio por cento.
@@ -2131,6 +2152,9 @@ t2e221d1f = { $path } ficou menor enquanto era lido.
 
 # A password has to be valid Unicode.
 t5ef729bc = Uma senha precisa ser Unicode válido.
+
+# Could not read the extended attributes of {path}: {e}
+t4f1421d7 = Não foi possível ler os atributos estendidos de { $path }: { $e }
 
 # Could not start compressing: {e}
 tc4faa70c = Não foi possível iniciar a compactação: { $e }

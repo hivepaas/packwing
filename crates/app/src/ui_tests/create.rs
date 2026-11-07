@@ -443,3 +443,39 @@ scenario!(
         assert_eq!(listed(&made, None), ["big.bin"]);
     }
 );
+
+#[cfg(unix)]
+scenario!(
+    /// A tar archive keeps the owners, and the extended attributes, when asked
+    /// in Keep for a backup; ZIP suggests tar.
+    a_tar_archive_keeps_owners_and_attributes_for_a_backup,
+    |ui| {
+        use std::os::unix::fs::MetadataExt;
+        let work = new_archive(ui);
+        let file = work.join("a.txt");
+        let attributes = cfg!(any(target_os = "linux", target_os = "macos"))
+            && xattr::set(&file, "user.packwing", b"kept").is_ok();
+        ui.click("advanced");
+        ui.wait_for("backup");
+        assert!(!ui.shows("keep-owners"), "ZIP has no place for owners");
+        ui.choose("format", ".tar");
+        ui.click("keep-owners");
+        if attributes {
+            ui.click("keep-xattrs");
+        }
+        ui.click("create");
+        ui.wait_for_no_dialog();
+        let made = std::fs::File::open(work.join("a.tar")).expect("the archive");
+        let mut reader = hivepack::tar::Reader::new(made);
+        let header = reader.next().expect("a header").expect("a.txt");
+        assert_eq!(header.name, b"a.txt");
+        let mine = std::fs::metadata(&file).expect("the file");
+        assert_eq!((header.uid, header.gid), (i64::from(mine.uid()), i64::from(mine.gid())));
+        if attributes {
+            assert_eq!(
+                header.xattrs.get(&b"user.packwing"[..]).map(Vec::as_slice),
+                Some(&b"kept"[..])
+            );
+        }
+    }
+);

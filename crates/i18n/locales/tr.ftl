@@ -270,6 +270,12 @@ t2e9c9e78 = Sıkıştırma yok
 # {name} compression
 te2db10f6 = { $name } sıkıştırma
 
+# Several frames
+t84cc41f7 = Birkaç çerçeve
+
+# One frame
+tc6ef759e = Tek çerçeve
+
 # Parts of 25 MB
 ta999efe2 = 25 MB'lık parçalar
 
@@ -284,6 +290,27 @@ tafd4b17d = Yazılacak boyutta parçalar
 
 # Public key
 t9981f45f = Genel anahtar
+
+# Owners kept
+t63e8a0df = Sahipler korunur
+
+# Attributes kept
+te9e8289c = Öznitelikler korunur
+
+# To keep owners and extended attributes for a backup, pick a .tar format.
+tcf2585da = Bir yedekte sahipleri ve genişletilmiş öznitelikleri korumak için bir .tar biçimi seçin.
+
+# Keep for a backup
+t6a2bcc1a = Yedek için koru
+
+# Owners: user and group
+t5350e3fe = Sahipler: kullanıcı ve grup
+
+# Extended attributes and ACLs
+t35aff4d1 = Genişletilmiş öznitelikler ve ACL’ler
+
+# For a backup to restore on this computer. Whoever opens the archive sees the names of the users.
+ta47cc163 = Bu bilgisayarda geri yüklenecek bir yedek için. Arşivi açan herkes kullanıcı adlarını görür.
 
 # Beside the files
 t757989af = Dosyaların yanına
@@ -344,12 +371,6 @@ t273a832f = Daha yüksek düzey daha küçük bir arşiv üretir; arşivin oluş
 
 # Frames
 tf03e266f = Çerçeveler
-
-# Several frames
-t84cc41f7 = Birkaç çerçeve
-
-# One frame
-tc6ef759e = Tek çerçeve
 
 # Several frames open on every core, and make the archive a little larger: under half a percent.
 tf461cde7 = Birkaç çerçeve her çekirdekte açılır ve arşivi biraz büyütür: yüzde yarımdan az.
@@ -2131,6 +2152,9 @@ t2e221d1f = { $path } okunurken kısaldı.
 
 # A password has to be valid Unicode.
 t5ef729bc = Parola geçerli Unicode olmalı.
+
+# Could not read the extended attributes of {path}: {e}
+t4f1421d7 = { $path } için genişletilmiş öznitelikler okunamadı: { $e }
 
 # Could not start compressing: {e}
 tc4faa70c = Sıkıştırma başlatılamadı: { $e }

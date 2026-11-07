@@ -48,8 +48,8 @@ pub use checksum::{
 };
 pub use convert::{Converted, convert};
 pub use create::{
-    COMPRESSED_EXTENSIONS, FRAME_SIZE, Frames, Kind, Level, Measured, NewArchive, OnExisting,
-    Route, SEVERAL_FRAMES_FROM, add, add_with, age_key_is_post_quantum, age_key_problem,
+    COMPRESSED_EXTENSIONS, FRAME_SIZE, Frames, Keep, Kind, Level, Measured, NewArchive, OnExisting,
+    Route, SEVERAL_FRAMES_FROM, Times, add, add_with, age_key_is_post_quantum, age_key_problem,
     age_keys_in, can_add, create, create_on, delete, free_archive_path, measure, memory_needed,
     memory_warning, refused_by, rename, route, within_memory,
 };

@@ -268,6 +268,12 @@ t2e9c9e78 = 不压缩
 # {name} compression
 te2db10f6 = { $name } 压缩
 
+# Several frames
+t84cc41f7 = 多帧
+
+# One frame
+tc6ef759e = 单帧
+
 # Parts of 25 MB
 ta999efe2 = 每卷 25 MB
 
@@ -282,6 +288,27 @@ tafd4b17d = 每卷大小自行输入
 
 # Public key
 t9981f45f = 公钥
+
+# Owners kept
+t63e8a0df = 保留所有者
+
+# Attributes kept
+te9e8289c = 保留属性
+
+# To keep owners and extended attributes for a backup, pick a .tar format.
+tcf2585da = 要在备份中保留所有者和扩展属性，请选择 .tar 格式。
+
+# Keep for a backup
+t6a2bcc1a = 为备份保留
+
+# Owners: user and group
+t5350e3fe = 所有者：用户和组
+
+# Extended attributes and ACLs
+t35aff4d1 = 扩展属性和 ACL
+
+# For a backup to restore on this computer. Whoever opens the archive sees the names of the users.
+ta47cc163 = 用于在这台电脑上恢复的备份。打开归档的人都能看到用户名。
 
 # Beside the files
 t757989af = 与文件放在一起
@@ -342,12 +369,6 @@ t273a832f = 级别越高，压缩包越小，但生成时间更长，打开时�
 
 # Frames
 tf03e266f = 帧
-
-# Several frames
-t84cc41f7 = 多帧
-
-# One frame
-tc6ef759e = 单帧
 
 # Several frames open on every core, and make the archive a little larger: under half a percent.
 tf461cde7 = 多帧可在所有核心上打开，压缩包会稍大一些：不到百分之零点五。
@@ -2097,6 +2118,9 @@ t2e221d1f = 读取过程中 { $path } 变短了。
 
 # A password has to be valid Unicode.
 t5ef729bc = 密码必须是有效的 Unicode。
+
+# Could not read the extended attributes of {path}: {e}
+t4f1421d7 = 无法读取 { $path } 的扩展属性：{ $e }
 
 # Could not start compressing: {e}
 tc4faa70c = 无法开始压缩：{ $e }

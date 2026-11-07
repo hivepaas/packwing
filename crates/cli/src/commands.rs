@@ -4,8 +4,8 @@ use std::io::Write as _;
 use std::path::{Path, PathBuf};
 
 use packwing_core::{
-    Algorithm, COMPRESSED_EXTENSIONS, Entry, ExtractOptions, Filter, Frames, Kind, Listing,
-    LocalFolder, NewArchive, OnExisting, Source, Transfer, add_with, algorithms_of,
+    Algorithm, COMPRESSED_EXTENSIONS, Entry, ExtractOptions, Filter, Frames, Keep, Kind, Listing,
+    LocalFolder, NewArchive, OnExisting, Source, Times, Transfer, add_with, algorithms_of,
     came_from_internet, checksum_line, checksums, convert, create, damages, delete,
     extract_selected, extract_with, has_signature, join_parts, left_out, list, read_entry, rename,
     renamings, save_checksum, signature_name, size, split_file, stem, test, transfer,
@@ -18,7 +18,7 @@ use crate::names::{
 };
 use crate::places::Place;
 use crate::signing::{keygen_cmd, sign_cmd, verify_cmd};
-use crate::{Command, Context, Exit, Making};
+use crate::{Backup, Command, Context, Exit, Making};
 
 pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
     match command {
@@ -58,8 +58,14 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
             archive,
             paths,
             make,
+            backup,
         } => {
-            let (archive, new) = making(&archive, make, cx)?;
+            let (archive, mut new) = making(&archive, make, cx)?;
+            new.keep = kept_for_backup(&backup, new.kind)?;
+            new.times = times_of(
+                backup.mtime.as_deref(),
+                std::env::var("SOURCE_DATE_EPOCH").ok(),
+            )?;
             write_archive(&archive, &paths, &new, cx)
         }
         Command::Convert {
@@ -508,6 +514,103 @@ fn frames_named(word: Option<&str>, kind: Kind) -> Result<Frames, Exit> {
         "several" | "many" => Ok(Frames::Several),
         _ => Err(Exit::Usage(format!("no --frames {word}: one or several"))),
     }
+}
+
+/// What `backup` asks a new archive of `kind` to keep: tar alone has a place for it.
+fn kept_for_backup(backup: &Backup, kind: Kind) -> Result<Keep, Exit> {
+    let keep = Keep {
+        owners: backup.owners,
+        xattrs: backup.xattrs,
+    };
+    if keep.any() && !kind.is_tar() {
+        return Err(Exit::Usage(
+            "--owners and --xattrs keep them in a tar archive: tar, tar.zst, tar.gz, tar.xz, tar.bz2 or tar.lz4".into(),
+        ));
+    }
+    if keep.owners && !cfg!(unix) {
+        return Err(Exit::Usage(
+            "--owners keeps Unix owners, which this system has not".into(),
+        ));
+    }
+    if keep.xattrs && !cfg!(any(target_os = "linux", target_os = "macos")) {
+        return Err(Exit::Usage(
+            "--xattrs keeps extended attributes on Linux and macOS only".into(),
+        ));
+    }
+    Ok(keep)
+}
+
+/// The times a new archive gives its files: all `mtime` (`--mtime`), else none
+/// later than `source_date_epoch`, the environment's `SOURCE_DATE_EPOCH`, as
+/// reproducible builds ask, else as they are.
+fn times_of(mtime: Option<&str>, source_date_epoch: Option<String>) -> Result<Times, Exit> {
+    if let Some(when) = mtime {
+        return time_typed(when).map(Times::All).ok_or_else(|| {
+            Exit::Usage(format!(
+                "not a time: {when} (as @1700000000, 2026-11-07 or 2026-11-07T10:30:00)"
+            ))
+        });
+    }
+    match source_date_epoch.as_deref().map(str::trim) {
+        None | Some("") => Ok(Times::AsTheyAre),
+        Some(secs) => secs.parse().map(Times::AtMost).map_err(|_| {
+            Exit::Usage(format!(
+                "SOURCE_DATE_EPOCH is not seconds since 1970: {secs}"
+            ))
+        }),
+    }
+}
+
+/// `@SECONDS` since 1970, `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SS` (a space for the
+/// `T`, and a `Z` after, taken too), in UTC: seconds since 1970.
+fn time_typed(when: &str) -> Option<i64> {
+    let when = when.trim();
+    if let Some(secs) = when.strip_prefix('@') {
+        return secs.parse().ok();
+    }
+    let when = when.strip_suffix('Z').unwrap_or(when);
+    let (date, time) = match when.split_once(['T', ' ']) {
+        Some((date, time)) => (date, Some(time)),
+        None => (when, None),
+    };
+    let number = |s: &str, digits: usize| {
+        (s.len() == digits && s.bytes().all(|b| b.is_ascii_digit()))
+            .then(|| s.parse::<i64>().ok())
+            .flatten()
+    };
+    let mut parts = date.split('-');
+    let (year, month, day) = (
+        number(parts.next()?, 4)?,
+        number(parts.next()?, 2)?,
+        number(parts.next()?, 2)?,
+    );
+    if parts.next().is_some() || !(1..=12).contains(&month) || !(1..=31).contains(&day) {
+        return None;
+    }
+    let (hour, minute, second) = match time {
+        None => (0, 0, 0),
+        Some(time) => {
+            let mut parts = time.split(':');
+            let hms = (
+                number(parts.next()?, 2)?,
+                number(parts.next()?, 2)?,
+                number(parts.next()?, 2)?,
+            );
+            if parts.next().is_some() || hms.0 > 23 || hms.1 > 59 || hms.2 > 60 {
+                return None;
+            }
+            hms
+        }
+    };
+    // Howard Hinnant's days_from_civil.
+    let y = if month <= 2 { year - 1 } else { year };
+    let era = y.div_euclid(400);
+    let yoe = y - era * 400;
+    let mp = (month + 9) % 12;
+    let doy = (153 * mp + 2) / 5 + day - 1;
+    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+    let days = era * 146_097 + doe - 719_468;
+    Some(days * 86_400 + hour * 3_600 + minute * 60 + second)
 }
 
 /// Makes the archive `new` at `archive`, of `paths`, and says what it made.
@@ -1018,6 +1121,54 @@ fn passphrase_cmd(min: usize, cx: &Context) -> Result<(), Exit> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn times_are_typed_as_gnu_tar_takes_them() {
+        assert_eq!(time_typed("@1700000000"), Some(1_700_000_000));
+        assert_eq!(time_typed("@-1"), Some(-1));
+        assert_eq!(time_typed("1970-01-01"), Some(0));
+        assert_eq!(time_typed("2026-11-07"), Some(1_794_009_600));
+        assert_eq!(time_typed("2026-11-07T10:30:00"), Some(1_794_047_400));
+        assert_eq!(time_typed("2026-11-07 10:30:00Z"), Some(1_794_047_400));
+        assert_eq!(time_typed("2000-02-29"), Some(951_782_400));
+        assert_eq!(time_typed("1969-12-31T23:59:59"), Some(-1));
+        for bad in [
+            "",
+            "@",
+            "2026-13-01",
+            "2026-1-07",
+            "2026-11-07T25:00:00",
+            "yesterday",
+        ] {
+            assert_eq!(time_typed(bad), None, "{bad:?}");
+        }
+    }
+
+    #[test]
+    fn source_date_epoch_takes_later_times_back_unless_one_time_is_given() {
+        let epoch = Some("1700000000".to_owned());
+        assert!(matches!(times_of(None, None), Ok(Times::AsTheyAre)));
+        assert!(matches!(
+            times_of(None, epoch.clone()),
+            Ok(Times::AtMost(1_700_000_000))
+        ));
+        assert!(matches!(times_of(Some("@5"), epoch), Ok(Times::All(5))));
+        assert!(times_of(None, Some("soon".into())).is_err());
+        assert!(times_of(Some("soon"), None).is_err());
+    }
+
+    #[test]
+    fn owners_and_attributes_are_for_tar_alone() {
+        let backup = Backup {
+            owners: true,
+            ..Backup::default()
+        };
+        assert!(kept_for_backup(&backup, Kind::Zip).is_err());
+        assert!(kept_for_backup(&Backup::default(), Kind::Zip).is_ok());
+        if cfg!(unix) {
+            assert!(kept_for_backup(&backup, Kind::TarZst).is_ok_and(|keep| keep.owners));
+        }
+    }
 
     #[test]
     fn a_sums_file_s_lines_are_read_as_tools_write_them() {

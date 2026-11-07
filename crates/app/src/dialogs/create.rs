@@ -14,7 +14,7 @@ use gpui::{
     ScrollHandle, Stateful, Subscription, Task, UniformListScrollHandle, Window, div, prelude::*,
     relative, rgb,
 };
-use packwing_core::{Frames, Kind, NewArchive, Route, Source};
+use packwing_core::{Frames, Keep, Kind, NewArchive, Route, Source};
 
 pub(crate) use packwing_core::Level;
 
@@ -32,6 +32,12 @@ use crate::widgets::{
     Chosen, Fill, Select, SelectLook, Size, Tone, button, check_row, icon, icon_button, legend,
     note, segment, segments, switch, tonal_tint,
 };
+
+/// Whether a tar archive can keep its files' owners here.
+const CAN_KEEP_OWNERS: bool = cfg!(unix);
+
+/// Whether a tar archive can keep its files' extended attributes here.
+const CAN_KEEP_XATTRS: bool = cfg!(any(target_os = "linux", target_os = "macos"));
 
 /// A kind of archive New archive makes.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -321,6 +327,9 @@ pub struct CreateDialog {
     /// Why the file chosen gave no keys.
     keys_file_problem: Option<String>,
     hide_names: bool,
+    /// What a tar archive keeps for a backup: never kept from one archive to the
+    /// next, as an archive to share has no use for it.
+    keep: Keep,
     /// Create was pressed with something missing: the notes say what.
     checked: bool,
     /// Why it did not start: another job makes an archive of that name there now.
@@ -437,6 +446,7 @@ impl CreateDialog {
             keys_file: None,
             keys_file_problem: None,
             hide_names: kept.hide_names,
+            keep: Keep::default(),
             checked: false,
             busy: None,
             memory_said: std::cell::RefCell::new(None),
@@ -505,6 +515,17 @@ impl CreateDialog {
         self.part
             .update(cx, |t, cx| t.set_text(part, part.len()..part.len(), cx));
         self.protect = true;
+        cx.notify();
+    }
+
+    /// Asks a tar archive to keep owners and extended attributes for a backup, as
+    /// pressing them would, for tests.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn keep_for_backup(&mut self, cx: &mut Context<Self>) {
+        self.keep = Keep {
+            owners: true,
+            xattrs: true,
+        };
         cx.notify();
     }
 
@@ -1060,6 +1081,8 @@ impl CreateDialog {
                 part_size: self.parts(cx),
                 stream_above: Some(crate::prefs::prefs(cx).stream_above),
                 frames: self.frames(cx),
+                keep: self.kept(cx),
+                times: Default::default(),
             },
         });
         if self.converting
@@ -1113,7 +1136,83 @@ impl CreateDialog {
         } else if self.protected() {
             said.push(tr!("Password"));
         }
+        let keep = self.kept(cx);
+        if keep.owners {
+            said.push(tr!("Owners kept"));
+        }
+        if keep.xattrs {
+            said.push(tr!("Attributes kept"));
+        }
         said
+    }
+
+    /// What the archive keeps for a backup: what was asked, where it can be kept.
+    fn kept(&self, cx: &App) -> Keep {
+        if self.converting || !self.format(cx).kind().is_tar() {
+            return Keep::default();
+        }
+        Keep {
+            owners: self.keep.owners && CAN_KEEP_OWNERS,
+            xattrs: self.keep.xattrs && CAN_KEEP_XATTRS,
+        }
+    }
+
+    /// What can be kept for a backup: on Unix, a tar archive's owners and, on Linux
+    /// and macOS, its extended attributes; asked for a ZIP or 7z one, tar is
+    /// suggested. Nothing when converting, which has no files of this computer's.
+    fn backup(&self, cx: &mut Context<Self>) -> Option<impl IntoElement + use<>> {
+        let c = colors();
+        let format = self.format(cx);
+        if self.converting || !CAN_KEEP_OWNERS || format.one_file() {
+            return None;
+        }
+        let panel = div()
+            .debug_selector(|| "backup".to_owned())
+            .flex()
+            .flex_col()
+            .gap(ui(10.))
+            .p(ui(16.))
+            .rounded(ui(20.))
+            .bg(rgb(c.well));
+        if !format.kind().is_tar() {
+            return Some(
+                panel.child(div().text_size(ui(13.)).text_color(rgb(c.muted)).child(tr!(
+                    "To keep owners and extended attributes for a backup, pick a .tar format."
+                ))),
+            );
+        }
+        Some(
+            panel
+                .child(
+                    div()
+                        .text_size(ui(15.))
+                        .font_weight(FontWeight::SEMIBOLD)
+                        .child(tr!("Keep for a backup")),
+                )
+                .child(
+                    check_row("keep-owners", self.keep.owners, tr!("Owners: user and group"))
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.keep.owners = !this.keep.owners;
+                            cx.notify();
+                        })),
+                )
+                .when(CAN_KEEP_XATTRS, |d| {
+                    d.child(
+                        check_row(
+                            "keep-xattrs",
+                            self.keep.xattrs,
+                            tr!("Extended attributes and ACLs"),
+                        )
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.keep.xattrs = !this.keep.xattrs;
+                            cx.notify();
+                        })),
+                    )
+                })
+                .child(div().text_size(ui(13.)).text_color(rgb(c.muted)).child(tr!(
+                    "For a backup to restore on this computer. Whoever opens the archive sees the names of the users."
+                ))),
+        )
     }
 
     /// What goes in the archive, and where it goes.
@@ -1925,7 +2024,9 @@ impl Render for CreateDialog {
                     .child(self.name_field(cx))
                     .child(self.advanced_toggle(cx))
                     .when(self.advanced, |d| {
-                        d.child(self.compression(cx)).child(self.protection(cx))
+                        d.child(self.compression(cx))
+                            .child(self.protection(cx))
+                            .children(self.backup(cx))
                     })
                     .children(self.busy.clone().map(|why| {
                         note(Tone::Warn)

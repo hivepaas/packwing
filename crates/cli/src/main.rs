@@ -149,6 +149,8 @@ enum Command {
         paths: Vec<PathBuf>,
         #[command(flatten)]
         make: Making,
+        #[command(flatten)]
+        backup: Backup,
     },
     /// Make an archive of what another holds, in another format: `pkw convert a.rar a.tar.zst`.
     ///
@@ -342,6 +344,25 @@ pub struct Making {
     /// __MACOSX and ._ files.
     #[arg(long)]
     pub keep_mac_files: bool,
+}
+
+/// What a new archive keeps for a backup, and the times it gives its files.
+#[derive(Args, Debug, Default)]
+pub struct Backup {
+    /// Keep each file's owner and group, by number and by name, for a backup to
+    /// restore on this computer: tar only. Left out, they are 0 and none.
+    #[arg(long)]
+    pub owners: bool,
+    /// Keep each file's extended attributes, Linux's ACLs among them, as GNU tar's
+    /// --xattrs does: tar only, on Linux and macOS.
+    #[arg(long)]
+    pub xattrs: bool,
+    /// Give every file this time, as GNU tar's --mtime: @SECONDS since 1970,
+    /// 2026-11-07 or 2026-11-07T10:30:00, in UTC. Without it, a time later than
+    /// SOURCE_DATE_EPOCH, when that is set, is taken back to it, so that the same
+    /// files make the same archive.
+    #[arg(long, value_name = "WHEN")]
+    pub mtime: Option<String>,
 }
 
 /// How it went, as the exit code says.
