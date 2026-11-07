@@ -9,7 +9,7 @@ Built in Rust on [hivepack](https://github.com/hivepaas/hivepack-rs).
 * **Every core at work:** ZIP, 7z, `.tar.xz`, `.tar.zst` and `.tar.bz2` are compressed on all of the computer's cores at once, and what is written in pieces (by packwing, `xz -T`, pbzip2 or 7-Zip) is read on all of them too; a ZIP archive's files are extracted several at once. The archive is the same, byte for byte, however many cores made it. The threads take no more than half of the memory free, so a big job never runs the computer out of memory, and Settings › General, or `pkw --threads N`, sets how many.
 * **Safe by default:** nothing is written outside the destination folder or through links, archive bombs stop at a size limit, and an existing file is never written over unless you say so. A file opens as a copy in a temporary folder, after asking, and a program always asks.
 * **Opens what you come across:** ZIP (split archives too), RAR 1.4 to 7 (volumes too), 7z, tar, cpio, disc images (ISO 9660 and UDF), RPM packages and macOS packages, inside any of the layers around them: gzip, zstd, xz, bzip2 and more.
-* **Writes archives:** ZIP, 7z, `.tar.gz`, `.tar.xz` and `.tar.zst`, with five levels, AES-256 on ZIP and 7z (7z can hide the names too), and parts as 7-Zip cuts them.
+* **Writes archives:** ZIP, 7z, `.tar.gz`, `.tar.xz` and `.tar.zst`, with five levels, AES-256 on ZIP and 7z (7z can hide the names too), and parts as 7-Zip cuts them. A tar archive holds a file with several names (hard links) once, and keeps for a backup, when asked, each file's owner and group and its extended attributes (Linux's ACLs among them), as GNU tar's `--xattrs` does; they are left out otherwise, so that an archive to share does not tell the names of its users.
 * **age built in:** opens and writes `.age` files with a passphrase, age keys, Ed25519 SSH keys and post-quantum keys.
 * **Edits ZIP archives:** add, delete and rename inside an archive, which goes in place only once the new one reads back.
 * **Look before you extract:** a search through all of an archive, whatever the case and accents (`bao cao` finds `Báo cáo`), a preview of pictures and text, and Extract for just what is selected. The archive's password is asked once: it is kept in memory, never written, until ten minutes after it was last used.
@@ -82,6 +82,8 @@ pkw create site.tar.zst site/           # its format by its extension, or -f; -l
 pkw create -p --hide-names private.7z docs/      # with a password, asked; its names hidden
 pkw create notes.tar.zst docs/ --encrypt-to age1…  # encrypted to a key: notes.tar.zst.age
 pkw create --split 25MB mail.zip photos/          # in parts: mail.zip.001, .002…
+pkw create --owners --xattrs home.tar.zst ~/      # for a backup: owners, extended attributes and ACLs
+pkw create --mtime 2026-01-01 src.tar.gz src/     # one time for every file; SOURCE_DATE_EPOCH caps them
 pkw add archive.zip new.txt --into docs  # and delete, rename: a ZIP archive, in place
 pkw split backup.iso --size 4GB         # into parts beside it, as 7-Zip cuts one: backup.iso.001, .002…
 pkw join backup.iso.001                 # back into backup.iso, the parts checked first

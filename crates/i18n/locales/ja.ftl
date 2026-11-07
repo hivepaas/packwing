@@ -283,6 +283,27 @@ tafd4b17d = 入力したサイズごとのパート
 # Public key
 t9981f45f = 公開鍵
 
+# Owners kept
+t63e8a0df = 所有者を保持
+
+# Attributes kept
+te9e8289c = 属性を保持
+
+# To keep owners and extended attributes for a backup, pick a .tar format.
+tcf2585da = バックアップで所有者と拡張属性を保持するには、.tar 形式を選んでください。
+
+# Keep for a backup
+t6a2bcc1a = バックアップ用に保持
+
+# Owners: user and group
+t5350e3fe = 所有者: ユーザーとグループ
+
+# Extended attributes and ACLs
+t35aff4d1 = 拡張属性と ACL
+
+# For a backup to restore on this computer. Whoever opens the archive sees the names of the users.
+ta47cc163 = このコンピュータで復元するバックアップ用です。アーカイブを開いた人にはユーザー名が見えます。
+
 # Beside the files
 t757989af = ファイルと同じ場所
 
@@ -2082,6 +2103,9 @@ t2e221d1f = { $path } は読み取り中に小さくなりました。
 
 # A password has to be valid Unicode.
 t5ef729bc = パスワードは有効な Unicode である必要があります。
+
+# Could not read the extended attributes of {path}: {e}
+t4f1421d7 = { $path } の拡張属性を読み取れませんでした: { $e }
 
 # Could not start compressing: {e}
 tc4faa70c = 圧縮を開始できませんでした：{ $e }

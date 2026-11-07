@@ -30,9 +30,12 @@ sha2 = { version = "0.11", default-features = false }
 md-5 = { version = "0.11", default-features = false }
 blake3 = "1.8"
 
-# Quarantine on what is copied here from elsewhere.
-[target.'cfg(target_os = "macos")'.dependencies]
+# Quarantine on what is copied here from elsewhere, on macOS; a file's extended
+# attributes and ACLs in a tar archive kept for a backup, on Unix.
+[target.'cfg(unix)'.dependencies]
 xattr = "1"
+# The names of a file's owner and group, in a tar archive kept for a backup.
+nix = { version = "0.31", default-features = false, features = ["user"] }
 
 [lints]
 workspace = true

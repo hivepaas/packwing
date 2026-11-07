@@ -285,6 +285,27 @@ tafd4b17d = Teile in selbst eingegebener Größe
 # Public key
 t9981f45f = Öffentlicher Schlüssel
 
+# Owners kept
+t63e8a0df = Besitzer behalten
+
+# Attributes kept
+te9e8289c = Attribute behalten
+
+# To keep owners and extended attributes for a backup, pick a .tar format.
+tcf2585da = Um Besitzer und erweiterte Attribute für eine Sicherung zu behalten, wähle ein .tar-Format.
+
+# Keep for a backup
+t6a2bcc1a = Für eine Sicherung behalten
+
+# Owners: user and group
+t5350e3fe = Besitzer: Benutzer und Gruppe
+
+# Extended attributes and ACLs
+t35aff4d1 = Erweiterte Attribute und ACLs
+
+# For a backup to restore on this computer. Whoever opens the archive sees the names of the users.
+ta47cc163 = Für eine Sicherung, die auf diesem Computer wiederhergestellt wird. Wer das Archiv öffnet, sieht die Benutzernamen.
+
 # Beside the files
 t757989af = Neben den Dateien
 
@@ -2116,6 +2137,9 @@ t2e221d1f = { $path } wurde beim Lesen kürzer.
 
 # A password has to be valid Unicode.
 t5ef729bc = Ein Passwort muss gültiges Unicode sein.
+
+# Could not read the extended attributes of {path}: {e}
+t4f1421d7 = Die erweiterten Attribute von { $path } konnten nicht gelesen werden: { $e }
 
 # Could not start compressing: {e}
 tc4faa70c = Komprimieren ließ sich nicht starten: { $e }
