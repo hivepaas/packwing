@@ -3,8 +3,9 @@
 //! program, or Rust does), so it is kept from happening.
 //!
 //! When a job starts, it asks for the most threads it may take ([`crate::threads`])
-//! whose memory fits the budget: half of what the system says is available
-//! now ([`available`]), less what the jobs running hold. One thread is always
+//! whose memory fits the budget: 70% of what the system says is available now
+//! ([`available`]), leaving at least [`LEFT`] of it to everything else, and
+//! never less than half of it ([`share_of`]), less what the jobs running hold. One thread is always
 //! given, as it takes what the job takes without threads. What a job holds is
 //! given back when it ends ([`Held`]).
 //!
@@ -16,7 +17,7 @@
 //! What is available is measured by hivepack's `memory`: the least of what
 //! the system has free and what its limits on packwing leave, a control
 //! group's and `ulimit`'s on Linux, a job object's on Windows. The policy is
-//! packwing's: half of it, never less than [`LEAST`], and `PACKWING_MEMORY`.
+//! packwing's: [`share_of`] it, never less than [`LEAST`], and `PACKWING_MEMORY`.
 
 use std::sync::OnceLock;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -31,6 +32,20 @@ static AVAILABLE: AtomicU64 = AtomicU64::new(0);
 /// most coders needs, so that a busy system is not told nothing at all.
 const LEAST: u64 = 64 << 20;
 
+/// What the jobs' threads leave to everything else of what is available, at
+/// least, once there is enough of it that half would leave more: 2 GiB, for
+/// the programs that grow while a long job runs.
+const LEFT: u64 = 2 << 30;
+
+/// What the jobs' threads may take of `available` bytes: 70% of them, but no
+/// more than leaves [`LEFT`], and never less than half, as it always was.
+/// Half up to 4 GiB available, then more, 70% from about 6.7 GiB on.
+fn share_of(available: u64) -> u64 {
+    let most = available / 10 * 7;
+    let leaving = available.saturating_sub(LEFT);
+    (available / 2).max(most.min(leaving))
+}
+
 /// The jobs' budget, shared between them: its bytes are measured again each
 /// time a job asks ([`refreshed`]). Each thread's overhead under `ulimit -v`
 /// (its stack, and the allocator's arena) is the system's, measured once.
@@ -42,7 +57,7 @@ fn shared() -> &'static Budget {
     })
 }
 
-/// The budget, its bytes half of what is available now, and never so few
+/// The budget, its bytes [`share_of`] what is available now, and never so few
 /// that less than [`LEAST`] is left past what the jobs running hold.
 fn refreshed() -> &'static Budget {
     refresh(shared())
@@ -50,7 +65,7 @@ fn refreshed() -> &'static Budget {
 
 /// `budget`, its bytes set as [`refreshed`] sets the shared one's.
 fn refresh(budget: &Budget) -> &Budget {
-    budget.set_bytes((available() / 2).max(budget.held().saturating_add(LEAST)));
+    budget.set_bytes(share_of(available()).max(budget.held().saturating_add(LEAST)));
     budget
 }
 
@@ -87,7 +102,7 @@ pub fn set_available(bytes: u64) {
     AVAILABLE.store(bytes, Ordering::Relaxed);
 }
 
-/// What a job starting now may take for its threads: half of what is
+/// What a job starting now may take for its threads: [`share_of`] what is
 /// available, less what the jobs running hold, and never less than
 /// [`LEAST`].
 pub fn budget() -> u64 {
@@ -115,6 +130,32 @@ mod tests {
     use super::*;
 
     const MIB: u64 = 1 << 20;
+    const GIB: u64 = 1 << 30;
+
+    #[test]
+    fn half_of_little_memory_and_seventy_percent_of_more_leaving_two_gib() {
+        // Half while it leaves more than 2 GiB would.
+        assert_eq!(share_of(3 * GIB), 3 * GIB / 2);
+        assert_eq!(share_of(4 * GIB), 2 * GIB);
+        // Between, all but 2 GiB.
+        assert_eq!(share_of(6 * GIB), 4 * GIB);
+        // 70% once that leaves 2 GiB or more.
+        assert_eq!(share_of(8 * GIB), 8 * GIB / 10 * 7);
+        assert_eq!(share_of(50 * GIB), 50 * GIB / 10 * 7);
+        assert_eq!(share_of(0), 0);
+        // Never less than half nor more than 70%, and never less for more.
+        let mut before = 0;
+        for mib in (0..=64 * 1024).step_by(97) {
+            let bytes = mib * MIB;
+            let share = share_of(bytes);
+            assert!(
+                share >= bytes / 2 && share <= bytes / 10 * 7,
+                "{mib} MiB: {share}"
+            );
+            assert!(share >= before, "{mib} MiB: {share} after {before}");
+            before = share;
+        }
+    }
 
     // A budget of its own: the tests that make archives hold from the
     // shared one at the same time.
