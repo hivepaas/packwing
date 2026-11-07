@@ -1355,8 +1355,9 @@ fn hard_link_key(metadata: &Metadata) -> Option<(u64, u64)> {
 }
 
 /// The names of the owners and groups found so far, which the system is asked
-/// for once each.
+/// for once each. Asked on Unix only: elsewhere a tar archive keeps none.
 #[derive(Default)]
+#[cfg_attr(not(unix), allow(dead_code))]
 struct Kept {
     users: HashMap<u32, Vec<u8>>,
     groups: HashMap<u32, Vec<u8>>,
