@@ -285,6 +285,27 @@ tafd4b17d = Yazılacak boyutta parçalar
 # Public key
 t9981f45f = Genel anahtar
 
+# Owners kept
+t63e8a0df = Sahipler korunur
+
+# Attributes kept
+te9e8289c = Öznitelikler korunur
+
+# To keep owners and extended attributes for a backup, pick a .tar format.
+tcf2585da = Bir yedekte sahipleri ve genişletilmiş öznitelikleri korumak için bir .tar biçimi seçin.
+
+# Keep for a backup
+t6a2bcc1a = Yedek için koru
+
+# Owners: user and group
+t5350e3fe = Sahipler: kullanıcı ve grup
+
+# Extended attributes and ACLs
+t35aff4d1 = Genişletilmiş öznitelikler ve ACL’ler
+
+# For a backup to restore on this computer. Whoever opens the archive sees the names of the users.
+ta47cc163 = Bu bilgisayarda geri yüklenecek bir yedek için. Arşivi açan herkes kullanıcı adlarını görür.
+
 # Beside the files
 t757989af = Dosyaların yanına
 
@@ -2116,6 +2137,9 @@ t2e221d1f = { $path } okunurken kısaldı.
 
 # A password has to be valid Unicode.
 t5ef729bc = Parola geçerli Unicode olmalı.
+
+# Could not read the extended attributes of {path}: {e}
+t4f1421d7 = { $path } için genişletilmiş öznitelikler okunamadı: { $e }
 
 # Could not start compressing: {e}
 tc4faa70c = Sıkıştırma başlatılamadı: { $e }

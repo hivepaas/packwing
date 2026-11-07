@@ -2747,3 +2747,242 @@ fn a_tar_lzma_under_its_short_name_opens() {
     assert_eq!(listing.files, 3);
     test(&tlz, &Keys::default(), &Control::default()).unwrap();
 }
+
+/// The headers of the plain tar archive at `path`, by name.
+fn tar_headers(path: &Path) -> Vec<hivepack::tar::Header> {
+    let mut reader = hivepack::tar::Reader::new(fs::File::open(path).unwrap());
+    let mut headers = Vec::new();
+    while let Some(header) = reader.next().unwrap() {
+        headers.push(header);
+    }
+    headers
+}
+
+fn header<'a>(headers: &'a [hivepack::tar::Header], name: &str) -> &'a hivepack::tar::Header {
+    headers
+        .iter()
+        .find(|h| h.name == name.as_bytes())
+        .unwrap_or_else(|| panic!("no {name}"))
+}
+
+fn plain_tar(keep: packwing_core::Keep, times: packwing_core::Times) -> NewArchive {
+    NewArchive {
+        kind: Kind::Tar,
+        keep,
+        times,
+        ..NewArchive::default()
+    }
+}
+
+/// A file with two names is in a tar archive once, its second name a hard link
+/// to the first, and comes out as one file with two names; ZIP keeps both whole.
+#[cfg(unix)]
+#[test]
+fn a_file_with_two_names_goes_in_a_tar_archive_once() {
+    use std::os::unix::fs::MetadataExt;
+    let s = Scratch::new("hard-links");
+    let root = s.path("d");
+    fs::create_dir_all(&root).unwrap();
+    fs::write(root.join("a"), big()).unwrap();
+    fs::hard_link(root.join("a"), root.join("b")).unwrap();
+    let new = plain_tar(Default::default(), Default::default());
+    let made = create(
+        std::slice::from_ref(&root),
+        &s.path("a.tar"),
+        &new,
+        &Control::default(),
+    )
+    .unwrap();
+    let headers = tar_headers(&made);
+    assert_eq!(header(&headers, "d/a").typeflag, hivepack::tar::TYPE_REG);
+    let b = header(&headers, "d/b");
+    assert_eq!(
+        (b.typeflag, b.linkname.as_slice()),
+        (hivepack::tar::TYPE_LINK, &b"d/a"[..])
+    );
+    assert!(fs::metadata(&made).unwrap().len() < 2 * big().len() as u64);
+    let out = s.path("out");
+    extract(&made, &out, &Keys::default(), &Control::default()).unwrap();
+    let (a, b) = (
+        fs::metadata(out.join("d/a")).unwrap(),
+        fs::metadata(out.join("d/b")).unwrap(),
+    );
+    assert_eq!(a.ino(), b.ino());
+    assert_eq!(fs::read(out.join("d/b")).unwrap(), big());
+    // ZIP has no hard links: both are whole.
+    let zip = NewArchive::default();
+    let made = create(
+        std::slice::from_ref(&root),
+        &s.path("a.zip"),
+        &zip,
+        &Control::default(),
+    )
+    .unwrap();
+    let listing = list(made, &Keys::default()).unwrap();
+    let sizes: Vec<u64> = listing
+        .entries
+        .iter()
+        .filter(|e| !e.dir)
+        .map(|e| e.size)
+        .collect();
+    assert_eq!(sizes, [big().len() as u64; 2]);
+}
+
+/// Owners are kept in a tar archive only when asked: by number and by name.
+#[cfg(unix)]
+#[test]
+fn owners_are_kept_when_asked() {
+    use std::os::unix::fs::MetadataExt;
+    let s = Scratch::new("owners");
+    let file = s.path("f");
+    fs::write(&file, "x").unwrap();
+    let mine = fs::metadata(&file).unwrap();
+    let made = |keep, name: &str| {
+        let new = plain_tar(keep, Default::default());
+        create(
+            std::slice::from_ref(&file),
+            &s.path(name),
+            &new,
+            &Control::default(),
+        )
+        .unwrap()
+    };
+    let plain = tar_headers(&made(Default::default(), "plain.tar"));
+    let h = header(&plain, "f");
+    assert_eq!((h.uid, h.gid, h.uname.len(), h.gname.len()), (0, 0, 0, 0));
+    let keep = packwing_core::Keep {
+        owners: true,
+        ..Default::default()
+    };
+    let kept = tar_headers(&made(keep, "kept.tar"));
+    let h = header(&kept, "f");
+    assert_eq!(
+        (h.uid, h.gid),
+        (i64::from(mine.uid()), i64::from(mine.gid()))
+    );
+    let user = nix::unistd::User::from_uid(nix::unistd::Uid::from_raw(mine.uid()))
+        .unwrap()
+        .map(|u| u.name)
+        .unwrap_or_default();
+    assert_eq!(String::from_utf8_lossy(&h.uname), user);
+}
+
+/// Extended attributes are kept in a tar archive only when asked, as PAX's
+/// `SCHILY.xattr.` records, which GNU tar reads.
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[test]
+fn extended_attributes_are_kept_when_asked() {
+    let s = Scratch::new("xattrs");
+    let file = s.path("f");
+    fs::write(&file, "x").unwrap();
+    if let Err(e) = xattr::set(&file, "user.packwing", b"b\x00inary") {
+        eprintln!("skipping: this file system takes no extended attributes ({e})");
+        return;
+    }
+    let made = |keep, name: &str| {
+        let new = plain_tar(keep, Default::default());
+        create(
+            std::slice::from_ref(&file),
+            &s.path(name),
+            &new,
+            &Control::default(),
+        )
+        .unwrap()
+    };
+    let plain = tar_headers(&made(Default::default(), "plain.tar"));
+    assert!(header(&plain, "f").xattrs.is_empty());
+    let keep = packwing_core::Keep {
+        xattrs: true,
+        ..Default::default()
+    };
+    let path = made(keep, "kept.tar");
+    let kept = tar_headers(&path);
+    assert_eq!(
+        header(&kept, "f")
+            .xattrs
+            .get(&b"user.packwing"[..])
+            .map(Vec::as_slice),
+        Some(&b"b\x00inary"[..])
+    );
+    if installed("tar") && cfg!(target_os = "linux") {
+        let out = s.path("gnu");
+        fs::create_dir_all(&out).unwrap();
+        let status = Command::new("tar")
+            .args(["--xattrs", "--xattrs-include=user.*", "-xf"])
+            .arg(&path)
+            .arg("-C")
+            .arg(&out)
+            .status()
+            .unwrap();
+        assert!(status.success());
+        assert_eq!(
+            xattr::get(out.join("f"), "user.packwing")
+                .unwrap()
+                .as_deref(),
+            Some(&b"b\x00inary"[..])
+        );
+    }
+}
+
+/// The same files, changed at other times, make the same archive with one time
+/// for all, of every kind; a time is taken back to the latest one allowed.
+#[test]
+fn one_time_for_all_makes_the_same_archive() {
+    let s = Scratch::new("times");
+    let make_tree = |name: &str, secs: u64| {
+        let root = s.path(name).join("d");
+        fs::create_dir_all(root.join("sub")).unwrap();
+        for (file, text) in [("a.txt", "a"), ("sub/b.txt", "b")] {
+            let path = root.join(file);
+            fs::write(&path, text).unwrap();
+            let when = std::time::UNIX_EPOCH + std::time::Duration::from_secs(secs);
+            fs::File::options()
+                .write(true)
+                .open(&path)
+                .unwrap()
+                .set_modified(when)
+                .unwrap();
+        }
+        root
+    };
+    let first = make_tree("one", 1_700_000_000);
+    let second = make_tree("two", 1_800_000_000);
+    for (kind, extension) in KINDS {
+        let new = NewArchive {
+            kind,
+            times: packwing_core::Times::All(1_600_000_000),
+            ..NewArchive::default()
+        };
+        let made = |root: &PathBuf, name: &str| {
+            let path = create(
+                std::slice::from_ref(root),
+                &s.path(&format!("{name}.{extension}")),
+                &new,
+                &Control::default(),
+            )
+            .unwrap();
+            fs::read(path).unwrap()
+        };
+        assert_eq!(made(&first, "one"), made(&second, "two"), "{extension}");
+    }
+    let new = plain_tar(
+        Default::default(),
+        packwing_core::Times::AtMost(1_750_000_000),
+    );
+    let headers = |root: &PathBuf, name: &str| {
+        let path = create(
+            std::slice::from_ref(root),
+            &s.path(name),
+            &new,
+            &Control::default(),
+        )
+        .unwrap();
+        tar_headers(&path)
+    };
+    let early = headers(&first, "early.tar");
+    let late = headers(&second, "late.tar");
+    let secs =
+        |headers: &[hivepack::tar::Header]| header(headers, "d/a.txt").mod_time.map(|t| t.secs);
+    assert_eq!(secs(&early), Some(1_700_000_000));
+    assert_eq!(secs(&late), Some(1_750_000_000));
+}

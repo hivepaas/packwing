@@ -283,6 +283,27 @@ tafd4b17d = Phần có cỡ tự nhập
 # Public key
 t9981f45f = Khoá công khai
 
+# Owners kept
+t63e8a0df = Giữ chủ sở hữu
+
+# Attributes kept
+te9e8289c = Giữ thuộc tính
+
+# To keep owners and extended attributes for a backup, pick a .tar format.
+tcf2585da = Để giữ chủ sở hữu và thuộc tính mở rộng khi sao lưu, hãy chọn định dạng .tar.
+
+# Keep for a backup
+t6a2bcc1a = Giữ để sao lưu
+
+# Owners: user and group
+t5350e3fe = Chủ sở hữu: người dùng và nhóm
+
+# Extended attributes and ACLs
+t35aff4d1 = Thuộc tính mở rộng và ACL
+
+# For a backup to restore on this computer. Whoever opens the archive sees the names of the users.
+ta47cc163 = Để sao lưu và khôi phục trên máy này. Ai mở archive cũng thấy tên người dùng.
+
 # Beside the files
 t757989af = Cạnh các tệp
 
@@ -2082,6 +2103,9 @@ t2e221d1f = { $path } ngắn lại trong khi đang đọc.
 
 # A password has to be valid Unicode.
 t5ef729bc = Mật khẩu phải là Unicode hợp lệ.
+
+# Could not read the extended attributes of {path}: {e}
+t4f1421d7 = Không đọc được thuộc tính mở rộng của { $path }: { $e }
 
 # Could not start compressing: {e}
 tc4faa70c = Không bắt đầu nén được: { $e }

@@ -14,6 +14,7 @@
 
 use packwing_i18n::tr;
 use packwing_policy::{Method, Policy, Refused};
+use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::fs::{self, File, Metadata, OpenOptions};
@@ -63,6 +64,14 @@ pub enum Kind {
 }
 
 impl Kind {
+    /// Whether it is a tar archive, compressed or not.
+    pub fn is_tar(self) -> bool {
+        matches!(
+            self,
+            Kind::Tar | Kind::TarGz | Kind::TarXz | Kind::TarZst | Kind::TarBz2 | Kind::TarLz4
+        )
+    }
+
     /// Whether it holds one file, with no archive around it.
     pub fn one_file(self) -> bool {
         matches!(
@@ -167,6 +176,51 @@ impl Level {
     }
 }
 
+/// What a tar archive keeps of each file for a backup, to be restored on the computer
+/// it came from: each is left out by default, as an archive to share has no use for
+/// it and would tell others the names of the users.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Keep {
+    /// Its owner and group, by number and by name (PAX's `uid`, `uname`, `gid`,
+    /// `gname`), where they are 0 and none otherwise. Unix only.
+    pub owners: bool,
+    /// Its extended attributes, all of them, the ACLs Linux keeps among them and
+    /// the Finder's on macOS (PAX's `SCHILY.xattr.` records, as GNU tar and bsdtar
+    /// write them). Linux and macOS only.
+    pub xattrs: bool,
+}
+
+impl Keep {
+    /// Whether it keeps anything.
+    pub fn any(self) -> bool {
+        self.owners || self.xattrs
+    }
+}
+
+/// The times the files of a new archive are given.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Times {
+    /// Those they were last changed at.
+    #[default]
+    AsTheyAre,
+    /// Those, but one later than this, in seconds since 1970, is this: a
+    /// reproducible build's `SOURCE_DATE_EPOCH`, as GNU tar's `--clamp-mtime`.
+    AtMost(i64),
+    /// This one for every file, as GNU tar's `--mtime`.
+    All(i64),
+}
+
+impl Times {
+    /// The time a file last changed at `secs` is given.
+    pub fn of(self, secs: i64) -> i64 {
+        match self {
+            Times::AsTheyAre => secs,
+            Times::AtMost(latest) => secs.min(latest),
+            Times::All(time) => time,
+        }
+    }
+}
+
 /// How a new archive is made.
 #[derive(Clone, Default, PartialEq, Eq)]
 pub struct NewArchive {
@@ -197,6 +251,12 @@ pub struct NewArchive {
     /// Cuts it into `name.zip.001`, `name.zip.002`, … of this many bytes, as
     /// 7-Zip does.
     pub part_size: Option<u64>,
+    /// What a tar archive keeps for a backup besides names, data, permissions, times
+    /// and links. ZIP and 7z have no place for it, nor does one file alone.
+    pub keep: Keep,
+    /// The times the files are given in it, for an archive that comes out the same
+    /// from the same files whenever they were last changed.
+    pub times: Times,
     /// Bound for a storage across a network, it goes straight there if its files
     /// come to more than this many bytes and the storage can take it that way. It
     /// goes through a temporary file otherwise, and if this is none.
@@ -265,6 +325,8 @@ impl fmt::Debug for NewArchive {
             .field("stream_above", &self.stream_above)
             .field("skip_mac_files", &self.skip_mac_files)
             .field("part_size", &self.part_size)
+            .field("keep", &self.keep)
+            .field("times", &self.times)
             .finish()
     }
 }
@@ -285,6 +347,9 @@ struct Item {
     name: String,
     path: PathBuf,
     metadata: Metadata,
+    /// The time it is given, in seconds since 1970: when it was last changed, or
+    /// as [`NewArchive::times`] says.
+    mtime: i64,
 }
 
 /// `path` and what is under it, its names under `name`, in order of name;
@@ -310,6 +375,7 @@ fn walk(path: &Path, name: String, items: &mut Vec<Item>, control: &Control) -> 
         items.push(Item {
             name: format!("{name}/"),
             path: path.to_path_buf(),
+            mtime: seconds(&metadata),
             metadata,
         });
         for child in children {
@@ -320,6 +386,7 @@ fn walk(path: &Path, name: String, items: &mut Vec<Item>, control: &Control) -> 
         items.push(Item {
             name,
             path: path.to_path_buf(),
+            mtime: seconds(&metadata),
             metadata,
         });
     }
@@ -972,7 +1039,7 @@ fn squeeze<W: Write>(
 ) -> Result<W, Error> {
     let mut out = Squeezed::new(new, out)?;
     if !new.kind.one_file() {
-        return write_tar(items, tally, out);
+        return write_tar(items, new.keep, tally, out);
     }
     let [item] = items.as_slice() else {
         return Err(Error::Failed(tr!(
@@ -1031,7 +1098,7 @@ fn add_items<R: ReadAt>(
     tally: &Arc<Tally>,
 ) -> Result<(), Error> {
     for item in items {
-        let mtime = seconds(&item.metadata);
+        let mtime = item.mtime;
         let (system, external) = attributes(&item.metadata);
         let name = item.name.as_bytes();
         let index = if item.metadata.is_dir() {
@@ -1118,9 +1185,10 @@ fn pump(item: &Item, out: &mut impl Write, tally: &Tally, buf: &mut [u8]) -> Res
     Ok(())
 }
 
-/// A time as 7z has it: in 100 ns since 1601, which an earlier one cannot be.
-fn ntfs_time(metadata: &Metadata) -> Option<u64> {
-    let since_1601 = seconds(metadata).checked_add(11_644_473_600)?;
+/// A time in seconds since 1970 as 7z has it: in 100 ns since 1601, which an
+/// earlier one cannot be.
+fn ntfs_time(secs: i64) -> Option<u64> {
+    let since_1601 = secs.checked_add(11_644_473_600)?;
     u64::try_from(since_1601).ok()?.checked_mul(10_000_000)
 }
 
@@ -1189,7 +1257,7 @@ fn write_7z<W: Write + Seek>(
         let entry = hivepack::sevenz::NewEntry {
             name: item.name.trim_end_matches('/').to_owned(),
             attributes: Some(attributes),
-            mtime: ntfs_time(&item.metadata),
+            mtime: ntfs_time(item.mtime),
             ctime: None,
         };
         if item.metadata.is_dir() {
@@ -1207,9 +1275,20 @@ fn write_7z<W: Write + Seek>(
     Ok(())
 }
 
-fn write_tar<W: Write>(items: Vec<Item>, tally: &Tally, out: Squeezed<W>) -> Result<W, Error> {
+/// Writes a tar archive of `items` to `out`, each file that has other names (a
+/// hard link) once, its other names linked to the first, and what `keep` says
+/// besides.
+fn write_tar<W: Write>(
+    items: Vec<Item>,
+    keep: Keep,
+    tally: &Tally,
+    out: Squeezed<W>,
+) -> Result<W, Error> {
     let mut tar = hivepack::tar::Writer::new(out);
     let mut buf = vec![0; PIECE];
+    let mut kept = Kept::default();
+    // The first name of each file with more than one, by its device and inode.
+    let mut first_names: HashMap<(u64, u64), &str> = HashMap::new();
     for item in &items {
         let kind = item.metadata.file_type();
         let link = kind.is_symlink();
@@ -1217,16 +1296,28 @@ fn write_tar<W: Write>(items: Vec<Item>, tally: &Tally, out: Squeezed<W>) -> Res
             name: item.name.as_bytes().to_vec(),
             mode: i64::from((attributes(&item.metadata).1 >> 16) & 0o7777),
             mod_time: Some(hivepack::tar::Time {
-                secs: seconds(&item.metadata),
+                secs: item.mtime,
                 nanos: 0,
             }),
             ..hivepack::tar::Header::default()
         };
+        kept.add(item, keep, &mut header)?;
+        let hard_link =
+            hard_link_key(&item.metadata).and_then(|key| match first_names.entry(key) {
+                Entry::Occupied(first) => Some(*first.get()),
+                Entry::Vacant(free) => {
+                    free.insert(&item.name);
+                    None
+                }
+            });
         if kind.is_dir() {
             header.typeflag = hivepack::tar::TYPE_DIR;
         } else if link {
             header.typeflag = hivepack::tar::TYPE_SYMLINK;
             header.linkname = link_target(&item.path)?;
+        } else if let Some(first) = hard_link {
+            header.typeflag = hivepack::tar::TYPE_LINK;
+            header.linkname = first.as_bytes().to_vec();
         } else {
             header.typeflag = hivepack::tar::TYPE_REG;
             header.size = i64::try_from(item.metadata.len()).map_err(|_| {
@@ -1236,12 +1327,121 @@ fn write_tar<W: Write>(items: Vec<Item>, tally: &Tally, out: Squeezed<W>) -> Res
         tar.write_header(&header)?;
         if link {
             tally.advance(1, 0);
+        } else if hard_link.is_some() {
+            // Its bytes were counted with the files', and are in the first name's.
+            tally.advance(1, item.metadata.len());
         } else if !kind.is_dir() {
             pump(item, &mut tar, tally, &mut buf)?;
         }
     }
     tar.close()?;
     Ok(tar.into_inner().finish()?)
+}
+
+/// What tells the names of one file apart from those of another: its device and
+/// inode, for a file with more than one name. None for one with a single name, a
+/// folder, a link, and on Windows.
+fn hard_link_key(metadata: &Metadata) -> Option<(u64, u64)> {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        (metadata.is_file() && metadata.nlink() > 1).then(|| (metadata.dev(), metadata.ino()))
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = metadata;
+        None
+    }
+}
+
+/// The names of the owners and groups found so far, which the system is asked
+/// for once each.
+#[derive(Default)]
+struct Kept {
+    users: HashMap<u32, Vec<u8>>,
+    groups: HashMap<u32, Vec<u8>>,
+}
+
+impl Kept {
+    /// Puts in `header` what `keep` says of `item`: its owner and group, and its
+    /// extended attributes.
+    #[cfg(unix)]
+    fn add(
+        &mut self,
+        item: &Item,
+        keep: Keep,
+        header: &mut hivepack::tar::Header,
+    ) -> Result<(), Error> {
+        use nix::unistd::{Gid, Group, Uid, User};
+        use std::os::unix::fs::MetadataExt;
+        if keep.owners {
+            let (uid, gid) = (item.metadata.uid(), item.metadata.gid());
+            header.uid = i64::from(uid);
+            header.gid = i64::from(gid);
+            header.uname = self
+                .users
+                .entry(uid)
+                .or_insert_with(|| {
+                    User::from_uid(Uid::from_raw(uid))
+                        .ok()
+                        .flatten()
+                        .map(|user| user.name.into_bytes())
+                        .unwrap_or_default()
+                })
+                .clone();
+            header.gname = self
+                .groups
+                .entry(gid)
+                .or_insert_with(|| {
+                    Group::from_gid(Gid::from_raw(gid))
+                        .ok()
+                        .flatten()
+                        .map(|group| group.name.into_bytes())
+                        .unwrap_or_default()
+                })
+                .clone();
+        }
+        if keep.xattrs {
+            header.xattrs = xattrs_of(&item.path)?;
+        }
+        Ok(())
+    }
+
+    #[cfg(not(unix))]
+    fn add(&mut self, _: &Item, _: Keep, _: &mut hivepack::tar::Header) -> Result<(), Error> {
+        Ok(())
+    }
+}
+
+/// The extended attributes of the file at `path`, a link's own and not its
+/// target's: none where its file system has none.
+#[cfg(unix)]
+fn xattrs_of(path: &Path) -> Result<hivepack::tar::Records, Error> {
+    use std::os::unix::ffi::OsStrExt;
+    let read = |e: io::Error| {
+        Error::Failed(tr!(
+            "Could not read the extended attributes of {path}: {e}",
+            path = path.display(),
+            e = e
+        ))
+    };
+    let mut records = hivepack::tar::Records::new();
+    let names = match xattr::list(path) {
+        Ok(names) => names,
+        Err(e) if e.kind() == io::ErrorKind::Unsupported => return Ok(records),
+        Err(e) => return Err(read(e)),
+    };
+    for name in names {
+        match xattr::get(path, &name) {
+            Ok(Some(value)) => {
+                records.insert(name.as_bytes().to_vec(), value);
+            }
+            // Gone since it was listed.
+            Ok(None) => {}
+            Err(e) => return Err(read(e)),
+        }
+    }
+    Ok(records)
 }
 
 /// How much is read of a file at a time, and made of what compresses.
@@ -1857,6 +2057,9 @@ fn chosen_items(
     let mut items = items_of(paths, control)?;
     if new.skip_mac_files {
         items.retain(|item| !is_mac_file(&item.name));
+    }
+    for item in &mut items {
+        item.mtime = new.times.of(item.mtime);
     }
     Ok(items)
 }

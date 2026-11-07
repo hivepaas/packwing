@@ -289,6 +289,27 @@ tafd4b17d = Частини вказаного розміру
 # Public key
 t9981f45f = Відкритий ключ
 
+# Owners kept
+t63e8a0df = Власників збережено
+
+# Attributes kept
+te9e8289c = Атрибути збережено
+
+# To keep owners and extended attributes for a backup, pick a .tar format.
+tcf2585da = Щоб зберегти власників і розширені атрибути для резервної копії, виберіть формат .tar.
+
+# Keep for a backup
+t6a2bcc1a = Зберегти для резервної копії
+
+# Owners: user and group
+t5350e3fe = Власники: користувач і група
+
+# Extended attributes and ACLs
+t35aff4d1 = Розширені атрибути та ACL
+
+# For a backup to restore on this computer. Whoever opens the archive sees the names of the users.
+ta47cc163 = Для резервної копії, яку відновлюють на цьому комп’ютері. Будь-хто, хто відкриє архів, побачить імена користувачів.
+
 # Beside the files
 t757989af = Поруч із файлами
 
@@ -2166,6 +2187,9 @@ t2e221d1f = { $path } став коротшим, поки його читали.
 
 # A password has to be valid Unicode.
 t5ef729bc = Пароль має бути дійсним Unicode.
+
+# Could not read the extended attributes of {path}: {e}
+t4f1421d7 = Не вдалося прочитати розширені атрибути { $path }: { $e }
 
 # Could not start compressing: {e}
 tc4faa70c = Не вдалося почати стиснення: { $e }

@@ -283,6 +283,27 @@ tafd4b17d = 自行輸入每份大小
 # Public key
 t9981f45f = 公鑰
 
+# Owners kept
+t63e8a0df = 保留擁有者
+
+# Attributes kept
+te9e8289c = 保留屬性
+
+# To keep owners and extended attributes for a backup, pick a .tar format.
+tcf2585da = 要在備份中保留擁有者與延伸屬性，請選擇 .tar 格式。
+
+# Keep for a backup
+t6a2bcc1a = 為備份保留
+
+# Owners: user and group
+t5350e3fe = 擁有者：使用者與群組
+
+# Extended attributes and ACLs
+t35aff4d1 = 延伸屬性與 ACL
+
+# For a backup to restore on this computer. Whoever opens the archive sees the names of the users.
+ta47cc163 = 用於在這台電腦上還原的備份。開啟封存的人都能看到使用者名稱。
+
 # Beside the files
 t757989af = 與檔案放在一起
 
@@ -2091,6 +2112,9 @@ t2e221d1f = { $path } 在讀取時變小了。
 
 # A password has to be valid Unicode.
 t5ef729bc = 密碼必須是有效的 Unicode。
+
+# Could not read the extended attributes of {path}: {e}
+t4f1421d7 = 無法讀取 { $path } 的延伸屬性：{ $e }
 
 # Could not start compressing: {e}
 tc4faa70c = 無法開始壓縮：{ $e }

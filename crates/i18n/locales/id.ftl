@@ -283,6 +283,27 @@ tafd4b17d = Bagian dengan ukuran yang diketik
 # Public key
 t9981f45f = Kunci publik
 
+# Owners kept
+t63e8a0df = Pemilik disimpan
+
+# Attributes kept
+te9e8289c = Atribut disimpan
+
+# To keep owners and extended attributes for a backup, pick a .tar format.
+tcf2585da = Untuk menyimpan pemilik dan atribut tambahan sebagai cadangan, pilih format .tar.
+
+# Keep for a backup
+t6a2bcc1a = Simpan untuk cadangan
+
+# Owners: user and group
+t5350e3fe = Pemilik: pengguna dan grup
+
+# Extended attributes and ACLs
+t35aff4d1 = Atribut tambahan dan ACL
+
+# For a backup to restore on this computer. Whoever opens the archive sees the names of the users.
+ta47cc163 = Untuk cadangan yang dipulihkan di komputer ini. Siapa pun yang membuka arsip melihat nama pengguna.
+
 # Beside the files
 t757989af = Di samping berkasnya
 
@@ -2091,6 +2112,9 @@ t2e221d1f = { $path } menjadi lebih pendek saat sedang dibaca.
 
 # A password has to be valid Unicode.
 t5ef729bc = Kata sandi harus berupa Unicode yang valid.
+
+# Could not read the extended attributes of {path}: {e}
+t4f1421d7 = Tidak dapat membaca atribut tambahan { $path }: { $e }
 
 # Could not start compressing: {e}
 tc4faa70c = Tidak dapat mulai mengompres: { $e }

@@ -285,6 +285,27 @@ tafd4b17d = Parti di una dimensione da digitare
 # Public key
 t9981f45f = Chiave pubblica
 
+# Owners kept
+t63e8a0df = Proprietari mantenuti
+
+# Attributes kept
+te9e8289c = Attributi mantenuti
+
+# To keep owners and extended attributes for a backup, pick a .tar format.
+tcf2585da = Per mantenere proprietari e attributi estesi in un backup, scegli un formato .tar.
+
+# Keep for a backup
+t6a2bcc1a = Mantieni per un backup
+
+# Owners: user and group
+t5350e3fe = Proprietari: utente e gruppo
+
+# Extended attributes and ACLs
+t35aff4d1 = Attributi estesi e ACL
+
+# For a backup to restore on this computer. Whoever opens the archive sees the names of the users.
+ta47cc163 = Per un backup da ripristinare su questo computer. Chi apre l’archivio vede i nomi degli utenti.
+
 # Beside the files
 t757989af = Accanto ai file
 
@@ -2116,6 +2137,9 @@ t2e221d1f = { $path } si è accorciato durante la lettura.
 
 # A password has to be valid Unicode.
 t5ef729bc = Una password deve essere Unicode valido.
+
+# Could not read the extended attributes of {path}: {e}
+t4f1421d7 = Impossibile leggere gli attributi estesi di { $path }: { $e }
 
 # Could not start compressing: {e}
 tc4faa70c = Impossibile avviare la compressione: { $e }
