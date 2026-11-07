@@ -52,3 +52,8 @@ strip = true
 # Dependencies optimised in dev builds too, so the UI is smooth while developing.
 [profile.dev.package."*"]
 opt-level = 2
+
+# Until hivepack's next release: `deflate::DeflateMt` (hivepack#179), on its
+# branch. Taken out, and the version above raised, once it is published.
+[patch.crates-io]
+hivepack = { git = "https://github.com/hivepaas/hivepack-rs", rev = "43f17063eeb4d93a76b163e8e11becafc22ec823" }

@@ -45,7 +45,11 @@ fn shared() -> &'static Budget {
 /// The budget, its bytes half of what is available now, and never so few
 /// that less than [`LEAST`] is left past what the jobs running hold.
 fn refreshed() -> &'static Budget {
-    let budget = shared();
+    refresh(shared())
+}
+
+/// `budget`, its bytes set as [`refreshed`] sets the shared one's.
+fn refresh(budget: &Budget) -> &Budget {
     budget.set_bytes((available() / 2).max(budget.held().saturating_add(LEAST)));
     budget
 }
@@ -112,22 +116,24 @@ mod tests {
 
     const MIB: u64 = 1 << 20;
 
+    // A budget of its own: the tests that make archives hold from the
+    // shared one at the same time.
     #[test]
     fn what_is_held_is_left_out_until_given_back() {
+        let own = Budget::new(0);
         set_available(4000 * MIB);
-        let base = shared().held();
         let need = |n: u32| u64::from(n) * 500 * MIB;
-        let (first, a) = hold_threads(16, need);
+        let (first, a) = refresh(&own).hold_threads(16, need);
         assert!(first >= 1);
         assert!(a.bytes() >= need(first));
-        assert_eq!(shared().held(), base + a.bytes());
-        let (second, b) = hold_threads(16, need);
+        assert_eq!(own.held(), a.bytes());
+        let (second, b) = refresh(&own).hold_threads(16, need);
         assert!(second <= first, "{second} after {first}");
         drop(a);
         drop(b);
-        assert_eq!(shared().held(), base);
+        assert_eq!(own.held(), 0);
         set_available(10 * MIB);
-        assert!(budget() >= LEAST);
+        assert!(refresh(&own).left() >= LEAST);
         set_available(0);
     }
 
