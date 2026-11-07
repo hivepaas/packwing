@@ -3055,3 +3055,46 @@ fn one_time_for_all_makes_the_same_archive() {
     assert_eq!(secs(&early), Some(1_700_000_000));
     assert_eq!(secs(&late), Some(1_750_000_000));
 }
+
+#[test]
+fn gzip_goes_in_blocks_compressed_in_threads() {
+    let s = Scratch::new("gzip-threads");
+    // Several blocks of 128 KiB, of words and noise.
+    let mut data = Vec::new();
+    let mut state = 7u64;
+    while data.len() < 900_000 {
+        state ^= state << 13;
+        state ^= state >> 7;
+        state ^= state << 17;
+        match state % 8 {
+            0 => data.extend((0..(state % 200)).map(|i| (state >> (i % 56)) as u8)),
+            n => data.extend_from_slice(
+                ["packwing ", "gzip ", "thread ", "block\n"][n as usize % 4].as_bytes(),
+            ),
+        }
+    }
+    let file = s.path("a.txt");
+    fs::write(&file, &data).unwrap();
+    let new = NewArchive {
+        kind: Kind::Gz,
+        level: Level::Medium,
+        ..NewArchive::default()
+    };
+    let made = create(&[file], &s.path("a.txt.gz"), &new, &Control::default()).unwrap();
+    // pigz's stream, as one thread makes it: the same whatever the threads.
+    let mut one = hivepack::deflate::DeflateMt::new(&hivepack::deflate::MtOptions {
+        level: 6,
+        ..hivepack::deflate::MtOptions::default()
+    })
+    .unwrap();
+    let mut want = vec![0; data.len() + (64 << 10)];
+    let mut output = hivepack::deflate::OutBuffer::new(&mut want);
+    let mut input = hivepack::deflate::InBuffer::new(&data);
+    let status = one
+        .deflate(&mut output, &mut input, hivepack::deflate::Flush::Finish)
+        .unwrap();
+    assert_eq!(status, hivepack::deflate::Status::StreamEnd);
+    let n = output.pos;
+    want.truncate(n);
+    assert_eq!(fs::read(&made).unwrap(), want);
+}

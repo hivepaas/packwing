@@ -3346,7 +3346,7 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 [[package]]
 name = "hivepack"
 version = "0.9.0"
-source = "git+https://github.com/hivepaas/hivepack-rs?rev=105ee456a091747e49cbb2ecf6fc7c483b30bf5c#105ee456a091747e49cbb2ecf6fc7c483b30bf5c"
+source = "git+https://github.com/hivepaas/hivepack-rs?rev=43f17063eeb4d93a76b163e8e11becafc22ec823#43f17063eeb4d93a76b163e8e11becafc22ec823"
 dependencies = [
  "aes 0.9.3",
  "blake2s_simd",
