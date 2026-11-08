@@ -331,6 +331,11 @@ pub fn check_signature(
     trusted: &[PublicKey],
     control: &Control,
 ) -> Result<Signed, Error> {
+    // A file with no signature beside it, as most are, is no check: the app
+    // looks for one each time a file is chosen.
+    if matches!(read_signature(storage, path), Err(Signed::No)) {
+        return Ok(Signed::No);
+    }
     let job = audit::begin(
         "verify",
         audit::fields([("file", json!(audit::place(storage, path)))]),

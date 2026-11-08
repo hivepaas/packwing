@@ -179,6 +179,17 @@ fn jobs_are_recorded_as_they_start_and_end_and_the_chain_holds() {
         .unwrap();
     assert_eq!(start["picked_names"][0], "in/b.txt");
 
+    // A file with no signature beside it is no check: the app looks for one
+    // each time a file is chosen, and nothing is recorded.
+    let before = audit::read(&log, None).unwrap().len();
+    let here = packwing_core::LocalFolder::new(&s.0);
+    let signed =
+        packwing_core::check_signature(&here, &["a.zip".to_owned()], &[], &Control::default())
+            .unwrap();
+    assert_eq!(signed, packwing_core::Signed::No);
+    assert_eq!(audit::read(&log, None).unwrap().len(), before);
+    let records = audit::read(&log, None).unwrap();
+
     // A record written by hand, or changed, shows.
     let report = audit::verify(&log).unwrap();
     assert!(report.breaks.is_empty(), "{report:?}");
