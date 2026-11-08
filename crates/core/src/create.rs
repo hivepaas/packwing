@@ -1891,6 +1891,10 @@ impl<W: Write> Squeezed<W> {
                     threads: threads(),
                     preset: new.level.xz(),
                     check: hivepack::xz::Check::CRC64,
+                    // A block's output is read once it is done, which at the
+                    // highest level may be many seconds: back every so often
+                    // meanwhile, to tell how far it is and to hear a stop.
+                    timeout: TICK_EVERY.as_millis() as u32,
                     ..MtOptions::default()
                 };
                 if let Some(bytes) = bytes {
