@@ -77,7 +77,7 @@ pub fn convert(
     fields.insert("source".into(), audit::source(&source));
     fields.insert("destination".into(), json!(audit::path_text(wanted)));
     fields.insert("filtered".into(), json!(!filter.is_everything()));
-    let job = audit::begin("convert", fields);
+    let job = audit::begin("convert", fields)?;
     let result = convert_from(source, keys, wanted, new, how, filter, control);
     audit::end(job, &result, |done| {
         let mut fields = crate::job::extracted(&done.summary);

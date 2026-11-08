@@ -67,11 +67,16 @@ test-window: ## Run every test, drawing every screen to target/shots with no dis
 test-ui: ## Run the UI scenarios, with no display: the real window, driven as a user does
 	$(CARGO) test $(APP),ui-tests ui_tests::$(FILTER)
 
-lint: ## Check the format and run clippy
+lint: ## Check the format, the catalogs and clippy, as CI does
 	$(CARGO) fmt --all -- --check
+	python3 scripts/i18n.py check
 	$(CARGO) clippy $(ALL) --all-targets -- -D warnings
 	$(CARGO) clippy $(APP),ui-tests --all-targets -- -D warnings
 	$(CARGO) clippy -p packwing-cli --all-targets -- -D warnings
+ifeq ($(shell uname -s),Linux)
+	# The screenshots' build, which only Linux has (make test-window).
+	$(CARGO) clippy $(APP),shots --all-targets -- -D warnings
+endif
 
 fmt: ## Format the code
 	$(CARGO) fmt --all

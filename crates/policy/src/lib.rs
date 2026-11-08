@@ -35,9 +35,10 @@ pub const AUDIT_LOG_RETENTION_DAYS: &str = "AuditLogRetentionDays";
 pub const AUDIT_LOG_MAX_SIZE_MB: &str = "AuditLogMaxSizeMB";
 pub const AUDIT_LOG_DETAIL: &str = "AuditLogDetail";
 pub const AUDIT_LOG_SYSTEM: &str = "AuditLogSystem";
+pub const AUDIT_LOG_REQUIRED: &str = "AuditLogRequired";
 
 /// Every policy there is, as the systems' readers look for them.
-pub const KEYS: [&str; 14] = [
+pub const KEYS: [&str; 15] = [
     LICENSE_KEY,
     PROPAGATE_MOTW,
     MARK_STORAGE_FILES,
@@ -52,6 +53,7 @@ pub const KEYS: [&str; 14] = [
     AUDIT_LOG_MAX_SIZE_MB,
     AUDIT_LOG_DETAIL,
     AUDIT_LOG_SYSTEM,
+    AUDIT_LOG_REQUIRED,
 ];
 
 /// The most `MinPasswordLength` may ask for.
@@ -247,6 +249,7 @@ pub struct Policy {
     pub audit_log_max_size_mb: Setting<u64>,
     pub audit_log_detail: Setting<Detail>,
     pub audit_log_system: Setting<bool>,
+    pub audit_log_required: Setting<bool>,
 }
 
 impl Policy {
@@ -275,6 +278,7 @@ impl Policy {
             audit_log_max_size_mb: Setting::of(value(AUDIT_LOG_MAX_SIZE_MB), read_size),
             audit_log_detail: Setting::of(value(AUDIT_LOG_DETAIL), read_detail),
             audit_log_system: Setting::of(value(AUDIT_LOG_SYSTEM), read_bool),
+            audit_log_required: Setting::of(value(AUDIT_LOG_REQUIRED), read_bool),
             unknown: found
                 .values
                 .iter()
@@ -480,6 +484,17 @@ impl Policy {
             || !matches!(self.audit_log_system, Setting::Unset | Setting::Set(false))
     }
 
+    /// Whether a job whose start cannot be recorded does not start, where the
+    /// log is kept. Only the organization says so; one that cannot be
+    /// understood does, as a mistake must not let jobs go unrecorded.
+    pub fn audit_log_required(&self) -> bool {
+        self.failure.is_some()
+            || !matches!(
+                self.audit_log_required,
+                Setting::Unset | Setting::Set(false)
+            )
+    }
+
     /// Each policy set, and each name that is none.
     pub fn rows(&self) -> Vec<Row> {
         let mut rows = Vec::new();
@@ -542,6 +557,12 @@ impl Policy {
             d.name().to_owned()
         });
         row(&mut rows, AUDIT_LOG_SYSTEM, &self.audit_log_system, on_off);
+        row(
+            &mut rows,
+            AUDIT_LOG_REQUIRED,
+            &self.audit_log_required,
+            on_off,
+        );
         rows.extend(self.unknown.iter().map(|key| Row {
             key: key.clone(),
             value: String::new(),
@@ -958,6 +979,7 @@ mod tests {
         assert_eq!(none.audit_log_max_bytes(100 << 20), 100 << 20);
         assert!(!none.audit_log_names_entries());
         assert!(!none.audit_log_to_system());
+        assert!(!none.audit_log_required());
         assert_eq!(none.audit_log_path(), None);
 
         let on = policy(&[(AUDIT_LOG, Value::Bool(true))]);
@@ -979,12 +1001,14 @@ mod tests {
             (AUDIT_LOG_MAX_SIZE_MB, Value::Int(500)),
             (AUDIT_LOG_DETAIL, Value::Text("Entries".into())),
             (AUDIT_LOG_SYSTEM, Value::Int(1)),
+            (AUDIT_LOG_REQUIRED, Value::Bool(true)),
         ]);
         assert_eq!(set.audit_log_path(), Some("\\\\files\\audit\\{user}"));
         assert_eq!(set.audit_log_retention_days(90), 0);
         assert_eq!(set.audit_log_max_bytes(0), 500 << 20);
         assert!(set.audit_log_names_entries());
         assert!(set.audit_log_to_system());
+        assert!(set.audit_log_required());
         assert!(set.rows().iter().all(|r| r.problem.is_none()));
 
         // Only how long, set: the user still turns it on or off.
@@ -1002,6 +1026,7 @@ mod tests {
             (AUDIT_LOG_MAX_SIZE_MB, Value::Text("big".into())),
             (AUDIT_LOG_DETAIL, Value::Text("all".into())),
             (AUDIT_LOG_SYSTEM, Value::Text("journald".into())),
+            (AUDIT_LOG_REQUIRED, Value::Text("always".into())),
         ]);
         assert!(wrong.locks_audit_log() && wrong.keeps_audit_log(false));
         // A folder that is no whole path: the system's own, and said.
@@ -1010,9 +1035,10 @@ mod tests {
         assert_eq!(wrong.audit_log_max_bytes(100 << 20), 0);
         assert!(wrong.audit_log_names_entries());
         assert!(wrong.audit_log_to_system());
+        assert!(wrong.audit_log_required());
         assert_eq!(
             wrong.rows().iter().filter(|r| r.problem.is_some()).count(),
-            6
+            7
         );
         let unreadable = Policy::of(Found {
             origin: "test".into(),
@@ -1021,6 +1047,7 @@ mod tests {
         });
         assert!(unreadable.keeps_audit_log(false));
         assert!(unreadable.audit_log_to_system());
+        assert!(unreadable.audit_log_required());
         assert_eq!(unreadable.audit_log_retention_days(90), 0);
         for path in [
             "/var/log/packwing",

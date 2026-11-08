@@ -202,6 +202,7 @@ fn status(cx: &Context) -> Result<(), Exit> {
             "max_bytes": config.as_ref().map(|c| c.max_bytes),
             "names_entries": config.as_ref().map(|c| c.entries),
             "system_log": config.as_ref().filter(|c| c.system).map(|_| audit::system_log_name()),
+            "required": config.as_ref().map(|c| c.required),
             "last_failure": audit::last_failure(),
         }));
         return Ok(());
@@ -219,6 +220,11 @@ fn status(cx: &Context) -> Result<(), Exit> {
             }
             if c.max_bytes > 0 {
                 println!("It takes at most {} MiB.", c.max_bytes >> 20);
+            }
+            if c.required {
+                println!(
+                    "A job whose start cannot be recorded does not start, as the policy says."
+                );
             }
             if c.system {
                 println!(

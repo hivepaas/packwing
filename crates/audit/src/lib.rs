@@ -25,7 +25,11 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use serde_json::{Map, Value, json};
 use sha2::{Digest, Sha256};
 
+#[cfg(target_os = "macos")]
+mod macos;
 mod system;
+#[cfg(windows)]
+mod windows;
 
 pub use system::name as system_log_name;
 
@@ -53,6 +57,10 @@ pub struct Config {
     pub entries: bool,
     /// Each record goes to the system's own log as well (`AuditLogSystem`).
     pub system: bool,
+    /// A job whose start cannot be written does not start
+    /// (`AuditLogRequired`): written to the day's file, and to the system's
+    /// log where it goes there too.
+    pub required: bool,
     /// What writes: `packwing` or `pkw`.
     pub app: String,
     /// Its version.
@@ -75,6 +83,10 @@ impl Log {
         base.insert("user".into(), json!(user));
         if let Some(id) = id {
             base.insert("uid".into(), json!(id));
+        }
+        #[cfg(windows)]
+        if let Some(sid) = windows::sid() {
+            base.insert("sid".into(), json!(sid));
         }
         base.insert("app".into(), json!(config.app));
         base.insert("version".into(), json!(config.version));
@@ -549,6 +561,7 @@ mod tests {
             max_bytes: 0,
             entries: false,
             system: false,
+            required: false,
             app: "pkw".into(),
             version: "0.0.0".into(),
         })

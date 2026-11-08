@@ -2050,6 +2050,12 @@ t8d6fca43 = 审计日志对压缩包记录什么
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = “entries”除了计数，还会记下损坏或被略过的文件名
 
+# Every job recorded
+t42369815 = 每项任务都记录
+
+# A job whose start the audit log cannot write does not start
+tda48e1c9 = 审计日志无法写入其开始的任务不会开始
+
 # The audit log in the system’s log
 t4a2fcd04 = 系统日志中的审计日志
 
@@ -2304,6 +2310,9 @@ t75e7db7c = { $folder }，每个压缩包一个文件夹
 
 # New
 t8b242db1 = 新建
+
+# Your organization requires each job to be recorded, and the audit log cannot be written: {why}
+t3f254f09 = 您的组织要求记录每项任务，但无法写入审计日志：{ $why }
 
 # There is no file to save it beside.
 ta9906e3b = 没有可在其旁边保存的文件。

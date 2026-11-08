@@ -2073,6 +2073,12 @@ t8d6fca43 = Denetim günlüğünün arşivler hakkında yazdıkları
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = “entries”, hasarlı ya da atlanan dosyaları saymanın yanı sıra adlarını da yazar
 
+# Every job recorded
+t42369815 = Her işlem kaydedilir
+
+# A job whose start the audit log cannot write does not start
+tda48e1c9 = Başlangıcı denetim günlüğüne yazılamayan bir işlem başlamaz
+
 # The audit log in the system’s log
 t4a2fcd04 = Sistem günlüğünde denetim günlüğü
 
@@ -2341,6 +2347,9 @@ t75e7db7c = { $folder }, her biri için bir klasör
 
 # New
 t8b242db1 = Yeni
+
+# Your organization requires each job to be recorded, and the audit log cannot be written: {why}
+t3f254f09 = Kuruluşunuz her işlemin kaydedilmesini istiyor ve denetim günlüğü yazılamıyor: { $why }
 
 # There is no file to save it beside.
 ta9906e3b = Yanına kaydedilecek dosya yok.

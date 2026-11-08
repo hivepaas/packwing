@@ -130,7 +130,7 @@ pub fn make_signing_key(folder: &Path, passphrase: &[u8]) -> Result<(SigningKey,
     let job = audit::begin(
         "keygen",
         audit::fields([("folder", json!(audit::path_text(folder)))]),
-    );
+    )?;
     let result = make_key_in(folder, passphrase);
     audit::end(job, &result, |(key, file)| {
         audit::fields([
@@ -221,7 +221,7 @@ pub fn sign_file(
             ("file", json!(audit::place(storage, path))),
             ("fingerprint", json!(key.public().fingerprint())),
         ]),
-    );
+    )?;
     let result = sign_on(storage, path, key, control);
     audit::end(job, &result, |_| serde_json::Map::new());
     result
@@ -339,7 +339,7 @@ pub fn check_signature(
     let job = audit::begin(
         "verify",
         audit::fields([("file", json!(audit::place(storage, path)))]),
-    );
+    )?;
     let result = check_on(storage, path, trusted, control);
     audit::end(job, &result, |signed| {
         let (said, fingerprint) = match signed {

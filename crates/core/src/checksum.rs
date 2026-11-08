@@ -178,7 +178,7 @@ pub fn checksums(
     let job = audit::begin(
         "checksum",
         audit::fields([("file", json!(audit::place(storage, path)))]),
-    );
+    )?;
     let result = storage
         .open(path)
         .map_err(|e| Error::Failed(e.to_string()))

@@ -313,7 +313,7 @@ pub fn extract_with(
     control: &Control,
 ) -> Result<Summary, Error> {
     let source = source.into();
-    let job = audit::begin("extract", extracting(&source, destination, how));
+    let job = audit::begin("extract", extracting(&source, destination, how))?;
     let result = extract_picked(&source, destination, keys, how, None, control);
     audit::end(job, &result, extracted);
     result
@@ -392,7 +392,7 @@ pub fn extract_selected(
         "picked_names",
         audit::list(picked.iter().map(|p| p.join("/"))),
     )]));
-    let job = audit::begin("extract", fields);
+    let job = audit::begin("extract", fields)?;
     let result = extract_selected_from(source, destination, picked, keys, how, control);
     audit::end(job, &result, extracted);
     result
@@ -526,7 +526,7 @@ pub fn extract_to_open(
             ("source", audit::source(&source)),
             ("entry", json!(entry.join("/"))),
         ]),
-    );
+    )?;
     let result = (|| {
         let name = entry.last().ok_or(Error::NotAnArchive)?.clone();
         let folder = opened_subfolder()?;
@@ -607,7 +607,7 @@ fn read_entry_for(
                     },
                 ),
             ]),
-        )
+        )?
     };
     let recorded = job.is_some();
     let read = (|| {
@@ -1043,7 +1043,7 @@ fn copy(
 /// and writes nothing. The summary counts the files and bytes read.
 pub fn test(source: impl Into<Source>, keys: &Keys, control: &Control) -> Result<Summary, Error> {
     let source: Source = source.into();
-    let job = audit::begin("test", audit::fields([("source", audit::source(&source))]));
+    let job = audit::begin("test", audit::fields([("source", audit::source(&source))]))?;
     let result = test_source(&source, keys, control);
     audit::end(job, &result, |summary| {
         audit::fields([
