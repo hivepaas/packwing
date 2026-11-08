@@ -18,7 +18,21 @@ getrandom = "0.4"
 [target.'cfg(unix)'.dependencies]
 rustix = { version = "1", features = ["system", "process", "fs", "net"] }
 
+# The user's SID, and the Event Log.
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_Security_Authorization", "Win32_System_EventLog", "Win32_System_Threading"] }
+
 [dev-dependencies]
 
-[lints]
-workspace = true
+# The C that writes to macOS's unified log.
+[build-dependencies]
+cc = "1"
+
+# As the workspace's, but that src/windows.rs may call the Event Log and the
+# process's token, and src/macos.rs the unified log, which no crate it has wraps.
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+unwrap_used = "warn"
+dbg_macro = "deny"

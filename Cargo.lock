@@ -5344,10 +5344,12 @@ dependencies = [
 name = "packwing-audit"
 version = "0.1.0"
 dependencies = [
+ "cc",
  "getrandom 0.4.3",
  "rustix",
  "serde_json",
  "sha2 0.11.1",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]

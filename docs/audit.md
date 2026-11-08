@@ -46,7 +46,35 @@ journalctl -t pkw -o json --all | jq -r .PACKWING_RECORD
 
 `journalctl -o json` leaves out fields over 4 KiB, as a record naming many files can be: `--all` shows them. Where there is no journald, as on the BSDs, it goes to syslog, the user facility, the line to read and then the record whole.
 
-On macOS it goes to syslog for now, which the unified log keeps; the unified log's own subsystem, and Windows' Event Log, come next ([design/audit-log.md](design/audit-log.md#phase-2)).
+On Windows it goes to the Application log, from the source `packwing` (the app's records and pkw's alike), as the user who ran it. The event's first string is what Event Viewer shows: the line to read, then the record whole. The next ones are for collectors, which read them as `param2` to `param6` in the event's data: `action`, `phase`, `result`, `job` and the record's hash. A job that failed is a warning, the rest information, and the event's id says how the job went:
+
+| Event ID | |
+|---|---|
+| 1 | a job started |
+| 2 | done |
+| 3 | partly done |
+| 4 | cancelled |
+| 5 | failed |
+| 9 | a record that is no job's: the log's own, as `audit.started` or `log.pruned` |
+
+A record longer than an event takes, 31,839 characters, goes as its line to read and its hash; the day's file holds it whole.
+
+Register the source once a computer, as an administrator, where you set the policy. packwing installs for the user, with no administrator's rights, so it cannot do it itself:
+
+```powershell
+New-EventLog -LogName Application -Source packwing
+```
+
+That is Windows PowerShell 5.1's, which every Windows has. Through Group Policy or Intune, it is the registry key `HKLM\SYSTEM\CurrentControlSet\Services\EventLog\Application\packwing` with `EventMessageFile` (expandable text) `%SystemRoot%\Microsoft.NET\Framework64\v4.0.30319\EventLogMessages.dll` and `TypesSupported` (DWORD) 7. Without it, events are written all the same, whole: Event Viewer only says their description cannot be found before it shows them.
+
+On macOS it goes to the unified log, as the subsystem `com.hivepaas.packwing` and the category `audit`, the app's records and pkw's alike: the line to read, then the record whole on the next line. It is written at the default level, which the log keeps on disk, and a job that failed as an error. A record of more than 1,000 bytes, which the unified log would cut, goes as its line to read and its hash; the day's file holds it whole.
+
+```sh
+log show --last 1d --predicate 'subsystem == "com.hivepaas.packwing"'
+log show --last 1d --style ndjson --predicate 'subsystem == "com.hivepaas.packwing" AND messageType == error'
+```
+
+The unified log keeps what it has for as long as the system decides, days to weeks, and a configuration profile can keep more: collectors that read it (an EDR, osquery's `unified_log`, Elastic's) take it off the computer.
 
 `pkw audit status` says where it goes, and a record it could not be sent to shows in Settings › Security as the last that could not be written.
 
@@ -68,7 +96,7 @@ Every record has:
 | `v` | the version of what records hold: 1 |
 | `time` | UTC, to the millisecond |
 | `prev` | the SHA-256 of the line before it (see [Changes](#changes)) |
-| `host`, `user`, `uid` | the computer, and who ran packwing (`uid` on Unix) |
+| `host`, `user`, `uid`, `sid` | the computer, and who ran packwing (`uid` on Unix, `sid` on Windows) |
 | `app`, `version`, `pid`, `session` | `packwing` or `pkw`, its version, its process and run |
 | `action` | what was done |
 
@@ -126,4 +154,4 @@ pkw audit verify                 # the chain, from the oldest record
 
 ## Not yet
 
-Planned, in [design/audit-log.md](design/audit-log.md): Windows' Event Log and macOS's unified log, a policy that stops a job whose record cannot be written, and every file extracted named.
+Planned, in [design/audit-log.md](design/audit-log.md): a policy that stops a job whose record cannot be written, and every file extracted named.

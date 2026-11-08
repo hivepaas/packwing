@@ -1,7 +1,8 @@
 //! Each record, written to the system's own log as well, where the
-//! organization's policy says so (`AuditLogSystem`): journald, or syslog where
-//! there is none. Collectors read those already, and someone who can change
-//! the log's files cannot take a record back out of journald.
+//! organization's policy says so (`AuditLogSystem`): the Event Log on Windows,
+//! the unified log on macOS, journald elsewhere, or syslog where there is none. Collectors read those
+//! already, and someone who can change the log's files cannot take a record
+//! back out of them.
 //!
 //! It is a second copy: the day's file stays the record, chain and all. What
 //! goes here is a line to read, the record whole, and a few of its fields to
@@ -30,6 +31,7 @@ pub(crate) fn summary(record: &Map<String, Value>) -> String {
         "destination",
         "folder",
         "part",
+        "made",
     ]
     .iter()
     .find_map(|key| text(key));
@@ -56,9 +58,30 @@ fn severity(record: &Map<String, Value>) -> u8 {
     }
 }
 
-/// The system's log records go to, by its name: `journald` or `syslog`.
+/// An event's id in the Event Log, by how its job went, for filters to take:
+/// 1 started, 2 done, 3 partly done, 4 cancelled, 5 failed, 9 a record that is
+/// no job's, as the log's own.
+#[cfg_attr(not(windows), allow(dead_code))]
+fn event_id(record: &Map<String, Value>) -> u32 {
+    let text = |key: &str| record.get(key).and_then(Value::as_str);
+    match (text("phase"), text("result")) {
+        (Some("start"), _) => 1,
+        (Some("end"), Some("partial")) => 3,
+        (Some("end"), Some("cancelled")) => 4,
+        (Some("end"), Some("failed")) => 5,
+        (Some("end"), _) => 2,
+        _ => 9,
+    }
+}
+
+/// The system's log records go to, by its name: `journald`, `syslog`, the
+/// unified log or the Event Log.
 pub fn name() -> &'static str {
-    #[cfg(unix)]
+    #[cfg(target_os = "macos")]
+    {
+        "the unified log"
+    }
+    #[cfg(all(unix, not(target_os = "macos")))]
     {
         if std::path::Path::new(unix::JOURNAL).exists() {
             "journald"
@@ -68,7 +91,7 @@ pub fn name() -> &'static str {
     }
     #[cfg(not(unix))]
     {
-        "Event Log"
+        "the Event Log"
     }
 }
 
@@ -80,19 +103,81 @@ pub(crate) fn send(
     hash: &str,
     record: &Map<String, Value>,
 ) -> io::Result<()> {
-    #[cfg(unix)]
+    #[cfg(target_os = "macos")]
+    {
+        let _ = app;
+        to_unified_log(line, hash, record)
+    }
+    #[cfg(all(unix, not(target_os = "macos")))]
     {
         unix::send(app, line, hash, record)
     }
-    #[cfg(not(unix))]
+    #[cfg(windows)]
     {
-        // The Event Log comes next (docs/design/audit-log.md).
+        let _ = app;
+        to_event_log(line, hash, record)
+    }
+    #[cfg(not(any(unix, windows)))]
+    {
         let _ = (app, line, hash, record);
         Ok(())
     }
 }
 
-#[cfg(unix)]
+/// The record to the unified log: its line to read, then the record whole on
+/// the next line. One longer than the log keeps whole goes as its line and
+/// hash, which the day's file holds whole. The app's and pkw's records alike
+/// are the subsystem's; which wrote it is in the record, and the process's.
+#[cfg(target_os = "macos")]
+fn to_unified_log(line: &str, hash: &str, record: &Map<String, Value>) -> io::Result<()> {
+    use crate::macos::{MOST_BYTES, SUBSYSTEM, write};
+
+    let read = summary(record);
+    let mut message = format!("{read}\n{line}");
+    if message.len() > MOST_BYTES {
+        message = format!("{read}\nThe record is too long for the log: hash {hash}.");
+    }
+    write(SUBSYSTEM, severity(record) <= 4, &message)
+}
+
+/// The record to the Event Log: its line to read and the record whole, as
+/// Event Viewer shows it, then its action, phase, result, job and hash, for
+/// collectors. One too long for an event's string goes as its line and hash,
+/// which the day's file holds whole.
+#[cfg(windows)]
+fn to_event_log(line: &str, hash: &str, record: &Map<String, Value>) -> io::Result<()> {
+    use windows_sys::Win32::System::EventLog::{EVENTLOG_INFORMATION_TYPE, EVENTLOG_WARNING_TYPE};
+
+    use crate::windows::{MOST_UNITS, SOURCE, report};
+
+    let read = summary(record);
+    let mut shown = format!("{read}\r\n\r\n{line}");
+    if shown.encode_utf16().count() > MOST_UNITS {
+        shown = format!("{read}\r\n\r\nThe record is too long for an event: hash {hash}.");
+    }
+    let field = |key: &str| match record.get(key) {
+        Some(Value::String(s)) => s.clone(),
+        Some(other) => other.to_string(),
+        None => String::new(),
+    };
+    let strings = [
+        shown,
+        field("action"),
+        field("phase"),
+        field("result"),
+        field("job"),
+        hash.to_owned(),
+    ];
+    let kind = if severity(record) <= 4 {
+        EVENTLOG_WARNING_TYPE
+    } else {
+        EVENTLOG_INFORMATION_TYPE
+    };
+    report(SOURCE, kind, event_id(record), &strings)
+}
+
+// Elsewhere than on macOS, which has its own (crate::macos).
+#[cfg(all(unix, not(target_os = "macos")))]
 mod unix {
     use std::io;
     use std::os::unix::net::UnixDatagram;
@@ -105,8 +190,8 @@ mod unix {
     /// Where journald takes what is sent to it.
     pub(super) const JOURNAL: &str = "/run/systemd/journal/socket";
 
-    /// Where syslog does, by the system: Linux and the BSDs, the BSDs, macOS.
-    const SYSLOG: [&str; 3] = ["/dev/log", "/var/run/log", "/var/run/syslog"];
+    /// Where syslog does, by the system: Linux and the BSDs, the BSDs.
+    const SYSLOG: [&str; 2] = ["/dev/log", "/var/run/log"];
 
     /// The facility of what users' programs say.
     const USER: u8 = 1;
@@ -290,12 +375,17 @@ mod tests {
             "read_entry ended: failed, /a/b.zip › c.txt (wrong password)"
         );
         assert_eq!(severity(&failed), 4);
+        let made = record(
+            json!({"action": "create", "phase": "end", "result": "ok", "made": "/a/new.zip"}),
+        );
+        assert_eq!(summary(&made), "create ended: ok, /a/new.zip");
         let stopped = record(json!({"action": "audit.stopped", "folder": "/var/audit"}));
         assert_eq!(summary(&stopped), "audit.stopped, /var/audit");
         assert_eq!(severity(&stopped), 5);
+        assert_eq!([&start, &failed, &stopped].map(event_id), [1, 5, 9]);
     }
 
-    #[cfg(unix)]
+    #[cfg(all(unix, not(target_os = "macos")))]
     mod unix {
         use std::io::{IoSliceMut, Read, Seek, SeekFrom};
         use std::mem::MaybeUninit;

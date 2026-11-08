@@ -72,9 +72,10 @@ jobs:
       - name: Clippy (with the UI tests)
         run: cargo clippy -p packwing --features ui-tests --all-targets -- -D warnings
 
-      # What the system's own marks and paths do, which only these systems can tell.
+      # What the system's own marks, paths and logs do, which only these systems
+      # can tell: the Event Log on Windows, journald on Linux.
       - name: Core tests
-        run: cargo test --no-fail-fast -p packwing-core -p packwing-policy -p packwing-license -p packwing-cli
+        run: cargo test --no-fail-fast -p packwing-core -p packwing-policy -p packwing-license -p packwing-cli -p packwing-audit
 
       # Whatever the core's tests said: both are worth seeing in one run.
       - name: UI scenarios
