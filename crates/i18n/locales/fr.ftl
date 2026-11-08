@@ -2073,6 +2073,12 @@ t8d6fca43 = Ce que le journal d’audit dit des archives
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = « entries » nomme les fichiers endommagés ou laissés de côté, en plus de les compter
 
+# The audit log in the system’s log
+t4a2fcd04 = Journal d’audit dans le journal du système
+
+# Each record goes to {log} as well, where your organization’s tools read it
+t3a4c104f = Chaque enregistrement va aussi dans { $log }, où les outils de votre organisation le lisent
+
 # packwing has no policy of this name.
 t7e03649c = packwing n'a aucune politique de ce nom.
 

@@ -2050,6 +2050,12 @@ t8d6fca43 = Nhật ký kiểm tra ghi gì về tệp nén
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = “entries” ghi cả tên các tệp bị hỏng hoặc bị bỏ qua, không chỉ đếm số lượng
 
+# The audit log in the system’s log
+t4a2fcd04 = Nhật ký kiểm tra trong nhật ký hệ thống
+
+# Each record goes to {log} as well, where your organization’s tools read it
+t3a4c104f = Mỗi bản ghi cũng được ghi vào { $log }, nơi các công cụ của tổ chức bạn đọc nó
+
 # packwing has no policy of this name.
 t7e03649c = packwing không có chính sách nào tên này.
 

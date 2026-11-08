@@ -2050,6 +2050,12 @@ t8d6fca43 = 稽核記錄對封存檔記下什麼
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = 「entries」除了計數，也會記下損毀或被略過的檔案名稱
 
+# The audit log in the system’s log
+t4a2fcd04 = 系統記錄中的稽核記錄
+
+# Each record goes to {log} as well, where your organization’s tools read it
+t3a4c104f = 每筆記錄也會寫入 { $log }，供貴組織的工具讀取
+
 # packwing has no policy of this name.
 t7e03649c = packwing 沒有這個名稱的政策。
 

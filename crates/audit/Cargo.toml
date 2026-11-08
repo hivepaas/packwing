@@ -13,9 +13,10 @@ sha2 = { version = "0.11", default-features = false }
 # A session's id, so that two runs' records are told apart.
 getrandom = "0.4"
 
-# The computer's name and the user's number.
+# The computer's name and the user's number; journald, and a record too
+# long for a datagram in a sealed memory file.
 [target.'cfg(unix)'.dependencies]
-rustix = { version = "1", features = ["system", "process"] }
+rustix = { version = "1", features = ["system", "process", "fs", "net"] }
 
 [dev-dependencies]
 

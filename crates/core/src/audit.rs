@@ -13,7 +13,9 @@ use std::sync::{Arc, Mutex, PoisonError, RwLock};
 use std::time::Instant;
 
 use packwing_audit::Log;
-pub use packwing_audit::{Break, Config, Report, day_files, default_folder, read, verify};
+pub use packwing_audit::{
+    Break, Config, Report, day_files, default_folder, read, system_log_name, verify,
+};
 use packwing_policy::Policy;
 use serde_json::{Map, Value, json};
 
@@ -59,6 +61,7 @@ pub fn settled(policy: &Policy, plan_has_it: bool, chosen: Chosen, app: &str) ->
         retention_days: policy.audit_log_retention_days(chosen.retention_days),
         max_bytes: policy.audit_log_max_bytes(PERSONAL_MAX_BYTES),
         entries: policy.audit_log_names_entries(),
+        system: policy.audit_log_to_system(),
         app: app.to_owned(),
         version: env!("CARGO_PKG_VERSION").to_owned(),
     })

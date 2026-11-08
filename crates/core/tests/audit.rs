@@ -37,6 +37,7 @@ fn config(folder: PathBuf, entries: bool) -> Config {
         retention_days: 90,
         max_bytes: 0,
         entries,
+        system: false,
         app: "pkw".into(),
         version: "test".into(),
     }

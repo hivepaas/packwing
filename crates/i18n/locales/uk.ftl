@@ -2119,6 +2119,12 @@ t8d6fca43 = Що журнал аудиту пише про архіви
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = «entries» записує не лише кількість пошкоджених і пропущених файлів, а й їхні назви
 
+# The audit log in the system’s log
+t4a2fcd04 = Журнал аудиту в системному журналі
+
+# Each record goes to {log} as well, where your organization’s tools read it
+t3a4c104f = Кожен запис також потрапляє до { $log }, звідки його читають інструменти вашої організації
+
 # packwing has no policy of this name.
 t7e03649c = У packwing немає політики з такою назвою.
 

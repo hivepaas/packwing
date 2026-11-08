@@ -25,6 +25,10 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use serde_json::{Map, Value, json};
 use sha2::{Digest, Sha256};
 
+mod system;
+
+pub use system::name as system_log_name;
+
 /// The version of what a record holds, its `v`.
 pub const SCHEMA: u64 = 1;
 
@@ -47,6 +51,8 @@ pub struct Config {
     /// Records name the files in an archive where they are at hand, not only
     /// count them.
     pub entries: bool,
+    /// Each record goes to the system's own log as well (`AuditLogSystem`).
+    pub system: bool,
     /// What writes: `packwing` or `pkw`.
     pub app: String,
     /// Its version.
@@ -88,24 +94,29 @@ impl Log {
 
     /// Writes `record`, with the fields every record has before its own: `v`,
     /// `time`, `prev`, and who and what wrote it. Its own take their place where
-    /// they have the same names, but for `v`, `time` and `prev`.
+    /// they have the same names, but for `v`, `time` and `prev`. Where the
+    /// system's log has it too, it goes there even when its file cannot be
+    /// written, with no `prev`.
     pub fn append(&self, record: Map<String, Value>) -> io::Result<()> {
         self.append_at(SystemTime::now(), record)
     }
 
     fn append_at(&self, now: SystemTime, record: Map<String, Value>) -> io::Result<()> {
-        fs::create_dir_all(&self.config.folder)?;
-        let _turn = Turn::take(&self.config.folder)?;
-        let file = self.config.folder.join(file_name(now));
-        let prev = match last_line(&file)? {
-            Some(line) => hash(&line),
-            None => newest_before(&self.config.folder, &file)?
-                .map(|f| last_line(&f))
-                .transpose()?
-                .flatten()
-                .map(|line| hash(&line))
-                .unwrap_or_default(),
+        let written = self.write(now, &record);
+        if !self.config.system {
+            return written.map(drop);
+        }
+        let line = match &written {
+            Ok(line) => line.clone(),
+            Err(_) => self.line(now, "", &record)?,
         };
+        let sent = system::send(&self.config.app, &line, &hash(line.as_bytes()), &record);
+        written?;
+        sent.map_err(|e| io::Error::new(e.kind(), format!("{}: {e}", system::name())))
+    }
+
+    /// `record` as its line holds it, after `prev`, without the line's end.
+    fn line(&self, now: SystemTime, prev: &str, record: &Map<String, Value>) -> io::Result<String> {
         let mut rest = Map::new();
         for (k, v) in self.base.iter().chain(record.iter()) {
             if !matches!(k.as_str(), "v" | "time" | "prev") {
@@ -120,14 +131,31 @@ impl Log {
             json!(rfc3339(now)),
             json!(prev)
         );
-        let mut text = match rest.strip_prefix('{').filter(|r| *r != "}") {
+        Ok(match rest.strip_prefix('{').filter(|r| *r != "}") {
             Some(r) => format!("{head},{r}"),
             None => format!("{head}}}"),
+        })
+    }
+
+    /// Writes `record` to its day's file, after the last: its line.
+    fn write(&self, now: SystemTime, record: &Map<String, Value>) -> io::Result<String> {
+        fs::create_dir_all(&self.config.folder)?;
+        let _turn = Turn::take(&self.config.folder)?;
+        let file = self.config.folder.join(file_name(now));
+        let prev = match last_line(&file)? {
+            Some(line) => hash(&line),
+            None => newest_before(&self.config.folder, &file)?
+                .map(|f| last_line(&f))
+                .transpose()?
+                .flatten()
+                .map(|line| hash(&line))
+                .unwrap_or_default(),
         };
-        text.push('\n');
+        let line = self.line(now, &prev, record)?;
         let mut out = OpenOptions::new().create(true).append(true).open(&file)?;
-        out.write_all(text.as_bytes())?;
-        out.sync_data()
+        out.write_all(format!("{line}\n").as_bytes())?;
+        out.sync_data()?;
+        Ok(line)
     }
 
     /// Takes away what is past its time, or over the size, as the config says,
@@ -520,6 +548,7 @@ mod tests {
             retention_days: 3,
             max_bytes: 0,
             entries: false,
+            system: false,
             app: "pkw".into(),
             version: "0.0.0".into(),
         })

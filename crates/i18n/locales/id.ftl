@@ -2050,6 +2050,12 @@ t8d6fca43 = Apa yang dicatat log audit tentang arsip
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = “entries” menyebut nama berkas yang rusak atau dilewati, selain menghitungnya
 
+# The audit log in the system’s log
+t4a2fcd04 = Log audit di log sistem
+
+# Each record goes to {log} as well, where your organization’s tools read it
+t3a4c104f = Setiap catatan juga dikirim ke { $log }, tempat alat organisasi Anda membacanya
+
 # packwing has no policy of this name.
 t7e03649c = packwing tidak memiliki kebijakan dengan nama ini.
 

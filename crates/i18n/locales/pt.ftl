@@ -2073,6 +2073,12 @@ t8d6fca43 = O que o registro de auditoria diz dos arquivos compactados
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = “entries” nomeia os arquivos danificados ou deixados de fora, além de contá-los
 
+# The audit log in the system’s log
+t4a2fcd04 = Registro de auditoria no log do sistema
+
+# Each record goes to {log} as well, where your organization’s tools read it
+t3a4c104f = Cada registro também vai para { $log }, onde as ferramentas da sua organização o leem
+
 # packwing has no policy of this name.
 t7e03649c = O packwing não tem uma política com este nome.
 
