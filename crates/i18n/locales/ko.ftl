@@ -274,6 +274,9 @@ t84cc41f7 = 여러 프레임
 # One frame
 tc6ef759e = 한 프레임
 
+# Small blocks
+t04032e8a = 작은 블록
+
 # Parts of 25 MB
 ta999efe2 = 25MB 단위로 분할
 
@@ -358,6 +361,9 @@ tae2a96e9 = 고급 옵션 숨기기
 # Advanced options
 t701d5ed9 = 고급 옵션
 
+# Large blocks
+tdc489452 = 큰 블록
+
 # Compression level
 td386c9ef = 압축 수준
 
@@ -375,6 +381,15 @@ tf461cde7 = 여러 프레임은 모든 코어에서 열리며, 압축 파일이 
 
 # One frame makes the smallest archive, which opens on one core.
 ta097b317 = 한 프레임은 가장 작은 압축 파일을 만들며, 하나의 코어에서 열립니다.
+
+# Blocks
+t036a71e3 = 블록
+
+# Small blocks keep every core at work: up to twice as fast, and the archive a few percent larger.
+t32239aa8 = 작은 블록은 모든 코어를 일하게 합니다. 최대 두 배 빠르고, 압축 파일은 몇 퍼센트 커집니다.
+
+# Large blocks make the smallest archive, on fewer cores where there is less to compress.
+t66a490d9 = 큰 블록은 가장 작은 압축 파일을 만듭니다. 압축할 것이 적으면 더 적은 코어를 씁니다.
 
 # Split into parts
 tca4436bd = 분할
@@ -759,6 +774,9 @@ tde281feb = 일시 중지됨
 
 # Starting…
 t73727cef = 시작하는 중…
+
+# Finishing…
+t042f47fe = 마무리하는 중…
 
 # Almost done
 ta550a6a9 = 거의 완료

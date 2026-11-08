@@ -11,11 +11,11 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use packwing_core::{
-    COMPRESSED_EXTENSIONS, Cancel, Control, Error, ExtractOptions, Frames, Item, Keys, Kind, Level,
-    Lister, LocalFolder, NewArchive, OnExisting, Progress, Route, SEVERAL_FRAMES_FROM, Source,
-    Storage, StoredFile, add, add_with, age_key_is_post_quantum, age_key_problem, age_keys_in,
-    can_add, create, create_on, delete, extract, extract_selected, extract_to_open, extract_with,
-    image_fits, list, measure, read_entry, rename, route, test,
+    Blocks, COMPRESSED_EXTENSIONS, Cancel, Control, Error, ExtractOptions, Frames, Item, Keys,
+    Kind, Level, Lister, LocalFolder, NewArchive, OnExisting, Progress, Route, SEVERAL_FRAMES_FROM,
+    Source, Storage, StoredFile, add, add_with, age_key_is_post_quantum, age_key_problem,
+    age_keys_in, can_add, create, create_on, delete, extract, extract_selected, extract_to_open,
+    extract_with, image_fits, list, measure, read_entry, rename, route, test,
 };
 
 /// A folder of a test's own, gone when it ends.
@@ -745,7 +745,9 @@ fn stopping_any_kind_leaves_nothing_and_progress_reaches_the_end() {
         let stop = cancel.clone();
         let control = Control {
             progress: Some(Arc::new(move |p: &Progress| {
-                if p.bytes > 0 {
+                // Once it has read a file: what is compressed in threads
+                // may count no bytes until the end.
+                if p.entries > 0 || p.bytes > 0 {
                     stop.cancel();
                 }
             })),
@@ -3210,4 +3212,194 @@ fn a_chosen_path_that_is_gone_is_an_error() {
     )
     .unwrap_err();
     assert!(err.to_string().contains("not-there"), "{err}");
+}
+
+/// Words and noise, `len` bytes of them: what compresses as files do.
+fn words_and_noise(len: usize, seed: u64) -> Vec<u8> {
+    let mut data = Vec::with_capacity(len + 256);
+    let mut state = seed | 1;
+    while data.len() < len {
+        state ^= state << 13;
+        state ^= state >> 7;
+        state ^= state << 17;
+        match state % 8 {
+            0 => data.extend((0..(state % 200)).map(|i| (state >> (i % 56)) as u8)),
+            n => data.extend_from_slice(
+                ["packwing ", "xz ", "thread ", "block\n"][n as usize % 4].as_bytes(),
+            ),
+        }
+    }
+    data.truncate(len);
+    data
+}
+
+/// xz's blocks are its own, or, small, cut so that the cores all have one,
+/// from the input's size alone: the same archive whatever the threads, as
+/// one thread makes it with blocks of that size.
+#[test]
+fn xz_goes_in_blocks_large_or_small() {
+    let s = Scratch::new("xz-blocks");
+    let data = words_and_noise(9 << 20, 5);
+    let file = s.path("a.txt");
+    fs::write(&file, &data).unwrap();
+    // Level Low is preset 3, of 4 MiB dictionary: xz's own blocks are 12 MiB,
+    // one for 9 MiB; small ones are a dictionary, the least, three of them.
+    assert!(Blocks::differ(Level::Low, 9 << 20));
+    assert!(
+        !Blocks::differ(Level::Low, 4 << 20),
+        "one dictionary is one block"
+    );
+    assert!(
+        !Blocks::differ(Level::Low, 32 * (12 << 20)),
+        "as many as the cores"
+    );
+    for (blocks, block_size) in [(Blocks::Large, 0), (Blocks::Small, 4 << 20)] {
+        let new = NewArchive {
+            kind: Kind::Xz,
+            level: Level::Low,
+            blocks,
+            ..NewArchive::default()
+        };
+        let made = create(
+            std::slice::from_ref(&file),
+            &s.path(&format!("{blocks:?}.xz")),
+            &new,
+            &Control::default(),
+        )
+        .unwrap();
+        let mut one = hivepack::xz::Stream::stream_encoder_mt(&hivepack::xz::MtOptions {
+            threads: 1,
+            preset: 3,
+            block_size,
+            check: hivepack::xz::Check::CRC64,
+            ..hivepack::xz::MtOptions::default()
+        })
+        .unwrap();
+        let mut want = vec![0; data.len() + (1 << 20)];
+        let mut output = hivepack::xz::OutBuffer::new(&mut want);
+        let mut input = hivepack::xz::InBuffer::new(&data);
+        loop {
+            let status = one
+                .code(&mut output, &mut input, hivepack::xz::Action::Finish)
+                .unwrap();
+            if status == hivepack::xz::Status::StreamEnd {
+                break;
+            }
+        }
+        let n = output.pos;
+        want.truncate(n);
+        assert!(
+            fs::read(&made).unwrap() == want,
+            "{blocks:?}: not in blocks of {block_size}"
+        );
+    }
+}
+
+/// A tar compressed in threads tells what is compressed, not what is read:
+/// never less than before, never more than all, and all at the end.
+#[test]
+fn a_compressed_tar_tells_what_is_compressed() {
+    let s = Scratch::new("compressed-progress");
+    let root = s.path("files");
+    fs::create_dir(&root).unwrap();
+    for i in 0..6 {
+        fs::write(
+            root.join(format!("{i}.txt")),
+            words_and_noise(3 << 20, i + 1),
+        )
+        .unwrap();
+    }
+    let total = 6 * (3 << 20);
+    for (kind, name, frames) in [
+        (Kind::TarXz, "a.tar.xz", Frames::One),
+        (Kind::TarZst, "a.tar.zst", Frames::One),
+        (Kind::TarZst, "frames.tar.zst", Frames::Several),
+    ] {
+        let told = Arc::new(std::sync::Mutex::new(Vec::new()));
+        let keep = told.clone();
+        let control = Control {
+            progress: Some(Arc::new(move |p: &Progress| {
+                keep.lock().unwrap().push((p.entries, p.bytes));
+            })),
+            ..Control::default()
+        };
+        let new = NewArchive {
+            kind,
+            level: Level::Medium,
+            frames,
+            ..NewArchive::default()
+        };
+        let made = create(std::slice::from_ref(&root), &s.path(name), &new, &control).unwrap();
+        let told = told.lock().unwrap();
+        for pair in told.windows(2) {
+            assert!(pair[1].1 >= pair[0].1, "{name}: {pair:?}");
+        }
+        assert!(told.iter().all(|&(_, bytes)| bytes <= total), "{name}");
+        assert_eq!(told.last().map(|&(_, bytes)| bytes), Some(total), "{name}");
+        // When the last file is read, its threads have not compressed it all:
+        // a block of xz's, a job of zstd's, a frame in flight, or the piece
+        // not yet a frame.
+        let all_read = told.iter().find(|&&(entries, _)| entries == 6).unwrap();
+        assert!(all_read.1 < total, "{name}: {all_read:?} when all was read");
+        let out = s.path(&format!("{name}-out"));
+        extract_with(
+            &made,
+            &out,
+            &Keys::default(),
+            &ExtractOptions::default(),
+            &Control::default(),
+        )
+        .unwrap();
+        assert_eq!(
+            fs::read(out.join("files/5.txt")).unwrap(),
+            words_and_noise(3 << 20, 6),
+            "{name}"
+        );
+    }
+}
+
+/// Stopped once every file is read, while its threads compress what they
+/// hold, a compressed tar stops there, and leaves nothing.
+#[test]
+fn stopped_while_the_threads_end_leaves_nothing() {
+    let s = Scratch::new("stopped-ending");
+    let root = s.path("files");
+    fs::create_dir(&root).unwrap();
+    for i in 0..3 {
+        fs::write(
+            root.join(format!("{i}.txt")),
+            words_and_noise(2 << 20, i + 1),
+        )
+        .unwrap();
+    }
+    for (kind, name, frames) in [
+        (Kind::TarXz, "a.tar.xz", Frames::One),
+        (Kind::TarZst, "a.tar.zst", Frames::One),
+        (Kind::TarZst, "frames.tar.zst", Frames::Several),
+    ] {
+        let cancel = Cancel::new();
+        let stop = cancel.clone();
+        let control = Control {
+            progress: Some(Arc::new(move |p: &Progress| {
+                if p.entries == 3 {
+                    stop.cancel();
+                }
+            })),
+            cancel: Some(cancel),
+            ..Control::default()
+        };
+        let new = NewArchive {
+            kind,
+            level: Level::Medium,
+            frames,
+            ..NewArchive::default()
+        };
+        let path = s.path(name);
+        let stopped = create(std::slice::from_ref(&root), &path, &new, &control);
+        assert!(
+            matches!(stopped, Err(Error::Cancelled)),
+            "{name}: {stopped:?}"
+        );
+        assert!(!path.exists(), "{name}");
+    }
 }

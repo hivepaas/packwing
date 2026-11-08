@@ -423,6 +423,13 @@ const SCREENS: [(&str, SetUp); 92] = [
             d.show_advanced(cx);
         });
     }),
+    ("create-blocks", |ws, window, cx| {
+        ws.open_create_sample(window, cx).update(cx, |d, cx| {
+            d.choose_format(crate::dialogs::Format::TarXz, cx);
+            d.set_counted(600 << 20, cx);
+            d.show_advanced(cx);
+        });
+    }),
     ("create-7z", |ws, window, cx| {
         ws.open_create_sample(window, cx).update(cx, |d, cx| {
             d.fill(crate::dialogs::Format::SevenZip, "100", cx)

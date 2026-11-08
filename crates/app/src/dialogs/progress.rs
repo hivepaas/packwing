@@ -1002,6 +1002,11 @@ impl ProgressDialog {
             return tr!("Starting…");
         }
         let (_, _, bytes, total) = self.counts();
+        // All is read, and what is left is the job's own: the last of the
+        // compressing, a 7z's headers, the archive put in its place.
+        if total > 0 && bytes >= total {
+            return tr!("Finishing…");
+        }
         let secs = (total.saturating_sub(bytes) as f64 / speed as f64).round() as u64;
         match secs {
             0..=4 => tr!("Almost done"),

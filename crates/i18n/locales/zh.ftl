@@ -274,6 +274,9 @@ t84cc41f7 = 多帧
 # One frame
 tc6ef759e = 单帧
 
+# Small blocks
+t04032e8a = 小块
+
 # Parts of 25 MB
 ta999efe2 = 每卷 25 MB
 
@@ -358,6 +361,9 @@ tae2a96e9 = 隐藏高级选项
 # Advanced options
 t701d5ed9 = 高级选项
 
+# Large blocks
+tdc489452 = 大块
+
 # Compression level
 td386c9ef = 压缩级别
 
@@ -375,6 +381,15 @@ tf461cde7 = 多帧可在所有核心上打开，压缩包会稍大一些：不�
 
 # One frame makes the smallest archive, which opens on one core.
 ta097b317 = 单帧生成最小的压缩包，只在一个核心上打开。
+
+# Blocks
+t036a71e3 = 块
+
+# Small blocks keep every core at work: up to twice as fast, and the archive a few percent larger.
+t32239aa8 = 小块让每个核心都在工作：最多快两倍，压缩包大几个百分点。
+
+# Large blocks make the smallest archive, on fewer cores where there is less to compress.
+t66a490d9 = 大块生成最小的压缩包，要压缩的内容较少时，用到的核心较少。
 
 # Split into parts
 tca4436bd = 分卷
@@ -759,6 +774,9 @@ tde281feb = 已暂停
 
 # Starting…
 t73727cef = 正在开始…
+
+# Finishing…
+t042f47fe = 正在完成…
 
 # Almost done
 ta550a6a9 = 即将完成

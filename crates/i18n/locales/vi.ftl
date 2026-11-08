@@ -274,6 +274,9 @@ t84cc41f7 = Nhiều khung
 # One frame
 tc6ef759e = Một khung
 
+# Small blocks
+t04032e8a = Khối nhỏ
+
 # Parts of 25 MB
 ta999efe2 = Phần 25 MB
 
@@ -358,6 +361,9 @@ tae2a96e9 = Ẩn nâng cao
 # Advanced options
 t701d5ed9 = Tuỳ chọn nâng cao
 
+# Large blocks
+tdc489452 = Khối lớn
+
 # Compression level
 td386c9ef = Mức nén
 
@@ -375,6 +381,15 @@ tf461cde7 = Nhiều khung mở được trên mọi lõi, và làm tệp nén l�
 
 # One frame makes the smallest archive, which opens on one core.
 ta097b317 = Một khung cho tệp nén nhỏ nhất, mở trên một lõi.
+
+# Blocks
+t036a71e3 = Khối
+
+# Small blocks keep every core at work: up to twice as fast, and the archive a few percent larger.
+t32239aa8 = Khối nhỏ cho mọi lõi cùng làm việc: nhanh hơn tới gấp đôi, và tệp nén lớn hơn vài phần trăm.
+
+# Large blocks make the smallest archive, on fewer cores where there is less to compress.
+t66a490d9 = Khối lớn cho tệp nén nhỏ nhất, dùng ít lõi hơn khi có ít dữ liệu để nén.
 
 # Split into parts
 tca4436bd = Chia thành nhiều phần
@@ -759,6 +774,9 @@ tde281feb = Tạm dừng
 
 # Starting…
 t73727cef = Đang bắt đầu…
+
+# Finishing…
+t042f47fe = Đang hoàn tất…
 
 # Almost done
 ta550a6a9 = Sắp xong

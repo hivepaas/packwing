@@ -276,6 +276,9 @@ t84cc41f7 = Vários quadros
 # One frame
 tc6ef759e = Um quadro
 
+# Small blocks
+t04032e8a = Blocos pequenos
+
 # Parts of 25 MB
 ta999efe2 = Partes de 25 MB
 
@@ -360,6 +363,9 @@ tae2a96e9 = Ocultar avançadas
 # Advanced options
 t701d5ed9 = Opções avançadas
 
+# Large blocks
+tdc489452 = Blocos grandes
+
 # Compression level
 td386c9ef = Nível de compactação
 
@@ -377,6 +383,15 @@ tf461cde7 = Vários quadros abrem em todos os núcleos e deixam o arquivo compac
 
 # One frame makes the smallest archive, which opens on one core.
 ta097b317 = Um quadro gera o arquivo compactado menor, que abre em um só núcleo.
+
+# Blocks
+t036a71e3 = Blocos
+
+# Small blocks keep every core at work: up to twice as fast, and the archive a few percent larger.
+t32239aa8 = Blocos pequenos mantêm todos os núcleos a trabalhar: até duas vezes mais rápido, e o arquivo alguns por cento maior.
+
+# Large blocks make the smallest archive, on fewer cores where there is less to compress.
+t66a490d9 = Blocos grandes dão o arquivo mais pequeno, em menos núcleos quando há pouco para comprimir.
 
 # Split into parts
 tca4436bd = Dividir em partes
@@ -765,6 +780,9 @@ tde281feb = Pausado
 
 # Starting…
 t73727cef = Iniciando…
+
+# Finishing…
+t042f47fe = Concluindo…
 
 # Almost done
 ta550a6a9 = Quase pronto

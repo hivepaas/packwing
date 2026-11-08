@@ -22,7 +22,7 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::mpsc::{Receiver, SyncSender, sync_channel};
 use std::sync::{Arc, Mutex, PoisonError};
-use std::time::UNIX_EPOCH;
+use std::time::{Duration, Instant, UNIX_EPOCH};
 
 use hivepack::age::{
     BoxedRecipient, RandomSource, Recipient, ScryptRecipient, parse_recipient,
@@ -31,7 +31,7 @@ use hivepack::age::{
 use hivepack::deflate::{DeflateMt, Flush};
 use hivepack::extract::{NameRules, Progress, check_name_for};
 use hivepack::open::Container;
-use hivepack::xz::{MtOptions, Stream, stream_encoder_mt_memusage};
+use hivepack::xz::{LzmaOptions, MtOptions, Stream, stream_encoder_mt_memusage};
 use hivepack::zip::{
     Archive, BufferSource, Closed, DataSource, ErrorCode, FileAttributes, Flags, OpenFlags, ReadAt,
     Stat, cm, em, file_attributes, opsys, stat, volume_paths,
@@ -207,6 +207,55 @@ impl Frames {
     }
 }
 
+/// How an `.tar.xz` or `.xz` is cut into blocks, each compressed in a thread
+/// and decoded in one: the same archive whatever the threads, as the blocks
+/// depend on the input's size alone.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Blocks {
+    /// xz's own, three dictionaries each: the smallest archive. Fewer blocks
+    /// than cores leave cores idle: 2.3 GB at the highest level is 13 blocks
+    /// of 192 MiB.
+    #[default]
+    Large,
+    /// Enough for [`XZ_BLOCKS`] cores where xz's own are fewer, down to one
+    /// dictionary each, as what xz finds is within one. 2.3 GB of a
+    /// computer's own files at the highest level, on 32 cores: 79 s in blocks
+    /// of 192 MiB, 38 s in 72 MiB, and 4% larger; 2.4 GB of programs, 89 s
+    /// and 46 s in 64 MiB, and 0.7% larger.
+    Small,
+}
+
+/// The cores [`Blocks::Small`] cuts enough blocks for, whatever the threads.
+pub const XZ_BLOCKS: u64 = 32;
+
+impl Blocks {
+    /// The input of each block for `bytes` at `level`, or 0 for xz's own.
+    fn size(self, level: Level, bytes: u64) -> u64 {
+        match self {
+            Blocks::Large => 0,
+            Blocks::Small => {
+                let (dictionary, own) = xz_blocks_of(level);
+                bytes.div_ceil(XZ_BLOCKS).clamp(dictionary, own)
+            }
+        }
+    }
+
+    /// Whether small blocks differ from large ones for `bytes` at `level`:
+    /// when there are fewer than [`XZ_BLOCKS`] of xz's own, and more than one
+    /// dictionary.
+    pub fn differ(level: Level, bytes: u64) -> bool {
+        let (dictionary, own) = xz_blocks_of(level);
+        bytes > dictionary && Blocks::Small.size(level, bytes) < own
+    }
+}
+
+/// xz's dictionary at `level`, and its own blocks, three dictionaries.
+fn xz_blocks_of(level: Level) -> (u64, u64) {
+    let dictionary = LzmaOptions::preset(level.xz()).map_or(8 << 20, |o| u64::from(o.dict_size));
+    let own = (3 * dictionary).max(1 << 20);
+    (dictionary.min(own), own)
+}
+
 /// What a tar archive keeps of each file for a backup, to be restored on the computer
 /// it came from: each is left out by default, as an archive to share has no use for
 /// it and would tell others the names of the users.
@@ -294,6 +343,8 @@ pub struct NewArchive {
     pub stream_above: Option<u64>,
     /// How a `.tar.zst` or `.zst` is cut into frames.
     pub frames: Frames,
+    /// How a `.tar.xz` or `.xz` is cut into blocks.
+    pub blocks: Blocks,
 }
 
 /// Why `policy` stops `new` being made, if it does: what the window asks before
@@ -545,6 +596,11 @@ struct Tally {
     /// A ZIP archive's file was gone when it was read, which the archive
     /// cannot leave out once it is being written: it is made again without.
     zip_gone: AtomicBool,
+    /// What a tar's compressor has taken and not yet compressed, as
+    /// [`Squeezed::watch`] measures it: read, but not done.
+    behind: Arc<AtomicU64>,
+    /// The bytes last told, which the next never goes below.
+    told: AtomicU64,
 }
 
 impl Tally {
@@ -569,6 +625,15 @@ impl Tally {
         self.advance(1, bytes);
     }
 
+    /// Tells how far it is while a compressor ends, its threads compressing
+    /// what they hold: an error once the job is stopped, which [`why`] says.
+    fn going(&self) -> io::Result<()> {
+        self.advance(0, 0);
+        self.control
+            .check()
+            .map_err(|_| io::Error::other("stopped"))
+    }
+
     /// What was gone so far.
     fn gone_paths(&self) -> HashSet<PathBuf> {
         self.gone
@@ -583,7 +648,16 @@ impl Tally {
         let mut progress = self.progress.lock().unwrap_or_else(PoisonError::into_inner);
         progress.entries += entries;
         progress.bytes += bytes;
-        self.control.report(&progress);
+        // What is read is done but for what a compressor in threads holds:
+        // up to a block for each, as much as the whole input at xz's highest
+        // level, which would show the end long before it is.
+        let done = progress
+            .bytes
+            .saturating_sub(self.behind.load(Ordering::Relaxed));
+        let told = self.told.fetch_max(done, Ordering::Relaxed).max(done);
+        let mut shown = *progress;
+        shown.bytes = told;
+        self.control.report(&shown);
     }
 }
 
@@ -1161,6 +1235,7 @@ fn squeeze<W: Write>(
         .map(|item| item.metadata.len())
         .sum();
     let mut out = Squeezed::new(new, Some(bytes), out)?;
+    out.watch(Arc::clone(&tally.behind));
     if !new.kind.one_file() {
         return write_tar(items, new.keep, tally, out);
     }
@@ -1176,7 +1251,7 @@ fn squeeze<W: Write>(
     }
     let file = File::open(&item.path).map_err(|e| read_failed(&item.path, &e))?;
     pump(item, file, &mut out, tally, &mut vec![0; PIECE])?;
-    Ok(out.finish()?)
+    Ok(out.finish_telling(&mut || tally.going())?)
 }
 
 /// How a ZIP archive's files are compressed.
@@ -1511,7 +1586,7 @@ fn write_tar<W: Write>(
         }
     }
     tar.close()?;
-    Ok(tar.into_inner().finish()?)
+    Ok(tar.into_inner().finish_telling(&mut || tally.going())?)
 }
 
 /// What tells the names of one file apart from those of another: its device and
@@ -1649,7 +1724,20 @@ pub(crate) struct Squeezed<W> {
     buf: Vec<u8>,
     /// The memory its threads hold, until it is dropped.
     _held: Option<crate::memory::Held>,
+    /// Where what it has taken and not yet compressed is kept, if anywhere.
+    behind: Option<Arc<AtomicU64>>,
+    /// What it has taken.
+    taken: u64,
+    /// When `tick` was last called, while it ends.
+    ticked: Option<Instant>,
 }
+
+/// How often a [`Squeezed`] that is watched tells how far it is while it
+/// ends, its threads compressing what they hold.
+const TICK_EVERY: Duration = Duration::from_millis(50);
+
+/// What a [`Squeezed`] calls to tell how far it is: an error stops it.
+type Tick<'a> = dyn FnMut() -> io::Result<()> + 'a;
 
 /// As many threads as [`crate::use_threads`] allows.
 fn threads() -> u32 {
@@ -1706,6 +1794,9 @@ impl<W: Write> Squeezed<W> {
                     check: hivepack::xz::Check::CRC64,
                     ..MtOptions::default()
                 };
+                if let Some(bytes) = bytes {
+                    options.block_size = new.blocks.size(new.level, bytes);
+                }
                 // As many threads as the memory there is takes: each takes
                 // about three dictionaries, the highest level's 64 MiB.
                 let (threads, holds) = crate::memory::hold_threads(options.threads, |n| {
@@ -1774,11 +1865,50 @@ impl<W: Write> Squeezed<W> {
             coder,
             buf: vec![0; PIECE],
             _held: held,
+            behind: None,
+            taken: 0,
+            ticked: None,
         })
     }
 
-    /// Compresses `input`, and with `finish`, ends the stream.
-    fn code(&mut self, input: &[u8], finish: bool) -> io::Result<()> {
+    /// Keeps in `behind` what it has taken and not yet compressed, measured
+    /// as it goes, for a progress to leave out.
+    pub(crate) fn watch(&mut self, behind: Arc<AtomicU64>) {
+        self.behind = Some(behind);
+    }
+
+    /// What it has compressed of what it has taken: what its threads hold
+    /// is not. The others compress what they take as they take it, or near
+    /// enough.
+    fn compressed_now(&self) -> u64 {
+        match &self.coder {
+            Coder::Xz(stream) => stream.get_progress().0,
+            Coder::Zstd(cctx) => cctx.get_frame_progression().consumed,
+            Coder::ZstdFrames(frames) => frames.consumed(),
+            Coder::Plain | Coder::Gzip(_) | Coder::Bzip2(_) | Coder::Lz4(_) => self.taken,
+        }
+    }
+
+    /// If it is watched, keeps how far behind it is, and when it is time,
+    /// calls `tick`, whose error it returns. Measured at each call: a few
+    /// locks, the threads' own.
+    fn measure(&mut self, tick: &mut Tick<'_>) -> io::Result<()> {
+        let Some(behind) = &self.behind else {
+            return Ok(());
+        };
+        let compressed = self.compressed_now().min(self.taken);
+        behind.store(self.taken - compressed, Ordering::Relaxed);
+        if self.ticked.is_none_or(|at| at.elapsed() >= TICK_EVERY) {
+            self.ticked = Some(Instant::now());
+            tick()?;
+        }
+        Ok(())
+    }
+
+    /// Compresses `input`, and with `finish`, ends the stream: `tick` called
+    /// as [`Squeezed::measure`] says.
+    fn code(&mut self, input: &[u8], finish: bool, tick: &mut Tick<'_>) -> io::Result<()> {
+        self.taken += input.len() as u64;
         let failed = |e: String| io::Error::other(tr!("Could not compress: {e}", e = e));
         match &mut self.coder {
             Coder::Plain => return self.out.write_all(input),
@@ -1887,14 +2017,27 @@ impl<W: Write> Squeezed<W> {
                 }
             };
             self.out.write_all(&self.buf[..made])?;
+            self.measure(tick)?;
             if done {
                 return Ok(());
             }
         }
     }
 
-    pub(crate) fn finish(mut self) -> io::Result<W> {
-        self.code(&[], true)?;
+    pub(crate) fn finish(self) -> io::Result<W> {
+        self.finish_telling(&mut || Ok(()))
+    }
+
+    /// Ends the stream, calling `tick` now and then while the threads
+    /// compress what they hold, and once more at the end, when nothing is
+    /// behind: its error is returned, and the stream left unfinished.
+    pub(crate) fn finish_telling(mut self, tick: &mut Tick<'_>) -> io::Result<W> {
+        self.ticked = None;
+        self.code(&[], true, tick)?;
+        if let Some(behind) = &self.behind {
+            behind.store(0, Ordering::Relaxed);
+        }
+        tick()?;
         self.out.flush()?;
         Ok(self.out)
     }
@@ -1902,7 +2045,8 @@ impl<W: Write> Squeezed<W> {
 
 impl<W: Write> Write for Squeezed<W> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        self.code(buf, false)?;
+        // What is read is told as it is read.
+        self.code(buf, false, &mut || Ok(()))?;
         Ok(buf.len())
     }
 
@@ -2233,6 +2377,8 @@ pub fn add_with(
         failed: Mutex::new(None),
         gone: Mutex::new(Vec::new()),
         zip_gone: AtomicBool::new(false),
+        behind: Arc::new(AtomicU64::new(0)),
+        told: AtomicU64::new(0),
     });
     control.report(&progress);
 
@@ -2299,6 +2445,8 @@ fn tally_of(items: &[Item], control: &Control) -> Arc<Tally> {
         failed: Mutex::new(None),
         gone: Mutex::new(Vec::new()),
         zip_gone: AtomicBool::new(false),
+        behind: Arc::new(AtomicU64::new(0)),
+        told: AtomicU64::new(0),
     })
 }
 

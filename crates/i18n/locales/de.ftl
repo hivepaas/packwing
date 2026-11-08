@@ -276,6 +276,9 @@ t84cc41f7 = Mehrere Frames
 # One frame
 tc6ef759e = Ein Frame
 
+# Small blocks
+t04032e8a = Kleine Blöcke
+
 # Parts of 25 MB
 ta999efe2 = Teile à 25 MB
 
@@ -360,6 +363,9 @@ tae2a96e9 = Erweitert ausblenden
 # Advanced options
 t701d5ed9 = Erweiterte Optionen
 
+# Large blocks
+tdc489452 = Große Blöcke
+
 # Compression level
 td386c9ef = Komprimierungsstufe
 
@@ -377,6 +383,15 @@ tf461cde7 = Mehrere Frames öffnen sich auf jedem Kern und machen das Archiv etw
 
 # One frame makes the smallest archive, which opens on one core.
 ta097b317 = Ein Frame ergibt das kleinste Archiv, das sich auf einem Kern öffnet.
+
+# Blocks
+t036a71e3 = Blöcke
+
+# Small blocks keep every core at work: up to twice as fast, and the archive a few percent larger.
+t32239aa8 = Kleine Blöcke halten jeden Kern beschäftigt: bis zu doppelt so schnell, und das Archiv wird ein paar Prozent größer.
+
+# Large blocks make the smallest archive, on fewer cores where there is less to compress.
+t66a490d9 = Große Blöcke ergeben das kleinste Archiv, auf weniger Kernen, wenn es wenig zu komprimieren gibt.
 
 # Split into parts
 tca4436bd = In Teile aufteilen
@@ -765,6 +780,9 @@ tde281feb = Pausiert
 
 # Starting…
 t73727cef = Wird gestartet…
+
+# Finishing…
+t042f47fe = Wird abgeschlossen…
 
 # Almost done
 ta550a6a9 = Fast fertig

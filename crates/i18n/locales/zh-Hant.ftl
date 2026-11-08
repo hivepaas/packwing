@@ -274,6 +274,9 @@ t84cc41f7 = 多幀
 # One frame
 tc6ef759e = 單幀
 
+# Small blocks
+t04032e8a = 小區塊
+
 # Parts of 25 MB
 ta999efe2 = 每份 25 MB
 
@@ -358,6 +361,9 @@ tae2a96e9 = 隱藏進階選項
 # Advanced options
 t701d5ed9 = 進階選項
 
+# Large blocks
+tdc489452 = 大區塊
+
 # Compression level
 td386c9ef = 壓縮等級
 
@@ -375,6 +381,15 @@ tf461cde7 = 多幀可在所有核心上開啟，封存檔會稍大一些：不�
 
 # One frame makes the smallest archive, which opens on one core.
 ta097b317 = 單幀產生最小的封存檔，只在一個核心上開啟。
+
+# Blocks
+t036a71e3 = 區塊
+
+# Small blocks keep every core at work: up to twice as fast, and the archive a few percent larger.
+t32239aa8 = 小區塊讓每個核心都在工作：最多快兩倍，壓縮檔大幾個百分點。
+
+# Large blocks make the smallest archive, on fewer cores where there is less to compress.
+t66a490d9 = 大區塊產生最小的壓縮檔，要壓縮的內容較少時，用到的核心較少。
 
 # Split into parts
 tca4436bd = 分割成多個部分
@@ -759,6 +774,9 @@ tde281feb = 已暫停
 
 # Starting…
 t73727cef = 正在開始…
+
+# Finishing…
+t042f47fe = 正在完成…
 
 # Almost done
 ta550a6a9 = 即將完成

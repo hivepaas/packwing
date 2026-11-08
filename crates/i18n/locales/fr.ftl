@@ -276,6 +276,9 @@ t84cc41f7 = Plusieurs trames
 # One frame
 tc6ef759e = Une trame
 
+# Small blocks
+t04032e8a = Petits blocs
+
 # Parts of 25 MB
 ta999efe2 = Volumes de 25 Mo
 
@@ -360,6 +363,9 @@ tae2a96e9 = Masquer les options avancées
 # Advanced options
 t701d5ed9 = Options avancées
 
+# Large blocks
+tdc489452 = Grands blocs
+
 # Compression level
 td386c9ef = Niveau de compression
 
@@ -377,6 +383,15 @@ tf461cde7 = Plusieurs trames s’ouvrent sur tous les cœurs et rendent l’arch
 
 # One frame makes the smallest archive, which opens on one core.
 ta097b317 = Une trame donne l’archive la plus petite, qui s’ouvre sur un seul cœur.
+
+# Blocks
+t036a71e3 = Blocs
+
+# Small blocks keep every core at work: up to twice as fast, and the archive a few percent larger.
+t32239aa8 = Les petits blocs occupent tous les cœurs : jusqu’à deux fois plus rapide, et l’archive quelques pour cent plus grande.
+
+# Large blocks make the smallest archive, on fewer cores where there is less to compress.
+t66a490d9 = Les grands blocs donnent l’archive la plus petite, sur moins de cœurs quand il y a peu à compresser.
 
 # Split into parts
 tca4436bd = Découper en volumes
@@ -765,6 +780,9 @@ tde281feb = En pause
 
 # Starting…
 t73727cef = Démarrage…
+
+# Finishing…
+t042f47fe = Finalisation…
 
 # Almost done
 ta550a6a9 = Presque terminé
