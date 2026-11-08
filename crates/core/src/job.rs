@@ -904,15 +904,22 @@ fn tar_into_folder(
     let size = source.size().unwrap_or(0);
     if let (Some(told), true) = (control.progress.clone(), size > 0) {
         let read = Arc::clone(&read);
+        // The fraction told so far, in millionths: the archive read, then
+        // the entries moved into place, never going back between the two.
+        let shown = AtomicU64::new(0);
         options.progress = Some(Arc::new(move |p: &Progress| {
+            let mut through = *p;
             if p.total_bytes == 0 && p.total_entries == 0 {
-                let mut through = *p;
                 through.bytes = read.load(Ordering::Relaxed).min(size);
                 through.total_bytes = size;
-                told(&through);
-            } else {
-                told(p);
             }
+            let total = u128::from(through.total_bytes.max(1));
+            let fraction = (u128::from(through.bytes) * 1_000_000 / total) as u64;
+            let before = shown.fetch_max(fraction, Ordering::Relaxed);
+            if before > fraction {
+                through.bytes = (u128::from(before) * total / 1_000_000) as u64;
+            }
+            told(&through);
         }));
     }
     let mut opener = opener_of(&source.name(), keys, || {

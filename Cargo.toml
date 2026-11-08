@@ -60,4 +60,4 @@ opt-level = 2
 # branch extract-one-reading, which has them). Taken out, and the version above
 # raised, once it is published.
 [patch.crates-io]
-hivepack = { git = "https://github.com/hivepaas/hivepack-rs", rev = "0625843ad5f7116637ea9d84e7f46d51efb50c07" }
+hivepack = { git = "https://github.com/hivepaas/hivepack-rs", rev = "dd3168dc002b117dcbffa47ccbe85324b4b023ed" }
