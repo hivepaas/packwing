@@ -57,6 +57,10 @@ pub struct Config {
     pub entries: bool,
     /// Each record goes to the system's own log as well (`AuditLogSystem`).
     pub system: bool,
+    /// A job whose start cannot be written does not start
+    /// (`AuditLogRequired`): written to the day's file, and to the system's
+    /// log where it goes there too.
+    pub required: bool,
     /// What writes: `packwing` or `pkw`.
     pub app: String,
     /// Its version.
@@ -557,6 +561,7 @@ mod tests {
             max_bytes: 0,
             entries: false,
             system: false,
+            required: false,
             app: "pkw".into(),
             version: "0.0.0".into(),
         })

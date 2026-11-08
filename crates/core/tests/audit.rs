@@ -38,6 +38,7 @@ fn config(folder: PathBuf, entries: bool) -> Config {
         max_bytes: 0,
         entries,
         system: false,
+        required: false,
         app: "pkw".into(),
         version: "test".into(),
     }
@@ -247,5 +248,45 @@ fn jobs_are_recorded_as_they_start_and_end_and_the_chain_holds() {
     let text = fs::read_to_string(&day).unwrap();
     fs::write(&day, text.replacen("\"ok\"", "\"failed\"", 1)).unwrap();
     assert_eq!(audit::verify(&log).unwrap().breaks.len(), 1);
+
+    // Where the organization requires the log, a job whose start cannot be
+    // written does not start. Where it does not, the job runs, and why it could
+    // not be written is kept for the app to say.
+    let blocked = s.0.join("not-a-folder");
+    fs::write(&blocked, "a file where the log's folder would be").unwrap();
+    let mut held = config(blocked, false);
+    audit::set(Some(held.clone()));
+    let free = s.0.join("free.zip");
+    let make = |to: &PathBuf| {
+        create(
+            &[files.join("in")],
+            to,
+            &NewArchive::default(),
+            &Control::default(),
+        )
+    };
+    make(&free).unwrap();
+    assert!(audit::last_failure().is_some());
+    held.required = true;
+    audit::set(Some(held));
+    let refused = s.0.join("refused.zip");
+    let e = make(&refused).unwrap_err();
+    assert!(
+        e.to_string().contains("requires each job to be recorded"),
+        "{e}"
+    );
+    assert!(!refused.exists(), "a job refused does nothing");
+    let e = test(&free, &Keys::default(), &Control::default()).unwrap_err();
+    assert!(
+        e.to_string().contains("requires each job to be recorded"),
+        "{e}"
+    );
+    // Writable again, the next job on this thread is recorded as any.
+    let again = s.0.join("audit-again");
+    let mut writable = config(again.clone(), false);
+    writable.required = true;
+    audit::set(Some(writable));
+    make(&s.0.join("again.zip")).unwrap();
+    assert_eq!(ends(&audit::read(&again, None).unwrap(), "create").len(), 1);
     audit::set(None);
 }

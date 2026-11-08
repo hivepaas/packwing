@@ -2073,6 +2073,12 @@ t8d6fca43 = Ce que le journal d’audit dit des archives
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = « entries » nomme les fichiers endommagés ou laissés de côté, en plus de les compter
 
+# Every job recorded
+t42369815 = Chaque tâche enregistrée
+
+# A job whose start the audit log cannot write does not start
+tda48e1c9 = Une tâche dont le journal d’audit ne peut écrire le début ne démarre pas
+
 # The audit log in the system’s log
 t4a2fcd04 = Journal d’audit dans le journal du système
 
@@ -2341,6 +2347,9 @@ t75e7db7c = { $folder }, un dossier pour chacune
 
 # New
 t8b242db1 = Nouveau
+
+# Your organization requires each job to be recorded, and the audit log cannot be written: {why}
+t3f254f09 = Votre organisation exige que chaque tâche soit enregistrée, et le journal d’audit ne peut pas être écrit : { $why }
 
 # There is no file to save it beside.
 ta9906e3b = Il n'y a pas de fichier à côté duquel l'enregistrer.

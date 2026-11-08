@@ -2050,6 +2050,12 @@ t8d6fca43 = アーカイブについて監査ログに記録する内容
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = 「entries」では、破損していたファイルや除外されたファイルを数えるだけでなく名前も記録します
 
+# Every job recorded
+t42369815 = すべての処理を記録
+
+# A job whose start the audit log cannot write does not start
+tda48e1c9 = 監査ログに開始を書き込めない処理は開始しません
+
 # The audit log in the system’s log
 t4a2fcd04 = システムのログへの監査ログ
 
@@ -2304,6 +2310,9 @@ t75e7db7c = { $folder }、それぞれ専用のフォルダ
 
 # New
 t8b242db1 = 新規
+
+# Your organization requires each job to be recorded, and the audit log cannot be written: {why}
+t3f254f09 = 組織はすべての処理の記録を求めていますが、監査ログに書き込めません: { $why }
 
 # There is no file to save it beside.
 ta9906e3b = 隣に保存するファイルがありません。

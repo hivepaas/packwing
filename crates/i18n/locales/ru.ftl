@@ -2119,6 +2119,12 @@ t8d6fca43 = Что журнал аудита пишет об архивах
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = «entries» записывает не только число повреждённых и пропущенных файлов, но и их имена
 
+# Every job recorded
+t42369815 = Каждая операция записывается
+
+# A job whose start the audit log cannot write does not start
+tda48e1c9 = Операция, начало которой журнал аудита не может записать, не запускается
+
 # The audit log in the system’s log
 t4a2fcd04 = Журнал аудита в системном журнале
 
@@ -2397,6 +2403,9 @@ t75e7db7c = { $folder }, для каждого своя папка
 
 # New
 t8b242db1 = Новый
+
+# Your organization requires each job to be recorded, and the audit log cannot be written: {why}
+t3f254f09 = Ваша организация требует записывать каждую операцию, а журнал аудита не удаётся записать: { $why }
 
 # There is no file to save it beside.
 ta9906e3b = Нет файла, рядом с которым сохранить.
