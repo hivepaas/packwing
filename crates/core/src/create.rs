@@ -1476,8 +1476,71 @@ fn write_7z<W: Write + Seek>(
     tally: &Tally,
     out: W,
 ) -> Result<(), Error> {
-    let (options, _held) = seven_zip_options(new)?;
-    let mut archive = hivepack::sevenz::Writer::with_options(out, options)?;
+    let (mut options, _held) = seven_zip_options(new)?;
+    // LZMA2's blocks are compressed in threads, up to a block for each taken
+    // ahead of what is compressed: what they hold is not done, and the
+    // writer, which may wait long for a block, is stopped from here.
+    let stop = Arc::new(AtomicBool::new(false));
+    options.stop = Some(Arc::clone(&stop));
+    let archive = hivepack::sevenz::Writer::with_options(out, options)?;
+    let progress = archive.progress();
+    let mut archive = Holding {
+        archive,
+        progress: progress.clone(),
+        behind: &tally.behind,
+    };
+    let ending = AtomicBool::new(false);
+    std::thread::scope(|scope| {
+        scope.spawn(|| {
+            while !ending.load(Ordering::Relaxed) {
+                std::thread::sleep(TICK_EVERY);
+                let held = progress.taken().saturating_sub(progress.compressed());
+                tally.behind.store(held, Ordering::Relaxed);
+                if tally.going().is_err() {
+                    stop.store(true, Ordering::Relaxed);
+                }
+            }
+        });
+        let written = fill_7z(&items, new, tally, &mut archive).and_then(|()| {
+            archive.archive.finish()?;
+            Ok(())
+        });
+        ending.store(true, Ordering::Relaxed);
+        written
+    })
+}
+
+/// A 7z writer that keeps in `behind`, as it is given data, what its threads
+/// hold and have not compressed.
+struct Holding<'a, W: Write + Seek> {
+    archive: hivepack::sevenz::Writer<W>,
+    progress: hivepack::sevenz::WriteProgress,
+    behind: &'a AtomicU64,
+}
+
+impl<W: Write + Seek> Write for Holding<'_, W> {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        let n = self.archive.write(buf)?;
+        let held = self
+            .progress
+            .taken()
+            .saturating_sub(self.progress.compressed());
+        self.behind.store(held, Ordering::Relaxed);
+        Ok(n)
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        self.archive.flush()
+    }
+}
+
+/// Writes `items` into `archive`, but for its end.
+fn fill_7z<W: Write + Seek>(
+    items: &[Item],
+    new: &NewArchive,
+    tally: &Tally,
+    holding: &mut Holding<'_, W>,
+) -> Result<(), Error> {
     let mut buf = vec![0; PIECE];
     // What is compressed already comes last, stored in a folder of its own, and
     // the rest stays together in one, which compresses it best.
@@ -1487,6 +1550,7 @@ fn write_7z<W: Write + Seek>(
             && has_extension_in(&item.name, &new.stored_extensions)
     });
     for (i, item) in squeezed.iter().chain(&stored).enumerate() {
+        let archive = &mut holding.archive;
         if i == squeezed.len() {
             archive.set_method(hivepack::sevenz::Method::Copy)?;
         }
@@ -1505,17 +1569,16 @@ fn write_7z<W: Write + Seek>(
                 continue;
             };
             archive.start_file(entry)?;
-            archive.write_all(&target)?;
+            holding.write_all(&target)?;
             tally.advance(1, 0);
         } else {
             let Some(file) = open_item(item, tally)? else {
                 continue;
             };
             archive.start_file(entry)?;
-            pump(item, file, &mut archive, tally, &mut buf)?;
+            pump(item, file, holding, tally, &mut buf)?;
         }
     }
-    archive.finish()?;
     Ok(())
 }
 

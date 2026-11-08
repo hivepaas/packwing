@@ -3389,8 +3389,9 @@ fn xz_goes_in_blocks_large_or_small() {
     }
 }
 
-/// A tar compressed in threads tells what is compressed, not what is read:
-/// never less than before, never more than all, and all at the end.
+/// A tar compressed in threads, and a 7z archive, tell what is compressed,
+/// not what is read: never less than before, never more than all, and all at
+/// the end.
 #[test]
 fn a_compressed_tar_tells_what_is_compressed() {
     let s = Scratch::new("compressed-progress");
@@ -3408,6 +3409,7 @@ fn a_compressed_tar_tells_what_is_compressed() {
         (Kind::TarXz, "a.tar.xz", Frames::One),
         (Kind::TarZst, "a.tar.zst", Frames::One),
         (Kind::TarZst, "frames.tar.zst", Frames::Several),
+        (Kind::SevenZip, "a.7z", Frames::One),
     ] {
         let told = Arc::new(std::sync::Mutex::new(Vec::new()));
         let keep = told.clone();
@@ -3453,7 +3455,7 @@ fn a_compressed_tar_tells_what_is_compressed() {
 }
 
 /// Stopped once every file is read, while its threads compress what they
-/// hold, a compressed tar stops there, and leaves nothing.
+/// hold, a compressed tar or a 7z archive stops there, and leaves nothing.
 #[test]
 fn stopped_while_the_threads_end_leaves_nothing() {
     let s = Scratch::new("stopped-ending");
@@ -3470,6 +3472,7 @@ fn stopped_while_the_threads_end_leaves_nothing() {
         (Kind::TarXz, "a.tar.xz", Frames::One),
         (Kind::TarZst, "a.tar.zst", Frames::One),
         (Kind::TarZst, "frames.tar.zst", Frames::Several),
+        (Kind::SevenZip, "a.7z", Frames::One),
     ] {
         let cancel = Cancel::new();
         let stop = cancel.clone();
