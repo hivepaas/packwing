@@ -1252,6 +1252,141 @@ td7688f56 =
        *[other] { $count } tệp thực thi trong thư mục này sẽ giữ dấu Internet khi được giải nén.
     }
 
+# Today
+te7c0775e = Hôm nay
+
+# Last 7 days
+t35b9d98f = 7 ngày qua
+
+# Last 30 days
+td0778b33 = 30 ngày qua
+
+# All days
+tabb197ef = Mọi ngày
+
+# All results
+t6235c0b2 = Mọi kết quả
+
+# Not done
+t0f88a146 = Chưa xong
+
+# Partly done
+t3355a2a5 = Xong một phần
+
+# Failed
+t5579c3d4 = Thất bại
+
+# Cancelled
+ta62b09bc = Đã hủy
+
+# No end recorded
+t38ab1371 = Không ghi nhận kết thúc
+
+# Make an archive
+t418bd6f0 = Tạo tệp nén
+
+# Open a file from an archive
+tc2dd3e41 = Mở tệp từ tệp nén
+
+# Preview a file
+t1f706562 = Xem trước tệp
+
+# Read a file from an archive
+t4229020d = Đọc tệp từ tệp nén
+
+# Add to an archive
+t4e28d1fa = Thêm vào tệp nén
+
+# Delete from an archive
+t158044d3 = Xóa khỏi tệp nén
+
+# Rename in an archive
+tb3eef763 = Đổi tên trong tệp nén
+
+# Check a signature
+t6f441e5e = Kiểm tra chữ ký
+
+# Make a signing key
+tbdf6bcd0 = Tạo khóa ký
+
+# Join parts
+t4eee8c5f = Ghép các phần
+
+# Checksums
+t47dd48d3 = Checksum
+
+# Audit log started
+tfb8df56f = Bắt đầu nhật ký kiểm tra
+
+# Audit log stopped
+t54654bc3 = Dừng nhật ký kiểm tra
+
+# Audit log changed
+td6b7bc4a = Thay đổi nhật ký kiểm tra
+
+# Old records taken away
+t5f337ebf = Đã xóa bản ghi cũ
+
+# All actions
+t4ff15157 = Mọi thao tác
+
+# Find a path, a name or an error
+t30cb1a6c = Tìm đường dẫn, tên hoặc lỗi
+
+# Read again
+t2f0dcc5d = Đọc lại
+
+# Save as CSV…
+tf103c3cc = Lưu thành CSV…
+
+# Checking that no record was changed…
+t00deba79 = Đang kiểm tra xem có bản ghi nào bị sửa không…
+
+# The audit log cannot be read: {why}
+t8783f4cf = Không đọc được nhật ký kiểm tra: { $why }
+
+# A record was changed, taken out or put in by hand: in {file}, line {line}. | Records were changed, taken out or put in by hand, in {n} places: the first in {file}, line {line}.
+t3cd011bd =
+    { $n ->
+       *[other] Bản ghi đã bị sửa, xóa hoặc chèn bằng tay ở { $n } chỗ: chỗ đầu tiên ở { $file }, dòng { $line }.
+    }
+
+# The oldest record follows one that is gone, and no record says it was taken away as past its time.
+t4579f8a7 = Bản ghi cũ nhất nối tiếp một bản ghi đã mất, và không có bản ghi nào cho biết nó bị xóa vì quá hạn lưu.
+
+# {n} record, and none was changed or taken out. | {n} records, and none was changed or taken out.
+tefc82060 =
+    { $n ->
+       *[other] { $n } bản ghi, không bản ghi nào bị sửa hay xóa.
+    }
+
+# Only the latest {most} records are shown: choose fewer days, or read all with pkw audit list.
+t5fabfc51 = Chỉ hiện { $most } bản ghi mới nhất: hãy chọn ít ngày hơn, hoặc đọc tất cả bằng pkw audit list.
+
+# Saved to {path}.
+te8346fa4 = Đã lưu vào { $path }.
+
+# Could not save: {why}
+t733a7cae = Không lưu được: { $why }
+
+# Record
+t9f4565ec = Bản ghi
+
+# Started
+t97b5823e = Bắt đầu
+
+# Ended
+tec2b41db = Kết thúc
+
+# Reading the audit log…
+t403ccdff = Đang đọc nhật ký kiểm tra…
+
+# No records in these days.
+t98687757 = Không có bản ghi nào trong những ngày này.
+
+# No record is as chosen.
+ta9ffcb9f = Không có bản ghi nào khớp với lựa chọn.
+
 # This computer
 tfa0d176a = Máy tính này
 
@@ -1272,6 +1407,9 @@ t0eac1f07 = Duyệt
 
 # Recent
 t50e888fe = Gần đây
+
+# Audit log
+tcb83f9ca = Nhật ký kiểm tra
 
 # Choose a file to see its information here
 t50aac02b = Chọn một tệp để xem thông tin ở đây
@@ -1945,9 +2083,6 @@ t713a842f = Mở thư mục
 # The last record could not be written: {why}
 t542148a1 = Không ghi được bản ghi gần nhất: { $why }
 
-# Audit log
-tcb83f9ca = Nhật ký kiểm tra
-
 # pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
 t482581ff = pkw audit verify kiểm tra rằng không bản ghi nào bị sửa hay bị xoá. Người quản trị máy này vẫn có thể xoá nhật ký: nó cho biết packwing đã làm gì, chứ không ngăn được ai.
 
@@ -1968,9 +2103,6 @@ t28a576c9 = Chọn tệp…
 
 # {name} (weak)
 tdb06c037 = { $name } (yếu)
-
-# Checksums
-t47dd48d3 = Checksum
 
 # What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
 t6edeb650 = Những gì mục Checksum… trong menu của tệp hiển thị, để so sánh với checksum được cung cấp ở nơi bạn lấy tệp. Checksum yếu vẫn phát hiện được tệp bị hỏng, nhưng không phát hiện được tệp bị cố ý sửa.

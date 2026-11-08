@@ -84,6 +84,14 @@ It does not stop someone who can write the files. They can write a new chain fro
 
 For records the user cannot change, take them off the computer as they are written: your log collector, reading the folder, or `AuditLogPath` on a share where people can add to files and not change or delete them (on Windows, *Create files / write data* denied and *Create folders / append data* allowed).
 
+## Reading it
+
+While the log is kept, Browse has an **Audit log** tab, after Recent. It shows a line a job, the latest first: what was done, what it was of, when (UTC), how it went and how long it took. Choose the days (today, the last 7 or 30, or all), an action, done or not, or type part of a path, a name or an error to find. A line clicked shows its records whole beside the list.
+
+Above the list, packwing checks the chain, as `pkw audit verify` does, and says whether a record was changed or taken out. **Save as CSV…** saves the lines shown, a job a row: `time`, `action`, `result` (`ok`, `partial`, `failed`, `cancelled`, or `unfinished` for a job with no end), `subject`, `error`, `duration_ms`, `user`, `host`, `app`, `job`.
+
+The tab reads the latest 50,000 records at most, and says so when there are more: choose fewer days, or read them all with `pkw audit list`. It never changes the log.
+
 ## pkw audit
 
 ```sh
@@ -94,4 +102,4 @@ pkw audit verify                 # the chain, from the oldest record
 
 ## Not yet
 
-Planned, in [design/audit-log.md](design/audit-log.md): the system's own logs (Windows' Event Log, journald, macOS's unified log), a policy that stops a job whose record cannot be written, a page in the app to read and filter the log, and every file extracted named.
+Planned, in [design/audit-log.md](design/audit-log.md): the system's own logs (Windows' Event Log, journald, macOS's unified log), a policy that stops a job whose record cannot be written, and every file extracted named.

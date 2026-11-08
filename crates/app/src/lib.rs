@@ -136,6 +136,7 @@ const ICONS: &[(&str, &[u8])] = icons![
     "appearance-system",
     "archive",
     "arrow-up",
+    "audit",
     "building",
     "check",
     "chevron-down",

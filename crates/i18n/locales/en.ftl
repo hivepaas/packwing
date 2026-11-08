@@ -469,6 +469,57 @@ td7688f56 =
         [one] { $count } executable in this folder will keep its Internet mark when extracted.
        *[other] { $count } executables in this folder will keep their Internet mark when extracted.
     }
+te7c0775e = Today
+t35b9d98f = Last 7 days
+td0778b33 = Last 30 days
+tabb197ef = All days
+t6235c0b2 = All results
+t0f88a146 = Not done
+t3355a2a5 = Partly done
+t5579c3d4 = Failed
+ta62b09bc = Cancelled
+t38ab1371 = No end recorded
+t418bd6f0 = Make an archive
+tc2dd3e41 = Open a file from an archive
+t1f706562 = Preview a file
+t4229020d = Read a file from an archive
+t4e28d1fa = Add to an archive
+t158044d3 = Delete from an archive
+tb3eef763 = Rename in an archive
+t6f441e5e = Check a signature
+tbdf6bcd0 = Make a signing key
+t4eee8c5f = Join parts
+t47dd48d3 = Checksums
+tfb8df56f = Audit log started
+t54654bc3 = Audit log stopped
+td6b7bc4a = Audit log changed
+t5f337ebf = Old records taken away
+t4ff15157 = All actions
+t30cb1a6c = Find a path, a name or an error
+t2f0dcc5d = Read again
+tf103c3cc = Save as CSV…
+t00deba79 = Checking that no record was changed…
+t8783f4cf = The audit log cannot be read: { $why }
+t3cd011bd =
+    { $n ->
+        [one] A record was changed, taken out or put in by hand: in { $file }, line { $line }.
+       *[other] Records were changed, taken out or put in by hand, in { $n } places: the first in { $file }, line { $line }.
+    }
+t4579f8a7 = The oldest record follows one that is gone, and no record says it was taken away as past its time.
+tefc82060 =
+    { $n ->
+        [one] { $n } record, and none was changed or taken out.
+       *[other] { $n } records, and none was changed or taken out.
+    }
+t5fabfc51 = Only the latest { $most } records are shown: choose fewer days, or read all with pkw audit list.
+te8346fa4 = Saved to { $path }.
+t733a7cae = Could not save: { $why }
+t9f4565ec = Record
+t97b5823e = Started
+tec2b41db = Ended
+t403ccdff = Reading the audit log…
+t98687757 = No records in these days.
+ta9ffcb9f = No record is as chosen.
 tfa0d176a = This computer
 t52f50eae = Home
 t64215c53 = Desktop
@@ -476,6 +527,7 @@ t539307de = Downloads
 tb255877b = Drop to open
 t0eac1f07 = Browse
 t50e888fe = Recent
+tcb83f9ca = Audit log
 t50aac02b = Choose a file to see its information here
 tbb5a2d5f =
     { $n ->
@@ -712,7 +764,6 @@ t2774cee6 = Takes a Pro or Enterprise license: Settings › License.
 t2702fcc6 = Where the audit log is
 t713a842f = Open folder
 t542148a1 = The last record could not be written: { $why }
-tcb83f9ca = Audit log
 t482581ff = pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
 td57933b9 = This is not a public key packwing can check with: { $why }.
 t90e7dd7b = This line cannot be read, so the key is not used
@@ -720,7 +771,6 @@ ted99ced8 = Keys you trust
 td25843b8 = A signature by one of these says who signed a file. One by any other key proves nothing, whatever it matches.
 t28a576c9 = Choose a file…
 tdb06c037 = { $name } (weak)
-t47dd48d3 = Checksums
 t6edeb650 = What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
 t7b4eb9c1 = Its policies cannot be read, so what they guard refuses: { $why }
 t7db7e7ec = Some settings are managed by your organization

@@ -249,3 +249,76 @@ scenario!(
         assert_eq!(ui.archive_names(), ["a.txt"]);
     }
 );
+
+scenario!(
+    /// Browse has an Audit log tab while the log is kept: its jobs, the latest
+    /// first, found by a path, by how they went, and each one's records beside
+    /// the list. Not kept, the tab is not there.
+    the_audit_log_is_read_on_browse,
+    |ui| {
+        use crate::pages::audit::Outcome;
+        let shown = |ui: &mut crate::ui_tests::Ui| -> Vec<(String, Outcome)> {
+            ui.ws(|ws, _, cx| {
+                let audit = ws.browse_page().read(cx).audit().clone();
+                audit
+                    .read(cx)
+                    .shown()
+                    .iter()
+                    .map(|l| (l.action.clone(), l.outcome))
+                    .collect()
+            })
+        };
+        ui.click("nav-browse");
+        assert!(!ui.shows("tab-audit"), "not kept: no tab");
+        let key = include_str!("../../../license/testdata/pro.key").trim();
+        ui.settings(5);
+        ui.type_in("Paste your license key", key);
+        ui.click("license-enter");
+        ui.settings(3);
+        ui.click("audit-log");
+        let file = ui.file("in/notes.txt", "a");
+        let made = ui.work.join("notes.zip");
+        packwing_core::create(
+            &[file],
+            &made,
+            &packwing_core::NewArchive::default(),
+            &packwing_core::Control::default(),
+        )
+        .expect("the archive");
+        assert!(
+            packwing_core::test(
+                ui.work.join("none.zip"),
+                &packwing_core::Keys::default(),
+                &packwing_core::Control::default(),
+            )
+            .is_err()
+        );
+
+        ui.click("nav-browse");
+        ui.click("tab-audit");
+        ui.wait_until("the records", |ui| shown(ui).len() == 3);
+        assert_eq!(
+            shown(ui),
+            [
+                ("test".to_owned(), Outcome::Failed),
+                ("create".to_owned(), Outcome::Ok),
+                ("audit.started".to_owned(), Outcome::Said),
+            ]
+        );
+        ui.wait_for("audit-chain");
+        ui.choose("audit-result", "Not done");
+        assert_eq!(shown(ui).len(), 1);
+        ui.choose("audit-result", "All results");
+        ui.type_in("Find a path, a name or an error", "notes.zip");
+        assert_eq!(shown(ui), [("create".to_owned(), Outcome::Ok)]);
+        ui.click("audit-row-0");
+        assert!(ui.shows("audit-detail"));
+        ui.click("audit-detail-close");
+        assert!(!ui.shows("audit-detail"));
+
+        ui.settings(3);
+        ui.click("audit-log");
+        ui.click("nav-browse");
+        assert!(!ui.shows("tab-audit"), "turned off: no tab");
+    }
+);

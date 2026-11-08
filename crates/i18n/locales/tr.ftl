@@ -1269,6 +1269,143 @@ td7688f56 =
        *[other] Bu klasördeki { $count } yürütülebilir dosya, çıkarılınca İnternet işaretini koruyacak.
     }
 
+# Today
+te7c0775e = Bugün
+
+# Last 7 days
+t35b9d98f = Son 7 gün
+
+# Last 30 days
+td0778b33 = Son 30 gün
+
+# All days
+tabb197ef = Tüm günler
+
+# All results
+t6235c0b2 = Tüm sonuçlar
+
+# Not done
+t0f88a146 = Tamamlanmadı
+
+# Partly done
+t3355a2a5 = Kısmen tamamlandı
+
+# Failed
+t5579c3d4 = Başarısız
+
+# Cancelled
+ta62b09bc = İptal edildi
+
+# No end recorded
+t38ab1371 = Bitişi kaydedilmedi
+
+# Make an archive
+t418bd6f0 = Arşiv oluştur
+
+# Open a file from an archive
+tc2dd3e41 = Arşivden dosya aç
+
+# Preview a file
+t1f706562 = Dosya önizleme
+
+# Read a file from an archive
+t4229020d = Arşivden dosya oku
+
+# Add to an archive
+t4e28d1fa = Arşive ekle
+
+# Delete from an archive
+t158044d3 = Arşivden sil
+
+# Rename in an archive
+tb3eef763 = Arşivde yeniden adlandır
+
+# Check a signature
+t6f441e5e = İmzayı denetle
+
+# Make a signing key
+tbdf6bcd0 = İmza anahtarı oluştur
+
+# Join parts
+t4eee8c5f = Parçaları birleştir
+
+# Checksums
+t47dd48d3 = Sağlama toplamları
+
+# Audit log started
+tfb8df56f = Denetim günlüğü başladı
+
+# Audit log stopped
+t54654bc3 = Denetim günlüğü durdu
+
+# Audit log changed
+td6b7bc4a = Denetim günlüğü değişti
+
+# Old records taken away
+t5f337ebf = Eski kayıtlar kaldırıldı
+
+# All actions
+t4ff15157 = Tüm işlemler
+
+# Find a path, a name or an error
+t30cb1a6c = Yol, ad ya da hata bul
+
+# Read again
+t2f0dcc5d = Yeniden oku
+
+# Save as CSV…
+tf103c3cc = CSV olarak kaydet…
+
+# Checking that no record was changed…
+t00deba79 = Hiçbir kaydın değiştirilmediği denetleniyor…
+
+# The audit log cannot be read: {why}
+t8783f4cf = Denetim günlüğü okunamıyor: { $why }
+
+# A record was changed, taken out or put in by hand: in {file}, line {line}. | Records were changed, taken out or put in by hand, in {n} places: the first in {file}, line {line}.
+t3cd011bd =
+    { $n ->
+        [one] Bir kayıt elle değiştirilmiş, çıkarılmış ya da eklenmiş: { $file }, satır { $line }.
+       *[other] Kayıtlar { $n } yerde elle değiştirilmiş, çıkarılmış ya da eklenmiş: ilki { $file }, satır { $line }.
+    }
+
+# The oldest record follows one that is gone, and no record says it was taken away as past its time.
+t4579f8a7 = En eski kayıttan önceki kayıt yok ve hiçbir kayıt onun süresi dolduğu için kaldırıldığını söylemiyor.
+
+# {n} record, and none was changed or taken out. | {n} records, and none was changed or taken out.
+tefc82060 =
+    { $n ->
+        [one] { $n } kayıt; hiçbiri değiştirilmemiş ya da çıkarılmamış.
+       *[other] { $n } kayıt; hiçbiri değiştirilmemiş ya da çıkarılmamış.
+    }
+
+# Only the latest {most} records are shown: choose fewer days, or read all with pkw audit list.
+t5fabfc51 = Yalnızca en yeni { $most } kayıt gösteriliyor: daha az gün seçin ya da tümünü pkw audit list ile okuyun.
+
+# Saved to {path}.
+te8346fa4 = { $path } konumuna kaydedildi.
+
+# Could not save: {why}
+t733a7cae = Kaydedilemedi: { $why }
+
+# Record
+t9f4565ec = Kayıt
+
+# Started
+t97b5823e = Başladı
+
+# Ended
+tec2b41db = Bitti
+
+# Reading the audit log…
+t403ccdff = Denetim günlüğü okunuyor…
+
+# No records in these days.
+t98687757 = Bu günlerde kayıt yok.
+
+# No record is as chosen.
+ta9ffcb9f = Seçime uyan kayıt yok.
+
 # This computer
 tfa0d176a = Bu bilgisayar
 
@@ -1289,6 +1426,9 @@ t0eac1f07 = Gözat
 
 # Recent
 t50e888fe = Son kullanılanlar
+
+# Audit log
+tcb83f9ca = Denetim günlüğü
 
 # Choose a file to see its information here
 t50aac02b = Bilgilerini burada görmek için bir dosya seçin
@@ -1966,9 +2106,6 @@ t713a842f = Klasörü aç
 # The last record could not be written: {why}
 t542148a1 = Son kayıt yazılamadı: { $why }
 
-# Audit log
-tcb83f9ca = Denetim günlüğü
-
 # pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
 t482581ff = pkw audit verify hiçbir kaydın değiştirilmediğini ya da silinmediğini denetler. Bu bilgisayarı yöneten kişi günlüğü yine de silebilir: günlük packwing'in ne yaptığını söyler, kimseyi durdurmaz.
 
@@ -1989,9 +2126,6 @@ t28a576c9 = Dosya seç…
 
 # {name} (weak)
 tdb06c037 = { $name } (zayıf)
-
-# Checksums
-t47dd48d3 = Sağlama toplamları
 
 # What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
 t6edeb650 = Bir dosyanın menüsündeki Sağlama toplamları… öğesinin gösterdikleri; dosyanın alındığı yerde verilen toplamla karşılaştırmak için. Zayıf olan bozuk bir dosyayı yakalar, ama bilerek değiştirilmiş olanı yakalamaz.

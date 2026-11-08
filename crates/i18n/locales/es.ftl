@@ -1269,6 +1269,143 @@ td7688f56 =
        *[other] Al extraer, { $count } ejecutables de esta carpeta conservarán su marca de Internet.
     }
 
+# Today
+te7c0775e = Hoy
+
+# Last 7 days
+t35b9d98f = Últimos 7 días
+
+# Last 30 days
+td0778b33 = Últimos 30 días
+
+# All days
+tabb197ef = Todos los días
+
+# All results
+t6235c0b2 = Todos los resultados
+
+# Not done
+t0f88a146 = No completado
+
+# Partly done
+t3355a2a5 = Completado en parte
+
+# Failed
+t5579c3d4 = Falló
+
+# Cancelled
+ta62b09bc = Cancelado
+
+# No end recorded
+t38ab1371 = Sin final registrado
+
+# Make an archive
+t418bd6f0 = Crear un archivo comprimido
+
+# Open a file from an archive
+tc2dd3e41 = Abrir un archivo de un archivo comprimido
+
+# Preview a file
+t1f706562 = Vista previa de un archivo
+
+# Read a file from an archive
+t4229020d = Leer un archivo de un archivo comprimido
+
+# Add to an archive
+t4e28d1fa = Añadir a un archivo comprimido
+
+# Delete from an archive
+t158044d3 = Eliminar de un archivo comprimido
+
+# Rename in an archive
+tb3eef763 = Cambiar nombre en un archivo comprimido
+
+# Check a signature
+t6f441e5e = Comprobar una firma
+
+# Make a signing key
+tbdf6bcd0 = Crear una clave de firma
+
+# Join parts
+t4eee8c5f = Unir partes
+
+# Checksums
+t47dd48d3 = Sumas de comprobación
+
+# Audit log started
+tfb8df56f = Registro de auditoría iniciado
+
+# Audit log stopped
+t54654bc3 = Registro de auditoría detenido
+
+# Audit log changed
+td6b7bc4a = Registro de auditoría cambiado
+
+# Old records taken away
+t5f337ebf = Registros antiguos eliminados
+
+# All actions
+t4ff15157 = Todas las acciones
+
+# Find a path, a name or an error
+t30cb1a6c = Buscar una ruta, un nombre o un error
+
+# Read again
+t2f0dcc5d = Volver a leer
+
+# Save as CSV…
+tf103c3cc = Guardar como CSV…
+
+# Checking that no record was changed…
+t00deba79 = Comprobando que ningún registro se haya cambiado…
+
+# The audit log cannot be read: {why}
+t8783f4cf = No se puede leer el registro de auditoría: { $why }
+
+# A record was changed, taken out or put in by hand: in {file}, line {line}. | Records were changed, taken out or put in by hand, in {n} places: the first in {file}, line {line}.
+t3cd011bd =
+    { $n ->
+        [one] Se cambió, quitó o añadió un registro a mano: en { $file }, línea { $line }.
+       *[other] Se cambiaron, quitaron o añadieron registros a mano en { $n } lugares: el primero en { $file }, línea { $line }.
+    }
+
+# The oldest record follows one that is gone, and no record says it was taken away as past its time.
+t4579f8a7 = El registro más antiguo sigue a uno que ya no está, y ningún registro indica que se eliminara por haber vencido su plazo.
+
+# {n} record, and none was changed or taken out. | {n} records, and none was changed or taken out.
+tefc82060 =
+    { $n ->
+        [one] { $n } registro, y ninguno se cambió ni se quitó.
+       *[other] { $n } registros, y ninguno se cambió ni se quitó.
+    }
+
+# Only the latest {most} records are shown: choose fewer days, or read all with pkw audit list.
+t5fabfc51 = Solo se muestran los { $most } registros más recientes: elija menos días o léalos todos con pkw audit list.
+
+# Saved to {path}.
+te8346fa4 = Guardado en { $path }.
+
+# Could not save: {why}
+t733a7cae = No se pudo guardar: { $why }
+
+# Record
+t9f4565ec = Registro
+
+# Started
+t97b5823e = Iniciado
+
+# Ended
+tec2b41db = Terminado
+
+# Reading the audit log…
+t403ccdff = Leyendo el registro de auditoría…
+
+# No records in these days.
+t98687757 = No hay registros en estos días.
+
+# No record is as chosen.
+ta9ffcb9f = Ningún registro coincide con lo elegido.
+
 # This computer
 tfa0d176a = Este equipo
 
@@ -1289,6 +1426,9 @@ t0eac1f07 = Explorar
 
 # Recent
 t50e888fe = Recientes
+
+# Audit log
+tcb83f9ca = Registro de auditoría
 
 # Choose a file to see its information here
 t50aac02b = Elige un archivo para ver aquí su información
@@ -1966,9 +2106,6 @@ t713a842f = Abrir carpeta
 # The last record could not be written: {why}
 t542148a1 = No se pudo escribir el último registro: { $why }
 
-# Audit log
-tcb83f9ca = Registro de auditoría
-
 # pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
 t482581ff = pkw audit verify comprueba que ningún registro se haya cambiado ni borrado. Quien administra este equipo aún puede eliminar el registro: muestra lo que hizo packwing, no detiene a nadie.
 
@@ -1989,9 +2126,6 @@ t28a576c9 = Elegir un archivo…
 
 # {name} (weak)
 tdb06c037 = { $name } (débil)
-
-# Checksums
-t47dd48d3 = Sumas de comprobación
 
 # What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
 t6edeb650 = Lo que muestra «Sumas de comprobación…» en el menú de un archivo, para compararlo con la suma que se da donde se obtuvo el archivo. Una débil detecta un archivo dañado, pero no uno cambiado a propósito.

@@ -2,6 +2,7 @@
 //! folders and the archives opened before, Settings, and the first run's welcome.
 
 pub mod archive;
+pub mod audit;
 pub mod browse;
 mod explorer_info;
 pub mod jobs;
