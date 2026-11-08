@@ -53,9 +53,10 @@ strip = true
 [profile.dev.package."*"]
 opt-level = 2
 
-# Until hivepack's next release: `zstd::CompressFrames` (hivepack#177, on its
-# main branch), `deflate::DeflateMt` (hivepack#179, on its branch, which has
-# #177 too) and `CompressFrames::consumed` (hivepack#180, on #179's branch).
-# Taken out, and the version above raised, once it is published.
+# Until hivepack's next release: `zstd::CompressFrames` (hivepack#177),
+# `deflate::DeflateMt` (hivepack#179) and `CompressFrames::consumed`
+# (hivepack#180), on its main branch, and `zip::Archive::set_deflate_in_blocks`
+# (on its branch zip-deflate-mt, which has them). Taken out, and the version
+# above raised, once it is published.
 [patch.crates-io]
-hivepack = { git = "https://github.com/hivepaas/hivepack-rs", rev = "c275e34b06125a7b134100b3cf2be586f409f98f" }
+hivepack = { git = "https://github.com/hivepaas/hivepack-rs", rev = "67bd25bf3784c681f06e0fe5ffe7a63b97c36ab4" }

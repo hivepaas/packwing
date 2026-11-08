@@ -1115,6 +1115,9 @@ fn new_zip(
         u64::from(n) * ZIP_THREAD_MEMORY
     });
     za.set_threads(hivepack::Threads::of(threads));
+    // Deflate in blocks, as pigz does: one large file on every core, where
+    // it took one; 0.84 MiB a thread more, within what each is held.
+    za.set_deflate_in_blocks(true);
     let how = Squeeze {
         level: new.level,
         stored: &new.stored_extensions,
