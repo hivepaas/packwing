@@ -1612,6 +1612,15 @@ t93ff7715 = パスワードでファイル名を隠す
 # For 7z: nobody sees what is inside without it
 t0f5354d7 = 7z 用：パスワードがないと中身が一切見えません
 
+# Yours
+t2635ea3b = 自分
+
+# By name
+t983e37f7 = 名前で
+
+# By number
+tcbbada8d = 番号で
+
 # No limit
 t6de7f47d = 制限なし
 
@@ -1653,6 +1662,18 @@ tf47f4968 = すべてのシステムで使える名前だけ
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = a:b.txt など Windows で使えない名前や、大文字・小文字だけが違う名前も、このコンピューターで確認します
+
+# Owners from a backup
+t38a7cf66 = バックアップの所有者
+
+# Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
+t46908bee = tar アーカイブが保持している場合：自分のもの、またはアーカイブのものを名前か番号で。ほかのユーザーにファイルを渡せるのは管理者だけです
+
+# Extended attributes from a backup
+t764eed3a = バックアップの拡張属性
+
+# Where a tar archive kept them, ACLs among them
+ta28f3ae5 = tar アーカイブが保持している場合（ACL を含む）
 
 # Light
 t8ad2f8cf = ライト

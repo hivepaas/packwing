@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use packwing_core::{
     Algorithm, COMPRESSED_EXTENSIONS, Entry, ExtractOptions, Filter, Frames, Keep, Kind, Listing,
-    LocalFolder, NewArchive, OnExisting, Source, Times, Transfer, add_with, algorithms_of,
+    LocalFolder, NewArchive, OnExisting, Owners, Source, Times, Transfer, add_with, algorithms_of,
     came_from_internet, checksum_line, checksums, convert, create, damages, delete,
     extract_selected, extract_with, has_signature, join_parts, left_out, list, read_entry, rename,
     renamings, save_checksum, signature_name, size, split_file, stem, test, transfer,
@@ -19,7 +19,7 @@ use crate::names::{
 };
 use crate::places::Place;
 use crate::signing::{keygen_cmd, sign_cmd, verify_cmd};
-use crate::{Backup, Command, Context, Exit, Making};
+use crate::{Backup, Command, Context, Exit, Making, Restore};
 
 pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
     match command {
@@ -38,13 +38,17 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
             no_mark,
             damaging,
             naming,
+            restore,
         } => {
+            let (owners, xattrs) = restored(&restore)?;
             let how = ExtractOptions {
                 overwrite,
                 limit: Some(limit_of(&limit)?),
                 keep_mark: keep_mark(no_mark),
                 portable_names: naming.portable_names,
                 links_outside: naming.links_outside(cx)?,
+                owners,
+                xattrs,
             };
             extract_cmd(&archive, &files, output, here, &how, &damaging, &naming, cx)
         }
@@ -293,6 +297,7 @@ fn extract_cmd(
             "damaged": crate::damaged::as_json(&outcome.damaged),
             "skipped": crate::damaged::left_out_json(&outcome.left_out),
             "renamed": crate::damaged::renamed_json(&outcome.renamed),
+            "owners_left": summary.owners_left,
         }));
     } else if !cx.quiet {
         eprintln!(
@@ -301,8 +306,39 @@ fn extract_cmd(
             size(summary.bytes),
             destination.display()
         );
+        if summary.owners_left > 0 {
+            eprintln!(
+                "{} files and folders stay yours: the owners the archive gives them are not \
+                 yours to give (only an administrator gives files to others)",
+                summary.owners_left
+            );
+        }
     }
     damaging.finish(&outcome)
+}
+
+/// Whose files are, extracted, and whether their extended attributes come back,
+/// as `restore` asks: on Linux and macOS, where hivepack gives them.
+fn restored(restore: &Restore) -> Result<(Owners, bool), Exit> {
+    let owners = if restore.numeric_owner {
+        Owners::ByNumber
+    } else if restore.same_owner {
+        Owners::ByName
+    } else {
+        Owners::Ignore
+    };
+    let here = cfg!(any(target_os = "linux", target_os = "macos"));
+    if !here && owners != Owners::Ignore {
+        return Err(Exit::Usage(
+            "--same-owner and --numeric-owner give Unix owners, on Linux and macOS only".into(),
+        ));
+    }
+    if !here && restore.xattrs {
+        return Err(Exit::Usage(
+            "--xattrs gives extended attributes on Linux and macOS only".into(),
+        ));
+    }
+    Ok((owners, restore.xattrs))
 }
 
 /// What came of extracting, as `summary` says.
@@ -1183,6 +1219,41 @@ mod tests {
         assert!(kept_for_backup(&Backup::default(), Kind::Zip).is_ok());
         if cfg!(unix) {
             assert!(kept_for_backup(&backup, Kind::TarZst).is_ok_and(|keep| keep.owners));
+        }
+    }
+
+    #[test]
+    fn owners_come_back_by_name_or_by_number_as_asked() {
+        let asked = |same_owner, numeric_owner, xattrs| {
+            restored(&Restore {
+                same_owner,
+                numeric_owner,
+                xattrs,
+            })
+        };
+        assert!(matches!(
+            asked(false, false, false),
+            Ok((Owners::Ignore, false))
+        ));
+        if cfg!(any(target_os = "linux", target_os = "macos")) {
+            assert!(matches!(
+                asked(true, false, false),
+                Ok((Owners::ByName, false))
+            ));
+            // As GNU tar takes the two together: by number.
+            for same_owner in [false, true] {
+                assert!(matches!(
+                    asked(same_owner, true, false),
+                    Ok((Owners::ByNumber, false))
+                ));
+            }
+            assert!(matches!(
+                asked(false, false, true),
+                Ok((Owners::Ignore, true))
+            ));
+        } else {
+            assert!(asked(true, false, false).is_err());
+            assert!(asked(false, false, true).is_err());
         }
     }
 

@@ -1675,6 +1675,15 @@ t93ff7715 = Приховувати назви файлів за паролем
 # For 7z: nobody sees what is inside without it
 t0f5354d7 = Для 7z: без пароля ніхто не побачить, що всередині
 
+# Yours
+t2635ea3b = Ваші
+
+# By name
+t983e37f7 = За іменем
+
+# By number
+tcbbada8d = За номером
+
 # No limit
 t6de7f47d = Без обмеження
 
@@ -1716,6 +1725,18 @@ tf47f4968 = Лише імена, придатні для будь-якої си�
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = Імена, яких не дозволяє Windows, як-от a:b.txt, та імена, що різняться лише регістром, запитуються й на цьому комп’ютері
+
+# Owners from a backup
+t38a7cf66 = Власники з резервної копії
+
+# Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
+t46908bee = Якщо tar-архів їх зберіг: ваші або з архіву — за іменем чи за номером. Віддати файли іншим може лише адміністратор
+
+# Extended attributes from a backup
+t764eed3a = Розширені атрибути з резервної копії
+
+# Where a tar archive kept them, ACLs among them
+ta28f3ae5 = Якщо tar-архів їх зберіг, разом з ACL
 
 # Light
 t8ad2f8cf = Світлий

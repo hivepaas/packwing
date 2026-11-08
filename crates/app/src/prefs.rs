@@ -11,8 +11,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use gpui::{App, Global};
 use packwing_core::{
-    Algorithm, COMPRESSED_EXTENSIONS, ExtractOptions, Level, OnLinksOutside, PublicKey, Values,
-    read_public_key,
+    Algorithm, COMPRESSED_EXTENSIONS, ExtractOptions, Level, OnLinksOutside, Owners, PublicKey,
+    Values, read_public_key,
 };
 
 use crate::dialogs::Format;
@@ -148,6 +148,11 @@ pub struct Prefs {
     pub keep_mark: bool,
     /// Extracts only names every system can use; otherwise those this one can.
     pub portable_names: bool,
+    /// Whose the files extracted are, where a tar archive kept their owners for
+    /// a backup: the user's (the default), or the archive's by name or by number.
+    pub restore_owners: Owners,
+    /// Gives the files extracted the extended attributes a tar archive kept.
+    pub restore_xattrs: bool,
     /// Asks before a file in an archive is opened. A program always asks.
     pub ask_before_open: bool,
     /// The latest first.
@@ -196,6 +201,8 @@ impl Default for Prefs {
             limit: 1,
             keep_mark: true,
             portable_names: false,
+            restore_owners: Owners::Ignore,
+            restore_xattrs: false,
             ask_before_open: true,
             recent: Vec::new(),
             storages: Vec::new(),
@@ -297,6 +304,14 @@ impl Prefs {
                 "overwrite" => p.overwrite = on(value, p.overwrite),
                 "keep_mark" => p.keep_mark = on(value, p.keep_mark),
                 "portable_names" => p.portable_names = on(value, p.portable_names),
+                "restore_owners" => {
+                    p.restore_owners = match value {
+                        "name" => Owners::ByName,
+                        "number" => Owners::ByNumber,
+                        _ => Owners::Ignore,
+                    }
+                }
+                "restore_xattrs" => p.restore_xattrs = on(value, p.restore_xattrs),
                 "ask_before_open" => p.ask_before_open = on(value, p.ask_before_open),
                 "threads" => p.threads = value.parse().unwrap_or(p.threads),
                 "limit" => {
@@ -411,7 +426,7 @@ impl Prefs {
         text += &format!(
             "appearance={appearance}\nformat={}\nlevel={level}\nhide_names={}\n\
              skip_mac_files={}\nstore_compressed={}\nstream_above={}\nextract_to={}\noverwrite={}\nlimit={limit}\nkeep_mark={}\n\
-             portable_names={}\nask_before_open={}\nthreads={}\n",
+             portable_names={}\nrestore_owners={}\nrestore_xattrs={}\nask_before_open={}\nthreads={}\n",
             self.format.ext(),
             self.hide_names,
             self.skip_mac_files,
@@ -421,6 +436,12 @@ impl Prefs {
             self.overwrite,
             self.keep_mark,
             self.portable_names,
+            match self.restore_owners {
+                Owners::ByName => "name",
+                Owners::ByNumber => "number",
+                _ => "none",
+            },
+            self.restore_xattrs,
             self.ask_before_open,
             self.threads,
         );
@@ -599,6 +620,8 @@ impl Prefs {
             portable_names: self.portable_names,
             // Asked about while extracting; left out where nothing asks.
             links_outside: OnLinksOutside::Skip,
+            owners: self.restore_owners,
+            xattrs: self.restore_xattrs,
         }
     }
 }
@@ -699,6 +722,30 @@ mod tests {
             ..Prefs::default()
         };
         assert_eq!(Prefs::parse(&p.text()).threads, 4);
+    }
+
+    #[test]
+    fn what_a_backup_gives_back_comes_back_and_none_kept_is_nothing() {
+        let unset = Prefs::parse("language=en\n");
+        assert_eq!(
+            (unset.restore_owners, unset.restore_xattrs),
+            (Owners::Ignore, false)
+        );
+        assert_eq!(
+            Prefs::parse("restore_owners=whoever\n").restore_owners,
+            Owners::Ignore
+        );
+        for owners in [Owners::Ignore, Owners::ByName, Owners::ByNumber] {
+            let p = Prefs {
+                restore_owners: owners,
+                restore_xattrs: true,
+                ..Prefs::default()
+            };
+            let back = Prefs::parse(&p.text());
+            assert_eq!((back.restore_owners, back.restore_xattrs), (owners, true));
+            let how = back.extract_options();
+            assert_eq!((how.owners, how.xattrs), (owners, true));
+        }
     }
 
     #[test]
@@ -913,6 +960,8 @@ mod tests {
                 keep_mark: false,
                 portable_names: false,
                 links_outside: OnLinksOutside::Skip,
+                owners: Owners::Ignore,
+                xattrs: false,
             }
         );
     }

@@ -1612,6 +1612,15 @@ t93ff7715 = Sembunyikan nama berkas di balik kata sandi
 # For 7z: nobody sees what is inside without it
 t0f5354d7 = Untuk 7z: tanpanya tidak ada yang bisa melihat isinya
 
+# Yours
+t2635ea3b = Milik Anda
+
+# By name
+t983e37f7 = Menurut nama
+
+# By number
+tcbbada8d = Menurut nomor
+
 # No limit
 t6de7f47d = Tanpa batas
 
@@ -1653,6 +1662,18 @@ tf47f4968 = Hanya nama yang bisa dipakai di semua sistem
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = Nama yang tidak diizinkan Windows, seperti a:b.txt, dan nama yang hanya beda huruf besar/kecil juga ditanyakan di komputer ini
+
+# Owners from a backup
+t38a7cf66 = Pemilik dari cadangan
+
+# Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
+t46908bee = Jika arsip tar menyimpannya: milik Anda, atau milik arsip menurut nama atau nomor. Hanya administrator yang dapat memberikan berkas kepada orang lain
+
+# Extended attributes from a backup
+t764eed3a = Atribut tambahan dari cadangan
+
+# Where a tar archive kept them, ACLs among them
+ta28f3ae5 = Jika arsip tar menyimpannya, termasuk ACL
 
 # Light
 t8ad2f8cf = Terang

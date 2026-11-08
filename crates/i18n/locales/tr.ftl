@@ -1633,6 +1633,15 @@ t93ff7715 = Dosya adlarını parolanın arkasında gizle
 # For 7z: nobody sees what is inside without it
 t0f5354d7 = 7z için: parola olmadan kimse içindekileri göremez
 
+# Yours
+t2635ea3b = Sizin
+
+# By name
+t983e37f7 = Ada göre
+
+# By number
+tcbbada8d = Numaraya göre
+
 # No limit
 t6de7f47d = Sınır yok
 
@@ -1674,6 +1683,18 @@ tf47f4968 = Yalnızca her sistemin kullanabildiği adlar
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = Windows'un kullanamadığı a:b.txt gibi adlar ve yalnızca büyük/küçük harfle ayrılan adlar bu bilgisayarda da sorulur
+
+# Owners from a backup
+t38a7cf66 = Yedekten sahipler
+
+# Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
+t46908bee = Bir tar arşivi onları koruduysa: sizin ya da arşivin, ada veya numaraya göre. Dosyaları başkalarına yalnızca bir yönetici verebilir
+
+# Extended attributes from a backup
+t764eed3a = Yedekten genişletilmiş öznitelikler
+
+# Where a tar archive kept them, ACLs among them
+ta28f3ae5 = Bir tar arşivi onları koruduysa, ACL’ler dahil
 
 # Light
 t8ad2f8cf = Açık
