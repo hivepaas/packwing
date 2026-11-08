@@ -29,9 +29,14 @@ pub const MIN_PASSWORD_LENGTH: &str = "MinPasswordLength";
 pub const LICENSE_KEY: &str = "LicenseKey";
 pub const ORGANIZATION_NAME: &str = "ManagedByOrganizationName";
 pub const ORGANIZATION_URL: &str = "ManagedByURL";
+pub const AUDIT_LOG: &str = "AuditLog";
+pub const AUDIT_LOG_PATH: &str = "AuditLogPath";
+pub const AUDIT_LOG_RETENTION_DAYS: &str = "AuditLogRetentionDays";
+pub const AUDIT_LOG_MAX_SIZE_MB: &str = "AuditLogMaxSizeMB";
+pub const AUDIT_LOG_DETAIL: &str = "AuditLogDetail";
 
 /// Every policy there is, as the systems' readers look for them.
-pub const KEYS: [&str; 8] = [
+pub const KEYS: [&str; 13] = [
     LICENSE_KEY,
     PROPAGATE_MOTW,
     MARK_STORAGE_FILES,
@@ -40,10 +45,47 @@ pub const KEYS: [&str; 8] = [
     MIN_PASSWORD_LENGTH,
     ORGANIZATION_NAME,
     ORGANIZATION_URL,
+    AUDIT_LOG,
+    AUDIT_LOG_PATH,
+    AUDIT_LOG_RETENTION_DAYS,
+    AUDIT_LOG_MAX_SIZE_MB,
+    AUDIT_LOG_DETAIL,
 ];
 
 /// The most `MinPasswordLength` may ask for.
 const MOST_LENGTH: i64 = 1024;
+
+/// The most `AuditLogRetentionDays` may say: a hundred years.
+const MOST_RETENTION_DAYS: i64 = 36_500;
+
+/// The most `AuditLogMaxSizeMB` may say: 10 TB.
+const MOST_SIZE_MB: i64 = 10_000_000;
+
+/// How long the audit log is kept where the organization turns it on and says
+/// nothing of how long, in days.
+pub const MANAGED_RETENTION_DAYS: u32 = 365;
+
+/// The most the audit log takes where the organization turns it on and says
+/// nothing of its size, in bytes: 1 GiB.
+pub const MANAGED_MAX_BYTES: u64 = 1 << 30;
+
+/// What the audit log's records hold of an archive's files.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Detail {
+    /// How many, and how much.
+    Summary,
+    /// Their names too, where they are at hand.
+    Entries,
+}
+
+impl Detail {
+    pub fn name(self) -> &'static str {
+        match self {
+            Detail::Summary => "summary",
+            Detail::Entries => "entries",
+        }
+    }
+}
 
 /// A value as the system holds it.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -197,6 +239,11 @@ pub struct Policy {
     pub license_key: Setting<String>,
     pub organization: Setting<String>,
     pub url: Setting<String>,
+    pub audit_log: Setting<bool>,
+    pub audit_log_path: Setting<String>,
+    pub audit_log_retention_days: Setting<u32>,
+    pub audit_log_max_size_mb: Setting<u64>,
+    pub audit_log_detail: Setting<Detail>,
 }
 
 impl Policy {
@@ -219,6 +266,11 @@ impl Policy {
             license_key: Setting::of(value(LICENSE_KEY), read_text),
             organization: Setting::of(value(ORGANIZATION_NAME), read_text),
             url: Setting::of(value(ORGANIZATION_URL), read_url),
+            audit_log: Setting::of(value(AUDIT_LOG), read_bool),
+            audit_log_path: Setting::of(value(AUDIT_LOG_PATH), read_path),
+            audit_log_retention_days: Setting::of(value(AUDIT_LOG_RETENTION_DAYS), read_days),
+            audit_log_max_size_mb: Setting::of(value(AUDIT_LOG_MAX_SIZE_MB), read_size),
+            audit_log_detail: Setting::of(value(AUDIT_LOG_DETAIL), read_detail),
             unknown: found
                 .values
                 .iter()
@@ -340,6 +392,81 @@ impl Policy {
         Ok(())
     }
 
+    /// Whether the audit log is kept, given what the user chose (and may choose,
+    /// by their plan). The organization's word decides where it says one; one
+    /// that cannot be understood keeps it, as a mistake must not stop it.
+    pub fn keeps_audit_log(&self, chosen: bool) -> bool {
+        if self.failure.is_some() {
+            return true;
+        }
+        match self.audit_log {
+            Setting::Unset => chosen,
+            Setting::Set(on) => on,
+            Setting::Bad(_) => true,
+        }
+    }
+
+    /// Whether the user's own switch for the audit log has no say: the
+    /// organization decides, whatever the license.
+    pub fn locks_audit_log(&self) -> bool {
+        self.failure.is_some() || self.audit_log != Setting::Unset
+    }
+
+    /// The folder the organization keeps the audit log in, as it wrote it, with
+    /// `{user}` and `{host}` still in it; none for the system's own. One that
+    /// cannot be understood is reported, and the system's own taken.
+    pub fn audit_log_path(&self) -> Option<&str> {
+        match &self.audit_log_path {
+            Setting::Set(path) => Some(path),
+            _ => None,
+        }
+    }
+
+    /// How many days the audit log is kept, given what the user chose: the
+    /// organization's, or [`MANAGED_RETENTION_DAYS`] where it turns the log on
+    /// and says nothing. One that cannot be understood keeps everything, as a
+    /// mistake must not take records away.
+    pub fn audit_log_retention_days(&self, chosen: u32) -> u32 {
+        if self.failure.is_some() {
+            return 0;
+        }
+        match self.audit_log_retention_days {
+            Setting::Set(days) => days,
+            Setting::Bad(_) => 0,
+            Setting::Unset if self.locks_audit_log() => MANAGED_RETENTION_DAYS,
+            Setting::Unset => chosen,
+        }
+    }
+
+    /// Whether the user's choice of how long has no say.
+    pub fn locks_audit_log_retention(&self) -> bool {
+        self.locks_audit_log() || self.audit_log_retention_days != Setting::Unset
+    }
+
+    /// The most the audit log may take, in bytes, given what is taken without a
+    /// policy: 0 for no limit. One that cannot be understood sets none.
+    pub fn audit_log_max_bytes(&self, otherwise: u64) -> u64 {
+        if self.failure.is_some() {
+            return 0;
+        }
+        match self.audit_log_max_size_mb {
+            Setting::Set(mb) => mb.saturating_mul(1 << 20),
+            Setting::Bad(_) => 0,
+            Setting::Unset if self.locks_audit_log() => MANAGED_MAX_BYTES,
+            Setting::Unset => otherwise,
+        }
+    }
+
+    /// Whether the audit log names an archive's files, where they are at hand.
+    /// One that cannot be understood names them.
+    pub fn audit_log_names_entries(&self) -> bool {
+        self.failure.is_some()
+            || !matches!(
+                self.audit_log_detail,
+                Setting::Unset | Setting::Set(Detail::Summary)
+            )
+    }
+
     /// Each policy set, and each name that is none.
     pub fn rows(&self) -> Vec<Row> {
         let mut rows = Vec::new();
@@ -379,6 +506,28 @@ impl Policy {
             String::clone,
         );
         row(&mut rows, ORGANIZATION_URL, &self.url, String::clone);
+        row(&mut rows, AUDIT_LOG, &self.audit_log, on_off);
+        row(
+            &mut rows,
+            AUDIT_LOG_PATH,
+            &self.audit_log_path,
+            String::clone,
+        );
+        row(
+            &mut rows,
+            AUDIT_LOG_RETENTION_DAYS,
+            &self.audit_log_retention_days,
+            u32::to_string,
+        );
+        row(
+            &mut rows,
+            AUDIT_LOG_MAX_SIZE_MB,
+            &self.audit_log_max_size_mb,
+            u64::to_string,
+        );
+        row(&mut rows, AUDIT_LOG_DETAIL, &self.audit_log_detail, |d| {
+            d.name().to_owned()
+        });
         rows.extend(self.unknown.iter().map(|key| Row {
             key: key.clone(),
             value: String::new(),
@@ -453,6 +602,57 @@ fn read_text(value: &Value) -> Result<String, String> {
     match value {
         Value::Text(text) if !text.trim().is_empty() => Ok(text.trim().to_owned()),
         other => Err(tr!("Expected some text, not {other}.", other = said(other))),
+    }
+}
+
+/// A folder for the audit log: a whole path, a share's among them. `{user}` and
+/// `{host}` stand for who runs packwing and the computer's name.
+fn read_path(value: &Value) -> Result<String, String> {
+    let text = read_text(value)?;
+    let whole = text.starts_with('/')
+        || text.starts_with("\\\\")
+        || text.as_bytes().get(1..3) == Some(b":\\")
+        || text.as_bytes().get(1..3) == Some(b":/");
+    if whole {
+        Ok(text)
+    } else {
+        Err(tr!(
+            "Expected a whole path, such as /var/log/packwing or \\\\server\\audit, not {other}.",
+            other = text
+        ))
+    }
+}
+
+fn read_days(value: &Value) -> Result<u32, String> {
+    match value {
+        Value::Int(n) if (0..=MOST_RETENTION_DAYS).contains(n) => Ok(*n as u32),
+        other => Err(tr!(
+            "Expected a number of days from 0 (keep all) to {most}, not {other}.",
+            most = MOST_RETENTION_DAYS,
+            other = said(other)
+        )),
+    }
+}
+
+fn read_size(value: &Value) -> Result<u64, String> {
+    match value {
+        Value::Int(n) if (0..=MOST_SIZE_MB).contains(n) => Ok(*n as u64),
+        other => Err(tr!(
+            "Expected a size in MB from 0 (no limit) to {most}, not {other}.",
+            most = MOST_SIZE_MB,
+            other = said(other)
+        )),
+    }
+}
+
+fn read_detail(value: &Value) -> Result<Detail, String> {
+    match read_text(value)?.to_ascii_lowercase().as_str() {
+        "summary" => Ok(Detail::Summary),
+        "entries" => Ok(Detail::Entries),
+        other => Err(tr!(
+            "Expected summary or entries, not {other}.",
+            other = other
+        )),
     }
 }
 
@@ -733,6 +933,84 @@ mod tests {
         assert_eq!(p.license_key, Setting::Set("secret-key-text".into()));
         assert!(!p.report().contains("secret-key-text"));
         assert_eq!(p.rows()[0].value, "(set)");
+    }
+
+    #[test]
+    fn the_audit_log_is_the_users_until_the_organization_says() {
+        let none = policy(&[]);
+        assert!(!none.locks_audit_log());
+        assert!(none.keeps_audit_log(true) && !none.keeps_audit_log(false));
+        assert_eq!(none.audit_log_retention_days(90), 90);
+        assert_eq!(none.audit_log_max_bytes(100 << 20), 100 << 20);
+        assert!(!none.audit_log_names_entries());
+        assert_eq!(none.audit_log_path(), None);
+
+        let on = policy(&[(AUDIT_LOG, Value::Bool(true))]);
+        assert!(on.locks_audit_log() && on.locks_audit_log_retention());
+        assert!(on.keeps_audit_log(false));
+        assert_eq!(on.audit_log_retention_days(30), MANAGED_RETENTION_DAYS);
+        assert_eq!(on.audit_log_max_bytes(100 << 20), MANAGED_MAX_BYTES);
+
+        let off = policy(&[(AUDIT_LOG, Value::Int(0))]);
+        assert!(off.locks_audit_log() && !off.keeps_audit_log(true));
+
+        let set = policy(&[
+            (AUDIT_LOG, Value::Bool(true)),
+            (
+                AUDIT_LOG_PATH,
+                Value::Text("\\\\files\\audit\\{user}".into()),
+            ),
+            (AUDIT_LOG_RETENTION_DAYS, Value::Int(0)),
+            (AUDIT_LOG_MAX_SIZE_MB, Value::Int(500)),
+            (AUDIT_LOG_DETAIL, Value::Text("Entries".into())),
+        ]);
+        assert_eq!(set.audit_log_path(), Some("\\\\files\\audit\\{user}"));
+        assert_eq!(set.audit_log_retention_days(90), 0);
+        assert_eq!(set.audit_log_max_bytes(0), 500 << 20);
+        assert!(set.audit_log_names_entries());
+        assert!(set.rows().iter().all(|r| r.problem.is_none()));
+
+        // Only how long, set: the user still turns it on or off.
+        let days = policy(&[(AUDIT_LOG_RETENTION_DAYS, Value::Int(30))]);
+        assert!(!days.locks_audit_log() && days.locks_audit_log_retention());
+        assert_eq!(days.audit_log_retention_days(365), 30);
+    }
+
+    #[test]
+    fn a_mistake_in_the_audit_log_keeps_it_and_takes_nothing_away() {
+        let wrong = policy(&[
+            (AUDIT_LOG, Value::Text("yes".into())),
+            (AUDIT_LOG_PATH, Value::Text("audit".into())),
+            (AUDIT_LOG_RETENTION_DAYS, Value::Int(-1)),
+            (AUDIT_LOG_MAX_SIZE_MB, Value::Text("big".into())),
+            (AUDIT_LOG_DETAIL, Value::Text("all".into())),
+        ]);
+        assert!(wrong.locks_audit_log() && wrong.keeps_audit_log(false));
+        // A folder that is no whole path: the system's own, and said.
+        assert_eq!(wrong.audit_log_path(), None);
+        assert_eq!(wrong.audit_log_retention_days(90), 0);
+        assert_eq!(wrong.audit_log_max_bytes(100 << 20), 0);
+        assert!(wrong.audit_log_names_entries());
+        assert_eq!(
+            wrong.rows().iter().filter(|r| r.problem.is_some()).count(),
+            5
+        );
+        let unreadable = Policy::of(Found {
+            origin: "test".into(),
+            values: Vec::new(),
+            failure: Some("broken".into()),
+        });
+        assert!(unreadable.keeps_audit_log(false));
+        assert_eq!(unreadable.audit_log_retention_days(90), 0);
+        for path in [
+            "/var/log/packwing",
+            "C:\\Logs\\audit",
+            "c:/logs",
+            "\\\\srv\\a",
+        ] {
+            let p = policy(&[(AUDIT_LOG_PATH, Value::Text(path.into()))]);
+            assert_eq!(p.audit_log_path(), Some(path));
+        }
     }
 
     #[test]

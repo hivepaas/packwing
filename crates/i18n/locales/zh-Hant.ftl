@@ -1831,6 +1831,18 @@ t7730ec1a = Windows 11 會把它們放在一個 Packwing 項目下，無論在�
 # One packwing item, with these under it
 tb5fdc584 = 只顯示一個 packwing 項目，這些項目在其下方
 
+# 30 days
+t7a572af9 = 30 天
+
+# 90 days
+t2d8a9817 = 90 天
+
+# 1 year
+t4d0a98a5 = 1 年
+
+# Keep all
+te0b1775b = 全部保留
+
 # Keep the “downloaded from the Internet” mark
 tfe574fa2 = 保留「從網際網路下載」標記
 
@@ -1870,6 +1882,36 @@ tb7d64a44 = 密碼長度下限
 # In characters, for every new archive with a password
 tca6d6982 = 以字元數計，適用於每個設有密碼的新封存檔
 
+# Keep an audit log
+tf7fd8762 = 保留稽核記錄
+
+# A record of what packwing does, whatever the license
+t34fe4e25 = 記錄 packwing 所做的事，不論授權為何
+
+# Where the audit log is kept
+tbd999abe = 稽核記錄的位置
+
+# A folder your organization chose
+td4e1f74a = 你的組織選定的資料夾
+
+# How long the audit log is kept
+td504acaf = 稽核記錄保留多久
+
+# In days; 0 keeps every record
+t127a3c54 = 以天計；0 表示保留所有記錄
+
+# Most the audit log may take
+ta334bb40 = 稽核記錄的大小上限
+
+# In MB; the oldest records go first
+t03a543d2 = 以 MB 計；最舊的記錄先刪除
+
+# What the audit log says of archives
+t8d6fca43 = 稽核記錄對封存檔記下什麼
+
+# “entries” names the files found damaged or left out, as well as counting them
+tf1125538 = 「entries」除了計數，也會記下損毀或被略過的檔案名稱
+
 # packwing has no policy of this name.
 t7e03649c = packwing 沒有這個名稱的政策。
 
@@ -1881,6 +1923,33 @@ t9173caaa = 開啟封存檔中的檔案時，會在暫存資料夾中放一份�
 
 # Paste a public key
 t0bf72f73 = 貼上公鑰
+
+# What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
+t2162955d = packwing 所做的事，保存在這台電腦上：解壓縮、建立、轉換與複製了哪些封存檔，何時、由誰。絕不記錄密碼或檔案內容。
+
+# Keep its records for
+tf423722f = 記錄保留
+
+# Older ones are taken away, and that is recorded too
+t7073f273 = 較舊的記錄會被刪除，刪除本身也會記下
+
+# Takes a Pro or Enterprise license: Settings › License.
+t2774cee6 = 需要 Pro 或 Enterprise 授權：設定 › 授權。
+
+# Where the audit log is
+t2702fcc6 = 稽核記錄的位置
+
+# Open folder
+t713a842f = 開啟資料夾
+
+# The last record could not be written: {why}
+t542148a1 = 無法寫入上一筆記錄：{ $why }
+
+# Audit log
+tcb83f9ca = 稽核記錄
+
+# pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
+t482581ff = pkw audit verify 會確認沒有記錄被修改或刪除。管理這台電腦的人仍可刪除記錄：它說明 packwing 做了什麼，並不能阻止任何人。
 
 # This is not a public key packwing can check with: {why}.
 td57933b9 = 這不是 packwing 可用於驗證的公鑰：{ $why }。
@@ -2400,6 +2469,18 @@ tda498fad = 應為 1 到 { $most } 的數字，而不是 { $other }。
 
 # Expected some text, not {other}.
 t9386ce3b = 應為文字，而不是 { $other }。
+
+# Expected a whole path, such as /var/log/packwing or \\server\audit, not {other}.
+t00d3565d = 應為完整路徑，例如 /var/log/packwing 或 \\server\audit，而不是 { $other }。
+
+# Expected a number of days from 0 (keep all) to {most}, not {other}.
+tf8fba675 = 應為 0（全部保留）到 { $most } 的天數，而不是 { $other }。
+
+# Expected a size in MB from 0 (no limit) to {most}, not {other}.
+t9f7e002d = 應為 0（無上限）到 { $most } 的 MB 大小，而不是 { $other }。
+
+# Expected summary or entries, not {other}.
+t27e9b96f = 應為 summary 或 entries，而不是 { $other }。
 
 # Expected an address starting with https://, not {other}.
 t93bfd19e = 應為以 https:// 開頭的位址，而不是 { $other }。

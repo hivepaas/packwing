@@ -22,7 +22,7 @@ use gpui::{
     StyledImage, Subscription, Task, UniformListScrollHandle, Window, anchored, deferred, div, img,
     prelude::*, px, relative, rgb, uniform_list,
 };
-use packwing_core::{Cancel, Control, Error, Keys, Signed, Source, image_fits, read_entry};
+use packwing_core::{Cancel, Control, Error, Keys, Signed, Source, image_fits, preview_entry};
 
 use super::panel;
 use crate::colors::colors;
@@ -534,7 +534,7 @@ impl ArchivePage {
             on_gone: None,
         };
         let reading = cx.background_executor().spawn(async move {
-            match read_entry(&source, &path, &keys, MOST_PREVIEWED, &control) {
+            match preview_entry(&source, &path, &keys, MOST_PREVIEWED, &control) {
                 Ok(bytes) => match format {
                     Some(format) if image_fits(&bytes) => {
                         Preview::Picture(Arc::new(Image::from_bytes(format, bytes)))

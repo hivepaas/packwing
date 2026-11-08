@@ -1831,6 +1831,18 @@ t7730ec1a = Windows 11 では、メニューと「その他のオプションを
 # One packwing item, with these under it
 tb5fdc584 = packwing の項目を 1 つにして、この下にまとめます
 
+# 30 days
+t7a572af9 = 30 日
+
+# 90 days
+t2d8a9817 = 90 日
+
+# 1 year
+t4d0a98a5 = 1 年
+
+# Keep all
+te0b1775b = すべて保持
+
 # Keep the “downloaded from the Internet” mark
 tfe574fa2 = 「インターネットからダウンロード」のマークを保持する
 
@@ -1870,6 +1882,36 @@ tb7d64a44 = パスワードの最小文字数
 # In characters, for every new archive with a password
 tca6d6982 = 文字数。パスワード付きの新規アーカイブすべてに適用されます
 
+# Keep an audit log
+tf7fd8762 = 監査ログを記録
+
+# A record of what packwing does, whatever the license
+t34fe4e25 = packwing の操作を、ライセンスにかかわらず記録します
+
+# Where the audit log is kept
+tbd999abe = 監査ログの保存場所
+
+# A folder your organization chose
+td4e1f74a = 組織が選んだフォルダー
+
+# How long the audit log is kept
+td504acaf = 監査ログの保存期間
+
+# In days; 0 keeps every record
+t127a3c54 = 日数。0 ですべての記録を保持
+
+# Most the audit log may take
+ta334bb40 = 監査ログの最大サイズ
+
+# In MB; the oldest records go first
+t03a543d2 = MB 単位。古い記録から削除されます
+
+# What the audit log says of archives
+t8d6fca43 = アーカイブについて監査ログに記録する内容
+
+# “entries” names the files found damaged or left out, as well as counting them
+tf1125538 = 「entries」では、破損していたファイルや除外されたファイルを数えるだけでなく名前も記録します
+
 # packwing has no policy of this name.
 t7e03649c = packwing にこの名前のポリシーはありません。
 
@@ -1881,6 +1923,33 @@ t9173caaa = アーカイブ内のファイルを開くと、一時フォルダ�
 
 # Paste a public key
 t0bf72f73 = 公開鍵を貼り付け
+
+# What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
+t2162955d = packwing の操作をこのコンピューターに記録します：展開・作成・変換・コピーしたアーカイブ、その日時と実行者。パスワードやファイルの内容は記録しません。
+
+# Keep its records for
+tf423722f = 記録の保存期間
+
+# Older ones are taken away, and that is recorded too
+t7073f273 = 古い記録は削除され、その削除も記録されます
+
+# Takes a Pro or Enterprise license: Settings › License.
+t2774cee6 = Pro または Enterprise ライセンスが必要です：設定 › ライセンス。
+
+# Where the audit log is
+t2702fcc6 = 監査ログの場所
+
+# Open folder
+t713a842f = フォルダーを開く
+
+# The last record could not be written: {why}
+t542148a1 = 直前の記録を書き込めませんでした：{ $why }
+
+# Audit log
+tcb83f9ca = 監査ログ
+
+# pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
+t482581ff = pkw audit verify は、記録が変更・削除されていないことを確認します。このコンピューターの管理者はログを削除できます。ログは packwing の操作を示すもので、誰かを止めるものではありません。
 
 # This is not a public key packwing can check with: {why}.
 td57933b9 = packwing で確認に使える公開鍵ではありません：{ $why }。
@@ -2391,6 +2460,18 @@ tda498fad = 1 から { $most } までの数値が必要ですが、{ $other } �
 
 # Expected some text, not {other}.
 t9386ce3b = テキストが必要ですが、{ $other } が指定されました。
+
+# Expected a whole path, such as /var/log/packwing or \\server\audit, not {other}.
+t00d3565d = /var/log/packwing や \\server\audit のような完全なパスが必要ですが、{ $other } が指定されました。
+
+# Expected a number of days from 0 (keep all) to {most}, not {other}.
+tf8fba675 = 0（すべて保持）から { $most } までの日数が必要ですが、{ $other } が指定されました。
+
+# Expected a size in MB from 0 (no limit) to {most}, not {other}.
+t9f7e002d = 0（無制限）から { $most } までの MB 単位のサイズが必要ですが、{ $other } が指定されました。
+
+# Expected summary or entries, not {other}.
+t27e9b96f = summary または entries が必要ですが、{ $other } が指定されました。
 
 # Expected an address starting with https://, not {other}.
 t93bfd19e = https:// で始まるアドレスが必要ですが、{ $other } が指定されました。

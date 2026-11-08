@@ -92,6 +92,12 @@ impl Plan {
     pub fn may_sign(self) -> bool {
         self != Plan::Free
     }
+
+    /// Whether the user may keep an audit log. Where the organization's policy
+    /// says, it decides, whatever the plan: a bill unpaid must not stop it.
+    pub fn has_audit_log(self) -> bool {
+        self != Plan::Free
+    }
 }
 
 /// A key that verified.

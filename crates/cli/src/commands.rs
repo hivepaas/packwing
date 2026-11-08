@@ -115,6 +115,7 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
             file,
             name,
         } => rename_cmd(&archive, &file, &name, cx),
+        Command::Audit { what } => crate::audit::run(what, cx),
         Command::Checksum {
             files,
             algorithm,
@@ -160,7 +161,7 @@ fn listed(place: &Place, cx: &mut Context) -> Result<Listing, Exit> {
         .unlocking(&place.name(), |keys| list(source.clone(), keys))?)
 }
 
-fn print_json(value: &Value) {
+pub(crate) fn print_json(value: &Value) {
     println!("{value:#}");
 }
 

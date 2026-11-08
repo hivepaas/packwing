@@ -17,7 +17,9 @@
 //! A [`Filter`] takes only some of its entries. A hard link to a file it leaves
 //! out stops the job, as extracting it would: the file's data is not read.
 
+use crate::audit;
 use packwing_i18n::tr;
+use serde_json::json;
 use std::io::{self, Cursor, Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -68,12 +70,37 @@ pub fn convert(
     filter: &Filter,
     control: &Control,
 ) -> Result<Converted, Error> {
+    let source: Source = source.into();
+    let mut fields = crate::create::making(&[], new);
+    fields.remove("paths");
+    fields.remove("path_names");
+    fields.insert("source".into(), audit::source(&source));
+    fields.insert("destination".into(), json!(audit::path_text(wanted)));
+    fields.insert("filtered".into(), json!(!filter.is_everything()));
+    let job = audit::begin("convert", fields);
+    let result = convert_from(source, keys, wanted, new, how, filter, control);
+    audit::end(job, &result, |done| {
+        let mut fields = crate::job::extracted(&done.summary);
+        fields.insert("made".into(), json!(audit::path_text(&done.made)));
+        fields
+    });
+    result
+}
+
+fn convert_from(
+    source: Source,
+    keys: &Keys,
+    wanted: &Path,
+    new: &NewArchive,
+    how: &ExtractOptions,
+    filter: &Filter,
+    control: &Control,
+) -> Result<Converted, Error> {
     // Refused before anything is read.
     obey_policy(new)?;
     let recipients = age_recipients(new)?;
     // At a level whose one thread the memory there is takes.
     let new = &crate::create::within_memory(new);
-    let source: Source = source.into();
     // What it holds is not known before it is read: at least what the archive
     // comes to, as a rule, which is enough to tell several frames from one.
     let bytes = source.size().ok();

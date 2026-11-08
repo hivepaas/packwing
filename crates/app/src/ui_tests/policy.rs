@@ -106,3 +106,25 @@ scenario!(
         assert!(ui.dialog_open() && !zip.exists());
     }
 );
+
+scenario!(
+    /// Turned on by the organization, the audit log is kept on Free too, its switch
+    /// locked, its records in the folder the policy names.
+    the_audit_log_is_kept_as_the_organization_says,
+    policy: found(vec![
+        (packwing_policy::AUDIT_LOG, Value::Bool(true)),
+        (packwing_policy::AUDIT_LOG_RETENTION_DAYS, Value::Int(30)),
+    ]),
+    |ui| {
+        use packwing_core::audit;
+        assert_eq!(ui.plan(), Plan::Free);
+        ui.settings(3);
+        assert!(!ui.shows("audit-log"), "the user's switch");
+        assert!(!ui.shows("audit-retention"), "the user's choice of how long");
+        let config = audit::config().expect("kept on Free");
+        assert_eq!(config.retention_days, 30);
+        let records = audit::read(&config.folder, None).expect("the records");
+        assert_eq!(records[0]["action"], "audit.started");
+        assert_eq!(records[0]["by"], "policy");
+    }
+);

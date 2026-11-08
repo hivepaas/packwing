@@ -1,0 +1,23 @@
+[package]
+name = "packwing-audit"
+description = "packwing's audit log: what it did, one JSON line a record, each chained to the one before"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde_json = "1"
+sha2 = { version = "0.11", default-features = false }
+# A session's id, so that two runs' records are told apart.
+getrandom = "0.4"
+
+# The computer's name and the user's number.
+[target.'cfg(unix)'.dependencies]
+rustix = { version = "1", features = ["system", "process"] }
+
+[dev-dependencies]
+
+[lints]
+workspace = true

@@ -26,6 +26,11 @@ They bind packwing, not the person. An administrator of the computer can change 
 | `LicenseKey` | text | Your organization's license key, so that nobody has to enter one. It lifts the limit on storages for everyone who gets it. Nothing is sent anywhere, and `packwing --policies` does not show it. A key that has ended never changes what the other policies do. |
 | `ManagedByOrganizationName` | text | Who is managing this, as the user sees it in Settings. |
 | `ManagedByURL` | text | Where the user can ask for help. It has to start with `https://` or `http://`. |
+| `AuditLog` | yes or no | Whether packwing keeps an audit log of what it does ([audit.md](audit.md)), on every computer it applies to, whatever the license, and even past a license's end. Replaces the user's switch; without it, a user with a Pro or Enterprise license chooses, off by default. |
+| `AuditLogPath` | text | The folder the log is kept in: a whole path, a share's among them (`\\files\audit\{user}`). `{user}` and `{host}` stand for who runs packwing and the computer's name. Without it, the system's own folder for the user ([audit.md](audit.md#where)). |
+| `AuditLogRetentionDays` | number, 0 to 36500 | How many days of records are kept; 0 keeps them all, for your own collector to rotate. 365 where `AuditLog` is on and this is not set. |
+| `AuditLogMaxSizeMB` | number, 0 to 10000000 | The most the log may take, in MB: past it, the oldest days go, never today's. 0 for no limit. 1024 where `AuditLog` is on and this is not set. |
+| `AuditLogDetail` | text | `summary` (the default) or `entries`: whether records name the files packwing comes on in archives, as those damaged or left out as they are extracted, as well as counting them. What the user picks is named either way. |
 
 A list can also be written as one text with commas between the names, for tools that cannot write lists.
 
@@ -42,6 +47,10 @@ A mistake never loosens anything, as a typing error must not quietly take a lock
 - `MinPasswordLength` that cannot be understood refuses passwords.
 - A name that is not a policy is reported, and does nothing else.
 - `ManagedByURL` and `ManagedByOrganizationName` guard nothing: they are reported, and not shown.
+- `AuditLog` that cannot be understood keeps the log, locked.
+- `AuditLogPath` that is not a whole path is reported, and the system's own folder taken.
+- `AuditLogRetentionDays` and `AuditLogMaxSizeMB` that cannot be understood keep every record.
+- `AuditLogDetail` that cannot be understood names the files.
 
 Where the policies cannot be read at all, as in a file that is not JSON, all of the above apply together.
 
@@ -77,7 +86,9 @@ One JSON object in `/etc/packwing/policy.json`:
   "ManagedByOrganizationName": "IT department",
   "RequireEncryption": true,
   "MinPasswordLength": 15,
-  "AllowedEncryptionMethods": ["7z-aes256", "age-key"]
+  "AllowedEncryptionMethods": ["7z-aes256", "age-key"],
+  "AuditLog": true,
+  "AuditLogPath": "/var/log/packwing/{user}"
 }
 ```
 

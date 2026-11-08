@@ -189,3 +189,51 @@ scenario!(
         assert_eq!(kept(ui), (packwing_core::Owners::ByNumber, true));
     }
 );
+
+scenario!(
+    /// The audit log takes a paid plan: on Free its switch is locked. On Pro it is
+    /// turned on, records jobs and its own changes, stays on through a restart,
+    /// and turned off records that last.
+    the_audit_log_takes_a_paid_plan_and_records_jobs,
+    |ui| {
+        use packwing_core::audit;
+        ui.settings(3);
+        assert!(!ui.shows("audit-log"), "Free has no switch");
+        assert!(audit::config().is_none());
+        let key = include_str!("../../../license/testdata/pro.key").trim();
+        ui.settings(5);
+        ui.type_in("Paste your license key", key);
+        ui.click("license-enter");
+        ui.settings(3);
+        ui.click("audit-log");
+        let folder = audit::config().expect("kept").folder;
+        let file = ui.file("in/a.txt", "a");
+        packwing_core::create(
+            &[file],
+            &ui.work.join("a.zip"),
+            &packwing_core::NewArchive::default(),
+            &packwing_core::Control::default(),
+        )
+        .expect("the archive");
+        ui.choose("audit-retention", "1 year");
+        assert_eq!(audit::config().expect("kept").retention_days, 365);
+        ui.start();
+        assert!(audit::config().is_some(), "on after a restart");
+        ui.settings(3);
+        ui.click("audit-log");
+        assert!(audit::config().is_none());
+        let records = audit::read(&folder, None).expect("the records");
+        let actions: Vec<&str> = records
+            .iter()
+            .filter_map(|r| r["action"].as_str())
+            .collect();
+        assert_eq!(actions.first(), Some(&"audit.started"));
+        assert!(actions.contains(&"create"));
+        assert!(actions.contains(&"audit.changed"));
+        assert_eq!(actions.last(), Some(&"audit.stopped"));
+        assert_eq!(records[0]["by"], "user");
+        assert_eq!(records[0]["app"], "packwing");
+        let report = audit::verify(&folder).expect("verified");
+        assert!(report.breaks.is_empty(), "{report:?}");
+    }
+);
