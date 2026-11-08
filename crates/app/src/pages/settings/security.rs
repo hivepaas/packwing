@@ -118,7 +118,7 @@ fn told(key: &str) -> (String, String) {
         ),
         AUDIT_LOG_DETAIL => (
             tr!("What the audit log says of archives"),
-            tr!("“entries” names the files in them, where they are known"),
+            tr!("“entries” names the files found damaged or left out, as well as counting them"),
         ),
         _ => (key.to_owned(), tr!("packwing has no policy of this name.")),
     }

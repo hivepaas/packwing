@@ -7,6 +7,7 @@
 //! one record of each.
 
 use std::cell::RefCell;
+use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, PoisonError, RwLock};
 use std::time::Instant;
@@ -94,6 +95,10 @@ pub fn set(config: Option<Config>) {
         *held = config.map(|c| Arc::new(Log::new(c)));
         held.clone()
     };
+    seen()
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+        .clear();
     if let Some(log) = log
         && let Err(e) = log.prune()
     {
@@ -128,6 +133,29 @@ fn failed(why: &str) {
 
 fn current() -> Option<Arc<Log>> {
     log().read().unwrap_or_else(PoisonError::into_inner).clone()
+}
+
+/// The entries previewed since the log was set, by archive: a preview is
+/// recorded the first time only, as moving through an archive shows many.
+fn seen() -> &'static Mutex<BTreeSet<(String, String)>> {
+    static SEEN: Mutex<BTreeSet<(String, String)>> = Mutex::new(BTreeSet::new());
+    &SEEN
+}
+
+/// Whether `entry` of `source` was previewed, and recorded, already.
+pub(crate) fn previewed(source: &Value, entry: &str) -> bool {
+    seen()
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+        .contains(&(source.to_string(), entry.to_owned()))
+}
+
+/// Notes that `entry` of `source` was previewed, and recorded.
+pub(crate) fn mark_previewed(source: &Value, entry: &str) {
+    seen()
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+        .insert((source.to_string(), entry.to_owned()));
 }
 
 /// Whether records name an archive's files.
@@ -287,8 +315,9 @@ pub(crate) fn place(storage: &dyn Storage, path: &[String]) -> String {
         .unwrap_or_else(|| storage.show_path(path))
 }
 
-/// What the user chose to work on, as files or names: the first [`MOST_NAMES`],
-/// and how many there are. Always recorded, as it is what the job is of.
+/// What the user chose to work on, as files on the computer or in an archive:
+/// the first [`MOST_NAMES`], and how many there are. Always recorded, as it is
+/// what the job is of.
 pub(crate) fn list<I, S>(all: I) -> Value
 where
     I: IntoIterator<Item = S>,
@@ -317,8 +346,9 @@ where
     }
 }
 
-/// Names of an archive's files, if records name them: the first
-/// [`MOST_NAMES`], and how many there are; else nothing.
+/// Names of an archive's files that packwing came on, not the user chose (as
+/// those damaged), if records name them: the first [`MOST_NAMES`], and how many
+/// there are; else nothing.
 pub(crate) fn names<I, S>(all: I) -> Value
 where
     I: IntoIterator<Item = S>,

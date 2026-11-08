@@ -1909,8 +1909,8 @@ t03a543d2 = 以 MB 計；最舊的記錄先刪除
 # What the audit log says of archives
 t8d6fca43 = 稽核記錄對封存檔記下什麼
 
-# “entries” names the files in them, where they are known
-t56cf1991 = 「entries」會在已知時一併記下其中的檔名
+# “entries” names the files found damaged or left out, as well as counting them
+tf1125538 = 「entries」除了計數，也會記下損毀或被略過的檔案名稱
 
 # packwing has no policy of this name.
 t7e03649c = packwing 沒有這個名稱的政策。

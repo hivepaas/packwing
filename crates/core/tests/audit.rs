@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use packwing_core::audit::{self, Config};
 use packwing_core::{
     Control, ExtractOptions, Filter, Keys, Kind, NewArchive, convert, create, extract_selected,
-    extract_with, test,
+    extract_with, preview_entry, read_entry, test,
 };
 use serde_json::{Map, Value};
 
@@ -160,11 +160,59 @@ fn jobs_are_recorded_as_they_start_and_end_and_the_chain_holds() {
         assert!(r["time"].as_str().is_some_and(|t| t.ends_with('Z')));
     }
 
-    // Names, where the organization asks for them.
-    audit::set(Some(config(log.clone(), true)));
+    // What the user picked is named, as what the job is of.
     extract_selected(
         &made,
         &s.0.join("picked"),
+        &[vec!["in".into(), "b.txt".into()]],
+        &keys,
+        &ExtractOptions::default(),
+        &Control::default(),
+    )
+    .unwrap();
+    let records = audit::read(&log, None).unwrap();
+    let start = records
+        .iter()
+        .rev()
+        .find(|r| r["action"] == "extract" && r["phase"] == "start")
+        .unwrap();
+    assert_eq!(start["picked_names"][0], "in/b.txt");
+
+    // A preview is recorded the first time only; `pkw cat` each time.
+    let entry = ["in".to_owned(), "b.txt".to_owned()];
+    let before = audit::read(&log, None).unwrap().len();
+    for _ in 0..3 {
+        preview_entry(&made, &entry, &keys, 1 << 20, &Control::default()).unwrap();
+    }
+    read_entry(&made, &entry, &keys, 1 << 20, &Control::default()).unwrap();
+    let records = audit::read(&log, None).unwrap();
+    let read: Vec<_> = records[before..]
+        .iter()
+        .filter(|r| r["action"] == "read_entry" && r["phase"] == "start")
+        .collect();
+    assert_eq!(read.len(), 2);
+    assert_eq!(read[0]["via"], "preview");
+    assert_eq!(read[0]["entry"], "in/b.txt");
+    assert!(read[1].get("via").is_none());
+    // A preview that failed is recorded again when it works.
+    let other = ["in".to_owned(), "ghi chú.txt".to_owned()];
+    assert!(preview_entry(&made, &other, &wrong, 1 << 20, &Control::default()).is_err());
+    preview_entry(&made, &other, &keys, 1 << 20, &Control::default()).unwrap();
+    let records = audit::read(&log, None).unwrap();
+    let finished = ends(&records, "read_entry");
+    let last: Vec<_> = finished
+        .iter()
+        .rev()
+        .take(2)
+        .map(|r| &r["result"])
+        .collect();
+    assert_eq!(last, ["ok", "failed"]);
+
+    // Names of what packwing came on, where the organization asks for them.
+    audit::set(Some(config(log.clone(), true)));
+    extract_selected(
+        &made,
+        &s.0.join("picked-again"),
         &[vec!["in".into(), "b.txt".into()]],
         &keys,
         &ExtractOptions::default(),

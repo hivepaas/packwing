@@ -1909,8 +1909,8 @@ t03a543d2 = MB 単位。古い記録から削除されます
 # What the audit log says of archives
 t8d6fca43 = アーカイブについて監査ログに記録する内容
 
-# “entries” names the files in them, where they are known
-t56cf1991 = “entries” の場合、わかる範囲で中のファイル名も記録します
+# “entries” names the files found damaged or left out, as well as counting them
+tf1125538 = 「entries」では、破損していたファイルや除外されたファイルを数えるだけでなく名前も記録します
 
 # packwing has no policy of this name.
 t7e03649c = packwing にこの名前のポリシーはありません。

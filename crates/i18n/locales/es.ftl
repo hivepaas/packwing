@@ -1930,8 +1930,8 @@ t03a543d2 = En MB; los registros más antiguos se borran primero
 # What the audit log says of archives
 t8d6fca43 = Qué dice el registro de auditoría de los archivos comprimidos
 
-# “entries” names the files in them, where they are known
-t56cf1991 = “entries” también nombra los archivos que contienen, cuando se conocen
+# “entries” names the files found damaged or left out, as well as counting them
+tf1125538 = «entries» nombra los archivos dañados u omitidos, además de contarlos
 
 # packwing has no policy of this name.
 t7e03649c = packwing no tiene ninguna política con este nombre.

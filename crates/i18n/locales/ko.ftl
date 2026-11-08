@@ -1909,8 +1909,8 @@ t03a543d2 = MB 단위, 가장 오래된 기록부터 삭제
 # What the audit log says of archives
 t8d6fca43 = 감사 로그가 압축 파일에 대해 기록하는 내용
 
-# “entries” names the files in them, where they are known
-t56cf1991 = “entries”이면 알 수 있는 경우 안의 파일 이름도 기록
+# “entries” names the files found damaged or left out, as well as counting them
+tf1125538 = “entries”는 손상되었거나 제외된 파일의 개수뿐 아니라 이름도 기록합니다
 
 # packwing has no policy of this name.
 t7e03649c = packwing에는 이 이름의 정책이 없습니다.

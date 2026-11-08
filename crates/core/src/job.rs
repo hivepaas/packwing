@@ -390,7 +390,7 @@ pub fn extract_selected(
     fields.insert("picked".into(), json!(picked.len()));
     fields.extend(audit::fields([(
         "picked_names",
-        audit::names(picked.iter().map(|p| p.join("/"))),
+        audit::list(picked.iter().map(|p| p.join("/"))),
     )]));
     let job = audit::begin("extract", fields);
     let result = extract_selected_from(source, destination, picked, keys, how, control);
@@ -561,14 +561,51 @@ pub fn read_entry(
     most: u64,
     control: &Control,
 ) -> Result<Vec<u8>, Error> {
-    let source = source.into();
-    let job = audit::begin(
-        "read_entry",
-        audit::fields([
-            ("source", audit::source(&source)),
-            ("entry", json!(entry.join("/"))),
-        ]),
-    );
+    read_entry_for(source.into(), entry, keys, most, control, false)
+}
+
+/// As [`read_entry`], to show the entry beside its archive: the audit log
+/// records it the first time only.
+pub fn preview_entry(
+    source: impl Into<Source>,
+    entry: &[String],
+    keys: &Keys,
+    most: u64,
+    control: &Control,
+) -> Result<Vec<u8>, Error> {
+    read_entry_for(source.into(), entry, keys, most, control, true)
+}
+
+fn read_entry_for(
+    source: Source,
+    entry: &[String],
+    keys: &Keys,
+    most: u64,
+    control: &Control,
+    preview: bool,
+) -> Result<Vec<u8>, Error> {
+    let subject = audit::source(&source);
+    let name = entry.join("/");
+    let job = if preview && audit::previewed(&subject, &name) {
+        None
+    } else {
+        audit::begin(
+            "read_entry",
+            audit::fields([
+                ("source", subject.clone()),
+                ("entry", json!(name)),
+                (
+                    "via",
+                    if preview {
+                        json!("preview")
+                    } else {
+                        Value::Null
+                    },
+                ),
+            ]),
+        )
+    };
+    let recorded = job.is_some();
     let read = (|| {
         let how = ExtractOptions {
             limit: Some(most),
@@ -585,6 +622,9 @@ pub fn read_entry(
     audit::end(job, &read, |bytes| {
         audit::fields([("bytes", json!(bytes.len()))])
     });
+    if preview && recorded && read.is_ok() {
+        audit::mark_previewed(&subject, &name);
+    }
     read
 }
 

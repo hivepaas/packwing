@@ -2228,7 +2228,7 @@ pub fn delete(archive: &Path, picked: &[Vec<String>], keys: &Keys) -> Result<(),
             ("picked", json!(picked.len())),
             (
                 "picked_names",
-                audit::names(picked.iter().map(|p| p.join("/"))),
+                audit::list(picked.iter().map(|p| p.join("/"))),
             ),
         ]),
     );
@@ -2271,8 +2271,8 @@ pub fn rename(archive: &Path, from: &[String], to: &str, keys: &Keys) -> Result<
         "rename",
         audit::fields([
             ("archive", json!(audit::path_text(archive))),
-            ("from_name", audit::names([from.join("/")])),
-            ("to_name", audit::names([to.to_owned()])),
+            ("from_name", json!(from.join("/"))),
+            ("to_name", json!(to)),
         ]),
     );
     let result = rename_in(archive, from, to, keys);

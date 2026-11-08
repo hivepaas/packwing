@@ -1930,8 +1930,8 @@ t03a543d2 = MB olarak; en eski kayıtlar önce silinir
 # What the audit log says of archives
 t8d6fca43 = Denetim günlüğünün arşivler hakkında yazdıkları
 
-# “entries” names the files in them, where they are known
-t56cf1991 = “entries” bilindiğinde içindeki dosyaların adlarını da yazar
+# “entries” names the files found damaged or left out, as well as counting them
+tf1125538 = “entries”, hasarlı ya da atlanan dosyaları saymanın yanı sıra adlarını da yazar
 
 # packwing has no policy of this name.
 t7e03649c = packwing'in bu adda bir ilkesi yok.

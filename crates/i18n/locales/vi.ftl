@@ -1909,8 +1909,8 @@ t03a543d2 = Tính bằng MB; bản ghi cũ nhất bị xoá trước
 # What the audit log says of archives
 t8d6fca43 = Nhật ký kiểm tra ghi gì về tệp nén
 
-# “entries” names the files in them, where they are known
-t56cf1991 = “entries” ghi cả tên các tệp bên trong, khi biết được
+# “entries” names the files found damaged or left out, as well as counting them
+tf1125538 = “entries” ghi cả tên các tệp bị hỏng hoặc bị bỏ qua, không chỉ đếm số lượng
 
 # packwing has no policy of this name.
 t7e03649c = packwing không có chính sách nào tên này.

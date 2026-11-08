@@ -1930,8 +1930,8 @@ t03a543d2 = In MB; le voci più vecchie vanno via per prime
 # What the audit log says of archives
 t8d6fca43 = Cosa dice il registro di controllo degli archivi
 
-# “entries” names the files in them, where they are known
-t56cf1991 = “entries” nomina anche i file contenuti, quando sono noti
+# “entries” names the files found damaged or left out, as well as counting them
+tf1125538 = “entries” nomina i file danneggiati o tralasciati, oltre a contarli
 
 # packwing has no policy of this name.
 t7e03649c = packwing non ha un criterio con questo nome.

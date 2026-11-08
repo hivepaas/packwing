@@ -1909,8 +1909,8 @@ t03a543d2 = 以 MB 计；最旧的记录先删除
 # What the audit log says of archives
 t8d6fca43 = 审计日志对压缩包记录什么
 
-# “entries” names the files in them, where they are known
-t56cf1991 = “entries”会在已知时一并记录其中的文件名
+# “entries” names the files found damaged or left out, as well as counting them
+tf1125538 = “entries”除了计数，还会记下损坏或被略过的文件名
 
 # packwing has no policy of this name.
 t7e03649c = packwing 没有此名称的策略。

@@ -57,7 +57,7 @@ A job is two records with the same `job`: `phase: start`, with what it is of, an
 | `convert` | `source`, `destination`, and as `create` | as `extract`, and `made` |
 | `test` | `source` | `files`, `bytes` |
 | `open_entry` | `source`, `entry`: a file opened from an archive | `copy`: where its copy is |
-| `read_entry` | `source`, `entry`: `pkw cat` | `bytes` |
+| `read_entry` | `source`, `entry`: `pkw cat`, or a file shown beside its archive (`via: preview`) | `bytes` |
 | `add`, `delete`, `rename` | `archive`, and what goes in, out, or the new name | |
 | `copy`, `move` | `from`, `to`, `names` | `files`, `bytes`, `skipped`, `links_left` |
 | `sign` | `file`, `fingerprint` | |
@@ -68,9 +68,11 @@ A job is two records with the same `job`: `phase: start`, with what it is of, an
 | `audit.started`, `audit.stopped`, `audit.changed` | `by` (`user`, `license`, `policy` or `startup`), `retention_days`, `max_bytes`, `folder` | |
 | `log.pruned` | `removed`, `last_removed` | |
 
-Paths are whole paths on the computer, or as a storage writes them. What the user chose to work on (`path_names`, `names`) is always named, the first 1,000 of it and how many in all.
+Paths are whole paths on the computer, or as a storage writes them. What the user chose to work on is always named, the first 1,000 of it and how many in all: the files and folders to put in an archive, copy or move (`path_names`, `names`), and in an archive those picked to extract, opened, shown, deleted or renamed (`picked_names`, `entry`, `from_name`, `to_name`).
 
-The files inside an archive are counted, not named, unless the organization sets `AuditLogDetail` to `entries`: then records name the files picked to extract, those damaged, left out or renamed, and those deleted or renamed in a ZIP archive. A record never names every file extracted, as packwing is not told them one by one.
+What packwing comes on as it works is counted, not named, unless the organization sets `AuditLogDetail` to `entries`: then records name the files damaged, left out or renamed as they were extracted. A record never names every file extracted, as packwing is not told them one by one.
+
+A file shown beside its archive is recorded the first time in a run only: going through an archive shows many, and seeing one again says nothing new. `pkw cat` is recorded each time.
 
 Never in a record: a password, a passphrase, a private key, a storage's secrets, or what is in a file.
 

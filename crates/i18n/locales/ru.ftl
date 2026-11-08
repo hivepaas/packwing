@@ -1972,8 +1972,8 @@ t03a543d2 = В МБ; первыми удаляются самые старые �
 # What the audit log says of archives
 t8d6fca43 = Что журнал аудита пишет об архивах
 
-# “entries” names the files in them, where they are known
-t56cf1991 = «entries» — также имена файлов внутри, если они известны
+# “entries” names the files found damaged or left out, as well as counting them
+tf1125538 = «entries» записывает не только число повреждённых и пропущенных файлов, но и их имена
 
 # packwing has no policy of this name.
 t7e03649c = В packwing нет политики с таким именем.

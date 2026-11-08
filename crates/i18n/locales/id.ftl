@@ -1909,8 +1909,8 @@ t03a543d2 = Dalam MB; catatan tertua dihapus lebih dulu
 # What the audit log says of archives
 t8d6fca43 = Apa yang dicatat log audit tentang arsip
 
-# “entries” names the files in them, where they are known
-t56cf1991 = “entries” juga menyebut nama berkas di dalamnya, bila diketahui
+# “entries” names the files found damaged or left out, as well as counting them
+tf1125538 = “entries” menyebut nama berkas yang rusak atau dilewati, selain menghitungnya
 
 # packwing has no policy of this name.
 t7e03649c = packwing tidak memiliki kebijakan dengan nama ini.

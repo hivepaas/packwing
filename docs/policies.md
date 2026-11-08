@@ -30,7 +30,7 @@ They bind packwing, not the person. An administrator of the computer can change 
 | `AuditLogPath` | text | The folder the log is kept in: a whole path, a share's among them (`\\files\audit\{user}`). `{user}` and `{host}` stand for who runs packwing and the computer's name. Without it, the system's own folder for the user ([audit.md](audit.md#where)). |
 | `AuditLogRetentionDays` | number, 0 to 36500 | How many days of records are kept; 0 keeps them all, for your own collector to rotate. 365 where `AuditLog` is on and this is not set. |
 | `AuditLogMaxSizeMB` | number, 0 to 10000000 | The most the log may take, in MB: past it, the oldest days go, never today's. 0 for no limit. 1024 where `AuditLog` is on and this is not set. |
-| `AuditLogDetail` | text | `summary` (the default) or `entries`: whether records name the files inside archives, where packwing knows them, as well as counting them. |
+| `AuditLogDetail` | text | `summary` (the default) or `entries`: whether records name the files packwing comes on in archives, as those damaged or left out as they are extracted, as well as counting them. What the user picks is named either way. |
 
 A list can also be written as one text with commas between the names, for tools that cannot write lists.
 
