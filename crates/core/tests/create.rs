@@ -3516,33 +3516,10 @@ fn a_large_file_in_zip_is_deflated_in_blocks() {
         &Control::default(),
     )
     .unwrap();
-    let za = hivepack::zip::Archive::open(
-        fs::File::open(&made).unwrap(),
-        hivepack::zip::OpenFlags::RDONLY,
-    )
-    .unwrap();
-    let mut stream = Vec::new();
-    io::copy(
-        &mut za.fopen_index(0, hivepack::zip::Flags::COMPRESSED).unwrap(),
-        &mut stream,
-    )
-    .unwrap();
-    let mut one = hivepack::deflate::DeflateMt::new(&hivepack::deflate::MtOptions {
-        level: 6,
-        raw: true,
-        ..hivepack::deflate::MtOptions::default()
-    })
-    .unwrap();
-    let mut want = vec![0; data.len() + (1 << 20)];
-    let mut output = hivepack::deflate::OutBuffer::new(&mut want);
-    let mut input = hivepack::deflate::InBuffer::new(&data);
-    let status = one
-        .deflate(&mut output, &mut input, hivepack::deflate::Flush::Finish)
-        .unwrap();
-    assert_eq!(status, hivepack::deflate::Status::StreamEnd);
-    let n = output.pos;
-    want.truncate(n);
-    assert!(stream == want, "not deflated in blocks");
+    assert!(
+        compressed_entry(&made, 0) == in_blocks(&data),
+        "not deflated in blocks"
+    );
     let out = s.path("out");
     extract_with(
         &made,
@@ -3607,4 +3584,87 @@ fn seven_zip_goes_in_blocks_large_or_small() {
         .unwrap();
         assert!(fs::read(out.join("a.txt")).unwrap() == data, "{name}");
     }
+}
+
+/// Entry `i` of the ZIP archive at `zip`, as it is stored, compressed.
+fn compressed_entry(zip: &Path, i: u64) -> Vec<u8> {
+    let za = hivepack::zip::Archive::open(
+        fs::File::open(zip).unwrap(),
+        hivepack::zip::OpenFlags::RDONLY,
+    )
+    .unwrap();
+    let mut stream = Vec::new();
+    io::copy(
+        &mut za.fopen_index(i, hivepack::zip::Flags::COMPRESSED).unwrap(),
+        &mut stream,
+    )
+    .unwrap();
+    stream
+}
+
+/// `data` deflated at level 6 in blocks, as pigz does, raw: as packwing
+/// deflates a ZIP archive's files.
+fn in_blocks(data: &[u8]) -> Vec<u8> {
+    let mut one = hivepack::deflate::DeflateMt::new(&hivepack::deflate::MtOptions {
+        level: 6,
+        raw: true,
+        ..hivepack::deflate::MtOptions::default()
+    })
+    .unwrap();
+    let mut want = vec![0; data.len() + (1 << 20)];
+    let mut output = hivepack::deflate::OutBuffer::new(&mut want);
+    let mut input = hivepack::deflate::InBuffer::new(data);
+    let status = one
+        .deflate(&mut output, &mut input, hivepack::deflate::Flush::Finish)
+        .unwrap();
+    assert_eq!(status, hivepack::deflate::Status::StreamEnd);
+    let n = output.pos;
+    want.truncate(n);
+    want
+}
+
+/// A large file added to a ZIP archive is deflated in blocks, as one in a
+/// new archive is, on every core; what was there stays as it was.
+#[test]
+fn a_large_file_added_to_a_zip_is_deflated_in_blocks() {
+    let s = Scratch::new("zip-add-blocks");
+    let small = s.path("small.txt");
+    fs::write(&small, "kept\n").unwrap();
+    let made = create(
+        &[small],
+        &s.path("a.zip"),
+        &NewArchive::default(),
+        &Control::default(),
+    )
+    .unwrap();
+    let kept = compressed_entry(&made, 0);
+    let data = words_and_noise(40 << 20, 4);
+    let big = s.path("big.txt");
+    fs::write(&big, &data).unwrap();
+    add_with(
+        &[big],
+        &made,
+        &[],
+        OnExisting::Stop,
+        &[],
+        &Keys::default(),
+        &Control::default(),
+    )
+    .unwrap();
+    assert!(compressed_entry(&made, 0) == kept, "what was there changed");
+    assert!(
+        compressed_entry(&made, 1) == in_blocks(&data),
+        "not deflated in blocks"
+    );
+    let out = s.path("out");
+    extract_with(
+        &made,
+        &out,
+        &Keys::default(),
+        &ExtractOptions::default(),
+        &Control::default(),
+    )
+    .unwrap();
+    assert!(fs::read(out.join("big.txt")).unwrap() == data);
+    assert_eq!(fs::read_to_string(out.join("small.txt")).unwrap(), "kept\n");
 }

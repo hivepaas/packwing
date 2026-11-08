@@ -57,8 +57,8 @@ opt-level = 2
 # Until hivepack's next release: `zstd::CompressFrames` (hivepack#177),
 # `deflate::DeflateMt` (hivepack#179), `CompressFrames::consumed` (hivepack#180)
 # and `zip::Archive::set_deflate_in_blocks` (hivepack#181), on its main branch,
-# and `sevenz::Writer::progress` and `WriteOptions::stop` (hivepack#182, on its
-# branch sevenz-consumed, which has them). Taken out, and the version above
-# raised, once it is published.
+# and `sevenz::Writer::progress`, `WriteOptions::stop` and zstd's workers
+# stopping when let go (hivepack#182, on its branch sevenz-consumed). Taken out,
+# and the version above raised, once it is published.
 [patch.crates-io]
-hivepack = { git = "https://github.com/hivepaas/hivepack-rs", rev = "dca8bfc34eed5fa60686838140adfe44c998afa2" }
+hivepack = { git = "https://github.com/hivepaas/hivepack-rs", rev = "26204ccc384b0e4c892277ea67a90aa133b90ddc" }

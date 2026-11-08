@@ -712,3 +712,52 @@ fn blocks_are_chosen_for_xz_and_7z() {
     usage(s.pkw(&["create", "-q", "--blocks", "small", "d.tar.zst", "big"]));
     usage(s.pkw(&["create", "-q", "--blocks", "tiny", "d.tar.xz", "big"]));
 }
+
+/// Ctrl-C (SIGINT) or SIGTERM while an archive is made stops the job, as the
+/// app's Cancel does: pkw ends with 130, and nothing is left of the archive.
+#[cfg(unix)]
+#[test]
+fn a_signal_stops_the_job_and_leaves_nothing() {
+    let s = Scratch::new("ctrl-c");
+    // Long enough to compress that the signal comes while it is made.
+    let mut data = Vec::with_capacity(48 << 20);
+    let mut state = 0x9e37_79b9_7f4a_7c15u64;
+    while data.len() < 48 << 20 {
+        state ^= state << 13;
+        state ^= state >> 7;
+        state ^= state << 17;
+        data.extend_from_slice(&state.to_le_bytes()[..(state % 7) as usize]);
+        data.extend_from_slice(b"packwing ");
+    }
+    std::fs::write(s.path("big.bin"), &data).expect("the data");
+    for (signal, name) in [
+        ("-INT", "a.tar.xz"),
+        ("-TERM", "b.tar.zst"),
+        ("-INT", "c.7z"),
+    ] {
+        let child = Command::new(env!("CARGO_BIN_EXE_pkw"))
+            .args(["create", "-q", "-l", "highest", name, "big.bin"])
+            .current_dir(&s.0)
+            .env("XDG_CONFIG_HOME", s.path("config"))
+            .stdin(std::process::Stdio::null())
+            .stderr(std::process::Stdio::piped())
+            .spawn()
+            .expect("pkw");
+        std::thread::sleep(std::time::Duration::from_millis(500));
+        let sent = Command::new("kill")
+            .args([signal, &child.id().to_string()])
+            .status()
+            .expect("kill");
+        assert!(sent.success());
+        let out = child.wait_with_output().expect("pkw ends");
+        let said = String::from_utf8_lossy(&out.stderr);
+        assert_eq!(out.status.code(), Some(130), "{name}: {said}");
+        let left: Vec<_> = std::fs::read_dir(&s.0)
+            .expect("the folder")
+            .flatten()
+            .map(|e| e.file_name().to_string_lossy().into_owned())
+            .filter(|n| n.contains(name))
+            .collect();
+        assert!(left.is_empty(), "{name}: left {left:?}");
+    }
+}

@@ -1944,6 +1944,10 @@ impl<W: Write> Squeezed<W> {
                     threads: threads(),
                     preset: new.level.xz(),
                     check: hivepack::xz::Check::CRC64,
+                    // A block's output is read once it is done, which at the
+                    // highest level may be many seconds: back every so often
+                    // meanwhile, to tell how far it is and to hear a stop.
+                    timeout: TICK_EVERY.as_millis() as u32,
                     ..MtOptions::default()
                 };
                 if let Some(bytes) = bytes {
@@ -2611,6 +2615,14 @@ fn add_into(
         level: Level::default(),
         stored: stored_extensions,
     };
+    // As a new archive's: the files compressed in threads ahead of the one
+    // written, a large one deflated in blocks on all of them, as many as the
+    // memory there is takes, held until the archive is written.
+    let (threads, _held) = crate::memory::hold_threads(crate::threads().count(), |n| {
+        u64::from(n) * ZIP_THREAD_MEMORY
+    });
+    za.set_threads(hivepack::Threads::of(threads));
+    za.set_deflate_in_blocks(true);
     if let Err(e) = add_items(&mut za, new, how, encrypted.is_some(), &tally) {
         return why(Err(e), &tally);
     }
