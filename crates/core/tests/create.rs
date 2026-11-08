@@ -3785,3 +3785,42 @@ fn a_compressed_tar_extracted_tells_how_far_through_the_archive() {
         .collect();
     assert_eq!(left, ["files"]);
 }
+
+/// "Extract selected" writes into a private folder of packwing's own, with a
+/// locked `owner`, and moves what was picked out of it: none is left after,
+/// and one a process left behind there, which no one holds, is removed first.
+#[test]
+fn extract_selected_leaves_no_private_folder_and_removes_one_left() {
+    let s = Scratch::new("selected-private");
+    let root = s.path("files");
+    fs::create_dir(&root).unwrap();
+    fs::write(root.join("a.txt"), "a").unwrap();
+    fs::write(root.join("b.txt"), "b").unwrap();
+    let made = create(
+        std::slice::from_ref(&root),
+        &s.path("a.zip"),
+        &NewArchive::default(),
+        &Control::default(),
+    )
+    .unwrap();
+    let out = s.path("out");
+    let left = out.join(".packwing-extracting-7");
+    fs::create_dir_all(left.join("files")).unwrap();
+    fs::write(left.join("owner"), "").unwrap();
+    packwing_core::extract_selected(
+        &made,
+        &out,
+        &[vec!["files".into(), "a.txt".into()]],
+        &Keys::default(),
+        &ExtractOptions::default(),
+        &Control::default(),
+    )
+    .unwrap();
+    let mut names: Vec<_> = fs::read_dir(&out)
+        .unwrap()
+        .flatten()
+        .map(|e| e.file_name().to_string_lossy().into_owned())
+        .collect();
+    names.sort();
+    assert_eq!(names, ["a.txt"]);
+}

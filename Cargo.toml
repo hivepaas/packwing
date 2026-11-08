@@ -55,9 +55,8 @@ strip = true
 opt-level = 2
 
 # Until hivepack's next release: the changes packwing takes from git, on its
-# main branch up to `lz4::EncoderMt` (hivepack#177 to #183), and a tar archive
-# read once into a folder, with `extract::remove_stale` (hivepack#184, on its
-# branch extract-one-reading, which has them). Taken out, and the version above
+# main branch (hivepack#177 to #185): a tar archive read once into a folder,
+# with `extract::remove_stale`, among them. Taken out, and the version above
 # raised, once it is published.
 [patch.crates-io]
-hivepack = { git = "https://github.com/hivepaas/hivepack-rs", rev = "0625843ad5f7116637ea9d84e7f46d51efb50c07" }
+hivepack = { git = "https://github.com/hivepaas/hivepack-rs", rev = "e0d0a802400540e4c7d4351632afaeffc9904f2a" }

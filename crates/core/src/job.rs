@@ -417,20 +417,24 @@ fn extract_selected_from(
         }
     }
     std::fs::create_dir_all(destination)?;
-    let scratch = fresh_folder(destination, ".packwing-extracting")?;
+    // What a process that died left here, and this one noted, so that what it
+    // leaves goes when packwing starts again.
+    crate::journal::remove_stale_own(destination);
+    let _noted = crate::journal::note(destination);
+    let scratch = crate::journal::Scratch::new(fresh_folder(destination, ".packwing-extracting")?)?;
     let chosen: Vec<Vec<String>> = picked.to_vec();
     let select: Select =
         Arc::new(move |entry: &[String]| chosen.iter().any(|p| entry.starts_with(p)));
-    let result =
-        extract_picked(&source, &scratch, keys, how, Some(select), control).and_then(|done| {
+    let result = extract_picked(&source, &scratch.files, keys, how, Some(select), control)
+        .and_then(|done| {
             for entry in picked {
                 let Some(name) = entry.last() else { continue };
-                let from = entry.iter().fold(scratch.clone(), |at, c| at.join(c));
+                let from = entry.iter().fold(scratch.files.clone(), |at, c| at.join(c));
                 move_into(&from, &destination.join(name))?;
             }
             Ok(done)
         });
-    let _ = std::fs::remove_dir_all(&scratch);
+    drop(scratch);
     result
 }
 
@@ -904,15 +908,22 @@ fn tar_into_folder(
     let size = source.size().unwrap_or(0);
     if let (Some(told), true) = (control.progress.clone(), size > 0) {
         let read = Arc::clone(&read);
+        // The fraction told so far, in millionths: the archive read, then
+        // the entries moved into place, never going back between the two.
+        let shown = AtomicU64::new(0);
         options.progress = Some(Arc::new(move |p: &Progress| {
+            let mut through = *p;
             if p.total_bytes == 0 && p.total_entries == 0 {
-                let mut through = *p;
                 through.bytes = read.load(Ordering::Relaxed).min(size);
                 through.total_bytes = size;
-                told(&through);
-            } else {
-                told(p);
             }
+            let total = u128::from(through.total_bytes.max(1));
+            let fraction = (u128::from(through.bytes) * 1_000_000 / total) as u64;
+            let before = shown.fetch_max(fraction, Ordering::Relaxed);
+            if before > fraction {
+                through.bytes = (u128::from(before) * total / 1_000_000) as u64;
+            }
+            told(&through);
         }));
     }
     let mut opener = opener_of(&source.name(), keys, || {
