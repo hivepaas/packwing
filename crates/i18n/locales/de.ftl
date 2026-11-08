@@ -1852,6 +1852,18 @@ t7730ec1a = Windows 11 fasst sie unter einem Eintrag „Packwing“ zusammen, im
 # One packwing item, with these under it
 tb5fdc584 = Ein packwing-Eintrag mit diesen darunter
 
+# 30 days
+t7a572af9 = 30 Tage
+
+# 90 days
+t2d8a9817 = 90 Tage
+
+# 1 year
+t4d0a98a5 = 1 Jahr
+
+# Keep all
+te0b1775b = Alles behalten
+
 # Keep the “downloaded from the Internet” mark
 tfe574fa2 = Die Markierung „aus dem Internet heruntergeladen“ beibehalten
 
@@ -1891,6 +1903,36 @@ tb7d64a44 = Mindestlänge des Passworts
 # In characters, for every new archive with a password
 tca6d6982 = In Zeichen, für jedes neue Archiv mit Passwort
 
+# Keep an audit log
+tf7fd8762 = Ein Audit-Protokoll führen
+
+# A record of what packwing does, whatever the license
+t34fe4e25 = Was packwing tut, festgehalten, unabhängig von der Lizenz
+
+# Where the audit log is kept
+tbd999abe = Wo das Audit-Protokoll liegt
+
+# A folder your organization chose
+td4e1f74a = Ein Ordner, den deine Organisation gewählt hat
+
+# How long the audit log is kept
+td504acaf = Wie lange das Audit-Protokoll aufbewahrt wird
+
+# In days; 0 keeps every record
+t127a3c54 = In Tagen; 0 behält jeden Eintrag
+
+# Most the audit log may take
+ta334bb40 = Höchstgröße des Audit-Protokolls
+
+# In MB; the oldest records go first
+t03a543d2 = In MB; die ältesten Einträge gehen zuerst
+
+# What the audit log says of archives
+t8d6fca43 = Was das Audit-Protokoll über Archive festhält
+
+# “entries” names the files in them, where they are known
+t56cf1991 = „entries“ nennt auch die Dateien darin, soweit bekannt
+
 # packwing has no policy of this name.
 t7e03649c = packwing hat keine Richtlinie mit diesem Namen.
 
@@ -1902,6 +1944,33 @@ t9173caaa = Beim Öffnen einer Datei in einem Archiv wird eine Kopie in einem te
 
 # Paste a public key
 t0bf72f73 = Einen öffentlichen Schlüssel einfügen
+
+# What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
+t2162955d = Was packwing tut, auf diesem Computer festgehalten: welche Archive entpackt, erstellt, umgewandelt und kopiert wurden, wann und von wem. Nie ein Passwort oder der Inhalt einer Datei.
+
+# Keep its records for
+tf423722f = Einträge behalten für
+
+# Older ones are taken away, and that is recorded too
+t7073f273 = Ältere werden entfernt, und auch das wird festgehalten
+
+# Takes a Pro or Enterprise license: Settings › License.
+t2774cee6 = Erfordert eine Pro- oder Enterprise-Lizenz: Einstellungen › Lizenz.
+
+# Where the audit log is
+t2702fcc6 = Wo das Audit-Protokoll liegt
+
+# Open folder
+t713a842f = Ordner öffnen
+
+# The last record could not be written: {why}
+t542148a1 = Der letzte Eintrag konnte nicht geschrieben werden: { $why }
+
+# Audit log
+tcb83f9ca = Audit-Protokoll
+
+# pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
+t482581ff = pkw audit verify prüft, dass kein Eintrag geändert oder entfernt wurde. Wer diesen Computer verwaltet, kann das Protokoll trotzdem löschen: Es zeigt, was packwing getan hat, es hält niemanden auf.
 
 # This is not a public key packwing can check with: {why}.
 td57933b9 = Das ist kein öffentlicher Schlüssel, mit dem packwing prüfen kann: { $why }.
@@ -2427,6 +2496,18 @@ tda498fad = Erwartet wurde eine Zahl von 1 bis { $most }, nicht { $other }.
 
 # Expected some text, not {other}.
 t9386ce3b = Erwartet wurde Text, nicht { $other }.
+
+# Expected a whole path, such as /var/log/packwing or \\server\audit, not {other}.
+t00d3565d = Erwartet wurde ein vollständiger Pfad wie /var/log/packwing oder \\server\audit, nicht { $other }.
+
+# Expected a number of days from 0 (keep all) to {most}, not {other}.
+tf8fba675 = Erwartet wurde eine Anzahl Tage von 0 (alles behalten) bis { $most }, nicht { $other }.
+
+# Expected a size in MB from 0 (no limit) to {most}, not {other}.
+t9f7e002d = Erwartet wurde eine Größe in MB von 0 (unbegrenzt) bis { $most }, nicht { $other }.
+
+# Expected summary or entries, not {other}.
+t27e9b96f = Erwartet wurde summary oder entries, nicht { $other }.
 
 # Expected an address starting with https://, not {other}.
 t93bfd19e = Erwartet wurde eine Adresse, die mit https:// beginnt, nicht { $other }.

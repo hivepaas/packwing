@@ -9,6 +9,7 @@
 //! file (taken out to a temporary one first when it is under layers), or
 //! one file, compressed or encrypted on its own (`notes.txt.zst`).
 
+pub mod audit;
 mod checksum;
 mod convert;
 mod create;

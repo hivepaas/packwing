@@ -1,26 +1,40 @@
-//! Security: what packwing checks and keeps when it extracts, the keys whose signatures
-//! it trusts and the checksums it shows. What an organization fixed is shown locked,
+//! Security: what packwing checks and keeps when it extracts, its audit log, the keys
+//! whose signatures it trusts and the checksums it shows. What an organization fixed is shown locked,
 //! with its name in the policy, and only the rest can be changed.
 
 use gpui::{
-    Context, Entity, FontWeight, PathPromptOptions, Render, SharedString, Window, div, prelude::*,
-    relative, rgb,
+    AnyElement, Context, Entity, FontWeight, PathPromptOptions, Render, SharedString, Subscription,
+    Window, div, prelude::*, relative, rgb,
 };
 use packwing_core::Algorithm;
+use packwing_core::audit::RETENTION_CHOICES;
 use packwing_i18n::tr;
 use packwing_policy::{
-    ALLOWED_ENCRYPTION_METHODS, LICENSE_KEY, MARK_STORAGE_FILES, MIN_PASSWORD_LENGTH,
+    ALLOWED_ENCRYPTION_METHODS, AUDIT_LOG, AUDIT_LOG_DETAIL, AUDIT_LOG_MAX_SIZE_MB, AUDIT_LOG_PATH,
+    AUDIT_LOG_RETENTION_DAYS, LICENSE_KEY, MARK_STORAGE_FILES, MIN_PASSWORD_LENGTH,
     ORGANIZATION_NAME, ORGANIZATION_URL, PROPAGATE_MOTW, Policy, REQUIRE_ENCRYPTION, Row, Setting,
 };
 
 use super::{rows, section, setting};
+use crate::audit_log::By;
 use crate::colors::{Tint, colors};
 use crate::input::TextInput;
 use crate::prefs;
 use crate::text_size::ui;
 use crate::widgets::{
-    Fill, Size, Tone, button, check_row, icon, legend, mono_font, note, switch, tile,
+    Chosen, Fill, Select, SelectLook, Size, Tone, button, check_row, icon, legend, mono_font, note,
+    switch, tile,
 };
+
+/// How long the audit log's records are kept, as [`RETENTION_CHOICES`] holds them.
+fn retention_names() -> [String; 4] {
+    [
+        tr!("30 days"),
+        tr!("90 days"),
+        tr!("1 year"),
+        tr!("Keep all"),
+    ]
+}
 
 /// What a switch sets.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -44,6 +58,9 @@ pub struct Security {
     /// Where a public key is pasted, and why the last one was not taken.
     new_key: Entity<TextInput>,
     key_problem: Option<String>,
+    /// How long the audit log's records are kept, where the user says.
+    retention: Entity<Select>,
+    _retention_chosen: Subscription,
 }
 
 /// What a public key's line calls it: what follows the key, if anything does.
@@ -83,6 +100,26 @@ fn told(key: &str) -> (String, String) {
             tr!("Minimum password length"),
             tr!("In characters, for every new archive with a password"),
         ),
+        AUDIT_LOG => (
+            tr!("Keep an audit log"),
+            tr!("A record of what packwing does, whatever the license"),
+        ),
+        AUDIT_LOG_PATH => (
+            tr!("Where the audit log is kept"),
+            tr!("A folder your organization chose"),
+        ),
+        AUDIT_LOG_RETENTION_DAYS => (
+            tr!("How long the audit log is kept"),
+            tr!("In days; 0 keeps every record"),
+        ),
+        AUDIT_LOG_MAX_SIZE_MB => (
+            tr!("Most the audit log may take"),
+            tr!("In MB; the oldest records go first"),
+        ),
+        AUDIT_LOG_DETAIL => (
+            tr!("What the audit log says of archives"),
+            tr!("“entries” names the files in them, where they are known"),
+        ),
         _ => (key.to_owned(), tr!("packwing has no policy of this name.")),
     }
 }
@@ -109,12 +146,128 @@ impl Security {
                 on: ask_open,
             },
         ];
+        let days = prefs::prefs(cx).audit_retention_days;
+        let retention = cx.new(|_| {
+            Select::new(
+                &retention_names(),
+                RETENTION_CHOICES
+                    .iter()
+                    .position(|d| *d == days)
+                    .unwrap_or(1),
+                SelectLook::Pill,
+            )
+            .marked("audit-retention")
+        });
+        let retention_chosen = cx.subscribe(&retention, |_, select, _: &Chosen, cx| {
+            let days = RETENTION_CHOICES[select.read(cx).chosen().min(RETENTION_CHOICES.len() - 1)];
+            prefs::change(cx, |p| p.audit_retention_days = days);
+            crate::audit_log::apply(cx, By::User);
+        });
         Security {
             mono: None,
             toggles,
             new_key: cx.new(|cx| TextInput::new(tr!("Paste a public key"), cx)),
             key_problem: None,
+            retention,
+            _retention_chosen: retention_chosen,
         }
+    }
+
+    /// The audit log: whether it is kept, for how long, and where, as the
+    /// organization fixed it, the plan has it, or the user chose.
+    fn audit_log(&self, policy: &Policy, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let c = colors();
+        let kept = prefs::prefs(cx);
+        let mut items: Vec<AnyElement> = Vec::new();
+        if !policy.locks_audit_log() {
+            let label = tr!("Keep an audit log");
+            if crate::licensing::plan(cx).has_audit_log() {
+                items.push(
+                    setting(
+                        label,
+                        tr!(
+                            "What packwing does, kept on this computer: archives extracted, \
+                             made, converted and copied, when and by whom. Never a password \
+                             or what is in a file."
+                        ),
+                        switch("audit-log", kept.audit_log).on_click(cx.listener(|_, _, _, cx| {
+                            prefs::change(cx, |p| p.audit_log = !p.audit_log);
+                            crate::audit_log::apply(cx, By::User);
+                            cx.notify();
+                        })),
+                    )
+                    .into_any_element(),
+                );
+                if kept.audit_log && !policy.locks_audit_log_retention() {
+                    items.push(
+                        setting(
+                            tr!("Keep its records for"),
+                            tr!("Older ones are taken away, and that is recorded too"),
+                            self.retention.clone(),
+                        )
+                        .into_any_element(),
+                    );
+                }
+            } else {
+                items.push(
+                    setting(
+                        label,
+                        tr!("Takes a Pro or Enterprise license: Settings › License."),
+                        div()
+                            .flex()
+                            .items_center()
+                            .gap(ui(6.))
+                            .px(ui(12.))
+                            .py(ui(4.))
+                            .rounded_full()
+                            .bg(rgb(c.surface))
+                            .text_size(ui(13.))
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .child(icon("lock", 13., c.text))
+                            .child(packwing_license::Plan::Pro.name()),
+                    )
+                    .into_any_element(),
+                );
+            }
+        }
+        if let Some(config) = packwing_core::audit::config() {
+            let folder = config.folder.clone();
+            items.push(
+                setting(
+                    tr!("Where the audit log is"),
+                    config.folder.to_string_lossy().into_owned(),
+                    button(
+                        "audit-open",
+                        tr!("Open folder"),
+                        Fill::Outline,
+                        Size::Medium,
+                    )
+                    .on_click(move |_, _, cx| {
+                        let _ = std::fs::create_dir_all(&folder);
+                        crate::file_manager::open(&folder, cx);
+                    }),
+                )
+                .into_any_element(),
+            );
+        }
+        let failure = packwing_core::audit::last_failure().map(|why| {
+            note(Tone::Warn).child(tr!(
+                "The last record could not be written: {why}",
+                why = why
+            ))
+        });
+        div()
+            .flex()
+            .flex_col()
+            .gap(ui(8.))
+            .child(legend(tr!("Audit log")))
+            .child(div().text_size(ui(13.)).text_color(rgb(c.muted)).child(tr!(
+                "pkw audit verify checks that no record was changed or taken out. Whoever \
+                     runs this computer can still remove the log: it tells what packwing \
+                     did, it does not stop anyone."
+            )))
+            .when(!items.is_empty(), |d| d.child(rows(items)))
+            .children(failure)
     }
 
     /// Trusts the key in `text`, a line of a `.pub` file.
@@ -403,6 +556,7 @@ impl Render for Security {
         let locks_mark = policy.locks_mark();
         let trusted = self.trusted_keys(cx);
         let checksums = Self::checksums(cx);
+        let audit_log = self.audit_log(&policy, cx);
         let open = self
             .toggles
             .iter()
@@ -430,6 +584,7 @@ impl Render for Security {
             return section()
                 .gap(ui(20.))
                 .child(rows(open))
+                .child(audit_log)
                 .child(trusted)
                 .child(checksums);
         }
@@ -449,6 +604,7 @@ impl Render for Security {
             .gap(ui(16.))
             .child(Self::banner(&policy))
             .child(rows(fixed.chain(open)))
+            .child(audit_log)
             .child(trusted)
             .child(checksums)
     }

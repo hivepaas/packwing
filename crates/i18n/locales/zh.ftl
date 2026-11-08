@@ -1831,6 +1831,18 @@ t7730ec1a = Windows 11 会把它们放在一个 Packwing 项下，无论在其�
 # One packwing item, with these under it
 tb5fdc584 = 只显示一个 packwing 项，这些项目在其下
 
+# 30 days
+t7a572af9 = 30 天
+
+# 90 days
+t2d8a9817 = 90 天
+
+# 1 year
+t4d0a98a5 = 1 年
+
+# Keep all
+te0b1775b = 全部保留
+
 # Keep the “downloaded from the Internet” mark
 tfe574fa2 = 保留“从互联网下载”标记
 
@@ -1870,6 +1882,36 @@ tb7d64a44 = 最短密码长度
 # In characters, for every new archive with a password
 tca6d6982 = 以字符计，适用于每个设有密码的新压缩包
 
+# Keep an audit log
+tf7fd8762 = 保留审计日志
+
+# A record of what packwing does, whatever the license
+t34fe4e25 = 记录 packwing 所做的事，不论许可证如何
+
+# Where the audit log is kept
+tbd999abe = 审计日志的位置
+
+# A folder your organization chose
+td4e1f74a = 你的组织选定的文件夹
+
+# How long the audit log is kept
+td504acaf = 审计日志保留多久
+
+# In days; 0 keeps every record
+t127a3c54 = 以天计；0 表示保留所有记录
+
+# Most the audit log may take
+ta334bb40 = 审计日志的大小上限
+
+# In MB; the oldest records go first
+t03a543d2 = 以 MB 计；最旧的记录先删除
+
+# What the audit log says of archives
+t8d6fca43 = 审计日志对压缩包记录什么
+
+# “entries” names the files in them, where they are known
+t56cf1991 = “entries”会在已知时一并记录其中的文件名
+
 # packwing has no policy of this name.
 t7e03649c = packwing 没有此名称的策略。
 
@@ -1881,6 +1923,33 @@ t9173caaa = 打开压缩包内的文件时，会在临时文件夹中放一份�
 
 # Paste a public key
 t0bf72f73 = 粘贴公钥
+
+# What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
+t2162955d = packwing 所做的事，保存在这台电脑上：解压、创建、转换和复制了哪些压缩包，何时、由谁。绝不记录密码或文件内容。
+
+# Keep its records for
+tf423722f = 记录保留
+
+# Older ones are taken away, and that is recorded too
+t7073f273 = 较旧的记录会被删除，删除本身也会记录
+
+# Takes a Pro or Enterprise license: Settings › License.
+t2774cee6 = 需要 Pro 或 Enterprise 许可证：设置 › 许可证。
+
+# Where the audit log is
+t2702fcc6 = 审计日志的位置
+
+# Open folder
+t713a842f = 打开文件夹
+
+# The last record could not be written: {why}
+t542148a1 = 无法写入上一条记录：{ $why }
+
+# Audit log
+tcb83f9ca = 审计日志
+
+# pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
+t482581ff = pkw audit verify 会检查没有记录被修改或删除。管理这台电脑的人仍可删除日志：它说明 packwing 做了什么，并不能阻止任何人。
 
 # This is not a public key packwing can check with: {why}.
 td57933b9 = 这不是 packwing 可用于验证的公钥：{ $why }。
@@ -2391,6 +2460,18 @@ tda498fad = 应为 1 到 { $most } 之间的数字，而不是 { $other }。
 
 # Expected some text, not {other}.
 t9386ce3b = 应为文本，而不是 { $other }。
+
+# Expected a whole path, such as /var/log/packwing or \\server\audit, not {other}.
+t00d3565d = 应为完整路径，例如 /var/log/packwing 或 \\server\audit，而不是 { $other }。
+
+# Expected a number of days from 0 (keep all) to {most}, not {other}.
+tf8fba675 = 应为 0（全部保留）到 { $most } 的天数，而不是 { $other }。
+
+# Expected a size in MB from 0 (no limit) to {most}, not {other}.
+t9f7e002d = 应为 0（无上限）到 { $most } 的 MB 大小，而不是 { $other }。
+
+# Expected summary or entries, not {other}.
+t27e9b96f = 应为 summary 或 entries，而不是 { $other }。
 
 # Expected an address starting with https://, not {other}.
 t93bfd19e = 应为以 https:// 开头的地址，而不是 { $other }。

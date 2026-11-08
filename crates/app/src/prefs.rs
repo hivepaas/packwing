@@ -155,6 +155,12 @@ pub struct Prefs {
     pub restore_xattrs: bool,
     /// Asks before a file in an archive is opened. A program always asks.
     pub ask_before_open: bool,
+    /// Keeps an audit log, where the plan has one and the organization says
+    /// nothing (docs/audit.md). Off by default.
+    pub audit_log: bool,
+    /// How many days its records are kept: one of
+    /// [`packwing_core::audit::RETENTION_CHOICES`], 0 for all.
+    pub audit_retention_days: u32,
     /// The latest first.
     pub recent: Vec<Opened>,
     /// The storages; before the user changes them, `storages_kept` is off and
@@ -204,6 +210,8 @@ impl Default for Prefs {
             restore_owners: Owners::Ignore,
             restore_xattrs: false,
             ask_before_open: true,
+            audit_log: false,
+            audit_retention_days: packwing_core::audit::PERSONAL_RETENTION_DAYS,
             recent: Vec::new(),
             storages: Vec::new(),
             storages_kept: false,
@@ -313,6 +321,16 @@ impl Prefs {
                 }
                 "restore_xattrs" => p.restore_xattrs = on(value, p.restore_xattrs),
                 "ask_before_open" => p.ask_before_open = on(value, p.ask_before_open),
+                "audit_log" => p.audit_log = on(value, p.audit_log),
+                "audit_retention_days" => {
+                    if let Some(days) = value
+                        .parse()
+                        .ok()
+                        .filter(|d| packwing_core::audit::RETENTION_CHOICES.contains(d))
+                    {
+                        p.audit_retention_days = days;
+                    }
+                }
                 "threads" => p.threads = value.parse().unwrap_or(p.threads),
                 "limit" => {
                     if let Some(i) = LIMITS.iter().position(|(name, _)| *name == value) {
@@ -426,7 +444,8 @@ impl Prefs {
         text += &format!(
             "appearance={appearance}\nformat={}\nlevel={level}\nhide_names={}\n\
              skip_mac_files={}\nstore_compressed={}\nstream_above={}\nextract_to={}\noverwrite={}\nlimit={limit}\nkeep_mark={}\n\
-             portable_names={}\nrestore_owners={}\nrestore_xattrs={}\nask_before_open={}\nthreads={}\n",
+             portable_names={}\nrestore_owners={}\nrestore_xattrs={}\nask_before_open={}\naudit_log={}\n\
+             audit_retention_days={}\nthreads={}\n",
             self.format.ext(),
             self.hide_names,
             self.skip_mac_files,
@@ -443,6 +462,8 @@ impl Prefs {
             },
             self.restore_xattrs,
             self.ask_before_open,
+            self.audit_log,
+            self.audit_retention_days,
             self.threads,
         );
         if let Some(extensions) = &self.stored_extensions {

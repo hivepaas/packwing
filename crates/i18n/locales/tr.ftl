@@ -1852,6 +1852,18 @@ t7730ec1a = Windows 11 bunları hem kendi menüsünde hem de “Daha fazla seçe
 # One packwing item, with these under it
 tb5fdc584 = Tek bir packwing öğesi, bunlar altında
 
+# 30 days
+t7a572af9 = 30 gün
+
+# 90 days
+t2d8a9817 = 90 gün
+
+# 1 year
+t4d0a98a5 = 1 yıl
+
+# Keep all
+te0b1775b = Tümünü sakla
+
 # Keep the “downloaded from the Internet” mark
 tfe574fa2 = “İnternet'ten indirildi” işaretini koru
 
@@ -1891,6 +1903,36 @@ tb7d64a44 = En düşük parola uzunluğu
 # In characters, for every new archive with a password
 tca6d6982 = Karakter olarak, parolalı her yeni arşiv için
 
+# Keep an audit log
+tf7fd8762 = Denetim günlüğü tut
+
+# A record of what packwing does, whatever the license
+t34fe4e25 = Lisanstan bağımsız olarak packwing'in yaptıklarının kaydı
+
+# Where the audit log is kept
+tbd999abe = Denetim günlüğünün yeri
+
+# A folder your organization chose
+td4e1f74a = Kuruluşunuzun seçtiği klasör
+
+# How long the audit log is kept
+td504acaf = Denetim günlüğünün saklanma süresi
+
+# In days; 0 keeps every record
+t127a3c54 = Gün olarak; 0 tüm kayıtları saklar
+
+# Most the audit log may take
+ta334bb40 = Denetim günlüğünün en büyük boyutu
+
+# In MB; the oldest records go first
+t03a543d2 = MB olarak; en eski kayıtlar önce silinir
+
+# What the audit log says of archives
+t8d6fca43 = Denetim günlüğünün arşivler hakkında yazdıkları
+
+# “entries” names the files in them, where they are known
+t56cf1991 = “entries” bilindiğinde içindeki dosyaların adlarını da yazar
+
 # packwing has no policy of this name.
 t7e03649c = packwing'in bu adda bir ilkesi yok.
 
@@ -1902,6 +1944,33 @@ t9173caaa = Arşivdeki bir dosyayı açmak, geçici bir klasöre bir kopya koyar
 
 # Paste a public key
 t0bf72f73 = Bir genel anahtar yapıştırın
+
+# What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
+t2162955d = packwing'in yaptıkları, bu bilgisayarda tutulur: çıkarılan, oluşturulan, dönüştürülen ve kopyalanan arşivler, ne zaman ve kim tarafından. Asla bir parola ya da dosya içeriği yazılmaz.
+
+# Keep its records for
+tf423722f = Kayıtları şu süre sakla
+
+# Older ones are taken away, and that is recorded too
+t7073f273 = Daha eskileri silinir ve bu da kaydedilir
+
+# Takes a Pro or Enterprise license: Settings › License.
+t2774cee6 = Pro veya Enterprise lisansı gerekir: Ayarlar › Lisans.
+
+# Where the audit log is
+t2702fcc6 = Denetim günlüğünün yeri
+
+# Open folder
+t713a842f = Klasörü aç
+
+# The last record could not be written: {why}
+t542148a1 = Son kayıt yazılamadı: { $why }
+
+# Audit log
+tcb83f9ca = Denetim günlüğü
+
+# pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
+t482581ff = pkw audit verify hiçbir kaydın değiştirilmediğini ya da silinmediğini denetler. Bu bilgisayarı yöneten kişi günlüğü yine de silebilir: günlük packwing'in ne yaptığını söyler, kimseyi durdurmaz.
 
 # This is not a public key packwing can check with: {why}.
 td57933b9 = Bu, packwing'in denetleyebileceği bir genel anahtar değil: { $why }.
@@ -2427,6 +2496,18 @@ tda498fad = 1 ile { $most } arası bir sayı bekleniyordu, { $other } değil.
 
 # Expected some text, not {other}.
 t9386ce3b = Bir metin bekleniyordu, { $other } değil.
+
+# Expected a whole path, such as /var/log/packwing or \\server\audit, not {other}.
+t00d3565d = /var/log/packwing veya \\server\audit gibi tam bir yol bekleniyordu, { $other } değil.
+
+# Expected a number of days from 0 (keep all) to {most}, not {other}.
+tf8fba675 = 0 (tümünü sakla) ile { $most } arası bir gün sayısı bekleniyordu, { $other } değil.
+
+# Expected a size in MB from 0 (no limit) to {most}, not {other}.
+t9f7e002d = 0 (sınırsız) ile { $most } arası MB cinsinden bir boyut bekleniyordu, { $other } değil.
+
+# Expected summary or entries, not {other}.
+t27e9b96f = summary veya entries bekleniyordu, { $other } değil.
 
 # Expected an address starting with https://, not {other}.
 t93bfd19e = https:// ile başlayan bir adres bekleniyordu, { $other } değil.

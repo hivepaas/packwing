@@ -40,6 +40,8 @@ gpui_platform.workspace = true
 packwing-core.workspace = true
 # What a license key says.
 packwing-license.workspace = true
+# The audit log's records of its own changes.
+serde_json = "1"
 # What an organization has fixed.
 packwing-policy.workspace = true
 # Storages across the network: S3, WebDAV and SFTP.

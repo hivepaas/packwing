@@ -20,7 +20,8 @@ Built in Rust on [hivepack](https://github.com/hivepaas/hivepack-rs).
 * **In the background:** extracting, compressing, testing, copying and signing go on behind when asked, while the window does other things; two at a time, the others waiting their turn; a Jobs page says how far each is and how it ended, and waits for a password one needs; the system tells of one that ends while you are elsewhere, and closing the window asks first.
 * **In your file manager:** Compress and Extract in the right-click menu of Windows Explorer, macOS Finder and Linux file managers, and drag and drop in the window.
 * **Updates you can trust:** a daily look for a newer version, in a list believed only when its signatures verify, with a badge on the title bar; nothing is downloaded or installed unless asked, and the look can be turned off ([docs/updates.md](docs/updates.md)).
-* **Ready for organizations:** Group Policy, a configuration profile or a file in `/etc` can keep the Internet mark, require encryption, and set which kinds and how long a password has to be ([docs/policies.md](docs/policies.md)).
+* **Ready for organizations:** Group Policy, a configuration profile or a file in `/etc` can keep the Internet mark, require encryption, set which kinds and how long a password has to be, and keep an audit log ([docs/policies.md](docs/policies.md)).
+* **Audit log:** a record on the computer of what packwing does, which archives were extracted, made and copied, by whom and when, one JSON line each, chained so that a record changed or taken out shows. Kept when your organization's policy says, whatever the license, or when you turn it on with a Pro or Enterprise license; never a password or what is in a file ([docs/audit.md](docs/audit.md)).
 * **On the command line too:** `pkw` lists, extracts, tests, makes, changes and converts archives, signs files and checks signatures, makes and checks checksums, and copies and moves files between this computer and the storages added to the app, reading archives where they are, with no window, as safely as the app and under the same policies, with JSON for scripts and exit codes that say what went wrong (Command line, below).
 * **Made for every day:** an interface in 15 languages ([CONTRIBUTING.md](CONTRIBUTING.md)), light and dark, and a window that comes back as it was left.
 
@@ -91,6 +92,7 @@ pkw add archive.zip new.txt --into docs  # and delete, rename: a ZIP archive, in
 pkw split backup.iso --size 4GB         # into parts beside it, as 7-Zip cuts one: backup.iso.001, .002…
 pkw join backup.iso.001                 # back into backup.iso, the parts checked first
 pkw checksum -a sha256 -a blake3 *.iso   # --save beside each, or --check SHA256SUMS
+pkw audit list --since 2026-11-01        # the audit log, when it is kept (--csv; verify, status)
 pkw convert photos.rar photos.tar.zst   # another format, as create makes it, an entry at a time with no folder in between (-p, -l, --split…)
 pkw convert site.zip site.7z --exclude '**/node_modules' --exclude '*.log'   # and --include: what goes in
 pkw keygen -o ~/keys                     # a key to sign with: Ed25519 and ML-DSA-65, and its .pub

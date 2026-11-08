@@ -3,7 +3,9 @@
 //! they pasted. A checksum says a file is the one it was made of, not who made it:
 //! only a signature says that.
 
+use crate::audit;
 use packwing_i18n::tr;
+use serde_json::json;
 use std::io::Read;
 
 use md5::Md5;
@@ -173,10 +175,22 @@ pub fn checksums(
     algorithms: &[Algorithm],
     control: &Control,
 ) -> Result<Vec<(Algorithm, String)>, Error> {
-    let reader = storage
+    let job = audit::begin(
+        "checksum",
+        audit::fields([("file", json!(audit::place(storage, path)))]),
+    );
+    let result = storage
         .open(path)
-        .map_err(|e| Error::Failed(e.to_string()))?;
-    checksums_of(reader, algorithms, control)
+        .map_err(|e| Error::Failed(e.to_string()))
+        .and_then(|reader| checksums_of(reader, algorithms, control));
+    audit::end(job, &result, |sums| {
+        let sums: serde_json::Map<String, serde_json::Value> = sums
+            .iter()
+            .map(|(a, sum)| (a.name().to_lowercase(), json!(sum)))
+            .collect();
+        audit::fields([("sums", json!(sums))])
+    });
+    result
 }
 
 /// The name of the file beside the one called `name` that keeps its `algorithm`

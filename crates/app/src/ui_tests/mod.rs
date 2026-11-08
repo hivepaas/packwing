@@ -113,6 +113,7 @@ pub fn in_child(module: &str) {
         .env("XDG_CONFIG_HOME", dir.join("xdg/config"))
         .env("XDG_DATA_HOME", dir.join("xdg/data"))
         .env("XDG_CACHE_HOME", dir.join("xdg/cache"))
+        .env("XDG_STATE_HOME", dir.join("xdg/state"))
         // No session bus: nothing can reach the desktop's keychain.
         .env_remove("DBUS_SESSION_BUS_ADDRESS")
         .output()
@@ -170,6 +171,7 @@ impl Ui {
             packwing_i18n::set_language(kept.language.as_deref().or(Some("en")));
             cx.set_global(kept);
             cx.set_global(crate::licensing::Licensed::load());
+            crate::audit_log::apply(cx, crate::audit_log::By::Startup);
         });
         let window = self.cx.add_window(|window, cx| {
             // Nothing is put in the system's menu.

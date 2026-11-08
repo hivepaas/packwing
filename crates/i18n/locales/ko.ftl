@@ -1831,6 +1831,18 @@ t7730ec1a = Windows 11은 메뉴와 ‘더 많은 옵션 표시’ 모두에서 
 # One packwing item, with these under it
 tb5fdc584 = packwing 항목 하나 아래에 이 항목들을 모읍니다
 
+# 30 days
+t7a572af9 = 30일
+
+# 90 days
+t2d8a9817 = 90일
+
+# 1 year
+t4d0a98a5 = 1년
+
+# Keep all
+te0b1775b = 모두 보관
+
 # Keep the “downloaded from the Internet” mark
 tfe574fa2 = “인터넷에서 받음” 표시 유지
 
@@ -1870,6 +1882,36 @@ tb7d64a44 = 최소 비밀번호 길이
 # In characters, for every new archive with a password
 tca6d6982 = 비밀번호가 있는 모든 새 압축 파일에 적용되며, 글자 수 기준입니다
 
+# Keep an audit log
+tf7fd8762 = 감사 로그 기록
+
+# A record of what packwing does, whatever the license
+t34fe4e25 = 라이선스와 관계없이 packwing이 한 일을 기록합니다
+
+# Where the audit log is kept
+tbd999abe = 감사 로그 위치
+
+# A folder your organization chose
+td4e1f74a = 조직에서 지정한 폴더
+
+# How long the audit log is kept
+td504acaf = 감사 로그 보관 기간
+
+# In days; 0 keeps every record
+t127a3c54 = 일 단위, 0이면 모든 기록 보관
+
+# Most the audit log may take
+ta334bb40 = 감사 로그 최대 크기
+
+# In MB; the oldest records go first
+t03a543d2 = MB 단위, 가장 오래된 기록부터 삭제
+
+# What the audit log says of archives
+t8d6fca43 = 감사 로그가 압축 파일에 대해 기록하는 내용
+
+# “entries” names the files in them, where they are known
+t56cf1991 = “entries”이면 알 수 있는 경우 안의 파일 이름도 기록
+
 # packwing has no policy of this name.
 t7e03649c = packwing에는 이 이름의 정책이 없습니다.
 
@@ -1881,6 +1923,33 @@ t9173caaa = 압축 파일 안의 파일을 열면 임시 폴더에 사본을 만
 
 # Paste a public key
 t0bf72f73 = 공개 키 붙여넣기
+
+# What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
+t2162955d = packwing이 한 일을 이 컴퓨터에 기록합니다: 압축을 풀거나 만들거나 변환하거나 복사한 압축 파일, 그 시각과 사용자. 비밀번호나 파일 내용은 절대 기록하지 않습니다.
+
+# Keep its records for
+tf423722f = 기록 보관 기간
+
+# Older ones are taken away, and that is recorded too
+t7073f273 = 오래된 기록은 삭제되며, 삭제 사실도 기록됩니다
+
+# Takes a Pro or Enterprise license: Settings › License.
+t2774cee6 = Pro 또는 Enterprise 라이선스가 필요합니다: 설정 › 라이선스.
+
+# Where the audit log is
+t2702fcc6 = 감사 로그 위치
+
+# Open folder
+t713a842f = 폴더 열기
+
+# The last record could not be written: {why}
+t542148a1 = 마지막 기록을 쓰지 못했습니다: { $why }
+
+# Audit log
+tcb83f9ca = 감사 로그
+
+# pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
+t482581ff = pkw audit verify는 기록이 변경되거나 삭제되지 않았는지 확인합니다. 이 컴퓨터의 관리자는 여전히 로그를 지울 수 있습니다. 로그는 packwing이 한 일을 알려 줄 뿐, 누구를 막지는 않습니다.
 
 # This is not a public key packwing can check with: {why}.
 td57933b9 = packwing에서 확인에 사용할 수 있는 공개 키가 아닙니다: { $why }.
@@ -2391,6 +2460,18 @@ tda498fad = 1에서 { $most } 사이의 숫자여야 하며, { $other }은(는) 
 
 # Expected some text, not {other}.
 t9386ce3b = 텍스트여야 하며, { $other }은(는) 안 됩니다.
+
+# Expected a whole path, such as /var/log/packwing or \\server\audit, not {other}.
+t00d3565d = /var/log/packwing 또는 \\server\audit 같은 전체 경로여야 하며, { $other }은(는) 안 됩니다.
+
+# Expected a number of days from 0 (keep all) to {most}, not {other}.
+tf8fba675 = 0(모두 보관)에서 { $most } 사이의 일수여야 하며, { $other }은(는) 안 됩니다.
+
+# Expected a size in MB from 0 (no limit) to {most}, not {other}.
+t9f7e002d = 0(제한 없음)에서 { $most } 사이의 MB 크기여야 하며, { $other }은(는) 안 됩니다.
+
+# Expected summary or entries, not {other}.
+t27e9b96f = summary 또는 entries여야 하며, { $other }은(는) 안 됩니다.
 
 # Expected an address starting with https://, not {other}.
 t93bfd19e = 예상한 값은 https://로 시작하는 주소이며, { $other }이(가) 아닙니다.

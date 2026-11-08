@@ -2,6 +2,8 @@
 //! the format of `ssh-keygen -Y sign`. A signature proves something only by a key
 //! the user trusts: one by any other key says nothing, whatever it matches.
 
+use crate::audit;
+use serde_json::json;
 use std::fs;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
@@ -125,6 +127,21 @@ fn random() -> RandomSource {
 /// free, its private file encrypted with `passphrase` and its `.pub` beside it.
 /// Nothing that is there is written over. It gives the key and its file.
 pub fn make_signing_key(folder: &Path, passphrase: &[u8]) -> Result<(SigningKey, PathBuf), Error> {
+    let job = audit::begin(
+        "keygen",
+        audit::fields([("folder", json!(audit::path_text(folder)))]),
+    );
+    let result = make_key_in(folder, passphrase);
+    audit::end(job, &result, |(key, file)| {
+        audit::fields([
+            ("key", json!(audit::path_text(file))),
+            ("fingerprint", json!(key.public().fingerprint())),
+        ])
+    });
+    result
+}
+
+fn make_key_in(folder: &Path, passphrase: &[u8]) -> Result<(SigningKey, PathBuf), Error> {
     let bad = |e: String| Error::Failed(tr!("Could not make the key: {e}", e = e));
     let random = random();
     let key = PrivateKey::generate_hybrid(&random).map_err(|e| bad(e.to_string()))?;
@@ -193,6 +210,24 @@ fn signature_path(path: &[String]) -> Option<Vec<String>> {
 /// Reads the file at `path` of `storage` through and writes its signature beside
 /// it, in place of one that is there.
 pub fn sign_file(
+    storage: &dyn Storage,
+    path: &[String],
+    key: &SigningKey,
+    control: &Control,
+) -> Result<(), Error> {
+    let job = audit::begin(
+        "sign",
+        audit::fields([
+            ("file", json!(audit::place(storage, path))),
+            ("fingerprint", json!(key.public().fingerprint())),
+        ]),
+    );
+    let result = sign_on(storage, path, key, control);
+    audit::end(job, &result, |_| serde_json::Map::new());
+    result
+}
+
+fn sign_on(
     storage: &dyn Storage,
     path: &[String],
     key: &SigningKey,
@@ -291,6 +326,35 @@ pub fn look_at_signature(storage: &dyn Storage, path: &[String], trusted: &[Publ
 /// [`look_at_signature`], and a signature by a key trusted checked against all of
 /// the file.
 pub fn check_signature(
+    storage: &dyn Storage,
+    path: &[String],
+    trusted: &[PublicKey],
+    control: &Control,
+) -> Result<Signed, Error> {
+    let job = audit::begin(
+        "verify",
+        audit::fields([("file", json!(audit::place(storage, path)))]),
+    );
+    let result = check_on(storage, path, trusted, control);
+    audit::end(job, &result, |signed| {
+        let (said, fingerprint) = match signed {
+            Signed::No => ("no_signature", None),
+            Signed::Unreadable(_) => ("unreadable", None),
+            Signed::Stranger { fingerprint } => ("untrusted_key", Some(fingerprint)),
+            Signed::NotChecked { fingerprint } => ("not_checked", Some(fingerprint)),
+            Signed::Good { fingerprint } => ("good", Some(fingerprint)),
+            Signed::Mismatch { fingerprint } => ("mismatch", Some(fingerprint)),
+            Signed::Failed(_) => ("read_failed", None),
+        };
+        audit::fields([
+            ("signature", json!(said)),
+            ("fingerprint", json!(fingerprint)),
+        ])
+    });
+    result
+}
+
+fn check_on(
     storage: &dyn Storage,
     path: &[String],
     trusted: &[PublicKey],

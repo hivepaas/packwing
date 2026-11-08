@@ -14,6 +14,7 @@
     allow(dead_code)
 )]
 
+mod audit_log;
 mod chrome;
 mod colors;
 mod confirm;
@@ -255,6 +256,7 @@ pub fn run(extensions: Extensions) {
             let window_bounds = placement::initial(kept.window, cx);
             cx.set_global(kept);
             cx.set_global(licensing::Licensed::load());
+            audit_log::apply(cx, audit_log::By::Startup);
             cx.set_global(text_size::SystemSize(text_size::read_system()));
             packwing_core::clean_opened_files();
             // GNOME's Wayland compositor draws no window frame, so Linux gets

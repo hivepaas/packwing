@@ -2,6 +2,8 @@
 //! appears under its name until all of it is written, and a moved file's original
 //! goes only once its copy has been read back and matches.
 
+use crate::audit;
+use serde_json::json;
 use std::io::{self, Read};
 use std::path::Path;
 use std::sync::Arc;
@@ -220,6 +222,32 @@ fn with_signatures(t: &Transfer, control: &Control) -> Result<Transfer, Error> {
 /// [`OnExisting::Stop`], a name taken stops it before anything is changed. A folder
 /// that is there takes what goes in it.
 pub fn transfer(t: &Transfer, control: &Control) -> Result<Transferred, Error> {
+    let job = audit::begin(
+        if t.moving { "move" } else { "copy" },
+        audit::fields([
+            ("from", json!(audit::place(t.from.as_ref(), &t.from_folder))),
+            ("to", json!(audit::place(t.to.as_ref(), &t.to_folder))),
+            ("names", audit::list(t.names.iter().cloned())),
+            (
+                "on_existing",
+                json!(format!("{:?}", t.on_existing).to_lowercase()),
+            ),
+            ("keep_mark", json!(t.keep_mark)),
+        ]),
+    );
+    let result = transfer_all(t, control);
+    audit::end(job, &result, |done| {
+        audit::fields([
+            ("files", json!(done.files)),
+            ("bytes", json!(done.bytes)),
+            ("skipped", json!(done.skipped)),
+            ("links_left", json!(done.links_left)),
+        ])
+    });
+    result
+}
+
+fn transfer_all(t: &Transfer, control: &Control) -> Result<Transferred, Error> {
     let t = &with_signatures(t, control)?;
     check_places(t)?;
     let mut done = Transferred::default();

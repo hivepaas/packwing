@@ -1831,6 +1831,18 @@ t7730ec1a = Windows 11 menaruhnya di bawah satu item Packwing, di menunya dan di
 # One packwing item, with these under it
 tb5fdc584 = Satu item packwing, dengan semua ini di bawahnya
 
+# 30 days
+t7a572af9 = 30 hari
+
+# 90 days
+t2d8a9817 = 90 hari
+
+# 1 year
+t4d0a98a5 = 1 tahun
+
+# Keep all
+te0b1775b = Simpan semua
+
 # Keep the “downloaded from the Internet” mark
 tfe574fa2 = Pertahankan tanda “diunduh dari Internet”
 
@@ -1870,6 +1882,36 @@ tb7d64a44 = Panjang kata sandi minimum
 # In characters, for every new archive with a password
 tca6d6982 = Dalam karakter, untuk setiap arsip baru dengan kata sandi
 
+# Keep an audit log
+tf7fd8762 = Simpan log audit
+
+# A record of what packwing does, whatever the license
+t34fe4e25 = Catatan apa yang dilakukan packwing, apa pun lisensinya
+
+# Where the audit log is kept
+tbd999abe = Lokasi log audit
+
+# A folder your organization chose
+td4e1f74a = Folder yang dipilih organisasi Anda
+
+# How long the audit log is kept
+td504acaf = Berapa lama log audit disimpan
+
+# In days; 0 keeps every record
+t127a3c54 = Dalam hari; 0 menyimpan semua catatan
+
+# Most the audit log may take
+ta334bb40 = Ukuran maksimum log audit
+
+# In MB; the oldest records go first
+t03a543d2 = Dalam MB; catatan tertua dihapus lebih dulu
+
+# What the audit log says of archives
+t8d6fca43 = Apa yang dicatat log audit tentang arsip
+
+# “entries” names the files in them, where they are known
+t56cf1991 = “entries” juga menyebut nama berkas di dalamnya, bila diketahui
+
 # packwing has no policy of this name.
 t7e03649c = packwing tidak memiliki kebijakan dengan nama ini.
 
@@ -1881,6 +1923,33 @@ t9173caaa = Membuka berkas di dalam arsip menaruh salinan di folder sementara. P
 
 # Paste a public key
 t0bf72f73 = Tempel kunci publik
+
+# What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
+t2162955d = Apa yang dilakukan packwing, disimpan di komputer ini: arsip yang diekstrak, dibuat, dikonversi, dan disalin, kapan dan oleh siapa. Tidak pernah kata sandi atau isi berkas.
+
+# Keep its records for
+tf423722f = Simpan catatan selama
+
+# Older ones are taken away, and that is recorded too
+t7073f273 = Yang lebih lama dihapus, dan itu juga dicatat
+
+# Takes a Pro or Enterprise license: Settings › License.
+t2774cee6 = Memerlukan lisensi Pro atau Enterprise: Pengaturan › Lisensi.
+
+# Where the audit log is
+t2702fcc6 = Lokasi log audit
+
+# Open folder
+t713a842f = Buka folder
+
+# The last record could not be written: {why}
+t542148a1 = Catatan terakhir tidak dapat ditulis: { $why }
+
+# Audit log
+tcb83f9ca = Log audit
+
+# pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
+t482581ff = pkw audit verify memeriksa bahwa tidak ada catatan yang diubah atau dihapus. Pengelola komputer ini tetap bisa menghapus log: log menunjukkan apa yang dilakukan packwing, bukan menghentikan siapa pun.
 
 # This is not a public key packwing can check with: {why}.
 td57933b9 = Ini bukan kunci publik yang dapat dipakai packwing untuk memeriksa: { $why }.
@@ -2400,6 +2469,18 @@ tda498fad = Diharapkan angka dari 1 sampai { $most }, bukan { $other }.
 
 # Expected some text, not {other}.
 t9386ce3b = Diharapkan teks, bukan { $other }.
+
+# Expected a whole path, such as /var/log/packwing or \\server\audit, not {other}.
+t00d3565d = Diharapkan path lengkap, seperti /var/log/packwing atau \\server\audit, bukan { $other }.
+
+# Expected a number of days from 0 (keep all) to {most}, not {other}.
+tf8fba675 = Diharapkan jumlah hari dari 0 (simpan semua) sampai { $most }, bukan { $other }.
+
+# Expected a size in MB from 0 (no limit) to {most}, not {other}.
+t9f7e002d = Diharapkan ukuran dalam MB dari 0 (tanpa batas) sampai { $most }, bukan { $other }.
+
+# Expected summary or entries, not {other}.
+t27e9b96f = Diharapkan summary atau entries, bukan { $other }.
 
 # Expected an address starting with https://, not {other}.
 t93bfd19e = Diharapkan alamat yang diawali https://, bukan { $other }.

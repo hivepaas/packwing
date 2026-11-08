@@ -14,6 +14,7 @@
 
 use packwing_i18n::tr;
 use packwing_policy::{Method, Policy, Refused};
+use serde_json::{Map, Value, json};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::fs::{self, File, Metadata, OpenOptions};
@@ -37,6 +38,7 @@ use hivepack::zip::{
     Stat, cm, em, file_attributes, opsys, stat, volume_paths,
 };
 
+use crate::audit;
 use crate::job::opened_subfolder;
 use crate::storage::{Item as StoredItem, Storage};
 use crate::transfer::Watched;
@@ -347,18 +349,49 @@ pub struct NewArchive {
     pub blocks: Blocks,
 }
 
-/// Why `policy` stops `new` being made, if it does: what the window asks before
-/// it starts, and [`create`] and [`create_on`] whoever asks them.
-pub fn refused_by(policy: &Policy, new: &NewArchive) -> Result<(), Refused> {
-    let method = match (&new.password, new.kind) {
+/// How `new` is encrypted, if it is.
+fn method_of(new: &NewArchive) -> Option<Method> {
+    match (&new.password, new.kind) {
         (Some(_), _) if with_age(new) => Some(Method::AgePassphrase),
         (Some(_), Kind::Zip) => Some(Method::ZipAes256),
         (Some(_), Kind::SevenZip) => Some(Method::SevenZipAes256),
         (Some(_), _) => Some(Method::AgePassphrase),
         (None, _) if !new.age_keys.is_empty() => Some(Method::AgeKey),
         (None, _) => None,
-    };
-    policy.check_method(method)?;
+    }
+}
+
+/// What a record of making `new` of `paths` says: its kind, how it is
+/// encrypted (never the password), and what goes in.
+pub(crate) fn making(paths: &[PathBuf], new: &NewArchive) -> Map<String, Value> {
+    audit::fields([
+        ("kind", json!(format!("{:?}", new.kind).to_lowercase())),
+        ("level", json!(format!("{:?}", new.level).to_lowercase())),
+        ("encryption", json!(method_of(new).map(Method::name))),
+        ("hide_names", json!(new.hide_names)),
+        (
+            "recipients",
+            if new.age_keys.is_empty() {
+                Value::Null
+            } else {
+                json!(new.age_keys)
+            },
+        ),
+        ("part_size", json!(new.part_size)),
+        ("keep_owners", json!(new.keep.owners)),
+        ("keep_xattrs", json!(new.keep.xattrs)),
+        ("paths", json!(paths.len())),
+        (
+            "path_names",
+            audit::list(paths.iter().map(|p| audit::path_text(p))),
+        ),
+    ])
+}
+
+/// Why `policy` stops `new` being made, if it does: what the window asks before
+/// it starts, and [`create`] and [`create_on`] whoever asks them.
+pub fn refused_by(policy: &Policy, new: &NewArchive) -> Result<(), Refused> {
+    policy.check_method(method_of(new))?;
     match &new.password {
         Some(password) => policy.check_password(password),
         None => Ok(()),
@@ -2188,6 +2221,23 @@ fn entries_of<R: ReadAt>(za: &Archive<R>) -> Result<Vec<(u64, Vec<String>, bool)
 /// paths in it, each with what is under it. All of it cannot go: an archive of
 /// nothing is not one.
 pub fn delete(archive: &Path, picked: &[Vec<String>], keys: &Keys) -> Result<(), Error> {
+    let job = audit::begin(
+        "delete",
+        audit::fields([
+            ("archive", json!(audit::path_text(archive))),
+            ("picked", json!(picked.len())),
+            (
+                "picked_names",
+                audit::names(picked.iter().map(|p| p.join("/"))),
+            ),
+        ]),
+    );
+    let result = delete_in(archive, picked, keys);
+    audit::end(job, &result, |_| Map::new());
+    result
+}
+
+fn delete_in(archive: &Path, picked: &[Vec<String>], keys: &Keys) -> Result<(), Error> {
     if !can_change(archive, keys)? {
         return Err(Error::Failed(tr!(
             "packwing can change only a ZIP archive that is one file."
@@ -2217,6 +2267,20 @@ pub fn delete(archive: &Path, picked: &[Vec<String>], keys: &Keys) -> Result<(),
 /// Renames the file or folder at `from` in the ZIP archive at `archive` to `to`,
 /// in the same folder. A name there already stops it.
 pub fn rename(archive: &Path, from: &[String], to: &str, keys: &Keys) -> Result<(), Error> {
+    let job = audit::begin(
+        "rename",
+        audit::fields([
+            ("archive", json!(audit::path_text(archive))),
+            ("from_name", audit::names([from.join("/")])),
+            ("to_name", audit::names([to.to_owned()])),
+        ]),
+    );
+    let result = rename_in(archive, from, to, keys);
+    audit::end(job, &result, |_| Map::new());
+    result
+}
+
+fn rename_in(archive: &Path, from: &[String], to: &str, keys: &Keys) -> Result<(), Error> {
     if !can_change(archive, keys)? {
         return Err(Error::Failed(tr!(
             "packwing can change only a ZIP archive that is one file."
@@ -2270,6 +2334,44 @@ pub fn rename(archive: &Path, from: &[String], to: &str, keys: &Keys) -> Result<
 /// [`NewArchive::stored_extensions`] says.
 /// If this fails or is stopped, the archive is as it was.
 pub fn add_with(
+    paths: &[PathBuf],
+    archive: &Path,
+    folder: &[String],
+    on_existing: OnExisting,
+    stored_extensions: &[String],
+    keys: &Keys,
+    control: &Control,
+) -> Result<(), Error> {
+    let job = audit::begin(
+        "add",
+        audit::fields([
+            ("archive", json!(audit::path_text(archive))),
+            ("into", json!(folder.join("/"))),
+            (
+                "on_existing",
+                json!(format!("{on_existing:?}").to_lowercase()),
+            ),
+            ("paths", json!(paths.len())),
+            (
+                "path_names",
+                audit::list(paths.iter().map(|p| audit::path_text(p))),
+            ),
+        ]),
+    );
+    let result = add_into(
+        paths,
+        archive,
+        folder,
+        on_existing,
+        stored_extensions,
+        keys,
+        control,
+    );
+    audit::end(job, &result, |_| Map::new());
+    result
+}
+
+fn add_into(
     paths: &[PathBuf],
     archive: &Path,
     folder: &[String],
@@ -2406,13 +2508,22 @@ pub fn create(
     new: &NewArchive,
     control: &Control,
 ) -> Result<PathBuf, Error> {
-    // Refused before anything is read.
-    obey_policy(new)?;
-    age_recipients(new)?;
-    // At a level whose one thread the memory there is takes.
-    let new = &within_memory(new);
-    // Before the archive is made, so that it is not among them.
-    create_of(chosen_items(paths, new, control)?, wanted, new, control)
+    let mut fields = making(paths, new);
+    fields.insert("destination".into(), json!(audit::path_text(wanted)));
+    let job = audit::begin("create", fields);
+    let result = (|| {
+        // Refused before anything is read.
+        obey_policy(new)?;
+        age_recipients(new)?;
+        // At a level whose one thread the memory there is takes.
+        let new = &within_memory(new);
+        // Before the archive is made, so that it is not among them.
+        create_of(chosen_items(paths, new, control)?, wanted, new, control)
+    })();
+    audit::end(job, &result, |made| {
+        audit::fields([("made", json!(audit::path_text(made)))])
+    });
+    result
 }
 
 /// What goes in a new archive of `paths`, walked once: what it holds, how much that
@@ -2761,6 +2872,27 @@ fn straight(
 /// starts, and the progress starts again with what is to go up. Failed or stopped,
 /// nothing is left in either place.
 pub fn create_on(
+    paths: &[PathBuf],
+    to: &dyn Storage,
+    folder: &[String],
+    name: &str,
+    new: &NewArchive,
+    control: &Control,
+    uploading: &dyn Fn(),
+) -> Result<Option<PathBuf>, Error> {
+    let mut fields = making(paths, new);
+    let mut path = folder.to_vec();
+    path.push(name.to_owned());
+    fields.insert("destination".into(), json!(audit::place(to, &path)));
+    let job = audit::begin("create", fields);
+    let result = create_on_storage(paths, to, folder, name, new, control, uploading);
+    audit::end(job, &result, |made| {
+        audit::fields([("made", json!(made.as_deref().map(audit::path_text)))])
+    });
+    result
+}
+
+fn create_on_storage(
     paths: &[PathBuf],
     to: &dyn Storage,
     folder: &[String],

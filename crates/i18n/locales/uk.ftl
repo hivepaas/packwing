@@ -1894,6 +1894,18 @@ t7730ec1a = Windows 11 збирає їх в один пункт Packwing — і 
 # One packwing item, with these under it
 tb5fdc584 = Один пункт packwing, а ці — під ним
 
+# 30 days
+t7a572af9 = 30 днів
+
+# 90 days
+t2d8a9817 = 90 днів
+
+# 1 year
+t4d0a98a5 = 1 рік
+
+# Keep all
+te0b1775b = Зберігати все
+
 # Keep the “downloaded from the Internet” mark
 tfe574fa2 = Зберігати позначку «завантажено з Інтернету»
 
@@ -1933,6 +1945,36 @@ tb7d64a44 = Мінімальна довжина пароля
 # In characters, for every new archive with a password
 tca6d6982 = У символах, для кожного нового архіву з паролем
 
+# Keep an audit log
+tf7fd8762 = Вести журнал аудиту
+
+# A record of what packwing does, whatever the license
+t34fe4e25 = Записи про дії packwing, незалежно від ліцензії
+
+# Where the audit log is kept
+tbd999abe = Де зберігається журнал аудиту
+
+# A folder your organization chose
+td4e1f74a = Тека, яку обрала ваша організація
+
+# How long the audit log is kept
+td504acaf = Скільки зберігається журнал аудиту
+
+# In days; 0 keeps every record
+t127a3c54 = У днях; 0 — зберігати всі записи
+
+# Most the audit log may take
+ta334bb40 = Найбільший розмір журналу аудиту
+
+# In MB; the oldest records go first
+t03a543d2 = У МБ; першими видаляються найстаріші записи
+
+# What the audit log says of archives
+t8d6fca43 = Що журнал аудиту пише про архіви
+
+# “entries” names the files in them, where they are known
+t56cf1991 = «entries» — також назви файлів усередині, якщо вони відомі
+
 # packwing has no policy of this name.
 t7e03649c = У packwing немає політики з такою назвою.
 
@@ -1944,6 +1986,33 @@ t9173caaa = Відкриття файлу з архіву кладе копію 
 
 # Paste a public key
 t0bf72f73 = Вставте відкритий ключ
+
+# What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
+t2162955d = Дії packwing, записані на цьому комп’ютері: які архіви видобуто, створено, перетворено й скопійовано, коли і ким. Ніколи — паролі чи вміст файлів.
+
+# Keep its records for
+tf423722f = Зберігати записи
+
+# Older ones are taken away, and that is recorded too
+t7073f273 = Старіші видаляються, і це теж записується
+
+# Takes a Pro or Enterprise license: Settings › License.
+t2774cee6 = Потрібна ліцензія Pro або Enterprise: Налаштування › Ліцензія.
+
+# Where the audit log is
+t2702fcc6 = Де журнал аудиту
+
+# Open folder
+t713a842f = Відкрити теку
+
+# The last record could not be written: {why}
+t542148a1 = Не вдалося записати останній запис: { $why }
+
+# Audit log
+tcb83f9ca = Журнал аудиту
+
+# pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
+t482581ff = pkw audit verify перевіряє, що жоден запис не змінено й не видалено. Адміністратор цього комп’ютера все одно може видалити журнал: він показує, що зробив packwing, але нікого не зупиняє.
 
 # This is not a public key packwing can check with: {why}.
 td57933b9 = Цим відкритим ключем packwing не може перевіряти: { $why }.
@@ -2481,6 +2550,18 @@ tda498fad = Очікувалося число від 1 до { $most }, а не {
 
 # Expected some text, not {other}.
 t9386ce3b = Очікувався текст, а не { $other }.
+
+# Expected a whole path, such as /var/log/packwing or \\server\audit, not {other}.
+t00d3565d = Очікувався повний шлях, наприклад /var/log/packwing або \\server\audit, а не { $other }.
+
+# Expected a number of days from 0 (keep all) to {most}, not {other}.
+tf8fba675 = Очікувалася кількість днів від 0 (зберігати все) до { $most }, а не { $other }.
+
+# Expected a size in MB from 0 (no limit) to {most}, not {other}.
+t9f7e002d = Очікувався розмір у МБ від 0 (без обмежень) до { $most }, а не { $other }.
+
+# Expected summary or entries, not {other}.
+t27e9b96f = Очікувалося summary або entries, а не { $other }.
 
 # Expected an address starting with https://, not {other}.
 t93bfd19e = Очікувалася адреса, що починається з https://, а не { $other }.

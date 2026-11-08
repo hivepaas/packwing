@@ -4,6 +4,7 @@
 //! as JSON (`--json`); what goes wrong, and how far a job is, to standard
 //! error. Its exit code says how it went ([`Exit`]).
 
+mod audit;
 mod commands;
 mod damaged;
 mod names;
@@ -293,6 +294,11 @@ enum Command {
         /// Its new name, in the same folder.
         name: String,
     },
+    /// The audit log: what packwing and pkw did, when it is kept (docs/audit.md).
+    Audit {
+        #[command(subcommand)]
+        what: AuditCommand,
+    },
     /// Make or check the checksums of files: sha256, sha512, sha1, md5, blake3.
     #[command(visible_alias = "sum")]
     Checksum {
@@ -308,6 +314,25 @@ enum Command {
         #[arg(long)]
         save: bool,
     },
+}
+
+/// What `pkw audit` does.
+#[derive(Subcommand)]
+pub enum AuditCommand {
+    /// Its records, the oldest first.
+    #[command(visible_alias = "ls")]
+    List {
+        /// From this day on, as YYYY-MM-DD in UTC.
+        #[arg(long, value_name = "DAY")]
+        since: Option<String>,
+        /// As CSV, for a spreadsheet.
+        #[arg(long)]
+        csv: bool,
+    },
+    /// Check that no record was changed, taken out or put in between others.
+    Verify,
+    /// Whether it is kept, where, for how long, and who decides.
+    Status,
 }
 
 /// How an archive is made, by `create` and `convert`.
@@ -480,6 +505,14 @@ fn main() -> ExitCode {
             .threads
             .unwrap_or_else(|| settings::threads(&settings::text())),
     );
+    // The audit log, as the organization or the user in the app says.
+    let settings = settings::text();
+    packwing_core::audit::set(packwing_core::audit::settled(
+        packwing_policy::current(),
+        settings::plan().has_audit_log(),
+        settings::audit(&settings),
+        "pkw",
+    ));
     let secrets = match Secrets::read(
         cli.secrets.password_file.as_deref(),
         cli.secrets.password_stdin,
