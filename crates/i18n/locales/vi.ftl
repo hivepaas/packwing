@@ -2050,6 +2050,12 @@ t8d6fca43 = Nhật ký kiểm tra ghi gì về tệp nén
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = “entries” ghi cả tên các tệp bị hỏng hoặc bị bỏ qua, không chỉ đếm số lượng
 
+# Every job recorded
+t42369815 = Mọi tác vụ đều được ghi
+
+# A job whose start the audit log cannot write does not start
+tda48e1c9 = Tác vụ mà nhật ký kiểm tra không ghi được lúc bắt đầu sẽ không chạy
+
 # The audit log in the system’s log
 t4a2fcd04 = Nhật ký kiểm tra trong nhật ký hệ thống
 
@@ -2304,6 +2310,9 @@ t75e7db7c = { $folder }, mỗi tệp nén một thư mục
 
 # New
 t8b242db1 = Mới
+
+# Your organization requires each job to be recorded, and the audit log cannot be written: {why}
+t3f254f09 = Tổ chức của bạn yêu cầu ghi lại mọi tác vụ, nhưng không ghi được nhật ký kiểm tra: { $why }
 
 # There is no file to save it beside.
 ta9906e3b = Không có tệp nào để lưu cạnh.

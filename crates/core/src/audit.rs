@@ -16,6 +16,7 @@ use packwing_audit::Log;
 pub use packwing_audit::{
     Break, Config, Report, day_files, default_folder, read, system_log_name, verify,
 };
+use packwing_i18n::tr;
 use packwing_policy::Policy;
 use serde_json::{Map, Value, json};
 
@@ -62,6 +63,7 @@ pub fn settled(policy: &Policy, plan_has_it: bool, chosen: Chosen, app: &str) ->
         max_bytes: policy.audit_log_max_bytes(PERSONAL_MAX_BYTES),
         entries: policy.audit_log_names_entries(),
         system: policy.audit_log_to_system(),
+        required: policy.audit_log_required(),
         app: app.to_owned(),
         version: env!("CARGO_PKG_VERSION").to_owned(),
     })
@@ -173,14 +175,22 @@ pub fn record(action: &str, fields: Map<String, Value>) {
         let mut record = Map::new();
         record.insert("action".into(), json!(action));
         record.extend(fields);
-        write(&log, record);
+        let _ = write(&log, record);
     }
 }
 
-fn write(log: &Log, record: Map<String, Value>) {
+/// Writes `record`, keeping why it could not be, for the app to say.
+fn write(log: &Log, record: Map<String, Value>) -> Result<(), String> {
     match log.append(record) {
-        Ok(()) => *failure().lock().unwrap_or_else(PoisonError::into_inner) = None,
-        Err(e) => failed(&e.to_string()),
+        Ok(()) => {
+            *failure().lock().unwrap_or_else(PoisonError::into_inner) = None;
+            Ok(())
+        }
+        Err(e) => {
+            let why = e.to_string();
+            failed(&why);
+            Err(why)
+        }
     }
 }
 
@@ -198,9 +208,16 @@ pub(crate) struct Job {
 }
 
 /// Starts recording a job of `action`, if the log is kept and no job runs on
-/// this thread already: its start is written now, with `fields`.
-pub(crate) fn begin(action: &'static str, fields: Map<String, Value>) -> Option<Job> {
-    let log = current()?;
+/// this thread already: its start is written now, with `fields`. Where the
+/// organization requires the log (`AuditLogRequired`), a start that cannot be
+/// written stops the job before it does anything.
+pub(crate) fn begin(
+    action: &'static str,
+    fields: Map<String, Value>,
+) -> Result<Option<Job>, Error> {
+    let Some(log) = current() else {
+        return Ok(None);
+    };
     let outer = NOTES.with(|n| {
         let mut n = n.borrow_mut();
         let running = n.is_some();
@@ -210,7 +227,7 @@ pub(crate) fn begin(action: &'static str, fields: Map<String, Value>) -> Option<
         running
     });
     if outer {
-        return None;
+        return Ok(None);
     }
     static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
     let id = format!(
@@ -223,13 +240,21 @@ pub(crate) fn begin(action: &'static str, fields: Map<String, Value>) -> Option<
     record.insert("phase".into(), json!("start"));
     record.insert("job".into(), json!(id));
     record.extend(fields);
-    write(&log, record);
-    Some(Job {
+    if let Err(why) = write(&log, record)
+        && log.config().required
+    {
+        NOTES.with(|n| *n.borrow_mut() = None);
+        return Err(Error::Failed(tr!(
+            "Your organization requires each job to be recorded, and the audit log cannot be written: {why}",
+            why = why
+        )));
+    }
+    Ok(Some(Job {
         log,
         id,
         action,
         started: Instant::now(),
-    })
+    }))
 }
 
 /// Notes `value` as `key` for the end of the job running on this thread, if one
@@ -278,7 +303,7 @@ pub(crate) fn end<T>(
             record.extend(notes);
         }
     }
-    write(&job.log, record);
+    let _ = write(&job.log, record);
 }
 
 /// Fields, from pairs.

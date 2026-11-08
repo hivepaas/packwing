@@ -2363,7 +2363,7 @@ pub fn delete(archive: &Path, picked: &[Vec<String>], keys: &Keys) -> Result<(),
                 audit::list(picked.iter().map(|p| p.join("/"))),
             ),
         ]),
-    );
+    )?;
     let result = delete_in(archive, picked, keys);
     audit::end(job, &result, |_| Map::new());
     result
@@ -2406,7 +2406,7 @@ pub fn rename(archive: &Path, from: &[String], to: &str, keys: &Keys) -> Result<
             ("from_name", json!(from.join("/"))),
             ("to_name", json!(to)),
         ]),
-    );
+    )?;
     let result = rename_in(archive, from, to, keys);
     audit::end(job, &result, |_| Map::new());
     result
@@ -2489,7 +2489,7 @@ pub fn add_with(
                 audit::list(paths.iter().map(|p| audit::path_text(p))),
             ),
         ]),
-    );
+    )?;
     let result = add_into(
         paths,
         archive,
@@ -2650,7 +2650,7 @@ pub fn create(
 ) -> Result<PathBuf, Error> {
     let mut fields = making(paths, new);
     fields.insert("destination".into(), json!(audit::path_text(wanted)));
-    let job = audit::begin("create", fields);
+    let job = audit::begin("create", fields)?;
     let result = (|| {
         // Refused before anything is read.
         obey_policy(new)?;
@@ -3024,7 +3024,7 @@ pub fn create_on(
     let mut path = folder.to_vec();
     path.push(name.to_owned());
     fields.insert("destination".into(), json!(audit::place(to, &path)));
-    let job = audit::begin("create", fields);
+    let job = audit::begin("create", fields)?;
     let result = create_on_storage(paths, to, folder, name, new, control, uploading);
     audit::end(job, &result, |made| {
         audit::fields([("made", json!(made.as_deref().map(audit::path_text)))])

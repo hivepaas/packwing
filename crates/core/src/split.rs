@@ -37,7 +37,7 @@ pub fn split_file(path: &Path, size: u64, control: &Control) -> Result<Vec<PathB
             ("file", json!(audit::path_text(path))),
             ("part_size", json!(size)),
         ]),
-    );
+    )?;
     let result = split_into(path, size, control);
     audit::end(job, &result, |parts| {
         audit::fields([("parts", json!(parts.len()))])
@@ -219,7 +219,7 @@ pub fn join_parts(path: &Path, control: &Control) -> Result<PathBuf, Error> {
     let job = audit::begin(
         "join",
         audit::fields([("part", json!(audit::path_text(path)))]),
-    );
+    )?;
     let result = join_from(path, control);
     audit::end(job, &result, |made| {
         audit::fields([("made", json!(audit::path_text(made)))])

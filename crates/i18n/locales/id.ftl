@@ -2050,6 +2050,12 @@ t8d6fca43 = Apa yang dicatat log audit tentang arsip
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = “entries” menyebut nama berkas yang rusak atau dilewati, selain menghitungnya
 
+# Every job recorded
+t42369815 = Setiap tugas dicatat
+
+# A job whose start the audit log cannot write does not start
+tda48e1c9 = Tugas yang awalnya tidak dapat ditulis oleh log audit tidak dimulai
+
 # The audit log in the system’s log
 t4a2fcd04 = Log audit di log sistem
 
@@ -2313,6 +2319,9 @@ t75e7db7c = { $folder }, satu folder untuk masing-masing
 
 # New
 t8b242db1 = Baru
+
+# Your organization requires each job to be recorded, and the audit log cannot be written: {why}
+t3f254f09 = Organisasi Anda mewajibkan setiap tugas dicatat, dan log audit tidak dapat ditulis: { $why }
 
 # There is no file to save it beside.
 ta9906e3b = Tidak ada berkas untuk tempat menyimpannya.

@@ -78,6 +78,12 @@ The unified log keeps what it has for as long as the system decides, days to wee
 
 `pkw audit status` says where it goes, and a record it could not be sent to shows in Settings › Security as the last that could not be written.
 
+## When it cannot be written
+
+A record that cannot be written, as on a share that is not there, shows in Settings › Security and in `pkw audit status`, and the job goes on: a log the user can turn off is no reason to stop their work.
+
+Where the organization sets `AuditLogRequired`, a job whose start cannot be written does not start, and says so: *Your organization requires each job to be recorded, and the audit log cannot be written*, and why. Nothing is extracted, made, opened or copied unrecorded. Written means to the day's file, and to the system's log too where `AuditLogSystem` sends records there. A job's end that cannot be written does not undo what the job did; it shows as above, and the job's start, with no end, stays.
+
 ## How long
 
 | | Kept | At most |
@@ -154,4 +160,4 @@ pkw audit verify                 # the chain, from the oldest record
 
 ## Not yet
 
-Planned, in [design/audit-log.md](design/audit-log.md): a policy that stops a job whose record cannot be written, and every file extracted named.
+Planned, in [design/audit-log.md](design/audit-log.md): every file extracted named.

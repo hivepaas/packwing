@@ -2073,6 +2073,12 @@ t8d6fca43 = Cosa dice il registro di controllo degli archivi
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = “entries” nomina i file danneggiati o tralasciati, oltre a contarli
 
+# Every job recorded
+t42369815 = Ogni operazione registrata
+
+# A job whose start the audit log cannot write does not start
+tda48e1c9 = Un’operazione il cui inizio il registro di controllo non può scrivere non parte
+
 # The audit log in the system’s log
 t4a2fcd04 = Registro di controllo nel registro di sistema
 
@@ -2341,6 +2347,9 @@ t75e7db7c = { $folder }, una cartella per ciascuno
 
 # New
 t8b242db1 = Nuovo
+
+# Your organization requires each job to be recorded, and the audit log cannot be written: {why}
+t3f254f09 = La tua organizzazione richiede che ogni operazione sia registrata, e il registro di controllo non può essere scritto: { $why }
 
 # There is no file to save it beside.
 ta9906e3b = Non c'è nessun file accanto a cui salvarlo.

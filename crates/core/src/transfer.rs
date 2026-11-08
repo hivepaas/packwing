@@ -234,7 +234,7 @@ pub fn transfer(t: &Transfer, control: &Control) -> Result<Transferred, Error> {
             ),
             ("keep_mark", json!(t.keep_mark)),
         ]),
-    );
+    )?;
     let result = transfer_all(t, control);
     audit::end(job, &result, |done| {
         audit::fields([

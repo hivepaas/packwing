@@ -11,9 +11,9 @@ use packwing_core::audit::RETENTION_CHOICES;
 use packwing_i18n::tr;
 use packwing_policy::{
     ALLOWED_ENCRYPTION_METHODS, AUDIT_LOG, AUDIT_LOG_DETAIL, AUDIT_LOG_MAX_SIZE_MB, AUDIT_LOG_PATH,
-    AUDIT_LOG_RETENTION_DAYS, AUDIT_LOG_SYSTEM, LICENSE_KEY, MARK_STORAGE_FILES,
-    MIN_PASSWORD_LENGTH, ORGANIZATION_NAME, ORGANIZATION_URL, PROPAGATE_MOTW, Policy,
-    REQUIRE_ENCRYPTION, Row, Setting,
+    AUDIT_LOG_REQUIRED, AUDIT_LOG_RETENTION_DAYS, AUDIT_LOG_SYSTEM, LICENSE_KEY,
+    MARK_STORAGE_FILES, MIN_PASSWORD_LENGTH, ORGANIZATION_NAME, ORGANIZATION_URL, PROPAGATE_MOTW,
+    Policy, REQUIRE_ENCRYPTION, Row, Setting,
 };
 
 use super::{rows, section, setting};
@@ -125,6 +125,10 @@ fn told(key: &str) -> (String, String) {
         AUDIT_LOG_DETAIL => (
             tr!("What the audit log says of archives"),
             tr!("“entries” names the files found damaged or left out, as well as counting them"),
+        ),
+        AUDIT_LOG_REQUIRED => (
+            tr!("Every job recorded"),
+            tr!("A job whose start the audit log cannot write does not start"),
         ),
         AUDIT_LOG_SYSTEM => (
             tr!("The audit log in the system’s log"),

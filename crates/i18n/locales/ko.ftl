@@ -2050,6 +2050,12 @@ t8d6fca43 = 감사 로그가 압축 파일에 대해 기록하는 내용
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = “entries”는 손상되었거나 제외된 파일의 개수뿐 아니라 이름도 기록합니다
 
+# Every job recorded
+t42369815 = 모든 작업 기록
+
+# A job whose start the audit log cannot write does not start
+tda48e1c9 = 감사 로그에 시작을 기록할 수 없는 작업은 시작되지 않습니다
+
 # The audit log in the system’s log
 t4a2fcd04 = 시스템 로그에 감사 로그 기록
 
@@ -2304,6 +2310,9 @@ t75e7db7c = { $folder }, 각각 폴더 하나씩
 
 # New
 t8b242db1 = 새로 만들기
+
+# Your organization requires each job to be recorded, and the audit log cannot be written: {why}
+t3f254f09 = 조직에서 모든 작업을 기록하도록 요구하지만 감사 로그를 쓸 수 없습니다: { $why }
 
 # There is no file to save it beside.
 ta9906e3b = 옆에 저장할 파일이 없습니다.

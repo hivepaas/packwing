@@ -2073,6 +2073,12 @@ t8d6fca43 = Was das Audit-Protokoll über Archive festhält
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = „entries“ nennt die Dateien, die beschädigt oder ausgelassen wurden, und zählt sie
 
+# Every job recorded
+t42369815 = Jeder Vorgang aufgezeichnet
+
+# A job whose start the audit log cannot write does not start
+tda48e1c9 = Ein Vorgang, dessen Beginn das Audit-Protokoll nicht schreiben kann, startet nicht
+
 # The audit log in the system’s log
 t4a2fcd04 = Audit-Protokoll im Systemprotokoll
 
@@ -2341,6 +2347,9 @@ t75e7db7c = { $folder }, je ein Ordner
 
 # New
 t8b242db1 = Neu
+
+# Your organization requires each job to be recorded, and the audit log cannot be written: {why}
+t3f254f09 = Ihre Organisation verlangt, dass jeder Vorgang aufgezeichnet wird, und das Audit-Protokoll kann nicht geschrieben werden: { $why }
 
 # There is no file to save it beside.
 ta9906e3b = Es gibt keine Datei, neben der gespeichert werden kann.

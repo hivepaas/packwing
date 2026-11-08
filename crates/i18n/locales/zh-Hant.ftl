@@ -2050,6 +2050,12 @@ t8d6fca43 = 稽核記錄對封存檔記下什麼
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = 「entries」除了計數，也會記下損毀或被略過的檔案名稱
 
+# Every job recorded
+t42369815 = 每項工作都記錄
+
+# A job whose start the audit log cannot write does not start
+tda48e1c9 = 稽核記錄無法寫入其開始的工作不會開始
+
 # The audit log in the system’s log
 t4a2fcd04 = 系統記錄中的稽核記錄
 
@@ -2313,6 +2319,9 @@ t75e7db7c = { $folder }，各自放進一個資料夾
 
 # New
 t8b242db1 = 新增
+
+# Your organization requires each job to be recorded, and the audit log cannot be written: {why}
+t3f254f09 = 貴組織要求記錄每項工作，但無法寫入稽核記錄：{ $why }
 
 # There is no file to save it beside.
 ta9906e3b = 沒有可在其旁邊儲存的檔案。

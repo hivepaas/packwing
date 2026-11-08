@@ -2073,6 +2073,12 @@ t8d6fca43 = O que o registro de auditoria diz dos arquivos compactados
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = “entries” nomeia os arquivos danificados ou deixados de fora, além de contá-los
 
+# Every job recorded
+t42369815 = Cada tarefa registrada
+
+# A job whose start the audit log cannot write does not start
+tda48e1c9 = Uma tarefa cujo início o registro de auditoria não consegue gravar não começa
+
 # The audit log in the system’s log
 t4a2fcd04 = Registro de auditoria no log do sistema
 
@@ -2341,6 +2347,9 @@ t75e7db7c = { $folder }, uma pasta para cada
 
 # New
 t8b242db1 = Novo
+
+# Your organization requires each job to be recorded, and the audit log cannot be written: {why}
+t3f254f09 = Sua organização exige que cada tarefa seja registrada, e o registro de auditoria não pode ser gravado: { $why }
 
 # There is no file to save it beside.
 ta9906e3b = Não há arquivo ao lado do qual salvar.
