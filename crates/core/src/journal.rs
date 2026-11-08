@@ -1,0 +1,204 @@
+//! Where packwing is extracting a tar archive into a folder, noted while it
+//! does. hivepack reads such an archive once, into a private folder it makes
+//! in the destination, and moves the entries into place at the end. A
+//! process that ends without removing that folder (a crash, the power) leaves
+//! it there: hivepack removes it itself when it extracts into the same place
+//! again, and [`clean_left_extractions`] removes it the next time packwing
+//! starts, wherever it was.
+//!
+//! The journal is a file of JSON lines in packwing's settings folder, one for
+//! each extraction going on, locked while it is changed: the app and `pkw`
+//! may run at once.
+
+use std::fs::{File, OpenOptions};
+use std::io::{Read, Seek, SeekFrom, Write};
+use std::path::{Path, PathBuf};
+use std::sync::Mutex;
+use std::sync::atomic::{AtomicU64, Ordering};
+
+use serde_json::{Value, json};
+
+/// The folder the journal is in, once the app or `pkw` has said.
+static FOLDER: Mutex<Option<PathBuf>> = Mutex::new(None);
+
+/// What tells this process's lines apart.
+static NEXT: AtomicU64 = AtomicU64::new(0);
+
+/// The journal's file, in its folder.
+const FILE: &str = "extracting";
+
+/// What hivepack names its private folders, before a number of their own.
+const PRIVATE: &str = ".hivepack-extracting-";
+
+/// Keeps the journal in `folder`, packwing's settings folder: before, nothing
+/// is noted.
+pub fn keep_journal_in(folder: PathBuf) {
+    *FOLDER
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner) = Some(folder);
+}
+
+/// The folder the journal is kept in, if it is.
+fn folder() -> Option<PathBuf> {
+    FOLDER
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .clone()
+}
+
+/// The journal in `folder`, open and locked.
+fn open(folder: &Path) -> Option<File> {
+    std::fs::create_dir_all(folder).ok()?;
+    let file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .truncate(false)
+        .open(folder.join(FILE))
+        .ok()?;
+    file.lock().ok()?;
+    Some(file)
+}
+
+/// The lines of `file`, read from its start.
+fn lines(file: &mut File) -> Vec<Value> {
+    let mut text = String::new();
+    if file.seek(SeekFrom::Start(0)).is_err() || file.read_to_string(&mut text).is_err() {
+        return Vec::new();
+    }
+    text.lines()
+        .filter_map(|line| serde_json::from_str(line).ok())
+        .collect()
+}
+
+/// `file`, written again with `lines`, and synced.
+fn write(file: &mut File, lines: &[Value]) {
+    let mut text = String::new();
+    for line in lines {
+        text.push_str(&line.to_string());
+        text.push('\n');
+    }
+    let _ = file
+        .set_len(0)
+        .and_then(|()| file.seek(SeekFrom::Start(0)))
+        .and_then(|_| file.write_all(text.as_bytes()))
+        .and_then(|()| file.sync_all());
+}
+
+/// An extraction into a folder, noted: its line goes when this is dropped,
+/// however the extraction ended.
+pub(crate) struct Noted {
+    folder: PathBuf,
+    id: String,
+}
+
+/// Notes that a tar archive is extracted into `destination`: none if the
+/// journal is not kept, or the path is not text.
+pub(crate) fn note(destination: &Path) -> Option<Noted> {
+    note_in(&folder()?, destination)
+}
+
+/// [`note`], in the journal in `folder`.
+fn note_in(folder: &Path, destination: &Path) -> Option<Noted> {
+    let destination = std::path::absolute(destination).ok()?;
+    let path = destination.to_str()?.to_owned();
+    let id = format!(
+        "{}-{}",
+        std::process::id(),
+        NEXT.fetch_add(1, Ordering::Relaxed)
+    );
+    let mut file = open(folder)?;
+    let mut all = lines(&mut file);
+    all.push(json!({ "id": id, "path": path }));
+    write(&mut file, &all);
+    Some(Noted {
+        folder: folder.to_path_buf(),
+        id,
+    })
+}
+
+impl Drop for Noted {
+    fn drop(&mut self) {
+        let Some(mut file) = open(&self.folder) else {
+            return;
+        };
+        let mut all = lines(&mut file);
+        all.retain(|line| line["id"].as_str() != Some(&self.id));
+        write(&mut file, &all);
+    }
+}
+
+/// Removes the private folders that extractions packwing noted left behind,
+/// their process having ended without removing them: what the app and `pkw`
+/// call when they start. One being used, by a packwing running now, is left,
+/// and so is its line.
+pub fn clean_left_extractions() {
+    if let Some(folder) = folder() {
+        clean_in(&folder);
+    }
+}
+
+/// [`clean_left_extractions`], of the journal in `folder`.
+fn clean_in(folder: &Path) {
+    let Some(mut file) = open(folder) else {
+        return;
+    };
+    let mut all = lines(&mut file);
+    let before = all.len();
+    all.retain(|line| {
+        let Some(path) = line["path"].as_str().map(Path::new) else {
+            return false;
+        };
+        let _ = hivepack::extract::remove_stale(path);
+        // Kept while a private folder is there still: in use.
+        std::fs::read_dir(path).is_ok_and(|entries| {
+            entries.flatten().any(|entry| {
+                entry
+                    .file_name()
+                    .to_str()
+                    .is_some_and(|name| name.starts_with(PRIVATE))
+            })
+        })
+    });
+    if all.len() != before {
+        write(&mut file, &all);
+    }
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_folder_left_is_removed_and_its_line_with_it() {
+        let root = std::env::temp_dir().join(format!("packwing-journal-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let settings = root.join("settings");
+        let out = root.join("out");
+        let noted = note_in(&settings, &out).unwrap();
+        // A private folder left by a process that died, no one holding it.
+        let left = out.join(format!("{PRIVATE}dead"));
+        std::fs::create_dir_all(left.join("data")).unwrap();
+        std::fs::write(left.join("owner"), "").unwrap();
+        std::mem::forget(noted);
+        clean_in(&settings);
+        assert!(!left.exists());
+        let text = std::fs::read_to_string(settings.join(FILE)).unwrap();
+        assert!(text.is_empty(), "{text}");
+        // A line goes when its extraction ends.
+        let noted = note_in(&settings, &out).unwrap();
+        assert!(
+            !std::fs::read_to_string(settings.join(FILE))
+                .unwrap()
+                .is_empty()
+        );
+        drop(noted);
+        assert!(
+            std::fs::read_to_string(settings.join(FILE))
+                .unwrap()
+                .is_empty()
+        );
+        let _ = std::fs::remove_dir_all(&root);
+    }
+}

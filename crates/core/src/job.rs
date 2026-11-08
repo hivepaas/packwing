@@ -7,7 +7,7 @@ use std::fs::OpenOptions;
 use std::io::{self, Read, Seek, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use std::sync::atomic::AtomicU64;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
 use hivepack::extract::{
@@ -27,7 +27,7 @@ use crate::rar;
 use crate::source::Source;
 use crate::spool::spool;
 use crate::volume::walk;
-use crate::{Error, Keys, opener, seven_zip, without_layers};
+use crate::{Error, Keys, opener, opener_of, seven_zip, without_layers};
 
 /// What a job tells how far it is, and what stops it.
 #[derive(Clone, Default)]
@@ -787,7 +787,14 @@ pub(crate) fn extract_into(
     match opened.container() {
         Container::Tar => {
             drop(opened);
-            Ok(into!(extract_tar, extract_tar_to, || Ok(opener.open()?))?)
+            match into {
+                WriteTo::Folder(destination) => {
+                    tar_into_folder(source, destination, keys, &mut options, control)
+                }
+                WriteTo::Taker(taker) => {
+                    Ok(extract_tar_to(|| Ok(opener.open()?), taker, &options)?)
+                }
+            }
         }
         Container::Zip if layers.is_empty() => {
             drop(opened);
@@ -876,6 +883,59 @@ pub(crate) fn extract_into(
                 }
             }
         }
+    }
+}
+
+/// A tar archive of `source` extracted into the folder `destination`, which
+/// hivepack reads once, into a private folder there, moved into place at the
+/// end. It is noted in the journal while it is, so that a private folder left
+/// behind goes when packwing starts again. hivepack knows its totals only once
+/// the archive is read: until then, how far it is, is told from the archive's
+/// bytes read, against its size.
+fn tar_into_folder(
+    source: &Source,
+    destination: &Path,
+    keys: &Keys,
+    options: &mut Options,
+    control: &Control,
+) -> Result<Summary, Error> {
+    let _noted = crate::journal::note(destination);
+    let read = Arc::new(AtomicU64::new(0));
+    let size = source.size().unwrap_or(0);
+    if let (Some(told), true) = (control.progress.clone(), size > 0) {
+        let read = Arc::clone(&read);
+        options.progress = Some(Arc::new(move |p: &Progress| {
+            if p.total_bytes == 0 && p.total_entries == 0 {
+                let mut through = *p;
+                through.bytes = read.load(Ordering::Relaxed).min(size);
+                through.total_bytes = size;
+                told(&through);
+            } else {
+                told(p);
+            }
+        }));
+    }
+    let mut opener = opener_of(&source.name(), keys, || {
+        read.store(0, Ordering::Relaxed);
+        Ok(Counting {
+            inner: source.reader()?,
+            read: Arc::clone(&read),
+        })
+    });
+    Ok(extract_tar(|| Ok(opener.open()?), destination, options)?)
+}
+
+/// What reads, counting the bytes it has read into `read`.
+struct Counting<R> {
+    inner: R,
+    read: Arc<AtomicU64>,
+}
+
+impl<R: Read> Read for Counting<R> {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        let n = self.inner.read(buf)?;
+        self.read.fetch_add(n as u64, Ordering::Relaxed);
+        Ok(n)
     }
 }
 

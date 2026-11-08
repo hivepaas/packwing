@@ -7,6 +7,11 @@ use std::sync::Arc;
 
 use packwing_core::{LocalFolder, PublicKey, Storage, StorageKind, Values, read_public_key};
 
+/// packwing's settings folder, the app's and `pkw`'s.
+pub fn folder() -> Option<PathBuf> {
+    file()?.parent().map(PathBuf::from)
+}
+
 /// The app's settings file, where `prefs.rs` keeps it.
 fn file() -> Option<PathBuf> {
     let env = |name: &str| {

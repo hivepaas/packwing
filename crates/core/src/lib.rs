@@ -16,6 +16,7 @@ mod create;
 mod filter;
 mod job;
 mod joined;
+mod journal;
 mod listing;
 mod mark;
 pub mod memory;
@@ -64,6 +65,7 @@ pub use job::{
     Renaming, UnnamableFn, clean_opened_files, damages, extract, extract_selected, extract_to_open,
     extract_with, image_fits, left_out, preview_entry, read_entry, renamings, test,
 };
+pub use journal::{clean_left_extractions, keep_journal_in};
 pub use listing::{Child, Entry, Found, Link, Listen, Listing, list, list_as_read};
 pub use mark::came_from_internet;
 pub use passphrase::suggest_passphrase;
@@ -477,7 +479,7 @@ fn opener<'a>(
 }
 
 /// [`opener`], of what `open` reads: the file named `name`, from its start.
-fn opener_of<F, R>(name: &str, keys: &Keys, open: F) -> Opener<F>
+pub(crate) fn opener_of<F, R>(name: &str, keys: &Keys, open: F) -> Opener<F>
 where
     F: FnMut() -> io::Result<R>,
     R: io::Read + Send,
