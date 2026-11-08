@@ -2070,8 +2070,8 @@ t03a543d2 = En Mo ; les entrées les plus anciennes partent en premier
 # What the audit log says of archives
 t8d6fca43 = Ce que le journal d’audit dit des archives
 
-# “entries” names the files found damaged or left out, as well as counting them
-tf1125538 = « entries » nomme les fichiers endommagés ou laissés de côté, en plus de les compter
+# “entries” names each file extracted, and those found damaged or left out
+t1e33aba6 = « entries » nomme chaque fichier extrait, et ceux trouvés endommagés ou laissés de côté
 
 # Every job recorded
 t42369815 = Chaque tâche enregistrée

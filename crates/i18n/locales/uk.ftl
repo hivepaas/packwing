@@ -2116,8 +2116,8 @@ t03a543d2 = У МБ; першими видаляються найстаріші 
 # What the audit log says of archives
 t8d6fca43 = Що журнал аудиту пише про архіви
 
-# “entries” names the files found damaged or left out, as well as counting them
-tf1125538 = «entries» записує не лише кількість пошкоджених і пропущених файлів, а й їхні назви
+# “entries” names each file extracted, and those found damaged or left out
+t1e33aba6 = «entries» називає кожен видобутий файл, а також пошкоджені та пропущені
 
 # Every job recorded
 t42369815 = Кожна операція записується

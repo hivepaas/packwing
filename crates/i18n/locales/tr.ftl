@@ -2070,8 +2070,8 @@ t03a543d2 = MB olarak; en eski kayıtlar önce silinir
 # What the audit log says of archives
 t8d6fca43 = Denetim günlüğünün arşivler hakkında yazdıkları
 
-# “entries” names the files found damaged or left out, as well as counting them
-tf1125538 = “entries”, hasarlı ya da atlanan dosyaları saymanın yanı sıra adlarını da yazar
+# “entries” names each file extracted, and those found damaged or left out
+t1e33aba6 = “entries”, çıkarılan her dosyayı ve hasarlı bulunan ya da dışarıda bırakılanları adlandırır
 
 # Every job recorded
 t42369815 = Her işlem kaydedilir

@@ -2070,8 +2070,8 @@ t03a543d2 = In MB; le voci più vecchie vanno via per prime
 # What the audit log says of archives
 t8d6fca43 = Cosa dice il registro di controllo degli archivi
 
-# “entries” names the files found damaged or left out, as well as counting them
-tf1125538 = “entries” nomina i file danneggiati o tralasciati, oltre a contarli
+# “entries” names each file extracted, and those found damaged or left out
+t1e33aba6 = “entries” indica ogni file estratto, e quelli trovati danneggiati o tralasciati
 
 # Every job recorded
 t42369815 = Ogni operazione registrata

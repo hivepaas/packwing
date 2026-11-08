@@ -2070,8 +2070,8 @@ t03a543d2 = In MB; die ältesten Einträge gehen zuerst
 # What the audit log says of archives
 t8d6fca43 = Was das Audit-Protokoll über Archive festhält
 
-# “entries” names the files found damaged or left out, as well as counting them
-tf1125538 = „entries“ nennt die Dateien, die beschädigt oder ausgelassen wurden, und zählt sie
+# “entries” names each file extracted, and those found damaged or left out
+t1e33aba6 = „entries“ nennt jede entpackte Datei und die als beschädigt erkannten oder ausgelassenen
 
 # Every job recorded
 t42369815 = Jeder Vorgang aufgezeichnet

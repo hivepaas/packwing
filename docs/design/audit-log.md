@@ -28,7 +28,7 @@ What the audit log does today is in [../audit.md](../audit.md). This is why it i
   - Windows: done. `ReportEventW` from the source `packwing`, with the user's SID. The installer is the user's and cannot register a source, which takes an administrator, and a message file in one user's folder is not found by another's Event Viewer: the organization registers it where it sets the policy, with .NET's `EventLogMessages.dll`, whose every event reads as its first string. Unregistered, events are written whole all the same, and Event Viewer says their description cannot be found before showing them.
   - macOS: done. `os_log` with the subsystem `com.hivepaas.packwing`, through a few lines of C (its format has to be a literal): the default level, kept on disk, and an error for a job that failed. The log cuts a message past about 1,013 bytes (macOS 15): one over 1,000 goes as its line and hash.
 - **`AuditLogRequired`**: a job whose start cannot be recorded does not start, and says why. Worth it once records go off the computer; before, the person it would stop can as well stop the log. Done: recorded is the day's file, and the system's log where it goes there too; a job's end that cannot be written undoes nothing.
-- **Every file extracted named**, with `entries`: hivepack tells each one written (a callback in `extract::Options`), and records hold them, to a limit.
+- **Every file extracted named**, with `entries`: hivepack tells each one written (`extract::Options::on_written`, hivepack#186), and records hold them, to a limit. Done: `extracted_names`, files and links by where they went (picked ones by where they were moved), the first 1,000 and how many.
 - **Windows' SID** of the user, besides the name: done, with the Event Log.
 
 ## Phase 3, if asked for

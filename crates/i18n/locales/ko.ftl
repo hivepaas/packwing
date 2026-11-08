@@ -2047,8 +2047,8 @@ t03a543d2 = MB 단위, 가장 오래된 기록부터 삭제
 # What the audit log says of archives
 t8d6fca43 = 감사 로그가 압축 파일에 대해 기록하는 내용
 
-# “entries” names the files found damaged or left out, as well as counting them
-tf1125538 = “entries”는 손상되었거나 제외된 파일의 개수뿐 아니라 이름도 기록합니다
+# “entries” names each file extracted, and those found damaged or left out
+t1e33aba6 = “entries”는 압축을 푼 각 파일과 손상되었거나 제외된 파일의 이름을 기록합니다
 
 # Every job recorded
 t42369815 = 모든 작업 기록

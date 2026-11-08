@@ -110,7 +110,7 @@ A job is two records with the same `job`: `phase: start`, with what it is of, an
 
 | `action` | Of | At its end |
 |---|---|---|
-| `extract` | `source`, `destination`, and how: `overwrite`, `keep_mark`, `portable_names`, `links_outside`, `owners`, `xattrs`, `limit`; `picked` where only some were | `format`, `layers`, `files`, `directories`, `links`, `bytes`, how many files were `damaged`, `left_out` and `renamed`, `owners_left`. `partial` where some were damaged or left out |
+| `extract` | `source`, `destination`, and how: `overwrite`, `keep_mark`, `portable_names`, `links_outside`, `owners`, `xattrs`, `limit`; `picked` where only some were | `format`, `layers`, `files`, `directories`, `links`, `bytes`, how many files were `damaged`, `left_out` and `renamed`, `owners_left`; with `entries`, `damaged_names`, `left_out_names`, `renamed_names` and `extracted_names`. `partial` where some were damaged or left out |
 | `create` | `destination`, `kind`, `level`, `encryption` (`zip-aes256`, `7z-aes256`, `age-passphrase`, `age-key`), `hide_names`, `recipients` (the age keys, which are public), `part_size`, `keep_owners`, `keep_xattrs`, `paths` and `path_names` | `made` |
 | `convert` | `source`, `destination`, and as `create` | as `extract`, and `made` |
 | `test` | `source` | `files`, `bytes` |
@@ -128,7 +128,7 @@ A job is two records with the same `job`: `phase: start`, with what it is of, an
 
 Paths are whole paths on the computer, or as a storage writes them. What the user chose to work on is always named, the first 1,000 of it and how many in all: the files and folders to put in an archive, copy or move (`path_names`, `names`), and in an archive those picked to extract, opened, shown, deleted or renamed (`picked_names`, `entry`, `from_name`, `to_name`).
 
-What packwing comes on as it works is counted, not named, unless the organization sets `AuditLogDetail` to `entries`: then records name the files damaged, left out or renamed as they were extracted. A record never names every file extracted, as packwing is not told them one by one.
+What packwing comes on as it works is counted, not named, unless the organization sets `AuditLogDetail` to `entries`: then records name the files damaged, left out or renamed as they were extracted, and every file and link extracted into a folder (`extracted_names`), where it went in the destination, the first 1,000 and how many in all. A job that failed names what it wrote before it did.
 
 A file shown beside its archive is recorded the first time in a run only: going through an archive shows many, and seeing one again says nothing new. `pkw cat` is recorded each time.
 
@@ -160,4 +160,4 @@ pkw audit verify                 # the chain, from the oldest record
 
 ## Not yet
 
-Planned, in [design/audit-log.md](design/audit-log.md): every file extracted named.
+Phase 2 of [design/audit-log.md](design/audit-log.md) is done; what phase 3 would add is there.
