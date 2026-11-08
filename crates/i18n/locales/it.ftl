@@ -1651,6 +1651,15 @@ t93ff7715 = Nascondi i nomi dei file dietro la password
 # For 7z: nobody sees what is inside without it
 t0f5354d7 = Per 7z: senza di essa nessuno vede cosa c'è dentro
 
+# Yours
+t2635ea3b = Tuoi
+
+# By name
+t983e37f7 = Per nome
+
+# By number
+tcbbada8d = Per numero
+
 # No limit
 t6de7f47d = Nessun limite
 
@@ -1692,6 +1701,18 @@ tf47f4968 = Solo nomi utilizzabili su ogni sistema
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = Anche su questo computer si chiede per i nomi che Windows non accetta, come a:b.txt, e per quelli che differiscono solo per maiuscole
+
+# Owners from a backup
+t38a7cf66 = Proprietari da un backup
+
+# Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
+t46908bee = Dove un archivio tar li ha mantenuti: tuoi, o quelli dell’archivio per nome o per numero. Solo un amministratore può dare file ad altri
+
+# Extended attributes from a backup
+t764eed3a = Attributi estesi da un backup
+
+# Where a tar archive kept them, ACLs among them
+ta28f3ae5 = Dove un archivio tar li ha mantenuti, ACL comprese
 
 # Light
 t8ad2f8cf = Chiaro

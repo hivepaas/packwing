@@ -1630,6 +1630,15 @@ t93ff7715 = 비밀번호로 파일 이름 숨기기
 # For 7z: nobody sees what is inside without it
 t0f5354d7 = 7z용: 비밀번호 없이는 안에 무엇이 있는지 볼 수 없습니다
 
+# Yours
+t2635ea3b = 내 것
+
+# By name
+t983e37f7 = 이름으로
+
+# By number
+tcbbada8d = 번호로
+
 # No limit
 t6de7f47d = 제한 없음
 
@@ -1671,6 +1680,18 @@ tf47f4968 = 모든 시스템에서 쓸 수 있는 이름만
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = a:b.txt처럼 Windows에서 쓸 수 없는 이름과 대소문자만 다른 이름도 이 컴퓨터에서 묻습니다
+
+# Owners from a backup
+t38a7cf66 = 백업의 소유자
+
+# Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
+t46908bee = tar 아카이브에 보존된 경우: 내 것, 또는 아카이브의 것을 이름이나 번호로. 다른 사람에게 파일을 줄 수 있는 것은 관리자뿐입니다
+
+# Extended attributes from a backup
+t764eed3a = 백업의 확장 속성
+
+# Where a tar archive kept them, ACLs among them
+ta28f3ae5 = tar 아카이브에 보존된 경우, ACL 포함
 
 # Light
 t8ad2f8cf = 라이트

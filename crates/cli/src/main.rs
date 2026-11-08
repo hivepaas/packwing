@@ -120,6 +120,8 @@ enum Command {
         damaging: Damaging,
         #[command(flatten)]
         naming: Naming,
+        #[command(flatten)]
+        restore: Restore,
     },
     /// Check that an archive reads whole, as it was made.
     #[command(visible_alias = "t")]
@@ -369,6 +371,25 @@ pub struct Backup {
     /// files make the same archive.
     #[arg(long, value_name = "WHEN")]
     pub mtime: Option<String>,
+}
+
+/// What a tar archive kept for a backup that extracting gives back.
+#[derive(Args, Debug, Default)]
+pub struct Restore {
+    /// Give each file the owner and group a tar archive kept for a backup
+    /// (create --owners): by name where this computer has the name, else by
+    /// number, as GNU tar's --same-owner. Only an administrator gives files to
+    /// others; the rest stay yours. Linux and macOS.
+    #[arg(long)]
+    pub same_owner: bool,
+    /// The same by the archive's numbers, names aside, as GNU tar's
+    /// --numeric-owner: for a backup restored on the computer it came from.
+    #[arg(long)]
+    pub numeric_owner: bool,
+    /// Give each file the extended attributes a tar archive kept (create
+    /// --xattrs), Linux's ACLs among them, as GNU tar's --xattrs. Linux and macOS.
+    #[arg(long)]
+    pub xattrs: bool,
 }
 
 /// How it went, as the exit code says.

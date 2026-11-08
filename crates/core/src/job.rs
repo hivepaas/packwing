@@ -11,10 +11,10 @@ use std::time::Duration;
 
 use hivepack::extract::{
     Cancel, Damaged, ErrorKind, LinkOutside, Links, NameDecoder, NameError, NameRules, OnDamaged,
-    OnLinksOutside, OnRefused, OnUnnamable, Options, Permissions, Progress, ProgressFn, RarProblem,
-    Select, Sink, Summary, extract_7z, extract_7z_to, extract_cpio, extract_cpio_to, extract_iso,
-    extract_iso_to, extract_rar, extract_rar_to, extract_tar, extract_tar_to, extract_udf,
-    extract_udf_to, extract_xar, extract_xar_to, extract_zip, extract_zip_to,
+    OnLinksOutside, OnRefused, OnUnnamable, Options, Owners, Permissions, Progress, ProgressFn,
+    RarProblem, Select, Sink, Summary, extract_7z, extract_7z_to, extract_cpio, extract_cpio_to,
+    extract_iso, extract_iso_to, extract_rar, extract_rar_to, extract_tar, extract_tar_to,
+    extract_udf, extract_udf_to, extract_xar, extract_xar_to, extract_zip, extract_zip_to,
 };
 use hivepack::open::{Container, Opened};
 use hivepack::tar::Reader;
@@ -254,6 +254,17 @@ pub struct ExtractOptions {
     /// default), created as they are, or the job stopped before anything is
     /// written. Links are written as files on Windows, whatever this says.
     pub links_outside: OnLinksOutside,
+    /// Each file's and folder's owner and group, as a tar archive kept them for a
+    /// backup ([`crate::Keep::owners`]): the user's by default; by name where
+    /// this system has the name, or by number, as GNU tar's `--same-owner` and
+    /// `--numeric-owner`. An administrator gives files to anyone, others to
+    /// themselves and their groups: what is not theirs to give is left the
+    /// user's, and counted ([`Summary::owners_left`]). Linux and macOS only.
+    pub owners: Owners,
+    /// Each file's and folder's extended attributes, Linux's ACLs among them, as a
+    /// tar archive kept them ([`crate::Keep::xattrs`]), as GNU tar's `--xattrs`.
+    /// Never one that gives a program rights. Linux and macOS only.
+    pub xattrs: bool,
 }
 
 impl Default for ExtractOptions {
@@ -264,6 +275,8 @@ impl Default for ExtractOptions {
             keep_mark: true,
             portable_names: false,
             links_outside: OnLinksOutside::Skip,
+            owners: Owners::Ignore,
+            xattrs: false,
         }
     }
 }
@@ -570,6 +583,12 @@ pub(crate) fn extract_into(
         options.on_links_outside = Some(Arc::new(move |links: &[LinkOutside]| {
             asked(&links.iter().map(OutsideLink::of).collect::<Vec<_>>())
         }));
+    }
+    // What a tar archive kept for a backup, when asked: into a folder alone, as
+    // what takes them otherwise is another archive.
+    if let WriteTo::Folder(_) = into {
+        options.owners = how.owners;
+        options.xattrs = how.xattrs;
     }
     if let WriteTo::Taker(_) = into {
         // What takes the links is no folder but an archive: they stay links, on
