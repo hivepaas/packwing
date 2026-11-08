@@ -2558,6 +2558,14 @@ fn add_into(
         level: Level::default(),
         stored: stored_extensions,
     };
+    // As a new archive's: the files compressed in threads ahead of the one
+    // written, a large one deflated in blocks on all of them, as many as the
+    // memory there is takes, held until the archive is written.
+    let (threads, _held) = crate::memory::hold_threads(crate::threads().count(), |n| {
+        u64::from(n) * ZIP_THREAD_MEMORY
+    });
+    za.set_threads(hivepack::Threads::of(threads));
+    za.set_deflate_in_blocks(true);
     if let Err(e) = add_items(&mut za, new, how, encrypted.is_some(), &tally) {
         return why(Err(e), &tally);
     }
