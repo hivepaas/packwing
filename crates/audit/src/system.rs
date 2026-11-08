@@ -1,6 +1,6 @@
 //! Each record, written to the system's own log as well, where the
 //! organization's policy says so (`AuditLogSystem`): the Event Log on Windows,
-//! journald elsewhere, or syslog where there is none. Collectors read those
+//! the unified log on macOS, journald elsewhere, or syslog where there is none. Collectors read those
 //! already, and someone who can change the log's files cannot take a record
 //! back out of them.
 //!
@@ -31,6 +31,7 @@ pub(crate) fn summary(record: &Map<String, Value>) -> String {
         "destination",
         "folder",
         "part",
+        "made",
     ]
     .iter()
     .find_map(|key| text(key));
@@ -73,10 +74,14 @@ fn event_id(record: &Map<String, Value>) -> u32 {
     }
 }
 
-/// The system's log records go to, by its name: `journald`, `syslog` or the
-/// Event Log.
+/// The system's log records go to, by its name: `journald`, `syslog`, the
+/// unified log or the Event Log.
 pub fn name() -> &'static str {
-    #[cfg(unix)]
+    #[cfg(target_os = "macos")]
+    {
+        "the unified log"
+    }
+    #[cfg(all(unix, not(target_os = "macos")))]
     {
         if std::path::Path::new(unix::JOURNAL).exists() {
             "journald"
@@ -98,7 +103,12 @@ pub(crate) fn send(
     hash: &str,
     record: &Map<String, Value>,
 ) -> io::Result<()> {
-    #[cfg(unix)]
+    #[cfg(target_os = "macos")]
+    {
+        let _ = app;
+        to_unified_log(line, hash, record)
+    }
+    #[cfg(all(unix, not(target_os = "macos")))]
     {
         unix::send(app, line, hash, record)
     }
@@ -112,6 +122,22 @@ pub(crate) fn send(
         let _ = (app, line, hash, record);
         Ok(())
     }
+}
+
+/// The record to the unified log: its line to read, then the record whole on
+/// the next line. One longer than the log keeps whole goes as its line and
+/// hash, which the day's file holds whole. The app's and pkw's records alike
+/// are the subsystem's; which wrote it is in the record, and the process's.
+#[cfg(target_os = "macos")]
+fn to_unified_log(line: &str, hash: &str, record: &Map<String, Value>) -> io::Result<()> {
+    use crate::macos::{MOST_BYTES, SUBSYSTEM, write};
+
+    let read = summary(record);
+    let mut message = format!("{read}\n{line}");
+    if message.len() > MOST_BYTES {
+        message = format!("{read}\nThe record is too long for the log: hash {hash}.");
+    }
+    write(SUBSYSTEM, severity(record) <= 4, &message)
 }
 
 /// The record to the Event Log: its line to read and the record whole, as
@@ -150,7 +176,8 @@ fn to_event_log(line: &str, hash: &str, record: &Map<String, Value>) -> io::Resu
     report(SOURCE, kind, event_id(record), &strings)
 }
 
-#[cfg(unix)]
+// Elsewhere than on macOS, which has its own (crate::macos).
+#[cfg(all(unix, not(target_os = "macos")))]
 mod unix {
     use std::io;
     use std::os::unix::net::UnixDatagram;
@@ -163,8 +190,8 @@ mod unix {
     /// Where journald takes what is sent to it.
     pub(super) const JOURNAL: &str = "/run/systemd/journal/socket";
 
-    /// Where syslog does, by the system: Linux and the BSDs, the BSDs, macOS.
-    const SYSLOG: [&str; 3] = ["/dev/log", "/var/run/log", "/var/run/syslog"];
+    /// Where syslog does, by the system: Linux and the BSDs, the BSDs.
+    const SYSLOG: [&str; 2] = ["/dev/log", "/var/run/log"];
 
     /// The facility of what users' programs say.
     const USER: u8 = 1;
@@ -348,13 +375,17 @@ mod tests {
             "read_entry ended: failed, /a/b.zip › c.txt (wrong password)"
         );
         assert_eq!(severity(&failed), 4);
+        let made = record(
+            json!({"action": "create", "phase": "end", "result": "ok", "made": "/a/new.zip"}),
+        );
+        assert_eq!(summary(&made), "create ended: ok, /a/new.zip");
         let stopped = record(json!({"action": "audit.stopped", "folder": "/var/audit"}));
         assert_eq!(summary(&stopped), "audit.stopped, /var/audit");
         assert_eq!(severity(&stopped), 5);
         assert_eq!([&start, &failed, &stopped].map(event_id), [1, 5, 9]);
     }
 
-    #[cfg(unix)]
+    #[cfg(all(unix, not(target_os = "macos")))]
     mod unix {
         use std::io::{IoSliceMut, Read, Seek, SeekFrom};
         use std::mem::MaybeUninit;

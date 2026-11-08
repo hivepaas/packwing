@@ -24,8 +24,12 @@ windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Securit
 
 [dev-dependencies]
 
+# The C that writes to macOS's unified log.
+[build-dependencies]
+cc = "1"
+
 # As the workspace's, but that src/windows.rs may call the Event Log and the
-# process's token, which no crate it has wraps.
+# process's token, and src/macos.rs the unified log, which no crate it has wraps.
 [lints.rust]
 unsafe_code = "deny"
 

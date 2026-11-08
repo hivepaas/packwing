@@ -67,7 +67,14 @@ New-EventLog -LogName Application -Source packwing
 
 That is Windows PowerShell 5.1's, which every Windows has. Through Group Policy or Intune, it is the registry key `HKLM\SYSTEM\CurrentControlSet\Services\EventLog\Application\packwing` with `EventMessageFile` (expandable text) `%SystemRoot%\Microsoft.NET\Framework64\v4.0.30319\EventLogMessages.dll` and `TypesSupported` (DWORD) 7. Without it, events are written all the same, whole: Event Viewer only says their description cannot be found before it shows them.
 
-On macOS it goes to syslog for now, which the unified log keeps; the unified log's own subsystem comes next ([design/audit-log.md](design/audit-log.md#phase-2)).
+On macOS it goes to the unified log, as the subsystem `com.hivepaas.packwing` and the category `audit`, the app's records and pkw's alike: the line to read, then the record whole on the next line. It is written at the default level, which the log keeps on disk, and a job that failed as an error. A record of more than 1,000 bytes, which the unified log would cut, goes as its line to read and its hash; the day's file holds it whole.
+
+```sh
+log show --last 1d --predicate 'subsystem == "com.hivepaas.packwing"'
+log show --last 1d --style ndjson --predicate 'subsystem == "com.hivepaas.packwing" AND messageType == error'
+```
+
+The unified log keeps what it has for as long as the system decides, days to weeks, and a configuration profile can keep more: collectors that read it (an EDR, osquery's `unified_log`, Elastic's) take it off the computer.
 
 `pkw audit status` says where it goes, and a record it could not be sent to shows in Settings › Security as the last that could not be written.
 
@@ -147,4 +154,4 @@ pkw audit verify                 # the chain, from the oldest record
 
 ## Not yet
 
-Planned, in [design/audit-log.md](design/audit-log.md): macOS's unified log, a policy that stops a job whose record cannot be written, and every file extracted named.
+Planned, in [design/audit-log.md](design/audit-log.md): a policy that stops a job whose record cannot be written, and every file extracted named.

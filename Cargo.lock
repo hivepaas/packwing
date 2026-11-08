@@ -5344,6 +5344,7 @@ dependencies = [
 name = "packwing-audit"
 version = "0.1.0"
 dependencies = [
+ "cc",
  "getrandom 0.4.3",
  "rustix",
  "serde_json",
