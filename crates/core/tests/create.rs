@@ -3722,3 +3722,66 @@ fn lz4_goes_in_blocks_compressed_in_threads() {
         assert!(back == data, "{level:?}");
     }
 }
+
+/// A compressed tar into a folder is read once: until its entries are checked,
+/// how far it is, is told from the archive's bytes read, against its size;
+/// what is told never goes back, ends at all of it, and no private folder is
+/// left.
+#[test]
+fn a_compressed_tar_extracted_tells_how_far_through_the_archive() {
+    let s = Scratch::new("tar-once-progress");
+    let root = s.path("files");
+    fs::create_dir(&root).unwrap();
+    for i in 0..4 {
+        fs::write(
+            root.join(format!("{i}.txt")),
+            words_and_noise(2 << 20, i + 20),
+        )
+        .unwrap();
+    }
+    let new = NewArchive {
+        kind: Kind::TarGz,
+        ..NewArchive::default()
+    };
+    let made = create(
+        std::slice::from_ref(&root),
+        &s.path("a.tar.gz"),
+        &new,
+        &Control::default(),
+    )
+    .unwrap();
+    let size = fs::metadata(&made).unwrap().len();
+    let told = Arc::new(std::sync::Mutex::new(Vec::new()));
+    let keep = told.clone();
+    let control = Control {
+        progress: Some(Arc::new(move |p: &Progress| {
+            keep.lock().unwrap().push((p.bytes, p.total_bytes));
+        })),
+        ..Control::default()
+    };
+    let out = s.path("out");
+    extract_with(
+        &made,
+        &out,
+        &Keys::default(),
+        &ExtractOptions::default(),
+        &control,
+    )
+    .unwrap();
+    let told = told.lock().unwrap();
+    assert!(told.iter().any(|&(_, total)| total == size), "{told:?}");
+    let fractions: Vec<f64> = told
+        .iter()
+        .filter(|&&(_, total)| total > 0)
+        .map(|&(bytes, total)| bytes as f64 / total as f64)
+        .collect();
+    assert!(fractions.windows(2).all(|w| w[1] >= w[0]), "{fractions:?}");
+    let all = 4 * (2 << 20);
+    assert_eq!(told.last(), Some(&(all, all)));
+    let left: Vec<_> = fs::read_dir(&out)
+        .unwrap()
+        .flatten()
+        .map(|e| e.file_name().to_string_lossy().into_owned())
+        .collect();
+    assert_eq!(left, ["files"]);
+}

@@ -260,6 +260,13 @@ pub fn run(extensions: Extensions) {
             audit_log::apply(cx, audit_log::By::Startup);
             cx.set_global(text_size::SystemSize(text_size::read_system()));
             packwing_core::clean_opened_files();
+            // What an extraction left behind when packwing ended without
+            // removing it: off the window's thread, as a folder it was in may
+            // be slow to reach.
+            if let Some(folder) = prefs::folder() {
+                packwing_core::keep_journal_in(folder);
+                std::thread::spawn(packwing_core::clean_left_extractions);
+            }
             // GNOME's Wayland compositor draws no window frame, so Linux gets
             // client-side decorations. macOS and Windows keep the system's
             // frame but hide its title bar, and the app draws its own.

@@ -508,6 +508,11 @@ fn main() -> ExitCode {
     // The core's messages, in the system's language, as the app's are.
     packwing_i18n::set_language(None);
     stop::listen();
+    // What an extraction left behind when packwing ended without removing it.
+    if let Some(folder) = settings::folder() {
+        packwing_core::keep_journal_in(folder);
+        packwing_core::clean_left_extractions();
+    }
     packwing_core::use_threads(
         cli.output
             .threads
