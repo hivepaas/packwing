@@ -25,11 +25,11 @@ What the audit log does today is in [../audit.md](../audit.md). This is why it i
 
 - **The system's own logs**, by policy (`AuditLogSystem`): Windows' Event Log (an event source of packwing's, in Application), journald, macOS's unified log (`com.hivepaas.packwing`). Collectors already read them, and clearing Windows' takes an administrator and is an event of its own (1102). A second copy: the day's files stay the record.
   - journald: done. Its native protocol on its socket, no library; a record too long for a datagram in a sealed memory file, as journald takes those. Syslog where there is none, and on macOS until the unified log.
-  - Windows: `ReportEventW` to the source `packwing`. The installer registers the source, with a message table in `packwing.exe`, so that Event Viewer reads the event as a sentence; unregistered, as a portable copy runs, events are still written whole, and Event Viewer says their description cannot be found before showing them.
+  - Windows: done. `ReportEventW` from the source `packwing`, with the user's SID. The installer is the user's and cannot register a source, which takes an administrator, and a message file in one user's folder is not found by another's Event Viewer: the organization registers it where it sets the policy, with .NET's `EventLogMessages.dll`, whose every event reads as its first string. Unregistered, events are written whole all the same, and Event Viewer says their description cannot be found before showing them.
   - macOS: `os_log` with the subsystem `com.hivepaas.packwing`, through a few lines of C.
 - **`AuditLogRequired`**: a job whose start cannot be recorded does not start, and says why. Worth it once records go off the computer; before, the person it would stop can as well stop the log.
 - **Every file extracted named**, with `entries`: hivepack tells each one written (a callback in `extract::Options`), and records hold them, to a limit.
-- **Windows' SID** of the user, besides the name.
+- **Windows' SID** of the user, besides the name: done, with the Event Log.
 
 ## Phase 3, if asked for
 

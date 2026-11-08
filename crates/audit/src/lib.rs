@@ -26,6 +26,8 @@ use serde_json::{Map, Value, json};
 use sha2::{Digest, Sha256};
 
 mod system;
+#[cfg(windows)]
+mod windows;
 
 pub use system::name as system_log_name;
 
@@ -75,6 +77,10 @@ impl Log {
         base.insert("user".into(), json!(user));
         if let Some(id) = id {
             base.insert("uid".into(), json!(id));
+        }
+        #[cfg(windows)]
+        if let Some(sid) = windows::sid() {
+            base.insert("sid".into(), json!(sid));
         }
         base.insert("app".into(), json!(config.app));
         base.insert("version".into(), json!(config.version));
