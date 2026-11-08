@@ -411,7 +411,8 @@ mod tests {
             ),
         ]);
         let kept = settled(&p, false, Chosen::default(), "pkw").unwrap();
-        let folder = path_text(&kept.folder);
+        // As the policy says it: on Windows, made absolute, it would take a drive.
+        let folder = kept.folder.to_string_lossy();
         assert!(folder.starts_with("/srv/audit/"), "{folder}");
         assert!(!folder.contains("{user}"), "{folder}");
     }
