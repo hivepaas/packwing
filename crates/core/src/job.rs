@@ -417,20 +417,24 @@ fn extract_selected_from(
         }
     }
     std::fs::create_dir_all(destination)?;
-    let scratch = fresh_folder(destination, ".packwing-extracting")?;
+    // What a process that died left here, and this one noted, so that what it
+    // leaves goes when packwing starts again.
+    crate::journal::remove_stale_own(destination);
+    let _noted = crate::journal::note(destination);
+    let scratch = crate::journal::Scratch::new(fresh_folder(destination, ".packwing-extracting")?)?;
     let chosen: Vec<Vec<String>> = picked.to_vec();
     let select: Select =
         Arc::new(move |entry: &[String]| chosen.iter().any(|p| entry.starts_with(p)));
-    let result =
-        extract_picked(&source, &scratch, keys, how, Some(select), control).and_then(|done| {
+    let result = extract_picked(&source, &scratch.files, keys, how, Some(select), control)
+        .and_then(|done| {
             for entry in picked {
                 let Some(name) = entry.last() else { continue };
-                let from = entry.iter().fold(scratch.clone(), |at, c| at.join(c));
+                let from = entry.iter().fold(scratch.files.clone(), |at, c| at.join(c));
                 move_into(&from, &destination.join(name))?;
             }
             Ok(done)
         });
-    let _ = std::fs::remove_dir_all(&scratch);
+    drop(scratch);
     result
 }
 

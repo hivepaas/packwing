@@ -30,6 +30,94 @@ const FILE: &str = "extracting";
 /// What hivepack names its private folders, before a number of their own.
 const PRIVATE: &str = ".hivepack-extracting-";
 
+/// What packwing names its own, before a number of their own: "Extract
+/// selected" writes into one, and moves what was picked out of it.
+const OWN: &str = ".packwing-extracting-";
+
+/// The file in a private folder that its extraction keeps locked.
+const OWNER: &str = "owner";
+
+/// How old one of packwing's own private folders without an `owner` (made
+/// before packwing kept one) is, when it is taken for left behind.
+const UNOWNED_FOR: std::time::Duration = std::time::Duration::from_secs(24 * 60 * 60);
+
+/// One of packwing's own private folders, `root`: what is extracted goes into
+/// `files`, beside an `owner` file that is locked while it is used, which the
+/// system lets go of however the process ends. Removed when dropped.
+pub(crate) struct Scratch {
+    pub(crate) files: PathBuf,
+    root: PathBuf,
+    owner: Option<File>,
+}
+
+impl Scratch {
+    /// The private folder `root`, just made, given its `owner`, locked, and
+    /// its `files`.
+    pub(crate) fn new(root: PathBuf) -> std::io::Result<Scratch> {
+        let made = (|| {
+            let owner = File::create_new(root.join(OWNER))?;
+            owner
+                .try_lock()
+                .map_err(|_| std::io::Error::from(std::io::ErrorKind::WouldBlock))?;
+            let files = root.join("files");
+            std::fs::create_dir(&files)?;
+            Ok((owner, files))
+        })();
+        match made {
+            Ok((owner, files)) => Ok(Scratch {
+                files,
+                root,
+                owner: Some(owner),
+            }),
+            Err(e) => {
+                let _ = std::fs::remove_dir_all(&root);
+                Err(e)
+            }
+        }
+    }
+}
+
+impl Drop for Scratch {
+    fn drop(&mut self) {
+        // Closed first: Windows removes no file that is open.
+        self.owner = None;
+        let _ = std::fs::remove_dir_all(&self.root);
+    }
+}
+
+/// Removes packwing's own private folders in `parent` that no one uses: whose
+/// `owner` can be locked, or that have none and are more than a day old.
+pub(crate) fn remove_stale_own(parent: &Path) {
+    let Ok(entries) = std::fs::read_dir(parent) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let named = entry
+            .file_name()
+            .to_str()
+            .is_some_and(|name| name.starts_with(OWN));
+        let Ok(kind) = entry.file_type() else {
+            continue;
+        };
+        if !named || !kind.is_dir() {
+            continue;
+        }
+        let path = entry.path();
+        let free = match OpenOptions::new().write(true).open(path.join(OWNER)) {
+            Ok(owner) => owner.try_lock().is_ok(),
+            Err(_) => entry
+                .metadata()
+                .and_then(|m| m.modified())
+                .ok()
+                .and_then(|at| at.elapsed().ok())
+                .is_some_and(|age| age > UNOWNED_FOR),
+        };
+        if free {
+            let _ = std::fs::remove_dir_all(&path);
+        }
+    }
+}
+
 /// Keeps the journal in `folder`, packwing's settings folder: before, nothing
 /// is noted.
 pub fn keep_journal_in(folder: PathBuf) {
@@ -150,13 +238,14 @@ fn clean_in(folder: &Path) {
             return false;
         };
         let _ = hivepack::extract::remove_stale(path);
+        remove_stale_own(path);
         // Kept while a private folder is there still: in use.
         std::fs::read_dir(path).is_ok_and(|entries| {
             entries.flatten().any(|entry| {
                 entry
                     .file_name()
                     .to_str()
-                    .is_some_and(|name| name.starts_with(PRIVATE))
+                    .is_some_and(|name| name.starts_with(PRIVATE) || name.starts_with(OWN))
             })
         })
     });
@@ -199,6 +288,25 @@ mod tests {
                 .unwrap()
                 .is_empty()
         );
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn packwing_s_own_private_folder_left_is_removed_and_one_in_use_is_not() {
+        let root = std::env::temp_dir().join(format!("packwing-scratch-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(&root).unwrap();
+        let used = root.join(format!("{OWN}0"));
+        std::fs::create_dir(&used).unwrap();
+        let scratch = Scratch::new(used.clone()).unwrap();
+        let left = root.join(format!("{OWN}1"));
+        std::fs::create_dir_all(left.join("files")).unwrap();
+        std::fs::write(left.join(OWNER), "").unwrap();
+        remove_stale_own(&root);
+        assert!(used.exists(), "in use");
+        assert!(!left.exists(), "left behind");
+        drop(scratch);
+        assert!(!used.exists(), "removed when dropped");
         let _ = std::fs::remove_dir_all(&root);
     }
 }
