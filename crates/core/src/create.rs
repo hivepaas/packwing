@@ -209,52 +209,85 @@ impl Frames {
     }
 }
 
-/// How an `.tar.xz` or `.xz` is cut into blocks, each compressed in a thread
-/// and decoded in one: the same archive whatever the threads, as the blocks
-/// depend on the input's size alone.
+/// How LZMA2 is cut into blocks, each compressed in a thread and decoded in
+/// one: a `.tar.xz` or `.xz`'s, and a 7z archive's. The same archive whatever
+/// the threads, as the blocks depend on the input's size alone.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Blocks {
-    /// xz's own, three dictionaries each: the smallest archive. Fewer blocks
-    /// than cores leave cores idle: 2.3 GB at the highest level is 13 blocks
-    /// of 192 MiB.
+    /// The format's own: xz's of three dictionaries, 7-Zip's of four, up to
+    /// 256 MiB. The smallest archive, but fewer blocks than cores leave
+    /// cores idle: 2.3 GB at the highest level is 13 blocks of xz, 10 of 7z.
     #[default]
     Large,
-    /// Enough for [`XZ_BLOCKS`] cores where xz's own are fewer, down to one
-    /// dictionary each, as what xz finds is within one. 2.3 GB of a
-    /// computer's own files at the highest level, on 32 cores: 79 s in blocks
-    /// of 192 MiB, 38 s in 72 MiB, and 4% larger; 2.4 GB of programs, 89 s
-    /// and 46 s in 64 MiB, and 0.7% larger.
+    /// Enough for [`SMALL_BLOCKS_FOR`] cores where the format's own are
+    /// fewer, down to one dictionary each, as what LZMA finds is within one.
+    /// At the highest level on 32 cores: 2.3 GB of a computer's own files as
+    /// xz, 79 s in blocks of 192 MiB, 38 s in 72 MiB, and 4% larger; as 7z,
+    /// 97 s in 256 MiB, 35–44 s in 64–96 MiB, 3–7% larger; 3 GB of programs
+    /// as 7z, 113 s, and 63–73 s, 0.4–0.8% larger.
     Small,
 }
 
 /// The cores [`Blocks::Small`] cuts enough blocks for, whatever the threads.
-pub const XZ_BLOCKS: u64 = 32;
+pub const SMALL_BLOCKS_FOR: u64 = 32;
 
 impl Blocks {
-    /// The input of each block for `bytes` at `level`, or 0 for xz's own.
-    fn size(self, level: Level, bytes: u64) -> u64 {
+    /// The input of each block of a `.tar.xz` or `.xz` of `bytes` at
+    /// `level`, or 0 for xz's own.
+    fn xz(self, level: Level, bytes: u64) -> u64 {
         match self {
             Blocks::Large => 0,
+            Blocks::Small => small_blocks(bytes, xz_blocks_of(level)),
+        }
+    }
+
+    /// A 7z archive's blocks, of `bytes` at `level`.
+    fn seven_zip(self, level: Level, bytes: u64) -> hivepack::sevenz::Lzma2Blocks {
+        match self {
+            Blocks::Large => hivepack::sevenz::Lzma2Blocks::Auto,
             Blocks::Small => {
-                let (dictionary, own) = xz_blocks_of(level);
-                bytes.div_ceil(XZ_BLOCKS).clamp(dictionary, own)
+                hivepack::sevenz::Lzma2Blocks::Size(small_blocks(bytes, seven_zip_blocks_of(level)))
             }
         }
     }
 
-    /// Whether small blocks differ from large ones for `bytes` at `level`:
-    /// when there are fewer than [`XZ_BLOCKS`] of xz's own, and more than one
+    /// Whether small blocks differ from large ones for `bytes` of `kind` at
+    /// `level`: for xz and 7z, when there are fewer than
+    /// [`SMALL_BLOCKS_FOR`] of the format's own, and more than one
     /// dictionary.
-    pub fn differ(level: Level, bytes: u64) -> bool {
-        let (dictionary, own) = xz_blocks_of(level);
-        bytes > dictionary && Blocks::Small.size(level, bytes) < own
+    pub fn differ(kind: Kind, level: Level, bytes: u64) -> bool {
+        let (dictionary, own) = match kind {
+            _ if level == Level::Store => return false,
+            Kind::TarXz | Kind::Xz => xz_blocks_of(level),
+            Kind::SevenZip => seven_zip_blocks_of(level),
+            _ => return false,
+        };
+        bytes > dictionary && small_blocks(bytes, (dictionary, own)) < own
     }
+}
+
+/// Small blocks for `bytes`, of a dictionary and the format's own.
+fn small_blocks(bytes: u64, (dictionary, own): (u64, u64)) -> u64 {
+    bytes.div_ceil(SMALL_BLOCKS_FOR).clamp(dictionary, own)
+}
+
+/// LZMA2's dictionary at `level`.
+fn dictionary_of(level: Level) -> u64 {
+    LzmaOptions::preset(level.xz()).map_or(8 << 20, |o| u64::from(o.dict_size))
 }
 
 /// xz's dictionary at `level`, and its own blocks, three dictionaries.
 fn xz_blocks_of(level: Level) -> (u64, u64) {
-    let dictionary = LzmaOptions::preset(level.xz()).map_or(8 << 20, |o| u64::from(o.dict_size));
+    let dictionary = dictionary_of(level);
     let own = (3 * dictionary).max(1 << 20);
+    (dictionary.min(own), own)
+}
+
+/// 7z's dictionary at `level`, and its own blocks
+/// (`Lzma2Blocks::Auto`): four dictionaries, from 1 MiB to 256 MiB.
+fn seven_zip_blocks_of(level: Level) -> (u64, u64) {
+    let dictionary = dictionary_of(level);
+    let own = (4 * dictionary).clamp(1 << 20, 256 << 20);
     (dictionary.min(own), own)
 }
 
@@ -345,7 +378,7 @@ pub struct NewArchive {
     pub stream_above: Option<u64>,
     /// How a `.tar.zst` or `.zst` is cut into frames.
     pub frames: Frames,
-    /// How a `.tar.xz` or `.xz` is cut into blocks.
+    /// How LZMA2 is cut into blocks, in a `.tar.xz`, a `.xz` or a 7z archive.
     pub blocks: Blocks,
 }
 
@@ -1032,10 +1065,13 @@ const ZIP_THREAD_MEMORY: u64 = 34 << 20;
 /// hundreds of MiB, and more.
 pub fn memory_needed(new: &NewArchive) -> u64 {
     match new.kind {
-        Kind::SevenZip => seven_zip_options(&NewArchive {
-            password: None,
-            ..new.clone()
-        })
+        Kind::SevenZip => seven_zip_options(
+            &NewArchive {
+                password: None,
+                ..new.clone()
+            },
+            None,
+        )
         .ok()
         .and_then(|(options, _)| options.memory_usage(1).ok())
         .unwrap_or(0),
@@ -1464,8 +1500,11 @@ fn ntfs_time(secs: i64) -> Option<u64> {
 }
 
 /// How hivepack::sevenz writes the 7z archive `new` asks for.
+/// The options of a 7z archive, of `bytes` if they are known: as
+/// [`Blocks`] says of them, in small blocks.
 pub(crate) fn seven_zip_options(
     new: &NewArchive,
+    bytes: Option<u64>,
 ) -> Result<(hivepack::sevenz::WriteOptions, crate::memory::Held), Error> {
     let password = match &new.password {
         None => None,
@@ -1487,9 +1526,13 @@ pub(crate) fn seven_zip_options(
         })),
         // Blocks of 4 times the dictionary, each compressed in a thread and
         // decoded so, by packwing and 7-Zip alike: about 2% larger, and as
-        // many times sooner as there are blocks and threads. The same
-        // archive whatever the threads.
-        lzma2_blocks: hivepack::sevenz::Lzma2Blocks::Auto,
+        // many times sooner as there are blocks and threads; smaller, if
+        // asked, where those are fewer than the cores. The same archive
+        // whatever the threads.
+        lzma2_blocks: match bytes {
+            Some(bytes) => new.blocks.seven_zip(new.level, bytes),
+            None => hivepack::sevenz::Lzma2Blocks::Auto,
+        },
         ..hivepack::sevenz::WriteOptions::default()
     };
     // As many threads as the memory there is takes: at the highest level,
@@ -1509,7 +1552,17 @@ fn write_7z<W: Write + Seek>(
     tally: &Tally,
     out: W,
 ) -> Result<(), Error> {
-    let (mut options, _held) = seven_zip_options(new)?;
+    // What goes into LZMA2: what is compressed already is stored apart.
+    let squeezed_bytes = items
+        .iter()
+        .filter(|item| {
+            item.metadata.is_file()
+                && (new.level == Level::Store
+                    || !has_extension_in(&item.name, &new.stored_extensions))
+        })
+        .map(|item| item.metadata.len())
+        .sum();
+    let (mut options, _held) = seven_zip_options(new, Some(squeezed_bytes))?;
     // LZMA2's blocks are compressed in threads, up to a block for each taken
     // ahead of what is compressed: what they hold is not done, and the
     // writer, which may wait long for a block, is stopped from here.
@@ -1894,7 +1947,7 @@ impl<W: Write> Squeezed<W> {
                     ..MtOptions::default()
                 };
                 if let Some(bytes) = bytes {
-                    options.block_size = new.blocks.size(new.level, bytes);
+                    options.block_size = new.blocks.xz(new.level, bytes);
                 }
                 // As many threads as the memory there is takes: each takes
                 // about three dictionaries, the highest level's 64 MiB.

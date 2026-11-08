@@ -265,7 +265,7 @@ impl<'a> Format<'a> {
                 Format::Zip(Box::new(zip))
             }
             Kind::SevenZip => {
-                let (options, held) = seven_zip_options(new)?;
+                let (options, held) = seven_zip_options(new, bytes)?;
                 Format::SevenZip {
                     archive: Box::new(hivepack::sevenz::Writer::with_options(out, options)?),
                     storing: new.level == Level::Store,

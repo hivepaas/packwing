@@ -488,6 +488,42 @@ scenario!(
     }
 );
 
+scenario!(
+    /// A 7z archive offers its blocks as xz does: large by default, small
+    /// when chosen.
+    seven_zip_blocks_are_offered_and_chosen,
+    |ui| {
+        // 40 MiB at Medium: two of 7-Zip's own blocks of 32 MiB, five small
+        // ones of a dictionary, 8 MiB.
+        let big = ui.work.join("big.bin");
+        std::fs::write(&big, vec![7u8; 40 << 20]).expect("the big file");
+        ui.ws(|ws, window, cx| ws.open_create(vec![big], window, cx));
+        ui.wait_for("create");
+        ui.click("advanced");
+        ui.choose("format", ".7z");
+        ui.wait_for("blocks");
+        ui.click("blocks-small");
+        ui.click("create");
+        ui.wait_for_no_dialog();
+        let made = made(ui, ".7z");
+        assert_eq!(listed(&made, None), ["big.bin"]);
+        let of = |blocks| {
+            let to = ui.work.join(format!("{blocks:?}.7z"));
+            let new = packwing_core::NewArchive {
+                kind: packwing_core::Kind::SevenZip,
+                blocks,
+                ..packwing_core::NewArchive::default()
+            };
+            let control = packwing_core::Control::default();
+            packwing_core::create(&[ui.work.join("big.bin")], &to, &new, &control).expect("made");
+            std::fs::read(to).expect("read")
+        };
+        let bytes = std::fs::read(&made).expect("the archive");
+        assert!(bytes == of(packwing_core::Blocks::Small), "in small blocks");
+        assert!(bytes != of(packwing_core::Blocks::Large));
+    }
+);
+
 #[cfg(unix)]
 scenario!(
     /// A tar archive keeps the owners, and the extended attributes, when asked

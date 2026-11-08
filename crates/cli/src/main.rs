@@ -365,9 +365,9 @@ pub struct Making {
     /// which open on every core. Several from 256 MiB of files by default.
     #[arg(long, value_name = "one|several")]
     pub frames: Option<String>,
-    /// xz and tar.xz: xz's own blocks, large, the smallest, or small, enough
-    /// for 32 cores where there is less to compress, faster, and a few
-    /// percent larger. Large by default.
+    /// xz, tar.xz and 7z: the format's own blocks, large, the smallest, or
+    /// small, enough for 32 cores where there is less to compress, faster,
+    /// and a few percent larger. Large by default.
     #[arg(long, value_name = "large|small")]
     pub blocks: Option<String>,
     /// Compress pictures, video, sound and archives too, not only store them.
