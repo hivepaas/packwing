@@ -3,8 +3,8 @@
 //! with its name in the policy, and only the rest can be changed.
 
 use gpui::{
-    AnyElement, Context, Entity, FontWeight, PathPromptOptions, Render, SharedString, Subscription,
-    Window, div, prelude::*, relative, rgb,
+    AnyElement, Context, Entity, EventEmitter, FontWeight, PathPromptOptions, Render, SharedString,
+    Subscription, Window, div, prelude::*, relative, rgb,
 };
 use packwing_core::Algorithm;
 use packwing_core::audit::RETENTION_CHOICES;
@@ -49,6 +49,11 @@ struct Toggle {
     detail: String,
     on: bool,
 }
+
+/// The audit log's records were asked for: Browse shows them.
+pub struct ShowAuditLog;
+
+impl EventEmitter<ShowAuditLog> for Security {}
 
 pub struct Security {
     /// The monospace font found, once looked for.
@@ -236,16 +241,27 @@ impl Security {
                 setting(
                     tr!("Where the audit log is"),
                     config.folder.to_string_lossy().into_owned(),
-                    button(
-                        "audit-open",
-                        tr!("Open folder"),
-                        Fill::Outline,
-                        Size::Medium,
-                    )
-                    .on_click(move |_, _, cx| {
-                        let _ = std::fs::create_dir_all(&folder);
-                        crate::file_manager::open(&folder, cx);
-                    }),
+                    div()
+                        .flex()
+                        .flex_wrap()
+                        .justify_end()
+                        .gap(ui(8.))
+                        .child(
+                            button("audit-view", tr!("View records"), Fill::Tonal, Size::Medium)
+                                .on_click(cx.listener(|_, _, _, cx| cx.emit(ShowAuditLog))),
+                        )
+                        .child(
+                            button(
+                                "audit-open",
+                                tr!("Open folder"),
+                                Fill::Outline,
+                                Size::Medium,
+                            )
+                            .on_click(move |_, _, cx| {
+                                let _ = std::fs::create_dir_all(&folder);
+                                crate::file_manager::open(&folder, cx);
+                            }),
+                        ),
                 )
                 .into_any_element(),
             );

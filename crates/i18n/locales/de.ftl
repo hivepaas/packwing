@@ -2100,6 +2100,9 @@ t2774cee6 = Erfordert eine Pro- oder Enterprise-Lizenz: Einstellungen › Lizenz
 # Where the audit log is
 t2702fcc6 = Wo das Audit-Protokoll liegt
 
+# View records
+t27c5284a = Einträge ansehen
+
 # Open folder
 t713a842f = Ordner öffnen
 

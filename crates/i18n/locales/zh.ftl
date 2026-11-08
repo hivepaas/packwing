@@ -2077,6 +2077,9 @@ t2774cee6 = 需要 Pro 或 Enterprise 许可证：设置 › 许可证。
 # Where the audit log is
 t2702fcc6 = 审计日志的位置
 
+# View records
+t27c5284a = 查看记录
+
 # Open folder
 t713a842f = 打开文件夹
 

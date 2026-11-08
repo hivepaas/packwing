@@ -2100,6 +2100,9 @@ t2774cee6 = Pro veya Enterprise lisansı gerekir: Ayarlar › Lisans.
 # Where the audit log is
 t2702fcc6 = Denetim günlüğünün yeri
 
+# View records
+t27c5284a = Kayıtları gör
+
 # Open folder
 t713a842f = Klasörü aç
 

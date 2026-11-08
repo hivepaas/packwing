@@ -2100,6 +2100,9 @@ t2774cee6 = Requiere una licencia Pro o Enterprise: Ajustes › Licencia.
 # Where the audit log is
 t2702fcc6 = Dónde está el registro de auditoría
 
+# View records
+t27c5284a = Ver registros
+
 # Open folder
 t713a842f = Abrir carpeta
 

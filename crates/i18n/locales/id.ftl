@@ -2077,6 +2077,9 @@ t2774cee6 = Memerlukan lisensi Pro atau Enterprise: Pengaturan › Lisensi.
 # Where the audit log is
 t2702fcc6 = Lokasi log audit
 
+# View records
+t27c5284a = Lihat catatan
+
 # Open folder
 t713a842f = Buka folder
 

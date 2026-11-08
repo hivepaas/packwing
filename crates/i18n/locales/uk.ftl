@@ -2146,6 +2146,9 @@ t2774cee6 = Потрібна ліцензія Pro або Enterprise: Налаш�
 # Where the audit log is
 t2702fcc6 = Де журнал аудиту
 
+# View records
+t27c5284a = Переглянути записи
+
 # Open folder
 t713a842f = Відкрити теку
 

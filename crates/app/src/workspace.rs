@@ -30,7 +30,7 @@ use crate::pages::browse::{BrowsePage, Tab};
 use crate::pages::jobs::{JobsEvent, JobsPage, Summary};
 use crate::pages::onboarding::{Done, Onboarding};
 use crate::pages::recent::{RecentEvent, RecentPage, Row};
-use crate::pages::settings::{Appearance, AppearanceChosen, Section, SettingsPage};
+use crate::pages::settings::{Appearance, AppearanceChosen, Section, SettingsPage, ShowAuditLog};
 use crate::pages::storages::{AddStorageAsked, EditStorageAsked, RemoveStorageAsked, StoragesPage};
 use crate::placement::{self, WindowPlace};
 use crate::prefs::{self, KeptStorage, TrustedKey};
@@ -394,6 +394,10 @@ impl Workspace {
                 window,
                 |this, _, e: &AppearanceChosen, window, cx| this.set_appearance(e.0, window, cx),
             ),
+            cx.subscribe(&settings, |this, _, _: &ShowAuditLog, cx| {
+                this.browse.update(cx, |b, cx| b.show_tab(Tab::Audit, cx));
+                this.show_page(Page::Browse, cx);
+            }),
             // The desktop may move the window's buttons to the other end.
             cx.observe_button_layout_changed(window, |_, _, cx| cx.notify()),
             cx.observe_window_appearance(window, |this, window, cx| {

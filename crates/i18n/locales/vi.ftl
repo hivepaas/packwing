@@ -2077,6 +2077,9 @@ t2774cee6 = Cần giấy phép Pro hoặc Enterprise: Cài đặt › Giấy ph�
 # Where the audit log is
 t2702fcc6 = Nơi lưu nhật ký kiểm tra
 
+# View records
+t27c5284a = Xem bản ghi
+
 # Open folder
 t713a842f = Mở thư mục
 

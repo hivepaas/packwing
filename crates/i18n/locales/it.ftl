@@ -2100,6 +2100,9 @@ t2774cee6 = Richiede una licenza Pro o Enterprise: Impostazioni › Licenza.
 # Where the audit log is
 t2702fcc6 = Dove si trova il registro di controllo
 
+# View records
+t27c5284a = Vedi i record
+
 # Open folder
 t713a842f = Apri cartella
 

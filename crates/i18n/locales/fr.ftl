@@ -2100,6 +2100,9 @@ t2774cee6 = Nécessite une licence Pro ou Enterprise : Réglages › Licence.
 # Where the audit log is
 t2702fcc6 = Où se trouve le journal d’audit
 
+# View records
+t27c5284a = Voir les enregistrements
+
 # Open folder
 t713a842f = Ouvrir le dossier
 

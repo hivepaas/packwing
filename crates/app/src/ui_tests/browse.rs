@@ -294,8 +294,14 @@ scenario!(
             .is_err()
         );
 
-        ui.click("nav-browse");
-        ui.click("tab-audit");
+        // Settings leads there.
+        ui.settings(3);
+        ui.click("audit-view");
+        assert!(ui.shows("tab-audit"));
+        assert_eq!(
+            ui.ws(|ws, _, cx| ws.browse_page().read(cx).tab()),
+            crate::pages::browse::Tab::Audit
+        );
         ui.wait_until("the records", |ui| shown(ui).len() == 3);
         assert_eq!(
             shown(ui),
@@ -315,6 +321,9 @@ scenario!(
         assert!(ui.shows("audit-detail"));
         ui.click("audit-detail-close");
         assert!(!ui.shows("audit-detail"));
+        ui.click("tab-recent");
+        ui.click("tab-audit");
+        assert!(ui.shows("audit-chain"));
 
         ui.settings(3);
         ui.click("audit-log");

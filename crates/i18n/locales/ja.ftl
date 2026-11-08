@@ -2077,6 +2077,9 @@ t2774cee6 = Pro または Enterprise ライセンスが必要です：設定 ›
 # Where the audit log is
 t2702fcc6 = 監査ログの場所
 
+# View records
+t27c5284a = 記録を表示
+
 # Open folder
 t713a842f = フォルダーを開く
 

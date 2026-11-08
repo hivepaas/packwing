@@ -2077,6 +2077,9 @@ t2774cee6 = Pro 또는 Enterprise 라이선스가 필요합니다: 설정 › �
 # Where the audit log is
 t2702fcc6 = 감사 로그 위치
 
+# View records
+t27c5284a = 기록 보기
+
 # Open folder
 t713a842f = 폴더 열기
 

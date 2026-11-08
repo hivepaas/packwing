@@ -2146,6 +2146,9 @@ t2774cee6 = Нужна лицензия Pro или Enterprise: Настройк�
 # Where the audit log is
 t2702fcc6 = Где находится журнал аудита
 
+# View records
+t27c5284a = Посмотреть записи
+
 # Open folder
 t713a842f = Открыть папку
 

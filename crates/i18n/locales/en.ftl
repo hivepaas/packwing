@@ -762,6 +762,7 @@ tf423722f = Keep its records for
 t7073f273 = Older ones are taken away, and that is recorded too
 t2774cee6 = Takes a Pro or Enterprise license: Settings › License.
 t2702fcc6 = Where the audit log is
+t27c5284a = View records
 t713a842f = Open folder
 t542148a1 = The last record could not be written: { $why }
 t482581ff = pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
