@@ -12,6 +12,7 @@ mod progress;
 mod secrets;
 mod settings;
 mod signing;
+mod stop;
 
 use std::io::IsTerminal as _;
 use std::path::PathBuf;
@@ -406,6 +407,9 @@ pub enum Exit {
     /// Done, but some files' data was damaged, and skipped or kept, or some
     /// files were left out, as their names could not be taken: 5.
     Damaged(String),
+    /// Stopped by Ctrl-C, or the system asking pkw to end, and what it was
+    /// making removed: 130, as a shell says a program ended by Ctrl-C.
+    Stopped(String),
 }
 
 impl Exit {
@@ -416,6 +420,7 @@ impl Exit {
             Exit::Locked(_) => 3,
             Exit::NotAnArchive(_) => 4,
             Exit::Damaged(_) => 5,
+            Exit::Stopped(_) => stop::STATUS as u8,
         }
     }
 
@@ -425,7 +430,8 @@ impl Exit {
             | Exit::Usage(m)
             | Exit::Locked(m)
             | Exit::NotAnArchive(m)
-            | Exit::Damaged(m) => m,
+            | Exit::Damaged(m)
+            | Exit::Stopped(m) => m,
         }
     }
 }
@@ -440,6 +446,7 @@ impl From<packwing_core::Error> for Exit {
             | Error::WrongPassword
             | Error::WrongPassphrase
             | Error::WrongKeyPassphrase => Exit::Locked(said),
+            Error::Cancelled => Exit::Stopped(said),
             _ => Exit::Failed(said),
         }
     }
@@ -475,6 +482,7 @@ fn main() -> ExitCode {
     }
     // The core's messages, in the system's language, as the app's are.
     packwing_i18n::set_language(None);
+    stop::listen();
     packwing_core::use_threads(
         cli.output
             .threads

@@ -26,6 +26,8 @@ clap_complete = "4.5"
 clap_mangen = "0.2"
 # A password typed with nothing shown.
 rpassword = "7"
+# Ctrl-C and SIGTERM stop a job, and remove what it was making.
+ctrlc = { version = "3.5", features = ["termination"] }
 serde_json = "1"
 
 [features]

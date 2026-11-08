@@ -7,15 +7,29 @@ use std::time::{Duration, Instant};
 
 use packwing_core::{Control, Progress, size};
 
-/// The line, while it is shown.
+/// The line, while it is shown, and the job, which Ctrl-C stops while it
+/// runs.
 pub struct Bar {
     shown: bool,
+    _job: crate::stop::Job,
 }
 
-/// A job's control, saying how far it is as `what` when `show`.
+/// A job's control, saying how far it is as `what` when `show`, and stopped
+/// by Ctrl-C.
 pub fn control(what: &str, show: bool) -> (Control, Bar) {
+    let (cancel, job) = crate::stop::job();
     if !show {
-        return (Control::default(), Bar { shown: false });
+        let control = Control {
+            cancel: Some(cancel),
+            ..Control::default()
+        };
+        return (
+            control,
+            Bar {
+                shown: false,
+                _job: job,
+            },
+        );
     }
     let what = what.to_owned();
     let last = Mutex::new(Instant::now() - Duration::from_secs(1));
@@ -42,9 +56,16 @@ pub fn control(what: &str, show: bool) -> (Control, Bar) {
     };
     let control = Control {
         progress: Some(Arc::new(progress)),
+        cancel: Some(cancel),
         ..Control::default()
     };
-    (control, Bar { shown: true })
+    (
+        control,
+        Bar {
+            shown: true,
+            _job: job,
+        },
+    )
 }
 
 impl Drop for Bar {
