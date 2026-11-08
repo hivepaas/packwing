@@ -444,6 +444,50 @@ scenario!(
     }
 );
 
+scenario!(
+    /// A .tar.xz offers its blocks where small ones would be more than xz's
+    /// own: large by default, small when chosen.
+    xz_blocks_are_offered_and_chosen,
+    |ui| {
+        let small = vec![ui.file("a.txt", "a")];
+        ui.ws(|ws, window, cx| ws.open_create(small, window, cx));
+        ui.wait_for("create");
+        ui.click("advanced");
+        ui.choose("format", ".tar.xz");
+        assert!(!ui.shows("blocks"), "a file of a byte is one block");
+        ui.click("cancel");
+
+        // 40 MiB at Medium: two of xz's own blocks of 24 MiB, five small ones.
+        let big = ui.work.join("big.bin");
+        std::fs::write(&big, vec![7u8; 40 << 20]).expect("the big file");
+        ui.ws(|ws, window, cx| ws.open_create(vec![big], window, cx));
+        ui.wait_for("create");
+        ui.click("advanced");
+        ui.choose("format", ".tar.xz");
+        ui.wait_for("blocks");
+        ui.click("blocks-small");
+        ui.click("create");
+        ui.wait_for_no_dialog();
+        let made = made(ui, ".tar.xz");
+        assert_eq!(listed(&made, None), ["big.bin"]);
+        // The archive the core makes in small blocks, not in large.
+        let of = |blocks| {
+            let to = ui.work.join(format!("{blocks:?}.tar.xz"));
+            let new = packwing_core::NewArchive {
+                kind: packwing_core::Kind::TarXz,
+                blocks,
+                ..packwing_core::NewArchive::default()
+            };
+            let control = packwing_core::Control::default();
+            packwing_core::create(&[ui.work.join("big.bin")], &to, &new, &control).expect("made");
+            std::fs::read(to).expect("read")
+        };
+        let bytes = std::fs::read(&made).expect("the archive");
+        assert!(bytes == of(packwing_core::Blocks::Small), "in small blocks");
+        assert!(bytes != of(packwing_core::Blocks::Large));
+    }
+);
+
 #[cfg(unix)]
 scenario!(
     /// A tar archive keeps the owners, and the extended attributes, when asked

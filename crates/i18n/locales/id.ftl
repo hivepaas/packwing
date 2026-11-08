@@ -274,6 +274,9 @@ t84cc41f7 = Beberapa frame
 # One frame
 tc6ef759e = Satu frame
 
+# Small blocks
+t04032e8a = Blok kecil
+
 # Parts of 25 MB
 ta999efe2 = Bagian 25 MB
 
@@ -358,6 +361,9 @@ tae2a96e9 = Sembunyikan opsi lanjutan
 # Advanced options
 t701d5ed9 = Opsi lanjutan
 
+# Large blocks
+tdc489452 = Blok besar
+
 # Compression level
 td386c9ef = Tingkat kompresi
 
@@ -375,6 +381,15 @@ tf461cde7 = Beberapa frame dibuka di setiap inti, dan membuat arsip sedikit lebi
 
 # One frame makes the smallest archive, which opens on one core.
 ta097b317 = Satu frame menghasilkan arsip terkecil, yang dibuka di satu inti.
+
+# Blocks
+t036a71e3 = Blok
+
+# Small blocks keep every core at work: up to twice as fast, and the archive a few percent larger.
+t32239aa8 = Blok kecil membuat semua inti bekerja: hingga dua kali lebih cepat, dan arsip beberapa persen lebih besar.
+
+# Large blocks make the smallest archive, on fewer cores where there is less to compress.
+t66a490d9 = Blok besar menghasilkan arsip terkecil, dengan lebih sedikit inti saat yang dikompresi tidak banyak.
 
 # Split into parts
 tca4436bd = Pecah menjadi bagian
@@ -759,6 +774,9 @@ tde281feb = Dijeda
 
 # Starting…
 t73727cef = Memulai…
+
+# Finishing…
+t042f47fe = Menyelesaikan…
 
 # Almost done
 ta550a6a9 = Hampir selesai

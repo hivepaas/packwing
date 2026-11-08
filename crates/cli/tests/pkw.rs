@@ -666,3 +666,35 @@ fn frames_are_chosen_for_zstd() {
     usage(s.pkw(&["create", "-q", "--frames", "several", "d.zip", "src"]));
     usage(s.pkw(&["create", "-q", "--frames", "two", "d.tar.zst", "src"]));
 }
+
+/// `--blocks small` cuts an xz stream into more blocks than xz's own, large
+/// by default, where there is less than enough of those for every core; and
+/// the option is for xz alone.
+#[test]
+fn blocks_are_chosen_for_xz() {
+    let s = Scratch::new("blocks");
+    // At the lowest level, xz's own blocks are 3 MiB: one for this, three
+    // small ones of a dictionary, 1 MiB.
+    let big = s.path("big");
+    std::fs::create_dir(&big).expect("big");
+    let data: Vec<u8> = (0..(5u32 << 19))
+        .flat_map(|i| (i % 251).to_le_bytes())
+        .collect();
+    std::fs::write(big.join("data.bin"), &data[..(5 << 19)]).expect("data");
+    for (blocks, name) in [("small", "a.tar.xz"), ("large", "b.tar.xz")] {
+        ok(&s.pkw(&[
+            "create", "-q", "-l", "lowest", "--blocks", blocks, name, "big",
+        ]));
+        ok(&s.pkw(&["test", "-q", name]));
+    }
+    ok(&s.pkw(&["create", "-q", "-l", "lowest", "c.tar.xz", "big"]));
+    let read = |name: &str| std::fs::read(s.path(name)).expect(name);
+    assert!(
+        read("a.tar.xz") != read("b.tar.xz"),
+        "small blocks are other blocks"
+    );
+    assert!(read("c.tar.xz") == read("b.tar.xz"), "large by default");
+    let usage = |o: Output| assert_eq!(o.status.code(), Some(2), "{o:?}");
+    usage(s.pkw(&["create", "-q", "--blocks", "small", "d.tar.zst", "big"]));
+    usage(s.pkw(&["create", "-q", "--blocks", "tiny", "d.tar.xz", "big"]));
+}

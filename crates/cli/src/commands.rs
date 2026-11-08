@@ -5,9 +5,9 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, PoisonError};
 
 use packwing_core::{
-    Algorithm, COMPRESSED_EXTENSIONS, Entry, ExtractOptions, Filter, Frames, Keep, Kind, Listing,
-    LocalFolder, NewArchive, OnExisting, Owners, Source, Times, Transfer, add_with, algorithms_of,
-    came_from_internet, checksum_line, checksums, convert, create, damages, delete,
+    Algorithm, Blocks, COMPRESSED_EXTENSIONS, Entry, ExtractOptions, Filter, Frames, Keep, Kind,
+    Listing, LocalFolder, NewArchive, OnExisting, Owners, Source, Times, Transfer, add_with,
+    algorithms_of, came_from_internet, checksum_line, checksums, convert, create, damages, delete,
     extract_selected, extract_with, has_signature, join_parts, left_out, list, read_entry, rename,
     renamings, save_checksum, signature_name, size, split_file, stem, test, transfer,
 };
@@ -494,10 +494,12 @@ fn making(archive: &Path, m: Making, cx: &Context) -> Result<(PathBuf, NewArchiv
         .map(|s| size_typed(s).ok_or_else(|| Exit::Usage(format!("not a size: {s} (as 25MB)"))))
         .transpose()?;
     let frames = frames_named(m.frames.as_deref(), kind)?;
+    let blocks = blocks_named(m.blocks.as_deref(), kind)?;
     let new = NewArchive {
         kind,
         level,
         frames,
+        blocks,
         password,
         age_keys: m.encrypt_to,
         whole_with_age: m.age,
@@ -550,6 +552,24 @@ fn frames_named(word: Option<&str>, kind: Kind) -> Result<Frames, Exit> {
         "one" | "1" => Ok(Frames::One),
         "several" | "many" => Ok(Frames::Several),
         _ => Err(Exit::Usage(format!("no --frames {word}: one or several"))),
+    }
+}
+
+/// How `--blocks` cuts an xz stream: large, xz's own, if it is not given, and
+/// only for a format of xz's.
+fn blocks_named(word: Option<&str>, kind: Kind) -> Result<Blocks, Exit> {
+    let Some(word) = word else {
+        return Ok(Blocks::Large);
+    };
+    if !matches!(kind, Kind::TarXz | Kind::Xz) {
+        return Err(Exit::Usage(
+            "--blocks is for xz and tar.xz, which are cut into blocks".into(),
+        ));
+    }
+    match word.to_ascii_lowercase().as_str() {
+        "large" => Ok(Blocks::Large),
+        "small" => Ok(Blocks::Small),
+        _ => Err(Exit::Usage(format!("no --blocks {word}: large or small"))),
     }
 }
 

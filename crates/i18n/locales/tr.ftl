@@ -276,6 +276,9 @@ t84cc41f7 = Birkaç çerçeve
 # One frame
 tc6ef759e = Tek çerçeve
 
+# Small blocks
+t04032e8a = Küçük bloklar
+
 # Parts of 25 MB
 ta999efe2 = 25 MB'lık parçalar
 
@@ -360,6 +363,9 @@ tae2a96e9 = Gelişmişi gizle
 # Advanced options
 t701d5ed9 = Gelişmiş seçenekler
 
+# Large blocks
+tdc489452 = Büyük bloklar
+
 # Compression level
 td386c9ef = Sıkıştırma düzeyi
 
@@ -377,6 +383,15 @@ tf461cde7 = Birkaç çerçeve her çekirdekte açılır ve arşivi biraz büyüt
 
 # One frame makes the smallest archive, which opens on one core.
 ta097b317 = Tek çerçeve en küçük arşivi verir; tek çekirdekte açılır.
+
+# Blocks
+t036a71e3 = Bloklar
+
+# Small blocks keep every core at work: up to twice as fast, and the archive a few percent larger.
+t32239aa8 = Küçük bloklar her çekirdeği çalıştırır: iki kata kadar daha hızlı, arşiv ise yüzde birkaç daha büyük.
+
+# Large blocks make the smallest archive, on fewer cores where there is less to compress.
+t66a490d9 = Büyük bloklar en küçük arşivi yapar; sıkıştırılacak az şey varken daha az çekirdekle.
 
 # Split into parts
 tca4436bd = Parçalara böl
@@ -765,6 +780,9 @@ tde281feb = Duraklatıldı
 
 # Starting…
 t73727cef = Başlıyor…
+
+# Finishing…
+t042f47fe = Tamamlanıyor…
 
 # Almost done
 ta550a6a9 = Neredeyse bitti

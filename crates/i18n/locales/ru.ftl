@@ -280,6 +280,9 @@ t84cc41f7 = Несколько фреймов
 # One frame
 tc6ef759e = Один фрейм
 
+# Small blocks
+t04032e8a = Мелкие блоки
+
 # Parts of 25 MB
 ta999efe2 = Тома по 25 MB
 
@@ -364,6 +367,9 @@ tae2a96e9 = Скрыть дополнительные
 # Advanced options
 t701d5ed9 = Дополнительные параметры
 
+# Large blocks
+tdc489452 = Крупные блоки
+
 # Compression level
 td386c9ef = Уровень сжатия
 
@@ -381,6 +387,15 @@ tf461cde7 = Несколько фреймов открываются на все
 
 # One frame makes the smallest archive, which opens on one core.
 ta097b317 = Один фрейм даёт самый маленький архив, который открывается на одном ядре.
+
+# Blocks
+t036a71e3 = Блоки
+
+# Small blocks keep every core at work: up to twice as fast, and the archive a few percent larger.
+t32239aa8 = Мелкие блоки загружают все ядра: до двух раз быстрее, а архив на несколько процентов больше.
+
+# Large blocks make the smallest archive, on fewer cores where there is less to compress.
+t66a490d9 = Крупные блоки дают самый маленький архив, на меньшем числе ядер, когда сжимать немного.
 
 # Split into parts
 tca4436bd = Разделить на тома
@@ -777,6 +792,9 @@ tde281feb = Приостановлено
 
 # Starting…
 t73727cef = Запуск…
+
+# Finishing…
+t042f47fe = Завершение…
 
 # Almost done
 ta550a6a9 = Почти готово

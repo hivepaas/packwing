@@ -274,6 +274,9 @@ t84cc41f7 = 複数フレーム
 # One frame
 tc6ef759e = 1フレーム
 
+# Small blocks
+t04032e8a = 小さいブロック
+
 # Parts of 25 MB
 ta999efe2 = 25 MB ごとのパート
 
@@ -358,6 +361,9 @@ tae2a96e9 = 詳細設定を隠す
 # Advanced options
 t701d5ed9 = 詳細設定
 
+# Large blocks
+tdc489452 = 大きいブロック
+
 # Compression level
 td386c9ef = 圧縮レベル
 
@@ -375,6 +381,15 @@ tf461cde7 = 複数フレームはすべてのコアで開けますが、アー�
 
 # One frame makes the smallest archive, which opens on one core.
 ta097b317 = 1フレームは最も小さいアーカイブになり、1つのコアで開きます。
+
+# Blocks
+t036a71e3 = ブロック
+
+# Small blocks keep every core at work: up to twice as fast, and the archive a few percent larger.
+t32239aa8 = 小さいブロックはすべてのコアを働かせます。最大2倍速くなり、アーカイブは数パーセント大きくなります。
+
+# Large blocks make the smallest archive, on fewer cores where there is less to compress.
+t66a490d9 = 大きいブロックは最も小さいアーカイブになります。圧縮するものが少ないと、使うコアは少なくなります。
 
 # Split into parts
 tca4436bd = パートに分割
@@ -759,6 +774,9 @@ tde281feb = 一時停止中
 
 # Starting…
 t73727cef = 開始しています…
+
+# Finishing…
+t042f47fe = 仕上げ中…
 
 # Almost done
 ta550a6a9 = まもなく完了

@@ -14,7 +14,7 @@ use gpui::{
     ScrollHandle, Stateful, Subscription, Task, UniformListScrollHandle, Window, div, prelude::*,
     relative, rgb,
 };
-use packwing_core::{Frames, Keep, Kind, NewArchive, Route, Source};
+use packwing_core::{Blocks, Frames, Keep, Kind, NewArchive, Route, Source};
 
 pub(crate) use packwing_core::Level;
 
@@ -308,6 +308,8 @@ pub struct CreateDialog {
     level: Level,
     /// How a zstd stream is cut, if the user chose: as its size says if not.
     frames: Option<Frames>,
+    /// How an xz stream is cut: xz's own, large, unless the user chose.
+    blocks: Blocks,
     advanced: bool,
     split: Entity<Select>,
     part: Entity<TextInput>,
@@ -432,6 +434,7 @@ impl CreateDialog {
             format,
             level: kept.level,
             frames: None,
+            blocks: Blocks::Large,
             // What has to be typed is not hidden.
             advanced: crate::managed::policy(cx).requires_encryption(),
             split,
@@ -835,6 +838,23 @@ impl CreateDialog {
         }
     }
 
+    /// Whether the choice of blocks is shown: for xz, where small ones differ
+    /// from its own at this level.
+    fn blocks_shown(&self, cx: &App) -> bool {
+        matches!(self.format(cx).kind(), Kind::TarXz | Kind::Xz)
+            && Blocks::differ(self.level(cx), self.selection.bytes)
+    }
+
+    /// How it is cut into blocks: as chosen where the choice is shown, xz's
+    /// own otherwise.
+    fn blocks(&self, cx: &App) -> Blocks {
+        if self.blocks_shown(cx) {
+            self.blocks
+        } else {
+            Blocks::Large
+        }
+    }
+
     /// Whether the choice of frames is shown: for zstd, of more than a frame.
     fn frames_shown(&self, cx: &App) -> bool {
         matches!(self.format(cx).kind(), Kind::TarZst | Kind::Zst)
@@ -1081,6 +1101,7 @@ impl CreateDialog {
                 part_size: self.parts(cx),
                 stream_above: Some(crate::prefs::prefs(cx).stream_above),
                 frames: self.frames(cx),
+                blocks: self.blocks(cx),
                 keep: self.kept(cx),
                 times: Default::default(),
             },
@@ -1121,6 +1142,9 @@ impl CreateDialog {
             } else {
                 tr!("One frame")
             });
+        }
+        if self.blocks(cx) == Blocks::Small {
+            said.push(tr!("Small blocks"));
         }
         match self.split.read(cx).chosen() {
             0 => {}
@@ -1559,6 +1583,22 @@ impl CreateDialog {
                 cx.notify();
             }))
         });
+        let small = self.blocks == Blocks::Small;
+        let blocks = [(true, "blocks-small"), (false, "blocks-large")].map(|(is_small, id)| {
+            let label = if is_small {
+                tr!("Small blocks")
+            } else {
+                tr!("Large blocks")
+            };
+            segment(id, label, is_small == small).on_click(cx.listener(move |this, _, _, cx| {
+                this.blocks = if is_small {
+                    Blocks::Small
+                } else {
+                    Blocks::Large
+                };
+                cx.notify();
+            }))
+        });
         let custom = self.custom_split(cx);
         let typed = !self.part.read(cx).text().trim().is_empty();
         let bad_part = custom && self.part_size(cx).is_none() && (typed || self.checked);
@@ -1618,6 +1658,29 @@ impl CreateDialog {
                                 tr!("Several frames open on every core, and make the archive a little larger: under half a percent.")
                             } else {
                                 tr!("One frame makes the smallest archive, which opens on one core.")
+                            },
+                        )),
+                )
+            })
+            .when(self.blocks_shown(cx), |d| {
+                d.child(
+                    div()
+                        .debug_selector(|| "blocks".into())
+                        .flex()
+                        .flex_col()
+                        .gap(ui(6.))
+                        .child(
+                            div()
+                                .text_size(ui(13.))
+                                .font_weight(FontWeight::SEMIBOLD)
+                                .child(tr!("Blocks")),
+                        )
+                        .child(segments(blocks))
+                        .child(div().text_size(ui(13.)).text_color(rgb(c.muted)).child(
+                            if small {
+                                tr!("Small blocks keep every core at work: up to twice as fast, and the archive a few percent larger.")
+                            } else {
+                                tr!("Large blocks make the smallest archive, on fewer cores where there is less to compress.")
                             },
                         )),
                 )

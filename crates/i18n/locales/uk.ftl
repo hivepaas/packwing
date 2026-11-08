@@ -280,6 +280,9 @@ t84cc41f7 = Кілька фреймів
 # One frame
 tc6ef759e = Один фрейм
 
+# Small blocks
+t04032e8a = Дрібні блоки
+
 # Parts of 25 MB
 ta999efe2 = Частини по 25 MB
 
@@ -364,6 +367,9 @@ tae2a96e9 = Сховати додаткові
 # Advanced options
 t701d5ed9 = Додаткові параметри
 
+# Large blocks
+tdc489452 = Великі блоки
+
 # Compression level
 td386c9ef = Рівень стиснення
 
@@ -381,6 +387,15 @@ tf461cde7 = Кілька фреймів відкриваються на всіх
 
 # One frame makes the smallest archive, which opens on one core.
 ta097b317 = Один фрейм дає найменший архів, який відкривається на одному ядрі.
+
+# Blocks
+t036a71e3 = Блоки
+
+# Small blocks keep every core at work: up to twice as fast, and the archive a few percent larger.
+t32239aa8 = Дрібні блоки завантажують усі ядра: до двох разів швидше, а архів на кілька відсотків більший.
+
+# Large blocks make the smallest archive, on fewer cores where there is less to compress.
+t66a490d9 = Великі блоки дають найменший архів, на меншій кількості ядер, коли стискати небагато.
 
 # Split into parts
 tca4436bd = Ділити на частини
@@ -777,6 +792,9 @@ tde281feb = Призупинено
 
 # Starting…
 t73727cef = Початок…
+
+# Finishing…
+t042f47fe = Завершення…
 
 # Almost done
 ta550a6a9 = Майже готово
