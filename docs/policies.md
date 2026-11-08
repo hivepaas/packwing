@@ -31,6 +31,7 @@ They bind packwing, not the person. An administrator of the computer can change 
 | `AuditLogRetentionDays` | number, 0 to 36500 | How many days of records are kept; 0 keeps them all, for your own collector to rotate. 365 where `AuditLog` is on and this is not set. |
 | `AuditLogMaxSizeMB` | number, 0 to 10000000 | The most the log may take, in MB: past it, the oldest days go, never today's. 0 for no limit. 1024 where `AuditLog` is on and this is not set. |
 | `AuditLogDetail` | text | `summary` (the default) or `entries`: whether records name the files packwing comes on in archives, as those damaged or left out as they are extracted, as well as counting them. What the user picks is named either way. |
+| `AuditLogSystem` | on/off | Each record goes to the system's own log as well, for collectors that read it: journald on Linux (syslog where there is none). The Event Log on Windows and macOS's unified log come next ([audit.md](audit.md#in-the-systems-log)). Off where not set; only a policy turns it on. |
 
 A list can also be written as one text with commas between the names, for tools that cannot write lists.
 
@@ -51,6 +52,7 @@ A mistake never loosens anything, as a typing error must not quietly take a lock
 - `AuditLogPath` that is not a whole path is reported, and the system's own folder taken.
 - `AuditLogRetentionDays` and `AuditLogMaxSizeMB` that cannot be understood keep every record.
 - `AuditLogDetail` that cannot be understood names the files.
+- `AuditLogSystem` that cannot be understood writes to the system's log too.
 
 Where the policies cannot be read at all, as in a file that is not JSON, all of the above apply together.
 

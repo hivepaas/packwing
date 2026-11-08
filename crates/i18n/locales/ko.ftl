@@ -2050,6 +2050,12 @@ t8d6fca43 = 감사 로그가 압축 파일에 대해 기록하는 내용
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = “entries”는 손상되었거나 제외된 파일의 개수뿐 아니라 이름도 기록합니다
 
+# The audit log in the system’s log
+t4a2fcd04 = 시스템 로그에 감사 로그 기록
+
+# Each record goes to {log} as well, where your organization’s tools read it
+t3a4c104f = 각 기록은 { $log }에도 기록되며, 조직의 도구가 그곳에서 읽습니다
+
 # packwing has no policy of this name.
 t7e03649c = packwing에는 이 이름의 정책이 없습니다.
 

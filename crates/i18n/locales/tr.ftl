@@ -2073,6 +2073,12 @@ t8d6fca43 = Denetim günlüğünün arşivler hakkında yazdıkları
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = “entries”, hasarlı ya da atlanan dosyaları saymanın yanı sıra adlarını da yazar
 
+# The audit log in the system’s log
+t4a2fcd04 = Sistem günlüğünde denetim günlüğü
+
+# Each record goes to {log} as well, where your organization’s tools read it
+t3a4c104f = Her kayıt { $log } günlüğüne de yazılır; kuruluşunuzun araçları onu oradan okur
+
 # packwing has no policy of this name.
 t7e03649c = packwing'in bu adda bir ilkesi yok.
 

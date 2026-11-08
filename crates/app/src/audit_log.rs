@@ -55,6 +55,7 @@ pub fn apply(cx: &App, by: By) {
                 ),
                 ("retention_days".to_owned(), json!(config.retention_days)),
                 ("max_bytes".to_owned(), json!(config.max_bytes)),
+                ("system_log".to_owned(), json!(config.system)),
                 ("folder".to_owned(), json!(config.folder.to_string_lossy())),
             ]),
         );

@@ -2050,6 +2050,12 @@ t8d6fca43 = アーカイブについて監査ログに記録する内容
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = 「entries」では、破損していたファイルや除外されたファイルを数えるだけでなく名前も記録します
 
+# The audit log in the system’s log
+t4a2fcd04 = システムのログへの監査ログ
+
+# Each record goes to {log} as well, where your organization’s tools read it
+t3a4c104f = 各記録は { $log } にも書き込まれ、組織のツールがそこから読み取ります
+
 # packwing has no policy of this name.
 t7e03649c = packwing にこの名前のポリシーはありません。
 

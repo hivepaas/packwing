@@ -26,6 +26,30 @@ An organization can name another with `AuditLogPath`, a share among them. Settin
 
 Each day's records are a file, `2026-11-08.jsonl` by the UTC date: one JSON object a line. Filebeat, Elastic Agent, Splunk's forwarder, Wazuh, Fluent Bit and Vector read it as it is.
 
+## In the system's log
+
+Where the organization sets `AuditLogSystem`, each record goes to the system's own log as well, as it is written. Collectors read that log already, and a user who can change the folder's files cannot take a record back out of it. The day's files stay the record, chain and all: this is a second copy. A record whose file cannot be written still goes there, with an empty `prev`.
+
+On Linux it goes to journald, as `pkw` or `packwing` (`SYSLOG_IDENTIFIER`), with a line to read in `MESSAGE` (`extract ended: failed, /home/an/a.zip (wrong password)`) and these fields:
+
+| Field | |
+|---|---|
+| `PRIORITY` | 4 (warning) for a job that failed, 5 (notice) for one partly done or cancelled and for `audit.stopped`, 6 (information) for the rest |
+| `PACKWING_ACTION`, `PACKWING_PHASE`, `PACKWING_RESULT`, `PACKWING_JOB` | as the record's `action`, `phase`, `result` and `job` |
+| `PACKWING_RECORD` | the record whole, its line in the day's file |
+| `PACKWING_HASH` | the SHA-256 of that line: the next record's `prev` |
+
+```sh
+journalctl -t packwing -t pkw PACKWING_RESULT=failed
+journalctl -t pkw -o json --all | jq -r .PACKWING_RECORD
+```
+
+`journalctl -o json` leaves out fields over 4 KiB, as a record naming many files can be: `--all` shows them. Where there is no journald, as on the BSDs, it goes to syslog, the user facility, the line to read and then the record whole.
+
+On macOS it goes to syslog for now, which the unified log keeps; the unified log's own subsystem, and Windows' Event Log, come next ([design/audit-log.md](design/audit-log.md#phase-2)).
+
+`pkw audit status` says where it goes, and a record it could not be sent to shows in Settings › Security as the last that could not be written.
+
 ## How long
 
 | | Kept | At most |
@@ -65,7 +89,7 @@ A job is two records with the same `job`: `phase: start`, with what it is of, an
 | `keygen` | `folder` | `key`, `fingerprint` |
 | `split`, `join` | `file` and `part_size`, or `part` | `parts`, or `made` |
 | `checksum` | `file` | `sums` |
-| `audit.started`, `audit.stopped`, `audit.changed` | `by` (`user`, `license`, `policy` or `startup`), `retention_days`, `max_bytes`, `folder` | |
+| `audit.started`, `audit.stopped`, `audit.changed` | `by` (`user`, `license`, `policy` or `startup`), `retention_days`, `max_bytes`, `folder`, `system_log` | |
 | `log.pruned` | `removed`, `last_removed` | |
 
 Paths are whole paths on the computer, or as a storage writes them. What the user chose to work on is always named, the first 1,000 of it and how many in all: the files and folders to put in an archive, copy or move (`path_names`, `names`), and in an archive those picked to extract, opened, shown, deleted or renamed (`picked_names`, `entry`, `from_name`, `to_name`).
@@ -102,4 +126,4 @@ pkw audit verify                 # the chain, from the oldest record
 
 ## Not yet
 
-Planned, in [design/audit-log.md](design/audit-log.md): the system's own logs (Windows' Event Log, journald, macOS's unified log), a policy that stops a job whose record cannot be written, and every file extracted named.
+Planned, in [design/audit-log.md](design/audit-log.md): Windows' Event Log and macOS's unified log, a policy that stops a job whose record cannot be written, and every file extracted named.

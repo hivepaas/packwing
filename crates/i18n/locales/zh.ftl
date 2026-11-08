@@ -2050,6 +2050,12 @@ t8d6fca43 = 审计日志对压缩包记录什么
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = “entries”除了计数，还会记下损坏或被略过的文件名
 
+# The audit log in the system’s log
+t4a2fcd04 = 系统日志中的审计日志
+
+# Each record goes to {log} as well, where your organization’s tools read it
+t3a4c104f = 每条记录也会写入 { $log }，供您组织的工具读取
+
 # packwing has no policy of this name.
 t7e03649c = packwing 没有此名称的策略。
 

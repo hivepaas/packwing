@@ -201,6 +201,7 @@ fn status(cx: &Context) -> Result<(), Exit> {
             "retention_days": config.as_ref().map(|c| c.retention_days),
             "max_bytes": config.as_ref().map(|c| c.max_bytes),
             "names_entries": config.as_ref().map(|c| c.entries),
+            "system_log": config.as_ref().filter(|c| c.system).map(|_| audit::system_log_name()),
             "last_failure": audit::last_failure(),
         }));
         return Ok(());
@@ -218,6 +219,12 @@ fn status(cx: &Context) -> Result<(), Exit> {
             }
             if c.max_bytes > 0 {
                 println!("It takes at most {} MiB.", c.max_bytes >> 20);
+            }
+            if c.system {
+                println!(
+                    "Each record goes to {} as well, as the policy says.",
+                    audit::system_log_name()
+                );
             }
         }
     }

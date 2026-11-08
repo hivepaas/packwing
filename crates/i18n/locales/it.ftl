@@ -2073,6 +2073,12 @@ t8d6fca43 = Cosa dice il registro di controllo degli archivi
 # “entries” names the files found damaged or left out, as well as counting them
 tf1125538 = “entries” nomina i file danneggiati o tralasciati, oltre a contarli
 
+# The audit log in the system’s log
+t4a2fcd04 = Registro di controllo nel registro di sistema
+
+# Each record goes to {log} as well, where your organization’s tools read it
+t3a4c104f = Ogni record va anche in { $log }, dove lo leggono gli strumenti della tua organizzazione
+
 # packwing has no policy of this name.
 t7e03649c = packwing non ha un criterio con questo nome.
 
