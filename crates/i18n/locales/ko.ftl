@@ -1252,6 +1252,141 @@ td7688f56 =
        *[other] 이 폴더의 실행 파일 { $count }개는 압축을 풀어도 인터넷 표시가 유지됩니다.
     }
 
+# Today
+te7c0775e = 오늘
+
+# Last 7 days
+t35b9d98f = 최근 7일
+
+# Last 30 days
+td0778b33 = 최근 30일
+
+# All days
+tabb197ef = 전체 기간
+
+# All results
+t6235c0b2 = 모든 결과
+
+# Not done
+t0f88a146 = 완료되지 않음
+
+# Partly done
+t3355a2a5 = 일부 완료
+
+# Failed
+t5579c3d4 = 실패
+
+# Cancelled
+ta62b09bc = 취소됨
+
+# No end recorded
+t38ab1371 = 종료 기록 없음
+
+# Make an archive
+t418bd6f0 = 압축 파일 만들기
+
+# Open a file from an archive
+tc2dd3e41 = 압축 파일에서 파일 열기
+
+# Preview a file
+t1f706562 = 파일 미리 보기
+
+# Read a file from an archive
+t4229020d = 압축 파일에서 파일 읽기
+
+# Add to an archive
+t4e28d1fa = 압축 파일에 추가
+
+# Delete from an archive
+t158044d3 = 압축 파일에서 삭제
+
+# Rename in an archive
+tb3eef763 = 압축 파일 안에서 이름 바꾸기
+
+# Check a signature
+t6f441e5e = 서명 확인
+
+# Make a signing key
+tbdf6bcd0 = 서명 키 만들기
+
+# Join parts
+t4eee8c5f = 조각 합치기
+
+# Checksums
+t47dd48d3 = 체크섬
+
+# Audit log started
+tfb8df56f = 감사 로그 시작
+
+# Audit log stopped
+t54654bc3 = 감사 로그 중지
+
+# Audit log changed
+td6b7bc4a = 감사 로그 변경
+
+# Old records taken away
+t5f337ebf = 오래된 기록 제거
+
+# All actions
+t4ff15157 = 모든 작업
+
+# Find a path, a name or an error
+t30cb1a6c = 경로, 이름 또는 오류 찾기
+
+# Read again
+t2f0dcc5d = 다시 읽기
+
+# Save as CSV…
+tf103c3cc = CSV로 저장…
+
+# Checking that no record was changed…
+t00deba79 = 변경된 기록이 없는지 확인하는 중…
+
+# The audit log cannot be read: {why}
+t8783f4cf = 감사 로그를 읽을 수 없습니다: { $why }
+
+# A record was changed, taken out or put in by hand: in {file}, line {line}. | Records were changed, taken out or put in by hand, in {n} places: the first in {file}, line {line}.
+t3cd011bd =
+    { $n ->
+       *[other] { $n }곳에서 기록이 직접 변경, 삭제 또는 삽입되었습니다. 첫 번째는 { $file }의 { $line }번째 줄입니다.
+    }
+
+# The oldest record follows one that is gone, and no record says it was taken away as past its time.
+t4579f8a7 = 가장 오래된 기록 앞의 기록이 없어졌지만, 보관 기간이 지나 제거되었다는 기록이 없습니다.
+
+# {n} record, and none was changed or taken out. | {n} records, and none was changed or taken out.
+tefc82060 =
+    { $n ->
+       *[other] 기록 { $n }개, 변경되거나 삭제된 기록은 없습니다.
+    }
+
+# Only the latest {most} records are shown: choose fewer days, or read all with pkw audit list.
+t5fabfc51 = 최근 { $most }개 기록만 표시됩니다. 기간을 줄이거나 pkw audit list로 모두 읽으세요.
+
+# Saved to {path}.
+te8346fa4 = { $path }에 저장했습니다.
+
+# Could not save: {why}
+t733a7cae = 저장할 수 없습니다: { $why }
+
+# Record
+t9f4565ec = 기록
+
+# Started
+t97b5823e = 시작
+
+# Ended
+tec2b41db = 종료
+
+# Reading the audit log…
+t403ccdff = 감사 로그를 읽는 중…
+
+# No records in these days.
+t98687757 = 이 기간에는 기록이 없습니다.
+
+# No record is as chosen.
+ta9ffcb9f = 선택한 조건에 맞는 기록이 없습니다.
+
 # This computer
 tfa0d176a = 이 컴퓨터
 
@@ -1272,6 +1407,9 @@ t0eac1f07 = 찾아보기
 
 # Recent
 t50e888fe = 최근
+
+# Audit log
+tcb83f9ca = 감사 로그
 
 # Choose a file to see its information here
 t50aac02b = 파일을 선택하면 정보가 여기에 표시됩니다
@@ -1939,14 +2077,14 @@ t2774cee6 = Pro 또는 Enterprise 라이선스가 필요합니다: 설정 › �
 # Where the audit log is
 t2702fcc6 = 감사 로그 위치
 
+# View records
+t27c5284a = 기록 보기
+
 # Open folder
 t713a842f = 폴더 열기
 
 # The last record could not be written: {why}
 t542148a1 = 마지막 기록을 쓰지 못했습니다: { $why }
-
-# Audit log
-tcb83f9ca = 감사 로그
 
 # pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
 t482581ff = pkw audit verify는 기록이 변경되거나 삭제되지 않았는지 확인합니다. 이 컴퓨터의 관리자는 여전히 로그를 지울 수 있습니다. 로그는 packwing이 한 일을 알려 줄 뿐, 누구를 막지는 않습니다.
@@ -1968,9 +2106,6 @@ t28a576c9 = 파일 선택…
 
 # {name} (weak)
 tdb06c037 = { $name } (약함)
-
-# Checksums
-t47dd48d3 = 체크섬
 
 # What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
 t6edeb650 = 파일 메뉴의 체크섬…에 표시되는 항목으로, 파일을 받은 곳에서 제공한 체크섬과 비교할 수 있습니다. 약한 체크섬은 손상된 파일은 알아내지만, 일부러 바꾼 파일은 알아내지 못합니다.

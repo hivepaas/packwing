@@ -1252,6 +1252,141 @@ td7688f56 =
        *[other] このフォルダ内の実行ファイル { $count } 個は、展開してもインターネットのマークが付いたままになります。
     }
 
+# Today
+te7c0775e = 今日
+
+# Last 7 days
+t35b9d98f = 過去 7 日間
+
+# Last 30 days
+td0778b33 = 過去 30 日間
+
+# All days
+tabb197ef = すべての日
+
+# All results
+t6235c0b2 = すべての結果
+
+# Not done
+t0f88a146 = 完了していない
+
+# Partly done
+t3355a2a5 = 一部完了
+
+# Failed
+t5579c3d4 = 失敗
+
+# Cancelled
+ta62b09bc = キャンセル
+
+# No end recorded
+t38ab1371 = 終了の記録なし
+
+# Make an archive
+t418bd6f0 = アーカイブを作成
+
+# Open a file from an archive
+tc2dd3e41 = アーカイブ内のファイルを開く
+
+# Preview a file
+t1f706562 = ファイルをプレビュー
+
+# Read a file from an archive
+t4229020d = アーカイブ内のファイルを読み取る
+
+# Add to an archive
+t4e28d1fa = アーカイブに追加
+
+# Delete from an archive
+t158044d3 = アーカイブから削除
+
+# Rename in an archive
+tb3eef763 = アーカイブ内で名前を変更
+
+# Check a signature
+t6f441e5e = 署名を確認
+
+# Make a signing key
+tbdf6bcd0 = 署名鍵を作成
+
+# Join parts
+t4eee8c5f = パーツを結合
+
+# Checksums
+t47dd48d3 = チェックサム
+
+# Audit log started
+tfb8df56f = 監査ログを開始
+
+# Audit log stopped
+t54654bc3 = 監査ログを停止
+
+# Audit log changed
+td6b7bc4a = 監査ログの設定を変更
+
+# Old records taken away
+t5f337ebf = 古い記録を削除
+
+# All actions
+t4ff15157 = すべての操作
+
+# Find a path, a name or an error
+t30cb1a6c = パス、名前、エラーを検索
+
+# Read again
+t2f0dcc5d = 再読み込み
+
+# Save as CSV…
+tf103c3cc = CSV として保存…
+
+# Checking that no record was changed…
+t00deba79 = 記録が変更されていないか確認しています…
+
+# The audit log cannot be read: {why}
+t8783f4cf = 監査ログを読み取れません: { $why }
+
+# A record was changed, taken out or put in by hand: in {file}, line {line}. | Records were changed, taken out or put in by hand, in {n} places: the first in {file}, line {line}.
+t3cd011bd =
+    { $n ->
+       *[other] { $n } か所で記録が手作業で変更、削除、挿入されています。最初は { $file } の { $line } 行目です。
+    }
+
+# The oldest record follows one that is gone, and no record says it was taken away as past its time.
+t4579f8a7 = 最も古い記録の前にあった記録が失われていますが、保存期間切れで削除されたことを示す記録はありません。
+
+# {n} record, and none was changed or taken out. | {n} records, and none was changed or taken out.
+tefc82060 =
+    { $n ->
+       *[other] { $n } 件の記録があり、変更や削除はありません。
+    }
+
+# Only the latest {most} records are shown: choose fewer days, or read all with pkw audit list.
+t5fabfc51 = 最新の { $most } 件だけを表示しています。日数を減らすか、pkw audit list ですべて読んでください。
+
+# Saved to {path}.
+te8346fa4 = { $path } に保存しました。
+
+# Could not save: {why}
+t733a7cae = 保存できませんでした: { $why }
+
+# Record
+t9f4565ec = 記録
+
+# Started
+t97b5823e = 開始
+
+# Ended
+tec2b41db = 終了
+
+# Reading the audit log…
+t403ccdff = 監査ログを読み取っています…
+
+# No records in these days.
+t98687757 = この期間の記録はありません。
+
+# No record is as chosen.
+ta9ffcb9f = 選択に合う記録はありません。
+
 # This computer
 tfa0d176a = このコンピュータ
 
@@ -1272,6 +1407,9 @@ t0eac1f07 = 参照
 
 # Recent
 t50e888fe = 最近使用
+
+# Audit log
+tcb83f9ca = 監査ログ
 
 # Choose a file to see its information here
 t50aac02b = ファイルを選択すると、ここに情報が表示されます
@@ -1939,14 +2077,14 @@ t2774cee6 = Pro または Enterprise ライセンスが必要です：設定 ›
 # Where the audit log is
 t2702fcc6 = 監査ログの場所
 
+# View records
+t27c5284a = 記録を表示
+
 # Open folder
 t713a842f = フォルダーを開く
 
 # The last record could not be written: {why}
 t542148a1 = 直前の記録を書き込めませんでした：{ $why }
-
-# Audit log
-tcb83f9ca = 監査ログ
 
 # pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
 t482581ff = pkw audit verify は、記録が変更・削除されていないことを確認します。このコンピューターの管理者はログを削除できます。ログは packwing の操作を示すもので、誰かを止めるものではありません。
@@ -1968,9 +2106,6 @@ t28a576c9 = ファイルを選択…
 
 # {name} (weak)
 tdb06c037 = { $name }（弱い）
-
-# Checksums
-t47dd48d3 = チェックサム
 
 # What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
 t6edeb650 = ファイルのメニューの「チェックサム…」に表示するもの。ファイルの入手元に記載されたチェックサムと比較できます。弱いものは破損したファイルは見分けられますが、意図的に変更されたファイルは見分けられません。

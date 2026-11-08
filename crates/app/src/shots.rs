@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 93] = [
+const SCREENS: [(&str, SetUp); 95] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -291,6 +291,10 @@ const SCREENS: [(&str, SetUp); 93] = [
         ws.open_recent_menu_for_shot(gpui::point(px(700.), px(300.)), 1, cx);
     }),
     ("recent-empty", |ws, _, cx| ws.show_recent_tab(cx)),
+    ("audit-log", |ws, _, cx| ws.show_audit_samples(None, cx)),
+    ("audit-log-detail", |ws, _, cx| {
+        ws.show_audit_samples(Some(2), cx)
+    }),
     ("settings", |ws, _, cx| ws.show_page(Page::Settings, cx)),
     ("settings-extracting", |ws, _, cx| {
         ws.show_settings(Section::Extracting, cx)

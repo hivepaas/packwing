@@ -1252,6 +1252,141 @@ td7688f56 =
        *[other] { $count } file yang dapat dijalankan di folder ini akan tetap bertanda Internet saat diekstrak.
     }
 
+# Today
+te7c0775e = Hari ini
+
+# Last 7 days
+t35b9d98f = 7 hari terakhir
+
+# Last 30 days
+td0778b33 = 30 hari terakhir
+
+# All days
+tabb197ef = Semua hari
+
+# All results
+t6235c0b2 = Semua hasil
+
+# Not done
+t0f88a146 = Tidak selesai
+
+# Partly done
+t3355a2a5 = Selesai sebagian
+
+# Failed
+t5579c3d4 = Gagal
+
+# Cancelled
+ta62b09bc = Dibatalkan
+
+# No end recorded
+t38ab1371 = Akhir tidak tercatat
+
+# Make an archive
+t418bd6f0 = Buat arsip
+
+# Open a file from an archive
+tc2dd3e41 = Buka berkas dari arsip
+
+# Preview a file
+t1f706562 = Pratinjau berkas
+
+# Read a file from an archive
+t4229020d = Baca berkas dari arsip
+
+# Add to an archive
+t4e28d1fa = Tambahkan ke arsip
+
+# Delete from an archive
+t158044d3 = Hapus dari arsip
+
+# Rename in an archive
+tb3eef763 = Ganti nama dalam arsip
+
+# Check a signature
+t6f441e5e = Periksa tanda tangan
+
+# Make a signing key
+tbdf6bcd0 = Buat kunci tanda tangan
+
+# Join parts
+t4eee8c5f = Gabungkan bagian
+
+# Checksums
+t47dd48d3 = Checksum
+
+# Audit log started
+tfb8df56f = Log audit dimulai
+
+# Audit log stopped
+t54654bc3 = Log audit dihentikan
+
+# Audit log changed
+td6b7bc4a = Log audit diubah
+
+# Old records taken away
+t5f337ebf = Catatan lama dihapus
+
+# All actions
+t4ff15157 = Semua tindakan
+
+# Find a path, a name or an error
+t30cb1a6c = Cari jalur, nama, atau galat
+
+# Read again
+t2f0dcc5d = Baca ulang
+
+# Save as CSV…
+tf103c3cc = Simpan sebagai CSV…
+
+# Checking that no record was changed…
+t00deba79 = Memeriksa bahwa tidak ada catatan yang diubah…
+
+# The audit log cannot be read: {why}
+t8783f4cf = Log audit tidak dapat dibaca: { $why }
+
+# A record was changed, taken out or put in by hand: in {file}, line {line}. | Records were changed, taken out or put in by hand, in {n} places: the first in {file}, line {line}.
+t3cd011bd =
+    { $n ->
+       *[other] Catatan diubah, dihapus, atau disisipkan secara manual di { $n } tempat: yang pertama di { $file }, baris { $line }.
+    }
+
+# The oldest record follows one that is gone, and no record says it was taken away as past its time.
+t4579f8a7 = Catatan tertua mengikuti catatan yang sudah tidak ada, dan tidak ada catatan yang menyatakan catatan itu dihapus karena masa simpannya habis.
+
+# {n} record, and none was changed or taken out. | {n} records, and none was changed or taken out.
+tefc82060 =
+    { $n ->
+       *[other] { $n } catatan, dan tidak ada yang diubah atau dihapus.
+    }
+
+# Only the latest {most} records are shown: choose fewer days, or read all with pkw audit list.
+t5fabfc51 = Hanya { $most } catatan terbaru yang ditampilkan: pilih lebih sedikit hari, atau baca semuanya dengan pkw audit list.
+
+# Saved to {path}.
+te8346fa4 = Disimpan ke { $path }.
+
+# Could not save: {why}
+t733a7cae = Tidak dapat menyimpan: { $why }
+
+# Record
+t9f4565ec = Catatan
+
+# Started
+t97b5823e = Dimulai
+
+# Ended
+tec2b41db = Selesai
+
+# Reading the audit log…
+t403ccdff = Membaca log audit…
+
+# No records in these days.
+t98687757 = Tidak ada catatan pada hari-hari ini.
+
+# No record is as chosen.
+ta9ffcb9f = Tidak ada catatan yang sesuai pilihan.
+
 # This computer
 tfa0d176a = Komputer ini
 
@@ -1272,6 +1407,9 @@ t0eac1f07 = Jelajahi
 
 # Recent
 t50e888fe = Terbaru
+
+# Audit log
+tcb83f9ca = Log audit
 
 # Choose a file to see its information here
 t50aac02b = Pilih berkas untuk melihat infonya di sini
@@ -1939,14 +2077,14 @@ t2774cee6 = Memerlukan lisensi Pro atau Enterprise: Pengaturan › Lisensi.
 # Where the audit log is
 t2702fcc6 = Lokasi log audit
 
+# View records
+t27c5284a = Lihat catatan
+
 # Open folder
 t713a842f = Buka folder
 
 # The last record could not be written: {why}
 t542148a1 = Catatan terakhir tidak dapat ditulis: { $why }
-
-# Audit log
-tcb83f9ca = Log audit
 
 # pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
 t482581ff = pkw audit verify memeriksa bahwa tidak ada catatan yang diubah atau dihapus. Pengelola komputer ini tetap bisa menghapus log: log menunjukkan apa yang dilakukan packwing, bukan menghentikan siapa pun.
@@ -1968,9 +2106,6 @@ t28a576c9 = Pilih berkas…
 
 # {name} (weak)
 tdb06c037 = { $name } (lemah)
-
-# Checksums
-t47dd48d3 = Checksum
 
 # What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
 t6edeb650 = Yang ditampilkan Checksum… di menu berkas, untuk dibandingkan dengan checksum yang diberikan di tempat asal berkas. Checksum lemah tetap mengenali berkas yang rusak, tetapi tidak berkas yang sengaja diubah.

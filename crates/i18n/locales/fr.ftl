@@ -1269,6 +1269,143 @@ td7688f56 =
        *[other] { $count } exécutables de ce dossier conserveront leur marque Internet à l'extraction.
     }
 
+# Today
+te7c0775e = Aujourd’hui
+
+# Last 7 days
+t35b9d98f = 7 derniers jours
+
+# Last 30 days
+td0778b33 = 30 derniers jours
+
+# All days
+tabb197ef = Tous les jours
+
+# All results
+t6235c0b2 = Tous les résultats
+
+# Not done
+t0f88a146 = Non abouti
+
+# Partly done
+t3355a2a5 = En partie abouti
+
+# Failed
+t5579c3d4 = Échec
+
+# Cancelled
+ta62b09bc = Annulé
+
+# No end recorded
+t38ab1371 = Aucune fin enregistrée
+
+# Make an archive
+t418bd6f0 = Créer une archive
+
+# Open a file from an archive
+tc2dd3e41 = Ouvrir un fichier d’une archive
+
+# Preview a file
+t1f706562 = Aperçu d’un fichier
+
+# Read a file from an archive
+t4229020d = Lire un fichier d’une archive
+
+# Add to an archive
+t4e28d1fa = Ajouter à une archive
+
+# Delete from an archive
+t158044d3 = Supprimer d’une archive
+
+# Rename in an archive
+tb3eef763 = Renommer dans une archive
+
+# Check a signature
+t6f441e5e = Vérifier une signature
+
+# Make a signing key
+tbdf6bcd0 = Créer une clé de signature
+
+# Join parts
+t4eee8c5f = Joindre les parties
+
+# Checksums
+t47dd48d3 = Sommes de contrôle
+
+# Audit log started
+tfb8df56f = Journal d’audit démarré
+
+# Audit log stopped
+t54654bc3 = Journal d’audit arrêté
+
+# Audit log changed
+td6b7bc4a = Journal d’audit modifié
+
+# Old records taken away
+t5f337ebf = Anciens enregistrements retirés
+
+# All actions
+t4ff15157 = Toutes les actions
+
+# Find a path, a name or an error
+t30cb1a6c = Chercher un chemin, un nom ou une erreur
+
+# Read again
+t2f0dcc5d = Relire
+
+# Save as CSV…
+tf103c3cc = Enregistrer en CSV…
+
+# Checking that no record was changed…
+t00deba79 = Vérification qu’aucun enregistrement n’a été modifié…
+
+# The audit log cannot be read: {why}
+t8783f4cf = Impossible de lire le journal d’audit : { $why }
+
+# A record was changed, taken out or put in by hand: in {file}, line {line}. | Records were changed, taken out or put in by hand, in {n} places: the first in {file}, line {line}.
+t3cd011bd =
+    { $n ->
+        [one] Un enregistrement a été modifié, retiré ou ajouté à la main : dans { $file }, ligne { $line }.
+       *[other] Des enregistrements ont été modifiés, retirés ou ajoutés à la main à { $n } endroits : le premier dans { $file }, ligne { $line }.
+    }
+
+# The oldest record follows one that is gone, and no record says it was taken away as past its time.
+t4579f8a7 = L’enregistrement le plus ancien suit un enregistrement disparu, et aucun ne dit qu’il a été retiré à l’expiration de son délai.
+
+# {n} record, and none was changed or taken out. | {n} records, and none was changed or taken out.
+tefc82060 =
+    { $n ->
+        [one] { $n } enregistrement, et aucun n’a été modifié ni retiré.
+       *[other] { $n } enregistrements, et aucun n’a été modifié ni retiré.
+    }
+
+# Only the latest {most} records are shown: choose fewer days, or read all with pkw audit list.
+t5fabfc51 = Seuls les { $most } enregistrements les plus récents sont affichés : choisissez moins de jours, ou lisez-les tous avec pkw audit list.
+
+# Saved to {path}.
+te8346fa4 = Enregistré dans { $path }.
+
+# Could not save: {why}
+t733a7cae = Enregistrement impossible : { $why }
+
+# Record
+t9f4565ec = Enregistrement
+
+# Started
+t97b5823e = Commencé
+
+# Ended
+tec2b41db = Terminé
+
+# Reading the audit log…
+t403ccdff = Lecture du journal d’audit…
+
+# No records in these days.
+t98687757 = Aucun enregistrement sur ces jours.
+
+# No record is as chosen.
+ta9ffcb9f = Aucun enregistrement ne correspond à ce choix.
+
 # This computer
 tfa0d176a = Cet ordinateur
 
@@ -1289,6 +1426,9 @@ t0eac1f07 = Parcourir
 
 # Recent
 t50e888fe = Récents
+
+# Audit log
+tcb83f9ca = Journal d’audit
 
 # Choose a file to see its information here
 t50aac02b = Choisissez un fichier pour voir ses informations ici
@@ -1960,14 +2100,14 @@ t2774cee6 = Nécessite une licence Pro ou Enterprise : Réglages › Licence.
 # Where the audit log is
 t2702fcc6 = Où se trouve le journal d’audit
 
+# View records
+t27c5284a = Voir les enregistrements
+
 # Open folder
 t713a842f = Ouvrir le dossier
 
 # The last record could not be written: {why}
 t542148a1 = La dernière entrée n’a pas pu être écrite : { $why }
-
-# Audit log
-tcb83f9ca = Journal d’audit
 
 # pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
 t482581ff = pkw audit verify vérifie qu’aucune entrée n’a été modifiée ni supprimée. Qui administre cet ordinateur peut quand même effacer le journal : il dit ce que packwing a fait, il n’arrête personne.
@@ -1989,9 +2129,6 @@ t28a576c9 = Choisir un fichier…
 
 # {name} (weak)
 tdb06c037 = { $name } (faible)
-
-# Checksums
-t47dd48d3 = Sommes de contrôle
 
 # What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
 t6edeb650 = Ce que « Sommes de contrôle… » affiche dans le menu d'un fichier, pour comparer avec la somme donnée là où le fichier a été obtenu. Une somme faible repère un fichier endommagé, mais pas un fichier modifié exprès.

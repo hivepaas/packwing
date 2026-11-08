@@ -10,6 +10,7 @@ mod right_click;
 mod security;
 
 pub use general::{Appearance, AppearanceChosen};
+pub use security::ShowAuditLog;
 
 use gpui::{
     AnyView, Context, Div, Entity, EventEmitter, FontWeight, IntoElement, Render, ScrollHandle,
@@ -66,10 +67,12 @@ pub struct SettingsPage {
     views: Vec<AnyView>,
     /// How far the open section is scrolled.
     scroll: ScrollHandle,
-    _appearance: Subscription,
+    /// What its sections ask of the window, passed on.
+    _passed_on: [Subscription; 2],
 }
 
 impl EventEmitter<AppearanceChosen> for SettingsPage {}
+impl EventEmitter<ShowAuditLog> for SettingsPage {}
 
 impl SettingsPage {
     pub fn new(
@@ -82,15 +85,19 @@ impl SettingsPage {
         let appearance = cx.subscribe(&general, |_, _, e: &AppearanceChosen, cx| {
             cx.emit(AppearanceChosen(e.0))
         });
+        let security = {
+            let kept = crate::prefs::prefs(cx);
+            let (mark, ask) = (kept.keep_mark, kept.ask_before_open);
+            cx.new(|cx| security::Security::new(mark, ask, cx))
+        };
+        let audit = cx.subscribe(&security, |_, _, _: &ShowAuditLog, cx| {
+            cx.emit(ShowAuditLog)
+        });
         let views = vec![
             general.clone().into(),
             cx.new(extracting::Extracting::new).into(),
             cx.new(compressing::Compressing::new).into(),
-            {
-                let kept = crate::prefs::prefs(cx);
-                let (mark, ask) = (kept.keep_mark, kept.ask_before_open);
-                cx.new(|cx| security::Security::new(mark, ask, cx)).into()
-            },
+            security.into(),
             cx.new(|cx| right_click::RightClick::new(menu, cx)).into(),
             cx.new(license::LicenseSection::new).into(),
             cx.new(|cx| about::About::new(updates, cx)).into(),
@@ -100,7 +107,7 @@ impl SettingsPage {
             general,
             views,
             scroll: ScrollHandle::new(),
-            _appearance: appearance,
+            _passed_on: [appearance, audit],
         }
     }
 

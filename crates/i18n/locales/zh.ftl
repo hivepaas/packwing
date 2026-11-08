@@ -1252,6 +1252,141 @@ td7688f56 =
        *[other] 此文件夹中的 { $count } 个可执行文件解压后将保留互联网标记。
     }
 
+# Today
+te7c0775e = 今天
+
+# Last 7 days
+t35b9d98f = 最近 7 天
+
+# Last 30 days
+td0778b33 = 最近 30 天
+
+# All days
+tabb197ef = 全部日期
+
+# All results
+t6235c0b2 = 全部结果
+
+# Not done
+t0f88a146 = 未完成
+
+# Partly done
+t3355a2a5 = 部分完成
+
+# Failed
+t5579c3d4 = 失败
+
+# Cancelled
+ta62b09bc = 已取消
+
+# No end recorded
+t38ab1371 = 未记录结束
+
+# Make an archive
+t418bd6f0 = 创建压缩包
+
+# Open a file from an archive
+tc2dd3e41 = 从压缩包打开文件
+
+# Preview a file
+t1f706562 = 预览文件
+
+# Read a file from an archive
+t4229020d = 从压缩包读取文件
+
+# Add to an archive
+t4e28d1fa = 添加到压缩包
+
+# Delete from an archive
+t158044d3 = 从压缩包删除
+
+# Rename in an archive
+tb3eef763 = 在压缩包中重命名
+
+# Check a signature
+t6f441e5e = 检查签名
+
+# Make a signing key
+tbdf6bcd0 = 创建签名密钥
+
+# Join parts
+t4eee8c5f = 合并分卷
+
+# Checksums
+t47dd48d3 = 校验和
+
+# Audit log started
+tfb8df56f = 审计日志已开始
+
+# Audit log stopped
+t54654bc3 = 审计日志已停止
+
+# Audit log changed
+td6b7bc4a = 审计日志已更改
+
+# Old records taken away
+t5f337ebf = 已移除旧记录
+
+# All actions
+t4ff15157 = 全部操作
+
+# Find a path, a name or an error
+t30cb1a6c = 查找路径、名称或错误
+
+# Read again
+t2f0dcc5d = 重新读取
+
+# Save as CSV…
+tf103c3cc = 另存为 CSV…
+
+# Checking that no record was changed…
+t00deba79 = 正在检查记录是否被更改…
+
+# The audit log cannot be read: {why}
+t8783f4cf = 无法读取审计日志：{ $why }
+
+# A record was changed, taken out or put in by hand: in {file}, line {line}. | Records were changed, taken out or put in by hand, in {n} places: the first in {file}, line {line}.
+t3cd011bd =
+    { $n ->
+       *[other] 有 { $n } 处记录被手动更改、删除或插入：第一处在 { $file } 第 { $line } 行。
+    }
+
+# The oldest record follows one that is gone, and no record says it was taken away as past its time.
+t4579f8a7 = 最早的记录之前的记录已不存在，且没有记录说明它因超过保留期而被移除。
+
+# {n} record, and none was changed or taken out. | {n} records, and none was changed or taken out.
+tefc82060 =
+    { $n ->
+       *[other] { $n } 条记录，没有任何记录被更改或删除。
+    }
+
+# Only the latest {most} records are shown: choose fewer days, or read all with pkw audit list.
+t5fabfc51 = 仅显示最新的 { $most } 条记录：请选择更少的天数，或用 pkw audit list 读取全部。
+
+# Saved to {path}.
+te8346fa4 = 已保存到 { $path }。
+
+# Could not save: {why}
+t733a7cae = 无法保存：{ $why }
+
+# Record
+t9f4565ec = 记录
+
+# Started
+t97b5823e = 开始
+
+# Ended
+tec2b41db = 结束
+
+# Reading the audit log…
+t403ccdff = 正在读取审计日志…
+
+# No records in these days.
+t98687757 = 这些天没有记录。
+
+# No record is as chosen.
+ta9ffcb9f = 没有符合所选条件的记录。
+
 # This computer
 tfa0d176a = 此计算机
 
@@ -1272,6 +1407,9 @@ t0eac1f07 = 浏览
 
 # Recent
 t50e888fe = 最近
+
+# Audit log
+tcb83f9ca = 审计日志
 
 # Choose a file to see its information here
 t50aac02b = 选择一个文件即可在此查看其信息
@@ -1939,14 +2077,14 @@ t2774cee6 = 需要 Pro 或 Enterprise 许可证：设置 › 许可证。
 # Where the audit log is
 t2702fcc6 = 审计日志的位置
 
+# View records
+t27c5284a = 查看记录
+
 # Open folder
 t713a842f = 打开文件夹
 
 # The last record could not be written: {why}
 t542148a1 = 无法写入上一条记录：{ $why }
-
-# Audit log
-tcb83f9ca = 审计日志
 
 # pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
 t482581ff = pkw audit verify 会检查没有记录被修改或删除。管理这台电脑的人仍可删除日志：它说明 packwing 做了什么，并不能阻止任何人。
@@ -1968,9 +2106,6 @@ t28a576c9 = 选择文件…
 
 # {name} (weak)
 tdb06c037 = { $name }（弱）
-
-# Checksums
-t47dd48d3 = 校验和
 
 # What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
 t6edeb650 = 文件菜单中“校验和…”显示的内容，用于与文件来源处提供的校验和进行比较。弱校验和能发现损坏的文件，但发现不了被故意修改的文件。

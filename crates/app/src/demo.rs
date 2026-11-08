@@ -132,6 +132,57 @@ pub fn many_chosen() -> crate::model::Selection {
     }
 }
 
+/// The audit log the screenshots show: a morning's jobs, the latest last.
+#[cfg(all(test, feature = "test-hooks"))]
+pub fn audit_records() -> Vec<serde_json::Map<String, serde_json::Value>> {
+    use serde_json::json;
+    let who = json!({"user": "minh", "host": "studio", "app": "packwing", "version": "0.9.0"});
+    [
+        json!({"time": "2026-11-08T08:58:12.204Z", "action": "audit.started", "by": "startup",
+               "retention_days": 90, "max_bytes": 104_857_600,
+               "folder": "/home/minh/.local/state/packwing/audit"}),
+        json!({"time": "2026-11-08T09:02:40.918Z", "action": "extract", "phase": "start", "job": "a1-1",
+               "source": "/home/minh/Downloads/brand-assets-2026.zip",
+               "destination": "/home/minh/Projects/brand-assets-2026", "overwrite": "ask",
+               "keep_mark": true, "links_outside": "skip", "owners": "ignore"}),
+        json!({"time": "2026-11-08T09:02:43.511Z", "action": "extract", "phase": "end", "job": "a1-1",
+               "result": "ok", "format": "zip", "files": 214, "directories": 18,
+               "bytes": 486_201_344_u64, "duration_ms": 2593}),
+        json!({"time": "2026-11-08T09:10:05.077Z", "action": "read_entry", "phase": "start", "job": "a1-2",
+               "source": "/home/minh/Downloads/brand-assets-2026.zip", "entry": "README.md", "via": "preview"}),
+        json!({"time": "2026-11-08T09:10:05.102Z", "action": "read_entry", "phase": "end", "job": "a1-2",
+               "result": "ok", "bytes": 2048, "duration_ms": 25}),
+        json!({"time": "2026-11-08T09:31:19.640Z", "action": "test", "phase": "start", "job": "a1-3",
+               "source": "/home/minh/Backups/photos-2025.7z"}),
+        json!({"time": "2026-11-08T09:31:21.002Z", "action": "test", "phase": "end", "job": "a1-3",
+               "result": "failed", "error": "The password is not this archive's.", "duration_ms": 1362}),
+        json!({"time": "2026-11-08T09:45:52.330Z", "action": "create", "phase": "start", "job": "a1-4",
+               "destination": "/home/minh/Projects/q4-report.zip", "kind": "zip", "level": 6,
+               "encryption": "zip-aes256", "paths": 3,
+               "path_names": ["/home/minh/Projects/q4/report.pdf", "/home/minh/Projects/q4/figures",
+                              "/home/minh/Projects/q4/data.csv"]}),
+        json!({"time": "2026-11-08T09:45:55.871Z", "action": "create", "phase": "end", "job": "a1-4",
+               "result": "ok", "made": "/home/minh/Projects/q4-report.zip", "duration_ms": 3541}),
+        json!({"time": "2026-11-08T10:05:08.415Z", "action": "copy", "phase": "start", "job": "a1-5",
+               "from": "/home/minh/Projects/q4-report.zip", "to": "s3://studio-archive/2026/",
+               "names": ["q4-report.zip"]}),
+        json!({"time": "2026-11-08T10:05:31.009Z", "action": "copy", "phase": "end", "job": "a1-5",
+               "result": "ok", "files": 1, "bytes": 31_457_280, "duration_ms": 22_594}),
+        json!({"time": "2026-11-08T10:12:44.180Z", "action": "convert", "phase": "start", "job": "a1-6",
+               "source": "/home/minh/Downloads/old-site.rar",
+               "destination": "/home/minh/Archive/old-site.tar.zst", "kind": "tar.zst"}),
+    ]
+    .into_iter()
+    .filter_map(|mut r| {
+        let r = r.as_object_mut()?;
+        for (k, v) in who.as_object()? {
+            r.insert(k.clone(), v.clone());
+        }
+        Some(r.clone())
+    })
+    .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -1303,6 +1303,147 @@ td7688f56 =
        *[other] { $count } исполняемого файла в этой папке сохранят метку «загружено из Интернета» при извлечении.
     }
 
+# Today
+te7c0775e = Сегодня
+
+# Last 7 days
+t35b9d98f = Последние 7 дней
+
+# Last 30 days
+td0778b33 = Последние 30 дней
+
+# All days
+tabb197ef = За всё время
+
+# All results
+t6235c0b2 = Все результаты
+
+# Not done
+t0f88a146 = Не выполнено
+
+# Partly done
+t3355a2a5 = Выполнено частично
+
+# Failed
+t5579c3d4 = Ошибка
+
+# Cancelled
+ta62b09bc = Отменено
+
+# No end recorded
+t38ab1371 = Окончание не записано
+
+# Make an archive
+t418bd6f0 = Создание архива
+
+# Open a file from an archive
+tc2dd3e41 = Открытие файла из архива
+
+# Preview a file
+t1f706562 = Предпросмотр файла
+
+# Read a file from an archive
+t4229020d = Чтение файла из архива
+
+# Add to an archive
+t4e28d1fa = Добавление в архив
+
+# Delete from an archive
+t158044d3 = Удаление из архива
+
+# Rename in an archive
+tb3eef763 = Переименование в архиве
+
+# Check a signature
+t6f441e5e = Проверка подписи
+
+# Make a signing key
+tbdf6bcd0 = Создание ключа подписи
+
+# Join parts
+t4eee8c5f = Объединение частей
+
+# Checksums
+t47dd48d3 = Контрольные суммы
+
+# Audit log started
+tfb8df56f = Журнал аудита запущен
+
+# Audit log stopped
+t54654bc3 = Журнал аудита остановлен
+
+# Audit log changed
+td6b7bc4a = Журнал аудита изменён
+
+# Old records taken away
+t5f337ebf = Старые записи удалены
+
+# All actions
+t4ff15157 = Все действия
+
+# Find a path, a name or an error
+t30cb1a6c = Найти путь, имя или ошибку
+
+# Read again
+t2f0dcc5d = Перечитать
+
+# Save as CSV…
+tf103c3cc = Сохранить как CSV…
+
+# Checking that no record was changed…
+t00deba79 = Проверка, что ни одна запись не изменена…
+
+# The audit log cannot be read: {why}
+t8783f4cf = Не удаётся прочитать журнал аудита: { $why }
+
+# A record was changed, taken out or put in by hand: in {file}, line {line}. | Records were changed, taken out or put in by hand, in {n} places: the first in {file}, line {line}.
+t3cd011bd =
+    { $n ->
+        [one] Запись изменена, удалена или вставлена вручную: { $file }, строка { $line }.
+        [few] Записи изменены, удалены или вставлены вручную в { $n } местах: первое — { $file }, строка { $line }.
+        [many] Записи изменены, удалены или вставлены вручную в { $n } местах: первое — { $file }, строка { $line }.
+       *[other] Записи изменены, удалены или вставлены вручную в { $n } местах: первое — { $file }, строка { $line }.
+    }
+
+# The oldest record follows one that is gone, and no record says it was taken away as past its time.
+t4579f8a7 = Самая старая запись следует за отсутствующей, и ни одна запись не говорит, что та удалена по истечении срока.
+
+# {n} record, and none was changed or taken out. | {n} records, and none was changed or taken out.
+tefc82060 =
+    { $n ->
+        [one] { $n } запись, ни одна не изменена и не удалена.
+        [few] { $n } записи, ни одна не изменена и не удалена.
+        [many] { $n } записей, ни одна не изменена и не удалена.
+       *[other] { $n } записи, ни одна не изменена и не удалена.
+    }
+
+# Only the latest {most} records are shown: choose fewer days, or read all with pkw audit list.
+t5fabfc51 = Показаны только последние { $most } записей: выберите меньше дней или прочитайте все с помощью pkw audit list.
+
+# Saved to {path}.
+te8346fa4 = Сохранено в { $path }.
+
+# Could not save: {why}
+t733a7cae = Не удалось сохранить: { $why }
+
+# Record
+t9f4565ec = Запись
+
+# Started
+t97b5823e = Начато
+
+# Ended
+tec2b41db = Завершено
+
+# Reading the audit log…
+t403ccdff = Чтение журнала аудита…
+
+# No records in these days.
+t98687757 = За эти дни записей нет.
+
+# No record is as chosen.
+ta9ffcb9f = Нет записей, подходящих под выбор.
+
 # This computer
 tfa0d176a = Этот компьютер
 
@@ -1323,6 +1464,9 @@ t0eac1f07 = Обзор
 
 # Recent
 t50e888fe = Недавние
+
+# Audit log
+tcb83f9ca = Журнал аудита
 
 # Choose a file to see its information here
 t50aac02b = Выберите файл, чтобы увидеть сведения о нём
@@ -2002,14 +2146,14 @@ t2774cee6 = Нужна лицензия Pro или Enterprise: Настройк�
 # Where the audit log is
 t2702fcc6 = Где находится журнал аудита
 
+# View records
+t27c5284a = Посмотреть записи
+
 # Open folder
 t713a842f = Открыть папку
 
 # The last record could not be written: {why}
 t542148a1 = Не удалось записать последнюю запись: { $why }
-
-# Audit log
-tcb83f9ca = Журнал аудита
 
 # pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
 t482581ff = pkw audit verify проверяет, что ни одна запись не изменена и не удалена. Администратор этого компьютера всё равно может удалить журнал: он показывает, что сделал packwing, но никого не останавливает.
@@ -2031,9 +2175,6 @@ t28a576c9 = Выбрать файл…
 
 # {name} (weak)
 tdb06c037 = { $name } (слабая)
-
-# Checksums
-t47dd48d3 = Контрольные суммы
 
 # What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
 t6edeb650 = Что показывает пункт «Контрольные суммы…» в меню файла, для сравнения с суммой, указанной там, откуда взят файл. Слабая выявит повреждённый файл, но не изменённый намеренно.

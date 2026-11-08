@@ -19,12 +19,12 @@ What the audit log does today is in [../audit.md](../audit.md). This is why it i
 - The core's jobs record their start and end, once each, a job inside another the outer one's.
 - Settings › Security: the switch (Pro and Enterprise), how long, where, Open folder; locked under a policy.
 - `pkw audit list | verify | status`.
+- Browse › Audit log, while the log is kept: a line a job, filters by days, action, result and words, each job's records beside, the chain checked, and saving as CSV. It reads the latest 50,000 records at most; `pkw audit list` reads all.
 
 ## Phase 2
 
 - **The system's own logs**, by policy (`AuditLogSystem`): Windows' Event Log (an event source of packwing's, in Application), journald, macOS's unified log (`com.hivepaas.packwing`). Collectors already read them, and clearing Windows' takes an administrator and is an event of its own (1102).
 - **`AuditLogRequired`**: a job whose start cannot be recorded does not start, and says why. Worth it once records go off the computer; before, the person it would stop can as well stop the log.
-- **A page in the app** to read the log: filters by day, action and result, and saving as CSV.
 - **Every file extracted named**, with `entries`: hivepack tells each one written (a callback in `extract::Options`), and records hold them, to a limit.
 - **Windows' SID** of the user, besides the name.
 

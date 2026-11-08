@@ -1252,6 +1252,141 @@ td7688f56 =
        *[other] 此資料夾中的 { $count } 個可執行檔解壓縮後會保留網際網路標記。
     }
 
+# Today
+te7c0775e = 今天
+
+# Last 7 days
+t35b9d98f = 最近 7 天
+
+# Last 30 days
+td0778b33 = 最近 30 天
+
+# All days
+tabb197ef = 全部日期
+
+# All results
+t6235c0b2 = 全部結果
+
+# Not done
+t0f88a146 = 未完成
+
+# Partly done
+t3355a2a5 = 部分完成
+
+# Failed
+t5579c3d4 = 失敗
+
+# Cancelled
+ta62b09bc = 已取消
+
+# No end recorded
+t38ab1371 = 未記錄結束
+
+# Make an archive
+t418bd6f0 = 建立壓縮檔
+
+# Open a file from an archive
+tc2dd3e41 = 從壓縮檔開啟檔案
+
+# Preview a file
+t1f706562 = 預覽檔案
+
+# Read a file from an archive
+t4229020d = 從壓縮檔讀取檔案
+
+# Add to an archive
+t4e28d1fa = 加入壓縮檔
+
+# Delete from an archive
+t158044d3 = 從壓縮檔刪除
+
+# Rename in an archive
+tb3eef763 = 在壓縮檔中重新命名
+
+# Check a signature
+t6f441e5e = 檢查簽章
+
+# Make a signing key
+tbdf6bcd0 = 建立簽章金鑰
+
+# Join parts
+t4eee8c5f = 合併分卷
+
+# Checksums
+t47dd48d3 = 檢查碼
+
+# Audit log started
+tfb8df56f = 稽核記錄已開始
+
+# Audit log stopped
+t54654bc3 = 稽核記錄已停止
+
+# Audit log changed
+td6b7bc4a = 稽核記錄已變更
+
+# Old records taken away
+t5f337ebf = 已移除舊記錄
+
+# All actions
+t4ff15157 = 全部操作
+
+# Find a path, a name or an error
+t30cb1a6c = 尋找路徑、名稱或錯誤
+
+# Read again
+t2f0dcc5d = 重新讀取
+
+# Save as CSV…
+tf103c3cc = 另存為 CSV…
+
+# Checking that no record was changed…
+t00deba79 = 正在檢查記錄是否遭到變更…
+
+# The audit log cannot be read: {why}
+t8783f4cf = 無法讀取稽核記錄：{ $why }
+
+# A record was changed, taken out or put in by hand: in {file}, line {line}. | Records were changed, taken out or put in by hand, in {n} places: the first in {file}, line {line}.
+t3cd011bd =
+    { $n ->
+       *[other] 有 { $n } 處記錄遭手動變更、刪除或插入：第一處在 { $file } 第 { $line } 行。
+    }
+
+# The oldest record follows one that is gone, and no record says it was taken away as past its time.
+t4579f8a7 = 最早的記錄之前的記錄已不存在，且沒有記錄說明它因超過保留期而被移除。
+
+# {n} record, and none was changed or taken out. | {n} records, and none was changed or taken out.
+tefc82060 =
+    { $n ->
+       *[other] { $n } 筆記錄，沒有任何記錄遭到變更或刪除。
+    }
+
+# Only the latest {most} records are shown: choose fewer days, or read all with pkw audit list.
+t5fabfc51 = 僅顯示最新的 { $most } 筆記錄：請選擇較少的天數，或用 pkw audit list 讀取全部。
+
+# Saved to {path}.
+te8346fa4 = 已儲存到 { $path }。
+
+# Could not save: {why}
+t733a7cae = 無法儲存：{ $why }
+
+# Record
+t9f4565ec = 記錄
+
+# Started
+t97b5823e = 開始
+
+# Ended
+tec2b41db = 結束
+
+# Reading the audit log…
+t403ccdff = 正在讀取稽核記錄…
+
+# No records in these days.
+t98687757 = 這些天沒有記錄。
+
+# No record is as chosen.
+ta9ffcb9f = 沒有符合所選條件的記錄。
+
 # This computer
 tfa0d176a = 這台電腦
 
@@ -1272,6 +1407,9 @@ t0eac1f07 = 瀏覽
 
 # Recent
 t50e888fe = 最近使用
+
+# Audit log
+tcb83f9ca = 稽核記錄
 
 # Choose a file to see its information here
 t50aac02b = 選擇檔案即可在此查看其資訊
@@ -1939,14 +2077,14 @@ t2774cee6 = 需要 Pro 或 Enterprise 授權：設定 › 授權。
 # Where the audit log is
 t2702fcc6 = 稽核記錄的位置
 
+# View records
+t27c5284a = 檢視記錄
+
 # Open folder
 t713a842f = 開啟資料夾
 
 # The last record could not be written: {why}
 t542148a1 = 無法寫入上一筆記錄：{ $why }
-
-# Audit log
-tcb83f9ca = 稽核記錄
 
 # pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
 t482581ff = pkw audit verify 會確認沒有記錄被修改或刪除。管理這台電腦的人仍可刪除記錄：它說明 packwing 做了什麼，並不能阻止任何人。
@@ -1968,9 +2106,6 @@ t28a576c9 = 選擇檔案…
 
 # {name} (weak)
 tdb06c037 = { $name }（弱）
-
-# Checksums
-t47dd48d3 = 檢查碼
 
 # What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
 t6edeb650 = 檔案選單中「檢查碼…」顯示的內容，用來與檔案來源處提供的檢查碼比較。弱檢查碼能發現損壞的檔案，但無法發現被刻意修改的檔案。

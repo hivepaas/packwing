@@ -8,6 +8,7 @@ use gpui::{
 };
 use packwing_i18n::tr;
 
+use super::audit::AuditPage;
 use super::recent::RecentPage;
 use super::{explorer_info, panel};
 use crate::colors::colors;
@@ -21,6 +22,8 @@ use crate::widgets::icon;
 pub enum Tab {
     Browse,
     Recent,
+    /// The audit log's records, while it is kept.
+    Audit,
 }
 
 /// What `path` starts from: `/`, or on Windows its drive's top.
@@ -46,6 +49,9 @@ pub struct BrowsePage {
     tab: Tab,
     explorer: Entity<Explorer>,
     recent: Entity<RecentPage>,
+    audit: Entity<AuditPage>,
+    /// The screenshots show the audit log's samples, kept or not.
+    audit_samples: bool,
     /// All of the disk it shows: from here it can go anywhere on it.
     top: PathBuf,
     _explorer_changed: Subscription,
@@ -74,6 +80,8 @@ impl BrowsePage {
             tab: Tab::Browse,
             explorer,
             recent,
+            audit: cx.new(AuditPage::new),
+            audit_samples: false,
             top,
             _explorer_changed: changed,
         }
@@ -84,13 +92,41 @@ impl BrowsePage {
     }
 
     pub fn show_tab(&mut self, tab: Tab, cx: &mut Context<Self>) {
+        if tab == Tab::Audit && self.tab != Tab::Audit {
+            self.audit.update(cx, |a, cx| a.reload(cx));
+        }
         self.tab = tab;
         cx.notify();
     }
 
-    /// The folder shown, on this computer.
+    /// The tab shown: Audit only while the log is kept.
     pub fn tab(&self) -> Tab {
-        self.tab
+        match self.tab {
+            Tab::Audit if !self.kept() => Tab::Browse,
+            tab => tab,
+        }
+    }
+
+    /// Whether the audit log is kept, or the screenshots show its samples.
+    fn kept(&self) -> bool {
+        self.audit_samples || packwing_core::audit::config().is_some()
+    }
+
+    /// Shows the audit log's samples, `chosen` beside them, as the
+    /// screenshots draw it.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn show_audit_samples(&mut self, chosen: Option<usize>, cx: &mut Context<Self>) {
+        self.audit_samples = true;
+        let lines = super::audit::lines(crate::demo::audit_records());
+        self.audit
+            .update(cx, |a, cx| a.show_samples(lines, chosen, cx));
+        self.tab = Tab::Audit;
+        cx.notify();
+    }
+
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn audit(&self) -> &Entity<AuditPage> {
+        &self.audit
     }
 
     /// The folder shown, on this computer.
@@ -194,7 +230,8 @@ fn drop_hint(dragging: bool) -> Div {
 
 impl Render for BrowsePage {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let tab = self.tab;
+        let tab = self.tab();
+        let kept = self.kept();
         let here = self.here(cx);
         let tabs = div()
             .flex()
@@ -208,6 +245,12 @@ impl Render for BrowsePage {
                 pill("tab-recent", "recent", tr!("Recent"), tab == Tab::Recent)
                     .on_click(cx.listener(|this, _, _, cx| this.show_tab(Tab::Recent, cx))),
             )
+            .when(kept, |d| {
+                d.child(
+                    pill("tab-audit", "audit", tr!("Audit log"), tab == Tab::Audit)
+                        .on_click(cx.listener(|this, _, _, cx| this.show_tab(Tab::Audit, cx))),
+                )
+            })
             .child(drop_hint(cx.has_active_drag()));
         let shortcuts = Self::shortcuts()
             .into_iter()
@@ -244,6 +287,7 @@ impl Render for BrowsePage {
                 )
                 .child(explorer_info::info(&self.explorer, window, cx)),
             Tab::Recent => body.child(self.recent.clone()),
+            Tab::Audit => body.child(self.audit.clone()),
         };
         div()
             .size_full()

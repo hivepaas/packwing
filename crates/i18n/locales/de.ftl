@@ -1269,6 +1269,143 @@ td7688f56 =
        *[other] { $count } ausführbare Dateien in diesem Ordner behalten beim Entpacken ihre Internet-Markierung.
     }
 
+# Today
+te7c0775e = Heute
+
+# Last 7 days
+t35b9d98f = Letzte 7 Tage
+
+# Last 30 days
+td0778b33 = Letzte 30 Tage
+
+# All days
+tabb197ef = Alle Tage
+
+# All results
+t6235c0b2 = Alle Ergebnisse
+
+# Not done
+t0f88a146 = Nicht erledigt
+
+# Partly done
+t3355a2a5 = Teilweise erledigt
+
+# Failed
+t5579c3d4 = Fehlgeschlagen
+
+# Cancelled
+ta62b09bc = Abgebrochen
+
+# No end recorded
+t38ab1371 = Kein Ende aufgezeichnet
+
+# Make an archive
+t418bd6f0 = Archiv erstellen
+
+# Open a file from an archive
+tc2dd3e41 = Datei aus einem Archiv öffnen
+
+# Preview a file
+t1f706562 = Dateivorschau
+
+# Read a file from an archive
+t4229020d = Datei aus einem Archiv lesen
+
+# Add to an archive
+t4e28d1fa = Zu einem Archiv hinzufügen
+
+# Delete from an archive
+t158044d3 = Aus einem Archiv löschen
+
+# Rename in an archive
+tb3eef763 = In einem Archiv umbenennen
+
+# Check a signature
+t6f441e5e = Signatur prüfen
+
+# Make a signing key
+tbdf6bcd0 = Signaturschlüssel erstellen
+
+# Join parts
+t4eee8c5f = Teile zusammenfügen
+
+# Checksums
+t47dd48d3 = Prüfsummen
+
+# Audit log started
+tfb8df56f = Audit-Protokoll gestartet
+
+# Audit log stopped
+t54654bc3 = Audit-Protokoll beendet
+
+# Audit log changed
+td6b7bc4a = Audit-Protokoll geändert
+
+# Old records taken away
+t5f337ebf = Alte Einträge entfernt
+
+# All actions
+t4ff15157 = Alle Aktionen
+
+# Find a path, a name or an error
+t30cb1a6c = Pfad, Name oder Fehler suchen
+
+# Read again
+t2f0dcc5d = Neu einlesen
+
+# Save as CSV…
+tf103c3cc = Als CSV speichern …
+
+# Checking that no record was changed…
+t00deba79 = Es wird geprüft, dass kein Eintrag geändert wurde …
+
+# The audit log cannot be read: {why}
+t8783f4cf = Das Audit-Protokoll kann nicht gelesen werden: { $why }
+
+# A record was changed, taken out or put in by hand: in {file}, line {line}. | Records were changed, taken out or put in by hand, in {n} places: the first in {file}, line {line}.
+t3cd011bd =
+    { $n ->
+        [one] Ein Eintrag wurde von Hand geändert, entfernt oder eingefügt: in { $file }, Zeile { $line }.
+       *[other] Einträge wurden an { $n } Stellen von Hand geändert, entfernt oder eingefügt: zuerst in { $file }, Zeile { $line }.
+    }
+
+# The oldest record follows one that is gone, and no record says it was taken away as past its time.
+t4579f8a7 = Der älteste Eintrag folgt auf einen, der fehlt, und kein Eintrag sagt, dass er nach Ablauf seiner Frist entfernt wurde.
+
+# {n} record, and none was changed or taken out. | {n} records, and none was changed or taken out.
+tefc82060 =
+    { $n ->
+        [one] { $n } Eintrag, keiner wurde geändert oder entfernt.
+       *[other] { $n } Einträge, keiner wurde geändert oder entfernt.
+    }
+
+# Only the latest {most} records are shown: choose fewer days, or read all with pkw audit list.
+t5fabfc51 = Nur die neuesten { $most } Einträge werden angezeigt: Wählen Sie weniger Tage, oder lesen Sie alle mit pkw audit list.
+
+# Saved to {path}.
+te8346fa4 = Gespeichert unter { $path }.
+
+# Could not save: {why}
+t733a7cae = Speichern nicht möglich: { $why }
+
+# Record
+t9f4565ec = Eintrag
+
+# Started
+t97b5823e = Begonnen
+
+# Ended
+tec2b41db = Beendet
+
+# Reading the audit log…
+t403ccdff = Audit-Protokoll wird gelesen …
+
+# No records in these days.
+t98687757 = Keine Einträge in diesem Zeitraum.
+
+# No record is as chosen.
+ta9ffcb9f = Kein Eintrag passt zur Auswahl.
+
 # This computer
 tfa0d176a = Dieser Computer
 
@@ -1289,6 +1426,9 @@ t0eac1f07 = Durchsuchen
 
 # Recent
 t50e888fe = Zuletzt
+
+# Audit log
+tcb83f9ca = Audit-Protokoll
 
 # Choose a file to see its information here
 t50aac02b = Wähle eine Datei, um hier ihre Informationen zu sehen
@@ -1960,14 +2100,14 @@ t2774cee6 = Erfordert eine Pro- oder Enterprise-Lizenz: Einstellungen › Lizenz
 # Where the audit log is
 t2702fcc6 = Wo das Audit-Protokoll liegt
 
+# View records
+t27c5284a = Einträge ansehen
+
 # Open folder
 t713a842f = Ordner öffnen
 
 # The last record could not be written: {why}
 t542148a1 = Der letzte Eintrag konnte nicht geschrieben werden: { $why }
-
-# Audit log
-tcb83f9ca = Audit-Protokoll
 
 # pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
 t482581ff = pkw audit verify prüft, dass kein Eintrag geändert oder entfernt wurde. Wer diesen Computer verwaltet, kann das Protokoll trotzdem löschen: Es zeigt, was packwing getan hat, es hält niemanden auf.
@@ -1989,9 +2129,6 @@ t28a576c9 = Datei auswählen…
 
 # {name} (weak)
 tdb06c037 = { $name } (schwach)
-
-# Checksums
-t47dd48d3 = Prüfsummen
 
 # What Checksums… in a file’s menu shows, to compare with the one given where the file came from. A weak one still tells a damaged file, but not one changed on purpose.
 t6edeb650 = Was „Prüfsummen…“ im Menü einer Datei zeigt, zum Vergleich mit der Prüfsumme, die dort angegeben ist, wo die Datei herkommt. Eine schwache erkennt eine beschädigte Datei, aber keine absichtlich veränderte.
