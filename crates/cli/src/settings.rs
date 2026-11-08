@@ -24,6 +24,33 @@ fn file() -> Option<PathBuf> {
     Some(folder.join("packwing").join("settings"))
 }
 
+/// What the user chose of the audit log in the app: `audit_log=true`, and
+/// `audit_retention_days=N`.
+pub fn audit(settings: &str) -> packwing_core::audit::Chosen {
+    let mut chosen = packwing_core::audit::Chosen::default();
+    for line in settings.lines() {
+        if let Some(on) = line.strip_prefix("audit_log=") {
+            chosen.on = on == "true";
+        } else if let Some(days) = line.strip_prefix("audit_retention_days=") {
+            chosen.retention_days = days.parse().unwrap_or(chosen.retention_days);
+        }
+    }
+    chosen
+}
+
+/// The plan of the license this computer holds: the organization's, set by
+/// policy, or the one entered in the app, kept beside its settings. Free without.
+pub fn plan() -> packwing_license::Plan {
+    let text = match &packwing_policy::current().license_key {
+        packwing_policy::Setting::Set(key) => Some(key.clone()),
+        _ => file().and_then(|f| std::fs::read_to_string(f.with_file_name("license.key")).ok()),
+    };
+    text.and_then(|t| packwing_license::read(&t).ok())
+        .map_or(packwing_license::Plan::Free, |l| {
+            l.plan(std::time::SystemTime::now().into())
+        })
+}
+
 /// The settings' text, or none.
 pub fn text() -> String {
     file()

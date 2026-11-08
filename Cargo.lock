@@ -5332,11 +5332,22 @@ dependencies = [
  "packwing-remote",
  "packwing-update",
  "robius-authentication",
+ "serde_json",
  "time",
  "unicode-segmentation",
  "winreg",
  "winresource",
  "xattr",
+]
+
+[[package]]
+name = "packwing-audit"
+version = "0.1.0"
+dependencies = [
+ "getrandom 0.4.3",
+ "rustix",
+ "serde_json",
+ "sha2 0.11.1",
 ]
 
 [[package]]
@@ -5349,6 +5360,7 @@ dependencies = [
  "ctrlc",
  "packwing-core",
  "packwing-i18n",
+ "packwing-license",
  "packwing-policy",
  "packwing-remote",
  "rpassword",
@@ -5367,8 +5379,10 @@ dependencies = [
  "imagesize",
  "md-5 0.11.0",
  "nix",
+ "packwing-audit",
  "packwing-i18n",
  "packwing-policy",
+ "serde_json",
  "sha1",
  "sha2 0.11.1",
  "trash",

@@ -1831,6 +1831,18 @@ t7730ec1a = Windows 11 gom chúng vào một mục Packwing, trong menu của n�
 # One packwing item, with these under it
 tb5fdc584 = Một mục packwing, các mục này nằm bên dưới
 
+# 30 days
+t7a572af9 = 30 ngày
+
+# 90 days
+t2d8a9817 = 90 ngày
+
+# 1 year
+t4d0a98a5 = 1 năm
+
+# Keep all
+te0b1775b = Giữ tất cả
+
 # Keep the “downloaded from the Internet” mark
 tfe574fa2 = Giữ dấu “tải từ Internet”
 
@@ -1870,6 +1882,36 @@ tb7d64a44 = Độ dài mật khẩu tối thiểu
 # In characters, for every new archive with a password
 tca6d6982 = Tính theo ký tự, cho mọi tệp nén mới có mật khẩu
 
+# Keep an audit log
+tf7fd8762 = Ghi nhật ký kiểm tra
+
+# A record of what packwing does, whatever the license
+t34fe4e25 = Ghi lại những gì packwing làm, bất kể giấy phép
+
+# Where the audit log is kept
+tbd999abe = Nơi lưu nhật ký kiểm tra
+
+# A folder your organization chose
+td4e1f74a = Thư mục do tổ chức của bạn chọn
+
+# How long the audit log is kept
+td504acaf = Thời gian lưu nhật ký kiểm tra
+
+# In days; 0 keeps every record
+t127a3c54 = Tính bằng ngày; 0 là giữ mọi bản ghi
+
+# Most the audit log may take
+ta334bb40 = Dung lượng tối đa của nhật ký kiểm tra
+
+# In MB; the oldest records go first
+t03a543d2 = Tính bằng MB; bản ghi cũ nhất bị xoá trước
+
+# What the audit log says of archives
+t8d6fca43 = Nhật ký kiểm tra ghi gì về tệp nén
+
+# “entries” names the files found damaged or left out, as well as counting them
+tf1125538 = “entries” ghi cả tên các tệp bị hỏng hoặc bị bỏ qua, không chỉ đếm số lượng
+
 # packwing has no policy of this name.
 t7e03649c = packwing không có chính sách nào tên này.
 
@@ -1881,6 +1923,33 @@ t9173caaa = Mở một tệp trong tệp nén là đặt một bản sao vào th
 
 # Paste a public key
 t0bf72f73 = Dán một khoá công khai
+
+# What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
+t2162955d = Những gì packwing làm, lưu trên máy này: tệp nén được giải nén, tạo, chuyển đổi và sao chép, lúc nào và bởi ai. Không bao giờ ghi mật khẩu hay nội dung tệp.
+
+# Keep its records for
+tf423722f = Giữ bản ghi trong
+
+# Older ones are taken away, and that is recorded too
+t7073f273 = Bản ghi cũ hơn sẽ bị xoá, và việc xoá cũng được ghi lại
+
+# Takes a Pro or Enterprise license: Settings › License.
+t2774cee6 = Cần giấy phép Pro hoặc Enterprise: Cài đặt › Giấy phép.
+
+# Where the audit log is
+t2702fcc6 = Nơi lưu nhật ký kiểm tra
+
+# Open folder
+t713a842f = Mở thư mục
+
+# The last record could not be written: {why}
+t542148a1 = Không ghi được bản ghi gần nhất: { $why }
+
+# Audit log
+tcb83f9ca = Nhật ký kiểm tra
+
+# pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
+t482581ff = pkw audit verify kiểm tra rằng không bản ghi nào bị sửa hay bị xoá. Người quản trị máy này vẫn có thể xoá nhật ký: nó cho biết packwing đã làm gì, chứ không ngăn được ai.
 
 # This is not a public key packwing can check with: {why}.
 td57933b9 = Đây không phải khoá công khai mà packwing kiểm tra được: { $why }.
@@ -2391,6 +2460,18 @@ tda498fad = Cần một số từ 1 đến { $most }, không phải { $other }.
 
 # Expected some text, not {other}.
 t9386ce3b = Cần một đoạn văn bản, không phải { $other }.
+
+# Expected a whole path, such as /var/log/packwing or \\server\audit, not {other}.
+t00d3565d = Cần một đường dẫn đầy đủ, như /var/log/packwing hoặc \\server\audit, không phải { $other }.
+
+# Expected a number of days from 0 (keep all) to {most}, not {other}.
+tf8fba675 = Cần số ngày từ 0 (giữ tất cả) đến { $most }, không phải { $other }.
+
+# Expected a size in MB from 0 (no limit) to {most}, not {other}.
+t9f7e002d = Cần dung lượng tính bằng MB từ 0 (không giới hạn) đến { $most }, không phải { $other }.
+
+# Expected summary or entries, not {other}.
+t27e9b96f = Cần summary hoặc entries, không phải { $other }.
 
 # Expected an address starting with https://, not {other}.
 t93bfd19e = Cần một địa chỉ bắt đầu bằng https://, không phải { $other }.

@@ -1852,6 +1852,18 @@ t7730ec1a = Windows 11 les regroupe sous un élément Packwing, dans son menu et
 # One packwing item, with these under it
 tb5fdc584 = Un seul élément packwing, avec ceux-ci dessous
 
+# 30 days
+t7a572af9 = 30 jours
+
+# 90 days
+t2d8a9817 = 90 jours
+
+# 1 year
+t4d0a98a5 = 1 an
+
+# Keep all
+te0b1775b = Tout conserver
+
 # Keep the “downloaded from the Internet” mark
 tfe574fa2 = Conserver la marque « téléchargé depuis Internet »
 
@@ -1891,6 +1903,36 @@ tb7d64a44 = Longueur minimale du mot de passe
 # In characters, for every new archive with a password
 tca6d6982 = En caractères, pour toute nouvelle archive avec un mot de passe
 
+# Keep an audit log
+tf7fd8762 = Tenir un journal d’audit
+
+# A record of what packwing does, whatever the license
+t34fe4e25 = Ce que fait packwing, consigné, quelle que soit la licence
+
+# Where the audit log is kept
+tbd999abe = Où se trouve le journal d’audit
+
+# A folder your organization chose
+td4e1f74a = Un dossier choisi par votre organisation
+
+# How long the audit log is kept
+td504acaf = Durée de conservation du journal d’audit
+
+# In days; 0 keeps every record
+t127a3c54 = En jours ; 0 conserve toutes les entrées
+
+# Most the audit log may take
+ta334bb40 = Taille maximale du journal d’audit
+
+# In MB; the oldest records go first
+t03a543d2 = En Mo ; les entrées les plus anciennes partent en premier
+
+# What the audit log says of archives
+t8d6fca43 = Ce que le journal d’audit dit des archives
+
+# “entries” names the files found damaged or left out, as well as counting them
+tf1125538 = « entries » nomme les fichiers endommagés ou laissés de côté, en plus de les compter
+
 # packwing has no policy of this name.
 t7e03649c = packwing n'a aucune politique de ce nom.
 
@@ -1902,6 +1944,33 @@ t9173caaa = Ouvrir un fichier dans une archive place une copie dans un dossier t
 
 # Paste a public key
 t0bf72f73 = Collez une clé publique
+
+# What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
+t2162955d = Ce que fait packwing, consigné sur cet ordinateur : archives extraites, créées, converties et copiées, quand et par qui. Jamais un mot de passe ni le contenu d’un fichier.
+
+# Keep its records for
+tf423722f = Conserver les entrées pendant
+
+# Older ones are taken away, and that is recorded too
+t7073f273 = Les plus anciennes sont supprimées, et cela aussi est consigné
+
+# Takes a Pro or Enterprise license: Settings › License.
+t2774cee6 = Nécessite une licence Pro ou Enterprise : Réglages › Licence.
+
+# Where the audit log is
+t2702fcc6 = Où se trouve le journal d’audit
+
+# Open folder
+t713a842f = Ouvrir le dossier
+
+# The last record could not be written: {why}
+t542148a1 = La dernière entrée n’a pas pu être écrite : { $why }
+
+# Audit log
+tcb83f9ca = Journal d’audit
+
+# pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
+t482581ff = pkw audit verify vérifie qu’aucune entrée n’a été modifiée ni supprimée. Qui administre cet ordinateur peut quand même effacer le journal : il dit ce que packwing a fait, il n’arrête personne.
 
 # This is not a public key packwing can check with: {why}.
 td57933b9 = Ce n'est pas une clé publique avec laquelle packwing peut vérifier : { $why }.
@@ -2427,6 +2496,18 @@ tda498fad = Attendu : un nombre de 1 à { $most }, pas { $other }.
 
 # Expected some text, not {other}.
 t9386ce3b = Attendu : du texte, pas { $other }.
+
+# Expected a whole path, such as /var/log/packwing or \\server\audit, not {other}.
+t00d3565d = Attendu : un chemin complet, comme /var/log/packwing ou \\server\audit, pas { $other }.
+
+# Expected a number of days from 0 (keep all) to {most}, not {other}.
+tf8fba675 = Attendu : un nombre de jours de 0 (tout conserver) à { $most }, pas { $other }.
+
+# Expected a size in MB from 0 (no limit) to {most}, not {other}.
+t9f7e002d = Attendu : une taille en Mo de 0 (sans limite) à { $most }, pas { $other }.
+
+# Expected summary or entries, not {other}.
+t27e9b96f = Attendu : summary ou entries, pas { $other }.
 
 # Expected an address starting with https://, not {other}.
 t93bfd19e = Attendu : une adresse commençant par https://, pas { $other }.

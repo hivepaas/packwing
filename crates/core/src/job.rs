@@ -2,6 +2,7 @@
 //! checks made, nothing written.
 
 use packwing_i18n::tr;
+use serde_json::{Map, Value, json};
 use std::fs::OpenOptions;
 use std::io::{self, Read, Seek, Write};
 use std::path::{Path, PathBuf};
@@ -21,6 +22,7 @@ use hivepack::tar::Reader;
 use hivepack::udf::{Udf, VType};
 use hivepack::zip::{Archive, Flags, OpenFlags, ReadAt, Volumes};
 
+use crate::audit;
 use crate::rar;
 use crate::source::Source;
 use crate::spool::spool;
@@ -310,7 +312,63 @@ pub fn extract_with(
     how: &ExtractOptions,
     control: &Control,
 ) -> Result<Summary, Error> {
-    extract_picked(&source.into(), destination, keys, how, None, control)
+    let source = source.into();
+    let job = audit::begin("extract", extracting(&source, destination, how));
+    let result = extract_picked(&source, destination, keys, how, None, control);
+    audit::end(job, &result, extracted);
+    result
+}
+
+/// What a record of extracting says of where from, where to and how.
+fn extracting(source: &Source, destination: &Path, how: &ExtractOptions) -> Map<String, Value> {
+    audit::fields([
+        ("source", audit::source(source)),
+        ("destination", json!(audit::path_text(destination))),
+        ("overwrite", json!(how.overwrite)),
+        ("keep_mark", json!(how.keep_mark)),
+        ("portable_names", json!(how.portable_names)),
+        (
+            "links_outside",
+            json!(format!("{:?}", how.links_outside).to_lowercase()),
+        ),
+        ("owners", json!(format!("{:?}", how.owners).to_lowercase())),
+        ("xattrs", json!(how.xattrs)),
+        ("limit", json!(how.limit)),
+    ])
+}
+
+/// What a record of extracting says of how it went: `partial` where files were
+/// damaged or left out, and which, where records name them.
+pub(crate) fn extracted(summary: &Summary) -> Map<String, Value> {
+    let damaged = damages(summary);
+    let left = left_out(summary);
+    let renamed = renamings(summary);
+    let mut fields = audit::fields([
+        ("files", json!(summary.files)),
+        ("directories", json!(summary.directories)),
+        ("links", json!(summary.links)),
+        ("bytes", json!(summary.bytes)),
+        ("damaged", json!(damaged.len())),
+        ("left_out", json!(left.len())),
+        ("renamed", json!(renamed.len())),
+        ("owners_left", json!(summary.owners_left)),
+        (
+            "damaged_names",
+            audit::names(damaged.iter().map(|d| d.path.clone())),
+        ),
+        (
+            "left_out_names",
+            audit::names(left.iter().map(|b| b.path.clone())),
+        ),
+        (
+            "renamed_names",
+            audit::names(renamed.iter().map(|r| format!("{} -> {}", r.path, r.to))),
+        ),
+    ]);
+    if !damaged.is_empty() || !left.is_empty() {
+        fields.insert("result".into(), json!("partial"));
+    }
+    fields
 }
 
 /// Extracts only `picked` of the archive at `path`, files or folders given by
@@ -321,6 +379,27 @@ pub fn extract_with(
 /// to be replaced; a folder takes what is new in it.
 pub fn extract_selected(
     source: impl Into<Source>,
+    destination: &Path,
+    picked: &[Vec<String>],
+    keys: &Keys,
+    how: &ExtractOptions,
+    control: &Control,
+) -> Result<Summary, Error> {
+    let source = source.into();
+    let mut fields = extracting(&source, destination, how);
+    fields.insert("picked".into(), json!(picked.len()));
+    fields.extend(audit::fields([(
+        "picked_names",
+        audit::list(picked.iter().map(|p| p.join("/"))),
+    )]));
+    let job = audit::begin("extract", fields);
+    let result = extract_selected_from(source, destination, picked, keys, how, control);
+    audit::end(job, &result, extracted);
+    result
+}
+
+fn extract_selected_from(
+    source: Source,
     destination: &Path,
     picked: &[Vec<String>],
     keys: &Keys,
@@ -342,8 +421,8 @@ pub fn extract_selected(
     let chosen: Vec<Vec<String>> = picked.to_vec();
     let select: Select =
         Arc::new(move |entry: &[String]| chosen.iter().any(|p| entry.starts_with(p)));
-    let result = extract_picked(&source.into(), &scratch, keys, how, Some(select), control)
-        .and_then(|done| {
+    let result =
+        extract_picked(&source, &scratch, keys, how, Some(select), control).and_then(|done| {
             for entry in picked {
                 let Some(name) = entry.last() else { continue };
                 let from = entry.iter().fold(scratch.clone(), |at, c| at.join(c));
@@ -436,16 +515,30 @@ pub fn extract_to_open(
     keys: &Keys,
     control: &Control,
 ) -> Result<PathBuf, Error> {
-    let name = entry.last().ok_or(Error::NotAnArchive)?.clone();
-    let folder = opened_subfolder()?;
-    let how = ExtractOptions::default();
-    match extract_selected(source, &folder, &[entry.to_vec()], keys, &how, control) {
-        Ok(_) => Ok(folder.join(name)),
-        Err(e) => {
-            let _ = std::fs::remove_dir_all(&folder);
-            Err(e)
+    let source = source.into();
+    let job = audit::begin(
+        "open_entry",
+        audit::fields([
+            ("source", audit::source(&source)),
+            ("entry", json!(entry.join("/"))),
+        ]),
+    );
+    let result = (|| {
+        let name = entry.last().ok_or(Error::NotAnArchive)?.clone();
+        let folder = opened_subfolder()?;
+        let how = ExtractOptions::default();
+        match extract_selected(source, &folder, &[entry.to_vec()], keys, &how, control) {
+            Ok(_) => Ok(folder.join(name)),
+            Err(e) => {
+                let _ = std::fs::remove_dir_all(&folder);
+                Err(e)
+            }
         }
-    }
+    })();
+    audit::end(job, &result, |copy| {
+        audit::fields([("copy", json!(audit::path_text(copy)))])
+    });
+    result
 }
 
 /// The most pixels a picture may have to be shown: decoded, one of these takes
@@ -468,16 +561,70 @@ pub fn read_entry(
     most: u64,
     control: &Control,
 ) -> Result<Vec<u8>, Error> {
-    let how = ExtractOptions {
-        limit: Some(most),
-        keep_mark: false,
-        ..ExtractOptions::default()
+    read_entry_for(source.into(), entry, keys, most, control, false)
+}
+
+/// As [`read_entry`], to show the entry beside its archive: the audit log
+/// records it the first time only.
+pub fn preview_entry(
+    source: impl Into<Source>,
+    entry: &[String],
+    keys: &Keys,
+    most: u64,
+    control: &Control,
+) -> Result<Vec<u8>, Error> {
+    read_entry_for(source.into(), entry, keys, most, control, true)
+}
+
+fn read_entry_for(
+    source: Source,
+    entry: &[String],
+    keys: &Keys,
+    most: u64,
+    control: &Control,
+    preview: bool,
+) -> Result<Vec<u8>, Error> {
+    let subject = audit::source(&source);
+    let name = entry.join("/");
+    let job = if preview && audit::previewed(&subject, &name) {
+        None
+    } else {
+        audit::begin(
+            "read_entry",
+            audit::fields([
+                ("source", subject.clone()),
+                ("entry", json!(name)),
+                (
+                    "via",
+                    if preview {
+                        json!("preview")
+                    } else {
+                        Value::Null
+                    },
+                ),
+            ]),
+        )
     };
-    let name = entry.last().ok_or(Error::NotAnArchive)?;
-    let folder = opened_subfolder()?;
-    let read = extract_selected(source, &folder, &[entry.to_vec()], keys, &how, control)
-        .and_then(|_| Ok(std::fs::read(folder.join(name))?));
-    let _ = std::fs::remove_dir_all(&folder);
+    let recorded = job.is_some();
+    let read = (|| {
+        let how = ExtractOptions {
+            limit: Some(most),
+            keep_mark: false,
+            ..ExtractOptions::default()
+        };
+        let name = entry.last().ok_or(Error::NotAnArchive)?;
+        let folder = opened_subfolder()?;
+        let read = extract_selected(source, &folder, &[entry.to_vec()], keys, &how, control)
+            .and_then(|_| Ok(std::fs::read(folder.join(name))?));
+        let _ = std::fs::remove_dir_all(&folder);
+        read
+    })();
+    audit::end(job, &read, |bytes| {
+        audit::fields([("bytes", json!(bytes.len()))])
+    });
+    if preview && recorded && read.is_ok() {
+        audit::mark_previewed(&subject, &name);
+    }
     read
 }
 
@@ -610,6 +757,19 @@ pub(crate) fn extract_into(
     let mut opener = opener(source, keys);
     let mut opened = opener.open()?;
     let layers = opened.layers().to_vec();
+    audit::note(
+        "format",
+        json!(format!("{:?}", opened.container()).to_lowercase()),
+    );
+    audit::note(
+        "layers",
+        json!(
+            layers
+                .iter()
+                .map(|l| format!("{l:?}").to_lowercase())
+                .collect::<Vec<_>>()
+        ),
+    );
     // RAR 3 and earlier have nothing but data that fails its hash to tell a
     // wrong password by: with one given, that stops the job, as a wrong
     // password, rather than be kept.
@@ -812,7 +972,18 @@ fn copy(
 /// and writes nothing. The summary counts the files and bytes read.
 pub fn test(source: impl Into<Source>, keys: &Keys, control: &Control) -> Result<Summary, Error> {
     let source: Source = source.into();
-    let source = &source;
+    let job = audit::begin("test", audit::fields([("source", audit::source(&source))]));
+    let result = test_source(&source, keys, control);
+    audit::end(job, &result, |summary| {
+        audit::fields([
+            ("files", json!(summary.files)),
+            ("bytes", json!(summary.bytes)),
+        ])
+    });
+    result
+}
+
+fn test_source(source: &Source, keys: &Keys, control: &Control) -> Result<Summary, Error> {
     let mut opener = opener(source, keys);
     let mut opened = opener.open()?;
     let layers = opened.layers().to_vec();

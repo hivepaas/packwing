@@ -12,6 +12,9 @@ publish.workspace = true
 packwing-i18n.workspace = true
 # What an organization has fixed.
 packwing-policy.workspace = true
+# What packwing did, kept when asked (docs/audit.md).
+packwing-audit.workspace = true
+serde_json = "1"
 # The random bytes of WinZip AES and 7z's AES, on every system.
 getrandom = "0.4"
 # Every format, RAR among them: see GPL-ADDITIONAL-PERMISSION.md. Files

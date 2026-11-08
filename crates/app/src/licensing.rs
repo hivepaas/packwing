@@ -75,6 +75,7 @@ pub fn enter(text: &str, cx: &mut App) -> Result<(), String> {
         license: Some(license),
         ..Licensed::default()
     });
+    crate::audit_log::apply(cx, crate::audit_log::By::License);
     Ok(())
 }
 
@@ -84,6 +85,7 @@ pub fn remove(cx: &mut App) {
         let _ = std::fs::remove_file(file);
     }
     cx.set_global(Licensed::default());
+    crate::audit_log::apply(cx, crate::audit_log::By::License);
 }
 
 /// Writes the key for this user's eyes: it holds their name and email.

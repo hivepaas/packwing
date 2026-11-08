@@ -716,7 +716,11 @@ fn a_signal_stops_the_job_and_leaves_nothing() {
         data.extend_from_slice(b"packwing ");
     }
     std::fs::write(s.path("big.bin"), &data).expect("the data");
-    for (signal, name) in [("-INT", "a.tar.xz"), ("-TERM", "b.tar.zst")] {
+    for (signal, name) in [
+        ("-INT", "a.tar.xz"),
+        ("-TERM", "b.tar.zst"),
+        ("-INT", "c.7z"),
+    ] {
         let child = Command::new(env!("CARGO_BIN_EXE_pkw"))
             .args(["create", "-q", "-l", "highest", name, "big.bin"])
             .current_dir(&s.0)
@@ -738,7 +742,7 @@ fn a_signal_stops_the_job_and_leaves_nothing() {
             .expect("the folder")
             .flatten()
             .map(|e| e.file_name().to_string_lossy().into_owned())
-            .filter(|n| n.contains(name.split('.').next().unwrap_or(name)) && n != "big.bin")
+            .filter(|n| n.contains(name))
             .collect();
         assert!(left.is_empty(), "{name}: left {left:?}");
     }

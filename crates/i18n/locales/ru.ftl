@@ -1894,6 +1894,18 @@ t7730ec1a = Windows 11 собирает их в один пункт Packwing —
 # One packwing item, with these under it
 tb5fdc584 = Один пункт packwing, а эти — внутри него
 
+# 30 days
+t7a572af9 = 30 дней
+
+# 90 days
+t2d8a9817 = 90 дней
+
+# 1 year
+t4d0a98a5 = 1 год
+
+# Keep all
+te0b1775b = Хранить всё
+
 # Keep the “downloaded from the Internet” mark
 tfe574fa2 = Сохранять метку «загружено из Интернета»
 
@@ -1933,6 +1945,36 @@ tb7d64a44 = Минимальная длина пароля
 # In characters, for every new archive with a password
 tca6d6982 = В символах, для каждого нового архива с паролем
 
+# Keep an audit log
+tf7fd8762 = Вести журнал аудита
+
+# A record of what packwing does, whatever the license
+t34fe4e25 = Записи о действиях packwing, независимо от лицензии
+
+# Where the audit log is kept
+tbd999abe = Где хранится журнал аудита
+
+# A folder your organization chose
+td4e1f74a = Папка, выбранная вашей организацией
+
+# How long the audit log is kept
+td504acaf = Сколько хранится журнал аудита
+
+# In days; 0 keeps every record
+t127a3c54 = В днях; 0 — хранить все записи
+
+# Most the audit log may take
+ta334bb40 = Максимальный размер журнала аудита
+
+# In MB; the oldest records go first
+t03a543d2 = В МБ; первыми удаляются самые старые записи
+
+# What the audit log says of archives
+t8d6fca43 = Что журнал аудита пишет об архивах
+
+# “entries” names the files found damaged or left out, as well as counting them
+tf1125538 = «entries» записывает не только число повреждённых и пропущенных файлов, но и их имена
+
 # packwing has no policy of this name.
 t7e03649c = В packwing нет политики с таким именем.
 
@@ -1944,6 +1986,33 @@ t9173caaa = При открытии файла из архива копия по
 
 # Paste a public key
 t0bf72f73 = Вставьте открытый ключ
+
+# What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
+t2162955d = Действия packwing, записанные на этом компьютере: какие архивы распакованы, созданы, преобразованы и скопированы, когда и кем. Никогда — пароли или содержимое файлов.
+
+# Keep its records for
+tf423722f = Хранить записи
+
+# Older ones are taken away, and that is recorded too
+t7073f273 = Более старые удаляются, и это тоже записывается
+
+# Takes a Pro or Enterprise license: Settings › License.
+t2774cee6 = Нужна лицензия Pro или Enterprise: Настройки › Лицензия.
+
+# Where the audit log is
+t2702fcc6 = Где находится журнал аудита
+
+# Open folder
+t713a842f = Открыть папку
+
+# The last record could not be written: {why}
+t542148a1 = Не удалось записать последнюю запись: { $why }
+
+# Audit log
+tcb83f9ca = Журнал аудита
+
+# pkw audit verify checks that no record was changed or taken out. Whoever runs this computer can still remove the log: it tells what packwing did, it does not stop anyone.
+t482581ff = pkw audit verify проверяет, что ни одна запись не изменена и не удалена. Администратор этого компьютера всё равно может удалить журнал: он показывает, что сделал packwing, но никого не останавливает.
 
 # This is not a public key packwing can check with: {why}.
 td57933b9 = Этим открытым ключом packwing проверять не может: { $why }.
@@ -2481,6 +2550,18 @@ tda498fad = Ожидалось число от 1 до { $most }, а не { $othe
 
 # Expected some text, not {other}.
 t9386ce3b = Ожидался текст, а не { $other }.
+
+# Expected a whole path, such as /var/log/packwing or \\server\audit, not {other}.
+t00d3565d = Ожидался полный путь, например /var/log/packwing или \\server\audit, а не { $other }.
+
+# Expected a number of days from 0 (keep all) to {most}, not {other}.
+tf8fba675 = Ожидалось число дней от 0 (хранить всё) до { $most }, а не { $other }.
+
+# Expected a size in MB from 0 (no limit) to {most}, not {other}.
+t9f7e002d = Ожидался размер в МБ от 0 (без ограничений) до { $most }, а не { $other }.
+
+# Expected summary or entries, not {other}.
+t27e9b96f = Ожидалось summary или entries, а не { $other }.
 
 # Expected an address starting with https://, not {other}.
 t93bfd19e = Ожидался адрес, начинающийся с https://, а не { $other }.
