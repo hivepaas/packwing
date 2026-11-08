@@ -3497,3 +3497,57 @@ fn stopped_while_the_threads_end_leaves_nothing() {
         assert!(!path.exists(), "{name}");
     }
 }
+
+/// A ZIP archive's large file is deflated in blocks, as pigz does, on every
+/// core: its stream is what one thread makes of it in blocks.
+#[test]
+fn a_large_file_in_zip_is_deflated_in_blocks() {
+    let s = Scratch::new("zip-blocks");
+    let data = words_and_noise(40 << 20, 3);
+    let file = s.path("big.txt");
+    fs::write(&file, &data).unwrap();
+    let made = create(
+        &[file],
+        &s.path("a.zip"),
+        &NewArchive::default(),
+        &Control::default(),
+    )
+    .unwrap();
+    let za = hivepack::zip::Archive::open(
+        fs::File::open(&made).unwrap(),
+        hivepack::zip::OpenFlags::RDONLY,
+    )
+    .unwrap();
+    let mut stream = Vec::new();
+    io::copy(
+        &mut za.fopen_index(0, hivepack::zip::Flags::COMPRESSED).unwrap(),
+        &mut stream,
+    )
+    .unwrap();
+    let mut one = hivepack::deflate::DeflateMt::new(&hivepack::deflate::MtOptions {
+        level: 6,
+        raw: true,
+        ..hivepack::deflate::MtOptions::default()
+    })
+    .unwrap();
+    let mut want = vec![0; data.len() + (1 << 20)];
+    let mut output = hivepack::deflate::OutBuffer::new(&mut want);
+    let mut input = hivepack::deflate::InBuffer::new(&data);
+    let status = one
+        .deflate(&mut output, &mut input, hivepack::deflate::Flush::Finish)
+        .unwrap();
+    assert_eq!(status, hivepack::deflate::Status::StreamEnd);
+    let n = output.pos;
+    want.truncate(n);
+    assert!(stream == want, "not deflated in blocks");
+    let out = s.path("out");
+    extract_with(
+        &made,
+        &out,
+        &Keys::default(),
+        &ExtractOptions::default(),
+        &Control::default(),
+    )
+    .unwrap();
+    assert!(fs::read(out.join("big.txt")).unwrap() == data);
+}
