@@ -556,15 +556,15 @@ fn frames_named(word: Option<&str>, kind: Kind) -> Result<Frames, Exit> {
     }
 }
 
-/// How `--blocks` cuts an xz stream: large, xz's own, if it is not given, and
-/// only for a format of xz's.
+/// How `--blocks` cuts LZMA2: large, the format's own, if it is not given,
+/// and only for xz, tar.xz and 7z.
 fn blocks_named(word: Option<&str>, kind: Kind) -> Result<Blocks, Exit> {
     let Some(word) = word else {
         return Ok(Blocks::Large);
     };
-    if !matches!(kind, Kind::TarXz | Kind::Xz) {
+    if !matches!(kind, Kind::TarXz | Kind::Xz | Kind::SevenZip) {
         return Err(Exit::Usage(
-            "--blocks is for xz and tar.xz, which are cut into blocks".into(),
+            "--blocks is for xz, tar.xz and 7z, which are cut into blocks".into(),
         ));
     }
     match word.to_ascii_lowercase().as_str() {

@@ -667,11 +667,11 @@ fn frames_are_chosen_for_zstd() {
     usage(s.pkw(&["create", "-q", "--frames", "two", "d.tar.zst", "src"]));
 }
 
-/// `--blocks small` cuts an xz stream into more blocks than xz's own, large
-/// by default, where there is less than enough of those for every core; and
-/// the option is for xz alone.
+/// `--blocks small` cuts xz's and 7z's LZMA2 into more blocks than the
+/// format's own, large by default, where there is less than enough of those
+/// for every core; and the option is for them alone.
 #[test]
-fn blocks_are_chosen_for_xz() {
+fn blocks_are_chosen_for_xz_and_7z() {
     let s = Scratch::new("blocks");
     // At the lowest level, xz's own blocks are 3 MiB: one for this, three
     // small ones of a dictionary, 1 MiB.
@@ -694,6 +694,20 @@ fn blocks_are_chosen_for_xz() {
         "small blocks are other blocks"
     );
     assert!(read("c.tar.xz") == read("b.tar.xz"), "large by default");
+    // 7z too, whose own blocks at the lowest level are 4 MiB, one dictionary
+    // being 1 MiB.
+    for (blocks, name) in [("small", "a.7z"), ("large", "b.7z")] {
+        ok(&s.pkw(&[
+            "create", "-q", "-l", "lowest", "--blocks", blocks, name, "big",
+        ]));
+        ok(&s.pkw(&["test", "-q", name]));
+    }
+    ok(&s.pkw(&["create", "-q", "-l", "lowest", "c.7z", "big"]));
+    assert!(
+        read("a.7z") != read("b.7z"),
+        "7z: small blocks are other blocks"
+    );
+    assert!(read("c.7z") == read("b.7z"), "7z: large by default");
     let usage = |o: Output| assert_eq!(o.status.code(), Some(2), "{o:?}");
     usage(s.pkw(&["create", "-q", "--blocks", "small", "d.tar.zst", "big"]));
     usage(s.pkw(&["create", "-q", "--blocks", "tiny", "d.tar.xz", "big"]));

@@ -308,7 +308,8 @@ pub struct CreateDialog {
     level: Level,
     /// How a zstd stream is cut, if the user chose: as its size says if not.
     frames: Option<Frames>,
-    /// How an xz stream is cut: xz's own, large, unless the user chose.
+    /// How LZMA2 is cut, in xz and 7z: the format's own, large, unless the
+    /// user chose.
     blocks: Blocks,
     advanced: bool,
     split: Entity<Select>,
@@ -838,15 +839,14 @@ impl CreateDialog {
         }
     }
 
-    /// Whether the choice of blocks is shown: for xz, where small ones differ
-    /// from its own at this level.
+    /// Whether the choice of blocks is shown: for xz and 7z, where small ones
+    /// differ from the format's own at this level.
     fn blocks_shown(&self, cx: &App) -> bool {
-        matches!(self.format(cx).kind(), Kind::TarXz | Kind::Xz)
-            && Blocks::differ(self.level(cx), self.selection.bytes)
+        Blocks::differ(self.format(cx).kind(), self.level(cx), self.selection.bytes)
     }
 
-    /// How it is cut into blocks: as chosen where the choice is shown, xz's
-    /// own otherwise.
+    /// How it is cut into blocks: as chosen where the choice is shown, the
+    /// format's own otherwise.
     fn blocks(&self, cx: &App) -> Blocks {
         if self.blocks_shown(cx) {
             self.blocks

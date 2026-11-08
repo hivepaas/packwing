@@ -3338,13 +3338,13 @@ fn xz_goes_in_blocks_large_or_small() {
     fs::write(&file, &data).unwrap();
     // Level Low is preset 3, of 4 MiB dictionary: xz's own blocks are 12 MiB,
     // one for 9 MiB; small ones are a dictionary, the least, three of them.
-    assert!(Blocks::differ(Level::Low, 9 << 20));
+    assert!(Blocks::differ(Kind::Xz, Level::Low, 9 << 20));
     assert!(
-        !Blocks::differ(Level::Low, 4 << 20),
+        !Blocks::differ(Kind::Xz, Level::Low, 4 << 20),
         "one dictionary is one block"
     );
     assert!(
-        !Blocks::differ(Level::Low, 32 * (12 << 20)),
+        !Blocks::differ(Kind::Xz, Level::Low, 32 * (12 << 20)),
         "as many as the cores"
     );
     for (blocks, block_size) in [(Blocks::Large, 0), (Blocks::Small, 4 << 20)] {
@@ -3530,6 +3530,60 @@ fn a_large_file_in_zip_is_deflated_in_blocks() {
     )
     .unwrap();
     assert!(fs::read(out.join("big.txt")).unwrap() == data);
+}
+
+/// A 7z archive's LZMA2 blocks are 7-Zip's own, or, small, enough for every
+/// core, from the input's size alone: the same archive whatever the threads,
+/// and both read back.
+#[test]
+fn seven_zip_goes_in_blocks_large_or_small() {
+    let s = Scratch::new("7z-blocks");
+    let data = words_and_noise(9 << 20, 6);
+    let file = s.path("a.txt");
+    fs::write(&file, &data).unwrap();
+    // Level Low is preset 3, of 4 MiB dictionary: 7-Zip's own blocks are
+    // 16 MiB, one for 9 MiB; small ones are a dictionary, three of them.
+    assert!(Blocks::differ(Kind::SevenZip, Level::Low, 9 << 20));
+    assert!(!Blocks::differ(Kind::SevenZip, Level::Low, 4 << 20));
+    assert!(!Blocks::differ(Kind::SevenZip, Level::Low, 32 * (16 << 20)));
+    assert!(!Blocks::differ(Kind::SevenZip, Level::Store, 9 << 20));
+    assert!(!Blocks::differ(Kind::Zip, Level::Low, 9 << 20));
+    let made = |blocks: Blocks, threads: u32, name: &str| {
+        packwing_core::use_threads(threads);
+        let new = NewArchive {
+            kind: Kind::SevenZip,
+            level: Level::Low,
+            blocks,
+            ..NewArchive::default()
+        };
+        let made = create(
+            std::slice::from_ref(&file),
+            &s.path(name),
+            &new,
+            &Control::default(),
+        );
+        packwing_core::use_threads(0);
+        fs::read(made.unwrap()).unwrap()
+    };
+    let large = made(Blocks::Large, 4, "large.7z");
+    let small = made(Blocks::Small, 4, "small.7z");
+    assert!(small != large, "small blocks are other blocks");
+    assert!(
+        made(Blocks::Small, 1, "small-one.7z") == small,
+        "whatever the threads"
+    );
+    for name in ["large.7z", "small.7z"] {
+        let out = s.path(&format!("{name}-out"));
+        extract_with(
+            s.path(name),
+            &out,
+            &Keys::default(),
+            &ExtractOptions::default(),
+            &Control::default(),
+        )
+        .unwrap();
+        assert!(fs::read(out.join("a.txt")).unwrap() == data, "{name}");
+    }
 }
 
 /// Entry `i` of the ZIP archive at `zip`, as it is stored, compressed.
