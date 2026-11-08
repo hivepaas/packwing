@@ -6,16 +6,17 @@ use serde_json::{Map, Value, json};
 use std::fs::OpenOptions;
 use std::io::{self, Read, Seek, Write};
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Arc, Mutex, PoisonError};
 use std::time::Duration;
 
 use hivepack::extract::{
     Cancel, Damaged, ErrorKind, LinkOutside, Links, NameDecoder, NameError, NameRules, OnDamaged,
     OnLinksOutside, OnRefused, OnUnnamable, Options, Owners, Permissions, Progress, ProgressFn,
-    RarProblem, Select, Sink, Summary, extract_7z, extract_7z_to, extract_cpio, extract_cpio_to,
-    extract_iso, extract_iso_to, extract_rar, extract_rar_to, extract_tar, extract_tar_to,
-    extract_udf, extract_udf_to, extract_xar, extract_xar_to, extract_zip, extract_zip_to,
+    RarProblem, Select, Sink, Summary, WrittenKind, extract_7z, extract_7z_to, extract_cpio,
+    extract_cpio_to, extract_iso, extract_iso_to, extract_rar, extract_rar_to, extract_tar,
+    extract_tar_to, extract_udf, extract_udf_to, extract_xar, extract_xar_to, extract_zip,
+    extract_zip_to,
 };
 use hivepack::open::{Container, Opened};
 use hivepack::tar::Reader;
@@ -425,15 +426,29 @@ fn extract_selected_from(
     let chosen: Vec<Vec<String>> = picked.to_vec();
     let select: Select =
         Arc::new(move |entry: &[String]| chosen.iter().any(|p| entry.starts_with(p)));
-    let result = extract_picked(&source, &scratch.files, keys, how, Some(select), control)
-        .and_then(|done| {
-            for entry in picked {
-                let Some(name) = entry.last() else { continue };
-                let from = entry.iter().fold(scratch.files.clone(), |at, c| at.join(c));
-                move_into(&from, &destination.join(name))?;
-            }
-            Ok(done)
-        });
+    let result = extract_picked(&source, &scratch.files, keys, how, Some(select), control);
+    // Named where they go: each picked one by its last name, in `destination`.
+    audit::rename_noted("extracted_names", |written| {
+        let parts: Vec<&str> = written.split('/').collect();
+        picked
+            .iter()
+            .filter(|p| !p.is_empty() && parts.len() >= p.len())
+            .find(|p| p.iter().zip(&parts).all(|(a, b)| a == b))
+            .map(|p| {
+                let mut placed = vec![p[p.len() - 1].as_str()];
+                placed.extend(&parts[p.len()..]);
+                placed.join("/")
+            })
+            .unwrap_or_else(|| written.to_owned())
+    });
+    let result = result.and_then(|done| {
+        for entry in picked {
+            let Some(name) = entry.last() else { continue };
+            let from = entry.iter().fold(scratch.files.clone(), |at, c| at.join(c));
+            move_into(&from, &destination.join(name))?;
+        }
+        Ok(done)
+    });
     drop(scratch);
     result
 }
@@ -681,7 +696,10 @@ pub(crate) trait Taker: Sink {
     ) -> Result<u64, Error>;
 }
 
-/// The archive of `source` extracted `into` a folder or a [`Taker`].
+/// The archive of `source` extracted `into` a folder or a [`Taker`]. Into a
+/// folder, where records name an archive's files, each file and link written
+/// is noted for the job's end (`extracted_names`), however it ends: what was
+/// written before a failure is there too.
 pub(crate) fn extract_into(
     source: &Source,
     into: WriteTo<'_>,
@@ -690,7 +708,43 @@ pub(crate) fn extract_into(
     select: Option<Select>,
     control: &Control,
 ) -> Result<Summary, Error> {
+    let written = match into {
+        WriteTo::Folder(_) if audit::names_entries() => {
+            Some(Arc::new(Mutex::new(audit::Gathered::default())))
+        }
+        _ => None,
+    };
+    let result = extract_naming(source, into, keys, how, select, control, written.as_ref());
+    if let Some(written) = written {
+        let names = written
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .value();
+        audit::note("extracted_names", names);
+    }
+    result
+}
+
+fn extract_naming(
+    source: &Source,
+    into: WriteTo<'_>,
+    keys: &Keys,
+    how: &ExtractOptions,
+    select: Option<Select>,
+    control: &Control,
+    written: Option<&Arc<Mutex<audit::Gathered>>>,
+) -> Result<Summary, Error> {
     let mut options = Options::default();
+    if let Some(written) = written {
+        let into = Arc::clone(written);
+        options.on_written = Some(Arc::new(move |w: &hivepack::extract::Written<'_>| {
+            if w.kind != WrittenKind::Directory {
+                into.lock()
+                    .unwrap_or_else(PoisonError::into_inner)
+                    .push(w.path.join("/"));
+            }
+        }));
+    }
     options.password = keys.password.clone();
     options.progress = control.progress.clone();
     options.cancel = control.cancel.clone();
@@ -877,7 +931,14 @@ pub(crate) fn extract_into(
             let name = without_layers(&source.name(), &layers);
             match into {
                 WriteTo::Folder(destination) => {
-                    extract_one(opened, &name, destination, how, control)
+                    let done = extract_one(opened, &name, destination, how, control);
+                    if let (Ok(_), Some(written)) = (&done, written) {
+                        written
+                            .lock()
+                            .unwrap_or_else(PoisonError::into_inner)
+                            .push(name.clone());
+                    }
+                    done
                 }
                 WriteTo::Taker(taker) => {
                     let mut summary = Summary::default();

@@ -144,6 +144,7 @@ fn jobs_are_recorded_as_they_start_and_end_and_the_chain_holds() {
     assert_eq!(extracted[0]["format"], "zip");
     // Summary only: no names of the archive's files.
     assert!(extracted[0].get("damaged_names").is_none());
+    assert!(extracted[0].get("extracted_names").is_none());
 
     let tested = ends(&records, "test");
     assert_eq!(tested.len(), 2);
@@ -228,6 +229,29 @@ fn jobs_are_recorded_as_they_start_and_end_and_the_chain_holds() {
         .find(|r| r["action"] == "extract" && r["phase"] == "start")
         .unwrap();
     assert_eq!(start["picked_names"][0], "in/b.txt");
+    // Each file written named, where it went in the destination.
+    assert_eq!(
+        ends(&records, "extract").last().unwrap()["extracted_names"],
+        serde_json::json!(["b.txt"])
+    );
+    extract_with(
+        &made,
+        &s.0.join("all-named"),
+        &keys,
+        &ExtractOptions::default(),
+        &Control::default(),
+    )
+    .unwrap();
+    let records = audit::read(&log, None).unwrap();
+    let all = ends(&records, "extract").last().unwrap()["extracted_names"].clone();
+    let mut all: Vec<&str> = all
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|n| n.as_str().unwrap())
+        .collect();
+    all.sort();
+    assert_eq!(all, ["in/b.txt", "in/ghi chú.txt"], "files, not folders");
 
     // A file with no signature beside it is no check: the app looks for one
     // each time a file is chosen, and nothing is recorded.

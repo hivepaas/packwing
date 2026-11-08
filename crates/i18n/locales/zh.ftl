@@ -2047,8 +2047,8 @@ t03a543d2 = 以 MB 计；最旧的记录先删除
 # What the audit log says of archives
 t8d6fca43 = 审计日志对压缩包记录什么
 
-# “entries” names the files found damaged or left out, as well as counting them
-tf1125538 = “entries”除了计数，还会记下损坏或被略过的文件名
+# “entries” names each file extracted, and those found damaged or left out
+t1e33aba6 = “entries” 会记录每个解压出的文件，以及发现损坏或被跳过的文件
 
 # Every job recorded
 t42369815 = 每项任务都记录

@@ -2070,8 +2070,8 @@ t03a543d2 = En MB; los registros más antiguos se borran primero
 # What the audit log says of archives
 t8d6fca43 = Qué dice el registro de auditoría de los archivos comprimidos
 
-# “entries” names the files found damaged or left out, as well as counting them
-tf1125538 = «entries» nombra los archivos dañados u omitidos, además de contarlos
+# “entries” names each file extracted, and those found damaged or left out
+t1e33aba6 = «entries» nombra cada archivo extraído y los que se encontraron dañados u omitidos
 
 # Every job recorded
 t42369815 = Cada tarea registrada

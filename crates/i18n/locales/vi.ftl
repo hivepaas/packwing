@@ -2047,8 +2047,8 @@ t03a543d2 = Tính bằng MB; bản ghi cũ nhất bị xoá trước
 # What the audit log says of archives
 t8d6fca43 = Nhật ký kiểm tra ghi gì về tệp nén
 
-# “entries” names the files found damaged or left out, as well as counting them
-tf1125538 = “entries” ghi cả tên các tệp bị hỏng hoặc bị bỏ qua, không chỉ đếm số lượng
+# “entries” names each file extracted, and those found damaged or left out
+t1e33aba6 = “entries” ghi tên mọi tệp được giải nén, cùng các tệp bị hỏng hoặc bị bỏ qua
 
 # Every job recorded
 t42369815 = Mọi tác vụ đều được ghi

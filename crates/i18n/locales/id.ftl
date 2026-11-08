@@ -2047,8 +2047,8 @@ t03a543d2 = Dalam MB; catatan tertua dihapus lebih dulu
 # What the audit log says of archives
 t8d6fca43 = Apa yang dicatat log audit tentang arsip
 
-# “entries” names the files found damaged or left out, as well as counting them
-tf1125538 = “entries” menyebut nama berkas yang rusak atau dilewati, selain menghitungnya
+# “entries” names each file extracted, and those found damaged or left out
+t1e33aba6 = “entries” menyebut setiap berkas yang diekstrak, serta yang ditemukan rusak atau dilewati
 
 # Every job recorded
 t42369815 = Setiap tugas dicatat

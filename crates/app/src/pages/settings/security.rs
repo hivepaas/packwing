@@ -124,7 +124,7 @@ fn told(key: &str) -> (String, String) {
         ),
         AUDIT_LOG_DETAIL => (
             tr!("What the audit log says of archives"),
-            tr!("“entries” names the files found damaged or left out, as well as counting them"),
+            tr!("“entries” names each file extracted, and those found damaged or left out"),
         ),
         AUDIT_LOG_REQUIRED => (
             tr!("Every job recorded"),

@@ -267,6 +267,29 @@ pub(crate) fn note(key: &str, value: Value) {
     });
 }
 
+/// Gives each name noted as `key` for the end of the job running on this
+/// thread, as [`Gathered`] holds them, as `place` says: where a job moves what
+/// it wrote, as picked files are moved out of the folder they came out in.
+pub(crate) fn rename_noted(key: &str, place: impl Fn(&str) -> String) {
+    NOTES.with(|n| {
+        let mut n = n.borrow_mut();
+        let Some(noted) = n.as_mut().and_then(|notes| notes.get_mut(key)) else {
+            return;
+        };
+        let names = match noted {
+            Value::Object(capped) => capped.get_mut("names"),
+            all => Some(all),
+        };
+        if let Some(Value::Array(names)) = names {
+            for name in names.iter_mut() {
+                if let Value::String(text) = name {
+                    *text = place(text);
+                }
+            }
+        }
+    });
+}
+
 /// Ends recording `job`, if it was, with how `result` went: `ok`, `failed`,
 /// `cancelled`, or what `more` says of a job done (`partial`, where some was
 /// left out), with what else it says.
@@ -359,18 +382,37 @@ where
     I: IntoIterator<Item = S>,
     S: Into<String>,
 {
-    let mut kept = Vec::new();
-    let mut count = 0usize;
+    let mut gathered = Gathered::default();
     for name in all {
-        if kept.len() < MOST_NAMES {
-            kept.push(name.into());
-        }
-        count += 1;
+        gathered.push(name.into());
     }
-    if count > kept.len() {
-        json!({ "names": kept, "count": count })
-    } else {
-        json!(kept)
+    gathered.value()
+}
+
+/// Names gathered as a job goes, as threads tell them: the first
+/// [`MOST_NAMES`], and how many there are.
+#[derive(Debug, Default)]
+pub(crate) struct Gathered {
+    kept: Vec<String>,
+    count: usize,
+}
+
+impl Gathered {
+    pub(crate) fn push(&mut self, name: String) {
+        if self.kept.len() < MOST_NAMES {
+            self.kept.push(name);
+        }
+        self.count += 1;
+    }
+
+    /// As a record holds them: a list, or past [`MOST_NAMES`] the first of
+    /// them and how many.
+    pub(crate) fn value(&self) -> Value {
+        if self.count > self.kept.len() {
+            json!({ "names": self.kept, "count": self.count })
+        } else {
+            json!(self.kept)
+        }
     }
 }
 

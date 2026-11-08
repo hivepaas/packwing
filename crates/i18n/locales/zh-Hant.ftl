@@ -2047,8 +2047,8 @@ t03a543d2 = 以 MB 計；最舊的記錄先刪除
 # What the audit log says of archives
 t8d6fca43 = 稽核記錄對封存檔記下什麼
 
-# “entries” names the files found damaged or left out, as well as counting them
-tf1125538 = 「entries」除了計數，也會記下損毀或被略過的檔案名稱
+# “entries” names each file extracted, and those found damaged or left out
+t1e33aba6 = 「entries」會記錄每個解壓縮出的檔案，以及發現損毀或被略過的檔案
 
 # Every job recorded
 t42369815 = 每項工作都記錄
