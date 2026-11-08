@@ -1812,8 +1812,10 @@ enum Coder {
     /// In streams of a block each, one after another, which `bzip2 -d`
     /// reads as one and packwing reads a stream in each thread.
     Bzip2(Box<hivepack::bzip2::CompressMt>),
-    /// What it makes waits in its `Vec`. None once it has ended.
-    Lz4(Option<Box<hivepack::lz4::Encoder<Vec<u8>>>>),
+    /// In independent blocks of 4 MB compressed in threads, as `lz4 -T`
+    /// writes them, with a checksum of the content. What it makes waits in
+    /// its `Vec`. None once it has ended.
+    Lz4(Option<Box<hivepack::lz4::EncoderMt<Vec<u8>>>>),
 }
 
 /// A stream compressed into `out`, whose end [`Squeezed::finish`] writes.
@@ -1877,12 +1879,19 @@ impl<W: Write> Squeezed<W> {
                 ))
             }
             Kind::TarLz4 | Kind::Lz4 => {
-                let prefs = hivepack::lz4::frame::Preferences {
-                    compression_level: new.level.lz4(),
-                    ..Default::default()
+                let mut options = hivepack::lz4::MtOptions {
+                    level: new.level.lz4(),
+                    ..hivepack::lz4::MtOptions::default()
                 };
+                // As many threads as the memory there is takes: each holds
+                // two blocks of 4 MB and what they compress to.
+                let (threads, holds) =
+                    crate::memory::hold_threads(threads(), |n| options.memory_usage(n));
+                options.threads = hivepack::Threads::of(threads);
+                options.memory_limit = holds.bytes();
+                held = Some(holds);
                 Coder::Lz4(Some(Box::new(
-                    hivepack::lz4::Encoder::new(Vec::new(), Some(&prefs))
+                    hivepack::lz4::EncoderMt::new(Vec::new(), &options)
                         .map_err(|e| failed(e.to_string()))?,
                 )))
             }

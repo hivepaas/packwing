@@ -3614,3 +3614,57 @@ fn a_large_file_added_to_a_zip_is_deflated_in_blocks() {
     assert!(fs::read(out.join("big.txt")).unwrap() == data);
     assert_eq!(fs::read_to_string(out.join("small.txt")).unwrap(), "kept\n");
 }
+
+/// LZ4 goes in independent blocks of 4 MB, each compressed in a thread, with
+/// a checksum of the content, as `lz4` writes it: the frame one thread makes
+/// with those preferences, byte for byte.
+#[test]
+fn lz4_goes_in_blocks_compressed_in_threads() {
+    use hivepack::lz4::frame::{
+        BlockMode, BlockSizeId, FrameInfo, Preferences, compress_frame, compress_frame_bound,
+    };
+    let s = Scratch::new("lz4-threads");
+    let data = words_and_noise((9 << 20) + 777, 8);
+    let file = s.path("a.txt");
+    fs::write(&file, &data).unwrap();
+    for (level, lz4_level) in [(Level::Medium, 1), (Level::High, 9)] {
+        let new = NewArchive {
+            kind: Kind::Lz4,
+            level,
+            ..NewArchive::default()
+        };
+        let made = create(
+            std::slice::from_ref(&file),
+            &s.path(&format!("{lz4_level}.lz4")),
+            &new,
+            &Control::default(),
+        )
+        .unwrap();
+        let prefs = Preferences {
+            frame_info: FrameInfo {
+                block_size_id: BlockSizeId::Max4Mb,
+                block_mode: BlockMode::Independent,
+                content_checksum: true,
+                ..FrameInfo::default()
+            },
+            compression_level: lz4_level,
+            ..Preferences::default()
+        };
+        let mut want = vec![0; compress_frame_bound(data.len(), Some(&prefs))];
+        let n = compress_frame(&mut want, &data, Some(&prefs)).unwrap();
+        want.truncate(n);
+        assert!(fs::read(&made).unwrap() == want, "{level:?}");
+        let out = s.path(&format!("{lz4_level}-out"));
+        extract_with(
+            &made,
+            &out,
+            &Keys::default(),
+            &ExtractOptions::default(),
+            &Control::default(),
+        )
+        .unwrap();
+        // A frame has no name: the file is the archive's, without `.lz4`.
+        let back = fs::read(out.join(lz4_level.to_string())).unwrap();
+        assert!(back == data, "{level:?}");
+    }
+}
