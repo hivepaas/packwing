@@ -53,16 +53,11 @@ jobs:
         with:
           key: lint
 
-      # en.ftl follows the code, and no catalog has what the code no longer says.
-      - name: Catalogs
-        run: python3 scripts/i18n.py check
-
-      - name: Format and clippy
+      # The format; the catalogs, en.ftl following the code and no catalog
+      # having what the code no longer says; clippy, the screenshots' build
+      # among them: what `make lint` runs on a computer too.
+      - name: Format, catalogs and clippy
         run: make lint
-
-      # The screenshots' build, which only Linux has (make test-window).
-      - name: Clippy (with the screenshots)
-        run: cargo clippy -p packwing --no-default-features --features wayland,shots --all-targets -- -D warnings
 
   test:
     runs-on: ubuntu-latest
