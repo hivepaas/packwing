@@ -55,8 +55,11 @@ strip = true
 opt-level = 2
 
 # Until hivepack's next release: the changes packwing takes from git, on its
-# main branch (hivepack#177 to #186): a tar archive read once into a folder,
-# with `extract::remove_stale`, and `extract::Options::on_written` among them.
+# main branch (hivepack#177 to #195): a tar archive read once into a folder,
+# with `extract::remove_stale`, and `extract::Options::on_written` among them;
+# 7z's LZMA2 blocks within the extraction's memory, inflate in whole pieces,
+# CRCs folded with the processor's carry-less multiplication, LZMA's bittrees
+# decoded as liblzma's assembly does, and a tar's directories opened once.
 # Taken out, and the version above raised, once it is published.
 [patch.crates-io]
-hivepack = { git = "https://github.com/hivepaas/hivepack-rs", rev = "fc2fc5a9c8793548158bc8286c216787a65772f5" }
+hivepack = { git = "https://github.com/hivepaas/hivepack-rs", rev = "6d4e4b6d65dff0a3a36df2169a7a9c8718a9bcef" }
