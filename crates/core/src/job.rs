@@ -18,7 +18,7 @@ use hivepack::extract::{
     extract_tar_to, extract_udf, extract_udf_to, extract_xar, extract_xar_to, extract_zip,
     extract_zip_to,
 };
-use hivepack::open::{Container, Opened};
+use hivepack::open::{Container, Opened, Opener};
 use hivepack::tar::Reader;
 use hivepack::udf::{Udf, VType};
 use hivepack::zip::{Archive, Flags, OpenFlags, ReadAt, Volumes};
@@ -812,7 +812,17 @@ fn extract_naming(
             }
         };
     }
-    let mut opener = opener(source, keys);
+    // What the last open of the archive has read, from its start: how far a
+    // tar archive is extracted is told from it until hivepack knows its
+    // totals ([`tar_into_folder`]).
+    let read = Arc::new(AtomicU64::new(0));
+    let mut opener = opener_of(&source.name(), keys, || {
+        read.store(0, Ordering::Relaxed);
+        Ok(Counting {
+            inner: source.reader()?,
+            read: Arc::clone(&read),
+        })
+    });
     let mut opened = opener.open()?;
     let layers = opened.layers().to_vec();
     audit::note(
@@ -843,17 +853,21 @@ fn extract_naming(
         }));
     }
     match opened.container() {
-        Container::Tar => {
-            drop(opened);
-            match into {
-                WriteTo::Folder(destination) => {
-                    tar_into_folder(source, destination, keys, &mut options, control)
-                }
-                WriteTo::Taker(taker) => {
-                    Ok(extract_tar_to(|| Ok(opener.open()?), taker, &options)?)
-                }
-            }
-        }
+        Container::Tar => match into {
+            WriteTo::Folder(destination) => tar_into_folder(
+                source,
+                destination,
+                reopened(opened, &mut opener),
+                &read,
+                &mut options,
+                control,
+            ),
+            WriteTo::Taker(taker) => Ok(extract_tar_to(
+                reopened(opened, &mut opener),
+                taker,
+                &options,
+            )?),
+        },
         Container::Zip if layers.is_empty() => {
             drop(opened);
             match source {
@@ -873,10 +887,11 @@ fn extract_naming(
             Ok(into!(extract_zip, extract_zip_to, &archive)?)
         }
         // Read twice, as a tar archive is: once to check, once to write.
-        Container::Iso => {
-            drop(opened);
-            Ok(into!(extract_iso, extract_iso_to, || Ok(opener.open()?))?)
-        }
+        Container::Iso => Ok(into!(
+            extract_iso,
+            extract_iso_to,
+            reopened(opened, &mut opener)
+        )?),
         Container::Udf if layers.is_empty() => {
             drop(opened);
             let mut udf = Udf::open(source.reader()?)?;
@@ -900,14 +915,16 @@ fn extract_naming(
         // Read twice, as a tar archive is; an RPM package's payload, its
         // lead and headers taken off, and a macOS package's payloads,
         // expanded into folders of their names.
-        Container::Cpio => {
-            drop(opened);
-            Ok(into!(extract_cpio, extract_cpio_to, || Ok(opener.open()?))?)
-        }
-        Container::Xar => {
-            drop(opened);
-            Ok(into!(extract_xar, extract_xar_to, || Ok(opener.open()?))?)
-        }
+        Container::Cpio => Ok(into!(
+            extract_cpio,
+            extract_cpio_to,
+            reopened(opened, &mut opener)
+        )?),
+        Container::Xar => Ok(into!(
+            extract_xar,
+            extract_xar_to,
+            reopened(opened, &mut opener)
+        )?),
         Container::Rar if layers.is_empty() && source.path().is_some() => {
             drop(opened);
             let path = source.path().expect("just looked at");
@@ -951,24 +968,45 @@ fn extract_naming(
     }
 }
 
+/// What opens the archive for hivepack, which reads it once or twice: the
+/// first time `opened`, the open that told what it is, read from its start
+/// (hivepack gives back what it read to tell), then `opener` again. Opened
+/// once more instead, its layers were taken off twice for the first reading:
+/// a `.tar.zst` of one frame had its first 64 MiB read and gone through
+/// again, one of packwing's frames had some decoded in threads and dropped.
+fn reopened<'a, F, R>(
+    opened: Opened<'a>,
+    opener: &mut Opener<F>,
+) -> impl FnMut() -> io::Result<Opened<'a>>
+where
+    F: FnMut() -> io::Result<R>,
+    R: Read + Send + 'a,
+{
+    let mut first = Some(opened);
+    move || match first.take() {
+        Some(opened) => Ok(opened),
+        None => Ok(opener.open()?),
+    }
+}
+
 /// A tar archive of `source` extracted into the folder `destination`, which
-/// hivepack reads once, into a private folder there, moved into place at the
-/// end. It is noted in the journal while it is, so that a private folder left
-/// behind goes when packwing starts again. hivepack knows its totals only once
-/// the archive is read: until then, how far it is, is told from the archive's
-/// bytes read, against its size.
-fn tar_into_folder(
+/// hivepack reads once, through `open`, into a private folder there, moved
+/// into place at the end. It is noted in the journal while it is, so that a
+/// private folder left behind goes when packwing starts again. hivepack knows
+/// its totals only once the archive is read: until then, how far it is, is
+/// told from the archive's bytes `read`, against its size.
+fn tar_into_folder<R: Read + Send>(
     source: &Source,
     destination: &Path,
-    keys: &Keys,
+    open: impl FnMut() -> io::Result<R>,
+    read: &Arc<AtomicU64>,
     options: &mut Options,
     control: &Control,
 ) -> Result<Summary, Error> {
     let _noted = crate::journal::note(destination);
-    let read = Arc::new(AtomicU64::new(0));
     let size = source.size().unwrap_or(0);
     if let (Some(told), true) = (control.progress.clone(), size > 0) {
-        let read = Arc::clone(&read);
+        let read = Arc::clone(read);
         // The fraction told so far, in millionths: the archive read, then
         // the entries moved into place, never going back between the two.
         let shown = AtomicU64::new(0);
@@ -987,14 +1025,7 @@ fn tar_into_folder(
             told(&through);
         }));
     }
-    let mut opener = opener_of(&source.name(), keys, || {
-        read.store(0, Ordering::Relaxed);
-        Ok(Counting {
-            inner: source.reader()?,
-            read: Arc::clone(&read),
-        })
-    });
-    Ok(extract_tar(|| Ok(opener.open()?), destination, options)?)
+    Ok(extract_tar(open, destination, options)?)
 }
 
 /// What reads, counting the bytes it has read into `read`.
