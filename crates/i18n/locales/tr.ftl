@@ -1575,8 +1575,8 @@ t3d37483c = Sürüm bilgisini kopyala
 # Version {version} · {os} {arch}
 t6bead5ae = Sürüm { $version } · { $os } { $arch }
 
-# A file archiver that opens archives safely.
-t3c244df9 = Arşivleri güvenle açan bir dosya arşivleyici.
+# A file archiver that puts every core to work and opens archives safely.
+t5d2a9fa0 = Her çekirdeği çalıştıran ve arşivleri güvenle açan bir dosya arşivleyici.
 
 # Updates
 t483075a5 = Güncellemeler

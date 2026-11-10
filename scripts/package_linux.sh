@@ -129,7 +129,7 @@ Enhances: nautilus
 Section: utils
 Priority: optional
 Homepage: https://github.com/hivepaas/packwing
-Description: File archiver that opens archives safely
+Description: File archiver that puts every core to work and opens archives safely
  Opens ZIP, RAR, 7z and tar archives without writing outside the folder
  chosen, and makes smaller files to share. Its items in the right-click
  menu of Nautilus, Dolphin, Nemo and Thunar extract and compress from any
@@ -171,7 +171,7 @@ Name: packwing
 # An RPM version has no hyphen; ~ sorts a beta before its release.
 Version: ${VERSION/-/\~}
 Release: 1
-Summary: File archiver that opens archives safely
+Summary: File archiver that puts every core to work and opens archives safely
 License: GPL-3.0-or-later
 URL: https://github.com/hivepaas/packwing
 Recommends: libwayland-client, libxcb, libX11-xcb, vulkan-loader, mesa-vulkan-drivers

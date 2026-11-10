@@ -1552,8 +1552,8 @@ t3d37483c = Sao chép thông tin phiên bản
 # Version {version} · {os} {arch}
 t6bead5ae = Phiên bản { $version } · { $os } { $arch }
 
-# A file archiver that opens archives safely.
-t3c244df9 = Ứng dụng nén và giải nén tệp, mở tệp nén một cách an toàn.
+# A file archiver that puts every core to work and opens archives safely.
+t5d2a9fa0 = Trình nén tệp tận dụng mọi nhân của máy và mở tệp nén an toàn.
 
 # Updates
 t483075a5 = Cập nhật

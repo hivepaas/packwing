@@ -1575,8 +1575,8 @@ t3d37483c = Copiar informações da versão
 # Version {version} · {os} {arch}
 t6bead5ae = Versão { $version } · { $os } { $arch }
 
-# A file archiver that opens archives safely.
-t3c244df9 = Um compactador de arquivos que abre arquivos compactados com segurança.
+# A file archiver that puts every core to work and opens archives safely.
+t5d2a9fa0 = Um arquivador de arquivos que põe todos os núcleos para trabalhar e abre arquivos compactados com segurança.
 
 # Updates
 t483075a5 = Atualizações
