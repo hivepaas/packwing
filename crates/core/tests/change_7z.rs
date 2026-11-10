@@ -36,7 +36,8 @@ impl Scratch {
     }
 
     /// `Báo cáo/`: a note, an empty file, an empty folder, 3 MB in a folder,
-    /// and a `.zip`, which packwing stores in a folder of its own.
+    /// and a `.zip` of more than a MiB, which packwing stores in a folder of
+    /// its own.
     fn tree(&self) -> PathBuf {
         let root = self.path("Báo cáo");
         fs::create_dir_all(root.join("Hình ảnh")).unwrap();
@@ -44,7 +45,7 @@ impl Scratch {
         fs::write(root.join("ghi chú.txt"), "xin chào\n").unwrap();
         fs::write(root.join("rỗng"), "").unwrap();
         fs::write(root.join("Hình ảnh/lớn.bin"), big(3_000_000)).unwrap();
-        fs::write(root.join("đã nén.zip"), big(100_000)).unwrap();
+        fs::write(root.join("đã nén.zip"), big(1_100_000)).unwrap();
         root
     }
 }
@@ -571,11 +572,11 @@ fn what_is_added_is_compressed_as_the_archive_was() {
         test(&archive, &none, &Control::default()).unwrap();
     }
 
-    // With a filter kept, what is compressed already goes through it too:
-    // a stored folder could not have it.
+    // With a filter kept, what is compressed already is stored apart still,
+    // in a folder of its own with none.
     let filtered = s.path("filter.7z");
     let zip = s.path("đã nén.zip");
-    fs::write(&zip, big(1000)).unwrap();
+    fs::write(&zip, big(1 << 20)).unwrap();
     let stored: Vec<String> = COMPRESSED_EXTENSIONS
         .iter()
         .map(|e| (*e).to_owned())
@@ -590,7 +591,8 @@ fn what_is_added_is_compressed_as_the_archive_was() {
         &Control::default(),
     )
     .unwrap();
-    assert_eq!(coding_of(&filtered, "đã nén.zip").filter, Filter::Arm64);
+    let zip = coding_of(&filtered, "đã nén.zip");
+    assert_eq!((zip.method, zip.filter), (Compression::Copy, Filter::None));
     test(&filtered, &none, &Control::default()).unwrap();
 
     // Each file a folder of its own: so are those added.
@@ -840,5 +842,81 @@ fn an_encrypted_archive_is_renamed_in_with_no_password_but_for_its_names() {
         );
         seven_zip_tests(&archive, Some("mật khẩu"));
         nothing_left_beside(&s);
+    }
+}
+
+/// A new 7z archive at each level takes 7-Zip's dictionary at its level, and
+/// its programs go through their branch converter in a folder of their own.
+#[test]
+fn a_new_archive_compresses_as_seven_zip_does_at_its_level() {
+    let s = Scratch::new("levels");
+    let root = s.path("dự án");
+    fs::create_dir_all(root.join("bin")).unwrap();
+    fs::write(root.join("notes.txt"), big(200_000)).unwrap();
+    // A program for x86-64, as Windows has them, of 64 KB.
+    let mut program = vec![0u8; 64 << 10];
+    program[..2].copy_from_slice(b"MZ");
+    program[0x3C..0x40].copy_from_slice(&0x80u32.to_le_bytes());
+    program[0x80..0x84].copy_from_slice(b"PE\0\0");
+    program[0x84..0x86].copy_from_slice(&0x8664u16.to_le_bytes());
+    program[0x200..].copy_from_slice(&big((64 << 10) - 0x200));
+    fs::write(root.join("bin/tool.exe"), &program).unwrap();
+    // Named as one, but not one: with the rest.
+    fs::write(root.join("bin/fake.exe"), big(8192)).unwrap();
+    // Compressed already, but small: with the rest too; large, stored.
+    fs::write(root.join("small.zip"), big(4096)).unwrap();
+    fs::write(root.join("large.zip"), big(1 << 20)).unwrap();
+    let mib = |n: u32| Some(n << 20);
+    let stored: Vec<String> = COMPRESSED_EXTENSIONS
+        .iter()
+        .map(|e| (*e).to_owned())
+        .collect();
+    for (level, dictionary) in [
+        (packwing_core::Level::Lowest, mib(1)),
+        (packwing_core::Level::Low, mib(4)),
+        (packwing_core::Level::Medium, mib(32)),
+        (packwing_core::Level::High, mib(128)),
+        (packwing_core::Level::Highest, mib(256)),
+    ] {
+        let new = NewArchive {
+            kind: Kind::SevenZip,
+            level,
+            stored_extensions: stored.clone(),
+            ..NewArchive::default()
+        };
+        let path = s.path(&format!("{level:?}.7z"));
+        create(
+            std::slice::from_ref(&root),
+            &path,
+            &new,
+            &Control::default(),
+        )
+        .unwrap();
+        let text = coding_of(&path, "dự án/notes.txt");
+        assert_eq!(
+            (text.method, text.filter, text.dictionary),
+            (Compression::Lzma2, Filter::None, dictionary),
+            "{level:?}"
+        );
+        let tool = coding_of(&path, "dự án/bin/tool.exe");
+        assert_eq!(
+            (tool.method, tool.filter, tool.dictionary),
+            (Compression::Lzma2, Filter::X86, dictionary),
+            "{level:?}"
+        );
+        assert_eq!(coding_of(&path, "dự án/bin/fake.exe").filter, Filter::None);
+        assert_eq!(
+            coding_of(&path, "dự án/small.zip").method,
+            Compression::Lzma2
+        );
+        assert_eq!(
+            coding_of(&path, "dự án/large.zip").method,
+            Compression::Copy
+        );
+        test(&path, &Keys::default(), &Control::default()).unwrap();
+        seven_zip_tests(&path, None);
+        let out = s.path(&format!("out-{level:?}"));
+        extract(&path, &out, &Keys::default(), &Control::default()).unwrap();
+        assert_eq!(fs::read(out.join("dự án/bin/tool.exe")).unwrap(), program);
     }
 }

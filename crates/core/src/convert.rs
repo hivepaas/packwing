@@ -327,6 +327,9 @@ impl<'a> Format<'a> {
             Format::SevenZip {
                 archive, storing, ..
             } => {
+                // Small, what is compressed already goes with the rest.
+                let stored = new.level == Level::Store
+                    || crate::create::stored_in_7z(name, len, &new.stored_extensions);
                 // Each change of method starts a folder of its own.
                 if stored != *storing {
                     archive.set_method(match stored {
