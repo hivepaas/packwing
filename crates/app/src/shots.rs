@@ -1089,6 +1089,50 @@ fn folder_of(test: &str, n: usize) -> PathBuf {
 }
 
 /// A window with the Storages page browsing `dir`, listed.
+/// A narrow window's Storages: the list between the storages and the
+/// information has room for names, as its Modified and Size columns go.
+#[test]
+fn a_narrow_window_s_storages_keep_room_for_names() {
+    let text = Arc::new(gpui_wgpu::CosmicTextSystem::new(crate::FONT));
+    let mut cx = HeadlessAppContext::with_platform(text, Arc::new(crate::Assets), || {
+        gpui_platform::current_headless_renderer()
+    });
+    for (name, width, columns) in [
+        ("storages-narrow", 1060., (true, false)),
+        ("storages-narrower", 900., (false, false)),
+        ("storages-wide", 1280., (true, true)),
+    ] {
+        let window = cx
+            .open_window(size(px(width), px(700.)), |window, cx| {
+                let menu =
+                    cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
+                cx.new(|cx| Workspace::new(false, menu, window, cx))
+            })
+            .expect("cannot open a window");
+        let explorer = window
+            .update(&mut cx, |ws, _, cx| {
+                ws.show_storage(sample_storage(), cx);
+                ws.explorer(cx)
+            })
+            .expect("cannot show the page");
+        cx.run_until_parked();
+        // The first frame measures the list, the next draws its columns.
+        for _ in 0..2 {
+            cx.capture_screenshot(window.into())
+                .expect("cannot draw the window");
+            cx.run_until_parked();
+        }
+        cx.capture_screenshot(window.into())
+            .expect("cannot draw the window")
+            .save(out_dir().join(format!("{name}.png")))
+            .expect("cannot save the picture");
+        let shown = window
+            .update(&mut cx, |_, _, cx| explorer.read(cx).columns_for_test())
+            .expect("the window");
+        assert_eq!(shown, columns, "{name}");
+    }
+}
+
 fn explorer_on(
     dir: PathBuf,
 ) -> (

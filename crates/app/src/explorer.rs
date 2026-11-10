@@ -17,7 +17,7 @@ use std::time::Duration;
 use gpui::{
     App, ClipboardItem, Context, Div, ElementId, Entity, EventEmitter, FocusHandle, Focusable,
     FontWeight, KeyDownEvent, MouseButton, MouseDownEvent, Pixels, Point, Render, ScrollStrategy,
-    Stateful, Subscription, Task, UniformListScrollHandle, Window, anchored, deferred, div,
+    Stateful, Subscription, Task, UniformListScrollHandle, Window, anchored, canvas, deferred, div,
     prelude::*, px, rgb, uniform_list,
 };
 use packwing_core::{
@@ -207,7 +207,46 @@ pub struct Explorer {
     problem: Option<String>,
     count: Option<Count>,
     signature: Option<SignatureOf>,
+    /// The columns its width leaves room for, as it was last drawn.
+    columns: std::rc::Rc<std::cell::Cell<Columns>>,
     _typing: Subscription,
+}
+
+/// The columns beside a name, as the width there is allows: Modified goes
+/// first, then Size, so that a name always has room.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+enum Columns {
+    #[default]
+    All,
+    Size,
+    Name,
+}
+
+impl Columns {
+    /// The columns for a list `width` wide, in the units of [`ui`]: a name
+    /// keeps at least 140 of them beside its tag, the rows' padding and gaps.
+    fn for_width(width: f32) -> Columns {
+        // Padding 28, the tag 36, a gap 12, and the name's 140.
+        const NAME: f32 = 28. + 36. + 12. + 140.;
+        // A gap and Size's 90; a gap and Modified's 100.
+        const SIZE: f32 = 12. + 90.;
+        const MODIFIED: f32 = 12. + 100.;
+        if width >= NAME + SIZE + MODIFIED {
+            Columns::All
+        } else if width >= NAME + SIZE {
+            Columns::Size
+        } else {
+            Columns::Name
+        }
+    }
+
+    fn size(self) -> bool {
+        self != Columns::Name
+    }
+
+    fn modified(self) -> bool {
+        self == Columns::All
+    }
 }
 
 impl EventEmitter<ExplorerEvent> for Explorer {}
@@ -280,6 +319,7 @@ impl Explorer {
             problem: None,
             count: None,
             signature: None,
+            columns: Default::default(),
             _typing: typing,
         }
     }
@@ -1153,6 +1193,7 @@ impl Explorer {
     /// The column heads: a click sorts by one.
     fn head(&self, cx: &mut Context<Self>) -> Div {
         let c = colors();
+        let columns = self.columns.get();
         let arrow = if self.ascending { " ↑" } else { " ↓" };
         let head = |id: &'static str, label: String, column: Column, cx: &mut Context<Self>| {
             let on = self.sort == column;
@@ -1181,24 +1222,29 @@ impl Explorer {
                     .min_w_0()
                     .child(head("sort-name", tr!("Name"), Column::Name, cx)),
             )
-            .child(
-                div()
-                    .w(ui(90.))
-                    .flex_shrink_0()
-                    .flex()
-                    .justify_end()
-                    .child(head("sort-size", tr!("Size"), Column::Size, cx)),
-            )
-            .child(div().w(ui(100.)).flex_shrink_0().child(head(
-                "sort-modified",
-                tr!("Modified"),
-                Column::Modified,
-                cx,
-            )))
+            .when(columns.size(), |d| {
+                d.child(
+                    div()
+                        .w(ui(90.))
+                        .flex_shrink_0()
+                        .flex()
+                        .justify_end()
+                        .child(head("sort-size", tr!("Size"), Column::Size, cx)),
+                )
+            })
+            .when(columns.modified(), |d| {
+                d.child(div().w(ui(100.)).flex_shrink_0().child(head(
+                    "sort-modified",
+                    tr!("Modified"),
+                    Column::Modified,
+                    cx,
+                )))
+            })
     }
 
     /// A row's frame, with the columns as an item's are laid out.
     fn cells(
+        columns: Columns,
         id: impl Into<ElementId>,
         tag: String,
         tint: crate::colors::Tint,
@@ -1224,24 +1270,28 @@ impl Explorer {
                     .child(tag),
             )
             .child(div().flex_1().min_w_0().child(name))
-            .child(
-                div()
-                    .w(ui(90.))
-                    .flex_shrink_0()
-                    .flex()
-                    .justify_end()
-                    .text_size(ui(13.))
-                    .text_color(rgb(c.muted))
-                    .child(size),
-            )
-            .child(
-                div()
-                    .w(ui(100.))
-                    .flex_shrink_0()
-                    .text_size(ui(13.))
-                    .text_color(rgb(c.muted))
-                    .child(modified),
-            )
+            .when(columns.size(), |d| {
+                d.child(
+                    div()
+                        .w(ui(90.))
+                        .flex_shrink_0()
+                        .flex()
+                        .justify_end()
+                        .text_size(ui(13.))
+                        .text_color(rgb(c.muted))
+                        .child(size),
+                )
+            })
+            .when(columns.modified(), |d| {
+                d.child(
+                    div()
+                        .w(ui(100.))
+                        .flex_shrink_0()
+                        .text_size(ui(13.))
+                        .text_color(rgb(c.muted))
+                        .child(modified),
+                )
+            })
     }
 
     /// The field a name is typed in, where the name goes in its row.
@@ -1265,6 +1315,7 @@ impl Explorer {
         let typing_new = self.naming == Some(Naming::NewFolder);
         if typing_new && i == 0 {
             return Self::cells(
+                self.columns.get(),
                 "new-folder",
                 "DIR".into(),
                 c.folder_tag,
@@ -1305,6 +1356,7 @@ impl Explorer {
         let row_item = item.clone();
         if self.picking {
             return Self::cells(
+                self.columns.get(),
                 ("row", at),
                 tag_of(&item.name, kind),
                 kind.tint(&c),
@@ -1327,6 +1379,7 @@ impl Explorer {
             .into_any_element();
         }
         Self::cells(
+            self.columns.get(),
             ("row", at),
             tag_of(&item.name, kind),
             kind.tint(&c),
@@ -1839,13 +1892,33 @@ impl Render for Explorer {
         let menu = self.menu.map(|(at, target)| self.menu(at, target, cx));
         let toolbar = self.toolbar(cx);
         let head = self.head(cx);
+        // Its width, once laid out: the columns it leaves room for change the
+        // next frame, as the window or the panes beside it change.
+        let columns = self.columns.clone();
+        let measure = canvas(
+            move |bounds, window, _| {
+                let width = f32::from(bounds.size.width) * 16. / f32::from(window.rem_size());
+                let fits = Columns::for_width(width);
+                if columns.get() != fits {
+                    columns.set(fits);
+                    window.refresh();
+                }
+            },
+            |_, _, _, _| {},
+        )
+        .absolute()
+        .top_0()
+        .left_0()
+        .size_full();
         div()
             .id("explorer")
             .track_focus(&self.focus)
             .on_key_down(cx.listener(Self::on_key))
+            .relative()
             .size_full()
             .flex()
             .flex_col()
+            .child(measure)
             .child(toolbar)
             .when(!self.picking, |d| d.child(head))
             .child(
@@ -1907,9 +1980,28 @@ impl Render for Explorer {
     }
 }
 
+#[cfg(all(test, feature = "shots", target_os = "linux"))]
+impl Explorer {
+    /// Whether the Size and Modified columns show, as its width left them.
+    pub(crate) fn columns_for_test(&self) -> (bool, bool) {
+        let columns = self.columns.get();
+        (columns.size(), columns.modified())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_narrow_list_drops_modified_then_size_and_keeps_the_name() {
+        assert_eq!(Columns::for_width(800.), Columns::All);
+        assert_eq!(Columns::for_width(430.), Columns::All);
+        assert_eq!(Columns::for_width(429.), Columns::Size);
+        assert_eq!(Columns::for_width(318.), Columns::Size);
+        assert_eq!(Columns::for_width(317.), Columns::Name);
+        assert_eq!(Columns::for_width(0.), Columns::Name);
+    }
 
     fn file(name: &str, mode: Option<u32>) -> Item {
         Item {
