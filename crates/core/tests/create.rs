@@ -1217,7 +1217,7 @@ fn stopping_or_failing_leaves_the_archive_as_it_was() {
 }
 
 #[test]
-fn only_a_zip_archive_of_one_file_takes_more() {
+fn only_a_zip_or_7z_archive_of_one_file_takes_more() {
     let s = Scratch::new("add-kinds");
     let root = s.tree();
     let extra = s.path("x.txt");
@@ -1236,7 +1236,8 @@ fn only_a_zip_archive_of_one_file_takes_more() {
         )
         .unwrap();
         let listing = list(&made, &Keys::default()).unwrap();
-        assert_eq!(can_add(&listing), kind == Kind::Zip, "{kind:?}");
+        let changes = matches!(kind, Kind::Zip | Kind::SevenZip);
+        assert_eq!(can_add(&listing), changes, "{kind:?}");
         let added = add(
             std::slice::from_ref(&extra),
             &made,
@@ -1244,7 +1245,7 @@ fn only_a_zip_archive_of_one_file_takes_more() {
             &Keys::default(),
             &Control::default(),
         );
-        assert_eq!(added.is_ok(), kind == Kind::Zip, "{kind:?}: {added:?}");
+        assert_eq!(added.is_ok(), changes, "{kind:?}: {added:?}");
     }
     let parts = NewArchive {
         part_size: Some(1_000_000),
@@ -1651,17 +1652,29 @@ fn entries_can_be_deleted_folders_with_what_they_hold() {
     let s = Scratch::new("delete");
     let made = to_add_to(&s, None);
     let keys = Keys::default();
-    delete(&made, &[path_of("Báo cáo/rỗng")], &keys).unwrap();
-    delete(&made, &[path_of("Báo cáo/Hình ảnh")], &keys).unwrap();
+    delete(
+        &made,
+        &[path_of("Báo cáo/rỗng")],
+        &keys,
+        &Control::default(),
+    )
+    .unwrap();
+    delete(
+        &made,
+        &[path_of("Báo cáo/Hình ảnh")],
+        &keys,
+        &Control::default(),
+    )
+    .unwrap();
     assert_eq!(names_in(&made, &keys), ["Báo cáo/ghi chú.txt"]);
     test(&made, &keys, &Control::default()).unwrap();
     if let Ok(said) = Command::new("unzip").arg("-t").arg(&made).output() {
         assert!(said.status.success(), "{said:?}");
     }
     let before = fs::read(&made).unwrap();
-    assert!(delete(&made, &[path_of("không có")], &keys).is_err());
+    assert!(delete(&made, &[path_of("không có")], &keys, &Control::default()).is_err());
     assert!(
-        delete(&made, &[path_of("Báo cáo")], &keys).is_err(),
+        delete(&made, &[path_of("Báo cáo")], &keys, &Control::default()).is_err(),
         "all of it"
     );
     assert_eq!(fs::read(&made).unwrap(), before);
@@ -1708,7 +1721,15 @@ fn only_a_zip_archive_of_one_file_is_changed() {
     };
     let made = create(&[root], &s.path("a.tar.gz"), &new, &Control::default()).unwrap();
     let keys = Keys::default();
-    assert!(delete(&made, &[path_of("Báo cáo/rỗng")], &keys).is_err());
+    assert!(
+        delete(
+            &made,
+            &[path_of("Báo cáo/rỗng")],
+            &keys,
+            &Control::default()
+        )
+        .is_err()
+    );
     assert!(rename(&made, &path_of("Báo cáo/rỗng"), "x", &keys).is_err());
 }
 

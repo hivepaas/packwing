@@ -2407,8 +2407,8 @@ tedfc294c = 変更はありません。
 # The archive did not come out whole.
 t2f015c79 = アーカイブが完全な形で作成されませんでした。
 
-# packwing can change only a ZIP archive that is one file.
-t48628036 = packwing が変更できるのは、1 つのファイルからなる ZIP アーカイブだけです。
+# packwing can change only a ZIP or 7z archive that is one file.
+t675882a8 = packwing が変更できるのは、1 つのファイルからなる ZIP または 7z アーカイブだけです。
 
 # That is not in the archive.
 t7530c419 = それはアーカイブにありません。
@@ -2416,14 +2416,17 @@ t7530c419 = それはアーカイブにありません。
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = アーカイブにはこれしか入っていません。代わりにアーカイブ自体を削除してください。
 
+# packwing can change only a ZIP archive that is one file.
+t48628036 = packwing が変更できるのは、1 つのファイルからなる ZIP アーカイブだけです。
+
 # “{to}” cannot be a name.
 td53e55bf = 「{ $to }」は名前にできません。
 
 # “{to}” is already in that folder. Nothing was changed.
 t5516dd83 = 「{ $to }」はすでにそのフォルダにあります。何も変更されていません。
 
-# packwing can add files only to a ZIP archive that is one file.
-t11a330d3 = packwing がファイルを追加できるのは、1 つのファイルからなる ZIP アーカイブだけです。
+# packwing can add files only to a ZIP or 7z archive that is one file.
+t8d1ef729 = packwing がファイルを追加できるのは、1 つのファイルからなる ZIP または 7z アーカイブだけです。
 
 # An archive can’t go inside itself.
 tff43ce74 = アーカイブを自分自身の中に入れることはできません。

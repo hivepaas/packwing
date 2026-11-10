@@ -55,7 +55,7 @@ strip = true
 opt-level = 2
 
 # Until hivepack's next release: the changes packwing takes from git (hivepack#177
-# to #205 on its main branch): a tar, cpio or XAR archive read once into a
+# to #205 on its main branch, and #207 before it is merged): a tar, cpio or XAR archive read once into a
 # folder, with `extract::remove_stale`, and `extract::Options::on_written` among
 # them; 7z's LZMA2 blocks within the extraction's memory, inflate in whole
 # pieces and from tables of its own, CRCs folded with the processor's
@@ -63,7 +63,9 @@ opt-level = 2
 # a tar's directories opened once, each thread's files made through a walk, a
 # tar's and a cpio's stream read ahead, a bzip2 block too large for a thread
 # decoded on the caller's, a ZIP's files taken largest first, and
-# `sevenz::Writer::copy_from`, a 7z archive changed by writing it again.
+# `sevenz::Writer::copy_from`, a 7z archive changed by writing it again, with
+# `sevenz::Archive::folder_coding` and `WriteOptions::dictionary` to compress
+# what it writes again as the archive was.
 # Taken out, and the version above raised, once it is published.
 [patch.crates-io]
-hivepack = { git = "https://github.com/hivepaas/hivepack-rs", rev = "09d3f9fc62cc9e73527581d9632c482949212f86" }
+hivepack = { git = "https://github.com/hivepaas/hivepack-rs", rev = "3a4f4a7da39d7c7bed096b39c19f3cd26f9607b3" }

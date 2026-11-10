@@ -753,8 +753,11 @@ fn add_cmd(
 
 fn delete_cmd(archive: &Path, files: &[String], cx: &mut Context) -> Result<(), Exit> {
     let picked = picked(files);
-    cx.secrets
-        .unlocking(&named(archive), |keys| delete(archive, &picked, keys))?;
+    let (control, bar) = crate::progress::control("Deleting", cx.progress);
+    cx.secrets.unlocking(&named(archive), |keys| {
+        delete(archive, &picked, keys, &control)
+    })?;
+    drop(bar);
     done(cx, format!("deleted from {}", archive.display()))
 }
 

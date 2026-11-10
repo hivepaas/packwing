@@ -2444,8 +2444,8 @@ tedfc294c = Hiçbir şey değişmedi.
 # The archive did not come out whole.
 t2f015c79 = Arşiv eksiksiz çıkmadı.
 
-# packwing can change only a ZIP archive that is one file.
-t48628036 = packwing yalnızca tek dosyalık bir ZIP arşivini değiştirebilir.
+# packwing can change only a ZIP or 7z archive that is one file.
+t675882a8 = packwing yalnızca tek dosyalık bir ZIP veya 7z arşivini değiştirebilir.
 
 # That is not in the archive.
 t7530c419 = Bu arşivde yok.
@@ -2453,14 +2453,17 @@ t7530c419 = Bu arşivde yok.
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = Arşivin tuttuğu bunların hepsi. Onun yerine arşivin kendisini silin.
 
+# packwing can change only a ZIP archive that is one file.
+t48628036 = packwing yalnızca tek dosyalık bir ZIP arşivini değiştirebilir.
+
 # “{to}” cannot be a name.
 td53e55bf = “{ $to }” ad olamaz.
 
 # “{to}” is already in that folder. Nothing was changed.
 t5516dd83 = “{ $to }” bu klasörde zaten var. Hiçbir şey değiştirilmedi.
 
-# packwing can add files only to a ZIP archive that is one file.
-t11a330d3 = packwing yalnızca tek dosyalık bir ZIP arşivine dosya ekleyebilir.
+# packwing can add files only to a ZIP or 7z archive that is one file.
+t8d1ef729 = packwing yalnızca tek dosyalık bir ZIP veya 7z arşivine dosya ekleyebilir.
 
 # An archive can’t go inside itself.
 tff43ce74 = Bir arşiv kendi içine konamaz.

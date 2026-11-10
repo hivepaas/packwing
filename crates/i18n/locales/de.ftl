@@ -2444,8 +2444,8 @@ tedfc294c = Nichts wurde geändert.
 # The archive did not come out whole.
 t2f015c79 = Das Archiv ist nicht vollständig entstanden.
 
-# packwing can change only a ZIP archive that is one file.
-t48628036 = packwing kann nur ein ZIP-Archiv ändern, das aus einer Datei besteht.
+# packwing can change only a ZIP or 7z archive that is one file.
+t675882a8 = packwing kann nur ein ZIP- oder 7z-Archiv ändern, das aus einer Datei besteht.
 
 # That is not in the archive.
 t7530c419 = Das ist nicht im Archiv.
@@ -2453,14 +2453,17 @@ t7530c419 = Das ist nicht im Archiv.
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = Das ist alles, was das Archiv enthält. Lösche stattdessen das Archiv selbst.
 
+# packwing can change only a ZIP archive that is one file.
+t48628036 = packwing kann nur ein ZIP-Archiv ändern, das aus einer Datei besteht.
+
 # “{to}” cannot be a name.
 td53e55bf = „{ $to }“ kann kein Name sein.
 
 # “{to}” is already in that folder. Nothing was changed.
 t5516dd83 = „{ $to }“ ist schon in diesem Ordner. Nichts wurde geändert.
 
-# packwing can add files only to a ZIP archive that is one file.
-t11a330d3 = packwing kann nur zu einem ZIP-Archiv, das aus einer Datei besteht, Dateien hinzufügen.
+# packwing can add files only to a ZIP or 7z archive that is one file.
+t8d1ef729 = packwing kann nur zu einem ZIP- oder 7z-Archiv, das aus einer Datei besteht, Dateien hinzufügen.
 
 # An archive can’t go inside itself.
 tff43ce74 = Ein Archiv kann nicht in sich selbst liegen.

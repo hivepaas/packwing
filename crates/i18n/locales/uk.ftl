@@ -2500,8 +2500,8 @@ tedfc294c = Нічого не змінилося.
 # The archive did not come out whole.
 t2f015c79 = Архів вийшов неповним.
 
-# packwing can change only a ZIP archive that is one file.
-t48628036 = packwing може змінювати лише архів ZIP з одного файлу.
+# packwing can change only a ZIP or 7z archive that is one file.
+t675882a8 = packwing може змінювати лише архів ZIP або 7z з одного файлу.
 
 # That is not in the archive.
 t7530c419 = Цього немає в архіві.
@@ -2509,14 +2509,17 @@ t7530c419 = Цього немає в архіві.
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = Це все, що містить архів. Натомість видаліть сам архів.
 
+# packwing can change only a ZIP archive that is one file.
+t48628036 = packwing може змінювати лише архів ZIP з одного файлу.
+
 # “{to}” cannot be a name.
 td53e55bf = «{ $to }» не може бути назвою.
 
 # “{to}” is already in that folder. Nothing was changed.
 t5516dd83 = «{ $to }» уже є в цій папці. Нічого не змінено.
 
-# packwing can add files only to a ZIP archive that is one file.
-t11a330d3 = packwing може додавати файли лише до архіву ZIP з одного файлу.
+# packwing can add files only to a ZIP or 7z archive that is one file.
+t8d1ef729 = packwing може додавати файли лише до архіву ZIP або 7z з одного файлу.
 
 # An archive can’t go inside itself.
 tff43ce74 = Архів не можна помістити сам у себе.

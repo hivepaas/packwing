@@ -2500,8 +2500,8 @@ tedfc294c = Ничего не изменилось.
 # The archive did not come out whole.
 t2f015c79 = Архив получился неполным.
 
-# packwing can change only a ZIP archive that is one file.
-t48628036 = packwing может изменять только ZIP-архив из одного файла.
+# packwing can change only a ZIP or 7z archive that is one file.
+t675882a8 = packwing может изменять только архив ZIP или 7z из одного файла.
 
 # That is not in the archive.
 t7530c419 = Этого нет в архиве.
@@ -2509,14 +2509,17 @@ t7530c419 = Этого нет в архиве.
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = Это всё, что есть в архиве. Удалите лучше сам архив.
 
+# packwing can change only a ZIP archive that is one file.
+t48628036 = packwing может изменять только ZIP-архив из одного файла.
+
 # “{to}” cannot be a name.
 td53e55bf = «{ $to }» не может быть именем.
 
 # “{to}” is already in that folder. Nothing was changed.
 t5516dd83 = «{ $to }» уже есть в этой папке. Ничего не изменено.
 
-# packwing can add files only to a ZIP archive that is one file.
-t11a330d3 = packwing может добавлять файлы только в ZIP-архив из одного файла.
+# packwing can add files only to a ZIP or 7z archive that is one file.
+t8d1ef729 = packwing может добавлять файлы только в архив ZIP или 7z из одного файла.
 
 # An archive can’t go inside itself.
 tff43ce74 = Архив нельзя поместить внутрь самого себя.

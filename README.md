@@ -11,7 +11,7 @@ Built in Rust on [hivepack](https://github.com/hivepaas/hivepack-rs).
 * **Opens what you come across:** ZIP (split archives too), RAR 1.4 to 7 (volumes too), 7z, tar, cpio, disc images (ISO 9660 and UDF), RPM packages and macOS packages, inside any of the layers around them: gzip, zstd, xz, bzip2 and more.
 * **Writes archives:** ZIP, 7z, `.tar.gz`, `.tar.xz` and `.tar.zst`, with five levels, AES-256 on ZIP and 7z (7z can hide the names too), and parts as 7-Zip cuts them. A tar archive holds a file with several names (hard links) once, and keeps for a backup, when asked, each file's owner and group and its extended attributes (Linux's ACLs among them), as GNU tar's `--xattrs` does; they are left out otherwise, so that an archive to share does not tell the names of its users. Extracting gives them back when asked (Settings › Extracting, or `pkw extract --same-owner`, `--numeric-owner`, `--xattrs`), on Linux and macOS: only an administrator gives files to others.
 * **age built in:** opens and writes `.age` files with a passphrase, age keys, Ed25519 SSH keys and post-quantum keys.
-* **Edits ZIP archives:** add, delete and rename inside an archive, which goes in place only once the new one reads back.
+* **Edits ZIP and 7z archives:** add, delete and rename inside a ZIP archive, add and delete inside a 7z archive, which goes in place only once the new one reads back. A 7z archive's solid blocks that lose nothing are copied as they are, encrypted or not; one that loses a file is compressed again as it was (its method, filter and dictionary), and what is added as the archive's blocks agree it was, solid or not, with its own password.
 * **Look before you extract:** a search through all of an archive, whatever the case and accents (`bao cao` finds `Báo cáo`), a preview of pictures and text, and Extract for just what is selected. The archive's password is asked once: it is kept in memory, never written, until ten minutes after it was last used.
 * **Storages:** browse folders, S3 buckets, WebDAV folders and SFTP servers as a file manager does, and copy and move between them, with secrets in the system's keychain.
 * **Archives in place:** a ZIP or 7z archive on a storage is listed, and a file taken from it, without fetching the rest.
@@ -88,7 +88,7 @@ pkw create --frames one backup.tar.zst home/      # zstd in one frame, the small
 pkw create --blocks small home.tar.xz home/       # xz or 7z in blocks for every core: faster, a little larger
 pkw create --owners --xattrs home.tar.zst ~/      # for a backup: owners, extended attributes and ACLs
 pkw create --mtime 2026-01-01 src.tar.gz src/     # one time for every file; SOURCE_DATE_EPOCH caps them
-pkw add archive.zip new.txt --into docs  # and delete, rename: a ZIP archive, in place
+pkw add archive.zip new.txt --into docs  # and delete, rename: a ZIP archive, in place (7z: add, delete)
 pkw split backup.iso --size 4GB         # into parts beside it, as 7-Zip cuts one: backup.iso.001, .002…
 pkw join backup.iso.001                 # back into backup.iso, the parts checked first
 pkw checksum -a sha256 -a blake3 *.iso   # --save beside each, or --check SHA256SUMS
