@@ -2515,6 +2515,9 @@ tf6ff23f2 = Не вдалося стиснути: { $e }
 # {path} is a link, which is kept only on Unix.
 t030316d9 = { $path } — це посилання, які зберігаються лише в Unix.
 
+# Changing this archive writes a new one beside it, which may take up to {need}. Only {free} is free in {folder}.
+ta087fe64 = Щоб змінити цей архів, поруч із ним записується новий, якому може знадобитися до { $need }. У { $folder } вільно лише { $free }.
+
 # Nothing changed.
 tedfc294c = Нічого не змінилося.
 
@@ -2529,9 +2532,6 @@ t7530c419 = Цього немає в архіві.
 
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = Це все, що містить архів. Натомість видаліть сам архів.
-
-# packwing can change only a ZIP archive that is one file.
-t48628036 = packwing може змінювати лише архів ZIP з одного файлу.
 
 # “{to}” cannot be a name.
 td53e55bf = «{ $to }» не може бути назвою.

@@ -2431,6 +2431,9 @@ tf6ff23f2 = 無法壓縮：{ $e }
 # {path} is a link, which is kept only on Unix.
 t030316d9 = { $path } 是連結，只有 Unix 才會保留連結。
 
+# Changing this archive writes a new one beside it, which may take up to {need}. Only {free} is free in {folder}.
+ta087fe64 = 變更此封存檔會在旁邊寫入新的封存檔，可能需要多達 { $need }。{ $folder } 中只有 { $free } 可用。
+
 # Nothing changed.
 tedfc294c = 沒有任何變更。
 
@@ -2445,9 +2448,6 @@ t7530c419 = 封存檔中沒有這個項目。
 
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = 這已是封存檔中的所有內容。請改為刪除封存檔本身。
-
-# packwing can change only a ZIP archive that is one file.
-t48628036 = packwing 只能變更單一檔案的 ZIP 封存檔。
 
 # “{to}” cannot be a name.
 td53e55bf = 「{ $to }」不能作為名稱。

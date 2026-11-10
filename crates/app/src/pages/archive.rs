@@ -1097,8 +1097,8 @@ impl ArchivePage {
                 .is_some_and(|l| packwing_core::can_add(l))
     }
 
-    /// Whether what is selected can be renamed, as it can be deleted: a 7z
-    /// archive's names are not changed yet.
+    /// Whether what is selected can be renamed: one entry, of an archive that
+    /// can be changed.
     fn renamable(&self, cx: &gpui::App) -> bool {
         self.changeable(cx)
             && self.selected.len() == 1

@@ -2459,6 +2459,9 @@ tf6ff23f2 = Não foi possível compactar: { $e }
 # {path} is a link, which is kept only on Unix.
 t030316d9 = { $path } é um link, que só é mantido no Unix.
 
+# Changing this archive writes a new one beside it, which may take up to {need}. Only {free} is free in {folder}.
+ta087fe64 = Alterar este arquivo grava um novo ao lado dele, que pode ocupar até { $need }. Só há { $free } livres em { $folder }.
+
 # Nothing changed.
 tedfc294c = Nada mudou.
 
@@ -2473,9 +2476,6 @@ t7530c419 = Isso não está no arquivo compactado.
 
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = Isso é tudo o que o arquivo compactado contém. Exclua o próprio arquivo compactado.
-
-# packwing can change only a ZIP archive that is one file.
-t48628036 = O packwing só pode alterar um arquivo ZIP que seja um único arquivo.
 
 # “{to}” cannot be a name.
 td53e55bf = “{ $to }” não pode ser um nome.

@@ -1689,8 +1689,22 @@ fn entries_can_be_renamed_folders_with_what_they_hold() {
         password: Some("mật khẩu".as_bytes().to_vec()),
         ..Keys::default()
     };
-    rename(&made, &path_of("Báo cáo/ghi chú.txt"), "đã đổi.txt", &keys).unwrap();
-    rename(&made, &path_of("Báo cáo/Hình ảnh"), "Ảnh", &keys).unwrap();
+    rename(
+        &made,
+        &path_of("Báo cáo/ghi chú.txt"),
+        "đã đổi.txt",
+        &keys,
+        &Control::default(),
+    )
+    .unwrap();
+    rename(
+        &made,
+        &path_of("Báo cáo/Hình ảnh"),
+        "Ảnh",
+        &keys,
+        &Control::default(),
+    )
+    .unwrap();
     assert_eq!(
         names_in(&made, &keys),
         ["Báo cáo/rỗng", "Báo cáo/đã đổi.txt", "Báo cáo/Ảnh/lớn.bin"]
@@ -1703,7 +1717,14 @@ fn entries_can_be_renamed_folders_with_what_they_hold() {
     let before = fs::read(&made).unwrap();
     for bad in ["", "a/b", "a\\b", "..", "rỗng"] {
         assert!(
-            rename(&made, &path_of("Báo cáo/đã đổi.txt"), bad, &keys).is_err(),
+            rename(
+                &made,
+                &path_of("Báo cáo/đã đổi.txt"),
+                bad,
+                &keys,
+                &Control::default()
+            )
+            .is_err(),
             "{bad:?}"
         );
     }
@@ -1730,7 +1751,16 @@ fn only_a_zip_archive_of_one_file_is_changed() {
         )
         .is_err()
     );
-    assert!(rename(&made, &path_of("Báo cáo/rỗng"), "x", &keys).is_err());
+    assert!(
+        rename(
+            &made,
+            &path_of("Báo cáo/rỗng"),
+            "x",
+            &keys,
+            &Control::default()
+        )
+        .is_err()
+    );
 }
 
 /// A folder as a storage across a network is: no path on this computer. `refuse`
