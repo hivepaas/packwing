@@ -398,7 +398,9 @@ scenario!(
     /// said under the levels; the archive is made all the same.
     a_level_that_takes_more_memory_than_is_free_is_said,
     |ui| {
-        packwing_core::memory::set_available(300_000_000);
+        // Medium's 7z, of 7-Zip's dictionary of 32 MiB, takes about 500 MB
+        // in one thread; Highest's, of 256 MiB, about 3 GB.
+        packwing_core::memory::set_available(1_000_000_000);
         let work = new_archive(ui);
         ui.click("advanced");
         ui.choose("format", ".7z");

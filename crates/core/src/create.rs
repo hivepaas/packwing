@@ -216,7 +216,7 @@ impl Frames {
 /// the threads, as the blocks depend on the input's size alone.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Blocks {
-    /// The format's own: xz's of three dictionaries, 7-Zip's of four, up to
+    /// The format's own: xz's of three dictionaries, 7-Zip's of four (two at Medium), up to
     /// 256 MiB. The smallest archive, but fewer blocks than cores leave
     /// cores idle: 2.3 GB at the highest level is 13 blocks of xz, 10 of 7z.
     #[default]
@@ -246,7 +246,7 @@ impl Blocks {
     /// A 7z archive's blocks, of `bytes` at `level`.
     fn seven_zip(self, level: Level, bytes: u64) -> hivepack::sevenz::Lzma2Blocks {
         match self {
-            Blocks::Large => hivepack::sevenz::Lzma2Blocks::Auto,
+            Blocks::Large => hivepack::sevenz::Lzma2Blocks::Size(seven_zip_blocks_of(level).1),
             Blocks::Small => {
                 hivepack::sevenz::Lzma2Blocks::Size(small_blocks(bytes, seven_zip_blocks_of(level)))
             }
@@ -273,6 +273,23 @@ fn small_blocks(bytes: u64, (dictionary, own): (u64, u64)) -> u64 {
     bytes.div_ceil(SMALL_BLOCKS_FOR).clamp(dictionary, own)
 }
 
+/// A 7z archive's dictionary at `level`: 7-Zip's at its level of the same
+/// place (`-mx1` 256 KiB, `-mx3` 4 MiB, `-mx5` 32 MiB, `-mx7` 128 MiB, `-mx9`
+/// 256 MiB, as 7-Zip 26.05 gives them), as an archive is set beside one of
+/// 7-Zip's; never less than xz's preset's, which packwing took before. What
+/// finds a file again further back than the dictionary does not: a build's
+/// many copies of a library of 10 MB came out 59% larger at 8 MiB.
+fn seven_zip_dictionary(level: Level) -> u64 {
+    let seven_zip: u64 = match level {
+        Level::Store | Level::Lowest => 256 << 10,
+        Level::Low => 4 << 20,
+        Level::Medium => 32 << 20,
+        Level::High => 128 << 20,
+        Level::Highest => 256 << 20,
+    };
+    seven_zip.max(dictionary_of(level))
+}
+
 /// LZMA2's dictionary at `level`.
 fn dictionary_of(level: Level) -> u64 {
     LzmaOptions::preset(level.xz()).map_or(8 << 20, |o| u64::from(o.dict_size))
@@ -285,11 +302,17 @@ fn xz_blocks_of(level: Level) -> (u64, u64) {
     (dictionary.min(own), own)
 }
 
-/// 7z's dictionary at `level`, and its own blocks
-/// (`Lzma2Blocks::Auto`): four dictionaries, from 1 MiB to 256 MiB.
+/// 7z's dictionary at `level`, and its own blocks: four dictionaries, from 1
+/// MiB to 256 MiB, as 7-Zip cuts them; two at Medium. Each block is one
+/// thread's, and starts with an empty dictionary: 7-Zip's of 128 MiB at
+/// `-mx5` find most in a build's copies of its libraries (363 MB to 34.6 MB),
+/// but in three threads where 7-Zip has two for each, its match finder's:
+/// 40 s where 7-Zip takes 19 s. Two dictionaries, 64 MiB, take 22 s, and
+/// 39.2 MB; elsewhere as small as four. Above Medium, size comes first.
 fn seven_zip_blocks_of(level: Level) -> (u64, u64) {
-    let dictionary = dictionary_of(level);
-    let own = (4 * dictionary).clamp(1 << 20, 256 << 20);
+    let dictionary = seven_zip_dictionary(level);
+    let times = if level == Level::Medium { 2 } else { 4 };
+    let own = (times * dictionary).clamp(1 << 20, 256 << 20);
     (dictionary.min(own), own)
 }
 
@@ -1354,6 +1377,20 @@ pub const COMPRESSED_EXTENSIONS: &[&str] = &[
 ];
 
 /// Whether the file named `name` ends in one of `extensions`, whatever its case.
+/// The size from which a file compressed already is stored as it is in a 7z
+/// archive, in a folder of its own: below it, it goes with the rest into the
+/// solid folder, where a copy of one is found again for nothing (a
+/// Debian system's `/usr/share/doc` holds 791 copies among its 3,148
+/// `.gz`), and LZMA2 stores what does not compress in chunks of its own at
+/// little cost.
+pub(crate) const STORED_FROM: u64 = 1 << 20;
+
+/// Whether `name`, of `len` bytes, is stored as it is in a 7z archive: one
+/// compressed already, as `stored_extensions` says, and large.
+pub(crate) fn stored_in_7z(name: &str, len: u64, stored_extensions: &[String]) -> bool {
+    len >= STORED_FROM && has_extension_in(name, stored_extensions)
+}
+
 pub(crate) fn has_extension_in(name: &str, extensions: &[impl AsRef<str>]) -> bool {
     name.rsplit_once('.').is_some_and(|(_, ext)| {
         extensions
@@ -1519,8 +1556,13 @@ pub(crate) fn seven_zip_options(
         Level::Store => hivepack::sevenz::Method::Copy,
         level => hivepack::sevenz::Method::Lzma2 { preset: level.xz() },
     };
+    // 7-Zip's dictionary at its level of the same place; the rest of the
+    // encoder, its mode and how hard it looks, xz's preset's.
+    let dictionary = (new.level != Level::Store)
+        .then(|| u32::try_from(seven_zip_dictionary(new.level)).unwrap_or(u32::MAX));
     let mut options = hivepack::sevenz::WriteOptions {
         method,
+        dictionary,
         encrypt_headers: new.hide_names && password.is_some(),
         password,
         random_source: Some(Arc::new(|buffer: &mut [u8]| {
@@ -1560,7 +1602,7 @@ fn write_7z<W: Write + Seek>(
         .filter(|item| {
             item.metadata.is_file()
                 && (new.level == Level::Store
-                    || !has_extension_in(&item.name, &new.stored_extensions))
+                    || !stored_in_7z(&item.name, item.metadata.len(), &new.stored_extensions))
         })
         .map(|item| item.metadata.len())
         .sum();
@@ -1570,6 +1612,7 @@ fn write_7z<W: Write + Seek>(
     // writer, which may wait long for a block, is stopped from here.
     let stop = Arc::new(AtomicBool::new(false));
     options.stop = Some(Arc::clone(&stop));
+    let coding = (options.method, options.filter, options.dictionary);
     let archive = hivepack::sevenz::Writer::with_options(out, options)?;
     let progress = archive.progress();
     let mut archive = Holding {
@@ -1589,9 +1632,8 @@ fn write_7z<W: Write + Seek>(
                 }
             }
         });
-        let store = new.level == Level::Store;
-        let written =
-            fill_7z(&items, store, &new.stored_extensions, tally, &mut archive).and_then(|()| {
+        let written = fill_7z(&items, coding, &new.stored_extensions, tally, &mut archive)
+            .and_then(|()| {
                 archive.archive.finish()?;
                 Ok(())
             });
@@ -1624,52 +1666,173 @@ impl<W: Write + Seek> Write for Holding<'_, W> {
     }
 }
 
-/// Writes `items` into `archive`, but for its end: all as they are if `store`,
-/// else those with `stored_extensions` as they are, last.
+/// Writes `items` into `archive`, but for its end, in up to four folders:
+/// what compresses, together, which compresses it best, as `coding` says;
+/// programs, as 7-Zip puts them, through the branch converter of the
+/// processor each is for (x86's BCJ, ARM64's), where `coding` has none of
+/// its own; then those with `stored_extensions` of [`STORED_FROM`] or more,
+/// as they are, which is what is compressed already. All as they are where `coding` is Copy.
 fn fill_7z<W: Write + Seek>(
     items: &[Item],
-    store: bool,
+    coding: Coding7z,
     stored_extensions: &[String],
     tally: &Tally,
     holding: &mut Holding<'_, W>,
 ) -> Result<(), Error> {
+    use hivepack::sevenz::{Filter, Method as M};
     let mut buf = vec![0; PIECE];
-    // What is compressed already comes last, stored in a folder of its own, and
-    // the rest stays together in one, which compresses it best.
-    let (stored, squeezed): (Vec<&Item>, Vec<&Item>) = items.iter().partition(|item| {
-        !store && item.metadata.is_file() && has_extension_in(&item.name, stored_extensions)
+    let (method, filter, dictionary) = coding;
+    let store = method == M::Copy;
+    let lzma = matches!(method, M::Lzma { .. } | M::Lzma2 { .. });
+    let file = |item: &Item| item.metadata.is_file();
+    let (stored, rest): (Vec<&Item>, Vec<&Item>) = items.iter().partition(|item| {
+        !store && file(item) && stored_in_7z(&item.name, item.metadata.len(), stored_extensions)
     });
-    for (i, item) in squeezed.iter().chain(&stored).enumerate() {
-        let archive = &mut holding.archive;
-        if i == squeezed.len() {
-            archive.set_method(hivepack::sevenz::Method::Copy)?;
-        }
-        // 7-Zip keeps a Unix mode above its own attributes, marked by 0x8000.
-        let attributes = attributes(&item.metadata).1 | 0x8000;
-        let entry = hivepack::sevenz::NewEntry {
-            name: item.name.trim_end_matches('/').to_owned(),
-            attributes: Some(attributes),
-            mtime: ntfs_time(item.mtime),
-            ctime: None,
-        };
-        if item.metadata.is_dir() {
-            archive.add_directory(entry)?;
-        } else if item.metadata.file_type().is_symlink() {
-            let Some(target) = target_of(item, tally)? else {
-                continue;
-            };
-            archive.start_file(entry)?;
-            holding.write_all(&target)?;
-            tally.advance(1, 0);
+    let mut squeezed = Vec::new();
+    let mut programs: Vec<(Filter, &Item)> = Vec::new();
+    for item in rest {
+        let converter = if lzma && filter == Filter::None && file(item) {
+            program_filter(item)
         } else {
-            let Some(file) = open_item(item, tally)? else {
-                continue;
+            None
+        };
+        match converter {
+            Some(f) => programs.push((f, item)),
+            None => squeezed.push(item),
+        }
+    }
+    // x86's before ARM64's, each a folder of its own.
+    programs.sort_by_key(|(f, _)| *f != Filter::X86);
+    let mut folders: Vec<(Coding7z, Vec<&Item>)> = vec![(coding, squeezed)];
+    for (f, item) in programs {
+        match folders.last_mut() {
+            Some(((_, last, _), group)) if *last == f && f != filter => group.push(item),
+            _ => folders.push(((method, f, dictionary), vec![item])),
+        }
+    }
+    folders.push(((M::Copy, Filter::None, None), stored));
+    for (i, ((m, f, d), group)) in folders.into_iter().enumerate() {
+        if group.is_empty() {
+            continue;
+        }
+        // The first is the writer's already.
+        if i > 0 {
+            holding.archive.set_compression(m, f, d)?;
+        }
+        for item in group {
+            let archive = &mut holding.archive;
+            // 7-Zip keeps a Unix mode above its own attributes, marked by 0x8000.
+            let attributes = attributes(&item.metadata).1 | 0x8000;
+            let entry = hivepack::sevenz::NewEntry {
+                name: item.name.trim_end_matches('/').to_owned(),
+                attributes: Some(attributes),
+                mtime: ntfs_time(item.mtime),
+                ctime: None,
             };
-            archive.start_file(entry)?;
-            pump(item, file, holding, tally, &mut buf)?;
+            if item.metadata.is_dir() {
+                archive.add_directory(entry)?;
+            } else if item.metadata.file_type().is_symlink() {
+                let Some(target) = target_of(item, tally)? else {
+                    continue;
+                };
+                archive.start_file(entry)?;
+                holding.write_all(&target)?;
+                tally.advance(1, 0);
+            } else {
+                let Some(file) = open_item(item, tally)? else {
+                    continue;
+                };
+                archive.start_file(entry)?;
+                pump(item, file, holding, tally, &mut buf)?;
+            }
         }
     }
     Ok(())
+}
+
+/// The names of programs and libraries whose start is looked at: those that
+/// end so, and those with no extension at all, as Linux's and macOS's
+/// programs are.
+const PROGRAM_EXTENSIONS: &[&str] = &[
+    "exe", "dll", "sys", "ocx", "cpl", "scr", "efi", "drv", "so", "dylib", "node", "pyd",
+];
+
+/// The branch converter for `item`, if it is a program or a library for x86
+/// or ARM64, as its start says: a PE (Windows), ELF (Linux) or Mach-O
+/// (macOS) file, and the processor it is for, as 7-Zip tells them. Only a
+/// file of 4 KiB or more whose name could be a program's is looked at, its
+/// first 4 KiB.
+fn program_filter(item: &Item) -> Option<hivepack::sevenz::Filter> {
+    if item.metadata.len() < 4096 {
+        return None;
+    }
+    let base = item
+        .name
+        .rsplit('/')
+        .next()
+        .unwrap_or(&item.name)
+        .to_lowercase();
+    let named = match base.rsplit_once('.') {
+        None => true,
+        Some((_, ext)) => PROGRAM_EXTENSIONS.contains(&ext) || base.contains(".so."),
+    };
+    if !named {
+        return None;
+    }
+    let mut head = [0u8; 4096];
+    let mut file = File::open(&item.path).ok()?;
+    let mut n = 0;
+    while n < head.len() {
+        match file.read(&mut head[n..]) {
+            Ok(0) => break,
+            Ok(k) => n += k,
+            Err(e) if e.kind() == io::ErrorKind::Interrupted => {}
+            Err(_) => return None,
+        }
+    }
+    machine_filter(&head[..n])
+}
+
+/// The branch converter for the program or library starting with `head`:
+/// x86's for one for x86 (32 or 64 bits), ARM64's for one for ARM64.
+fn machine_filter(head: &[u8]) -> Option<hivepack::sevenz::Filter> {
+    use hivepack::sevenz::Filter;
+    let u16_at = |at: usize| {
+        head.get(at..at.checked_add(2)?)
+            .map(|b| u16::from_le_bytes([b[0], b[1]]))
+    };
+    let u32_at = |at: usize| {
+        head.get(at..at.checked_add(4)?)
+            .map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]))
+    };
+    if head.starts_with(b"MZ") {
+        let pe = usize::try_from(u32_at(0x3C)?).ok()?;
+        if head.get(pe..pe.checked_add(4)?)? != b"PE\0\0" {
+            return None;
+        }
+        return match u16_at(pe + 4)? {
+            0x014C | 0x8664 => Some(Filter::X86),
+            0xAA64 => Some(Filter::Arm64),
+            _ => None,
+        };
+    }
+    // ELF, little-endian.
+    if head.starts_with(b"\x7fELF") && head.get(5) == Some(&1) {
+        return match u16_at(0x12)? {
+            3 | 62 => Some(Filter::X86),
+            183 => Some(Filter::Arm64),
+            _ => None,
+        };
+    }
+    // Mach-O, 32 or 64 bits, little-endian.
+    if matches!(u32_at(0)?, 0xFEED_FACE | 0xFEED_FACF) {
+        return match u32_at(4)? {
+            7 | 0x0100_0007 => Some(Filter::X86),
+            0x0100_000C => Some(Filter::Arm64),
+            _ => None,
+        };
+    }
+    None
 }
 
 /// Writes a tar archive of `items` to `out`, each file that has other names (a
@@ -3080,16 +3243,9 @@ fn write_changed_7z(
     // As a new archive's: stopped from here while it waits for LZMA2's blocks.
     let stop = Arc::new(AtomicBool::new(false));
     options.stop = Some(Arc::clone(&stop));
-    let store = options.method == hivepack::sevenz::Method::Copy;
     let added = (options.method, options.filter, options.dictionary);
     let in_rewritten = |e: &hivepack::sevenz::Entry| {
         e.has_stream && rewritten.iter().any(|(f, _)| e.folder == Some(*f))
-    };
-    // A filter is LZMA's and LZMA2's: with one kept, what is compressed
-    // already is not stored apart, and goes through it with the rest.
-    let stored_extensions = match options.filter {
-        hivepack::sevenz::Filter::None => stored_extensions,
-        _ => &[],
     };
     let writer = hivepack::sevenz::Writer::with_options(out, options)?;
     let progress = writer.progress();
@@ -3141,7 +3297,7 @@ fn write_changed_7z(
             .and_then(|()| {
                 copying.store(false, Ordering::Relaxed);
                 tally.advance(kept_files, tell_copied());
-                fill_7z(new, store, stored_extensions, tally, &mut holding)?;
+                fill_7z(new, added, stored_extensions, tally, &mut holding)?;
                 Ok(holding.archive.finish()?)
             });
         ending.store(true, Ordering::Relaxed);
@@ -3970,6 +4126,78 @@ mod tests {
         assert!(room_needed(0) > 0);
         assert!(room_needed(6_400) > 6_400);
         assert_eq!(room_needed(u64::MAX), u64::MAX);
+    }
+
+    #[test]
+    fn seven_zip_s_levels_take_seven_zip_s_dictionaries() {
+        let mib = |n: u64| n << 20;
+        assert_eq!(seven_zip_dictionary(Level::Lowest), mib(1));
+        assert_eq!(seven_zip_dictionary(Level::Low), mib(4));
+        assert_eq!(seven_zip_dictionary(Level::Medium), mib(32));
+        assert_eq!(seven_zip_dictionary(Level::High), mib(128));
+        assert_eq!(seven_zip_dictionary(Level::Highest), mib(256));
+        // Their blocks: four dictionaries, two at Medium.
+        assert_eq!(seven_zip_blocks_of(Level::Lowest), (mib(1), mib(4)));
+        assert_eq!(seven_zip_blocks_of(Level::Low), (mib(4), mib(16)));
+        assert_eq!(seven_zip_blocks_of(Level::Medium), (mib(32), mib(64)));
+        assert_eq!(seven_zip_blocks_of(Level::High), (mib(128), mib(256)));
+        assert_eq!(seven_zip_blocks_of(Level::Highest), (mib(256), mib(256)));
+        // Never less than xz's preset's.
+        for level in [
+            Level::Lowest,
+            Level::Low,
+            Level::Medium,
+            Level::High,
+            Level::Highest,
+        ] {
+            assert!(
+                seven_zip_dictionary(level) >= dictionary_of(level),
+                "{level:?}"
+            );
+        }
+    }
+
+    /// The start of a PE file for `machine`.
+    fn pe(machine: u16) -> Vec<u8> {
+        let mut head = vec![0u8; 512];
+        head[..2].copy_from_slice(b"MZ");
+        head[0x3C..0x40].copy_from_slice(&0x80u32.to_le_bytes());
+        head[0x80..0x84].copy_from_slice(b"PE\0\0");
+        head[0x84..0x86].copy_from_slice(&machine.to_le_bytes());
+        head
+    }
+
+    #[test]
+    fn programs_are_told_by_their_start() {
+        use hivepack::sevenz::Filter;
+        assert_eq!(machine_filter(&pe(0x8664)), Some(Filter::X86));
+        assert_eq!(machine_filter(&pe(0x014C)), Some(Filter::X86));
+        assert_eq!(machine_filter(&pe(0xAA64)), Some(Filter::Arm64));
+        assert_eq!(machine_filter(&pe(0x01C4)), None, "ARM, 32 bits");
+        let elf = |machine: u16| {
+            let mut head = vec![0u8; 64];
+            head[..4].copy_from_slice(b"\x7fELF");
+            head[4] = 2;
+            head[5] = 1;
+            head[0x12..0x14].copy_from_slice(&machine.to_le_bytes());
+            head
+        };
+        assert_eq!(machine_filter(&elf(62)), Some(Filter::X86));
+        assert_eq!(machine_filter(&elf(183)), Some(Filter::Arm64));
+        assert_eq!(machine_filter(&elf(243)), None, "RISC-V");
+        let macho = |cpu: u32| {
+            let mut head = 0xFEED_FACFu32.to_le_bytes().to_vec();
+            head.extend(cpu.to_le_bytes());
+            head.extend([0; 24]);
+            head
+        };
+        assert_eq!(machine_filter(&macho(0x0100_0007)), Some(Filter::X86));
+        assert_eq!(machine_filter(&macho(0x0100_000C)), Some(Filter::Arm64));
+        // Not programs, or cut short.
+        assert_eq!(machine_filter(b"MZ"), None);
+        assert_eq!(machine_filter(&pe(0x8664)[..0x84]), None);
+        assert_eq!(machine_filter(b"#!/bin/sh\necho\n"), None);
+        assert_eq!(machine_filter(&[]), None);
     }
 
     #[test]

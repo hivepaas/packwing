@@ -559,8 +559,18 @@ fn a_7z_archive_stores_the_extensions_it_is_told_in_a_folder_of_their_own() {
     fs::create_dir_all(&what).unwrap();
     // As compressible as the text: only its name says it is compressed.
     let text = "xin chào ".repeat(20_000);
+    // Stored only from a MiB: smaller, they would go with the rest. As
+    // stored, its ratio is 1, and no bomb.
+    let large = text.repeat(6);
+    let content = |name: &str| {
+        if name.ends_with(".txt") {
+            &text
+        } else {
+            &large
+        }
+    };
     for name in ["a.txt", "photo.JPG", "b.txt", "clip.mp4"] {
-        fs::write(what.join(name), &text).unwrap();
+        fs::write(what.join(name), content(name)).unwrap();
     }
     let known: Vec<String> = COMPRESSED_EXTENSIONS
         .iter()
@@ -599,8 +609,8 @@ fn a_7z_archive_stores_the_extensions_it_is_told_in_a_folder_of_their_own() {
     extract(&made, &out, &Keys::default(), &Control::default()).unwrap();
     for name in ["a.txt", "photo.JPG", "b.txt", "clip.mp4"] {
         assert_eq!(
-            fs::read_to_string(out.join("what").join(name)).unwrap(),
-            text
+            &fs::read_to_string(out.join("what").join(name)).unwrap(),
+            content(name)
         );
     }
 }
