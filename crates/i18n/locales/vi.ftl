@@ -1609,6 +1609,9 @@ tdf2cab9c = { $by } sẽ cập nhật nó: { $command }
 # {by} updates it.
 t84b27295 = { $by } sẽ cập nhật nó.
 
+# It is downloaded and checked, then installed when you quit: Windows asks for an administrator's permission, as packwing is installed for everyone.
+tc816fc67 = Bản mới được tải xuống và kiểm tra, rồi cài khi bạn thoát app: Windows sẽ hỏi quyền quản trị, vì packwing được cài cho mọi người trên máy.
+
 # It is downloaded and checked, then installed when you quit.
 tb46c0678 = Bản mới được tải xuống và kiểm tra, rồi cài khi bạn thoát app.
 

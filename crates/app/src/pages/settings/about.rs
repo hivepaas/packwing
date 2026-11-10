@@ -308,6 +308,9 @@ impl About {
                 Install::Managed { by, command: None } => {
                     tr!("{by} updates it.", by = updates::by_said(by))
                 }
+                Install::WindowsInstaller { everyone: true } => tr!(
+                    "It is downloaded and checked, then installed when you quit: Windows asks for an administrator's permission, as packwing is installed for everyone."
+                ),
                 i if i.updates_itself() => {
                     tr!("It is downloaded and checked, then installed when you quit.")
                 }

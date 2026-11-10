@@ -1,7 +1,8 @@
-# Puts a folder in the user's PATH, or takes it out, for installer.nsi: pkw.exe
-# is in packwing's folder, and a terminal opened after finds it.
+# Puts a folder in the PATH, or takes it out, for installer.nsi: pkw.exe is in
+# packwing's folder, and a terminal opened after finds it. The user's PATH, or
+# for an install for everyone the computer's, which an administrator writes.
 #
-#   powershell -NoProfile -ExecutionPolicy Bypass -File path.ps1 add|remove DIR
+#   powershell -NoProfile -ExecutionPolicy Bypass -File path.ps1 add|remove DIR [user|machine]
 #
 # The PATH is read and written in the registry as it is kept, its %VARIABLES%
 # left as they are, and of the kind it is (REG_EXPAND_SZ, or REG_SZ): never
@@ -11,11 +12,17 @@
 
 param(
     [Parameter(Mandatory)][ValidateSet('add', 'remove')][string]$Do,
-    [Parameter(Mandatory)][string]$Dir
+    [Parameter(Mandatory)][string]$Dir,
+    [ValidateSet('user', 'machine')][string]$For = 'user'
 )
 
 $ErrorActionPreference = 'Stop'
-$key = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey('Environment')
+$key = if ($For -eq 'machine') {
+    [Microsoft.Win32.Registry]::LocalMachine.CreateSubKey(
+        'SYSTEM\CurrentControlSet\Control\Session Manager\Environment')
+} else {
+    [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey('Environment')
+}
 try {
     $there = $key.GetValueNames() -contains 'Path'
     $kind = if ($there) { $key.GetValueKind('Path') } else { [Microsoft.Win32.RegistryValueKind]::ExpandString }
@@ -31,7 +38,7 @@ try {
             $key.SetValue('Path', (($folders + $Dir) -join ';'), $kind)
         }
     } elseif ($others.Count -ne $folders.Count) {
-        if ($others.Count -eq 0) {
+        if ($others.Count -eq 0 -and $For -eq 'user') {
             $key.DeleteValue('Path')
         } else {
             $key.SetValue('Path', ($others -join ';'), $kind)

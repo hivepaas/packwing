@@ -42,7 +42,7 @@ pub fn apply(install: &Install, staged: &Path, relaunch: bool) -> io::Result<()>
             }
             Ok(())
         }
-        Install::WindowsInstaller => run_installer(staged, relaunch),
+        Install::WindowsInstaller { .. } => run_installer(staged, relaunch),
         Install::Manual | Install::Package(_) | Install::Managed { .. } => Err(io::Error::other(
             "this copy of the app is not one it can update itself",
         )),

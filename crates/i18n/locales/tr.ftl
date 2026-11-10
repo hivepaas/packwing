@@ -1632,6 +1632,9 @@ tdf2cab9c = { $by } tarafından güncellenir: { $command }
 # {by} updates it.
 t84b27295 = { $by } tarafından güncellenir.
 
+# It is downloaded and checked, then installed when you quit: Windows asks for an administrator's permission, as packwing is installed for everyone.
+tc816fc67 = İndirilir ve doğrulanır, sonra çıktığınızda kurulur: packwing herkes için kurulu olduğundan Windows yönetici izni ister.
+
 # It is downloaded and checked, then installed when you quit.
 tb46c0678 = İndirilir ve doğrulanır, sonra çıktığınızda kurulur.
 

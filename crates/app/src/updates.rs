@@ -429,7 +429,7 @@ impl Updates {
             Ok(()) => {
                 // The installer on Windows runs once this app has gone: its file stays
                 // until the next run sees the new version.
-                if how != Install::WindowsInstaller {
+                if !matches!(how, Install::WindowsInstaller { .. }) {
                     let _ = std::fs::remove_file(&file);
                     self.state.staged = None;
                 }

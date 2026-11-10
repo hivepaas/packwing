@@ -70,7 +70,7 @@ runs:
 | from the release's `.rpm` (`/usr/bin/packwing`, no dpkg, and zypper or dnf there) | the same, with zypper or dnf |
 | an AppImage (`$APPIMAGE`) | downloads the release's AppImage and puts it in place of this one |
 | `Packwing.app` on macOS | downloads the `.app` (tarred), checks it with `codesign` (valid, signed by the team that signed this one), and swaps the two |
-| by its installer on Windows (`…\AppData\Local\Programs\packwing\`, `…\Program Files\packwing\`) | downloads the installer and runs it, quiet (`/S`), once the app has quit |
+| by its installer on Windows (`…\AppData\Local\Programs\packwing\`, `…\Program Files\packwing\`) | downloads the installer and runs it, quiet (`/S`), once the app has quit; installed for everyone, in Program Files, the installer asks Windows for an administrator's rights (UAC) as it starts, which About says beforehand |
 | by Homebrew, Scoop, Flatpak, Snap, a distribution's package, a store | says what updates it |
 | by hand (a binary in a folder) | opens the release's page |
 
