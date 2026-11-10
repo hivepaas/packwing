@@ -347,7 +347,10 @@ pub fn card() -> Div {
         .flex()
         .flex_col()
         .gap(ui(20.))
-        .p(ui(28.))
+        // Narrower at the sides than above and below, where the header's tile
+        // and the footer's buttons come to the edge: they look alike so.
+        .px(ui(20.))
+        .py(ui(22.))
         .rounded(ui(28.))
         .bg(rgb(c.surface))
         .text_color(rgb(c.text))

@@ -825,7 +825,7 @@ impl Render for StoragesPage {
         let page = div()
             .size_full()
             .flex()
-            .gap(ui(18.))
+            .gap(ui(crate::widgets::PANE_GAP))
             .on_mouse_move(cx.listener(|this, _: &gpui::MouseMoveEvent, _, _| this.used()))
             .on_scroll_wheel(cx.listener(|this, _: &gpui::ScrollWheelEvent, _, _| this.used()))
             .capture_key_down(cx.listener(|this, _: &KeyDownEvent, _, _| this.used()))

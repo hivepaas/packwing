@@ -1550,7 +1550,8 @@ impl ArchivePage {
         let picture = div()
             .when(showing, |d| d.flex_1().min_h(ui(200.)))
             .when(!showing, |d| d.h(ui(200.)))
-            .rounded(ui(20.))
+            // Its corners follow the panel's, inside its padding.
+            .rounded(ui(28. - crate::widgets::PANE_GAP))
             .bg(rgb(c.field))
             .flex()
             .items_center()
@@ -1615,7 +1616,7 @@ impl ArchivePage {
             .flex()
             .flex_col()
             .gap(ui(14.))
-            .p(ui(18.))
+            .p(ui(crate::widgets::PANE_GAP))
             .child(picture)
             .children(entry.map(|e| {
                 div()
@@ -1664,7 +1665,11 @@ impl ArchivePage {
 
 impl Render for ArchivePage {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let page = div().size_full().flex().flex_col().gap(ui(18.));
+        let page = div()
+            .size_full()
+            .flex()
+            .flex_col()
+            .gap(ui(crate::widgets::PANE_GAP));
         let Some(a) = self.current() else {
             return page.child(self.empty(cx));
         };
@@ -1680,7 +1685,7 @@ impl Render for ArchivePage {
                     .min_h_0()
                     .flex()
                     .items_start()
-                    .gap(ui(18.))
+                    .gap(ui(crate::widgets::PANE_GAP))
                     .child(self.contents(a, cx))
                     .child(self.preview(a)),
             )
