@@ -2373,9 +2373,10 @@ impl Render for Workspace {
                             .flex()
                             .flex_col()
                             .pt(ui(top))
-                            .pr(ui(24.))
-                            .pb(ui(24.))
-                            .pl(ui(8.))
+                            // The card's right edge is the window buttons'; the
+                            // rail's own room keeps it from the left edge.
+                            .pr(ui(12.))
+                            .pb(ui(12.))
                             .child(page),
                     )
             }
