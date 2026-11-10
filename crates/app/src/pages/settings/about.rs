@@ -554,9 +554,7 @@ fn other_apps() -> Div {
         .child(app(
             tracewing_logo(),
             "tracewing",
-            tr!(
-                "A native HTTP(S) debugging proxy that keeps up with big sessions. In early development: nothing to download yet."
-            ),
+            tr!("A native HTTP(S) debugging proxy that keeps up with big sessions."),
             vec![
                 tr!("HTTP/2, WebSocket and SSE"),
                 tr!("A million requests, smooth"),

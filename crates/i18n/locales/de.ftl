@@ -1716,8 +1716,8 @@ t8622a5c1 = GPL-3.0-or-later
 # Visit shellwing.app
 t1d2ed540 = shellwing.app besuchen
 
-# A native HTTP(S) debugging proxy that keeps up with big sessions. In early development: nothing to download yet.
-tccd9be23 = Ein nativer HTTP(S)-Debugging-Proxy, der auch große Sitzungen flüssig bewältigt. In früher Entwicklung: noch nichts zum Herunterladen.
+# A native HTTP(S) debugging proxy that keeps up with big sessions.
+t86e5ad3e = Ein nativer HTTP(S)-Debugging-Proxy, der auch große Sitzungen flüssig bewältigt.
 
 # HTTP/2, WebSocket and SSE
 t2c3c2377 = HTTP/2, WebSocket und SSE

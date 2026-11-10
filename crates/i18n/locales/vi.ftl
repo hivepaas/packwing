@@ -1693,8 +1693,8 @@ t8622a5c1 = GPL-3.0-or-later
 # Visit shellwing.app
 t1d2ed540 = Xem shellwing.app
 
-# A native HTTP(S) debugging proxy that keeps up with big sessions. In early development: nothing to download yet.
-tccd9be23 = Proxy gỡ lỗi HTTP(S) chạy native, vẫn mượt với những phiên lớn. Đang ở giai đoạn đầu: chưa có bản để tải về.
+# A native HTTP(S) debugging proxy that keeps up with big sessions.
+t86e5ad3e = Proxy gỡ lỗi HTTP(S) chạy native, vẫn mượt với những phiên lớn.
 
 # HTTP/2, WebSocket and SSE
 t2c3c2377 = HTTP/2, WebSocket và SSE
