@@ -1980,7 +1980,7 @@ impl Render for Explorer {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "shots", target_os = "linux"))]
 impl Explorer {
     /// Whether the Size and Modified columns show, as its width left them.
     pub(crate) fn columns_for_test(&self) -> (bool, bool) {
