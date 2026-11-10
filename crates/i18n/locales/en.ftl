@@ -606,6 +606,7 @@ t36a30d8b = packwing { $version } is out
 t98b9753c = Run these in a terminal. They check the download against the signed list of releases, and sudo asks for your password.
 tdf2cab9c = { $by } updates it: { $command }
 t84b27295 = { $by } updates it.
+tc816fc67 = It is downloaded and checked, then installed when you quit: Windows asks for an administrator's permission, as packwing is installed for everyone.
 tb46c0678 = It is downloaded and checked, then installed when you quit.
 t39312eae = Download it, and install it in place of this one.
 t5e96c075 = The download failed: { $why }

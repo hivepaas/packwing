@@ -1609,6 +1609,9 @@ tdf2cab9c = { $by } memperbaruinya: { $command }
 # {by} updates it.
 t84b27295 = { $by } memperbaruinya.
 
+# It is downloaded and checked, then installed when you quit: Windows asks for an administrator's permission, as packwing is installed for everyone.
+tc816fc67 = Diunduh dan diperiksa, lalu dipasang saat Anda keluar: Windows meminta izin administrator, karena packwing dipasang untuk semua pengguna.
+
 # It is downloaded and checked, then installed when you quit.
 tb46c0678 = Diunduh dan diperiksa, lalu dipasang saat Anda keluar.
 

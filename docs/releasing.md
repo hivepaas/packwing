@@ -33,11 +33,17 @@ people.
   is signed ad hoc and holds no extension (the items are then Quick Actions),
   and Gatekeeper asks the first time it opens. The updater accepts a new `.app`
   whose signature verifies, by the team that signed the running one.
-- **Windows**: an NSIS installer, for the user, into
-  `%LOCALAPPDATA%\Programs\packwing` (where the updater looks for it), with
-  `pkw.exe` in the user's PATH and context-menu-rs's extension for Windows 11's
-  menu. It is not signed: SmartScreen asks the first time (More info › Run
-  anyway), and Windows takes the extension's package only with Developer Mode on.
+- **Windows**: an NSIS installer, which asks whom for: everyone on the computer,
+  by default, into `C:\Program Files\packwing` with an administrator's
+  permission (Windows asks), or the user alone into
+  `%LOCALAPPDATA%\Programs\packwing` with none; both are where the updater looks
+  for it. `/ALLUSERS` or `/CURRENTUSER` says it without the page, as with `/S`
+  for a quiet install; where packwing is installed already, it goes there again,
+  as it was. `pkw.exe` goes in the PATH (the computer's, or the user's), and
+  context-menu-rs's extension for Windows 11's menu is registered for the user
+  who installs. It is not signed: SmartScreen asks the first time (More info ›
+  Run anyway), and Windows takes the extension's package only with Developer
+  Mode on.
 
 ## Signing for macOS
 

@@ -1632,6 +1632,9 @@ tdf2cab9c = Das Update übernimmt { $by }: { $command }
 # {by} updates it.
 t84b27295 = Das Update übernimmt { $by }.
 
+# It is downloaded and checked, then installed when you quit: Windows asks for an administrator's permission, as packwing is installed for everyone.
+tc816fc67 = Es wird heruntergeladen und geprüft, dann beim Beenden installiert: Windows fragt nach der Erlaubnis eines Administrators, da packwing für alle installiert ist.
+
 # It is downloaded and checked, then installed when you quit.
 tb46c0678 = Es wird heruntergeladen und geprüft, dann beim Beenden installiert.
 

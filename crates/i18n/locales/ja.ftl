@@ -1609,6 +1609,9 @@ tdf2cab9c = { $by } でアップデートします：{ $command }
 # {by} updates it.
 t84b27295 = { $by } でアップデートします。
 
+# It is downloaded and checked, then installed when you quit: Windows asks for an administrator's permission, as packwing is installed for everyone.
+tc816fc67 = ダウンロードして検証し、終了時にインストールします。packwing はすべてのユーザー向けにインストールされているため、Windows が管理者の許可を求めます。
+
 # It is downloaded and checked, then installed when you quit.
 tb46c0678 = ダウンロードして検証し、終了時にインストールします。
 

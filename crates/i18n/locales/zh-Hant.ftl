@@ -1609,6 +1609,9 @@ tdf2cab9c = 透過 { $by } 更新：{ $command }
 # {by} updates it.
 t84b27295 = 透過 { $by } 更新。
 
+# It is downloaded and checked, then installed when you quit: Windows asks for an administrator's permission, as packwing is installed for everyone.
+tc816fc67 = 下載並驗證後，會在結束時安裝：由於 packwing 是為所有使用者安裝的，Windows 會要求系統管理員權限。
+
 # It is downloaded and checked, then installed when you quit.
 tb46c0678 = 下載並驗證後，會在結束時安裝。
 

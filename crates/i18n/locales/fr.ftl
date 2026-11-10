@@ -1632,6 +1632,9 @@ tdf2cab9c = Mise à jour via { $by } : { $command }
 # {by} updates it.
 t84b27295 = Mise à jour via { $by }.
 
+# It is downloaded and checked, then installed when you quit: Windows asks for an administrator's permission, as packwing is installed for everyone.
+tc816fc67 = Il est téléchargé et vérifié, puis installé quand vous quittez : Windows demande l'autorisation d'un administrateur, car packwing est installé pour tous.
+
 # It is downloaded and checked, then installed when you quit.
 tb46c0678 = Il est téléchargé et vérifié, puis installé quand vous quittez.
 

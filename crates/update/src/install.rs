@@ -15,8 +15,9 @@ pub enum Install {
     /// An app bundle on macOS, this `.app`: replaced whole.
     MacBundle(PathBuf),
     /// Put there by packwing's installer on Windows: the next one installs
-    /// over it.
-    WindowsInstaller,
+    /// over it. For everyone, into Program Files, Windows asks for an
+    /// administrator's permission as it does.
+    WindowsInstaller { everyone: bool },
     /// Put there by hand (a binary run from a folder): the app says where
     /// the release is, and the user puts it there.
     Manual,
@@ -71,7 +72,7 @@ impl Install {
     pub fn updates_itself(&self) -> bool {
         matches!(
             self,
-            Install::AppImage(_) | Install::MacBundle(_) | Install::WindowsInstaller
+            Install::AppImage(_) | Install::MacBundle(_) | Install::WindowsInstaller { .. }
         )
     }
 }
@@ -115,11 +116,11 @@ pub fn install_of(exe: &Path, var: impl Fn(&str) -> Option<String>) -> Install {
         return Install::MacBundle(bundle);
     }
     // Where packwing's installer puts it: for the user, or for everyone.
-    if p.ends_with(".exe")
-        && (p.contains("/appdata/local/programs/packwing/")
-            || p.contains("/program files/packwing/"))
-    {
-        return Install::WindowsInstaller;
+    if p.ends_with(".exe") && p.contains("/appdata/local/programs/packwing/") {
+        return Install::WindowsInstaller { everyone: false };
+    }
+    if p.ends_with(".exe") && p.contains("/program files/packwing/") {
+        return Install::WindowsInstaller { everyone: true };
     }
     if p == PACKAGE_EXE
         && let Some(tool) = package_tool(|f| Path::new(f).exists())
@@ -166,7 +167,11 @@ mod tests {
                 r"C:\Users\me\AppData\Local\Programs\packwing\packwing.exe",
                 &[]
             ),
-            Install::WindowsInstaller
+            Install::WindowsInstaller { everyone: false }
+        );
+        assert_eq!(
+            install(r"C:\Program Files\packwing\packwing.exe", &[]),
+            Install::WindowsInstaller { everyone: true }
         );
         assert!(matches!(
             install("/app/bin/packwing", &[("FLATPAK_ID", "dev.packwing")]),

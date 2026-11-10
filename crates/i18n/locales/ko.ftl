@@ -1609,6 +1609,9 @@ tdf2cab9c = { $by }에서 업데이트합니다: { $command }
 # {by} updates it.
 t84b27295 = { $by }에서 업데이트합니다.
 
+# It is downloaded and checked, then installed when you quit: Windows asks for an administrator's permission, as packwing is installed for everyone.
+tc816fc67 = 다운로드하고 확인한 뒤, 종료할 때 설치합니다. packwing이 모든 사용자용으로 설치되어 있어 Windows가 관리자 권한을 요청합니다.
+
 # It is downloaded and checked, then installed when you quit.
 tb46c0678 = 다운로드하고 확인한 뒤, 종료할 때 설치합니다.
 

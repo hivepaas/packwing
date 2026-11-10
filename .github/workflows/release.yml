@@ -19,6 +19,7 @@ on:
       - packaging/**
       - scripts/package_*.sh
       - scripts/check_linux_package.sh
+      - scripts/check_windows_installer.ps1
   workflow_dispatch:
 
 concurrency:
@@ -165,6 +166,13 @@ jobs:
           scripts/check_linux_package.sh --install dist/packwing_*.deb
           scripts/check_linux_package.sh --install dist/packwing_*.rpm
           scripts/check_linux_package.sh dist/pkw_*.tar.gz
+
+      # The installer, quiet: for the user and for everyone, again as the
+      # updater runs it, and uninstalled.
+      - name: Install and uninstall (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: scripts/check_windows_installer.ps1 (Get-Item dist/packwing_*-setup.exe).FullName
 
       - uses: actions/upload-artifact@v4
         with:
