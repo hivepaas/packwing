@@ -814,7 +814,7 @@ fn extract_naming(
     }
     // What the last open of the archive has read, from its start: how far a
     // tar archive is extracted is told from it until hivepack knows its
-    // totals ([`tar_into_folder`]).
+    // totals ([`into_folder_once`]).
     let read = Arc::new(AtomicU64::new(0));
     let mut opener = opener_of(&source.name(), keys, || {
         read.store(0, Ordering::Relaxed);
@@ -854,7 +854,8 @@ fn extract_naming(
     }
     match opened.container() {
         Container::Tar => match into {
-            WriteTo::Folder(destination) => tar_into_folder(
+            WriteTo::Folder(destination) => into_folder_once(
+                ReadOnce::Tar,
                 source,
                 destination,
                 reopened(opened, &mut opener),
@@ -886,7 +887,8 @@ fn extract_naming(
             let archive = zip_archive(&spooled.file)?;
             Ok(into!(extract_zip, extract_zip_to, &archive)?)
         }
-        // Read twice, as a tar archive is: once to check, once to write.
+        // Read twice, as a tar archive into another is: once to check, once
+        // to write.
         Container::Iso => Ok(into!(
             extract_iso,
             extract_iso_to,
@@ -912,19 +914,32 @@ fn extract_naming(
             let mut seven = seven_zip(|| spooled.rewound(), keys)?;
             Ok(into!(extract_7z, extract_7z_to, &mut seven.archive)?)
         }
-        // Read twice, as a tar archive is; an RPM package's payload, its
-        // lead and headers taken off, and a macOS package's payloads,
-        // expanded into folders of their names.
-        Container::Cpio => Ok(into!(
-            extract_cpio,
-            extract_cpio_to,
-            reopened(opened, &mut opener)
-        )?),
-        Container::Xar => Ok(into!(
-            extract_xar,
-            extract_xar_to,
-            reopened(opened, &mut opener)
-        )?),
+        // Read once into a folder, as a tar archive is, and twice into an
+        // archive; an RPM package's payload, its lead and headers taken off,
+        // and a macOS package's payloads, expanded into folders of their
+        // names.
+        Container::Cpio | Container::Xar => {
+            let format = match opened.container() {
+                Container::Cpio => ReadOnce::Cpio,
+                _ => ReadOnce::Xar,
+            };
+            let open = reopened(opened, &mut opener);
+            match (into, format) {
+                (WriteTo::Folder(destination), format) => into_folder_once(
+                    format,
+                    source,
+                    destination,
+                    open,
+                    &read,
+                    &mut options,
+                    control,
+                ),
+                (WriteTo::Taker(taker), ReadOnce::Cpio) => {
+                    Ok(extract_cpio_to(open, taker, &options)?)
+                }
+                (WriteTo::Taker(taker), _) => Ok(extract_xar_to(open, taker, &options)?),
+            }
+        }
         Container::Rar if layers.is_empty() && source.path().is_some() => {
             drop(opened);
             let path = source.path().expect("just looked at");
@@ -989,13 +1004,24 @@ where
     }
 }
 
-/// A tar archive of `source` extracted into the folder `destination`, which
-/// hivepack reads once, through `open`, into a private folder there, moved
-/// into place at the end. It is noted in the journal while it is, so that a
-/// private folder left behind goes when packwing starts again. hivepack knows
-/// its totals only once the archive is read: until then, how far it is, is
-/// told from the archive's bytes `read`, against its size.
-fn tar_into_folder<R: Read + Send>(
+/// The archives hivepack reads once into a folder.
+#[derive(Clone, Copy)]
+enum ReadOnce {
+    Tar,
+    /// An RPM package's payload among them.
+    Cpio,
+    /// A macOS package, its payloads expanded, and a `.xip` file.
+    Xar,
+}
+
+/// A tar, cpio or XAR archive of `source` extracted into the folder
+/// `destination`, which hivepack reads once, through `open`, into a private
+/// folder there, moved into place at the end. It is noted in the journal while
+/// it is, so that a private folder left behind goes when packwing starts again.
+/// hivepack knows its totals only once the archive is read: until then, how far
+/// it is, is told from the archive's bytes `read`, against its size.
+fn into_folder_once<R: Read + Send>(
+    format: ReadOnce,
     source: &Source,
     destination: &Path,
     open: impl FnMut() -> io::Result<R>,
@@ -1025,7 +1051,11 @@ fn tar_into_folder<R: Read + Send>(
             told(&through);
         }));
     }
-    Ok(extract_tar(open, destination, options)?)
+    Ok(match format {
+        ReadOnce::Tar => extract_tar(open, destination, options),
+        ReadOnce::Cpio => extract_cpio(open, destination, options),
+        ReadOnce::Xar => extract_xar(open, destination, options),
+    }?)
 }
 
 /// What reads, counting the bytes it has read into `read`.

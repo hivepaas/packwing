@@ -54,13 +54,16 @@ strip = true
 [profile.dev.package."*"]
 opt-level = 2
 
-# Until hivepack's next release: the changes packwing takes from git, on its
-# main branch (hivepack#177 to #197): a tar archive read once into a folder,
-# with `extract::remove_stale`, and `extract::Options::on_written` among them;
-# 7z's LZMA2 blocks within the extraction's memory, inflate in whole pieces,
-# CRCs folded with the processor's carry-less multiplication, LZMA's bittrees
-# decoded as liblzma's assembly does, a tar's directories opened once, each
-# thread's files made through a walk, and a tar's stream read ahead.
+# Until hivepack's next release: the changes packwing takes from git (hivepack#177
+# to #200 on its main branch, and #203 before it is merged): a tar, cpio or XAR
+# archive read once into a folder, with `extract::remove_stale`, and
+# `extract::Options::on_written` among them; 7z's LZMA2 blocks within the
+# extraction's memory, inflate in whole pieces and from tables of its own, CRCs
+# folded with the processor's carry-less multiplication, LZMA's bittrees decoded
+# as liblzma's assembly does, a tar's directories opened once, each thread's
+# files made through a walk, a tar's and a cpio's stream read ahead, a bzip2
+# block too large for a thread decoded on the caller's, and a ZIP's files taken
+# largest first.
 # Taken out, and the version above raised, once it is published.
 [patch.crates-io]
-hivepack = { git = "https://github.com/hivepaas/hivepack-rs", rev = "f3c46a12e6f2d77ab6a6ac323e31a7e76925c73b" }
+hivepack = { git = "https://github.com/hivepaas/hivepack-rs", rev = "33434b86aae0afd8fbf375da5f3f06ea572bd386" }
