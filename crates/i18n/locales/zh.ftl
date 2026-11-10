@@ -1552,8 +1552,8 @@ t3d37483c = 复制版本信息
 # Version {version} · {os} {arch}
 t6bead5ae = 版本 { $version } · { $os } { $arch }
 
-# A file archiver that opens archives safely.
-t3c244df9 = 安全打开压缩包的文件压缩软件。
+# A file archiver that puts every core to work and opens archives safely.
+t5d2a9fa0 = 让每个核心都投入工作、安全打开压缩包的文件压缩工具。
 
 # Updates
 t483075a5 = 更新

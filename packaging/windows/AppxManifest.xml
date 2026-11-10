@@ -43,7 +43,7 @@
   </Capabilities>
   <Applications>
     <Application Id="packwing" Executable="packwing.exe" uap10:TrustLevel="mediumIL" uap10:RuntimeBehavior="win32App">
-      <uap:VisualElements AppListEntry="none" DisplayName="packwing" Description="File archiver that opens archives safely" BackgroundColor="transparent" Square150x150Logo="logo150.png" Square44x44Logo="logo44.png" />
+      <uap:VisualElements AppListEntry="none" DisplayName="packwing" Description="File archiver that puts every core to work and opens archives safely" BackgroundColor="transparent" Square150x150Logo="logo150.png" Square44x44Logo="logo44.png" />
       <Extensions>
         <desktop4:Extension Category="windows.fileExplorerContextMenus">
           <desktop4:FileExplorerContextMenus>

@@ -1,6 +1,6 @@
 [package]
 name = "packwing"
-description = "File archiver that opens archives safely"
+description = "File archiver that puts every core to work and opens archives safely"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

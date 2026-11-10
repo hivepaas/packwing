@@ -1552,8 +1552,8 @@ t3d37483c = 버전 정보 복사
 # Version {version} · {os} {arch}
 t6bead5ae = 버전 { $version } · { $os } { $arch }
 
-# A file archiver that opens archives safely.
-t3c244df9 = 압축 파일을 안전하게 여는 파일 압축 프로그램입니다.
+# A file archiver that puts every core to work and opens archives safely.
+t5d2a9fa0 = 모든 코어를 활용하고 압축 파일을 안전하게 여는 파일 압축 프로그램.
 
 # Updates
 t483075a5 = 업데이트

@@ -1,4 +1,4 @@
-//! packwing: a file archiver that opens archives safely.
+//! packwing: a file archiver that puts every core to work and opens archives safely.
 //!
 //! Usage: `packwing [--first-run] [--policies] [--<item> PATH…]`. Archives
 //! are read, extracted and tested through packwing-core and hivepack

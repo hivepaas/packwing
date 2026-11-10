@@ -109,12 +109,9 @@ impl About {
                         os = std::env::consts::OS,
                         arch = std::env::consts::ARCH
                     )))
-                    .child(
-                        div()
-                            .pt(ui(6.))
-                            .text_size(ui(15.))
-                            .child(tr!("A file archiver that opens archives safely.")),
-                    ),
+                    .child(div().pt(ui(6.)).text_size(ui(15.)).child(tr!(
+                        "A file archiver that puts every core to work and opens archives safely."
+                    ))),
             )
             .child(
                 button("about-copy-version", copy, Fill::Outline, Size::Medium).on_click(

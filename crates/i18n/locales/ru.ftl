@@ -1621,8 +1621,8 @@ t3d37483c = Скопировать сведения о версии
 # Version {version} · {os} {arch}
 t6bead5ae = Версия { $version } · { $os } { $arch }
 
-# A file archiver that opens archives safely.
-t3c244df9 = Архиватор, который безопасно открывает архивы.
+# A file archiver that puts every core to work and opens archives safely.
+t5d2a9fa0 = Архиватор, который задействует все ядра и безопасно открывает архивы.
 
 # Updates
 t483075a5 = Обновления

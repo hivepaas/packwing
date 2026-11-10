@@ -1552,8 +1552,8 @@ t3d37483c = Salin info versi
 # Version {version} · {os} {arch}
 t6bead5ae = Versi { $version } · { $os } { $arch }
 
-# A file archiver that opens archives safely.
-t3c244df9 = Pengarsip berkas yang membuka arsip dengan aman.
+# A file archiver that puts every core to work and opens archives safely.
+t5d2a9fa0 = Pengarsip berkas yang memanfaatkan setiap inti prosesor dan membuka arsip dengan aman.
 
 # Updates
 t483075a5 = Pembaruan

@@ -1552,8 +1552,8 @@ t3d37483c = 複製版本資訊
 # Version {version} · {os} {arch}
 t6bead5ae = 版本 { $version } · { $os } { $arch }
 
-# A file archiver that opens archives safely.
-t3c244df9 = 安全開啟封存檔的檔案封存工具。
+# A file archiver that puts every core to work and opens archives safely.
+t5d2a9fa0 = 讓每個核心都投入運作、安全開啟封存檔的檔案壓縮工具。
 
 # Updates
 t483075a5 = 更新

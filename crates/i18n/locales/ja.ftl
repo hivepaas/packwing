@@ -1552,8 +1552,8 @@ t3d37483c = バージョン情報をコピー
 # Version {version} · {os} {arch}
 t6bead5ae = バージョン { $version } · { $os } { $arch }
 
-# A file archiver that opens archives safely.
-t3c244df9 = アーカイブを安全に開くファイルアーカイバ。
+# A file archiver that puts every core to work and opens archives safely.
+t5d2a9fa0 = すべてのコアを働かせ、アーカイブを安全に開くファイルアーカイバ。
 
 # Updates
 t483075a5 = アップデート
