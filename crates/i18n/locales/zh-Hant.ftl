@@ -1693,8 +1693,8 @@ t8622a5c1 = GPL-3.0-or-later
 # Visit shellwing.app
 t1d2ed540 = 前往 shellwing.app
 
-# A native HTTP(S) debugging proxy for Linux, macOS and Windows that keeps up with big sessions. In early development: nothing to download yet.
-tfce8cf4b = 適用於 Linux、macOS 與 Windows 的原生 HTTP(S) 除錯代理，大型工作階段也跟得上。仍在早期開發階段：尚無可下載的版本。
+# A native HTTP(S) debugging proxy that keeps up with big sessions. In early development: nothing to download yet.
+tccd9be23 = 原生 HTTP(S) 除錯代理，大型工作階段也跟得上。仍在早期開發階段：尚無可下載的版本。
 
 # HTTP/2, WebSocket and SSE
 t2c3c2377 = HTTP/2、WebSocket 與 SSE
@@ -1707,6 +1707,9 @@ t00c623a3 = 中斷點與改寫
 
 # Phones and emulators
 t8c26f435 = 手機與模擬器
+
+# Visit tracewing.app
+t4668641f = 前往 tracewing.app
 
 # A self-hosted platform for your apps, built on Docker Swarm: an open-source alternative to Heroku, Render and Coolify.
 tc9d13419 = 以 Docker Swarm 打造、可自行架設的應用程式平台：Heroku、Render 和 Coolify 的開放原始碼替代方案。

@@ -24,7 +24,7 @@ const ISSUES: &str = "https://github.com/hivepaas/packwing/issues/new";
 const RELEASES: &str = "https://github.com/hivepaas/packwing/releases";
 const SHELLWING: &str = "https://shellwing.app";
 const SHELLWING_SOURCE: &str = "https://github.com/hivepaas/shellwing";
-/// tracewing has no site of its own yet: its code is where to see it.
+const TRACEWING: &str = "https://tracewing.app";
 const TRACEWING_SOURCE: &str = "https://github.com/hivepaas/tracewing";
 const HIVEPAAS: &str = "https://hivepaas.com";
 const HIVEPAAS_SOURCE: &str = "https://github.com/hivepaas/hivepaas";
@@ -555,7 +555,7 @@ fn other_apps() -> Div {
             tracewing_logo(),
             "tracewing",
             tr!(
-                "A native HTTP(S) debugging proxy for Linux, macOS and Windows that keeps up with big sessions. In early development: nothing to download yet."
+                "A native HTTP(S) debugging proxy that keeps up with big sessions. In early development: nothing to download yet."
             ),
             vec![
                 tr!("HTTP/2, WebSocket and SSE"),
@@ -564,12 +564,19 @@ fn other_apps() -> Div {
                 tr!("Phones and emulators"),
                 tr!("GPL-3.0-or-later"),
             ],
-            actions().child(link(
-                "about-tracewing-source",
-                "GitHub".to_owned(),
-                TRACEWING_SOURCE,
-                Fill::Tonal,
-            )),
+            actions()
+                .child(link(
+                    "about-tracewing",
+                    tr!("Visit tracewing.app"),
+                    TRACEWING,
+                    Fill::Tonal,
+                ))
+                .child(link(
+                    "about-tracewing-source",
+                    "GitHub".to_owned(),
+                    TRACEWING_SOURCE,
+                    Fill::Outline,
+                )),
         ))
         .child(app(
             hivepaas_logo(),

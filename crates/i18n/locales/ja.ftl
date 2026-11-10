@@ -1693,8 +1693,8 @@ t8622a5c1 = GPL-3.0-or-later
 # Visit shellwing.app
 t1d2ed540 = shellwing.app を開く
 
-# A native HTTP(S) debugging proxy for Linux, macOS and Windows that keeps up with big sessions. In early development: nothing to download yet.
-tfce8cf4b = 大きなセッションにもついていく、Linux・macOS・Windows 向けのネイティブ HTTP(S) デバッグプロキシ。開発初期のため、まだダウンロードできるものはありません。
+# A native HTTP(S) debugging proxy that keeps up with big sessions. In early development: nothing to download yet.
+tccd9be23 = 大きなセッションにもついていくネイティブ HTTP(S) デバッグプロキシ。開発初期のため、まだダウンロードできるものはありません。
 
 # HTTP/2, WebSocket and SSE
 t2c3c2377 = HTTP/2、WebSocket、SSE
@@ -1707,6 +1707,9 @@ t00c623a3 = ブレークポイントと書き換え
 
 # Phones and emulators
 t8c26f435 = スマートフォンとエミュレータ
+
+# Visit tracewing.app
+t4668641f = tracewing.app を開く
 
 # A self-hosted platform for your apps, built on Docker Swarm: an open-source alternative to Heroku, Render and Coolify.
 tc9d13419 = Docker Swarm 上に構築された、アプリ向けのセルフホスト型プラットフォーム。Heroku、Render、Coolify に代わるオープンソースです。
