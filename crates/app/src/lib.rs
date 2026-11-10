@@ -162,6 +162,7 @@ const ICONS: &[(&str, &[u8])] = icons![
     "shield",
     "sliders",
     "storages",
+    "tracewing",
     "warning",
     "x",
     // The window's buttons, as GNOME and Windows draw them.

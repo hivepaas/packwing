@@ -1762,6 +1762,24 @@ t8622a5c1 = GPL-3.0-or-later
 # Visit shellwing.app
 t1d2ed540 = Відвідати shellwing.app
 
+# A native HTTP(S) debugging proxy that keeps up with big sessions.
+t86e5ad3e = Нативний налагоджувальний HTTP(S)-проксі, що впорається з великими сесіями.
+
+# HTTP/2, WebSocket and SSE
+t2c3c2377 = HTTP/2, WebSocket і SSE
+
+# A million requests, smooth
+t60de9f6c = Мільйон запитів — плавно
+
+# Breakpoints and rewrites
+t00c623a3 = Точки зупину й переписування
+
+# Phones and emulators
+t8c26f435 = Телефони й емулятори
+
+# Visit tracewing.app
+t4668641f = Відвідати tracewing.app
+
 # A self-hosted platform for your apps, built on Docker Swarm: an open-source alternative to Heroku, Render and Coolify.
 tc9d13419 = Платформа для ваших застосунків на власному сервері, побудована на Docker Swarm: відкрита альтернатива Heroku, Render і Coolify.
 

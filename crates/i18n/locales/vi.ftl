@@ -1693,6 +1693,24 @@ t8622a5c1 = GPL-3.0-or-later
 # Visit shellwing.app
 t1d2ed540 = Xem shellwing.app
 
+# A native HTTP(S) debugging proxy that keeps up with big sessions.
+t86e5ad3e = Proxy gỡ lỗi HTTP(S) chạy native, vẫn mượt với những phiên lớn.
+
+# HTTP/2, WebSocket and SSE
+t2c3c2377 = HTTP/2, WebSocket và SSE
+
+# A million requests, smooth
+t60de9f6c = Một triệu request vẫn mượt
+
+# Breakpoints and rewrites
+t00c623a3 = Breakpoint và viết lại
+
+# Phones and emulators
+t8c26f435 = Điện thoại và trình giả lập
+
+# Visit tracewing.app
+t4668641f = Xem tracewing.app
+
 # A self-hosted platform for your apps, built on Docker Swarm: an open-source alternative to Heroku, Render and Coolify.
 tc9d13419 = Nền tảng tự lưu trữ cho các ứng dụng của bạn, xây trên Docker Swarm: lựa chọn mã nguồn mở thay cho Heroku, Render và Coolify.
 
