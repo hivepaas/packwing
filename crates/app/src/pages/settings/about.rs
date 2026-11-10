@@ -24,6 +24,8 @@ const ISSUES: &str = "https://github.com/hivepaas/packwing/issues/new";
 const RELEASES: &str = "https://github.com/hivepaas/packwing/releases";
 const SHELLWING: &str = "https://shellwing.app";
 const SHELLWING_SOURCE: &str = "https://github.com/hivepaas/shellwing";
+/// tracewing has no site of its own yet: its code is where to see it.
+const TRACEWING_SOURCE: &str = "https://github.com/hivepaas/tracewing";
 const HIVEPAAS: &str = "https://hivepaas.com";
 const HIVEPAAS_SOURCE: &str = "https://github.com/hivepaas/hivepaas";
 /// The year in the copyright line.
@@ -417,11 +419,22 @@ fn card(title: String, body: Div) -> Div {
 
 /// shellwing's icon: the wing on a pale tile, as it draws it, in either look.
 fn shellwing_logo() -> Div {
-    pale_tile(0xeef1f5).child(
+    logo_tile(0xeef1f5).child(
         svg()
             .path("icons/shellwing.svg")
             .size(ui(36.))
             .text_color(rgb(0x0284c7)),
+    )
+}
+
+/// tracewing's icon: its trace in white on its blue tile, as it draws it, in either
+/// look.
+fn tracewing_logo() -> Div {
+    logo_tile(0x2f55b4).child(
+        svg()
+            .path("icons/tracewing.svg")
+            .size(ui(30.))
+            .text_color(rgb(0xffffff)),
     )
 }
 
@@ -440,7 +453,7 @@ fn hivepaas_logo() -> Div {
         (12.98, 26.70, BROWN),
         (23.02, 26.70, AMBER),
     ];
-    pale_tile(0xfbf7f0).child(
+    logo_tile(0xfbf7f0).child(
         div()
             .relative()
             .size(ui(36.))
@@ -456,7 +469,8 @@ fn hivepaas_logo() -> Div {
     )
 }
 
-fn pale_tile(ground: u32) -> Div {
+/// A logo's tile, of its own ground.
+fn logo_tile(ground: u32) -> Div {
     div()
         .size(ui(56.))
         .flex_shrink_0()
@@ -536,6 +550,26 @@ fn other_apps() -> Div {
                     SHELLWING_SOURCE,
                     Fill::Outline,
                 )),
+        ))
+        .child(app(
+            tracewing_logo(),
+            "tracewing",
+            tr!(
+                "A native HTTP(S) debugging proxy for Linux, macOS and Windows that keeps up with big sessions. In early development: nothing to download yet."
+            ),
+            vec![
+                tr!("HTTP/2, WebSocket and SSE"),
+                tr!("A million requests, smooth"),
+                tr!("Breakpoints and rewrites"),
+                tr!("Phones and emulators"),
+                tr!("GPL-3.0-or-later"),
+            ],
+            actions().child(link(
+                "about-tracewing-source",
+                "GitHub".to_owned(),
+                TRACEWING_SOURCE,
+                Fill::Tonal,
+            )),
         ))
         .child(app(
             hivepaas_logo(),

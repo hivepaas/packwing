@@ -1716,6 +1716,21 @@ t8622a5c1 = GPL-3.0-or-later
 # Visit shellwing.app
 t1d2ed540 = Visitar shellwing.app
 
+# A native HTTP(S) debugging proxy for Linux, macOS and Windows that keeps up with big sessions. In early development: nothing to download yet.
+tfce8cf4b = Un proxy de depuración HTTP(S) nativo para Linux, macOS y Windows que aguanta sesiones grandes. En desarrollo temprano: aún no hay nada que descargar.
+
+# HTTP/2, WebSocket and SSE
+t2c3c2377 = HTTP/2, WebSocket y SSE
+
+# A million requests, smooth
+t60de9f6c = Un millón de solicitudes, con fluidez
+
+# Breakpoints and rewrites
+t00c623a3 = Puntos de interrupción y reescrituras
+
+# Phones and emulators
+t8c26f435 = Teléfonos y emuladores
+
 # A self-hosted platform for your apps, built on Docker Swarm: an open-source alternative to Heroku, Render and Coolify.
 tc9d13419 = Una plataforma autoalojada para tus apps, basada en Docker Swarm: una alternativa de código abierto a Heroku, Render y Coolify.
 
