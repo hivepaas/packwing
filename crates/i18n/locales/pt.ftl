@@ -2444,8 +2444,8 @@ tedfc294c = Nada mudou.
 # The archive did not come out whole.
 t2f015c79 = O arquivo compactado não saiu inteiro.
 
-# packwing can change only a ZIP archive that is one file.
-t48628036 = O packwing só pode alterar um arquivo ZIP que seja um único arquivo.
+# packwing can change only a ZIP or 7z archive that is one file.
+t675882a8 = O packwing só pode alterar um arquivo ZIP ou 7z que seja um único arquivo.
 
 # That is not in the archive.
 t7530c419 = Isso não está no arquivo compactado.
@@ -2453,14 +2453,17 @@ t7530c419 = Isso não está no arquivo compactado.
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = Isso é tudo o que o arquivo compactado contém. Exclua o próprio arquivo compactado.
 
+# packwing can change only a ZIP archive that is one file.
+t48628036 = O packwing só pode alterar um arquivo ZIP que seja um único arquivo.
+
 # “{to}” cannot be a name.
 td53e55bf = “{ $to }” não pode ser um nome.
 
 # “{to}” is already in that folder. Nothing was changed.
 t5516dd83 = “{ $to }” já está nessa pasta. Nada foi alterado.
 
-# packwing can add files only to a ZIP archive that is one file.
-t11a330d3 = O packwing só pode adicionar arquivos a um ZIP que seja um único arquivo.
+# packwing can add files only to a ZIP or 7z archive that is one file.
+t8d1ef729 = O packwing só pode adicionar arquivos a um ZIP ou 7z que seja um único arquivo.
 
 # An archive can’t go inside itself.
 tff43ce74 = Um arquivo compactado não pode entrar em si mesmo.

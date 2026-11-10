@@ -2416,8 +2416,8 @@ tedfc294c = Tidak ada yang berubah.
 # The archive did not come out whole.
 t2f015c79 = Arsip tidak selesai dengan utuh.
 
-# packwing can change only a ZIP archive that is one file.
-t48628036 = packwing hanya dapat mengubah arsip ZIP yang berupa satu berkas.
+# packwing can change only a ZIP or 7z archive that is one file.
+t675882a8 = packwing hanya dapat mengubah arsip ZIP atau 7z yang berupa satu berkas.
 
 # That is not in the archive.
 t7530c419 = Itu tidak ada di arsip.
@@ -2425,14 +2425,17 @@ t7530c419 = Itu tidak ada di arsip.
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = Hanya itu isi arsip. Hapus arsipnya saja.
 
+# packwing can change only a ZIP archive that is one file.
+t48628036 = packwing hanya dapat mengubah arsip ZIP yang berupa satu berkas.
+
 # “{to}” cannot be a name.
 td53e55bf = “{ $to }” tidak bisa menjadi nama.
 
 # “{to}” is already in that folder. Nothing was changed.
 t5516dd83 = “{ $to }” sudah ada di folder itu. Tidak ada yang diubah.
 
-# packwing can add files only to a ZIP archive that is one file.
-t11a330d3 = packwing hanya dapat menambahkan berkas ke arsip ZIP yang berupa satu berkas.
+# packwing can add files only to a ZIP or 7z archive that is one file.
+t8d1ef729 = packwing hanya dapat menambahkan berkas ke arsip ZIP atau 7z yang berupa satu berkas.
 
 # An archive can’t go inside itself.
 tff43ce74 = Arsip tidak bisa dimasukkan ke dalam dirinya sendiri.

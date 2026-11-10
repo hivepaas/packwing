@@ -2407,8 +2407,8 @@ tedfc294c = Không có gì thay đổi.
 # The archive did not come out whole.
 t2f015c79 = Tệp nén tạo ra không đầy đủ.
 
-# packwing can change only a ZIP archive that is one file.
-t48628036 = packwing chỉ sửa được tệp nén ZIP nếu nó là một tệp.
+# packwing can change only a ZIP or 7z archive that is one file.
+t675882a8 = packwing chỉ sửa được tệp nén ZIP hoặc 7z nếu nó là một tệp.
 
 # That is not in the archive.
 t7530c419 = Mục đó không có trong tệp nén.
@@ -2416,14 +2416,17 @@ t7530c419 = Mục đó không có trong tệp nén.
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = Đó là tất cả những gì tệp nén chứa. Hãy xoá chính tệp nén.
 
+# packwing can change only a ZIP archive that is one file.
+t48628036 = packwing chỉ sửa được tệp nén ZIP nếu nó là một tệp.
+
 # “{to}” cannot be a name.
 td53e55bf = “{ $to }” không dùng làm tên được.
 
 # “{to}” is already in that folder. Nothing was changed.
 t5516dd83 = “{ $to }” đã có trong thư mục đó. Không có gì thay đổi.
 
-# packwing can add files only to a ZIP archive that is one file.
-t11a330d3 = packwing chỉ thêm tệp vào được tệp nén ZIP nếu nó là một tệp.
+# packwing can add files only to a ZIP or 7z archive that is one file.
+t8d1ef729 = packwing chỉ thêm tệp vào được tệp nén ZIP hoặc 7z nếu nó là một tệp.
 
 # An archive can’t go inside itself.
 tff43ce74 = Tệp nén không thể nằm trong chính nó.

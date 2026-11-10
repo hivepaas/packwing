@@ -2416,8 +2416,8 @@ tedfc294c = 沒有任何變更。
 # The archive did not come out whole.
 t2f015c79 = 封存檔未能完整產生。
 
-# packwing can change only a ZIP archive that is one file.
-t48628036 = packwing 只能變更單一檔案的 ZIP 封存檔。
+# packwing can change only a ZIP or 7z archive that is one file.
+t675882a8 = packwing 只能變更單一檔案的 ZIP 或 7z 封存檔。
 
 # That is not in the archive.
 t7530c419 = 封存檔中沒有這個項目。
@@ -2425,14 +2425,17 @@ t7530c419 = 封存檔中沒有這個項目。
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = 這已是封存檔中的所有內容。請改為刪除封存檔本身。
 
+# packwing can change only a ZIP archive that is one file.
+t48628036 = packwing 只能變更單一檔案的 ZIP 封存檔。
+
 # “{to}” cannot be a name.
 td53e55bf = 「{ $to }」不能作為名稱。
 
 # “{to}” is already in that folder. Nothing was changed.
 t5516dd83 = 「{ $to }」已存在於該資料夾中。未做任何變更。
 
-# packwing can add files only to a ZIP archive that is one file.
-t11a330d3 = packwing 只能將檔案加入單一檔案的 ZIP 封存檔。
+# packwing can add files only to a ZIP or 7z archive that is one file.
+t8d1ef729 = packwing 只能將檔案加入單一檔案的 ZIP 或 7z 封存檔。
 
 # An archive can’t go inside itself.
 tff43ce74 = 封存檔不能放進它自己裡面。

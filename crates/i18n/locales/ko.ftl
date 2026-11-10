@@ -2407,8 +2407,8 @@ tedfc294c = 변경된 것이 없습니다.
 # The archive did not come out whole.
 t2f015c79 = 압축 파일이 온전하게 만들어지지 않았습니다.
 
-# packwing can change only a ZIP archive that is one file.
-t48628036 = packwing은 파일 하나로 된 ZIP 압축 파일만 변경할 수 있습니다.
+# packwing can change only a ZIP or 7z archive that is one file.
+t675882a8 = packwing은 파일 하나로 된 ZIP 또는 7z 압축 파일만 변경할 수 있습니다.
 
 # That is not in the archive.
 t7530c419 = 압축 파일에 없는 항목입니다.
@@ -2416,14 +2416,17 @@ t7530c419 = 압축 파일에 없는 항목입니다.
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = 압축 파일에 있는 전부입니다. 대신 압축 파일 자체를 삭제하세요.
 
+# packwing can change only a ZIP archive that is one file.
+t48628036 = packwing은 파일 하나로 된 ZIP 압축 파일만 변경할 수 있습니다.
+
 # “{to}” cannot be a name.
 td53e55bf = “{ $to }”은(는) 이름으로 쓸 수 없습니다.
 
 # “{to}” is already in that folder. Nothing was changed.
 t5516dd83 = “{ $to }”이(가) 이미 그 폴더에 있습니다. 변경된 것이 없습니다.
 
-# packwing can add files only to a ZIP archive that is one file.
-t11a330d3 = packwing은 파일 하나로 된 ZIP 압축 파일에만 파일을 추가할 수 있습니다.
+# packwing can add files only to a ZIP or 7z archive that is one file.
+t8d1ef729 = packwing은 파일 하나로 된 ZIP 또는 7z 압축 파일에만 파일을 추가할 수 있습니다.
 
 # An archive can’t go inside itself.
 tff43ce74 = 압축 파일을 자기 자신 안에 넣을 수 없습니다.

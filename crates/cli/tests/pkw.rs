@@ -186,7 +186,7 @@ fn a_password_comes_from_a_file_and_age_files_are_named_so() {
 }
 
 #[test]
-fn a_zip_archive_is_changed_in_place() {
+fn a_zip_or_7z_archive_is_changed_in_place() {
     let s = Scratch::new("change");
     ok(&s.pkw(&["create", "-q", "a.zip", "src"]));
     std::fs::write(s.path("extra.txt"), "new").expect("the file");
@@ -196,10 +196,26 @@ fn a_zip_archive_is_changed_in_place() {
     let listed = ok(&s.pkw(&["list", "a.zip"]));
     assert!(listed.contains("src/docs/more.txt"), "{listed}");
     assert!(!listed.contains("numbers.txt"), "{listed}");
-    // Only a ZIP archive changes.
+    // A 7z archive takes more and gives some up, but is not renamed in.
     ok(&s.pkw(&["create", "-q", "a.7z", "src"]));
+    ok(&s.pkw(&["add", "-q", "a.7z", "extra.txt", "--into", "src/docs"]));
+    ok(&s.pkw(&["delete", "-q", "a.7z", "src/numbers.txt"]));
+    let listed = ok(&s.pkw(&["list", "a.7z"]));
+    assert!(listed.contains("src/docs/extra.txt"), "{listed}");
+    assert!(!listed.contains("numbers.txt"), "{listed}");
+    ok(&s.pkw(&["test", "-q", "a.7z"]));
     assert_eq!(
-        s.pkw(&["delete", "a.7z", "src/numbers.txt"]).status.code(),
+        s.pkw(&["rename", "a.7z", "src/docs/extra.txt", "more.txt"])
+            .status
+            .code(),
+        Some(1)
+    );
+    // Nor is a tar archive changed.
+    ok(&s.pkw(&["create", "-q", "a.tar.gz", "src"]));
+    assert_eq!(
+        s.pkw(&["delete", "a.tar.gz", "src/docs/notes.txt"])
+            .status
+            .code(),
         Some(1)
     );
 }

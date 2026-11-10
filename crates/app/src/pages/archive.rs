@@ -953,7 +953,7 @@ impl ArchivePage {
                         button("extract", tr!("Extract"), Fill::Accent, Size::Large).px(ui(28.)),
                         || ArchiveEvent::Extract,
                     ))
-                    // A 7z or tar archive has to be written whole again, and
+                    // A tar archive has to be written whole again, and
                     // packwing does not do that yet.
                     .when(
                         reading.is_none()
@@ -1097,6 +1097,17 @@ impl ArchivePage {
                 .is_some_and(|l| packwing_core::can_add(l))
     }
 
+    /// Whether what is selected can be renamed, as it can be deleted: a 7z
+    /// archive's names are not changed yet.
+    fn renamable(&self, cx: &gpui::App) -> bool {
+        self.changeable(cx)
+            && self.selected.len() == 1
+            && self
+                .archive()
+                .and_then(|a| a.listing.as_ref())
+                .is_some_and(|l| packwing_core::can_rename(l))
+    }
+
     /// The entry selected, when there is one alone.
     fn one_selected(&self) -> Option<&Entry> {
         match (self.current(), self.selected.len()) {
@@ -1129,7 +1140,7 @@ impl ArchivePage {
                 (path, e.kind == Kind::Folder)
             });
         let changeable = self.changeable(cx);
-        let one = self.selected.len() == 1;
+        let renamable = self.renamable(cx);
         deferred(
             anchored()
                 .position(at)
@@ -1165,7 +1176,7 @@ impl ArchivePage {
                         }))
                         .when(changeable, |d| {
                             d.child(line())
-                                .when(one, |d| {
+                                .when(renamable, |d| {
                                     d.child(item("menu-rename", tr!("Rename"), "F2", || {
                                         ArchiveEvent::Rename
                                     }))
@@ -1190,9 +1201,7 @@ impl ArchivePage {
                 self.menu_at = None;
                 cx.notify();
             }
-            "f2" if self.changeable(cx) && self.selected.len() == 1 => {
-                cx.emit(ArchiveEvent::Rename)
-            }
+            "f2" if self.renamable(cx) => cx.emit(ArchiveEvent::Rename),
             "delete" if self.changeable(cx) => cx.emit(ArchiveEvent::Delete),
             _ => return,
         }

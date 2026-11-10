@@ -269,7 +269,7 @@ enum Command {
         #[arg(long, value_name = "N", default_value_t = 0)]
         min: usize,
     },
-    /// Add files and folders to a ZIP archive.
+    /// Add files and folders to a ZIP or 7z archive.
     Add {
         archive: PathBuf,
         #[arg(required = true)]
@@ -281,7 +281,7 @@ enum Command {
         #[arg(long, value_name = "WHAT", default_value = "stop")]
         on_existing: String,
     },
-    /// Delete files or folders from a ZIP archive.
+    /// Delete files or folders from a ZIP or 7z archive.
     #[command(visible_alias = "rm")]
     Delete {
         archive: PathBuf,

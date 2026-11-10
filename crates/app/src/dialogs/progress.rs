@@ -456,7 +456,9 @@ impl ProgressDialog {
             }
             if let Some((archive, _, edit)) = edit {
                 match edit {
-                    Editing::Delete(picked) => packwing_core::delete(&archive, &picked, &keys)?,
+                    Editing::Delete(picked) => {
+                        packwing_core::delete(&archive, &picked, &keys, &control)?
+                    }
                     Editing::Rename { from, to } => {
                         packwing_core::rename(&archive, &from, &to, &keys)?
                     }

@@ -52,8 +52,9 @@ pub use convert::{Converted, convert};
 pub use create::{
     Blocks, COMPRESSED_EXTENSIONS, FRAME_SIZE, Frames, Keep, Kind, Level, Measured, NewArchive,
     OnExisting, Route, SEVERAL_FRAMES_FROM, Times, add, add_with, age_key_is_post_quantum,
-    age_key_problem, age_keys_in, can_add, create, create_on, delete, free_archive_path, measure,
-    memory_needed, memory_warning, refused_by, rename, route, within_memory,
+    age_key_problem, age_keys_in, can_add, can_rename, create, create_on, delete,
+    free_archive_path, measure, memory_needed, memory_warning, refused_by, rename, route,
+    within_memory,
 };
 pub use filter::Filter;
 pub use hivepack::extract::{

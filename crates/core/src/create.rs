@@ -8,9 +8,11 @@
 //! reading it could wait for ever. A tar archive's owners are left out too:
 //! its files may go to someone with other users.
 //!
-//! Files are added to a ZIP archive by writing it anew beside itself, read
-//! back, and only then put in its place: if anything goes wrong, it is as it
-//! was.
+//! Files are added to a ZIP or 7z archive, or deleted from it, by writing it
+//! anew beside itself, read back, and only then put in its place: if anything
+//! goes wrong, it is as it was. A 7z archive's folders that lose nothing are
+//! copied as they are, compressed data and all; what is compressed again is
+//! compressed as the archive says it was, where it says ([`like_7z`]).
 
 use packwing_i18n::tr;
 use packwing_policy::{Method, Policy, Refused};
@@ -1587,10 +1589,12 @@ fn write_7z<W: Write + Seek>(
                 }
             }
         });
-        let written = fill_7z(&items, new, tally, &mut archive).and_then(|()| {
-            archive.archive.finish()?;
-            Ok(())
-        });
+        let store = new.level == Level::Store;
+        let written =
+            fill_7z(&items, store, &new.stored_extensions, tally, &mut archive).and_then(|()| {
+                archive.archive.finish()?;
+                Ok(())
+            });
         ending.store(true, Ordering::Relaxed);
         written
     })
@@ -1620,10 +1624,12 @@ impl<W: Write + Seek> Write for Holding<'_, W> {
     }
 }
 
-/// Writes `items` into `archive`, but for its end.
+/// Writes `items` into `archive`, but for its end: all as they are if `store`,
+/// else those with `stored_extensions` as they are, last.
 fn fill_7z<W: Write + Seek>(
     items: &[Item],
-    new: &NewArchive,
+    store: bool,
+    stored_extensions: &[String],
     tally: &Tally,
     holding: &mut Holding<'_, W>,
 ) -> Result<(), Error> {
@@ -1631,9 +1637,7 @@ fn fill_7z<W: Write + Seek>(
     // What is compressed already comes last, stored in a folder of its own, and
     // the rest stays together in one, which compresses it best.
     let (stored, squeezed): (Vec<&Item>, Vec<&Item>) = items.iter().partition(|item| {
-        new.level != Level::Store
-            && item.metadata.is_file()
-            && has_extension_in(&item.name, &new.stored_extensions)
+        !store && item.metadata.is_file() && has_extension_in(&item.name, stored_extensions)
     });
     for (i, item) in squeezed.iter().chain(&stored).enumerate() {
         let archive = &mut holding.archive;
@@ -2256,13 +2260,20 @@ fn why(result: Result<(), Error>, tally: &Tally) -> Result<(), Error> {
     }
 }
 
-/// Whether files can be added to the archive listed: a ZIP archive that is one
-/// file, under no layers. A 7z or tar archive would be written whole again, and
-/// a compressed one is a stream that has no place to add to.
+/// Whether files can be added to the archive listed, and deleted from it: a
+/// ZIP or 7z archive that is one file, under no layers. A tar archive would be
+/// written whole again, and a compressed one is a stream that has no place to
+/// add to.
 pub fn can_add(listing: &Listing) -> bool {
-    listing.container == Container::Zip
+    matches!(listing.container, Container::Zip | Container::SevenZip)
         && listing.layers.is_empty()
         && volume_paths(&listing.folder.join(&listing.name)).len() == 1
+}
+
+/// Whether what the archive listed holds can be renamed: a ZIP archive's, as
+/// [`can_add`] says. A 7z archive's names are not changed yet.
+pub fn can_rename(listing: &Listing) -> bool {
+    listing.container == Container::Zip && can_add(listing)
 }
 
 /// What to do with a file whose name an archive holds already.
@@ -2287,14 +2298,16 @@ pub fn add(
     add_with(paths, archive, folder, OnExisting::Stop, &[], keys, control)
 }
 
-/// Whether the archive at `path` is one that can be changed: a ZIP archive of
-/// one file, under no layers.
-fn can_change(archive: &Path, keys: &Keys) -> Result<bool, Error> {
+/// The archive at `path`, if it is one that can be changed, as [`can_add`]
+/// says: ZIP or 7z, of one file, under no layers.
+fn changeable(archive: &Path, keys: &Keys) -> Result<Option<Container>, Error> {
     let source = crate::Source::from(archive);
     let opened = opener(&source, keys).open()?;
-    Ok(opened.container() == Container::Zip
+    let container = opened.container();
+    Ok((matches!(container, Container::Zip | Container::SevenZip)
         && opened.layers().is_empty()
         && volume_paths(archive).len() == 1)
+        .then_some(container))
 }
 
 /// Writes `za`, with its changes, beside the archive at `archive`, reads it back
@@ -2349,10 +2362,18 @@ fn entries_of<R: ReadAt>(za: &Archive<R>) -> Result<Vec<(u64, Vec<String>, bool)
     Ok(entries)
 }
 
-/// Deletes `picked` from the ZIP archive at `archive`, files or folders by their
-/// paths in it, each with what is under it. All of it cannot go: an archive of
-/// nothing is not one.
-pub fn delete(archive: &Path, picked: &[Vec<String>], keys: &Keys) -> Result<(), Error> {
+/// Deletes `picked` from the ZIP or 7z archive at `archive`, files or folders by
+/// their paths in it, each with what is under it. All of it cannot go: an
+/// archive of nothing is not one. A 7z archive's folder that loses some of its
+/// files is decompressed and compressed again, which takes as long as its
+/// size: `control` tells how far, and stops it. If this fails or is stopped,
+/// the archive is as it was.
+pub fn delete(
+    archive: &Path,
+    picked: &[Vec<String>],
+    keys: &Keys,
+    control: &Control,
+) -> Result<(), Error> {
     let job = audit::begin(
         "delete",
         audit::fields([
@@ -2364,16 +2385,25 @@ pub fn delete(archive: &Path, picked: &[Vec<String>], keys: &Keys) -> Result<(),
             ),
         ]),
     )?;
-    let result = delete_in(archive, picked, keys);
+    let result = delete_in(archive, picked, keys, control);
     audit::end(job, &result, |_| Map::new());
     result
 }
 
-fn delete_in(archive: &Path, picked: &[Vec<String>], keys: &Keys) -> Result<(), Error> {
-    if !can_change(archive, keys)? {
-        return Err(Error::Failed(tr!(
-            "packwing can change only a ZIP archive that is one file."
-        )));
+fn delete_in(
+    archive: &Path,
+    picked: &[Vec<String>],
+    keys: &Keys,
+    control: &Control,
+) -> Result<(), Error> {
+    match changeable(archive, keys)? {
+        Some(Container::SevenZip) => return delete_7z(archive, picked, keys, control),
+        Some(_) => {}
+        None => {
+            return Err(Error::Failed(tr!(
+                "packwing can change only a ZIP or 7z archive that is one file."
+            )));
+        }
     }
     let mut za = Archive::open(File::open(archive)?, OpenFlags::CHECKCONS)?;
     let entries = entries_of(&za)?;
@@ -2382,18 +2412,24 @@ fn delete_in(archive: &Path, picked: &[Vec<String>], keys: &Keys) -> Result<(), 
         .filter(|(_, path, _)| picked.iter().any(|p| path.starts_with(p)))
         .map(|(i, _, _)| *i)
         .collect();
-    if gone.is_empty() {
-        return Err(Error::Failed(tr!("That is not in the archive.")));
-    }
-    if gone.len() == entries.len() {
-        return Err(Error::Failed(tr!(
-            "That is all the archive holds. Delete the archive itself instead."
-        )));
-    }
+    deletable(gone.len(), entries.len())?;
     for i in &gone {
         za.delete(*i)?;
     }
     replace_with(za, archive, (entries.len() - gone.len()) as u64, |r| r)
+}
+
+/// Whether `gone` entries of `all` can be deleted: some, not all.
+fn deletable(gone: usize, all: usize) -> Result<(), Error> {
+    if gone == 0 {
+        return Err(Error::Failed(tr!("That is not in the archive.")));
+    }
+    if gone == all {
+        return Err(Error::Failed(tr!(
+            "That is all the archive holds. Delete the archive itself instead."
+        )));
+    }
+    Ok(())
 }
 
 /// Renames the file or folder at `from` in the ZIP archive at `archive` to `to`,
@@ -2413,7 +2449,7 @@ pub fn rename(archive: &Path, from: &[String], to: &str, keys: &Keys) -> Result<
 }
 
 fn rename_in(archive: &Path, from: &[String], to: &str, keys: &Keys) -> Result<(), Error> {
-    if !can_change(archive, keys)? {
+    if changeable(archive, keys)? != Some(Container::Zip) {
         return Err(Error::Failed(tr!(
             "packwing can change only a ZIP archive that is one file."
         )));
@@ -2512,11 +2548,11 @@ fn add_into(
     keys: &Keys,
     control: &Control,
 ) -> Result<(), Error> {
-    if !can_change(archive, keys)? {
+    let Some(container) = changeable(archive, keys)? else {
         return Err(Error::Failed(tr!(
-            "packwing can add files only to a ZIP archive that is one file."
+            "packwing can add files only to a ZIP or 7z archive that is one file."
         )));
-    }
+    };
     let mut items = items_of(paths, control)?;
     let inside = archive.canonicalize()?;
     let mut prefix = folder.join("/");
@@ -2529,35 +2565,36 @@ fn add_into(
         }
         item.name.insert_str(0, &prefix);
     }
-
-    let mut za = Archive::open(File::open(archive)?, OpenFlags::CHECKCONS)?;
-    let (mut files, mut dirs) = (HashMap::new(), HashSet::new());
-    let mut encrypted = None;
-    for i in 0..za.get_num_entries(Flags::NONE) {
-        let stat = za.stat_index(i, Flags::NONE)?;
-        let name = String::from_utf8_lossy(stat.name.unwrap_or_default()).into_owned();
-        if !name.ends_with('/') {
-            if stat.encryption_method != em::NONE {
-                encrypted = encrypted.or(Some(i));
-            }
-            files.insert(name.clone(), i);
-        }
-        // Its folders, which it may hold only by implication.
-        let mut end = 0;
-        while let Some(slash) = name[end..].find('/') {
-            end += slash + 1;
-            dirs.insert(name[..end - 1].to_owned());
-        }
+    match container {
+        Container::SevenZip => add_7z(
+            items,
+            archive,
+            on_existing,
+            stored_extensions,
+            keys,
+            control,
+        ),
+        _ => add_zip(
+            items,
+            archive,
+            on_existing,
+            stored_extensions,
+            keys,
+            control,
+        ),
     }
-    let policy = packwing_policy::current();
-    let obeying = policy.check_adding(encrypted.is_some()).and_then(|()| {
-        // What is added to encrypted files is encrypted as they are.
-        match encrypted {
-            Some(_) => policy.check_method(Some(Method::ZipAes256)),
-            None => Ok(()),
-        }
-    });
-    obeying.map_err(|why| Error::Failed(why.to_string()))?;
+}
+
+/// Of `items`, those to add to an archive whose files are `files`, by name to
+/// their indexes, and whose folders are `dirs`, as `on_existing` says; and the
+/// files of the archive they replace. A file where there is a folder, or the
+/// other way, always stops it.
+fn sorted_out<I: Copy>(
+    items: Vec<Item>,
+    files: &HashMap<String, I>,
+    dirs: &HashSet<String>,
+    on_existing: OnExisting,
+) -> Result<(Vec<Item>, Vec<I>), Error> {
     let mut new = Vec::new();
     let mut replaced = Vec::new();
     for item in items {
@@ -2584,6 +2621,75 @@ fn add_into(
             new.push(item);
         }
     }
+    Ok((new, replaced))
+}
+
+/// The folders `name` is in, by implication: `a` and `a/b` of `a/b/c`.
+fn folders_above(name: &str, dirs: &mut HashSet<String>) {
+    let mut end = 0;
+    while let Some(slash) = name[end..].find('/') {
+        end += slash + 1;
+        dirs.insert(name[..end - 1].to_owned());
+    }
+}
+
+/// The policy's word on adding to an archive, encrypted or not: what is added
+/// to encrypted files is encrypted as they are, with `method`.
+fn adding_allowed(encrypted: bool, method: Method) -> Result<(), Error> {
+    let policy = packwing_policy::current();
+    policy
+        .check_adding(encrypted)
+        .and_then(|()| match encrypted {
+            true => policy.check_method(Some(method)),
+            false => Ok(()),
+        })
+        .map_err(|why| Error::Failed(why.to_string()))
+}
+
+/// The progress of adding `new` and writing again `kept`, files and bytes,
+/// told once.
+fn adding_tally(new: &[Item], kept: (u64, u64), control: &Control) -> Arc<Tally> {
+    let mut progress = Progress::default();
+    let counted = measured(new);
+    progress.total_entries = counted.files + kept.0;
+    progress.total_bytes = counted.bytes + kept.1;
+    control.report(&progress);
+    Arc::new(Tally {
+        control: control.clone(),
+        progress: Mutex::new(progress),
+        failed: Mutex::new(None),
+        gone: Mutex::new(Vec::new()),
+        zip_gone: AtomicBool::new(false),
+        behind: Arc::new(AtomicU64::new(0)),
+        told: AtomicU64::new(0),
+    })
+}
+
+fn add_zip(
+    items: Vec<Item>,
+    archive: &Path,
+    on_existing: OnExisting,
+    stored_extensions: &[String],
+    keys: &Keys,
+    control: &Control,
+) -> Result<(), Error> {
+    let mut za = Archive::open(File::open(archive)?, OpenFlags::CHECKCONS)?;
+    let (mut files, mut dirs) = (HashMap::new(), HashSet::new());
+    let mut encrypted = None;
+    for i in 0..za.get_num_entries(Flags::NONE) {
+        let stat = za.stat_index(i, Flags::NONE)?;
+        let name = String::from_utf8_lossy(stat.name.unwrap_or_default()).into_owned();
+        if !name.ends_with('/') {
+            if stat.encryption_method != em::NONE {
+                encrypted = encrypted.or(Some(i));
+            }
+            files.insert(name.clone(), i);
+        }
+        // Its folders, which it may hold only by implication.
+        folders_above(&name, &mut dirs);
+    }
+    adding_allowed(encrypted.is_some(), Method::ZipAes256)?;
+    let (new, replaced) = sorted_out(items, &files, &dirs, on_existing)?;
     if new.is_empty() {
         return Ok(());
     }
@@ -2601,21 +2707,7 @@ fn add_into(
         getrandom::fill(buffer).map_err(io::Error::other)
     })));
 
-    let mut progress = Progress::default();
-    let counted = measured(&new);
-    progress.total_entries = counted.files;
-    progress.total_bytes = counted.bytes;
-    let tally = Arc::new(Tally {
-        control: control.clone(),
-        progress: Mutex::new(progress),
-        failed: Mutex::new(None),
-        gone: Mutex::new(Vec::new()),
-        zip_gone: AtomicBool::new(false),
-        behind: Arc::new(AtomicU64::new(0)),
-        told: AtomicU64::new(0),
-    });
-    control.report(&progress);
-
+    let tally = adding_tally(&new, (0, 0), control);
     let expected = za.get_num_entries(Flags::NONE) + new.len() as u64 - replaced.len() as u64;
     for index in replaced {
         za.delete(index)?;
@@ -2636,6 +2728,558 @@ fn add_into(
         return why(Err(e), &tally);
     }
     replace_with(za, archive, expected, |written| why(written, &tally))
+}
+
+/// A 7z archive to change, opened from its file with the password of `keys`.
+fn open_7z(archive: &Path, keys: &Keys) -> Result<crate::SevenZip<File>, Error> {
+    crate::seven_zip(|| File::open(archive), keys)
+}
+
+/// Whether entry `e` of a 7z archive is one of `picked`, or under one.
+fn picked_in(e: &hivepack::sevenz::Entry, picked: &[Vec<String>]) -> bool {
+    let path = crate::listing::components(&e.name);
+    picked.iter().any(|p| path.starts_with(p))
+}
+
+fn delete_7z(
+    archive: &Path,
+    picked: &[Vec<String>],
+    keys: &Keys,
+    control: &Control,
+) -> Result<(), Error> {
+    let seven = open_7z(archive, keys)?;
+    let gone: HashSet<usize> = seven
+        .archive
+        .entries()
+        .filter(|e| picked_in(e, picked))
+        .map(|e| e.index)
+        .collect();
+    let all = seven.archive.len();
+    deletable(gone.len(), all)?;
+    change_7z(
+        seven,
+        archive,
+        keys,
+        control,
+        &gone,
+        &[],
+        &[],
+        all - gone.len(),
+    )
+}
+
+fn add_7z(
+    items: Vec<Item>,
+    archive: &Path,
+    on_existing: OnExisting,
+    stored_extensions: &[String],
+    keys: &Keys,
+    control: &Control,
+) -> Result<(), Error> {
+    let seven = open_7z(archive, keys)?;
+    let (mut files, mut dirs) = (HashMap::new(), HashSet::new());
+    let mut encrypted = seven.archive.headers_encrypted();
+    for e in seven.archive.entries() {
+        let name = crate::listing::components(&e.name).join("/");
+        if e.is_dir {
+            dirs.insert(name.clone());
+        } else {
+            encrypted |= e.encrypted;
+            files.insert(name.clone(), e.index);
+        }
+        folders_above(&name, &mut dirs);
+    }
+    adding_allowed(encrypted, Method::SevenZipAes256)?;
+    let (new, replaced) = sorted_out(items, &files, &dirs, on_existing)?;
+    if new.is_empty() {
+        return Ok(());
+    }
+    let expected = seven.archive.len() + new.len() - replaced.len();
+    let gone: HashSet<usize> = replaced.into_iter().collect();
+    change_7z(
+        seven,
+        archive,
+        keys,
+        control,
+        &gone,
+        &new,
+        stored_extensions,
+        expected,
+    )
+}
+
+/// Writes the 7z archive `seven`, open from `archive`, again beside it: its
+/// entries but `gone`, then `new`, with `stored_extensions` as they are;
+/// reads it back to see it holds `expected` entries, and puts it in the
+/// archive's place. Its folders that keep all their files are copied as they
+/// are, encrypted or not; one that loses some is decompressed and compressed
+/// again as it was ([`folder_like`]), and what is added as [`like_7z`] says.
+/// If anything fails, or `control` stops it, the archive is as it was.
+#[allow(clippy::too_many_arguments)]
+fn change_7z(
+    mut seven: crate::SevenZip<File>,
+    archive: &Path,
+    keys: &Keys,
+    control: &Control,
+    gone: &HashSet<usize>,
+    new: &[Item],
+    stored_extensions: &[String],
+    expected: usize,
+) -> Result<(), Error> {
+    let source = &mut seven.archive;
+    let keep = |e: &hivepack::sevenz::Entry| !gone.contains(&e.index);
+    // Of each folder, the files kept and all of them.
+    let mut kept_of = vec![(0usize, 0usize); source.folders()];
+    let (mut kept_files, mut kept_bytes) = (0u64, 0u64);
+    let mut encrypted = source.headers_encrypted();
+    for e in source.entries() {
+        encrypted |= e.encrypted;
+        let folder = e.folder.filter(|_| e.has_stream);
+        if let Some(of) = folder.and_then(|f| kept_of.get_mut(f)) {
+            of.1 += 1;
+            of.0 += usize::from(keep(&e));
+        }
+        if keep(&e) && !e.is_dir {
+            kept_files += 1;
+            kept_bytes += e.size;
+        }
+    }
+    let written_again = |f: usize| matches!(kept_of[f], (kept, all) if kept > 0 && kept < all);
+    let decrypted_again = (0..source.folders())
+        .any(|f| written_again(f) && source.folder_coding(f).is_some_and(|c| c.encrypted));
+    // The password, for what is encrypted again or added to encrypted files,
+    // and for names hidden: the one that opens what is there, or what is
+    // added would have another.
+    let password =
+        if source.headers_encrypted() || (encrypted && (!new.is_empty() || decrypted_again)) {
+            let Some(password) = keys.password.as_deref() else {
+                return Err(Error::Locked {
+                    needs: vec![crate::PASSWORD.to_owned()],
+                });
+            };
+            let password = String::from_utf8(password.to_vec())
+                .map_err(|_| Error::Failed(tr!("A password has to be valid Unicode.")))?;
+            if !source.headers_encrypted() {
+                password_opens(source)?;
+            }
+            Some(password)
+        } else {
+            None
+        };
+
+    // Each folder that loses some of its files, compressed again as it was.
+    let mut rewritten: Vec<(usize, Coding7z)> = (0..source.folders())
+        .filter(|&f| written_again(f))
+        .map(|f| match source.folder_coding(f) {
+            Some(coding) => (f, folder_like(&coding)),
+            None => (f, like_7z(source).coding()),
+        })
+        .collect();
+    let rewritten_bytes: u64 = source
+        .entries()
+        .filter(|e| keep(e) && e.has_stream && e.folder.is_some_and(written_again))
+        .map(|e| e.size)
+        .sum();
+    let squeezed: u64 = new
+        .iter()
+        .filter(|i| i.metadata.is_file())
+        .map(|i| i.metadata.len())
+        .sum();
+    let (options, _held) =
+        changed_7z_options(source, password, squeezed + rewritten_bytes, &mut rewritten)?;
+    let tally = adding_tally(new, (kept_files, kept_bytes), control);
+
+    let name = archive.file_name().unwrap_or_default().to_string_lossy();
+    let beside = archive.with_file_name(format!(".{name}.adding"));
+    let (written_to, file) = free_name(&beside, |path| {
+        OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create_new(true)
+            .open(path)
+    })?;
+    let written = write_changed_7z(
+        source,
+        file,
+        options,
+        keep,
+        &rewritten,
+        new,
+        stored_extensions,
+        &tally,
+        kept_files,
+    )
+    .and_then(|file| {
+        file.sync_all()?;
+        drop(file);
+        let back = open_7z(&written_to, keys)?;
+        if back.archive.len() != expected {
+            return Err(Error::Failed(tr!("The archive did not come out whole.")));
+        }
+        drop(back);
+        // Its own file goes before the new one takes its place, as Windows wants.
+        drop(seven);
+        fs::set_permissions(&written_to, fs::metadata(archive)?.permissions())?;
+        fs::rename(&written_to, archive)?;
+        Ok(())
+    });
+    if let Err(e) = why(written, &tally) {
+        let _ = fs::remove_file(&written_to);
+        return Err(e);
+    }
+    Ok(())
+}
+
+/// Writes into `out` what `keep` keeps of `source`, then `new`, and gives
+/// `out` back: the folders kept whole first, then each of `rewritten`
+/// compressed as it says, then what is added as `options` say; what is
+/// copied told as the writer takes it, `kept_files` once it is done, and
+/// what is added as it is read.
+#[allow(clippy::too_many_arguments)]
+fn write_changed_7z(
+    source: &mut hivepack::sevenz::Archive<File>,
+    out: File,
+    mut options: hivepack::sevenz::WriteOptions,
+    keep: impl Fn(&hivepack::sevenz::Entry) -> bool,
+    rewritten: &[(usize, Coding7z)],
+    new: &[Item],
+    stored_extensions: &[String],
+    tally: &Tally,
+    kept_files: u64,
+) -> Result<File, Error> {
+    // As a new archive's: stopped from here while it waits for LZMA2's blocks.
+    let stop = Arc::new(AtomicBool::new(false));
+    options.stop = Some(Arc::clone(&stop));
+    let store = options.method == hivepack::sevenz::Method::Copy;
+    let added = (options.method, options.filter, options.dictionary);
+    let in_rewritten = |e: &hivepack::sevenz::Entry| {
+        e.has_stream && rewritten.iter().any(|(f, _)| e.folder == Some(*f))
+    };
+    // A filter is LZMA's and LZMA2's: with one kept, what is compressed
+    // already is not stored apart, and goes through it with the rest.
+    let stored_extensions = match options.filter {
+        hivepack::sevenz::Filter::None => stored_extensions,
+        _ => &[],
+    };
+    let writer = hivepack::sevenz::Writer::with_options(out, options)?;
+    let progress = writer.progress();
+    let mut holding = Holding {
+        archive: writer,
+        progress: progress.clone(),
+        behind: &tally.behind,
+    };
+    // While it copies, what the writer has taken is what is done but for
+    // what its threads hold; once it is done, what is added is told as it is
+    // read, as a new archive's is.
+    let copying = AtomicBool::new(true);
+    let copied = AtomicU64::new(0);
+    let tell_copied = || {
+        let taken = progress.taken();
+        let before = copied.fetch_max(taken, Ordering::Relaxed);
+        taken.saturating_sub(before)
+    };
+    let ending = AtomicBool::new(false);
+    std::thread::scope(|scope| {
+        scope.spawn(|| {
+            while !ending.load(Ordering::Relaxed) {
+                std::thread::sleep(TICK_EVERY);
+                let held = progress.taken().saturating_sub(progress.compressed());
+                tally.behind.store(held, Ordering::Relaxed);
+                if copying.load(Ordering::Relaxed) {
+                    tally.advance(0, tell_copied());
+                }
+                if tally.going().is_err() {
+                    stop.store(true, Ordering::Relaxed);
+                }
+            }
+        });
+        let archive = &mut holding.archive;
+        let written = archive
+            .copy_from(source, |e| keep(e) && !in_rewritten(e))
+            .and_then(|()| {
+                for &(folder, (method, filter, dictionary)) in rewritten {
+                    archive.set_compression(method, filter, dictionary)?;
+                    archive.copy_from(source, |e| {
+                        keep(e) && e.has_stream && e.folder == Some(folder)
+                    })?;
+                }
+                archive.set_compression(added.0, added.1, added.2)
+            })
+            .map_err(Error::from)
+            .and_then(|()| {
+                copying.store(false, Ordering::Relaxed);
+                tally.advance(kept_files, tell_copied());
+                fill_7z(new, store, stored_extensions, tally, &mut holding)?;
+                Ok(holding.archive.finish()?)
+            });
+        ending.store(true, Ordering::Relaxed);
+        written
+    })
+}
+
+/// Whether the password `source` was given opens its encrypted files, which
+/// 7z keeps nothing else to check it with: the smallest first file of an
+/// encrypted folder decoded, and its CRC checked.
+fn password_opens(source: &mut hivepack::sevenz::Archive<File>) -> Result<(), Error> {
+    let mut smallest: Option<(usize, u64)> = None;
+    let mut seen = HashSet::new();
+    for e in source.entries() {
+        if let Some(folder) = e.folder
+            && e.has_stream
+            && e.encrypted
+            && seen.insert(folder)
+            && smallest.is_none_or(|(_, size)| e.size < size)
+        {
+            smallest = Some((folder, e.size));
+        }
+    }
+    let Some((folder, _)) = smallest else {
+        return Ok(());
+    };
+    let mut files = source.files();
+    loop {
+        match files.next() {
+            Ok(Some(e)) if e.has_stream && e.folder == Some(folder) => {
+                return match io::copy(&mut files, &mut io::sink()) {
+                    Ok(_) => Ok(()),
+                    Err(_) => Err(Error::WrongPassword),
+                };
+            }
+            Ok(Some(e)) if e.folder.is_some() => {
+                files.skip_folder();
+            }
+            Ok(Some(_)) => {}
+            Ok(None) => return Ok(()),
+            Err(_) => return Err(Error::WrongPassword),
+        }
+    }
+}
+
+/// How a changed 7z archive compresses what it writes again, and what is
+/// added to it: as its folders say they were, where those that compress agree
+/// on it, and as packwing makes a new archive for the rest. A 7z archive does
+/// not say its level, which only its dictionary tells of, and not always: so
+/// the dictionary is kept, and the rest is packwing's ([`Level::default`]).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct SevenZipLike {
+    /// The method, where the folders agree on one that packwing writes;
+    /// LZMA2 for one it does not (PPMd, Deflate64, Zstandard). None where they
+    /// do not agree, or all are stored.
+    pub method: Option<hivepack::sevenz::Method>,
+    /// The filter, where the folders that compress agree on one: x86's for
+    /// BCJ2's, which packwing does not write.
+    pub filter: hivepack::sevenz::Filter,
+    /// LZMA's or LZMA2's dictionary, the largest of the folders' that is not
+    /// as large as its folder: 7-Zip cuts the dictionary to the data, which
+    /// then tells nothing of what was asked for.
+    pub dictionary: Option<u32>,
+    /// Each file in a folder of its own, as `7z a -ms=off` makes them.
+    pub each_file_alone: bool,
+    /// The solid blocks' size, where there are more than one of more than one
+    /// file: the largest.
+    pub solid_block_size: Option<u64>,
+}
+
+/// How a folder, or what is added, is compressed: method, filter, and
+/// LZMA's or LZMA2's dictionary.
+type Coding7z = (
+    hivepack::sevenz::Method,
+    hivepack::sevenz::Filter,
+    Option<u32>,
+);
+
+impl SevenZipLike {
+    /// Its method, filter and dictionary: packwing's own method where it has
+    /// none.
+    fn coding(&self) -> Coding7z {
+        let level = Level::default();
+        let own = hivepack::sevenz::Method::Lzma2 { preset: level.xz() };
+        (self.method.unwrap_or(own), self.filter, self.dictionary)
+    }
+}
+
+/// The method packwing writes for `compression`: LZMA2 for those it does not
+/// (PPMd, Deflate64, Zstandard), at packwing's own level.
+fn method_like(compression: hivepack::sevenz::Compression) -> hivepack::sevenz::Method {
+    use hivepack::sevenz::{Compression, Method as M};
+    let level = Level::default();
+    match compression {
+        Compression::Copy => M::Copy,
+        Compression::Lzma => M::Lzma { preset: level.xz() },
+        Compression::BZip2 => M::BZip2 { level: 9 },
+        Compression::Deflate => M::Deflate {
+            level: level.deflate() as i32,
+        },
+        _ => M::Lzma2 { preset: level.xz() },
+    }
+}
+
+/// How a folder written again is compressed: as `coding` says it was, its
+/// method, its filter (x86's for BCJ2's) and its dictionary, cut to its data
+/// or not, as that is the data it holds.
+fn folder_like(coding: &hivepack::sevenz::Coding) -> Coding7z {
+    use hivepack::sevenz::{Compression, Filter};
+    let lzma = matches!(coding.method, Compression::Lzma | Compression::Lzma2);
+    if !lzma {
+        return (method_like(coding.method), Filter::None, None);
+    }
+    let filter = if coding.bcj2 {
+        Filter::X86
+    } else {
+        coding.filter
+    };
+    let dictionary = coding
+        .dictionary
+        .map(|d| d.clamp(SEVEN_ZIP_DICTIONARY.0, SEVEN_ZIP_DICTIONARY.1));
+    (method_like(coding.method), filter, dictionary)
+}
+
+/// What [`SevenZipLike`] reads of `source`.
+pub(crate) fn like_7z<R: Read + Seek>(source: &hivepack::sevenz::Archive<R>) -> SevenZipLike {
+    use hivepack::sevenz::{Compression, Filter};
+    let mut files_in = vec![0usize; source.folders()];
+    for e in source.entries().filter(|e| e.has_stream) {
+        if let Some(n) = e.folder.and_then(|f| files_in.get_mut(f)) {
+            *n += 1;
+        }
+    }
+    // The folders that compress: those stored are what was compressed already.
+    let compressing: Vec<_> = (0..source.folders())
+        .filter_map(|f| Some((source.folder_coding(f)?, source.folder_size(f), files_in[f])))
+        .filter(|(coding, _, _)| coding.method != Compression::Copy)
+        .collect();
+    let mut like = SevenZipLike {
+        method: None,
+        filter: Filter::None,
+        dictionary: None,
+        each_file_alone: compressing.len() > 1 && compressing.iter().all(|(_, _, n)| *n == 1),
+        solid_block_size: None,
+    };
+    let Some((first, _, _)) = compressing.first() else {
+        return like;
+    };
+    if !compressing.iter().all(|(c, _, _)| c.method == first.method) {
+        return like;
+    }
+    let lzma = matches!(first.method, Compression::Lzma | Compression::Lzma2);
+    like.method = Some(method_like(first.method));
+    if lzma {
+        let filter_of = |c: &hivepack::sevenz::Coding| if c.bcj2 { Filter::X86 } else { c.filter };
+        if compressing
+            .iter()
+            .all(|(c, _, _)| filter_of(c) == filter_of(first))
+        {
+            like.filter = filter_of(first);
+        }
+        like.dictionary = compressing
+            .iter()
+            .filter_map(|(c, size, _)| c.dictionary.filter(|d| u64::from(*d) < *size))
+            .max()
+            .map(|d| d.clamp(SEVEN_ZIP_DICTIONARY.0, SEVEN_ZIP_DICTIONARY.1));
+    }
+    let solid: Vec<u64> = compressing
+        .iter()
+        .filter(|(_, _, n)| *n > 1)
+        .map(|(_, size, _)| *size)
+        .collect();
+    if solid.len() > 1 {
+        like.solid_block_size = solid.into_iter().max();
+    }
+    like
+}
+
+/// The dictionaries LZMA's encoder takes, from 4 KiB to 1.5 GiB.
+const SEVEN_ZIP_DICTIONARY: (u32, u32) = (4 << 10, 3 << 29);
+
+/// The options a changed 7z archive is written with: what is added compressed
+/// as [`like_7z`] says, and each of `rewritten` as it says, encrypted with
+/// `password` if given, names too if they were, in as many threads as the
+/// memory there is takes. A dictionary larger than the memory for one encoder
+/// is halved until it fits, down to packwing's own. LZMA2's blocks are cut so
+/// that the `bytes` compressed again and added share the threads, as a delete
+/// is waited for, but none smaller than the largest dictionary, which they
+/// would cut.
+fn changed_7z_options<R: Read + Seek>(
+    source: &hivepack::sevenz::Archive<R>,
+    password: Option<String>,
+    bytes: u64,
+    rewritten: &mut [(usize, Coding7z)],
+) -> Result<(hivepack::sevenz::WriteOptions, crate::memory::Held), Error> {
+    use hivepack::sevenz::{Filter, Lzma2Blocks, Method as M, WriteOptions};
+    let like = like_7z(source);
+    let level = Level::default();
+    let (method, filter, dictionary) = like.coding();
+    let mut options = WriteOptions {
+        method,
+        filter,
+        dictionary,
+        encrypt_headers: source.headers_encrypted() && password.is_some(),
+        password,
+        random_source: Some(Arc::new(|buffer: &mut [u8]| {
+            getrandom::fill(buffer).map_err(io::Error::other)
+        })),
+        ..WriteOptions::default()
+    };
+    if like.each_file_alone {
+        options.solid_block_size = None;
+    } else if let Some(size) = like.solid_block_size {
+        options.solid_block_size = Some(size);
+    }
+    let own = LzmaOptions::preset(level.xz()).map_or(0, |o| o.dict_size);
+    let budget = crate::memory::budget();
+    let fitting = |(method, filter, mut dictionary): Coding7z| {
+        let mut probe = WriteOptions {
+            method,
+            filter,
+            dictionary,
+            ..WriteOptions::default()
+        };
+        while let Some(d) = dictionary
+            && d > own
+            && probe.memory_usage(1).unwrap_or(u64::MAX) > budget
+        {
+            dictionary = Some((d / 2).max(own));
+            probe.dictionary = dictionary;
+        }
+        (method, filter, dictionary)
+    };
+    (options.method, options.filter, options.dictionary) =
+        fitting((options.method, options.filter, options.dictionary));
+    for (_, coding) in rewritten.iter_mut() {
+        *coding = fitting(*coding);
+    }
+
+    let lzma = |m: &M| matches!(m, M::Lzma { .. } | M::Lzma2 { .. });
+    let largest = rewritten
+        .iter()
+        .map(|(_, c)| *c)
+        .chain([(options.method, options.filter, options.dictionary)])
+        .filter(|(m, _, _)| lzma(m))
+        .map(|(_, _, d)| u64::from(d.unwrap_or(own)))
+        .max();
+    let threads = u64::from(crate::threads().count().max(1));
+    if let Some(largest) = largest {
+        let block = bytes
+            .div_ceil(threads)
+            .clamp(largest, largest * 4)
+            .next_multiple_of(1 << 20)
+            .min(1 << 30);
+        options.lzma2_blocks = Lzma2Blocks::Size(block);
+    }
+    // The threads, for the largest dictionary's.
+    let probe = WriteOptions {
+        method: M::Lzma2 { preset: level.xz() },
+        filter: Filter::None,
+        dictionary: largest.and_then(|d| u32::try_from(d).ok()),
+        ..options.clone()
+    };
+    let (threads, held) = crate::memory::hold_threads(crate::threads().count(), |n| {
+        let usage = |o: &WriteOptions| o.memory_usage(n).unwrap_or(0);
+        usage(&options).max(if largest.is_some() { usage(&probe) } else { 0 })
+    });
+    options.threads = hivepack::Threads::of(threads);
+    options.memory_limit = held.bytes();
+    Ok((options, held))
 }
 
 /// Makes an archive of `paths`, each with what is under it, named after
