@@ -1,5 +1,5 @@
-//! Where packwing is extracting a tar archive into a folder, noted while it
-//! does. hivepack reads such an archive once, into a private folder it makes
+//! Where packwing is extracting a tar, cpio or XAR archive into a folder,
+//! noted while it does. hivepack reads such an archive once, into a private folder it makes
 //! in the destination, and moves the entries into place at the end. A
 //! process that ends without removing that folder (a crash, the power) leaves
 //! it there: hivepack removes it itself when it extracts into the same place

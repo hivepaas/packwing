@@ -855,8 +855,8 @@ fn a_7z_archive_needs_its_password() {
 #[test]
 fn a_damaged_cpio_or_7z_archive_fails_and_writes_nothing() {
     let s = Scratch::new();
-    // A cpio archive cut in its last file's data: the first reading reads
-    // it, before anything is written.
+    // A cpio archive cut in its last file's data: read once, the cut is met
+    // before anything moves into place.
     let mut cpio = newc(&sample());
     let at = cpio.windows(10).position(|w| w == b"# Read me\n").unwrap();
     cpio.truncate(at + 4);
@@ -1600,4 +1600,79 @@ fn a_file_split_joins_back_as_it_was() {
     std::fs::write(&parts[1], b"short").unwrap();
     assert!(matches!(parts_of(&parts[0]), Err(Error::Failed(_))));
     assert!(matches!(parts_of(&file), Err(Error::Failed(_))));
+}
+
+/// An RPM package's payload and a macOS package into a folder are read once,
+/// as a tar archive is: until their entries are checked, how far it is, is
+/// told from the archive's bytes read, against its size; what is told never
+/// goes back, ends at all of it, and no private folder is left.
+#[test]
+fn a_cpio_or_a_package_extracted_tells_how_far_through_the_archive() {
+    let s = Scratch::new();
+    // Data that does not compress, so that the archive is as large.
+    let mut seed = 7u64;
+    let mut noise = |n: usize| -> Vec<u8> {
+        (0..n)
+            .map(|_| {
+                seed = seed.wrapping_mul(6_364_136_223_846_793_005).wrapping_add(1);
+                (seed >> 56) as u8
+            })
+            .collect()
+    };
+    let files: Vec<Vec<u8>> = (0..4).map(|_| noise(1 << 20)).collect();
+    let names = ["a", "b", "c", "d"];
+    let entries: Vec<(&str, &[u8])> = names
+        .iter()
+        .copied()
+        .zip(files.iter().map(Vec::as_slice))
+        .collect();
+    let all = 4 << 20;
+    for (name, data, written) in [
+        ("big.rpm", rpm(&zstd(&newc(&entries))), names.to_vec()),
+        (
+            "tiny.pkg",
+            image("tiny.pkg"),
+            vec!["Bom", "PackageInfo", "Payload"],
+        ),
+    ] {
+        let path = s.file(name, &data);
+        let size = data.len() as u64;
+        let told = Arc::new(Mutex::new(Vec::new()));
+        let keep = told.clone();
+        let control = Control {
+            progress: Some(Arc::new(move |p: &Progress| {
+                keep.lock().unwrap().push((p.bytes, p.total_bytes));
+            })),
+            ..Control::default()
+        };
+        let out = s.0.join(format!("out-{name}"));
+        extract(&path, &out, &Keys::default(), &control).unwrap();
+        let told = told.lock().unwrap();
+        assert!(
+            told.iter().any(|&(_, total)| total == size),
+            "{name}: {told:?}"
+        );
+        let fractions: Vec<f64> = told
+            .iter()
+            .filter(|&&(_, total)| total > 0)
+            .map(|&(bytes, total)| bytes as f64 / total as f64)
+            .collect();
+        assert!(
+            fractions.windows(2).all(|w| w[1] >= w[0]),
+            "{name}: {fractions:?}"
+        );
+        let last = *told.last().unwrap();
+        assert_eq!(last.0, last.1, "{name}");
+        let mut left: Vec<_> = std::fs::read_dir(&out)
+            .unwrap()
+            .flatten()
+            .map(|e| e.file_name().to_string_lossy().into_owned())
+            .collect();
+        left.sort();
+        assert_eq!(left, written, "{name}");
+        if name == "big.rpm" {
+            assert_eq!(last.1, all);
+            assert!(std::fs::read(out.join("c")).unwrap() == files[2]);
+        }
+    }
 }
