@@ -2422,6 +2422,9 @@ tf6ff23f2 = 圧縮できませんでした：{ $e }
 # {path} is a link, which is kept only on Unix.
 t030316d9 = { $path } はリンクです。リンクは Unix でのみ保持されます。
 
+# Changing this archive writes a new one beside it, which may take up to {need}. Only {free} is free in {folder}.
+ta087fe64 = このアーカイブを変更すると、隣に新しいアーカイブが書き込まれ、最大 { $need } 必要になる場合があります。{ $folder } の空きは { $free } しかありません。
+
 # Nothing changed.
 tedfc294c = 変更はありません。
 
@@ -2436,9 +2439,6 @@ t7530c419 = それはアーカイブにありません。
 
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = アーカイブにはこれしか入っていません。代わりにアーカイブ自体を削除してください。
-
-# packwing can change only a ZIP archive that is one file.
-t48628036 = packwing が変更できるのは、1 つのファイルからなる ZIP アーカイブだけです。
 
 # “{to}” cannot be a name.
 td53e55bf = 「{ $to }」は名前にできません。

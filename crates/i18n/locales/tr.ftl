@@ -2459,6 +2459,9 @@ tf6ff23f2 = Sıkıştırılamadı: { $e }
 # {path} is a link, which is kept only on Unix.
 t030316d9 = { $path } bir bağlantı; bağlantılar yalnızca Unix'te korunur.
 
+# Changing this archive writes a new one beside it, which may take up to {need}. Only {free} is free in {folder}.
+ta087fe64 = Bu arşivi değiştirmek yanına yeni bir arşiv yazar ve bu { $need } kadar yer kaplayabilir. { $folder } içinde yalnızca { $free } boş.
+
 # Nothing changed.
 tedfc294c = Hiçbir şey değişmedi.
 
@@ -2473,9 +2476,6 @@ t7530c419 = Bu arşivde yok.
 
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = Arşivin tuttuğu bunların hepsi. Onun yerine arşivin kendisini silin.
-
-# packwing can change only a ZIP archive that is one file.
-t48628036 = packwing yalnızca tek dosyalık bir ZIP arşivini değiştirebilir.
 
 # “{to}” cannot be a name.
 td53e55bf = “{ $to }” ad olamaz.

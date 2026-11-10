@@ -174,8 +174,7 @@ fn a_7z_archive_of_one_file_takes_more_and_gives_up_some() {
     let archive = made(&s, None, false);
     let listing = list(&archive, &Keys::default()).unwrap();
     assert!(can_add(&listing));
-    assert!(!can_rename(&listing));
-    assert!(rename(&archive, &path_of("Báo cáo/rỗng"), "x", &Keys::default()).is_err());
+    assert!(can_rename(&listing));
     // In parts, it does not.
     let parts = NewArchive {
         kind: Kind::SevenZip,
@@ -734,4 +733,112 @@ fn a_folder_written_again_is_compressed_as_it_was() {
     );
     test(&archive, &none, &Control::default()).unwrap();
     seven_zip_tests(&archive, None);
+}
+
+#[test]
+fn entries_are_renamed_their_folders_copied_as_they_are() {
+    let s = Scratch::new("rename");
+    let archive = made(&s, None, false);
+    let none = Keys::default();
+    let control = Control::default();
+    let before = packed(&archive, None);
+    rename(
+        &archive,
+        &path_of("Báo cáo/ghi chú.txt"),
+        "đã đổi.txt",
+        &none,
+        &control,
+    )
+    .unwrap();
+    // A folder, with what is in it, and an empty one.
+    rename(
+        &archive,
+        &path_of("Báo cáo/Hình ảnh"),
+        "Ảnh",
+        &none,
+        &control,
+    )
+    .unwrap();
+    rename(
+        &archive,
+        &path_of("Báo cáo/trống"),
+        "rỗng tuếch",
+        &none,
+        &control,
+    )
+    .unwrap();
+    assert_eq!(
+        names_in(&archive, &none),
+        [
+            "Báo cáo/rỗng",
+            "Báo cáo/đã nén.zip",
+            "Báo cáo/đã đổi.txt",
+            "Báo cáo/Ảnh/lớn.bin",
+        ]
+    );
+    let sizes = |p: &[(Vec<String>, u64)]| p.iter().map(|(_, s)| *s).collect::<Vec<_>>();
+    assert_eq!(
+        sizes(&packed(&archive, None)),
+        sizes(&before),
+        "copied whole"
+    );
+    let back = opened(&archive, None);
+    let dir = back
+        .entries()
+        .find(|e| e.name == "Báo cáo/rỗng tuếch")
+        .unwrap();
+    assert!(dir.is_dir);
+    let out = s.path("out");
+    extract(&archive, &out, &none, &control).unwrap();
+    assert_eq!(
+        fs::read(out.join("Báo cáo/Ảnh/lớn.bin")).unwrap(),
+        big(3_000_000)
+    );
+    seven_zip_tests(&archive, None);
+
+    let before = fs::read(&archive).unwrap();
+    for bad in ["", "a/b", "a\\b", "..", "rỗng"] {
+        assert!(
+            rename(
+                &archive,
+                &path_of("Báo cáo/đã đổi.txt"),
+                bad,
+                &none,
+                &control
+            )
+            .is_err(),
+            "{bad:?}"
+        );
+    }
+    assert!(rename(&archive, &path_of("không có"), "x", &none, &control).is_err());
+    assert_eq!(fs::read(&archive).unwrap(), before);
+    nothing_left_beside(&s);
+}
+
+#[test]
+fn an_encrypted_archive_is_renamed_in_with_no_password_but_for_its_names() {
+    for hide_names in [false, true] {
+        let s = Scratch::new(&format!("rename-password-{hide_names}"));
+        let archive = made(&s, Some("mật khẩu"), hide_names);
+        let right = keys(Some("mật khẩu"));
+        let control = Control::default();
+        let from = path_of("Báo cáo/ghi chú.txt");
+        if hide_names {
+            let renamed = rename(&archive, &from, "x.txt", &Keys::default(), &control);
+            assert!(matches!(renamed, Err(Error::Locked { .. })), "{renamed:?}");
+            rename(&archive, &from, "x.txt", &right, &control).unwrap();
+            assert!(opened(&archive, Some("mật khẩu")).headers_encrypted());
+        } else {
+            // Its data is copied as it is: no password.
+            rename(&archive, &from, "x.txt", &Keys::default(), &control).unwrap();
+        }
+        let out = s.path("out");
+        extract(&archive, &out, &right, &control).unwrap();
+        assert_eq!(
+            fs::read_to_string(out.join("Báo cáo/x.txt")).unwrap(),
+            "xin chào\n"
+        );
+        seven_zip_tests(&archive, Some("mật khẩu"));
+        nothing_left_beside(&s);
+    }
 }

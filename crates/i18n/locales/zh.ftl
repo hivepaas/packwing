@@ -2422,6 +2422,9 @@ tf6ff23f2 = 无法压缩：{ $e }
 # {path} is a link, which is kept only on Unix.
 t030316d9 = { $path } 是链接，而链接仅在 Unix 上保留。
 
+# Changing this archive writes a new one beside it, which may take up to {need}. Only {free} is free in {folder}.
+ta087fe64 = 修改此压缩包会在旁边写入一个新的压缩包，可能需要多达 { $need }。{ $folder } 中只有 { $free } 可用。
+
 # Nothing changed.
 tedfc294c = 没有任何更改。
 
@@ -2436,9 +2439,6 @@ t7530c419 = 压缩包中没有它。
 
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = 这已是压缩包中的全部内容。请改为删除压缩包本身。
-
-# packwing can change only a ZIP archive that is one file.
-t48628036 = packwing 只能修改单文件的 ZIP 压缩包。
 
 # “{to}” cannot be a name.
 td53e55bf = “{ $to }”不能作为名称。

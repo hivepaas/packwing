@@ -2270,10 +2270,39 @@ pub fn can_add(listing: &Listing) -> bool {
         && volume_paths(&listing.folder.join(&listing.name)).len() == 1
 }
 
-/// Whether what the archive listed holds can be renamed: a ZIP archive's, as
-/// [`can_add`] says. A 7z archive's names are not changed yet.
+/// Whether what the archive listed holds can be renamed: as [`can_add`] says,
+/// a ZIP or 7z archive's.
 pub fn can_rename(listing: &Listing) -> bool {
-    listing.container == Container::Zip && can_add(listing)
+    can_add(listing)
+}
+
+/// Whether there is room beside `archive` for it written again, with `added`
+/// bytes more: a change writes a new archive there before it takes the old
+/// one's place. What cannot be measured is found out by trying.
+fn room_to_change(archive: &Path, added: u64) -> Result<(), Error> {
+    let folder = match archive.parent() {
+        Some(p) if !p.as_os_str().is_empty() => p,
+        _ => Path::new("."),
+    };
+    let size = fs::metadata(archive).map_or(0, |m| m.len());
+    let need = room_needed(size.saturating_add(added));
+    match fs4::available_space(folder) {
+        Ok(free) => no_room_to_change(need, free, folder).map_or(Ok(()), Err),
+        Err(_) => Ok(()),
+    }
+}
+
+/// Why a change whose new archive may take `need` bytes should not start in
+/// `folder`, with `free` bytes free there.
+fn no_room_to_change(need: u64, free: u64, folder: &Path) -> Option<Error> {
+    (free < need).then(|| {
+        Error::Failed(tr!(
+            "Changing this archive writes a new one beside it, which may take up to {need}. Only {free} is free in {folder}.",
+            need = crate::size(need),
+            free = crate::size(free),
+            folder = folder.display()
+        ))
+    })
 }
 
 /// What to do with a file whose name an archive holds already.
@@ -2396,7 +2425,11 @@ fn delete_in(
     keys: &Keys,
     control: &Control,
 ) -> Result<(), Error> {
-    match changeable(archive, keys)? {
+    let container = changeable(archive, keys)?;
+    if container.is_some() {
+        room_to_change(archive, 0)?;
+    }
+    match container {
         Some(Container::SevenZip) => return delete_7z(archive, picked, keys, control),
         Some(_) => {}
         None => {
@@ -2432,9 +2465,17 @@ fn deletable(gone: usize, all: usize) -> Result<(), Error> {
     Ok(())
 }
 
-/// Renames the file or folder at `from` in the ZIP archive at `archive` to `to`,
-/// in the same folder. A name there already stops it.
-pub fn rename(archive: &Path, from: &[String], to: &str, keys: &Keys) -> Result<(), Error> {
+/// Renames the file or folder at `from` in the ZIP or 7z archive at `archive`
+/// to `to`, in the same folder. A name there already stops it. A 7z archive
+/// is written again with every folder copied as it is, which `control` tells
+/// of and stops. If this fails or is stopped, the archive is as it was.
+pub fn rename(
+    archive: &Path,
+    from: &[String],
+    to: &str,
+    keys: &Keys,
+    control: &Control,
+) -> Result<(), Error> {
     let job = audit::begin(
         "rename",
         audit::fields([
@@ -2443,17 +2484,23 @@ pub fn rename(archive: &Path, from: &[String], to: &str, keys: &Keys) -> Result<
             ("to_name", json!(to)),
         ]),
     )?;
-    let result = rename_in(archive, from, to, keys);
+    let result = rename_in(archive, from, to, keys, control);
     audit::end(job, &result, |_| Map::new());
     result
 }
 
-fn rename_in(archive: &Path, from: &[String], to: &str, keys: &Keys) -> Result<(), Error> {
-    if changeable(archive, keys)? != Some(Container::Zip) {
+fn rename_in(
+    archive: &Path,
+    from: &[String],
+    to: &str,
+    keys: &Keys,
+    control: &Control,
+) -> Result<(), Error> {
+    let Some(container) = changeable(archive, keys)? else {
         return Err(Error::Failed(tr!(
-            "packwing can change only a ZIP archive that is one file."
+            "packwing can change only a ZIP or 7z archive that is one file."
         )));
-    }
+    };
     if to.is_empty() || to.contains(['/', '\\']) || to == "." || to == ".." {
         return Err(Error::Failed(tr!("“{to}” cannot be a name.", to = to)));
     }
@@ -2464,6 +2511,10 @@ fn rename_in(archive: &Path, from: &[String], to: &str, keys: &Keys) -> Result<(
     target.push(to.to_owned());
     if target == from {
         return Ok(());
+    }
+    room_to_change(archive, 0)?;
+    if container == Container::SevenZip {
+        return rename_7z(archive, from, &target, keys, control);
     }
     let mut za = Archive::open(File::open(archive)?, OpenFlags::CHECKCONS)?;
     let entries = entries_of(&za)?;
@@ -2565,6 +2616,7 @@ fn add_into(
         }
         item.name.insert_str(0, &prefix);
     }
+    room_to_change(archive, measured(&items).bytes)?;
     match container {
         Container::SevenZip => add_7z(
             items,
@@ -2756,16 +2808,89 @@ fn delete_7z(
         .collect();
     let all = seven.archive.len();
     deletable(gone.len(), all)?;
+    let renamed = HashMap::new();
     change_7z(
         seven,
         archive,
         keys,
         control,
         &gone,
+        &renamed,
         &[],
         &[],
         all - gone.len(),
     )
+}
+
+fn rename_7z(
+    archive: &Path,
+    from: &[String],
+    target: &[String],
+    keys: &Keys,
+    control: &Control,
+) -> Result<(), Error> {
+    let seven = open_7z(archive, keys)?;
+    let to = target.last().map_or("", String::as_str);
+    let mut renamed = HashMap::new();
+    for e in seven.archive.entries() {
+        let path = crate::listing::components(&e.name);
+        if path.starts_with(target) {
+            return Err(Error::Failed(tr!(
+                "“{to}” is already in that folder. Nothing was changed.",
+                to = to
+            )));
+        }
+        if path.starts_with(from)
+            && let Some(name) = renamed_at(&e.name_utf16, from.len() - 1, to)
+        {
+            renamed.insert(e.index, name);
+        }
+    }
+    if renamed.is_empty() {
+        return Err(Error::Failed(tr!("That is not in the archive.")));
+    }
+    let all = seven.archive.len();
+    let gone = HashSet::new();
+    change_7z(
+        seven,
+        archive,
+        keys,
+        control,
+        &gone,
+        &renamed,
+        &[],
+        &[],
+        all,
+    )
+}
+
+/// `name`, in UTF-16 units, with its component `at`, as
+/// [`crate::listing::components`] counts them, `to`: the rest of it, its
+/// separators and what is not text, as it was.
+fn renamed_at(name: &[u16], at: usize, to: &str) -> Option<Vec<u16>> {
+    let slash = u16::from(b'/');
+    let mut parts = Vec::new();
+    let mut start = 0;
+    for (i, &unit) in name.iter().enumerate().chain([(name.len(), &slash)]) {
+        if unit == slash {
+            if i > start {
+                parts.push(start..i);
+            }
+            start = i + 1;
+        }
+    }
+    // A first `.` is not one, as `components` takes it.
+    if parts
+        .first()
+        .is_some_and(|r| name[r.clone()] == [u16::from(b'.')])
+    {
+        parts.remove(0);
+    }
+    let range = parts.get(at)?.clone();
+    let mut renamed = name[..range.start].to_vec();
+    renamed.extend(to.encode_utf16());
+    renamed.extend(&name[range.end..]);
+    Some(renamed)
 }
 
 fn add_7z(
@@ -2796,12 +2921,14 @@ fn add_7z(
     }
     let expected = seven.archive.len() + new.len() - replaced.len();
     let gone: HashSet<usize> = replaced.into_iter().collect();
+    let renamed = HashMap::new();
     change_7z(
         seven,
         archive,
         keys,
         control,
         &gone,
+        &renamed,
         &new,
         stored_extensions,
         expected,
@@ -2809,7 +2936,7 @@ fn add_7z(
 }
 
 /// Writes the 7z archive `seven`, open from `archive`, again beside it: its
-/// entries but `gone`, then `new`, with `stored_extensions` as they are;
+/// entries but `gone`, those of `renamed` by their new names, then `new`, with `stored_extensions` as they are;
 /// reads it back to see it holds `expected` entries, and puts it in the
 /// archive's place. Its folders that keep all their files are copied as they
 /// are, encrypted or not; one that loses some is decompressed and compressed
@@ -2822,6 +2949,7 @@ fn change_7z(
     keys: &Keys,
     control: &Control,
     gone: &HashSet<usize>,
+    renamed: &HashMap<usize, Vec<u16>>,
     new: &[Item],
     stored_extensions: &[String],
     expected: usize,
@@ -2903,6 +3031,7 @@ fn change_7z(
         file,
         options,
         keep,
+        |e: &hivepack::sevenz::Entry| renamed.get(&e.index).cloned(),
         &rewritten,
         new,
         stored_extensions,
@@ -2941,6 +3070,7 @@ fn write_changed_7z(
     out: File,
     mut options: hivepack::sevenz::WriteOptions,
     keep: impl Fn(&hivepack::sevenz::Entry) -> bool,
+    rename: impl Fn(&hivepack::sevenz::Entry) -> Option<Vec<u16>>,
     rewritten: &[(usize, Coding7z)],
     new: &[Item],
     stored_extensions: &[String],
@@ -2995,13 +3125,15 @@ fn write_changed_7z(
         });
         let archive = &mut holding.archive;
         let written = archive
-            .copy_from(source, |e| keep(e) && !in_rewritten(e))
+            .copy_from_renamed(source, |e| keep(e) && !in_rewritten(e), &rename)
             .and_then(|()| {
                 for &(folder, (method, filter, dictionary)) in rewritten {
                     archive.set_compression(method, filter, dictionary)?;
-                    archive.copy_from(source, |e| {
-                        keep(e) && e.has_stream && e.folder == Some(folder)
-                    })?;
+                    archive.copy_from_renamed(
+                        source,
+                        |e| keep(e) && e.has_stream && e.folder == Some(folder),
+                        &rename,
+                    )?;
                 }
                 archive.set_compression(added.0, added.1, added.2)
             })
@@ -3844,6 +3976,12 @@ mod tests {
     fn too_little_room_says_how_much_and_where() {
         let folder = Path::new("/tmp/here");
         assert!(no_room(100, 100, folder).is_none());
+        assert!(no_room_to_change(100, 100, folder).is_none());
+        let said = no_room_to_change(5_000_000, 1_000, folder)
+            .expect("no room")
+            .to_string();
+        assert!(said.contains("beside it"), "{said}");
+        assert!(said.contains("/tmp/here") && said.contains("5 MB"), "{said}");
         let said = no_room(5_000_000, 1_000, folder)
             .expect("no room")
             .to_string();

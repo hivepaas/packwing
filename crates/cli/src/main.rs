@@ -288,7 +288,7 @@ enum Command {
         #[arg(required = true)]
         files: Vec<String>,
     },
-    /// Rename a file or folder in a ZIP archive.
+    /// Rename a file or folder in a ZIP or 7z archive.
     Rename {
         archive: PathBuf,
         file: String,

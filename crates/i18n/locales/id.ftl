@@ -2431,6 +2431,9 @@ tf6ff23f2 = Tidak dapat mengompres: { $e }
 # {path} is a link, which is kept only on Unix.
 t030316d9 = { $path } adalah tautan, yang hanya dipertahankan di Unix.
 
+# Changing this archive writes a new one beside it, which may take up to {need}. Only {free} is free in {folder}.
+ta087fe64 = Mengubah arsip ini menulis arsip baru di sebelahnya, yang bisa memerlukan hingga { $need }. Hanya { $free } yang tersedia di { $folder }.
+
 # Nothing changed.
 tedfc294c = Tidak ada yang berubah.
 
@@ -2445,9 +2448,6 @@ t7530c419 = Itu tidak ada di arsip.
 
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = Hanya itu isi arsip. Hapus arsipnya saja.
-
-# packwing can change only a ZIP archive that is one file.
-t48628036 = packwing hanya dapat mengubah arsip ZIP yang berupa satu berkas.
 
 # “{to}” cannot be a name.
 td53e55bf = “{ $to }” tidak bisa menjadi nama.

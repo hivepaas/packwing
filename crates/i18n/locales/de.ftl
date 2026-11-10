@@ -2459,6 +2459,9 @@ tf6ff23f2 = Komprimieren nicht möglich: { $e }
 # {path} is a link, which is kept only on Unix.
 t030316d9 = { $path } ist ein Link, und Links bleiben nur unter Unix erhalten.
 
+# Changing this archive writes a new one beside it, which may take up to {need}. Only {free} is free in {folder}.
+ta087fe64 = Beim Ändern dieses Archivs wird daneben ein neues geschrieben, das bis zu { $need } brauchen kann. In { $folder } sind nur { $free } frei.
+
 # Nothing changed.
 tedfc294c = Nichts wurde geändert.
 
@@ -2473,9 +2476,6 @@ t7530c419 = Das ist nicht im Archiv.
 
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = Das ist alles, was das Archiv enthält. Lösche stattdessen das Archiv selbst.
-
-# packwing can change only a ZIP archive that is one file.
-t48628036 = packwing kann nur ein ZIP-Archiv ändern, das aus einer Datei besteht.
 
 # “{to}” cannot be a name.
 td53e55bf = „{ $to }“ kann kein Name sein.

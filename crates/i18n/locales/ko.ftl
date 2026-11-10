@@ -2422,6 +2422,9 @@ tf6ff23f2 = 압축할 수 없습니다: { $e }
 # {path} is a link, which is kept only on Unix.
 t030316d9 = { $path }은(는) 링크이며, 링크는 Unix에서만 보존됩니다.
 
+# Changing this archive writes a new one beside it, which may take up to {need}. Only {free} is free in {folder}.
+ta087fe64 = 이 압축 파일을 변경하면 옆에 새 압축 파일이 만들어지며 최대 { $need }이(가) 필요할 수 있습니다. { $folder }에는 { $free }만 남아 있습니다.
+
 # Nothing changed.
 tedfc294c = 변경된 것이 없습니다.
 
@@ -2436,9 +2439,6 @@ t7530c419 = 압축 파일에 없는 항목입니다.
 
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = 압축 파일에 있는 전부입니다. 대신 압축 파일 자체를 삭제하세요.
-
-# packwing can change only a ZIP archive that is one file.
-t48628036 = packwing은 파일 하나로 된 ZIP 압축 파일만 변경할 수 있습니다.
 
 # “{to}” cannot be a name.
 td53e55bf = “{ $to }”은(는) 이름으로 쓸 수 없습니다.

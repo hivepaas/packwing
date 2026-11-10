@@ -460,7 +460,7 @@ impl ProgressDialog {
                         packwing_core::delete(&archive, &picked, &keys, &control)?
                     }
                     Editing::Rename { from, to } => {
-                        packwing_core::rename(&archive, &from, &to, &keys)?
+                        packwing_core::rename(&archive, &from, &to, &keys, &control)?
                     }
                 }
                 return Ok(None);

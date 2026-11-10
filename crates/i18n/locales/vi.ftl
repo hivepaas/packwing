@@ -2422,6 +2422,9 @@ tf6ff23f2 = Không nén được: { $e }
 # {path} is a link, which is kept only on Unix.
 t030316d9 = { $path } là liên kết, chỉ được giữ trên Unix.
 
+# Changing this archive writes a new one beside it, which may take up to {need}. Only {free} is free in {folder}.
+ta087fe64 = Để sửa tệp nén này, packwing ghi một tệp mới bên cạnh, có thể cần tới { $need }. Trong { $folder } chỉ còn trống { $free }.
+
 # Nothing changed.
 tedfc294c = Không có gì thay đổi.
 
@@ -2436,9 +2439,6 @@ t7530c419 = Mục đó không có trong tệp nén.
 
 # That is all the archive holds. Delete the archive itself instead.
 t495f94b1 = Đó là tất cả những gì tệp nén chứa. Hãy xoá chính tệp nén.
-
-# packwing can change only a ZIP archive that is one file.
-t48628036 = packwing chỉ sửa được tệp nén ZIP nếu nó là một tệp.
 
 # “{to}” cannot be a name.
 td53e55bf = “{ $to }” không dùng làm tên được.

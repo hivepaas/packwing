@@ -763,8 +763,11 @@ fn delete_cmd(archive: &Path, files: &[String], cx: &mut Context) -> Result<(), 
 
 fn rename_cmd(archive: &Path, file: &str, name: &str, cx: &mut Context) -> Result<(), Exit> {
     let from = entry_path(file);
-    cx.secrets
-        .unlocking(&named(archive), |keys| rename(archive, &from, name, keys))?;
+    let (control, bar) = crate::progress::control("Renaming", cx.progress);
+    cx.secrets.unlocking(&named(archive), |keys| {
+        rename(archive, &from, name, keys, &control)
+    })?;
+    drop(bar);
     done(cx, format!("renamed in {}", archive.display()))
 }
 
