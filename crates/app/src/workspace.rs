@@ -2375,8 +2375,8 @@ impl Render for Workspace {
                             .pt(ui(top))
                             // The card's right edge is the window buttons'; the
                             // rail's own room keeps it from the left edge.
-                            .pr(ui(12.))
-                            .pb(ui(12.))
+                            .pr(ui(crate::widgets::PANE_GAP))
+                            .pb(ui(crate::widgets::PANE_GAP))
                             .child(page),
                     )
             }

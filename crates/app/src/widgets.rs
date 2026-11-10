@@ -11,6 +11,10 @@ use gpui::{
 use crate::colors::{Tint, colors};
 use crate::text_size::ui;
 
+/// The room between a page's panes, and between the page and the window's
+/// right and bottom edges: one measure, so that they look alike.
+pub const PANE_GAP: f32 = 12.;
+
 /// Monospace fonts, for what is read character by character, the first one
 /// installed.
 const MONO_FONTS: [&str; 8] = [

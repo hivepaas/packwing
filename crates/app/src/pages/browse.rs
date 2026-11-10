@@ -276,7 +276,7 @@ impl Render for BrowsePage {
         let body = match tab {
             Tab::Browse => body
                 .flex()
-                .gap(ui(18.))
+                .gap(ui(crate::widgets::PANE_GAP))
                 .child(
                     panel()
                         .flex_1()
@@ -293,7 +293,7 @@ impl Render for BrowsePage {
             .size_full()
             .flex()
             .flex_col()
-            .gap(ui(14.))
+            .gap(ui(crate::widgets::PANE_GAP))
             .child(top)
             .child(body)
     }

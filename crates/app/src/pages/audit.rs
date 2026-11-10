@@ -1018,7 +1018,7 @@ impl Render for AuditPage {
                     .flex_1()
                     .min_h_0()
                     .flex()
-                    .gap(ui(18.))
+                    .gap(ui(crate::widgets::PANE_GAP))
                     .child(
                         panel()
                             .flex_1()
