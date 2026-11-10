@@ -3981,7 +3981,10 @@ mod tests {
             .expect("no room")
             .to_string();
         assert!(said.contains("beside it"), "{said}");
-        assert!(said.contains("/tmp/here") && said.contains("5 MB"), "{said}");
+        assert!(
+            said.contains("/tmp/here") && said.contains("5 MB"),
+            "{said}"
+        );
         let said = no_room(5_000_000, 1_000, folder)
             .expect("no room")
             .to_string();
