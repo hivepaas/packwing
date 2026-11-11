@@ -14,7 +14,7 @@ use crate::file_manager;
 use crate::model::{Kind, date, size, tag_of};
 use crate::prefs::Opened;
 use crate::text_size::ui;
-use crate::widgets::{menu_item, menu_panel, tile};
+use crate::widgets::{kind_tile, menu_item, menu_panel};
 
 /// What was asked of one of them, by its path: what the page cannot do itself.
 pub enum RecentEvent {
@@ -242,12 +242,15 @@ impl Render for RecentPage {
                         cx.notify();
                     }),
                 )
-                .child(
-                    tile(40., 14., Kind::Archive.tint(&c))
-                        .text_size(ui(11.))
-                        .font_weight(FontWeight::BOLD)
-                        .child(tag_of(&r.name, Kind::Archive)),
-                )
+                // What was opened is an archive, whatever its extension.
+                .child(kind_tile(
+                    Kind::Archive,
+                    tag_of(&r.name, Kind::Archive),
+                    40.,
+                    40.,
+                    14.,
+                    11.,
+                ))
                 .child(
                     div()
                         .flex_1()
