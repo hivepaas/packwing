@@ -510,7 +510,7 @@ impl ArchivePage {
             return;
         }
         let format = picture_format(&entry.name);
-        if format.is_none() && entry.kind != Kind::Text {
+        if format.is_none() && !matches!(entry.kind, Kind::Text | Kind::Other) {
             return;
         }
         let Some(source) = a.source.clone() else {

@@ -19,11 +19,15 @@ pub enum Kind {
     Image,
     Document,
     Sheet,
+    /// Text packwing knows by its extension: notes, logs, settings, markup.
     Text,
+    Video,
     Program,
     Archive,
     /// A symbolic link, whatever its name.
     Link,
+    /// Anything else: an extension packwing does not know, or none.
+    Other,
 }
 
 impl Kind {
@@ -33,7 +37,8 @@ impl Kind {
             Kind::Pdf => c.red_tag,
             Kind::Image | Kind::Document => c.blue_tag,
             Kind::Sheet | Kind::Archive => c.green_tag,
-            Kind::Text => c.plain_tag,
+            Kind::Text | Kind::Other => c.plain_tag,
+            Kind::Video => c.video_tag,
             Kind::Program => c.orange_tag,
             Kind::Link => c.link_tag,
         }
@@ -47,10 +52,10 @@ impl Kind {
             return Kind::Folder;
         }
         match Kind::of_extension(name) {
-            Kind::Text if without_part_number(name) != name => {
+            Kind::Other if without_part_number(name) != name => {
                 match Kind::of_extension(without_part_number(name)) {
                     Kind::Archive => Kind::Archive,
-                    _ => Kind::Text,
+                    _ => Kind::Other,
                 }
             }
             kind => kind,
@@ -71,6 +76,11 @@ impl Kind {
                 Kind::Document
             }
             "xls" | "xlsx" | "ods" | "csv" | "numbers" => Kind::Sheet,
+            "txt" | "md" | "markdown" | "rst" | "log" | "json" | "xml" | "yaml" | "yml"
+            | "toml" | "ini" | "conf" | "cfg" | "html" | "htm" | "css" => Kind::Text,
+            "mp4" | "m4v" | "mkv" | "mov" | "avi" | "webm" | "wmv" | "flv" | "mpg" | "mpeg" => {
+                Kind::Video
+            }
             "exe" | "msi" | "dll" | "app" | "dmg" | "pkg" | "deb" | "rpm" | "sh" | "bat"
             | "cmd" | "ps1" | "js" | "lnk" | "jar" | "apk" => Kind::Program,
             // Java's and Android's run, as the packages above install: packwing
@@ -80,7 +90,7 @@ impl Kind {
             | "cpio" | "xar" | "war" | "ear" | "xpi" | "cbz" | "cbr" | "cb7" | "cbt" => {
                 Kind::Archive
             }
-            _ => Kind::Text,
+            _ => Kind::Other,
         }
     }
 }
@@ -442,14 +452,14 @@ mod tests {
         assert_eq!(tag_of("a.7z.001", Kind::Archive), "7Z");
         assert_eq!(tag_of("b.tar.zst.002", Kind::Archive), "ZST");
         // A part of what is not an archive is not opened as one.
-        assert_eq!(Kind::of("movie.mkv.001", false), Kind::Text);
-        assert_eq!(Kind::of("photo.jpg.001", false), Kind::Text);
-        assert_eq!(tag_of("movie.mkv.001", Kind::Text), "001");
+        assert_eq!(Kind::of("movie.mkv.001", false), Kind::Other);
+        assert_eq!(Kind::of("photo.jpg.001", false), Kind::Other);
+        assert_eq!(tag_of("movie.mkv.001", Kind::Other), "001");
         // Two digits are not a part's number, nor a name ending in a dot.
-        assert_eq!(Kind::of("a.7z.01", false), Kind::Text);
-        assert_eq!(Kind::of("a.7z.", false), Kind::Text);
+        assert_eq!(Kind::of("a.7z.01", false), Kind::Other);
+        assert_eq!(Kind::of("a.7z.", false), Kind::Other);
         assert_eq!(Kind::of("a.7z", false), Kind::Archive);
-        assert_eq!(Kind::of("2026.001", false), Kind::Text);
+        assert_eq!(Kind::of("2026.001", false), Kind::Other);
     }
 
     fn holding(paths: &[(&str, bool)]) -> Archive {
@@ -610,7 +620,12 @@ mod tests {
         assert_eq!(stem("ứng dụng.war"), "ứng dụng");
         assert_eq!(stem("truyện.cbz"), "truyện");
         assert_eq!(stem("sao lưu.tlz4"), "sao lưu");
-        assert_eq!(Kind::of("Makefile", false), Kind::Text);
+        assert_eq!(Kind::of("Makefile", false), Kind::Other);
+        assert_eq!(Kind::of("session.dat", false), Kind::Other);
+        assert_eq!(Kind::of("README.md", false), Kind::Text);
+        assert_eq!(Kind::of("server.LOG", false), Kind::Text);
+        assert_eq!(Kind::of("teaser.mp4", false), Kind::Video);
+        assert_eq!(Kind::of("Phim.MKV", false), Kind::Video);
         assert_eq!(Kind::of("docs", true), Kind::Folder);
     }
 

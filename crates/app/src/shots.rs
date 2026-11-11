@@ -546,6 +546,10 @@ fn sample_storage() -> PathBuf {
         ("notes.pdf", 1_400_000),
         ("deploy.sh", 840),
         ("hero.png", 480_000),
+        // A file of every group the list draws a shape for, and one of none.
+        ("launch-teaser.mp4", 86_300_000),
+        ("q3-costs.xlsx", 64_000),
+        ("session.dat", 12_000),
     ] {
         let f = std::fs::File::create(dir.join(name)).expect("cannot write");
         f.set_len(bytes as u64).expect("cannot size");

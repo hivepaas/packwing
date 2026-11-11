@@ -94,6 +94,8 @@ pub struct Palette {
     pub green_tag: Tint,
     pub plain_tag: Tint,
     pub orange_tag: Tint,
+    /// A video's: rose, a colour no other kind has.
+    pub video_tag: Tint,
     /// A symbolic link's.
     pub link_tag: Tint,
 }
@@ -152,13 +154,18 @@ pub const LIGHT: Palette = Palette {
         ground: 0xcdebdd,
         ink: 0x0b3b2a,
     },
+    // A shade off `chosen`, so that a chosen row's tile still shows.
     plain_tag: Tint {
-        ground: 0xe2ece6,
+        ground: 0xd5e1da,
         ink: 0x2c3a33,
     },
     orange_tag: Tint {
         ground: 0xffe1cc,
         ink: 0x5a2e0c,
+    },
+    video_tag: Tint {
+        ground: 0xfbdaea,
+        ink: 0x6b1a48,
     },
     link_tag: Tint {
         ground: 0xe8defc,
@@ -222,13 +229,18 @@ pub const DARK: Palette = Palette {
         ground: 0x1b4747,
         ink: 0xb3eee4,
     },
+    // A shade off `chosen`, so that a chosen row's tile still shows.
     plain_tag: Tint {
-        ground: 0x212a33,
+        ground: 0x2b3540,
         ink: 0xcbd3db,
     },
     orange_tag: Tint {
         ground: 0x55391f,
         ink: 0xffdcc2,
+    },
+    video_tag: Tint {
+        ground: 0x4f2340,
+        ink: 0xffd8ee,
     },
     link_tag: Tint {
         ground: 0x352a57,
@@ -326,6 +338,7 @@ mod tests {
                 p.green_tag,
                 p.plain_tag,
                 p.orange_tag,
+                p.video_tag,
                 p.link_tag,
             ] {
                 assert!(contrast(t.ink, t.ground) >= 4.5, "{t:?}");

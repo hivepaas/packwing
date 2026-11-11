@@ -150,6 +150,15 @@ const ICONS: &[(&str, &[u8])] = icons![
     // A folder's tile in a list: its outline, then its front edge.
     "folder-tile",
     "folder-tile-edge",
+    // A file's, by its group: its shape, then the detail drawn on it.
+    "file-archive",
+    "file-archive-detail",
+    "file-document",
+    "file-document-detail",
+    "file-frame",
+    "file-image-detail",
+    "file-program-detail",
+    "file-video",
     "home",
     "image",
     "jobs",
