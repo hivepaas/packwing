@@ -18,6 +18,10 @@ packwing-core's tests read them.
   package's one file is `Payload/usr/local/share/example/readme.txt`, in a
   cpio archive under gzip.
 
+- `tiny.rpm`: libarchive 3.8.10's `cpio_svr4_gzip_rpm.rpm` test package
+  (BSD-2-Clause, Copyright (c) 2003-2011 Tim Kientzle and others): its payload,
+  `etc/file1` to `etc/file3`, a newc cpio archive under gzip.
+
 - `notes.tar.zst.age`: a tar archive (`docs/notes.txt`, `docs/data.bin`)
   under zstd, encrypted by age v1.3.2 to the passphrase `password` at
   work factor 10: hivepack-rs's `testdata/oracle/open.txt`, its first file

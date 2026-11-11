@@ -29,17 +29,16 @@ pub const ID: &str = "packwing";
 /// bytes, so what is a ZIP, a RAR or a 7z archive under another name opens as
 /// one: Java's jar, war and ear, Android's apk, Firefox's xpi, an epub book, a
 /// comic book (cbz, cbr, cb7, cbt). `iso` is a disc image, ISO 9660 or UDF;
-/// `rpm` a package whose payload is a cpio archive; `pkg` a macOS package, a
-/// XAR archive; `sqfs` and `squashfs` a SquashFS image. Debian packages,
-/// snaps and AppImages are not here: the system installs or runs them, and
-/// packwing is not offered to open them; the archive items are for them too
-/// ([`PACKAGES`]). The first part of one cut as 7-Zip cuts it, `name.7z.001`,
+/// `xar` a XAR archive; `sqfs` and `squashfs` a SquashFS image. Debian, RPM
+/// and macOS packages, snaps and AppImages are not here: the system installs
+/// or runs them, and packwing is not offered to open them; the archive items
+/// are for them too ([`PACKAGES`]). The first part of one cut as 7-Zip cuts it, `name.7z.001`,
 /// opens as the whole: each kind it is cut from is named, so a `.001` of a
 /// film is not one. Where a file's type is its last extension alone (Open
 /// With on Windows and macOS, Finder's Quick Actions), they are for every
 /// `.001`; Dolphin, which goes by MIME type, has none for them.
 #[rustfmt::skip]
-pub const ARCHIVES: [&str; 46] = [
+pub const ARCHIVES: [&str; 44] = [
     // ZIP, and what is one under its own name
     "zip", "jar", "war", "ear", "apk", "xpi", "epub", "cbz",
     // RAR and 7z
@@ -48,7 +47,7 @@ pub const ARCHIVES: [&str; 46] = [
     "tar", "cbt", "gz", "tgz", "bz2", "tbz2", "tbz", "xz", "txz", "zst", "tzst", "lz4",
     "tlz4", "lz", "lzma", "tlz",
     // Disc images and packages
-    "iso", "cpio", "rpm", "xar", "pkg", "sqfs", "squashfs",
+    "iso", "cpio", "xar", "sqfs", "squashfs",
     // The first part of one cut in parts
     "7z.001", "zip.001", "rar.001", "tar.001", "tgz.001", "tar.gz.001", "tar.zst.001",
     "tar.xz.001", "tar.bz2.001", "tar.lz4.001", "iso.001",
@@ -658,8 +657,9 @@ mod tests {
         assert_eq!(none.menu(&program()), None);
     }
 
-    /// Debian packages, snaps and AppImages open and extract from the menu, as
-    /// archives do, and are not offered to packwing in Open With.
+    /// Debian, RPM and macOS packages, snaps and AppImages open and extract
+    /// from the menu, as archives do, and are not offered to packwing in Open
+    /// With.
     #[test]
     fn packages_are_in_the_archive_items_and_not_in_open_with() {
         let menu = Choice::default().menu(&program()).expect("items");
@@ -667,7 +667,9 @@ mod tests {
             let context_menu::Files::Extensions(extensions) = &item.applies_to.files else {
                 continue;
             };
-            for ext in ["zip", "iso", "sqfs", "deb", "udeb", "snap", "appimage"] {
+            for ext in [
+                "zip", "iso", "sqfs", "deb", "udeb", "rpm", "pkg", "snap", "appimage",
+            ] {
                 assert!(extensions.iter().any(|e| e == ext), "{}: {ext}", item.id);
             }
         }
