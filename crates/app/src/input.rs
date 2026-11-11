@@ -1635,6 +1635,11 @@ impl Element for AreaElement {
             }
             for (_, line, top) in &area.drawn {
                 let origin = point(bounds.left(), bounds.top() + *top - scroll_y);
+                // Only what is in sight is painted: a long text has many lines.
+                let height = line.size(line_height).height;
+                if origin.y + height < field.top() || origin.y > field.bottom() {
+                    continue;
+                }
                 let _ = line.paint_background(
                     origin,
                     line_height,

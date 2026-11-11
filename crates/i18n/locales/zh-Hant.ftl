@@ -1000,30 +1000,6 @@ t8ecbab4e = 每個原始檔案會在其副本讀回並確認相符後才移除�
 # The originals stay where they are.
 t5937f050 = 原始檔案會留在原處。
 
-# Too big to show here
-t1b339d35 = 太大，無法在此顯示
-
-# packwing can’t show this kind of file
-tb909bf3c = packwing 無法顯示這種檔案
-
-# It could not be read
-tb7927177 = 無法讀取
-
-# It could not be read: {why}
-t26005fe3 = 無法讀取：{ $why }
-
-# It needs the password to show it
-t81f5dbce = 需要密碼才能顯示
-
-# It could not be shown
-tb60fb288 = 無法顯示
-
-# Open as archive
-t3373ce55 = 以封存檔開啟
-
-# Open with default app
-t5ef80ec5 = 以預設應用程式開啟
-
 # Another job is making {name} there now: give this one another name, or wait for it to end.
 tc8c2bae0 = 另一個工作正在那裡建立 { $name }：請為這個工作換個名稱，或等它結束。
 
@@ -1089,6 +1065,12 @@ t5e4baa18 = 檢視
 
 # Extract…
 t4a09490e = 解壓縮…
+
+# Open with default app
+t5ef80ec5 = 以預設應用程式開啟
+
+# Open as archive
+t3373ce55 = 以封存檔開啟
 
 # Compress…
 t690f9553 = 壓縮…
@@ -1180,9 +1162,6 @@ t73690b65 = 封存檔
 # Search inside this archive
 tb35c0c27 = 搜尋此封存檔內部
 
-# Not text it can show
-ta413eca5 = 不是可顯示的文字
-
 # Open another…
 tff74a552 = 開啟其他…
 
@@ -1227,6 +1206,9 @@ t539b9c10 = 返回 { $name }
 
 # Open an archive…
 t2cf2a8ee = 開啟封存檔…
+
+# It could not be shown
+tb60fb288 = 無法顯示
 
 # Choose a file to see it here
 t37854216 = 選擇檔案即可在此查看
@@ -2292,6 +2274,30 @@ tb9fa7744 =
 
 # No folder to download to.
 t2bfc1370 = 沒有可下載到的資料夾。
+
+# packwing can’t show this kind of file
+tb909bf3c = packwing 無法顯示這種檔案
+
+# Too big to show here
+t1b339d35 = 太大，無法在此顯示
+
+# It needs the password to show it
+t81f5dbce = 需要密碼才能顯示
+
+# It could not be read: {why}
+t26005fe3 = 無法讀取：{ $why }
+
+# Fit
+t116f13cc = 符合視窗
+
+# {count} line | {count} lines
+t9fbb1078 =
+    { $n ->
+       *[other] { $count } 行
+    }
+
+# Its first 1 MB is shown
+t329dac80 = 僅顯示前 1 MB
 
 # Update available
 t676409df = 有可用更新

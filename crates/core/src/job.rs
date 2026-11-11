@@ -565,6 +565,15 @@ pub fn extract_to_open(
 /// 400 MB, and a small file can say it has far more.
 const MOST_PIXELS: u64 = 100_000_000;
 
+/// The width and height the picture in `bytes` says it has, in pixels.
+pub fn image_size(bytes: &[u8]) -> Option<(u32, u32)> {
+    let size = imagesize::blob_size(bytes).ok()?;
+    Some((
+        u32::try_from(size.width).ok()?,
+        u32::try_from(size.height).ok()?,
+    ))
+}
+
 /// Whether the picture in `bytes` says a size that is safe to decode.
 pub fn image_fits(bytes: &[u8]) -> bool {
     imagesize::blob_size(bytes)

@@ -1045,30 +1045,6 @@ t8ecbab4e = Кожен оригінал видаляється, коли йог�
 # The originals stay where they are.
 t5937f050 = Оригінали залишаються на місці.
 
-# Too big to show here
-t1b339d35 = Завелике, щоб показати тут
-
-# packwing can’t show this kind of file
-tb909bf3c = packwing не може показати файл такого виду
-
-# It could not be read
-tb7927177 = Не вдалося прочитати
-
-# It could not be read: {why}
-t26005fe3 = Не вдалося прочитати: { $why }
-
-# It needs the password to show it
-t81f5dbce = Щоб показати, потрібен пароль
-
-# It could not be shown
-tb60fb288 = Не вдалося показати
-
-# Open as archive
-t3373ce55 = Відкрити як архів
-
-# Open with default app
-t5ef80ec5 = Відкрити в застосунку за замовчуванням
-
 # Another job is making {name} there now: give this one another name, or wait for it to end.
 tc8c2bae0 = Інше завдання зараз створює там { $name }: дайте цьому іншу назву або зачекайте, доки воно завершиться.
 
@@ -1134,6 +1110,12 @@ t5e4baa18 = Вигляд
 
 # Extract…
 t4a09490e = Видобути…
+
+# Open with default app
+t5ef80ec5 = Відкрити в застосунку за замовчуванням
+
+# Open as archive
+t3373ce55 = Відкрити як архів
 
 # Compress…
 t690f9553 = Стиснути…
@@ -1228,9 +1210,6 @@ t73690b65 = Архів
 # Search inside this archive
 tb35c0c27 = Шукати в цьому архіві
 
-# Not text it can show
-ta413eca5 = Не текст, який можна показати
-
 # Open another…
 tff74a552 = Відкрити інший…
 
@@ -1275,6 +1254,9 @@ t539b9c10 = Назад до { $name }
 
 # Open an archive…
 t2cf2a8ee = Відкрити архів…
+
+# It could not be shown
+tb60fb288 = Не вдалося показати
 
 # Choose a file to see it here
 t37854216 = Виберіть файл, щоб побачити його тут
@@ -2370,6 +2352,33 @@ tb9fa7744 =
 
 # No folder to download to.
 t2bfc1370 = Немає папки для завантаження.
+
+# packwing can’t show this kind of file
+tb909bf3c = packwing не може показати файл такого виду
+
+# Too big to show here
+t1b339d35 = Завелике, щоб показати тут
+
+# It needs the password to show it
+t81f5dbce = Щоб показати, потрібен пароль
+
+# It could not be read: {why}
+t26005fe3 = Не вдалося прочитати: { $why }
+
+# Fit
+t116f13cc = Вписати
+
+# {count} line | {count} lines
+t9fbb1078 =
+    { $n ->
+        [one] { $count } рядок
+        [few] { $count } рядки
+        [many] { $count } рядків
+       *[other] { $count } рядка
+    }
+
+# Its first 1 MB is shown
+t329dac80 = Показано перший 1 МБ
 
 # Update available
 t676409df = Є оновлення

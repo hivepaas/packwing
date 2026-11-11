@@ -20,7 +20,6 @@ mod remove_storage;
 mod sign;
 mod split;
 mod transfer;
-mod view_file;
 
 pub use add::AddDialog;
 pub use add_storage::AddStorageDialog;
@@ -39,7 +38,6 @@ pub use remove_storage::RemoveStorageDialog;
 pub use sign::SignDialog;
 pub use split::SplitDialog;
 pub use transfer::TransferDialog;
-pub use view_file::ViewDialog;
 
 use std::path::PathBuf;
 use std::sync::atomic::AtomicBool;
@@ -331,8 +329,6 @@ pub enum DialogEvent {
     /// A copy of a file of the archive open was made, to open in packwing as
     /// an archive of its own.
     Inside(PathBuf),
-    /// A file of the archive open, by its path in it, is to be opened so.
-    Entry(Vec<String>, EntryOpen),
     /// A license key is to be entered: Settings › License.
     ShowLicense,
     /// Which checksums are shown is to be chosen: Settings › Security, at
@@ -344,15 +340,6 @@ pub enum DialogEvent {
         folder: Vec<String>,
         show: bool,
     },
-}
-
-/// How a file of the archive open is opened, when asked from a dialog.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum EntryOpen {
-    /// By the app the system has for it.
-    WithApp,
-    /// In packwing, as an archive, whatever its name says.
-    AsArchive,
 }
 
 /// The card a dialog is drawn on.

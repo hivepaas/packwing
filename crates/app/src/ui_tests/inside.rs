@@ -85,9 +85,9 @@ scenario!(
 );
 
 scenario!(
-    /// A file that is not an archive opens in packwing's own view: a text
-    /// shown; what it cannot show offered to the system's app and to packwing
-    /// as an archive.
+    /// A file that is not an archive opens in the viewer: a text shown; what
+    /// it cannot show offered to the system's app and to packwing as an
+    /// archive. Back goes back to the archive, the file chosen there.
     a_file_inside_is_shown_or_offered,
     |ui| {
         opened_nest(ui);
@@ -96,14 +96,14 @@ scenario!(
         ui.wait_for("view-app");
         // A text is shown: nothing else is offered for it.
         assert!(!ui.shows("view-as-archive"));
-        ui.click("close");
-        ui.wait_for_no_dialog();
+        ui.click("view-back");
+        ui.wait_until("the viewer closed", |ui| !ui.shows("viewer"));
         menu_of(ui, "data.bin");
         ui.click("menu-open");
         ui.wait_for("view-as-archive");
         assert!(ui.shows("view-app"));
-        ui.click("close");
-        ui.wait_for_no_dialog();
+        ui.click("view-back");
+        ui.wait_until("the viewer closed", |ui| !ui.shows("viewer"));
         assert!(outer(ui).is_empty());
     }
 );

@@ -379,14 +379,6 @@ t5318c14e = They are in this folder already. Choose another.
 t51019905 = All of it passes through this computer, and your provider may charge for what is read from it. Each moved original goes once its copy has been read back and matches.
 t8ecbab4e = Each original goes once its copy has been read back and matches.
 t5937f050 = The originals stay where they are.
-t1b339d35 = Too big to show here
-tb909bf3c = packwing can’t show this kind of file
-tb7927177 = It could not be read
-t26005fe3 = It could not be read: { $why }
-t81f5dbce = It needs the password to show it
-tb60fb288 = It could not be shown
-t3373ce55 = Open as archive
-t5ef80ec5 = Open with default app
 tc8c2bae0 = Another job is making { $name } there now: give this one another name, or wait for it to end.
 t042cbb2a = Another job is extracting into { $folder } now: choose another folder, or wait for it to end.
 tbf2a5d3a = no editor command
@@ -409,6 +401,8 @@ t3375c9c0 = Hide hidden files
 tf18c7057 = Show hidden files
 t5e4baa18 = View
 t4a09490e = Extract…
+t5ef80ec5 = Open with default app
+t3373ce55 = Open as archive
 t690f9553 = Compress…
 t543cf15b = Copy to…
 t7a32320b = Move to…
@@ -442,7 +436,6 @@ t6aef5c37 = Copy all
 tfd0ff0a1 = This system has no folder for settings.
 t73690b65 = Archive
 tb35c0c27 = Search inside this archive
-ta413eca5 = Not text it can show
 tff74a552 = Open another…
 tcfba8fd5 = From a storage…
 t3c93bb70 = Safe to extract
@@ -458,6 +451,7 @@ t8382bd3e = Open an archive
 t4a498ac8 = ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
 t539b9c10 = Back to { $name }
 t2cf2a8ee = Open an archive…
+tb60fb288 = It could not be shown
 t37854216 = Choose a file to see it here
 tc7c20187 = Symbolic link
 te7ddae48 = Leads to { $target }
@@ -843,6 +837,17 @@ tb9fa7744 =
        *[other] { $n } days ago
     }
 t2bfc1370 = No folder to download to.
+tb909bf3c = packwing can’t show this kind of file
+t1b339d35 = Too big to show here
+t81f5dbce = It needs the password to show it
+t26005fe3 = It could not be read: { $why }
+t116f13cc = Fit
+t9fbb1078 =
+    { $n ->
+        [one] { $count } line
+       *[other] { $count } lines
+    }
+t329dac80 = Its first 1 MB is shown
 t676409df = Update available
 tbbbbda26 = Restart to update
 t843cf8f1 =

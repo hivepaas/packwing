@@ -1000,30 +1000,6 @@ t8ecbab4e = 元のファイルは、コピーを読み戻して一致を確認�
 # The originals stay where they are.
 t5937f050 = 元のファイルはそのまま残ります。
 
-# Too big to show here
-t1b339d35 = 大きすぎてここでは表示できません
-
-# packwing can’t show this kind of file
-tb909bf3c = packwing ではこの種類のファイルを表示できません
-
-# It could not be read
-tb7927177 = 読み取れませんでした
-
-# It could not be read: {why}
-t26005fe3 = 読み取れませんでした：{ $why }
-
-# It needs the password to show it
-t81f5dbce = 表示するにはパスワードが必要です
-
-# It could not be shown
-tb60fb288 = 表示できませんでした
-
-# Open as archive
-t3373ce55 = アーカイブとして開く
-
-# Open with default app
-t5ef80ec5 = 既定のアプリで開く
-
 # Another job is making {name} there now: give this one another name, or wait for it to end.
 tc8c2bae0 = 別のジョブがそこで { $name } を作成中です。別の名前にするか、終わるまでお待ちください。
 
@@ -1089,6 +1065,12 @@ t5e4baa18 = 表示
 
 # Extract…
 t4a09490e = 展開…
+
+# Open with default app
+t5ef80ec5 = 既定のアプリで開く
+
+# Open as archive
+t3373ce55 = アーカイブとして開く
 
 # Compress…
 t690f9553 = 圧縮…
@@ -1180,9 +1162,6 @@ t73690b65 = アーカイブ
 # Search inside this archive
 tb35c0c27 = このアーカイブ内を検索
 
-# Not text it can show
-ta413eca5 = 表示できるテキストではありません
-
 # Open another…
 tff74a552 = ほかを開く…
 
@@ -1227,6 +1206,9 @@ t539b9c10 = { $name } に戻る
 
 # Open an archive…
 t2cf2a8ee = アーカイブを開く…
+
+# It could not be shown
+tb60fb288 = 表示できませんでした
 
 # Choose a file to see it here
 t37854216 = ファイルを選択するとここに表示されます
@@ -2283,6 +2265,30 @@ tb9fa7744 = { $n } 日前
 
 # No folder to download to.
 t2bfc1370 = ダウンロード先のフォルダーがありません。
+
+# packwing can’t show this kind of file
+tb909bf3c = packwing ではこの種類のファイルを表示できません
+
+# Too big to show here
+t1b339d35 = 大きすぎてここでは表示できません
+
+# It needs the password to show it
+t81f5dbce = 表示するにはパスワードが必要です
+
+# It could not be read: {why}
+t26005fe3 = 読み取れませんでした：{ $why }
+
+# Fit
+t116f13cc = 全体表示
+
+# {count} line | {count} lines
+t9fbb1078 =
+    { $n ->
+       *[other] { $count } 行
+    }
+
+# Its first 1 MB is shown
+t329dac80 = 先頭の 1 MB を表示しています
 
 # Update available
 t676409df = アップデートがあります

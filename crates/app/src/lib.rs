@@ -39,6 +39,7 @@ mod right_click;
 mod signatures;
 mod text_size;
 mod updates;
+mod viewer;
 mod widgets;
 mod workspace;
 
@@ -140,7 +141,10 @@ const ICONS: &[(&str, &[u8])] = icons![
     "audit",
     "building",
     "check",
+    "arrow-left",
     "chevron-down",
+    "chevron-left",
+    "chevron-right",
     "desktop",
     "download",
     "drop",

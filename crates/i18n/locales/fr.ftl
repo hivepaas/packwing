@@ -1015,30 +1015,6 @@ t8ecbab4e = Chaque original disparaît une fois sa copie relue et jugée identiq
 # The originals stay where they are.
 t5937f050 = Les originaux restent où ils sont.
 
-# Too big to show here
-t1b339d35 = Trop volumineux pour être affiché ici
-
-# packwing can’t show this kind of file
-tb909bf3c = packwing ne peut pas afficher ce type de fichier
-
-# It could not be read
-tb7927177 = Lecture impossible
-
-# It could not be read: {why}
-t26005fe3 = Lecture impossible : { $why }
-
-# It needs the password to show it
-t81f5dbce = Le mot de passe est nécessaire pour l'afficher
-
-# It could not be shown
-tb60fb288 = Affichage impossible
-
-# Open as archive
-t3373ce55 = Ouvrir comme archive
-
-# Open with default app
-t5ef80ec5 = Ouvrir avec l'application par défaut
-
 # Another job is making {name} there now: give this one another name, or wait for it to end.
 tc8c2bae0 = Une autre tâche crée { $name } à cet endroit : donnez un autre nom à celle-ci, ou attendez qu'elle se termine.
 
@@ -1104,6 +1080,12 @@ t5e4baa18 = Affichage
 
 # Extract…
 t4a09490e = Extraire…
+
+# Open with default app
+t5ef80ec5 = Ouvrir avec l'application par défaut
+
+# Open as archive
+t3373ce55 = Ouvrir comme archive
 
 # Compress…
 t690f9553 = Compresser…
@@ -1196,9 +1178,6 @@ t73690b65 = Archive
 # Search inside this archive
 tb35c0c27 = Rechercher dans cette archive
 
-# Not text it can show
-ta413eca5 = Pas du texte affichable
-
 # Open another…
 tff74a552 = En ouvrir une autre…
 
@@ -1243,6 +1222,9 @@ t539b9c10 = Revenir à { $name }
 
 # Open an archive…
 t2cf2a8ee = Ouvrir une archive…
+
+# It could not be shown
+tb60fb288 = Affichage impossible
 
 # Choose a file to see it here
 t37854216 = Choisissez un fichier pour le voir ici
@@ -2318,6 +2300,31 @@ tb9fa7744 =
 
 # No folder to download to.
 t2bfc1370 = Aucun dossier où télécharger.
+
+# packwing can’t show this kind of file
+tb909bf3c = packwing ne peut pas afficher ce type de fichier
+
+# Too big to show here
+t1b339d35 = Trop volumineux pour être affiché ici
+
+# It needs the password to show it
+t81f5dbce = Le mot de passe est nécessaire pour l'afficher
+
+# It could not be read: {why}
+t26005fe3 = Lecture impossible : { $why }
+
+# Fit
+t116f13cc = Ajuster
+
+# {count} line | {count} lines
+t9fbb1078 =
+    { $n ->
+        [one] { $count } ligne
+       *[other] { $count } lignes
+    }
+
+# Its first 1 MB is shown
+t329dac80 = Son premier Mo est affiché
 
 # Update available
 t676409df = Mise à jour disponible
