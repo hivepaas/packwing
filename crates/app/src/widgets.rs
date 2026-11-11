@@ -62,10 +62,10 @@ pub fn tile(size: f32, radius: f32, tint: Tint) -> Div {
         .justify_center()
 }
 
-/// A file's tile in a list, `width` by `height` with corners of `radius`: the
-/// letters of its tag, `text` px, on its kind's tint. A folder's is no square:
-/// a folder's outline as large as fits, in the tint's ground, with its front
-/// edge in the ink, so that folders and files differ at a glance.
+/// A file's tile in a list, `width` by `height`: a shape for its kind's
+/// group, as large as fits, in its kind's tint, with the letters of its tag,
+/// `text` px, in the shape's open middle. A folder's shape has no letters; a
+/// file of no group (and a link) keeps the plain tile, corners of `radius`.
 pub fn kind_tile(
     kind: Kind,
     tag: impl Into<SharedString>,
@@ -75,21 +75,17 @@ pub fn kind_tile(
     text: f32,
 ) -> Div {
     let tint = kind.tint(&colors());
-    if kind == Kind::Folder {
-        return folder_tile(width, height, tint);
-    }
-    tile(width, radius, tint)
-        .h(ui(height))
-        .text_size(ui(text))
-        .font_weight(FontWeight::BOLD)
-        .child(tag.into())
-}
-
-/// A folder's outline, 36 by 32 as drawn, in `width` by `height`. GPUI draws
-/// an icon in one colour, so the outline and its edge are two, one over the
-/// other, as the logo's zipper and feather are.
-fn folder_tile(width: f32, height: f32, tint: Tint) -> Div {
+    let Some(shape) = Shape::of(kind) else {
+        return tile(width, radius, tint)
+            .h(ui(height))
+            .text_size(ui(text))
+            .font_weight(FontWeight::BOLD)
+            .child(tag.into());
+    };
+    let tag: SharedString = tag.into();
+    // The shapes are drawn on 36 by 32.
     let w = width.min(height * 36. / 32.);
+    let k = w / 36.;
     let layer = |name: &str, color: gpui::Rgba| {
         svg()
             .path(SharedString::from(format!("icons/{name}.svg")))
@@ -99,6 +95,33 @@ fn folder_tile(width: f32, height: f32, tint: Tint) -> Div {
             .size_full()
             .text_color(color)
     };
+    let mut drawn = div()
+        .relative()
+        .w(ui(w))
+        .h(ui(w * 32. / 36.))
+        .child(layer(shape.ground, rgb(tint.ground)));
+    if let Some((detail, alpha)) = shape.detail {
+        // Lighter than the ink: a detail of the shape, not a line over it.
+        drawn = drawn.child(layer(detail, rgba(tint.ink << 8 | alpha)));
+    }
+    if let Some([top, right, bottom, left]) = shape.letters {
+        let size = if tag.len() >= 4 { text * 0.9 } else { text };
+        drawn = drawn.child(
+            div()
+                .absolute()
+                .top(ui(top * k))
+                .right(ui(right * k))
+                .bottom(ui(bottom * k))
+                .left(ui(left * k))
+                .flex()
+                .items_center()
+                .justify_center()
+                .text_size(ui(size))
+                .font_weight(FontWeight::BOLD)
+                .text_color(rgb(tint.ink))
+                .child(tag),
+        );
+    }
     div()
         .w(ui(width))
         .h(ui(height))
@@ -106,15 +129,63 @@ fn folder_tile(width: f32, height: f32, tint: Tint) -> Div {
         .flex()
         .items_center()
         .justify_center()
-        .child(
-            div()
-                .relative()
-                .w(ui(w))
-                .h(ui(w * 32. / 36.))
-                .child(layer("folder-tile", rgb(tint.ground)))
-                // The edge a little lighter than the ink: a fold, not a line.
-                .child(layer("folder-tile-edge", rgba(tint.ink << 8 | 0x73))),
-        )
+        .child(drawn)
+}
+
+/// How a group's tile is drawn. GPUI draws an icon in one colour, so a shape
+/// and its detail are two icons, one over the other, as the logo's zipper and
+/// feather are.
+struct Shape {
+    /// The outline, in the tint's ground.
+    ground: &'static str,
+    /// What is drawn on it, in the ink, and how opaque (of 255).
+    detail: Option<(&'static str, u32)>,
+    /// Where the letters go, from the top, right, bottom and left of 36 by 32:
+    /// the middle of what the detail leaves open. None for a folder.
+    letters: Option<[f32; 4]>,
+}
+
+impl Shape {
+    fn of(kind: Kind) -> Option<Shape> {
+        let shape = |ground, detail, letters| {
+            Some(Shape {
+                ground,
+                detail,
+                letters,
+            })
+        };
+        match kind {
+            // Its front edge, a fold.
+            Kind::Folder => shape("folder-tile", Some(("folder-tile-edge", 0x73)), None),
+            // A box, its lid on, a clasp across the seam: the letters on the box.
+            Kind::Archive => shape(
+                "file-archive",
+                Some(("file-archive-detail", 0xb3)),
+                Some([12., 0., 0., 0.]),
+            ),
+            // A photo, a sun and a ridge: the letters in the sky.
+            Kind::Image => shape(
+                "file-frame",
+                Some(("file-image-detail", 0x61)),
+                Some([4., 5., 9., 0.]),
+            ),
+            // A page, its corner folded.
+            Kind::Pdf | Kind::Document | Kind::Sheet | Kind::Text => shape(
+                "file-document",
+                Some(("file-document-detail", 0x73)),
+                Some([11., 3., 7., 0.]),
+            ),
+            // A frame of film, its holes cut through.
+            Kind::Video => shape("file-video", None, Some([6., 0., 6., 0.])),
+            // A terminal's window, its title bar and three buttons.
+            Kind::Program => shape(
+                "file-frame",
+                Some(("file-program-detail", 0x4d)),
+                Some([9.5, 0., 0.5, 0.]),
+            ),
+            Kind::Link | Kind::Other => None,
+        }
+    }
 }
 
 /// The accent's tint, for the logo's tile.
