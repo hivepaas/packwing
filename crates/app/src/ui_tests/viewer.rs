@@ -42,7 +42,8 @@ fn wait_for_shown(ui: &mut Ui, name: &str, what: &'static str) {
 scenario!(
     /// Open on a picture of an archive shows the viewer over the window; Next
     /// and Previous step through the folder's pictures and texts, not what it
-    /// cannot show; Escape goes back to the archive, the last shown chosen.
+    /// cannot show; a text is copied from its right-click menu; Escape goes
+    /// back to the archive, the last shown chosen.
     the_viewer_steps_through_an_archive_and_goes_back,
     |ui| {
         let paths = vec![
@@ -72,6 +73,12 @@ scenario!(
         wait_for_shown(ui, "d.png", "picture");
         ui.keys("left");
         wait_for_shown(ui, "b.txt", "text");
+        // A text has its right-click menu, as the preview's had.
+        ui.right_click("field: ");
+        ui.wait_for("text-copy-all");
+        ui.click("text-copy-all");
+        let copied = ui.ws(|_, _, cx| cx.read_from_clipboard().and_then(|c| c.text()));
+        assert_eq!(copied.as_deref(), Some("a note"));
         ui.keys("escape");
         ui.wait_until("the viewer closed", |ui| viewing(ui).is_none());
         let chosen = ui.ws(|ws, _, cx| ws.archive_page().read(cx).selected_names());

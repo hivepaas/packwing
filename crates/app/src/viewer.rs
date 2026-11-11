@@ -1,6 +1,6 @@
 //! The viewer: a file of a folder, or of an archive, over the whole window, the
 //! rail and the page hidden. A picture fits the window, or shows at its own size;
-//! a text shows with its lines' numbers; anything else says why it cannot be shown
+//! a text shows with its lines' numbers, to choose and copy from; anything else says why it cannot be shown
 //! and offers the system's app, and packwing as an archive. Previous and Next step
 //! through the folder's other pictures and texts, the next read ahead.
 //!
@@ -11,18 +11,23 @@ use std::cmp::Ordering;
 use std::sync::Arc;
 
 use gpui::{
-    Context, EventEmitter, FocusHandle, Focusable, FontWeight, Image, KeyDownEvent,
-    ListHorizontalSizingBehavior, ObjectFit, Render, StyledImage, Task, Window, div, img,
-    prelude::*, px, relative, rgb, uniform_list,
+    Context, Entity, EventEmitter, FocusHandle, Focusable, FontWeight, Image, KeyDownEvent,
+    ObjectFit, Render, StyledImage, Task, Window, div, img, prelude::*, px, rgb,
 };
 use packwing_core::{Control, Error, Keys, Source, Storage, image_fits, image_size, preview_entry};
 use packwing_i18n::{tr, tr_n};
 
 use crate::colors::colors;
+use crate::input::{Paint, TextInput};
 use crate::model::{Kind, size, tag_of, text_preview};
 use crate::pages::archive::{MOST_PREVIEWED, picture_format};
 use crate::text_size::ui;
 use crate::widgets::{Fill, Size, button, icon, icon_button, kind_tile, mono_font};
+
+/// A text's paint: none, all in the text's color.
+fn unpainted(_: &str) -> Vec<(std::ops::Range<usize>, Paint)> {
+    Vec::new()
+}
 
 /// How much of a text the viewer shows.
 const MOST_TEXT: usize = 256 * 1024;
@@ -65,8 +70,8 @@ enum Shown {
     Reading,
     /// A picture, and its size in pixels.
     Picture(Arc<Image>, Option<(u32, u32)>),
-    /// A text's lines, and whether it was cut.
-    Text(Arc<Vec<String>>, bool),
+    /// A text, how many lines it has, and whether it was cut.
+    Text(Arc<String>, usize, bool),
     /// Why it cannot be shown.
     Not(String),
 }
@@ -78,6 +83,9 @@ pub struct Viewer {
     files: Vec<ViewFile>,
     at: usize,
     shown: Shown,
+    /// The text shown, when it is one: it can be chosen and copied, with a
+    /// right-click menu, its lines numbered.
+    text: Entity<TextInput>,
     /// A picture at its own size, where it fits the window otherwise.
     actual: bool,
     /// The file after the one shown, read ahead, and what it showed.
@@ -191,10 +199,15 @@ fn read(reading: &Reading, file: &ViewFile) -> Shown {
         None => {
             let cut = file.size > MOST_TEXT as u64;
             match text_preview(&bytes, MOST_TEXT) {
-                Some(text) => Shown::Text(
-                    Arc::new(text.lines().map(|l| l.replace('\t', "    ")).collect()),
-                    cut,
-                ),
+                Some(text) => {
+                    // The last line's end starts no line of its own.
+                    let text = text
+                        .strip_suffix('\n')
+                        .unwrap_or(&text)
+                        .replace('\t', "    ");
+                    let lines = text.lines().count();
+                    Shown::Text(Arc::new(text), lines, cut)
+                }
                 None => Shown::Not(tr!("packwing can’t show this kind of file")),
             }
         }
@@ -216,6 +229,7 @@ impl Viewer {
             files,
             at,
             shown: Shown::Reading,
+            text: cx.new(|cx| TextInput::new("", cx).read_only().code(unpainted)),
             actual: false,
             ahead: None,
             _read: None,
@@ -248,6 +262,14 @@ impl Viewer {
         }
     }
 
+    /// Shows `shown`, a text in its field.
+    fn set_shown(&mut self, shown: Shown, cx: &mut Context<Self>) {
+        if let Shown::Text(text, ..) = &shown {
+            self.text.update(cx, |t, cx| t.set_text(text, 0..0, cx));
+        }
+        self.shown = shown;
+    }
+
     /// Shows the file at `at`, read now, or ahead already.
     fn show(&mut self, at: usize, cx: &mut Context<Self>) {
         let Some(file) = self.files.get(at).cloned() else {
@@ -258,7 +280,7 @@ impl Viewer {
         if let Some((ahead, shown)) = self.ahead.take()
             && ahead == at
         {
-            self.shown = shown;
+            self.set_shown(shown, cx);
             self.read_ahead(cx);
             cx.notify();
             return;
@@ -270,7 +292,7 @@ impl Viewer {
             let shown = task.await;
             let _ = this.update(cx, |this, cx| {
                 if this.at == at {
-                    this.shown = shown;
+                    this.set_shown(shown, cx);
                     this.read_ahead(cx);
                     cx.notify();
                 }
@@ -515,50 +537,19 @@ impl Viewer {
                         .into_any_element(),
                 }
             }
-            Shown::Text(lines, _) => {
-                let lines = lines.clone();
-                let digits = lines.len().max(1).to_string().len();
-                let font = mono_font(window);
-                stage
-                    .items_start()
-                    .justify_start()
-                    .bg(rgb(c.surface))
-                    .border_1()
-                    .border_color(rgb(c.field))
-                    .child(
-                        uniform_list("view-lines", lines.len(), move |range, _, _| {
-                            range
-                                .map(|i| {
-                                    div()
-                                        .flex()
-                                        .gap(ui(14.))
-                                        .px(ui(14.))
-                                        .whitespace_nowrap()
-                                        .child(
-                                            div()
-                                                .flex_shrink_0()
-                                                .w(ui(9. * digits as f32))
-                                                .text_right()
-                                                .text_color(rgb(c.faint))
-                                                .child((i + 1).to_string()),
-                                        )
-                                        .child(
-                                            div().text_color(rgb(c.text)).child(lines[i].clone()),
-                                        )
-                                })
-                                .collect::<Vec<_>>()
-                        })
-                        .with_horizontal_sizing_behavior(
-                            ListHorizontalSizingBehavior::Unconstrained,
-                        )
-                        .size_full()
-                        .py(ui(10.))
-                        .font_family(font)
-                        .text_size(ui(13.))
-                        .line_height(relative(1.6)),
-                    )
-                    .into_any_element()
-            }
+            Shown::Text(..) => stage
+                .items_start()
+                .justify_start()
+                .bg(rgb(c.surface))
+                .border_1()
+                .border_color(rgb(c.field))
+                .p(ui(12.))
+                .font_family(mono_font(window))
+                .text_size(ui(13.))
+                .text_color(rgb(c.text))
+                // The field is as high as what holds it, and scrolls past that.
+                .child(div().size_full().flex().child(self.text.clone()))
+                .into_any_element(),
         }
     }
 
@@ -567,12 +558,12 @@ impl Viewer {
         let mut said = vec![self.file().map(|f| size(f.size)).unwrap_or_default()];
         match &self.shown {
             Shown::Picture(_, Some((w, h))) => said.push(format!("{w} × {h}")),
-            Shown::Text(lines, cut) => {
+            Shown::Text(_, lines, cut) => {
                 said.push(tr_n!(
-                    lines.len(),
+                    *lines,
                     "{count} line",
                     "{count} lines",
-                    count = crate::model::count(lines.len() as u64)
+                    count = crate::model::count(*lines as u64)
                 ));
                 if *cut {
                     said.push(tr!("Its first 256 KB are shown"));
