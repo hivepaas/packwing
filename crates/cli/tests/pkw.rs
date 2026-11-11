@@ -304,14 +304,14 @@ fn packages_snaps_and_appimages_are_listed_tested_extracted_and_converted() {
         out.truncate(n);
         out
     };
-    std::fs::write(s.path("Tool.AppImage"), appimage(2, &sqfs)).expect("a file");
+    std::fs::write(s.path("New.AppImage"), appimage(2, &sqfs)).expect("a file");
     std::fs::write(s.path("Old.AppImage"), appimage(1, &iso)).expect("a file");
     std::fs::write(s.path("tool.snap"), &sqfs).expect("a file");
     std::fs::copy(fixture("sample-xz.deb"), s.path("tool_1.0_all.deb")).expect("a copy");
     for (name, format, container) in [
         ("tool_1.0_all.deb", "Tar in Xz in Deb", "Tar"),
         ("tool.snap", "Squashfs", "Squashfs"),
-        ("Tool.AppImage", "AppImageType2", "AppImageType2"),
+        ("New.AppImage", "AppImageType2", "AppImageType2"),
         ("Old.AppImage", "AppImageType1", "AppImageType1"),
     ] {
         let listed = ok(&s.pkw(&["list", name]));
