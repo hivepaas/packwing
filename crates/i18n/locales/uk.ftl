@@ -2605,6 +2605,21 @@ t5af584a0 = { $name } уже є в папці
 # This file is not an archive packwing can open.
 t660f149b = Цей файл не є архівом, який може відкрити packwing.
 
+# This is a Debian package (.deb). packwing can’t open those yet.
+tfba1f7a9 = Це пакет Debian (.deb). packwing поки що не вміє їх відкривати.
+
+# This is an ar archive, as static libraries are. packwing can’t open those yet.
+t9c5564b8 = Це архів ar, як статичні бібліотеки. packwing поки що не вміє їх відкривати.
+
+# This is a macOS disk image (.dmg). packwing can’t open those yet.
+t080d0cb2 = Це образ диска macOS (.dmg). packwing поки що не вміє їх відкривати.
+
+# This is an AppImage, a Linux program with its files inside. packwing can’t open those yet.
+t0fd14656 = Це AppImage — програма для Linux із файлами всередині. packwing поки що не вміє їх відкривати.
+
+# This is a SquashFS image, as snap packages are. packwing can’t open those yet.
+ta2e5570a = Це образ SquashFS, як пакети snap. packwing поки що не вміє їх відкривати.
+
 # The password is wrong, or the archive is damaged.
 ta4d3227d = Пароль неправильний, або архів пошкоджено.
 

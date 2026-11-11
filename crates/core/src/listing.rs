@@ -19,6 +19,7 @@ use unicode_normalization::char::is_combining_mark;
 use crate::rar;
 use crate::source::Source;
 use crate::spool::spool;
+use crate::unsupported::named;
 use crate::volume::walk;
 use crate::{Error, Keys, SevenZip, opener_of, seven_zip, without_layers};
 
@@ -321,7 +322,8 @@ pub fn list_as_read(
     listen: Listen<'_>,
 ) -> Result<Listing, Error> {
     let cancel = listen.cancel.clone();
-    let listed = listed(source.into(), keys, listen);
+    let source = source.into();
+    let listed = named(&source, listed(source.clone(), keys, listen));
     // What stopped reading it, it was told to.
     match listed {
         Err(_) if cancel.as_ref().is_some_and(Cancel::is_cancelled) => Err(Error::Cancelled),

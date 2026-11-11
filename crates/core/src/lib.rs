@@ -28,6 +28,7 @@ mod split;
 mod spool;
 mod storage;
 mod transfer;
+mod unsupported;
 mod volume;
 
 use packwing_i18n::{tr, tr_n};
@@ -82,6 +83,7 @@ pub use storage::{
     by_name, count, folded_query, name_holds,
 };
 pub use transfer::{Transfer, Transferred, transfer};
+pub use unsupported::Unsupported;
 
 /// The largest scrypt work factor accepted: 2^20, 1 GiB and about a second.
 /// age encrypts with 2^18; hivepack's default, 2^22, takes 4 GiB, which a
@@ -196,6 +198,8 @@ impl fmt::Debug for Keys {
 pub enum Error {
     /// Nothing packwing reads: no layer it knows, and no archive.
     NotAnArchive,
+    /// A kind of archive packwing knows of, but does not read yet.
+    Unsupported(Unsupported),
     /// Encrypted, and none of the keys given opens it. The types of its
     /// recipients say what it needs: `scrypt` is a passphrase, `X25519` or
     /// `ssh-ed25519` a key; `password` is an archive's own password (a 7z
@@ -221,6 +225,19 @@ impl fmt::Display for Error {
             Error::NotAnArchive => {
                 f.write_str(&tr!("This file is not an archive packwing can open."))
             }
+            Error::Unsupported(what) => f.write_str(&match what {
+                Unsupported::Deb => tr!("This is a Debian package (.deb). packwing can’t open those yet."),
+                Unsupported::Ar => tr!(
+                    "This is an ar archive, as static libraries are. packwing can’t open those yet."
+                ),
+                Unsupported::Dmg => tr!("This is a macOS disk image (.dmg). packwing can’t open those yet."),
+                Unsupported::AppImage => tr!(
+                    "This is an AppImage, a Linux program with its files inside. packwing can’t open those yet."
+                ),
+                Unsupported::SquashFs => tr!(
+                    "This is a SquashFS image, as snap packages are. packwing can’t open those yet."
+                ),
+            }),
             Error::Locked { needs } if needs.iter().any(|n| n == "scrypt") => {
                 f.write_str(&tr!("This file is encrypted with a passphrase."))
             }
