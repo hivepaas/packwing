@@ -841,6 +841,9 @@ tb909bf3c = packwing can’t show this kind of file
 t1b339d35 = Too big to show here
 t81f5dbce = It needs the password to show it
 t26005fe3 = It could not be read: { $why }
+t9cbe4be4 = Find in text
+td29421ef = No matches
+t3e1cd17a = Find
 t116f13cc = Fit
 t9fbb1078 =
     { $n ->

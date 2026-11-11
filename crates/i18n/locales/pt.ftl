@@ -2313,6 +2313,15 @@ t81f5dbce = Precisa da senha para mostrar
 # It could not be read: {why}
 t26005fe3 = Não foi possível ler: { $why }
 
+# Find in text
+t9cbe4be4 = Localizar no texto
+
+# No matches
+td29421ef = Nenhuma correspondência
+
+# Find
+t3e1cd17a = Localizar
+
 # Fit
 t116f13cc = Ajustar
 

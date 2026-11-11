@@ -63,6 +63,8 @@ pub struct TextInput {
     /// Where its right-click menu is open, for text to read.
     menu_at: Option<Point<Pixels>>,
     history: History,
+    /// What a search found in it, each part marked: [`TextInput::mark`].
+    found: Vec<Range<usize>>,
 }
 
 /// What the text was before an edit, to go back to.
@@ -304,6 +306,7 @@ impl TextInput {
             read_only: false,
             menu_at: None,
             history: History::default(),
+            found: Vec::new(),
         }
     }
 
@@ -488,7 +491,29 @@ impl TextInput {
         self.reversed = false;
         self.marked = None;
         self.menu_at = None;
+        self.found.clear();
         cx.emit(Changed);
+        cx.notify();
+    }
+
+    /// Marks `found` (byte ranges, in order, apart) on a ground of their own, as
+    /// a search's matches are: in the place of code's colors, while there are
+    /// any. The text keeps its color.
+    pub fn mark(&mut self, found: Vec<Range<usize>>, cx: &mut Context<Self>) {
+        let len = self.content.len();
+        self.found = found
+            .into_iter()
+            .filter(|r| r.start < r.end && r.end <= len)
+            .collect();
+        cx.notify();
+    }
+
+    /// Chooses `range` (a byte range), as a search's match is, and scrolls
+    /// to it.
+    pub fn select(&mut self, range: Range<usize>, cx: &mut Context<Self>) {
+        let end = range.end.min(self.content.len());
+        self.selected = range.start.min(end)..end;
+        self.reversed = false;
         cx.notify();
     }
 
@@ -1347,7 +1372,17 @@ fn area_runs(
     if input.content.is_empty() {
         return vec![base];
     }
-    let painted = input.code.map(|paint| paint(text)).unwrap_or_default();
+    // What a search found takes the place of code's colors while it is marked.
+    let painted = if input.found.is_empty() {
+        input.code.map(|paint| paint(text)).unwrap_or_default()
+    } else {
+        // The warning's ground: read against the text's color in both themes.
+        let paint = Paint {
+            color: colors().text,
+            ground: Some(crate::colors::with_alpha(colors().warn_bg, 0xff)),
+        };
+        input.found.iter().map(|r| (r.clone(), paint)).collect()
+    };
     let ground = rgba(crate::colors::with_alpha(colors().accent, 0x55)).into();
     runs(text.len(), &base, &painted, input.selected.clone(), ground)
 }

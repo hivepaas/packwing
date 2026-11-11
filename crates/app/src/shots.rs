@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 100] = [
+const SCREENS: [(&str, SetUp); 101] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -299,6 +299,13 @@ const SCREENS: [(&str, SetUp); 100] = [
     }),
     ("viewer-text", |ws, window, cx| {
         view_in_browse(ws, "notes.md", window, cx)
+    }),
+    ("viewer-find", |ws, window, cx| {
+        view_in_browse(ws, "notes.md", window, cx);
+        // The viewer opens once the workspace hears the explorer.
+        cx.defer_in(window, |ws, window, cx| {
+            ws.find_in_viewer("zip", window, cx)
+        });
     }),
     ("archive-failed", |ws, _, cx| {
         ws.show_archive(

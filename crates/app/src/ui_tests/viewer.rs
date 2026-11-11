@@ -172,3 +172,42 @@ scenario!(
         wait_for_shown(ui, "run.sh", "text");
     }
 );
+
+scenario!(
+    /// A text is searched: Ctrl+F (Cmd+F) opens the search's bar, what is
+    /// typed is found whatever its case, Enter goes to the next and round,
+    /// Shift+Enter back; Escape closes the bar, then the viewer.
+    a_text_is_searched,
+    |ui| {
+        let paths = vec![file(
+            ui,
+            "notes/todo.txt",
+            "Back up the site\nback up the logs\nCheck the BACKUP\n".as_bytes(),
+        )];
+        let made = zip(ui, &paths, "notes.zip");
+        ui.open(&made);
+        assert_eq!(ui.archive_failed(), None);
+        ui.click("entry-0");
+        ui.keys("enter");
+        wait_for_shown(ui, "todo.txt", "text");
+        let finding = |ui: &mut Ui| ui.ws(|ws, _, cx| ws.viewer_finding(cx));
+        assert_eq!(finding(ui), None);
+        ui.keys("secondary-f");
+        ui.wait_for("find-count");
+        ui.type_in("Find in text", "back");
+        assert_eq!(finding(ui), Some((3, 0)));
+        ui.keys("enter");
+        assert_eq!(finding(ui), Some((3, 1)));
+        ui.keys("enter enter");
+        assert_eq!(finding(ui), Some((3, 0)), "round to the first");
+        ui.keys("shift-enter");
+        assert_eq!(finding(ui), Some((3, 2)));
+        ui.replace_in("Find in text", "nowhere");
+        assert_eq!(finding(ui), Some((0, 0)));
+        ui.keys("escape");
+        assert_eq!(finding(ui), None);
+        assert!(ui.shows("viewer"), "the viewer stays");
+        ui.keys("escape");
+        ui.wait_until("the viewer closed", |ui| !ui.shows("viewer"));
+    }
+);

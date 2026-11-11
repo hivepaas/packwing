@@ -2313,6 +2313,15 @@ t81f5dbce = Serve la password per mostrarlo
 # It could not be read: {why}
 t26005fe3 = Impossibile leggerlo: { $why }
 
+# Find in text
+t9cbe4be4 = Trova nel testo
+
+# No matches
+td29421ef = Nessuna corrispondenza
+
+# Find
+t3e1cd17a = Trova
+
 # Fit
 t116f13cc = Adatta
 

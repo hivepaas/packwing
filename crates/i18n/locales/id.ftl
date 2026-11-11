@@ -2287,6 +2287,15 @@ t81f5dbce = Memerlukan kata sandi untuk menampilkannya
 # It could not be read: {why}
 t26005fe3 = Tidak dapat dibaca: { $why }
 
+# Find in text
+t9cbe4be4 = Cari dalam teks
+
+# No matches
+td29421ef = Tidak ada yang cocok
+
+# Find
+t3e1cd17a = Cari
+
 # Fit
 t116f13cc = Paskan
 

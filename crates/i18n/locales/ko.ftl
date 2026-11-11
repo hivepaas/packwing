@@ -2278,6 +2278,15 @@ t81f5dbce = 표시하려면 비밀번호가 필요합니다
 # It could not be read: {why}
 t26005fe3 = 읽을 수 없습니다: { $why }
 
+# Find in text
+t9cbe4be4 = 텍스트에서 찾기
+
+# No matches
+td29421ef = 일치 항목 없음
+
+# Find
+t3e1cd17a = 찾기
+
 # Fit
 t116f13cc = 맞춤
 
