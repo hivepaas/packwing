@@ -453,7 +453,9 @@ fn a_snap_of_each_compressor_lists_tests_and_extracts() {
             &Control::default(),
         )
         .unwrap();
-        assert_eq!(done.files, 4, "{name}");
+        // On Windows the link comes out as a file holding its target.
+        let files = if cfg!(windows) { 5 } else { 4 };
+        assert_eq!(done.files, files, "{name}");
         let blocks = std::fs::read(out.join("blocks.txt")).unwrap();
         assert_eq!(blocks.len(), 9000, "{name}");
         let hello = std::fs::read(out.join("hello.txt")).unwrap();
