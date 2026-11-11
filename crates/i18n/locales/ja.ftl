@@ -220,21 +220,6 @@ tcef8b0ce = + フォルダ
 # Add the files or a folder to put in the archive.
 t2e5c8c3e = アーカイブに入れるファイルまたはフォルダを追加してください。
 
-# Windows 11 and Linux open 7z on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tf7f64b21 = Windows 11 と Linux では 7z をそのまま開けます。macOS、スマートフォン、古い Windows ではアーカイバアプリが必要な場合があります。誰とでも共有するには .zip を選んでください。
-
-# Linux, macOS and Windows 11 open it on their own; phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-t051031b1 = Linux、macOS、Windows 11 ではそのまま開けます。スマートフォンや古い Windows ではアーカイバアプリが必要な場合があります。誰とでも共有するには .zip を選んでください。
-
-# Linux and Windows 11 open it on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tc2c29183 = Linux と Windows 11 ではそのまま開けます。macOS、スマートフォン、古い Windows ではアーカイバアプリが必要な場合があります。誰とでも共有するには .zip を選んでください。
-
-# Most computers need an archiver app or the lz4 tool to open it. To share with anyone, pick .zip.
-te9afe1c2 = ほとんどのコンピューターで、開くにはアーカイバアプリまたは lz4 ツールが必要です。誰とでも共有するには .zip を選んでください。
-
-# It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
-t16463509 = 1 つのファイルだけを格納します。コマンドラインツールで開けます。Windows と macOS ではアーカイバアプリが必要な場合があります。誰とでも共有するには .zip を選んでください。
-
 # Don’t split
 t56ee6829 = 分割しない
 

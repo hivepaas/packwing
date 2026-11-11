@@ -220,21 +220,6 @@ tcef8b0ce = + 폴더
 # Add the files or a folder to put in the archive.
 t2e5c8c3e = 압축 파일에 넣을 파일이나 폴더를 추가하세요.
 
-# Windows 11 and Linux open 7z on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tf7f64b21 = Windows 11과 Linux는 7z를 기본으로 열 수 있습니다. macOS, 휴대폰, 이전 버전의 Windows는 압축 앱이 필요할 수 있습니다. 누구에게나 공유하려면 .zip을 선택하세요.
-
-# Linux, macOS and Windows 11 open it on their own; phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-t051031b1 = Linux, macOS, Windows 11은 기본으로 열 수 있습니다. 휴대폰과 이전 버전의 Windows는 압축 앱이 필요할 수 있습니다. 누구에게나 공유하려면 .zip을 선택하세요.
-
-# Linux and Windows 11 open it on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tc2c29183 = Linux와 Windows 11은 기본으로 열 수 있습니다. macOS, 휴대폰, 이전 버전의 Windows는 압축 앱이 필요할 수 있습니다. 누구에게나 공유하려면 .zip을 선택하세요.
-
-# Most computers need an archiver app or the lz4 tool to open it. To share with anyone, pick .zip.
-te9afe1c2 = 대부분의 컴퓨터에서 열려면 압축 앱이나 lz4 도구가 필요합니다. 누구에게나 공유하려면 .zip을 선택하세요.
-
-# It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
-t16463509 = 파일 하나만 담습니다. 명령줄 도구로 열 수 있으며, Windows와 macOS는 압축 앱이 필요할 수 있습니다. 누구에게나 공유하려면 .zip을 선택하세요.
-
 # Don’t split
 t56ee6829 = 나누지 않음
 

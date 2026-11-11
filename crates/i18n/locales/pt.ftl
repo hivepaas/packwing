@@ -222,21 +222,6 @@ tcef8b0ce = + Pasta
 # Add the files or a folder to put in the archive.
 t2e5c8c3e = Adicione os arquivos ou uma pasta para colocar no arquivo compactado.
 
-# Windows 11 and Linux open 7z on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tf7f64b21 = O Windows 11 e o Linux abrem 7z por conta própria; o macOS, celulares e versões antigas do Windows podem precisar de um app de compactação. Para compartilhar com qualquer pessoa, escolha .zip.
-
-# Linux, macOS and Windows 11 open it on their own; phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-t051031b1 = O Linux, o macOS e o Windows 11 abrem por conta própria; celulares e versões antigas do Windows podem precisar de um app de compactação. Para compartilhar com qualquer pessoa, escolha .zip.
-
-# Linux and Windows 11 open it on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tc2c29183 = O Linux e o Windows 11 abrem por conta própria; o macOS, celulares e versões antigas do Windows podem precisar de um app de compactação. Para compartilhar com qualquer pessoa, escolha .zip.
-
-# Most computers need an archiver app or the lz4 tool to open it. To share with anyone, pick .zip.
-te9afe1c2 = A maioria dos computadores precisa de um app de compactação ou da ferramenta lz4 para abrir. Para compartilhar com qualquer pessoa, escolha .zip.
-
-# It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
-t16463509 = Contém este único arquivo. Ferramentas de linha de comando o abrem; o Windows e o macOS podem precisar de um app de compactação. Para compartilhar com qualquer pessoa, escolha .zip.
-
 # Don’t split
 t56ee6829 = Não dividir
 

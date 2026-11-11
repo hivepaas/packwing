@@ -220,21 +220,6 @@ tcef8b0ce = + 文件夹
 # Add the files or a folder to put in the archive.
 t2e5c8c3e = 添加要放入压缩包的文件或文件夹。
 
-# Windows 11 and Linux open 7z on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tf7f64b21 = Windows 11 和 Linux 可直接打开 7z；macOS、手机和较旧的 Windows 可能需要压缩软件。若要分享给任何人，请选择 .zip。
-
-# Linux, macOS and Windows 11 open it on their own; phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-t051031b1 = Linux、macOS 和 Windows 11 可直接打开；手机和较旧的 Windows 可能需要压缩软件。若要分享给任何人，请选择 .zip。
-
-# Linux and Windows 11 open it on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tc2c29183 = Linux 和 Windows 11 可直接打开；macOS、手机和较旧的 Windows 可能需要压缩软件。若要分享给任何人，请选择 .zip。
-
-# Most computers need an archiver app or the lz4 tool to open it. To share with anyone, pick .zip.
-te9afe1c2 = 大多数电脑需要压缩软件或 lz4 工具才能打开。若要分享给任何人，请选择 .zip。
-
-# It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
-t16463509 = 只能存放这一个文件。命令行工具可以打开；Windows 和 macOS 可能需要压缩软件。若要分享给任何人，请选择 .zip。
-
 # Don’t split
 t56ee6829 = 不分卷
 

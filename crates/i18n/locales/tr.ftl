@@ -222,21 +222,6 @@ tcef8b0ce = + Klasör
 # Add the files or a folder to put in the archive.
 t2e5c8c3e = Arşive konacak dosyaları veya bir klasörü ekleyin.
 
-# Windows 11 and Linux open 7z on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tf7f64b21 = Windows 11 ve Linux 7z dosyalarını kendiliğinden açar; macOS, telefonlar ve eski Windows sürümleri için bir arşivleme uygulaması gerekebilir. Herkesle paylaşmak için .zip seçin.
-
-# Linux, macOS and Windows 11 open it on their own; phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-t051031b1 = Linux, macOS ve Windows 11 bunu kendiliğinden açar; telefonlar ve eski Windows sürümleri için bir arşivleme uygulaması gerekebilir. Herkesle paylaşmak için .zip seçin.
-
-# Linux and Windows 11 open it on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tc2c29183 = Linux ve Windows 11 bunu kendiliğinden açar; macOS, telefonlar ve eski Windows sürümleri için bir arşivleme uygulaması gerekebilir. Herkesle paylaşmak için .zip seçin.
-
-# Most computers need an archiver app or the lz4 tool to open it. To share with anyone, pick .zip.
-te9afe1c2 = Çoğu bilgisayarda açmak için bir arşivleme uygulaması veya lz4 aracı gerekir. Herkesle paylaşmak için .zip seçin.
-
-# It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
-t16463509 = Yalnızca bu tek dosyayı tutar. Komut satırı araçları açar; Windows ve macOS için bir arşivleme uygulaması gerekebilir. Herkesle paylaşmak için .zip seçin.
-
 # Don’t split
 t56ee6829 = Bölme
 

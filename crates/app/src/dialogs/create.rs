@@ -117,34 +117,6 @@ impl Format {
         self.kind().one_file()
     }
 
-    /// Where its archives may not open without an archiver app, said under
-    /// the name: none for ZIP, which opens on every phone and computer.
-    pub fn caveat(self) -> Option<String> {
-        match self {
-            Format::Zip => None,
-            Format::SevenZip => Some(tr!(
-                "Windows 11 and Linux open 7z on their own; macOS, phones and older Windows \
-                 may need an archiver app. To share with anyone, pick .zip."
-            )),
-            Format::Tar | Format::TarGz | Format::TarXz | Format::TarBz2 => Some(tr!(
-                "Linux, macOS and Windows 11 open it on their own; phones and older Windows \
-                 may need an archiver app. To share with anyone, pick .zip."
-            )),
-            Format::TarZst => Some(tr!(
-                "Linux and Windows 11 open it on their own; macOS, phones and older Windows \
-                 may need an archiver app. To share with anyone, pick .zip."
-            )),
-            Format::TarLz4 => Some(tr!(
-                "Most computers need an archiver app or the lz4 tool to open it. To share with \
-                 anyone, pick .zip."
-            )),
-            Format::Gz | Format::Zst | Format::Xz | Format::Bz2 | Format::Lz4 => Some(tr!(
-                "It holds this one file. Command-line tools open it; Windows and macOS may need \
-                 an archiver app. To share with anyone, pick .zip."
-            )),
-        }
-    }
-
     /// What packwing-core makes of it.
     fn kind(self) -> Kind {
         match self {
@@ -1494,11 +1466,6 @@ impl CreateDialog {
                         name = name
                     ))
             }))
-            .children(
-                self.format(cx)
-                    .caveat()
-                    .map(|caveat| note(Tone::Warn).mt(ui(4.)).child(caveat)),
-            )
             .children(self.selection.not_portable.first().map(|name| {
                 // What it holds is no reason not to make it: said, not refused.
                 note(Tone::Warn)
@@ -2143,13 +2110,6 @@ mod tests {
         assert!(name_fits(".hidden"));
         for bad in ["", ".", "..", "a/b", "../a", "a\\b"] {
             assert!(!name_fits(bad), "{bad:?}");
-        }
-    }
-
-    #[test]
-    fn every_format_but_zip_says_where_it_may_not_open() {
-        for f in Format::WITH_ONE_FILE {
-            assert_eq!(f.caveat().is_none(), f == Format::Zip, "{f:?}");
         }
     }
 
