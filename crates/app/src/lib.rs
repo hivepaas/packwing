@@ -147,6 +147,9 @@ const ICONS: &[(&str, &[u8])] = icons![
     "eye",
     "eye-off",
     "folder",
+    // A folder's tile in a list: its outline, then its front edge.
+    "folder-tile",
+    "folder-tile-edge",
     "home",
     "image",
     "jobs",

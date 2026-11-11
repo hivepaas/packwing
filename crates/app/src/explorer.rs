@@ -34,7 +34,7 @@ use crate::model::{Kind, date, tag_of};
 use crate::prefs;
 use crate::signatures::{self, Looking};
 use crate::text_size::ui;
-use crate::widgets::{Fill, Size, button, icon, icon_button, menu_item, menu_panel, tile};
+use crate::widgets::{Fill, Size, button, icon, icon_button, kind_tile, menu_item, menu_panel};
 
 /// How many items are asked for at a time.
 pub const PAGE: usize = 1000;
@@ -1246,8 +1246,8 @@ impl Explorer {
     fn cells(
         columns: Columns,
         id: impl Into<ElementId>,
+        kind: Kind,
         tag: String,
-        tint: crate::colors::Tint,
         name: impl IntoElement,
         size: String,
         modified: String,
@@ -1262,13 +1262,7 @@ impl Explorer {
             .gap(ui(12.))
             .px(ui(14.))
             .rounded(ui(16.))
-            .child(
-                tile(36., 11., tint)
-                    .h(ui(32.))
-                    .text_size(ui(10.))
-                    .font_weight(FontWeight::BOLD)
-                    .child(tag),
-            )
+            .child(kind_tile(kind, tag, 36., 32., 11., 10.))
             .child(div().flex_1().min_w_0().child(name))
             .when(columns.size(), |d| {
                 d.child(
@@ -1317,8 +1311,8 @@ impl Explorer {
             return Self::cells(
                 self.columns.get(),
                 "new-folder",
+                Kind::Folder,
                 "DIR".into(),
-                c.folder_tag,
                 self.name_box(),
                 String::new(),
                 String::new(),
@@ -1358,8 +1352,8 @@ impl Explorer {
             return Self::cells(
                 self.columns.get(),
                 ("row", at),
+                kind,
                 tag_of(&item.name, kind),
-                kind.tint(&c),
                 name,
                 if item.dir { String::new() } else { size },
                 modified,
@@ -1381,8 +1375,8 @@ impl Explorer {
         Self::cells(
             self.columns.get(),
             ("row", at),
+            kind,
             tag_of(&item.name, kind),
-            kind.tint(&c),
             name,
             size,
             modified,

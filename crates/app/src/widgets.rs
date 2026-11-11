@@ -9,6 +9,7 @@ use gpui::{
 };
 
 use crate::colors::{Tint, colors};
+use crate::model::Kind;
 use crate::text_size::ui;
 
 /// The room between a page's panes, and between the page and the window's
@@ -59,6 +60,61 @@ pub fn tile(size: f32, radius: f32, tint: Tint) -> Div {
         .flex()
         .items_center()
         .justify_center()
+}
+
+/// A file's tile in a list, `width` by `height` with corners of `radius`: the
+/// letters of its tag, `text` px, on its kind's tint. A folder's is no square:
+/// a folder's outline as large as fits, in the tint's ground, with its front
+/// edge in the ink, so that folders and files differ at a glance.
+pub fn kind_tile(
+    kind: Kind,
+    tag: impl Into<SharedString>,
+    width: f32,
+    height: f32,
+    radius: f32,
+    text: f32,
+) -> Div {
+    let tint = kind.tint(&colors());
+    if kind == Kind::Folder {
+        return folder_tile(width, height, tint);
+    }
+    tile(width, radius, tint)
+        .h(ui(height))
+        .text_size(ui(text))
+        .font_weight(FontWeight::BOLD)
+        .child(tag.into())
+}
+
+/// A folder's outline, 36 by 32 as drawn, in `width` by `height`. GPUI draws
+/// an icon in one colour, so the outline and its edge are two, one over the
+/// other, as the logo's zipper and feather are.
+fn folder_tile(width: f32, height: f32, tint: Tint) -> Div {
+    let w = width.min(height * 36. / 32.);
+    let layer = |name: &str, color: gpui::Rgba| {
+        svg()
+            .path(SharedString::from(format!("icons/{name}.svg")))
+            .absolute()
+            .top_0()
+            .left_0()
+            .size_full()
+            .text_color(color)
+    };
+    div()
+        .w(ui(width))
+        .h(ui(height))
+        .flex_shrink_0()
+        .flex()
+        .items_center()
+        .justify_center()
+        .child(
+            div()
+                .relative()
+                .w(ui(w))
+                .h(ui(w * 32. / 36.))
+                .child(layer("folder-tile", rgb(tint.ground)))
+                // The edge a little lighter than the ink: a fold, not a line.
+                .child(layer("folder-tile-edge", rgba(tint.ink << 8 | 0x73))),
+        )
 }
 
 /// The accent's tint, for the logo's tile.
