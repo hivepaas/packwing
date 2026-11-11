@@ -2290,6 +2290,9 @@ t26005fe3 = Tidak dapat dibaca: { $why }
 # Find in text
 t9cbe4be4 = Cari dalam teks
 
+# Invalid pattern
+t5b9dcaca = Pola tidak valid
+
 # No matches
 td29421ef = Tidak ada yang cocok
 

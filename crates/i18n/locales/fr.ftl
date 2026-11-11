@@ -2316,6 +2316,9 @@ t26005fe3 = Lecture impossible : { $why }
 # Find in text
 t9cbe4be4 = Rechercher dans le texte
 
+# Invalid pattern
+t5b9dcaca = Motif non valide
+
 # No matches
 td29421ef = Aucun résultat
 

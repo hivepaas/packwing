@@ -2281,6 +2281,9 @@ t26005fe3 = 읽을 수 없습니다: { $why }
 # Find in text
 t9cbe4be4 = 텍스트에서 찾기
 
+# Invalid pattern
+t5b9dcaca = 잘못된 패턴
+
 # No matches
 td29421ef = 일치 항목 없음
 

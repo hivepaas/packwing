@@ -2316,6 +2316,9 @@ t26005fe3 = Okunamadı: { $why }
 # Find in text
 t9cbe4be4 = Metinde bul
 
+# Invalid pattern
+t5b9dcaca = Geçersiz desen
+
 # No matches
 td29421ef = Eşleşme yok
 

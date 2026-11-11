@@ -2290,6 +2290,9 @@ t26005fe3 = 無法讀取：{ $why }
 # Find in text
 t9cbe4be4 = 在文字中尋找
 
+# Invalid pattern
+t5b9dcaca = 無效的模式
+
 # No matches
 td29421ef = 沒有符合的結果
 

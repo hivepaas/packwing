@@ -2281,6 +2281,9 @@ t26005fe3 = 无法读取：{ $why }
 # Find in text
 t9cbe4be4 = 在文本中查找
 
+# Invalid pattern
+t5b9dcaca = 无效的模式
+
 # No matches
 td29421ef = 无匹配项
 

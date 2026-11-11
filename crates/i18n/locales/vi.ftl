@@ -2281,6 +2281,9 @@ t26005fe3 = Không đọc được: { $why }
 # Find in text
 t9cbe4be4 = Tìm trong văn bản
 
+# Invalid pattern
+t5b9dcaca = Mẫu không hợp lệ
+
 # No matches
 td29421ef = Không tìm thấy
 

@@ -2368,6 +2368,9 @@ t26005fe3 = Не удалось прочитать: { $why }
 # Find in text
 t9cbe4be4 = Найти в тексте
 
+# Invalid pattern
+t5b9dcaca = Неверный шаблон
+
 # No matches
 td29421ef = Совпадений нет
 

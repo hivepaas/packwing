@@ -96,6 +96,8 @@ pub struct Viewer {
     _read_ahead: Option<Task<()>>,
     /// A search in the text shown, while its bar is open.
     finding: Option<Finding>,
+    /// How the search reads what is typed: kept from one file to the next.
+    how: HowFound,
     focus: FocusHandle,
 }
 
@@ -105,19 +107,56 @@ struct Finding {
     field: Entity<TextInput>,
     found: Vec<Range<usize>>,
     at: usize,
+    /// What is typed is no pattern.
+    invalid: bool,
     _typing: Subscription,
 }
 
 /// The most a search finds: more is not counted, nor marked.
 const MOST_FOUND: usize = 10_000;
 
-/// Where `query` is in `text`, whatever the letters' case, by byte ranges,
-/// [`MOST_FOUND`] at most.
-pub fn find_all(text: &str, query: &str) -> Vec<Range<usize>> {
-    let query: Vec<char> = query.chars().collect();
+/// How a search reads what is typed.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct HowFound {
+    /// The letters' case as typed, where any case is found otherwise.
+    pub case: bool,
+    /// A pattern (Rust's regex: no look-around, no back-references), `^`
+    /// and `$` at each line's start and end.
+    pub regex: bool,
+}
+
+/// Where `query` is in `text`, as `how` says, by byte ranges, apart,
+/// [`MOST_FOUND`] at most; none empty. `None` when it is no pattern.
+pub fn find_all(text: &str, query: &str, how: HowFound) -> Option<Vec<Range<usize>>> {
     if query.is_empty() {
-        return Vec::new();
+        return Some(Vec::new());
     }
+    if how.regex {
+        let pattern = regex::RegexBuilder::new(query)
+            .case_insensitive(!how.case)
+            .multi_line(true)
+            // A pattern typed is small; one that compiles to more is refused.
+            .size_limit(1 << 20)
+            .build()
+            .ok()?;
+        return Some(
+            pattern
+                .find_iter(text)
+                .filter(|m| !m.is_empty())
+                .take(MOST_FOUND)
+                .map(|m| m.range())
+                .collect(),
+        );
+    }
+    if how.case {
+        return Some(
+            text.match_indices(query)
+                .take(MOST_FOUND)
+                .map(|(at, m)| at..at + m.len())
+                .collect(),
+        );
+    }
+    let query: Vec<char> = query.chars().collect();
     let same = |a: char, b: char| a == b || a.to_lowercase().eq(b.to_lowercase());
     let chars: Vec<(usize, char)> = text.char_indices().collect();
     let mut found = Vec::new();
@@ -136,7 +175,7 @@ pub fn find_all(text: &str, query: &str) -> Vec<Range<usize>> {
             i += 1;
         }
     }
-    found
+    Some(found)
 }
 
 impl EventEmitter<ViewerEvent> for Viewer {}
@@ -299,6 +338,7 @@ impl Viewer {
             _read: None,
             _read_ahead: None,
             finding: None,
+            how: HowFound::default(),
             focus: cx.focus_handle(),
         };
         viewer.show(at, cx);
@@ -318,8 +358,10 @@ impl Viewer {
 
     /// What the search found, and the one chosen of it, while its bar is open.
     #[cfg(all(test, feature = "test-hooks"))]
-    pub fn finding(&self) -> Option<(usize, usize)> {
-        self.finding.as_ref().map(|f| (f.found.len(), f.at))
+    pub fn finding(&self) -> Option<(usize, usize, bool)> {
+        self.finding
+            .as_ref()
+            .map(|f| (f.found.len(), f.at, f.invalid))
     }
 
     /// Whether what is shown is read, and what kind it is, for tests.
@@ -370,6 +412,7 @@ impl Viewer {
                 field,
                 found: Vec::new(),
                 at: 0,
+                invalid: false,
                 _typing: typing,
             });
         }
@@ -386,10 +429,12 @@ impl Viewer {
             return;
         };
         let query = finding.field.read(cx).text().to_owned();
-        finding.found = match &self.shown {
-            Shown::Text(text, ..) => find_all(text, &query),
-            _ => Vec::new(),
+        let found = match &self.shown {
+            Shown::Text(text, ..) => find_all(text, &query, self.how),
+            _ => Some(Vec::new()),
         };
+        finding.invalid = found.is_none();
+        finding.found = found.unwrap_or_default();
         finding.at = 0;
         let found = finding.found.clone();
         self.text.update(cx, |t, cx| {
@@ -429,11 +474,40 @@ impl Viewer {
         cx.notify();
     }
 
+    /// A switch of how the search reads what is typed, `on` or not, which
+    /// `flip` turns.
+    fn find_toggle(
+        &self,
+        id: &'static str,
+        label: &'static str,
+        on: bool,
+        flip: fn(&mut HowFound),
+        cx: &mut Context<Self>,
+    ) -> impl IntoElement + use<> {
+        button(
+            id,
+            label,
+            if on { Fill::Tonal } else { Fill::Text },
+            Size::Medium,
+        )
+        .px(ui(12.))
+        .font_family(crate::FONT)
+        .on_click(cx.listener(move |this, _, window, cx| {
+            flip(&mut this.how);
+            this.find(cx);
+            // Back to the field, to type on.
+            if let Some(f) = &this.finding {
+                window.focus(&f.field.focus_handle(cx), cx);
+            }
+        }))
+    }
+
     fn find_bar(&self, cx: &mut Context<Self>) -> Option<impl IntoElement + use<>> {
         let c = colors();
         let finding = self.finding.as_ref()?;
         let typed = !finding.field.read(cx).text().is_empty();
         let said = match finding.found.len() {
+            _ if finding.invalid => tr!("Invalid pattern"),
             0 if typed => tr!("No matches"),
             0 => String::new(),
             n if n >= MOST_FOUND => format!("{} / {}+", finding.at + 1, count(n as u64)),
@@ -456,6 +530,14 @@ impl Viewer {
                         .text_size(ui(14.))
                         .child(finding.field.clone()),
                 )
+                .child(self.find_toggle("find-case", "Aa", self.how.case, |h| h.case = !h.case, cx))
+                .child(self.find_toggle(
+                    "find-regex",
+                    ".*",
+                    self.how.regex,
+                    |h| h.regex = !h.regex,
+                    cx,
+                ))
                 .child(
                     div()
                         .debug_selector(|| "find-count".to_owned())
@@ -878,14 +960,54 @@ mod tests {
 
     #[test]
     fn a_search_finds_whatever_the_case() {
+        let any = HowFound::default();
         let text = "Xin chào\nxin CHÀO\nxinh";
-        let found = find_all(text, "xin chào");
+        let found = find_all(text, "xin chào", any).expect("found");
         assert_eq!(found.len(), 2);
         assert_eq!(&text[found[1].clone()], "xin CHÀO");
         // Apart: one match does not start inside another.
-        assert_eq!(find_all("aaaa", "aa"), [0..2, 2..4]);
-        assert!(find_all(text, "").is_empty());
-        assert!(find_all(text, "missing").is_empty());
+        assert_eq!(find_all("aaaa", "aa", any), Some(vec![0..2, 2..4]));
+        assert_eq!(find_all(text, "", any), Some(Vec::new()));
+        assert_eq!(find_all(text, "missing", any), Some(Vec::new()));
+        // Its case as typed.
+        let case = HowFound {
+            case: true,
+            regex: false,
+        };
+        assert_eq!(find_all(text, "xin", case).map(|f| f.len()), Some(2));
+        assert_eq!(find_all(text, "CHÀO", case).map(|f| f.len()), Some(1));
+    }
+
+    #[test]
+    fn a_search_by_pattern() {
+        let regex = HowFound {
+            case: false,
+            regex: true,
+        };
+        let log = "ERROR disk full\nINFO ok\nerror: retry 3\nWARN 42 errors";
+        // ^ at each line's start, any case.
+        let found = find_all(log, "^error", regex).expect("a pattern");
+        assert_eq!(found.len(), 2);
+        assert_eq!(&log[found[1].clone()], "error");
+        let digits = find_all(log, r"\d+", regex).expect("a pattern");
+        let digits: Vec<&str> = digits.into_iter().map(|r| &log[r]).collect();
+        assert_eq!(digits, ["3", "42"]);
+        // Its case as typed.
+        let case = HowFound {
+            case: true,
+            regex: true,
+        };
+        assert_eq!(find_all(log, "^error", case).map(|f| f.len()), Some(1));
+        // What finds nothing but empty matches finds nothing.
+        assert_eq!(find_all(log, "^", regex), Some(Vec::new()));
+        assert_eq!(find_all(log, "x*", regex), Some(Vec::new()));
+        // No pattern.
+        assert_eq!(find_all(log, "[abc", regex), None);
+        assert_eq!(find_all(log, "(?<=a)b", regex), None);
+        // Not a pattern without the switch: the brackets are letters.
+        let letters = find_all("a[abc", "[abc", HowFound::default()).expect("found");
+        assert_eq!(letters.len(), 1);
+        assert_eq!(letters[0], 1..5);
     }
 
     #[test]
