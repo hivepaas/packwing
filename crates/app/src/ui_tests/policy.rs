@@ -2,7 +2,8 @@
 
 use packwing_license::Plan;
 use packwing_policy::{
-    Found, LICENSE_KEY, MIN_PASSWORD_LENGTH, PROPAGATE_MOTW, REQUIRE_ENCRYPTION, Value,
+    AUDIT_LOG, AUDIT_LOG_PATH, AUDIT_LOG_REQUIRED, Found, LICENSE_KEY, MIN_PASSWORD_LENGTH,
+    PROPAGATE_MOTW, REQUIRE_ENCRYPTION, Value,
 };
 
 use super::{Ui, listed, scenario};
@@ -128,3 +129,38 @@ scenario!(
         assert_eq!(records[0]["by"], "policy");
     }
 );
+
+/// A file where the audit log's folder would be, so that no record can be
+/// written: one for this process, made before the policy names it.
+fn no_audit_folder() -> std::path::PathBuf {
+    let path = no_audit_path();
+    std::fs::write(&path, "a file where the audit log's folder would be").expect("the file");
+    path
+}
+
+scenario!(
+    /// Required by the organization, a job whose start the audit log cannot
+    /// write does not start: New archive says why, and makes nothing.
+    a_job_the_audit_log_cannot_record_does_not_start,
+    policy: found(vec![
+        (AUDIT_LOG, Value::Bool(true)),
+        (AUDIT_LOG_REQUIRED, Value::Bool(true)),
+        (AUDIT_LOG_PATH, Value::Text(no_audit_folder().display().to_string())),
+    ]),
+    |ui| {
+        let zip = new_archive(ui);
+        ui.click("create");
+        ui.wait_until("the job to be refused", |ui| {
+            ui.ws(|ws, _, cx| ws.job_failed(cx)).is_some()
+        });
+        let why = ui.ws(|ws, _, cx| ws.job_failed(cx)).expect("why");
+        assert!(why.contains("requires each job to be recorded"), "{why}");
+        assert!(!zip.exists(), "a job refused makes nothing");
+        let _ = std::fs::remove_file(no_audit_path());
+    }
+);
+
+/// Where [`no_audit_folder`] put its file.
+fn no_audit_path() -> std::path::PathBuf {
+    std::env::temp_dir().join(format!("packwing-no-audit-{}", std::process::id()))
+}
