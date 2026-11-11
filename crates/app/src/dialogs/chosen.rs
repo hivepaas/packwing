@@ -10,7 +10,7 @@ use packwing_i18n::tr;
 use crate::colors::colors;
 use crate::model::{Kind, Selection, tag_of};
 use crate::text_size::ui;
-use crate::widgets::{Fill, Size, Tone, button, icon, icon_button, legend, note, tile, tip};
+use crate::widgets::{Fill, Size, Tone, button, icon, icon_button, kind_tile, legend, note, tip};
 
 /// How tall a row of the list is, and how many show before it scrolls.
 const ROW: f32 = 44.;
@@ -107,12 +107,7 @@ fn row<V: Choosing>(this: &V, at: usize, cx: &mut Context<V>) -> Option<impl Int
             .px(ui(10.))
             .rounded(ui(12.))
             .hover(|s| s.bg(rgb(c.well_hover)))
-            .child(
-                tile(30., 10., kind.tint(&c))
-                    .text_size(ui(9.))
-                    .font_weight(FontWeight::BOLD)
-                    .child(tag_of(&name, kind)),
-            )
+            .child(kind_tile(kind, tag_of(&name, kind), 30., 30., 10., 9.))
             .child(
                 div()
                     .flex_1()

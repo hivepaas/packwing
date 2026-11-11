@@ -11,7 +11,7 @@ use crate::explorer::{Explorer, can_be_signed, is_archive, runs_when_opened};
 use crate::model::{Kind, date, size, tag_of};
 use crate::signatures::{self, Standing};
 use crate::text_size::ui;
-use crate::widgets::{Fill, Size, button, tile};
+use crate::widgets::{Fill, Size, button, kind_tile};
 
 fn transfers(explorer: &Entity<Explorer>) -> Div {
     let (copy, moved) = (explorer.clone(), explorer.clone());
@@ -230,12 +230,14 @@ fn info_of(entity: &Entity<Explorer>, item: &Item, body: Div, cx: &App) -> Div {
             .flex()
             .items_center()
             .gap(ui(12.))
-            .child(
-                tile(48., 16., kind.tint(&c))
-                    .text_size(ui(12.))
-                    .font_weight(FontWeight::BOLD)
-                    .child(tag_of(&item.name, kind)),
-            )
+            .child(kind_tile(
+                kind,
+                tag_of(&item.name, kind),
+                48.,
+                48.,
+                16.,
+                12.,
+            ))
             .child(
                 div()
                     .flex_1()

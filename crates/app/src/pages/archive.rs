@@ -33,8 +33,8 @@ use crate::prefs;
 use crate::signatures::{self, Looking, Standing};
 use crate::text_size::ui;
 use crate::widgets::{
-    Fill, Size, Tone, button, chip, icon, icon_button, menu_item, menu_panel, note, tile,
-    tonal_tint,
+    Fill, Size, Tone, button, chip, icon, icon_button, kind_tile, menu_item, menu_panel, note,
+    tile, tonal_tint,
 };
 
 /// What the user asked of the archive.
@@ -1234,7 +1234,6 @@ impl ArchivePage {
                 }
             });
             let dir = e.kind == Kind::Folder;
-            let tint = e.kind.tint(&c);
             let inside = (e.kind == Kind::Folder).then(|| {
                 let mut folder = a.folder.clone();
                 folder.push(e.name.clone());
@@ -1293,12 +1292,7 @@ impl ArchivePage {
                         }
                     }
                 }))
-                .child(
-                    tile(40., 14., tint)
-                        .text_size(ui(11.))
-                        .font_weight(FontWeight::BOLD)
-                        .child(e.tag()),
-                )
+                .child(kind_tile(e.kind, e.tag(), 40., 40., 14., 11.))
                 .child(
                     div()
                         .flex_1()
@@ -1593,12 +1587,7 @@ impl ArchivePage {
                         .child(why.clone()),
                 ),
                 (Some(e), _) if e.kind == Kind::Image => d.child(icon("image", 40., c.muted)),
-                (Some(e), _) => d.child(
-                    tile(64., 20., e.kind.tint(&c))
-                        .text_size(ui(15.))
-                        .font_weight(FontWeight::BOLD)
-                        .child(e.tag()),
-                ),
+                (Some(e), _) => d.child(kind_tile(e.kind, e.tag(), 64., 64., 20., 15.)),
                 (None, _) => d.child(
                     div()
                         .text_size(ui(13.))
