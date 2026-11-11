@@ -2515,20 +2515,11 @@ t5af584a0 = { $name } đã có trong thư mục
 # This file is not an archive packwing can open.
 t660f149b = Tệp này không phải tệp nén mà packwing mở được.
 
-# This is a Debian package (.deb). packwing can’t open those yet.
-tfba1f7a9 = Đây là gói Debian (.deb). packwing chưa mở được loại này.
-
 # This is an ar archive, as static libraries are. packwing can’t open those yet.
 t9c5564b8 = Đây là tệp nén ar, như các thư viện tĩnh. packwing chưa mở được loại này.
 
 # This is a macOS disk image (.dmg). packwing can’t open those yet.
 t080d0cb2 = Đây là ảnh đĩa macOS (.dmg). packwing chưa mở được loại này.
-
-# This is an AppImage, a Linux program with its files inside. packwing can’t open those yet.
-t0fd14656 = Đây là AppImage, một chương trình Linux chứa các tệp của nó bên trong. packwing chưa mở được loại này.
-
-# This is a SquashFS image, as snap packages are. packwing can’t open those yet.
-ta2e5570a = Đây là ảnh SquashFS, như các gói snap. packwing chưa mở được loại này.
 
 # The password is wrong, or the archive is damaged.
 ta4d3227d = Mật khẩu sai, hoặc tệp nén bị hỏng.

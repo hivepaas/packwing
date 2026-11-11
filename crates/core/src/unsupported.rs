@@ -10,18 +10,11 @@ use crate::source::Source;
 /// A kind of archive packwing does not read yet, told by its bytes.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Unsupported {
-    /// A Debian package (`.deb`): an ar archive whose first member is
-    /// `debian-binary`.
-    Deb,
-    /// Another ar archive: a static library (`.a`), most often.
+    /// An ar archive that is not a Debian package, which packwing opens: a
+    /// static library (`.a`), most often.
     Ar,
     /// A macOS disk image (`.dmg`): UDIF, whose last 512 bytes start `koly`.
     Dmg,
-    /// An AppImage: a Linux program (ELF) marked `AI` at its 8th byte, its
-    /// files in a SquashFS image after it.
-    AppImage,
-    /// A SquashFS image, as a snap package is.
-    SquashFs,
 }
 
 /// `result`, or, when it failed as reading a file of a kind packwing does
@@ -56,22 +49,11 @@ fn what_it_is(source: &Source) -> io::Result<Option<Unsupported>> {
 }
 
 /// What the first bytes of a file say it is.
+/// A Debian package, which hivepack::open tells too, is one packwing reads:
+/// one that fails, fails as itself.
 fn by_head(head: &[u8]) -> Option<Unsupported> {
-    if let Some(member) = head.strip_prefix(b"!<arch>\n") {
-        return Some(if member.starts_with(b"debian-binary") {
-            Unsupported::Deb
-        } else {
-            Unsupported::Ar
-        });
-    }
-    if head.starts_with(b"hsqs") {
-        return Some(Unsupported::SquashFs);
-    }
-    // The AppImage specification's magic: `AI` and its type, 1 or 2.
-    if head.starts_with(b"\x7fELF") && head.get(8..10) == Some(b"AI") {
-        return Some(Unsupported::AppImage);
-    }
-    None
+    let member = head.strip_prefix(b"!<arch>\n")?;
+    (!member.starts_with(b"debian-binary")).then_some(Unsupported::Ar)
 }
 
 fn read_up_to(r: &mut impl Read, buf: &mut [u8]) -> io::Result<usize> {
@@ -92,21 +74,13 @@ mod tests {
     #[test]
     fn told_by_their_first_bytes() {
         assert_eq!(
-            by_head(b"!<arch>\ndebian-binary   1342"),
-            Some(Unsupported::Deb)
-        );
-        assert_eq!(
             by_head(b"!<arch>\nfoo.o/          0"),
             Some(Unsupported::Ar)
         );
-        assert_eq!(
-            by_head(b"hsqs\x05\x00\x00\x00"),
-            Some(Unsupported::SquashFs)
-        );
-        assert_eq!(
-            by_head(b"\x7fELF\x02\x01\x01\x00AI\x02\x00\x00\x00"),
-            Some(Unsupported::AppImage)
-        );
+        // What packwing reads: a Debian package, a SquashFS image, an AppImage.
+        assert_eq!(by_head(b"!<arch>\ndebian-binary   1342"), None);
+        assert_eq!(by_head(b"hsqs\x05\x00\x00\x00"), None);
+        assert_eq!(by_head(b"\x7fELF\x02\x01\x01\x00AI\x02\x00\x00\x00"), None);
         // A program that is only one.
         assert_eq!(by_head(b"\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00"), None);
         assert_eq!(by_head(b"\xFF\xD8\xFF\xE0"), None);

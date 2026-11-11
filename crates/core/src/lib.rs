@@ -3,11 +3,13 @@
 //! archives. Nothing here draws; the window shows what comes back.
 //!
 //! A file is opened through its layers (age, zstd, xz, gzip, bzip2, an RPM
-//! package's lead and headers and the others hivepack::open finds), and what
-//! is under them read: a tar, cpio or XAR archive (a macOS package) or an
-//! ISO 9660 image as it streams, a ZIP, RAR or 7z archive or a UDF volume from a
-//! file (taken out to a temporary one first when it is under layers), or
-//! one file, compressed or encrypted on its own (`notes.txt.zst`).
+//! package's lead and headers, a Debian package's members before its
+//! `data.tar`, and the others hivepack::open finds), and what is under them
+//! read: a tar, cpio or XAR archive (a macOS package) or an ISO 9660 image (a
+//! type 1 AppImage too) as it streams, a ZIP, RAR or 7z archive, a UDF volume
+//! or a SquashFS image (a snap, a type 2 AppImage's) from a file (taken out to
+//! a temporary one first when it is under layers), or one file, compressed or
+//! encrypted on its own (`notes.txt.zst`).
 
 pub mod audit;
 mod checksum;
@@ -226,17 +228,12 @@ impl fmt::Display for Error {
                 f.write_str(&tr!("This file is not an archive packwing can open."))
             }
             Error::Unsupported(what) => f.write_str(&match what {
-                Unsupported::Deb => tr!("This is a Debian package (.deb). packwing can’t open those yet."),
                 Unsupported::Ar => tr!(
                     "This is an ar archive, as static libraries are. packwing can’t open those yet."
                 ),
-                Unsupported::Dmg => tr!("This is a macOS disk image (.dmg). packwing can’t open those yet."),
-                Unsupported::AppImage => tr!(
-                    "This is an AppImage, a Linux program with its files inside. packwing can’t open those yet."
-                ),
-                Unsupported::SquashFs => tr!(
-                    "This is a SquashFS image, as snap packages are. packwing can’t open those yet."
-                ),
+                Unsupported::Dmg => {
+                    tr!("This is a macOS disk image (.dmg). packwing can’t open those yet.")
+                }
             }),
             Error::Locked { needs } if needs.iter().any(|n| n == "scrypt") => {
                 f.write_str(&tr!("This file is encrypted with a passphrase."))
@@ -455,6 +452,27 @@ impl From<hivepack::iso::Error> for Error {
     }
 }
 
+impl From<hivepack::squashfs::Error> for Error {
+    fn from(e: hivepack::squashfs::Error) -> Error {
+        match e {
+            hivepack::squashfs::Error::Io(io) => Error::from(io),
+            e => Error::Failed(e.to_string()),
+        }
+    }
+}
+
+impl From<hivepack::appimage::Error> for Error {
+    fn from(e: hivepack::appimage::Error) -> Error {
+        match e {
+            hivepack::appimage::Error::Io(io) => Error::from(io),
+            hivepack::appimage::Error::Squashfs(hivepack::squashfs::Error::Io(io)) => {
+                Error::from(io)
+            }
+            e => Error::Failed(e.to_string()),
+        }
+    }
+}
+
 impl From<hivepack::udf::Error> for Error {
     fn from(e: hivepack::udf::Error) -> Error {
         match e {
@@ -640,11 +658,48 @@ const _: () = assert!(hivepack::zstd::UNSAFE_FAST);
 /// `name` without its archive extensions and a part number: what it unpacks
 /// to (`Báo cáo.part1.rar` → `Báo cáo`, `backup.tar.zst.age` → `backup`).
 pub fn stem(name: &str) -> &str {
-    const EXTENSIONS: [&str; 34] = [
-        ".age", ".zst", ".gz", ".xz", ".bz2", ".lz4", ".lz", ".lzma", ".tgz", ".tbz2", ".tbz",
-        ".txz", ".tzst", ".tlz", ".tlz4", ".tar", ".7z", ".zip", ".rar", ".iso", ".cpio", ".rpm",
-        ".xar", ".pkg", ".jar", ".war", ".ear", ".apk", ".xpi", ".epub", ".cbz", ".cbr", ".cb7",
+    const EXTENSIONS: [&str; 41] = [
+        ".age",
+        ".zst",
+        ".gz",
+        ".xz",
+        ".bz2",
+        ".lz4",
+        ".lz",
+        ".lzma",
+        ".tgz",
+        ".tbz2",
+        ".tbz",
+        ".txz",
+        ".tzst",
+        ".tlz",
+        ".tlz4",
+        ".tar",
+        ".7z",
+        ".zip",
+        ".rar",
+        ".iso",
+        ".cpio",
+        ".rpm",
+        ".xar",
+        ".pkg",
+        ".jar",
+        ".war",
+        ".ear",
+        ".apk",
+        ".xpi",
+        ".epub",
+        ".cbz",
+        ".cbr",
+        ".cb7",
         ".cbt",
+        ".deb",
+        ".udeb",
+        ".snap",
+        ".sqfs",
+        ".squashfs",
+        ".AppImage",
+        ".appimage",
     ];
     let mut s = name;
     while let Some(rest) = EXTENSIONS

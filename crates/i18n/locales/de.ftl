@@ -2553,20 +2553,11 @@ t5af584a0 = { $name } ist schon im Ordner
 # This file is not an archive packwing can open.
 t660f149b = Diese Datei ist kein Archiv, das packwing öffnen kann.
 
-# This is a Debian package (.deb). packwing can’t open those yet.
-tfba1f7a9 = Dies ist ein Debian-Paket (.deb). packwing kann solche noch nicht öffnen.
-
 # This is an ar archive, as static libraries are. packwing can’t open those yet.
 t9c5564b8 = Dies ist ein ar-Archiv, wie es statische Bibliotheken sind. packwing kann solche noch nicht öffnen.
 
 # This is a macOS disk image (.dmg). packwing can’t open those yet.
 t080d0cb2 = Dies ist ein macOS-Image (.dmg). packwing kann solche noch nicht öffnen.
-
-# This is an AppImage, a Linux program with its files inside. packwing can’t open those yet.
-t0fd14656 = Dies ist ein AppImage, ein Linux-Programm mit seinen Dateien darin. packwing kann solche noch nicht öffnen.
-
-# This is a SquashFS image, as snap packages are. packwing can’t open those yet.
-ta2e5570a = Dies ist ein SquashFS-Image, wie es Snap-Pakete sind. packwing kann solche noch nicht öffnen.
 
 # The password is wrong, or the archive is damaged.
 ta4d3227d = Das Passwort ist falsch, oder das Archiv ist beschädigt.

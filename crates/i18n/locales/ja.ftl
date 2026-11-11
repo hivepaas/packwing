@@ -2515,20 +2515,11 @@ t5af584a0 = { $name } はすでにフォルダにあります
 # This file is not an archive packwing can open.
 t660f149b = このファイルは packwing で開けるアーカイブではありません。
 
-# This is a Debian package (.deb). packwing can’t open those yet.
-tfba1f7a9 = これは Debian パッケージ (.deb) です。packwing はまだ開けません。
-
 # This is an ar archive, as static libraries are. packwing can’t open those yet.
 t9c5564b8 = これは静的ライブラリなどの ar アーカイブです。packwing はまだ開けません。
 
 # This is a macOS disk image (.dmg). packwing can’t open those yet.
 t080d0cb2 = これは macOS のディスクイメージ (.dmg) です。packwing はまだ開けません。
-
-# This is an AppImage, a Linux program with its files inside. packwing can’t open those yet.
-t0fd14656 = これは AppImage (ファイルを内蔵した Linux プログラム) です。packwing はまだ開けません。
-
-# This is a SquashFS image, as snap packages are. packwing can’t open those yet.
-ta2e5570a = これは snap パッケージなどの SquashFS イメージです。packwing はまだ開けません。
 
 # The password is wrong, or the archive is damaged.
 ta4d3227d = パスワードが違うか、アーカイブが壊れています。

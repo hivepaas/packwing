@@ -253,6 +253,29 @@ fn jobs_are_recorded_as_they_start_and_end_and_the_chain_holds() {
     all.sort();
     assert_eq!(all, ["in/b.txt", "in/ghi chú.txt"], "files, not folders");
 
+    // A Debian package is its data.tar, under the package and its
+    // compressor; a snap is a SquashFS image.
+    let data = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data");
+    for (name, format, layers) in [
+        ("sample-xz.deb", "tar", serde_json::json!(["deb", "xz"])),
+        ("sample.sqfs", "squashfs", serde_json::json!([])),
+    ] {
+        extract_with(
+            data.join(name),
+            &s.0.join(format!("out-{name}")),
+            &keys,
+            &ExtractOptions::default(),
+            &Control::default(),
+        )
+        .unwrap();
+        let records = audit::read(&log, None).unwrap();
+        let done = ends(&records, "extract").last().copied().unwrap();
+        assert_eq!(done["result"], "ok", "{name}");
+        assert_eq!(done["format"], format, "{name}");
+        assert_eq!(done["layers"], layers, "{name}");
+        assert_eq!(done["files"], 3, "{name}");
+    }
+
     // A file with no signature beside it is no check: the app looks for one
     // each time a file is chosen, and nothing is recorded.
     let before = audit::read(&log, None).unwrap().len();
