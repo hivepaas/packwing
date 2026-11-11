@@ -849,6 +849,11 @@ fn an_encrypted_archive_is_renamed_in_with_no_password_but_for_its_names() {
 /// its programs go through their branch converter in a folder of their own.
 #[test]
 fn a_new_archive_compresses_as_seven_zip_does_at_its_level() {
+    // Each level as it is, whatever is free on the machine that runs this: a
+    // level whose one thread takes more than is free is lowered (`within`), as
+    // Highest's 256 MiB was to High's on a CI runner. One thread of Highest
+    // fits in this; what is compressed here is too small to touch much of it.
+    packwing_core::memory::set_available(8 << 30);
     let s = Scratch::new("levels");
     let root = s.path("dự án");
     fs::create_dir_all(root.join("bin")).unwrap();
@@ -919,4 +924,5 @@ fn a_new_archive_compresses_as_seven_zip_does_at_its_level() {
         extract(&path, &out, &Keys::default(), &Control::default()).unwrap();
         assert_eq!(fs::read(out.join("dự án/bin/tool.exe")).unwrap(), program);
     }
+    packwing_core::memory::set_available(0);
 }
