@@ -60,10 +60,11 @@ strip = true
 opt-level = 2
 
 # Until hivepack 0.11: the changes packwing takes from git, on its main branch
-# (hivepack#216 to #220): Debian packages opened down to their data.tar
+# (hivepack#216 to #221): Debian packages opened down to their data.tar
 # (open::Layer::Deb, hivepack::ar), SquashFS images read and extracted
 # (hivepack::squashfs, extract_squashfs) for snaps, AppImages of type 2 and
-# type 1 told and opened (hivepack::appimage), and LZO for SquashFS's images.
+# type 1 told and opened (hivepack::appimage), LZO for SquashFS's images, and
+# a SquashFS image's files written in threads (Options::threads).
 # Taken out, and the version above raised, once it is published.
 [patch.crates-io]
-hivepack = { git = "https://github.com/hivepaas/hivepack-rs", rev = "184ba6ceaa962c4182fd95c28a0e04364e649fbf" }
+hivepack = { git = "https://github.com/hivepaas/hivepack-rs", rev = "cbaaef0da2eee24a9ee24d68a991d251c4797f63" }
