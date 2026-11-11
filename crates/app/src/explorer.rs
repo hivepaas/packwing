@@ -270,9 +270,14 @@ pub fn runs_when_opened(item: &Item) -> bool {
         .rsplit_once('.')
         .map(|(_, e)| e.to_ascii_lowercase())
         .unwrap_or_default();
-    Kind::of(&item.name, false) == Kind::Program
+    let kind = Kind::of(&item.name, false);
+    kind == Kind::Program
         || ALSO.contains(&ext.as_str())
-        || item.mode.is_some_and(|m| m & 0o111 != 0)
+        // Marked to run, and named as nothing else: a program or a script
+        // with no extension. What its name says it is opens as that, however
+        // marked: a drive formatted for Windows (NTFS, FAT, exFAT) keeps no
+        // such mark, and Linux marks all its files so.
+        || (kind == Kind::Other && item.mode.is_some_and(|m| m & 0o111 != 0))
 }
 
 /// Whether `item` is a file that can have a signature of its own.
@@ -2075,7 +2080,18 @@ mod tests {
             assert!(runs_when_opened(&file(name, Some(0o644))), "{name}");
         }
         assert!(runs_when_opened(&file("tool", Some(0o755))));
+        assert!(runs_when_opened(&file("data.bin", Some(0o755))));
         assert!(!runs_when_opened(&file("notes.txt", Some(0o644))));
         assert!(!runs_when_opened(&file("photo.jpg", None)));
+        // On a drive formatted for Windows, every file is marked to run.
+        for name in [
+            "backup.tar.xz",
+            "ubuntu.iso",
+            "photo.jpg",
+            "notes.txt",
+            "report.pdf",
+        ] {
+            assert!(!runs_when_opened(&file(name, Some(0o755))), "{name}");
+        }
     }
 }
