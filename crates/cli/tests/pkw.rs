@@ -272,6 +272,90 @@ fn what_is_not_an_archive_or_not_understood_says_so_by_its_code() {
     ok(&s.pkw(&["test", "-q", &fixture("sample.iso.zst")]));
 }
 
+/// A 64-bit ELF program marked as an AppImage of type `kind`, its section
+/// headers at its end, then `image`: a type 2 AppImage of a SquashFS image.
+/// A type 1 is an ISO 9660 image with the program in its first 32 KiB.
+fn appimage(kind: u8, image: &[u8]) -> Vec<u8> {
+    let mut f = vec![0u8; 4096 + 7 * 64];
+    f[..4].copy_from_slice(b"\x7fELF");
+    f[4..7].copy_from_slice(&[2, 1, 1]);
+    f[8..11].copy_from_slice(&[b'A', b'I', kind]);
+    f[40..48].copy_from_slice(&4096u64.to_le_bytes());
+    f[58..60].copy_from_slice(&64u16.to_le_bytes());
+    f[60..62].copy_from_slice(&7u16.to_le_bytes());
+    if kind == 1 {
+        let mut iso = image.to_vec();
+        iso[..f.len()].copy_from_slice(&f);
+        return iso;
+    }
+    f.extend_from_slice(image);
+    f
+}
+
+#[test]
+fn packages_snaps_and_appimages_are_listed_tested_extracted_and_converted() {
+    let s = Scratch::new("packages");
+    let read = |name: &str| std::fs::read(fixture(name)).expect("the fixture");
+    let sqfs = read("sample.sqfs");
+    let iso = {
+        let zst = read("sample.iso.zst");
+        let mut out = vec![0u8; 1 << 20];
+        let n = hivepack::zstd::decompress(&mut out, &zst).expect("the image");
+        out.truncate(n);
+        out
+    };
+    std::fs::write(s.path("Tool.AppImage"), appimage(2, &sqfs)).expect("a file");
+    std::fs::write(s.path("Old.AppImage"), appimage(1, &iso)).expect("a file");
+    std::fs::write(s.path("tool.snap"), &sqfs).expect("a file");
+    std::fs::copy(fixture("sample-xz.deb"), s.path("tool_1.0_all.deb")).expect("a copy");
+    for (name, format, container) in [
+        ("tool_1.0_all.deb", "Tar in Xz in Deb", "Tar"),
+        ("tool.snap", "Squashfs", "Squashfs"),
+        ("Tool.AppImage", "AppImageType2", "AppImageType2"),
+        ("Old.AppImage", "AppImageType1", "AppImageType1"),
+    ] {
+        let listed = ok(&s.pkw(&["list", name]));
+        assert!(
+            listed.lines().any(|l| l == "docs/notes.txt"),
+            "{name}: {listed}"
+        );
+        let info = ok(&s.pkw(&["info", name]));
+        assert!(
+            info.lines()
+                .any(|l| l.starts_with("Format") && l.ends_with(format)),
+            "{name}: {info}"
+        );
+        let json: serde_json::Value =
+            serde_json::from_str(&ok(&s.pkw(&["--json", "info", name]))).expect("JSON");
+        assert_eq!(json["container"], container, "{name}");
+        assert_eq!(json["files"], 3, "{name}");
+        ok(&s.pkw(&["test", "-q", name]));
+        // Into a folder named after it, without its extension.
+        ok(&s.pkw(&["extract", "-q", name]));
+        let stem = name.rsplit_once('.').expect("an extension").0;
+        assert_eq!(
+            std::fs::read(s.path(stem).join("docs/notes.txt")).expect(name),
+            b"Notes from inside the archive.\n"
+        );
+        let picked = format!("picked-{name}");
+        ok(&s.pkw(&["x", "-q", name, "docs/plans", "-o", &picked]));
+        assert!(s.path(&picked).join("plans/a.txt").is_file(), "{name}");
+        assert!(!s.path(&picked).join("readme.md").exists(), "{name}");
+        assert_eq!(
+            ok(&s.pkw(&["cat", name, "readme.md"])),
+            "# Read me\n",
+            "{name}"
+        );
+        let zip = format!("{stem}.zip");
+        ok(&s.pkw(&["convert", "-q", name, &zip]));
+        let converted = ok(&s.pkw(&["list", &zip]));
+        assert!(
+            converted.lines().any(|l| l == "docs/plans/a.txt"),
+            "{name}: {converted}"
+        );
+    }
+}
+
 #[test]
 fn a_file_is_signed_and_its_signature_checked() {
     let s = Scratch::new("sign");
