@@ -29,6 +29,7 @@ use super::panel;
 use crate::colors::colors;
 use crate::file_manager;
 use crate::input::{Changed, TextInput};
+use crate::list_keys;
 use crate::model::{Archive, Entry, Kind, count, size, text_preview};
 use crate::prefs;
 use crate::signatures::{self, Looking, Standing};
@@ -1369,16 +1370,88 @@ impl ArchivePage {
     /// The list's keys, as the browser's: F2 renames, Delete deletes, Escape
     /// closes the menu.
     fn on_key(&mut self, e: &KeyDownEvent, _: &mut Window, cx: &mut Context<Self>) {
-        match e.keystroke.key.as_str() {
+        let key = e.keystroke.key.as_str();
+        match key {
             "escape" if self.menu_at.is_some() => {
                 self.menu_at = None;
                 cx.notify();
             }
             "f2" if self.renamable(cx) => cx.emit(ArchiveEvent::Rename),
             "delete" if self.changeable(cx) => cx.emit(ArchiveEvent::Delete),
+            "up" | "down" | "pageup" | "pagedown" | "home" | "end" if self.menu_at.is_none() => {
+                self.move_choice(key, e.keystroke.modifiers.shift, cx)
+            }
+            "enter" if self.menu_at.is_none() => self.open_chosen(cx),
+            "backspace" if self.menu_at.is_none() => self.go_up(cx),
             _ => return,
         }
         cx.stop_propagation();
+    }
+
+    /// Chooses the row `key` moves to (see [`list_keys`]), showing it in the
+    /// preview; with `range`, all from the one chosen before to it.
+    fn move_choice(&mut self, key: &str, range: bool, cx: &mut Context<Self>) {
+        let Some(a) = self.archive() else {
+            return;
+        };
+        let listed = self.listed(a, cx);
+        let index_at = |n| self.listed_at(a, &listed, n).map(|(i, _, _)| i);
+        let len = listed.len();
+        let from = self
+            .chosen
+            .and_then(|c| (0..len).find(|&n| index_at(n) == Some(c)));
+        let page = list_keys::rows_per_page(&self.scroll, len);
+        let Some(to) = list_keys::moved(key, from, len, page) else {
+            return;
+        };
+        let Some(i) = index_at(to) else {
+            return;
+        };
+        self.select(i, false, range);
+        self.scroll.scroll_to_item(to, ScrollStrategy::Nearest);
+        self.start_preview(cx);
+        cx.notify();
+    }
+
+    /// Opens the one row chosen, as a double click does: a folder gone into, a
+    /// file opened.
+    fn open_chosen(&mut self, cx: &mut Context<Self>) {
+        if self.selected.len() != 1 {
+            return;
+        }
+        let Some(a) = self.archive() else {
+            return;
+        };
+        let listed = self.listed(a, cx);
+        let row = (0..listed.len())
+            .filter_map(|n| self.listed_at(a, &listed, n))
+            .find(|(i, _, _)| Some(*i) == self.chosen);
+        let Some((_, entry, found)) = row else {
+            return;
+        };
+        let path = found.unwrap_or_else(|| {
+            let mut path = a.folder.clone();
+            path.push(entry.name.clone());
+            path
+        });
+        match entry.kind {
+            Kind::Folder => self.reveal(&path, true, cx),
+            Kind::Link => {}
+            _ => cx.emit(ArchiveEvent::OpenEntry(path)),
+        }
+    }
+
+    /// Shows the folder the one shown is in; from its top, the archive it was
+    /// opened from, if it was.
+    fn go_up(&mut self, cx: &mut Context<Self>) {
+        let Some(mut folder) = self.archive().map(|a| a.folder.clone()) else {
+            return;
+        };
+        if folder.pop().is_some() {
+            self.enter(folder, cx);
+        } else if let Some(level) = self.outer.len().checked_sub(1) {
+            cx.emit(ArchiveEvent::Back(level));
+        }
     }
 
     /// A row of the list, of the entry at `i`, or what was found there.

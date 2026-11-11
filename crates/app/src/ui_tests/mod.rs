@@ -29,6 +29,7 @@ mod far;
 mod history;
 mod inside;
 mod jobs;
+mod keys;
 mod policy;
 mod settings;
 mod storages;

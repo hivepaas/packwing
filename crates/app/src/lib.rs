@@ -28,6 +28,7 @@ mod file_manager;
 mod history;
 mod input;
 mod licensing;
+mod list_keys;
 mod managed;
 mod model;
 mod open_with;

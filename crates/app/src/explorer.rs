@@ -30,6 +30,7 @@ use crate::colors::colors;
 use crate::editors;
 use crate::file_manager;
 use crate::input::{Changed, TextInput};
+use crate::list_keys;
 use crate::model::{Kind, date, tag_of};
 use crate::prefs;
 use crate::signatures::{self, Looking};
@@ -1081,26 +1082,25 @@ impl Explorer {
                     .collect();
                 cx.notify();
             }
-            "up" | "down" => self.move_choice(key == "down", m.shift, cx),
+            "up" | "down" | "pageup" | "pagedown" | "home" | "end" => {
+                self.move_choice(key, m.shift, cx)
+            }
             _ => return,
         }
         cx.stop_propagation();
     }
 
-    /// Chooses the row above or below the anchor; with `range`, up to it.
-    fn move_choice(&mut self, down: bool, range: bool, cx: &mut Context<Self>) {
-        if self.shown.is_empty() {
-            return;
-        }
+    /// Chooses the row `key` moves to from the anchor (see [`list_keys`]);
+    /// with `range`, all up to it.
+    fn move_choice(&mut self, key: &str, range: bool, cx: &mut Context<Self>) {
         let from = self.anchor.as_ref().and_then(|anchor| {
             self.shown
                 .iter()
                 .position(|&s| self.items.get(s).is_some_and(|it| &it.name == anchor))
         });
-        let to = match (from, down) {
-            (None, _) => 0,
-            (Some(f), true) => (f + 1).min(self.shown.len() - 1),
-            (Some(f), false) => f.saturating_sub(1),
+        let page = list_keys::rows_per_page(&self.scroll, self.shown.len());
+        let Some(to) = list_keys::moved(key, from, self.shown.len(), page) else {
+            return;
         };
         let keep = self.anchor.clone();
         self.select(to, false, range, cx);
@@ -1389,6 +1389,10 @@ impl Explorer {
             size,
             modified,
         )
+        .debug_selector({
+            let name = item.name.clone();
+            move || format!("row: {name}")
+        })
         .cursor_pointer()
         .when(on, |d| d.bg(rgb(c.chosen)))
         .when(!on, |d| d.hover(|s| s.bg(rgb(c.hover))))
