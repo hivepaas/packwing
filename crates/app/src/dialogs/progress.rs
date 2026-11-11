@@ -567,6 +567,9 @@ impl ProgressDialog {
                 }
             }
             Ok(_) if self.job.sign.is_some() => cx.emit(DialogEvent::Signed),
+            Ok(Some(copy)) if self.job.verb == Verb::Open && self.job.inside => {
+                cx.emit(DialogEvent::Inside(copy));
+            }
             Ok(Some(copy)) if self.job.verb == Verb::Open => {
                 cx.open_with_system(&copy);
                 cx.emit(DialogEvent::Close);

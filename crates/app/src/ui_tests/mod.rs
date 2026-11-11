@@ -27,6 +27,7 @@ mod create;
 mod edit;
 mod far;
 mod history;
+mod inside;
 mod jobs;
 mod policy;
 mod settings;

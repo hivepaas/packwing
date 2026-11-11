@@ -1042,8 +1042,14 @@ tb7927177 = Okunamadı
 # It could not be read: {why}
 t26005fe3 = Okunamadı: { $why }
 
+# It needs the password to show it
+t81f5dbce = Göstermek için parola gerekir
+
 # It could not be shown
 tb60fb288 = Gösterilemedi
+
+# Open as archive
+t3373ce55 = Arşiv olarak aç
 
 # Open with default app
 t5ef80ec5 = Varsayılan uygulamayla aç
@@ -1208,9 +1214,6 @@ tb35c0c27 = Bu arşivde ara
 # Not text it can show
 ta413eca5 = Gösterilebilecek bir metin değil
 
-# It needs the password to show it
-t81f5dbce = Göstermek için parola gerekir
-
 # Open another…
 tff74a552 = Başkasını aç…
 
@@ -1249,6 +1252,9 @@ t8382bd3e = Bir arşiv açın
 
 # ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
 t4a498ac8 = ZIP, 7z ve tar arşivleri, disk kalıpları ve paketler, sıkıştırılmış veya age ile şifrelenmiş: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
+
+# Back to {name}
+t539b9c10 = { $name } öğesine dön
 
 # Open an archive…
 t2cf2a8ee = Arşiv aç…

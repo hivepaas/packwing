@@ -1042,8 +1042,14 @@ tb7927177 = Lecture impossible
 # It could not be read: {why}
 t26005fe3 = Lecture impossible : { $why }
 
+# It needs the password to show it
+t81f5dbce = Le mot de passe est nécessaire pour l'afficher
+
 # It could not be shown
 tb60fb288 = Affichage impossible
+
+# Open as archive
+t3373ce55 = Ouvrir comme archive
 
 # Open with default app
 t5ef80ec5 = Ouvrir avec l'application par défaut
@@ -1208,9 +1214,6 @@ tb35c0c27 = Rechercher dans cette archive
 # Not text it can show
 ta413eca5 = Pas du texte affichable
 
-# It needs the password to show it
-t81f5dbce = Le mot de passe est nécessaire pour l'afficher
-
 # Open another…
 tff74a552 = En ouvrir une autre…
 
@@ -1249,6 +1252,9 @@ t8382bd3e = Ouvrir une archive
 
 # ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
 t4a498ac8 = Archives ZIP, 7z et tar, images disque et paquets, compressés ou chiffrés avec age : .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
+
+# Back to {name}
+t539b9c10 = Revenir à { $name }
 
 # Open an archive…
 t2cf2a8ee = Ouvrir une archive…

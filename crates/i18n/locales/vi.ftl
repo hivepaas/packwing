@@ -1027,8 +1027,14 @@ tb7927177 = Không đọc được
 # It could not be read: {why}
 t26005fe3 = Không đọc được: { $why }
 
+# It needs the password to show it
+t81f5dbce = Cần mật khẩu để hiện
+
 # It could not be shown
 tb60fb288 = Không hiện được
+
+# Open as archive
+t3373ce55 = Mở dưới dạng tệp nén
 
 # Open with default app
 t5ef80ec5 = Mở bằng ứng dụng mặc định
@@ -1192,9 +1198,6 @@ tb35c0c27 = Tìm trong tệp nén này
 # Not text it can show
 ta413eca5 = Không phải văn bản để hiện
 
-# It needs the password to show it
-t81f5dbce = Cần mật khẩu để hiện
-
 # Open another…
 tff74a552 = Mở tệp khác…
 
@@ -1233,6 +1236,9 @@ t8382bd3e = Mở tệp nén
 
 # ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
 t4a498ac8 = Tệp nén ZIP, 7z và tar, ảnh đĩa và gói cài đặt, nén hoặc mã hoá bằng age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
+
+# Back to {name}
+t539b9c10 = Quay lại { $name }
 
 # Open an archive…
 t2cf2a8ee = Mở tệp nén…

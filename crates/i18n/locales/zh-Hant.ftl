@@ -1027,8 +1027,14 @@ tb7927177 = 無法讀取
 # It could not be read: {why}
 t26005fe3 = 無法讀取：{ $why }
 
+# It needs the password to show it
+t81f5dbce = 需要密碼才能顯示
+
 # It could not be shown
 tb60fb288 = 無法顯示
+
+# Open as archive
+t3373ce55 = 以封存檔開啟
 
 # Open with default app
 t5ef80ec5 = 以預設應用程式開啟
@@ -1192,9 +1198,6 @@ tb35c0c27 = 搜尋此封存檔內部
 # Not text it can show
 ta413eca5 = 不是可顯示的文字
 
-# It needs the password to show it
-t81f5dbce = 需要密碼才能顯示
-
 # Open another…
 tff74a552 = 開啟其他…
 
@@ -1233,6 +1236,9 @@ t8382bd3e = 開啟封存檔
 
 # ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
 t4a498ac8 = ZIP、7z 和 tar 封存檔、光碟映像檔和套件，以及以 age 壓縮或加密的檔案：.zip、.7z、.tar.gz、.tar.zst、.iso、.rpm、.pkg、.zst.age…
+
+# Back to {name}
+t539b9c10 = 返回 { $name }
 
 # Open an archive…
 t2cf2a8ee = 開啟封存檔…
