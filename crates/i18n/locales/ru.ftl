@@ -2365,6 +2365,15 @@ t81f5dbce = Чтобы показать, нужен пароль
 # It could not be read: {why}
 t26005fe3 = Не удалось прочитать: { $why }
 
+# Find in text
+t9cbe4be4 = Найти в тексте
+
+# No matches
+td29421ef = Совпадений нет
+
+# Find
+t3e1cd17a = Найти
+
 # Fit
 t116f13cc = Вписать
 

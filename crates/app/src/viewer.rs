@@ -8,18 +8,19 @@
 //! so that what holds it (the workspace) may put it anywhere.
 
 use std::cmp::Ordering;
+use std::ops::Range;
 use std::sync::Arc;
 
 use gpui::{
     Context, Entity, EventEmitter, FocusHandle, Focusable, FontWeight, Image, KeyDownEvent,
-    ObjectFit, Render, StyledImage, Task, Window, div, img, prelude::*, px, rgb,
+    ObjectFit, Render, StyledImage, Subscription, Task, Window, div, img, prelude::*, px, rgb,
 };
 use packwing_core::{Control, Error, Keys, Source, Storage, image_fits, image_size, preview_entry};
 use packwing_i18n::{tr, tr_n};
 
 use crate::colors::colors;
-use crate::input::{Paint, TextInput};
-use crate::model::{Kind, reads_as_text, size, tag_of, text_preview};
+use crate::input::{Changed, Paint, TextInput};
+use crate::model::{Kind, count, reads_as_text, size, tag_of, text_preview};
 use crate::pages::archive::{MOST_PREVIEWED, picture_format};
 use crate::text_size::ui;
 use crate::widgets::{Fill, Size, button, icon, icon_button, kind_tile, mono_font};
@@ -93,7 +94,49 @@ pub struct Viewer {
     ahead: Option<(usize, Shown)>,
     _read: Option<Task<()>>,
     _read_ahead: Option<Task<()>>,
+    /// A search in the text shown, while its bar is open.
+    finding: Option<Finding>,
     focus: FocusHandle,
+}
+
+/// A search in the text shown: what is typed, what it found, and the one
+/// chosen of it.
+struct Finding {
+    field: Entity<TextInput>,
+    found: Vec<Range<usize>>,
+    at: usize,
+    _typing: Subscription,
+}
+
+/// The most a search finds: more is not counted, nor marked.
+const MOST_FOUND: usize = 10_000;
+
+/// Where `query` is in `text`, whatever the letters' case, by byte ranges,
+/// [`MOST_FOUND`] at most.
+pub fn find_all(text: &str, query: &str) -> Vec<Range<usize>> {
+    let query: Vec<char> = query.chars().collect();
+    if query.is_empty() {
+        return Vec::new();
+    }
+    let same = |a: char, b: char| a == b || a.to_lowercase().eq(b.to_lowercase());
+    let chars: Vec<(usize, char)> = text.char_indices().collect();
+    let mut found = Vec::new();
+    let mut i = 0;
+    while i + query.len() <= chars.len() && found.len() < MOST_FOUND {
+        if query
+            .iter()
+            .enumerate()
+            .all(|(k, q)| same(chars[i + k].1, *q))
+        {
+            let start = chars[i].0;
+            let end = chars.get(i + query.len()).map_or(text.len(), |c| c.0);
+            found.push(start..end);
+            i += query.len();
+        } else {
+            i += 1;
+        }
+    }
+    found
 }
 
 impl EventEmitter<ViewerEvent> for Viewer {}
@@ -255,6 +298,7 @@ impl Viewer {
             ahead: None,
             _read: None,
             _read_ahead: None,
+            finding: None,
             focus: cx.focus_handle(),
         };
         viewer.show(at, cx);
@@ -270,6 +314,12 @@ impl Viewer {
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn names(&self) -> Vec<String> {
         self.files.iter().map(|f| f.name.clone()).collect()
+    }
+
+    /// What the search found, and the one chosen of it, while its bar is open.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn finding(&self) -> Option<(usize, usize)> {
+        self.finding.as_ref().map(|f| (f.found.len(), f.at))
     }
 
     /// Whether what is shown is read, and what kind it is, for tests.
@@ -289,6 +339,144 @@ impl Viewer {
             self.text.update(cx, |t, cx| t.set_text(text, 0..0, cx));
         }
         self.shown = shown;
+        // The search goes on in the next text.
+        self.find(cx);
+    }
+
+    /// Opens the search's bar, for the text shown, its field taking the keys.
+    fn open_find(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if !matches!(self.shown, Shown::Text(..)) {
+            return;
+        }
+        self.open_find_bar(window, cx);
+    }
+
+    /// Searches for `query`, as typed, once the text is read: as the
+    /// screenshots draw it.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn find_for_shot(&mut self, query: &str, window: &mut Window, cx: &mut Context<Self>) {
+        self.open_find_bar(window, cx);
+        if let Some(f) = &self.finding {
+            f.field
+                .update(cx, |t, cx| t.set_text(query, query.len()..query.len(), cx));
+        }
+    }
+
+    fn open_find_bar(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.finding.is_none() {
+            let field = cx.new(|cx| TextInput::new(tr!("Find in text"), cx));
+            let typing = cx.subscribe(&field, |this: &mut Self, _, _: &Changed, cx| this.find(cx));
+            self.finding = Some(Finding {
+                field,
+                found: Vec::new(),
+                at: 0,
+                _typing: typing,
+            });
+        }
+        if let Some(f) = &self.finding {
+            window.focus(&f.field.focus_handle(cx), cx);
+        }
+        cx.notify();
+    }
+
+    /// Finds what is typed in the text shown, marks all of it, and chooses
+    /// the first.
+    fn find(&mut self, cx: &mut Context<Self>) {
+        let Some(finding) = &mut self.finding else {
+            return;
+        };
+        let query = finding.field.read(cx).text().to_owned();
+        finding.found = match &self.shown {
+            Shown::Text(text, ..) => find_all(text, &query),
+            _ => Vec::new(),
+        };
+        finding.at = 0;
+        let found = finding.found.clone();
+        self.text.update(cx, |t, cx| {
+            t.mark(found.clone(), cx);
+            if let Some(first) = found.first() {
+                t.select(first.clone(), cx);
+            }
+        });
+        cx.notify();
+    }
+
+    /// Chooses the next of what was found, or with `back` the one before,
+    /// from the last to the first and round.
+    fn find_next(&mut self, back: bool, cx: &mut Context<Self>) {
+        let Some(finding) = &mut self.finding else {
+            return;
+        };
+        let n = finding.found.len();
+        if n == 0 {
+            return;
+        }
+        finding.at = if back {
+            (finding.at + n - 1) % n
+        } else {
+            (finding.at + 1) % n
+        };
+        let chosen = finding.found[finding.at].clone();
+        self.text.update(cx, |t, cx| t.select(chosen, cx));
+        cx.notify();
+    }
+
+    /// Closes the search's bar: what it found is no longer marked.
+    fn close_find(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.finding = None;
+        self.text.update(cx, |t, cx| t.mark(Vec::new(), cx));
+        window.focus(&self.focus, cx);
+        cx.notify();
+    }
+
+    fn find_bar(&self, cx: &mut Context<Self>) -> Option<impl IntoElement + use<>> {
+        let c = colors();
+        let finding = self.finding.as_ref()?;
+        let typed = !finding.field.read(cx).text().is_empty();
+        let said = match finding.found.len() {
+            0 if typed => tr!("No matches"),
+            0 => String::new(),
+            n if n >= MOST_FOUND => format!("{} / {}+", finding.at + 1, count(n as u64)),
+            n => format!("{} / {}", finding.at + 1, count(n as u64)),
+        };
+        Some(
+            div()
+                .flex()
+                .items_center()
+                .gap(ui(8.))
+                .child(
+                    div()
+                        .w(ui(340.))
+                        .h(ui(40.))
+                        .px(ui(14.))
+                        .flex()
+                        .items_center()
+                        .rounded_full()
+                        .bg(rgb(c.field))
+                        .text_size(ui(14.))
+                        .child(finding.field.clone()),
+                )
+                .child(
+                    div()
+                        .debug_selector(|| "find-count".to_owned())
+                        .min_w(ui(90.))
+                        .text_size(ui(13.))
+                        .text_color(rgb(c.muted))
+                        .child(said),
+                )
+                .child(
+                    icon_button("find-previous", "chevron-up", 36.)
+                        .on_click(cx.listener(|this, _, _, cx| this.find_next(true, cx))),
+                )
+                .child(
+                    icon_button("find-next", "chevron-down", 36.)
+                        .on_click(cx.listener(|this, _, _, cx| this.find_next(false, cx))),
+                )
+                .child(
+                    icon_button("find-close", "x", 36.)
+                        .on_click(cx.listener(|this, _, window, cx| this.close_find(window, cx))),
+                ),
+        )
     }
 
     /// Shows the file at `at`, read now, or ahead already.
@@ -355,6 +543,26 @@ impl Viewer {
     }
 
     fn on_key(&mut self, e: &KeyDownEvent, window: &mut Window, cx: &mut Context<Self>) {
+        let (key, m) = (e.keystroke.key.as_str(), &e.keystroke.modifiers);
+        let finding = self.finding.is_some();
+        // Typing in the search's field: its keys are the field's, but these.
+        let typing = self
+            .finding
+            .as_ref()
+            .is_some_and(|f| f.field.focus_handle(cx).is_focused(window));
+        match key {
+            "f" if m.secondary() => self.open_find(window, cx),
+            "f3" => self.find_next(m.shift, cx),
+            "enter" if finding => self.find_next(m.shift, cx),
+            "escape" if finding => self.close_find(window, cx),
+            _ if typing => return,
+            _ => return self.on_view_key(e, window, cx),
+        }
+        cx.stop_propagation();
+    }
+
+    /// The keys that step through the files and change how they show.
+    fn on_view_key(&mut self, e: &KeyDownEvent, window: &mut Window, cx: &mut Context<Self>) {
         match e.keystroke.key.as_str() {
             "left" | "pageup" => self.step(-1, cx),
             "right" | "pagedown" | "space" => self.step(1, cx),
@@ -442,6 +650,20 @@ impl Viewer {
                     .child(format!("{} / {}", self.at + 1, self.files.len())),
             )
             .child(step("view-next", "chevron-right", 1, last))
+            // Its bar open, the bar is where it is.
+            .when(
+                matches!(self.shown, Shown::Text(..)) && self.finding.is_none(),
+                |d| {
+                    d.child(
+                        button("view-find", tr!("Find"), Fill::Outline, Size::Medium)
+                            .flex_row_reverse()
+                            .child(icon("search", 16., c.text))
+                            .on_click(
+                                cx.listener(|this, _, window, cx| this.open_find(window, cx)),
+                            ),
+                    )
+                },
+            )
             .when(picture, |d| {
                 d.child(toggle("view-fit", tr!("Fit"), !self.actual, false))
                     .child(toggle("view-actual", "1:1".into(), self.actual, true))
@@ -614,6 +836,7 @@ impl Render for Viewer {
             .rounded(ui(28.))
             .bg(rgb(c.surface))
             .child(self.toolbar(cx))
+            .children(self.find_bar(cx))
             .child(self.stage(window, cx))
             .child(
                 div()
@@ -651,6 +874,18 @@ mod tests {
         );
         assert_eq!(natural_order("a", "a"), Ordering::Equal);
         assert_eq!(natural_order("a", "ab"), Ordering::Less);
+    }
+
+    #[test]
+    fn a_search_finds_whatever_the_case() {
+        let text = "Xin chào\nxin CHÀO\nxinh";
+        let found = find_all(text, "xin chào");
+        assert_eq!(found.len(), 2);
+        assert_eq!(&text[found[1].clone()], "xin CHÀO");
+        // Apart: one match does not start inside another.
+        assert_eq!(find_all("aaaa", "aa"), [0..2, 2..4]);
+        assert!(find_all(text, "").is_empty());
+        assert!(find_all(text, "missing").is_empty());
     }
 
     #[test]

@@ -2287,6 +2287,15 @@ t81f5dbce = 需要密碼才能顯示
 # It could not be read: {why}
 t26005fe3 = 無法讀取：{ $why }
 
+# Find in text
+t9cbe4be4 = 在文字中尋找
+
+# No matches
+td29421ef = 沒有符合的結果
+
+# Find
+t3e1cd17a = 尋找
+
 # Fit
 t116f13cc = 符合視窗
 

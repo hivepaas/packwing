@@ -1013,6 +1013,21 @@ impl Workspace {
         ))
     }
 
+    /// Searches the viewer's text for `query`, as the screenshots draw it.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn find_in_viewer(&mut self, query: &str, window: &mut Window, cx: &mut Context<Self>) {
+        if let Some(viewing) = &self.viewing {
+            let viewer = viewing.viewer.clone();
+            viewer.update(cx, |v, cx| v.find_for_shot(query, window, cx));
+        }
+    }
+
+    /// What the viewer's search found, and the one chosen, if it is open.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn viewer_finding(&self, cx: &gpui::App) -> Option<(usize, usize)> {
+        self.viewing.as_ref()?.viewer.read(cx).finding()
+    }
+
     /// Shows `inner` as opened from `outer`, through a copy at `copy`.
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn show_inside(

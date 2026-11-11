@@ -2278,6 +2278,15 @@ t81f5dbce = Cần mật khẩu để hiện
 # It could not be read: {why}
 t26005fe3 = Không đọc được: { $why }
 
+# Find in text
+t9cbe4be4 = Tìm trong văn bản
+
+# No matches
+td29421ef = Không tìm thấy
+
+# Find
+t3e1cd17a = Tìm
+
 # Fit
 t116f13cc = Vừa khung
 

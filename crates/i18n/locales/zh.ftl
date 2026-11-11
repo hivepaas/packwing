@@ -2278,6 +2278,15 @@ t81f5dbce = 需要密码才能显示
 # It could not be read: {why}
 t26005fe3 = 无法读取：{ $why }
 
+# Find in text
+t9cbe4be4 = 在文本中查找
+
+# No matches
+td29421ef = 无匹配项
+
+# Find
+t3e1cd17a = 查找
+
 # Fit
 t116f13cc = 适应窗口
 

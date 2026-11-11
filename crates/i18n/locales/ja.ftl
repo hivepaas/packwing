@@ -2278,6 +2278,15 @@ t81f5dbce = 表示するにはパスワードが必要です
 # It could not be read: {why}
 t26005fe3 = 読み取れませんでした：{ $why }
 
+# Find in text
+t9cbe4be4 = テキスト内を検索
+
+# No matches
+td29421ef = 一致なし
+
+# Find
+t3e1cd17a = 検索
+
 # Fit
 t116f13cc = 全体表示
 

@@ -2313,6 +2313,15 @@ t81f5dbce = Göstermek için parola gerekir
 # It could not be read: {why}
 t26005fe3 = Okunamadı: { $why }
 
+# Find in text
+t9cbe4be4 = Metinde bul
+
+# No matches
+td29421ef = Eşleşme yok
+
+# Find
+t3e1cd17a = Bul
+
 # Fit
 t116f13cc = Sığdır
 
