@@ -87,6 +87,16 @@ license = "BSD-3-Clause"
 checksum = "2213f5ba10b67b59452a838df7c716993d484f8ac18582b824660de8da9c6398"
 
 [[hivepack.clarify.files]]
+path = "src/appimage/LICENSE"
+license = "MIT"
+checksum = "67e99b3fbfb2605f37576cd2560b1429f3bea0c654d2eb5b5a4b18de9381ce92"
+
+[[hivepack.clarify.files]]
+path = "src/ar/LICENSE"
+license = "BSD-2-Clause"
+checksum = "d912859814d8cb891afddc3bd812af4b1b79d809e8ce5c39838b050bb7c2f1d7"
+
+[[hivepack.clarify.files]]
 path = "src/bzip2/LICENSE"
 license = "bzip2-1.0.6"
 checksum = "2d4b9e1c508b6f26e310a4341c51ce11708b0a189d883ca3fec9b4dacef497ae"
@@ -122,9 +132,19 @@ license = "BSD-2-Clause"
 checksum = "fe5427e219b3ea9f3aca0e4b0771879ef894543952c3d3c0bec6dfdf84cc4855"
 
 [[hivepack.clarify.files]]
+path = "src/lzo/LICENSE"
+license = "MIT"
+checksum = "257615a879357be70d44b14185ff6b1cdd3f4f9340cf4295b33a4a0aadc0ea84"
+
+[[hivepack.clarify.files]]
 path = "src/rar/LICENSE"
 license = "UnRAR"
 checksum = "0ba8b407184231d368a3522ba5d875bdc3b585b34a92bb240f843b1197c99052"
+
+[[hivepack.clarify.files]]
+path = "src/squashfs/LICENSE"
+license = "BSD-2-Clause"
+checksum = "9e909cc8a8ba27b1a649c964cf9eda37de911f3138c2b64e6d2f01703904ac13"
 
 [[hivepack.clarify.files]]
 path = "src/tar/LICENSE"
