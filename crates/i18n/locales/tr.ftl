@@ -1015,30 +1015,6 @@ t8ecbab4e = Her asıl dosya, kopyası geri okunup eşleştiğinde silinir.
 # The originals stay where they are.
 t5937f050 = Asıl dosyalar olduğu yerde kalır.
 
-# Too big to show here
-t1b339d35 = Burada gösterilemeyecek kadar büyük
-
-# packwing can’t show this kind of file
-tb909bf3c = packwing bu tür dosyayı gösteremez
-
-# It could not be read
-tb7927177 = Okunamadı
-
-# It could not be read: {why}
-t26005fe3 = Okunamadı: { $why }
-
-# It needs the password to show it
-t81f5dbce = Göstermek için parola gerekir
-
-# It could not be shown
-tb60fb288 = Gösterilemedi
-
-# Open as archive
-t3373ce55 = Arşiv olarak aç
-
-# Open with default app
-t5ef80ec5 = Varsayılan uygulamayla aç
-
 # Another job is making {name} there now: give this one another name, or wait for it to end.
 tc8c2bae0 = Başka bir iş şu an orada { $name } oluşturuyor: buna başka bir ad verin ya da onun bitmesini bekleyin.
 
@@ -1104,6 +1080,12 @@ t5e4baa18 = Görünüm
 
 # Extract…
 t4a09490e = Çıkar…
+
+# Open with default app
+t5ef80ec5 = Varsayılan uygulamayla aç
+
+# Open as archive
+t3373ce55 = Arşiv olarak aç
 
 # Compress…
 t690f9553 = Sıkıştır…
@@ -1196,8 +1178,17 @@ t73690b65 = Arşiv
 # Search inside this archive
 tb35c0c27 = Bu arşivde ara
 
+# Too big to show here
+t1b339d35 = Burada gösterilemeyecek kadar büyük
+
 # Not text it can show
 ta413eca5 = Gösterilebilecek bir metin değil
+
+# It needs the password to show it
+t81f5dbce = Göstermek için parola gerekir
+
+# It could not be read
+tb7927177 = Okunamadı
 
 # Open another…
 tff74a552 = Başkasını aç…
@@ -1243,6 +1234,9 @@ t539b9c10 = { $name } öğesine dön
 
 # Open an archive…
 t2cf2a8ee = Arşiv aç…
+
+# It could not be shown
+tb60fb288 = Gösterilemedi
 
 # Choose a file to see it here
 t37854216 = Burada görmek için bir dosya seçin
@@ -2318,6 +2312,25 @@ tb9fa7744 =
 
 # No folder to download to.
 t2bfc1370 = İndirme için klasör yok.
+
+# packwing can’t show this kind of file
+tb909bf3c = packwing bu tür dosyayı gösteremez
+
+# It could not be read: {why}
+t26005fe3 = Okunamadı: { $why }
+
+# Fit
+t116f13cc = Sığdır
+
+# {count} line | {count} lines
+t9fbb1078 =
+    { $n ->
+        [one] { $count } satır
+       *[other] { $count } satır
+    }
+
+# Its first 256 KB are shown
+t7113adfc = İlk 256 KB gösteriliyor
 
 # Update available
 t676409df = Güncelleme var

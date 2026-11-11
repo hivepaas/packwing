@@ -1015,30 +1015,6 @@ t8ecbab4e = Cada original é removido depois que sua cópia é lida de volta e c
 # The originals stay where they are.
 t5937f050 = Os originais ficam onde estão.
 
-# Too big to show here
-t1b339d35 = Grande demais para mostrar aqui
-
-# packwing can’t show this kind of file
-tb909bf3c = O packwing não consegue mostrar este tipo de arquivo
-
-# It could not be read
-tb7927177 = Não foi possível ler
-
-# It could not be read: {why}
-t26005fe3 = Não foi possível ler: { $why }
-
-# It needs the password to show it
-t81f5dbce = Precisa da senha para mostrar
-
-# It could not be shown
-tb60fb288 = Não foi possível mostrar
-
-# Open as archive
-t3373ce55 = Abrir como arquivo compactado
-
-# Open with default app
-t5ef80ec5 = Abrir com o app padrão
-
 # Another job is making {name} there now: give this one another name, or wait for it to end.
 tc8c2bae0 = Outra tarefa está criando { $name } aí agora: dê outro nome a esta ou espere ela terminar.
 
@@ -1104,6 +1080,12 @@ t5e4baa18 = Exibir
 
 # Extract…
 t4a09490e = Extrair…
+
+# Open with default app
+t5ef80ec5 = Abrir com o app padrão
+
+# Open as archive
+t3373ce55 = Abrir como arquivo compactado
 
 # Compress…
 t690f9553 = Compactar…
@@ -1196,8 +1178,17 @@ t73690b65 = Arquivo
 # Search inside this archive
 tb35c0c27 = Pesquisar dentro deste arquivo compactado
 
+# Too big to show here
+t1b339d35 = Grande demais para mostrar aqui
+
 # Not text it can show
 ta413eca5 = Não é um texto que possa mostrar
+
+# It needs the password to show it
+t81f5dbce = Precisa da senha para mostrar
+
+# It could not be read
+tb7927177 = Não foi possível ler
 
 # Open another…
 tff74a552 = Abrir outro…
@@ -1243,6 +1234,9 @@ t539b9c10 = Voltar para { $name }
 
 # Open an archive…
 t2cf2a8ee = Abrir um arquivo compactado…
+
+# It could not be shown
+tb60fb288 = Não foi possível mostrar
 
 # Choose a file to see it here
 t37854216 = Escolha um arquivo para vê-lo aqui
@@ -2318,6 +2312,25 @@ tb9fa7744 =
 
 # No folder to download to.
 t2bfc1370 = Não há pasta para onde baixar.
+
+# packwing can’t show this kind of file
+tb909bf3c = O packwing não consegue mostrar este tipo de arquivo
+
+# It could not be read: {why}
+t26005fe3 = Não foi possível ler: { $why }
+
+# Fit
+t116f13cc = Ajustar
+
+# {count} line | {count} lines
+t9fbb1078 =
+    { $n ->
+        [one] { $count } linha
+       *[other] { $count } linhas
+    }
+
+# Its first 256 KB are shown
+t7113adfc = Os primeiros 256 KB são mostrados
 
 # Update available
 t676409df = Atualização disponível

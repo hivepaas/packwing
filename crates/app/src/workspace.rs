@@ -18,13 +18,14 @@ use crate::colors::{self, colors};
 use crate::demo;
 use crate::dialogs::{
     AddDialog, AddStorageDialog, ChecksumDialog, CreateDialog, Creating, DeleteDialog, DialogEvent,
-    EditDialog, EntryOpen, ExtractDialog, Job, OpenFileDialog, OpenStoredDialog, PasswordDialog,
+    EditDialog, ExtractDialog, Job, OpenFileDialog, OpenStoredDialog, PasswordDialog,
     PasswordEvent, ProgressDialog, QuitDialog, RemoveStorageDialog, Saving, SignDialog,
-    SplitDialog, State, TransferDialog, Verb, ViewDialog, asked_for,
+    SplitDialog, State, TransferDialog, Verb, asked_for,
 };
-use crate::explorer::ExplorerEvent;
+use crate::explorer::{Explorer, ExplorerEvent};
 use crate::history::History;
 use crate::model::{Archive, Kind, Selection, stem};
+use crate::pages::archive::picture_format;
 use crate::pages::archive::{ArchiveEvent, ArchivePage, Heard, Shown};
 use crate::pages::browse::{BrowsePage, Tab};
 use crate::pages::jobs::{JobsEvent, JobsPage, Summary};
@@ -37,6 +38,7 @@ use crate::prefs::{self, KeptStorage, TrustedKey};
 use crate::right_click::{Action, Request, RightClickMenu};
 use crate::text_size::ui;
 use crate::updates::{Badge, Updates};
+use crate::viewer::{self, Reading, ViewFile, Viewer, ViewerEvent};
 use crate::widgets::{accent_tint, icon, logo, tile, tip};
 
 /// The pages the menu leads to.
@@ -108,6 +110,30 @@ impl Then {
     }
 }
 
+/// The viewer, over the whole window, and where it was opened from.
+struct Viewing {
+    viewer: Entity<Viewer>,
+    from: ViewedFrom,
+    _events: Subscription,
+}
+
+/// Where the viewer was opened from: what it goes back to, and what opens its
+/// files otherwise.
+#[derive(Clone)]
+enum ViewedFrom {
+    Archive,
+    Explorer(Entity<Explorer>),
+}
+
+/// Whether `name` is a comic book's: an archive of its pages, read as a book.
+fn is_comic(name: &str) -> bool {
+    let ext = name
+        .rsplit_once('.')
+        .map(|(_, e)| e.to_ascii_lowercase())
+        .unwrap_or_default();
+    matches!(ext.as_str(), "cbz" | "cbr" | "cb7" | "cbt")
+}
+
 /// The dialog open over the window.
 struct Open {
     view: AnyView,
@@ -120,6 +146,8 @@ struct Open {
 pub struct Workspace {
     focus: FocusHandle,
     page: Page,
+    /// The viewer, shown in the pages' place while it is open.
+    viewing: Option<Viewing>,
     archive: Entity<ArchivePage>,
     storages: Entity<StoragesPage>,
     browse: Entity<BrowsePage>,
@@ -424,6 +452,7 @@ impl Workspace {
             updates,
             right_click,
             welcome: None,
+            viewing: None,
             reading: None,
             readings: 0,
             folder_after_reading: None,
@@ -752,9 +781,19 @@ impl Workspace {
             }
             ExplorerEvent::Compress(paths) => this.open_create(paths.clone(), window, cx),
             ExplorerEvent::View(item) => {
-                let (item, explorer) = (item.clone(), explorer.clone());
-                let view = cx.new(|cx| ViewDialog::new(item, explorer, cx));
-                this.show(view, true, window, cx);
+                let e = explorer.read(cx);
+                let Some(place) = e.place() else {
+                    return;
+                };
+                let reading = Reading::Stored(place.storage.clone());
+                let from = e
+                    .folder()
+                    .last()
+                    .cloned()
+                    .unwrap_or_else(|| place.name.clone());
+                let (files, at) = viewer::stepping(e.viewer_files(), &item.name);
+                let from_explorer = ViewedFrom::Explorer(explorer.clone());
+                this.open_viewer(reading, from, files, at, from_explorer, window, cx);
             }
             ExplorerEvent::Transfer { moving } => {
                 this.open_transfer(explorer, *moving, window, cx);
@@ -870,13 +909,6 @@ impl Workspace {
                     this.close_dialog(cx);
                     this.read_archive(source.clone(), Keys::default(), false, window, cx);
                 }
-                DialogEvent::Entry(entry, how) => {
-                    this.close_dialog(cx);
-                    match how {
-                        EntryOpen::WithApp => this.open_entry_with_app(entry.clone(), window, cx),
-                        EntryOpen::AsArchive => this.open_entry_inside(entry.clone(), window, cx),
-                    }
-                }
                 DialogEvent::ShowLicense => {
                     this.close_dialog(cx);
                     this.settings.update(cx, |s, cx| {
@@ -967,6 +999,18 @@ impl Workspace {
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn show_archive(&mut self, shown: Shown, cx: &mut Context<Self>) {
         self.archive.update(cx, |p, cx| p.show(shown, cx));
+    }
+
+    /// What the viewer steps through, the file it shows, and what kind of
+    /// thing it shows of it, if it is open.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn viewing(&self, cx: &gpui::App) -> Option<(Vec<String>, String, &'static str)> {
+        let viewer = self.viewing.as_ref()?.viewer.read(cx);
+        Some((
+            viewer.names(),
+            viewer.file()?.name.clone(),
+            viewer.showing(),
+        ))
     }
 
     /// Shows `inner` as opened from `outer`, through a copy at `copy`.
@@ -1150,6 +1194,7 @@ impl Workspace {
                     return;
                 }
                 this.reading = None;
+                let comic = is_comic(&name);
                 let shown = match result {
                     Ok(archive) => {
                         // Only what is on this computer: Recent opens it by its path.
@@ -1182,6 +1227,7 @@ impl Workspace {
                 };
                 let opened = matches!(shown, Shown::Open(_));
                 let folder = this.folder_after_reading.take();
+                let into_folder = folder.is_some();
                 this.archive.update(cx, |p, cx| {
                     match shown {
                         Shown::Open(archive) => p.read_through(*archive, cx),
@@ -1193,6 +1239,8 @@ impl Workspace {
                 });
                 if opened && then_extract {
                     this.open_extract(window, cx);
+                } else if opened && !into_folder && comic {
+                    this.open_comic(window, cx);
                 }
             });
         })
@@ -1345,23 +1393,143 @@ impl Workspace {
     /// packwing, which goes back to the one open; another file shown, if
     /// packwing can show it, and otherwise offered to the system's app.
     pub fn open_entry(&mut self, entry: Vec<String>, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(name) = entry.last() else {
+        let Some(name) = entry.last().cloned() else {
             return;
         };
-        if Kind::of(name, false) == Kind::Archive {
+        if Kind::of(&name, false) == Kind::Archive {
             self.open_entry_inside(entry, window, cx);
             return;
         }
         let page = self.archive.read(cx);
-        let size = page.size_of(&entry);
-        let Some((source, keys)) = page
-            .archive()
-            .and_then(|a| Some((a.source.clone()?, a.keys.clone())))
-        else {
+        let Some(a) = page.archive() else {
             return;
         };
-        let view = cx.new(|cx| ViewDialog::of_entry(source, keys, entry, size, cx));
-        self.show(view, true, window, cx);
+        let (Some(source), keys, from) = (a.source.clone(), a.keys.clone(), a.name.clone()) else {
+            return;
+        };
+        let mut files = page.viewer_files(cx);
+        // A file the list does not hold (a sample's, a search's) is shown alone.
+        if !files.iter().any(|f| f.path == entry) {
+            files = vec![ViewFile {
+                path: entry.clone(),
+                name: name.clone(),
+                size: page.size_of(&entry),
+                app: true,
+                edit: false,
+            }];
+        }
+        let (files, at) = viewer::stepping(files, &name);
+        let reading = Reading::Archive { source, keys };
+        self.open_viewer(reading, from, files, at, ViewedFrom::Archive, window, cx);
+    }
+
+    /// Shows the viewer in the pages' place, at `files[at]`.
+    #[allow(clippy::too_many_arguments)]
+    fn open_viewer(
+        &mut self,
+        reading: Reading,
+        from: String,
+        files: Vec<ViewFile>,
+        at: usize,
+        viewed_from: ViewedFrom,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if files.is_empty() {
+            return;
+        }
+        let viewer = cx.new(|cx| Viewer::new(reading, from, files, at, cx));
+        let events = cx.subscribe_in(&viewer, window, Self::viewer_event);
+        window.focus(&viewer.focus_handle(cx), cx);
+        self.viewing = Some(Viewing {
+            viewer,
+            from: viewed_from,
+            _events: events,
+        });
+        cx.notify();
+    }
+
+    /// The viewer is closed, the file it showed last chosen where it was opened.
+    fn close_viewer(&mut self, last: Option<String>, window: &mut Window, cx: &mut Context<Self>) {
+        let Some(viewing) = self.viewing.take() else {
+            return;
+        };
+        if window.is_fullscreen() {
+            window.toggle_fullscreen();
+        }
+        match (viewing.from, last) {
+            (ViewedFrom::Archive, Some(name)) => {
+                self.archive
+                    .update(cx, |p, cx| p.choose_named(&name, window, cx));
+            }
+            (ViewedFrom::Explorer(e), Some(name)) => {
+                e.update(cx, |e, cx| e.choose_and_show(&name, window, cx));
+            }
+            (_, None) => window.focus(&self.focus, cx),
+        }
+        cx.notify();
+    }
+
+    fn viewer_event(
+        &mut self,
+        _: &Entity<Viewer>,
+        e: &ViewerEvent,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let Some(from) = self.viewing.as_ref().map(|v| v.from.clone()) else {
+            return;
+        };
+        match (e, from) {
+            (ViewerEvent::Close(file), _) => self.close_viewer(Some(file.name.clone()), window, cx),
+            (ViewerEvent::OpenWithApp(file), ViewedFrom::Archive) => {
+                self.open_entry_with_app(file.path.clone(), window, cx)
+            }
+            (ViewerEvent::OpenWithApp(file), ViewedFrom::Explorer(e)) => e.update(cx, |e, cx| {
+                if let Some(item) = e.item_named(&file.name) {
+                    e.open_with_system(&item, cx);
+                }
+            }),
+            (ViewerEvent::OpenAsArchive(file), ViewedFrom::Archive) => {
+                self.close_viewer(None, window, cx);
+                self.open_entry_inside(file.path.clone(), window, cx);
+            }
+            (ViewerEvent::OpenAsArchive(file), ViewedFrom::Explorer(e)) => {
+                self.close_viewer(None, window, cx);
+                e.update(cx, |e, cx| {
+                    if let Some(item) = e.item_named(&file.name) {
+                        e.open_as_archive(&item, cx);
+                    }
+                });
+            }
+            (ViewerEvent::Edit(file), ViewedFrom::Explorer(e)) => e.update(cx, |e, cx| {
+                if let Some(item) = e.item_named(&file.name) {
+                    e.edit(&item, cx);
+                }
+            }),
+            (ViewerEvent::Edit(_), ViewedFrom::Archive) => {}
+        }
+    }
+
+    /// A comic book just opened is read as a book: its pages, from the first,
+    /// in the viewer, in the order people number them.
+    fn open_comic(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.archive.update(cx, |p, cx| p.enter_only_folder(cx));
+        let page = self.archive.read(cx);
+        let Some(a) = page.archive() else {
+            return;
+        };
+        let (Some(source), keys, from) = (a.source.clone(), a.keys.clone(), a.name.clone()) else {
+            return;
+        };
+        let mut pages: Vec<ViewFile> = page
+            .viewer_files(cx)
+            .into_iter()
+            .filter(|f| picture_format(&f.name).is_some())
+            .collect();
+        pages.sort_by(|a, b| viewer::natural_order(&a.name, &b.name));
+        let reading = Reading::Archive { source, keys };
+        self.open_viewer(reading, from, pages, 0, ViewedFrom::Archive, window, cx);
     }
 
     /// Opens a copy of a file of the archive open in packwing, as an archive,
@@ -1867,7 +2035,6 @@ impl Workspace {
             }
             DialogEvent::Start(_)
             | DialogEvent::Open(_)
-            | DialogEvent::Entry(..)
             | DialogEvent::ShowLicense
             | DialogEvent::ShowChecksumSettings
             | DialogEvent::Saved
@@ -2228,6 +2395,18 @@ impl Workspace {
         if self.dialog.is_some() || self.welcome.is_some() {
             return;
         }
+        // The viewer is left first, the file it showed chosen.
+        if let Some(viewing) = &self.viewing {
+            if back {
+                let viewer = viewing.viewer.clone();
+                viewer.update(cx, |v, cx| {
+                    if let Some(file) = v.file().cloned() {
+                        cx.emit(ViewerEvent::Close(file));
+                    }
+                });
+            }
+            return;
+        }
         let Some(history) = &self.history else {
             return;
         };
@@ -2481,9 +2660,18 @@ impl Render for Workspace {
         } else {
             20.
         };
-        let body = match &self.welcome {
-            Some((welcome, _)) => div().flex_1().min_h_0().flex().child(welcome.clone()),
-            None => {
+        let body = match (&self.welcome, &self.viewing) {
+            (Some((welcome, _)), _) => div().flex_1().min_h_0().flex().child(welcome.clone()),
+            // The viewer in the rail's and the page's place.
+            (None, Some(viewing)) => div()
+                .flex_1()
+                .min_h_0()
+                .flex()
+                .pt(ui(top))
+                .px(ui(crate::widgets::PANE_GAP))
+                .pb(ui(crate::widgets::PANE_GAP))
+                .child(viewing.viewer.clone()),
+            (None, None) => {
                 let page: AnyView = match self.page {
                     Page::Archive => self.archive.clone().into(),
                     Page::Storages => self.storages.clone().into(),

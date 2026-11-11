@@ -1015,30 +1015,6 @@ t8ecbab4e = Jedes Original wird entfernt, sobald seine Kopie zurückgelesen wurd
 # The originals stay where they are.
 t5937f050 = Die Originale bleiben, wo sie sind.
 
-# Too big to show here
-t1b339d35 = Zu groß für die Anzeige
-
-# packwing can’t show this kind of file
-tb909bf3c = packwing kann diese Art von Datei nicht anzeigen
-
-# It could not be read
-tb7927177 = Sie ließ sich nicht lesen
-
-# It could not be read: {why}
-t26005fe3 = Sie ließ sich nicht lesen: { $why }
-
-# It needs the password to show it
-t81f5dbce = Zum Anzeigen braucht es das Passwort
-
-# It could not be shown
-tb60fb288 = Sie ließ sich nicht anzeigen
-
-# Open as archive
-t3373ce55 = Als Archiv öffnen
-
-# Open with default app
-t5ef80ec5 = Mit Standard-App öffnen
-
 # Another job is making {name} there now: give this one another name, or wait for it to end.
 tc8c2bae0 = Eine andere Aufgabe erstellt dort gerade { $name }: gib diesem einen anderen Namen oder warte, bis sie fertig ist.
 
@@ -1104,6 +1080,12 @@ t5e4baa18 = Ansicht
 
 # Extract…
 t4a09490e = Entpacken…
+
+# Open with default app
+t5ef80ec5 = Mit Standard-App öffnen
+
+# Open as archive
+t3373ce55 = Als Archiv öffnen
 
 # Compress…
 t690f9553 = Komprimieren…
@@ -1196,8 +1178,17 @@ t73690b65 = Archiv
 # Search inside this archive
 tb35c0c27 = In diesem Archiv suchen
 
+# Too big to show here
+t1b339d35 = Zu groß für die Anzeige
+
 # Not text it can show
 ta413eca5 = Kein Text, den es anzeigen kann
+
+# It needs the password to show it
+t81f5dbce = Zum Anzeigen braucht es das Passwort
+
+# It could not be read
+tb7927177 = Sie ließ sich nicht lesen
 
 # Open another…
 tff74a552 = Anderes öffnen…
@@ -1243,6 +1234,9 @@ t539b9c10 = Zurück zu { $name }
 
 # Open an archive…
 t2cf2a8ee = Archiv öffnen…
+
+# It could not be shown
+tb60fb288 = Sie ließ sich nicht anzeigen
 
 # Choose a file to see it here
 t37854216 = Wähle eine Datei, um sie hier zu sehen
@@ -2318,6 +2312,25 @@ tb9fa7744 =
 
 # No folder to download to.
 t2bfc1370 = Kein Ordner zum Herunterladen.
+
+# packwing can’t show this kind of file
+tb909bf3c = packwing kann diese Art von Datei nicht anzeigen
+
+# It could not be read: {why}
+t26005fe3 = Sie ließ sich nicht lesen: { $why }
+
+# Fit
+t116f13cc = Einpassen
+
+# {count} line | {count} lines
+t9fbb1078 =
+    { $n ->
+        [one] { $count } Zeile
+       *[other] { $count } Zeilen
+    }
+
+# Its first 256 KB are shown
+t7113adfc = Die ersten 256 KB werden angezeigt
 
 # Update available
 t676409df = Update verfügbar

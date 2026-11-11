@@ -399,6 +399,65 @@ impl ArchivePage {
         self.outer.iter().map(|o| o.archive.name.clone()).collect()
     }
 
+    /// The files the list shows, in its order, for the viewer: the folder's,
+    /// or what the search found.
+    pub fn viewer_files(&self, cx: &gpui::App) -> Vec<crate::viewer::ViewFile> {
+        let Some(a) = self.archive() else {
+            return Vec::new();
+        };
+        let listed = self.listed(a, cx);
+        (0..listed.len())
+            .filter_map(|n| self.listed_at(a, &listed, n))
+            .filter(|(_, e, _)| !matches!(e.kind, Kind::Folder | Kind::Link))
+            .map(|(_, e, found)| crate::viewer::ViewFile {
+                path: found.unwrap_or_else(|| {
+                    let mut path = a.folder.clone();
+                    path.push(e.name.clone());
+                    path
+                }),
+                name: e.name.clone(),
+                size: e.size,
+                app: true,
+                edit: false,
+            })
+            .collect()
+    }
+
+    /// Chooses the row of `name` in the list, as a click does, and shows it.
+    pub fn choose_named(&mut self, name: &str, window: &mut Window, cx: &mut Context<Self>) {
+        let Some(a) = self.archive() else {
+            return;
+        };
+        let listed = self.listed(a, cx);
+        let found = (0..listed.len())
+            .filter_map(|n| self.listed_at(a, &listed, n).map(|row| (n, row)))
+            .find(|(_, (_, e, _))| e.name == name)
+            .map(|(n, (i, _, _))| (n, i));
+        if let Some((n, i)) = found {
+            self.select(i, false, false);
+            self.scroll.scroll_to_item(n, ScrollStrategy::Center);
+            self.start_preview(cx);
+        }
+        window.focus(&self.focus, cx);
+        cx.notify();
+    }
+
+    /// Goes into the folder at the archive's top while it is all there is, as
+    /// a comic book's pages are often kept.
+    pub fn enter_only_folder(&mut self, cx: &mut Context<Self>) {
+        loop {
+            let only = match self.archive() {
+                Some(a) if a.entries.len() == 1 && a.entries[0].kind == Kind::Folder => {
+                    let mut folder = a.folder.clone();
+                    folder.push(a.entries[0].name.clone());
+                    folder
+                }
+                _ => return,
+            };
+            self.enter(only, cx);
+        }
+    }
+
     /// Whether the archive shown was opened from another, and is only read.
     pub fn inside(&self) -> bool {
         self.copy.is_some()

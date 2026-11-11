@@ -1045,30 +1045,6 @@ t8ecbab4e = Каждый оригинал удаляется после того
 # The originals stay where they are.
 t5937f050 = Оригиналы остаются на своих местах.
 
-# Too big to show here
-t1b339d35 = Слишком большой для показа
-
-# packwing can’t show this kind of file
-tb909bf3c = packwing не может показать файл такого типа
-
-# It could not be read
-tb7927177 = Не удалось прочитать
-
-# It could not be read: {why}
-t26005fe3 = Не удалось прочитать: { $why }
-
-# It needs the password to show it
-t81f5dbce = Чтобы показать, нужен пароль
-
-# It could not be shown
-tb60fb288 = Не удалось показать
-
-# Open as archive
-t3373ce55 = Открыть как архив
-
-# Open with default app
-t5ef80ec5 = Открыть в приложении по умолчанию
-
 # Another job is making {name} there now: give this one another name, or wait for it to end.
 tc8c2bae0 = Другая задача сейчас создаёт там { $name }: дайте этой другое имя или дождитесь её завершения.
 
@@ -1134,6 +1110,12 @@ t5e4baa18 = Вид
 
 # Extract…
 t4a09490e = Извлечь…
+
+# Open with default app
+t5ef80ec5 = Открыть в приложении по умолчанию
+
+# Open as archive
+t3373ce55 = Открыть как архив
 
 # Compress…
 t690f9553 = Сжать…
@@ -1228,8 +1210,17 @@ t73690b65 = Архив
 # Search inside this archive
 tb35c0c27 = Поиск в этом архиве
 
+# Too big to show here
+t1b339d35 = Слишком большой для показа
+
 # Not text it can show
 ta413eca5 = Это не текст, который можно показать
+
+# It needs the password to show it
+t81f5dbce = Чтобы показать, нужен пароль
+
+# It could not be read
+tb7927177 = Не удалось прочитать
 
 # Open another…
 tff74a552 = Открыть другой…
@@ -1275,6 +1266,9 @@ t539b9c10 = Назад к { $name }
 
 # Open an archive…
 t2cf2a8ee = Открыть архив…
+
+# It could not be shown
+tb60fb288 = Не удалось показать
 
 # Choose a file to see it here
 t37854216 = Выберите файл, чтобы увидеть его здесь
@@ -2370,6 +2364,27 @@ tb9fa7744 =
 
 # No folder to download to.
 t2bfc1370 = Нет папки для загрузки.
+
+# packwing can’t show this kind of file
+tb909bf3c = packwing не может показать файл такого типа
+
+# It could not be read: {why}
+t26005fe3 = Не удалось прочитать: { $why }
+
+# Fit
+t116f13cc = Вписать
+
+# {count} line | {count} lines
+t9fbb1078 =
+    { $n ->
+        [one] { $count } строка
+        [few] { $count } строки
+        [many] { $count } строк
+       *[other] { $count } строки
+    }
+
+# Its first 256 KB are shown
+t7113adfc = Показаны первые 256 КБ
 
 # Update available
 t676409df = Доступно обновление

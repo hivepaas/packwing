@@ -33,6 +33,7 @@ mod keys;
 mod policy;
 mod settings;
 mod storages;
+mod viewer;
 
 /// How long a step may take before the scenario fails: CI machines are slow.
 const STEP: Duration = Duration::from_secs(60);

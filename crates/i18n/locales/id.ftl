@@ -1000,30 +1000,6 @@ t8ecbab4e = Setiap berkas asli dihapus setelah salinannya dibaca ulang dan cocok
 # The originals stay where they are.
 t5937f050 = Berkas aslinya tetap di tempatnya.
 
-# Too big to show here
-t1b339d35 = Terlalu besar untuk ditampilkan di sini
-
-# packwing can’t show this kind of file
-tb909bf3c = packwing tidak dapat menampilkan jenis berkas ini
-
-# It could not be read
-tb7927177 = Tidak dapat dibaca
-
-# It could not be read: {why}
-t26005fe3 = Tidak dapat dibaca: { $why }
-
-# It needs the password to show it
-t81f5dbce = Memerlukan kata sandi untuk menampilkannya
-
-# It could not be shown
-tb60fb288 = Tidak dapat ditampilkan
-
-# Open as archive
-t3373ce55 = Buka sebagai arsip
-
-# Open with default app
-t5ef80ec5 = Buka dengan aplikasi bawaan
-
 # Another job is making {name} there now: give this one another name, or wait for it to end.
 tc8c2bae0 = Tugas lain sedang membuat { $name } di sana: beri nama lain untuk yang ini, atau tunggu sampai selesai.
 
@@ -1089,6 +1065,12 @@ t5e4baa18 = Lihat
 
 # Extract…
 t4a09490e = Ekstrak…
+
+# Open with default app
+t5ef80ec5 = Buka dengan aplikasi bawaan
+
+# Open as archive
+t3373ce55 = Buka sebagai arsip
 
 # Compress…
 t690f9553 = Kompres…
@@ -1180,8 +1162,17 @@ t73690b65 = Arsip
 # Search inside this archive
 tb35c0c27 = Cari di dalam arsip ini
 
+# Too big to show here
+t1b339d35 = Terlalu besar untuk ditampilkan di sini
+
 # Not text it can show
 ta413eca5 = Bukan teks yang dapat ditampilkan
+
+# It needs the password to show it
+t81f5dbce = Memerlukan kata sandi untuk menampilkannya
+
+# It could not be read
+tb7927177 = Tidak dapat dibaca
 
 # Open another…
 tff74a552 = Buka yang lain…
@@ -1227,6 +1218,9 @@ t539b9c10 = Kembali ke { $name }
 
 # Open an archive…
 t2cf2a8ee = Buka arsip…
+
+# It could not be shown
+tb60fb288 = Tidak dapat ditampilkan
 
 # Choose a file to see it here
 t37854216 = Pilih berkas untuk melihatnya di sini
@@ -2292,6 +2286,24 @@ tb9fa7744 =
 
 # No folder to download to.
 t2bfc1370 = Tidak ada folder tujuan unduhan.
+
+# packwing can’t show this kind of file
+tb909bf3c = packwing tidak dapat menampilkan jenis berkas ini
+
+# It could not be read: {why}
+t26005fe3 = Tidak dapat dibaca: { $why }
+
+# Fit
+t116f13cc = Paskan
+
+# {count} line | {count} lines
+t9fbb1078 =
+    { $n ->
+       *[other] { $count } baris
+    }
+
+# Its first 256 KB are shown
+t7113adfc = 256 KB pertamanya ditampilkan
 
 # Update available
 t676409df = Pembaruan tersedia

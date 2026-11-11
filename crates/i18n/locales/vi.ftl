@@ -1000,30 +1000,6 @@ t8ecbab4e = Mỗi bản gốc chỉ bị xoá sau khi bản sao đã được đ
 # The originals stay where they are.
 t5937f050 = Các bản gốc vẫn ở nguyên chỗ cũ.
 
-# Too big to show here
-t1b339d35 = Quá lớn để hiện ở đây
-
-# packwing can’t show this kind of file
-tb909bf3c = packwing không hiện được loại tệp này
-
-# It could not be read
-tb7927177 = Không đọc được
-
-# It could not be read: {why}
-t26005fe3 = Không đọc được: { $why }
-
-# It needs the password to show it
-t81f5dbce = Cần mật khẩu để hiện
-
-# It could not be shown
-tb60fb288 = Không hiện được
-
-# Open as archive
-t3373ce55 = Mở dưới dạng tệp nén
-
-# Open with default app
-t5ef80ec5 = Mở bằng ứng dụng mặc định
-
 # Another job is making {name} there now: give this one another name, or wait for it to end.
 tc8c2bae0 = Một tác vụ khác đang tạo { $name } ở đó: hãy đặt tên khác, hoặc chờ tác vụ đó xong.
 
@@ -1089,6 +1065,12 @@ t5e4baa18 = Xem
 
 # Extract…
 t4a09490e = Giải nén…
+
+# Open with default app
+t5ef80ec5 = Mở bằng ứng dụng mặc định
+
+# Open as archive
+t3373ce55 = Mở dưới dạng tệp nén
 
 # Compress…
 t690f9553 = Nén…
@@ -1180,8 +1162,17 @@ t73690b65 = Tệp nén
 # Search inside this archive
 tb35c0c27 = Tìm trong tệp nén này
 
+# Too big to show here
+t1b339d35 = Quá lớn để hiện ở đây
+
 # Not text it can show
 ta413eca5 = Không phải văn bản để hiện
+
+# It needs the password to show it
+t81f5dbce = Cần mật khẩu để hiện
+
+# It could not be read
+tb7927177 = Không đọc được
 
 # Open another…
 tff74a552 = Mở tệp khác…
@@ -1227,6 +1218,9 @@ t539b9c10 = Quay lại { $name }
 
 # Open an archive…
 t2cf2a8ee = Mở tệp nén…
+
+# It could not be shown
+tb60fb288 = Không hiện được
 
 # Choose a file to see it here
 t37854216 = Chọn một tệp để xem ở đây
@@ -2283,6 +2277,24 @@ tb9fa7744 = { $n } ngày trước
 
 # No folder to download to.
 t2bfc1370 = Không có thư mục để tải xuống.
+
+# packwing can’t show this kind of file
+tb909bf3c = packwing không hiện được loại tệp này
+
+# It could not be read: {why}
+t26005fe3 = Không đọc được: { $why }
+
+# Fit
+t116f13cc = Vừa khung
+
+# {count} line | {count} lines
+t9fbb1078 =
+    { $n ->
+       *[other] { $count } dòng
+    }
+
+# Its first 256 KB are shown
+t7113adfc = Đang hiện 256 KB đầu tiên
 
 # Update available
 t676409df = Có bản cập nhật

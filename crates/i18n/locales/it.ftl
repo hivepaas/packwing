@@ -1015,30 +1015,6 @@ t8ecbab4e = Ogni originale viene rimosso solo dopo che la sua copia è stata ril
 # The originals stay where they are.
 t5937f050 = Gli originali restano dove sono.
 
-# Too big to show here
-t1b339d35 = Troppo grande per mostrarlo qui
-
-# packwing can’t show this kind of file
-tb909bf3c = packwing non può mostrare questo tipo di file
-
-# It could not be read
-tb7927177 = Impossibile leggerlo
-
-# It could not be read: {why}
-t26005fe3 = Impossibile leggerlo: { $why }
-
-# It needs the password to show it
-t81f5dbce = Serve la password per mostrarlo
-
-# It could not be shown
-tb60fb288 = Impossibile mostrarlo
-
-# Open as archive
-t3373ce55 = Apri come archivio
-
-# Open with default app
-t5ef80ec5 = Apri con l'app predefinita
-
 # Another job is making {name} there now: give this one another name, or wait for it to end.
 tc8c2bae0 = Un'altra attività sta creando { $name } lì: dai a questa un altro nome o attendi che finisca.
 
@@ -1104,6 +1080,12 @@ t5e4baa18 = Vista
 
 # Extract…
 t4a09490e = Estrai…
+
+# Open with default app
+t5ef80ec5 = Apri con l'app predefinita
+
+# Open as archive
+t3373ce55 = Apri come archivio
 
 # Compress…
 t690f9553 = Comprimi…
@@ -1196,8 +1178,17 @@ t73690b65 = Archivio
 # Search inside this archive
 tb35c0c27 = Cerca in questo archivio
 
+# Too big to show here
+t1b339d35 = Troppo grande per mostrarlo qui
+
 # Not text it can show
 ta413eca5 = Non è testo che può mostrare
+
+# It needs the password to show it
+t81f5dbce = Serve la password per mostrarlo
+
+# It could not be read
+tb7927177 = Impossibile leggerlo
 
 # Open another…
 tff74a552 = Aprine un altro…
@@ -1243,6 +1234,9 @@ t539b9c10 = Torna a { $name }
 
 # Open an archive…
 t2cf2a8ee = Apri un archivio…
+
+# It could not be shown
+tb60fb288 = Impossibile mostrarlo
 
 # Choose a file to see it here
 t37854216 = Scegli un file per vederlo qui
@@ -2318,6 +2312,25 @@ tb9fa7744 =
 
 # No folder to download to.
 t2bfc1370 = Nessuna cartella in cui scaricare.
+
+# packwing can’t show this kind of file
+tb909bf3c = packwing non può mostrare questo tipo di file
+
+# It could not be read: {why}
+t26005fe3 = Impossibile leggerlo: { $why }
+
+# Fit
+t116f13cc = Adatta
+
+# {count} line | {count} lines
+t9fbb1078 =
+    { $n ->
+        [one] { $count } riga
+       *[other] { $count } righe
+    }
+
+# Its first 256 KB are shown
+t7113adfc = Sono mostrati i primi 256 KB
 
 # Update available
 t676409df = Aggiornamento disponibile

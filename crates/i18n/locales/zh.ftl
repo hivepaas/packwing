@@ -1000,30 +1000,6 @@ t8ecbab4e = 每个原件会在其副本被读回并确认一致后删除。
 # The originals stay where they are.
 t5937f050 = 原件保留在原处。
 
-# Too big to show here
-t1b339d35 = 太大，无法在此显示
-
-# packwing can’t show this kind of file
-tb909bf3c = packwing 无法显示这种文件
-
-# It could not be read
-tb7927177 = 无法读取
-
-# It could not be read: {why}
-t26005fe3 = 无法读取：{ $why }
-
-# It needs the password to show it
-t81f5dbce = 需要密码才能显示
-
-# It could not be shown
-tb60fb288 = 无法显示
-
-# Open as archive
-t3373ce55 = 作为压缩包打开
-
-# Open with default app
-t5ef80ec5 = 用默认应用打开
-
 # Another job is making {name} there now: give this one another name, or wait for it to end.
 tc8c2bae0 = 另一个任务正在那里创建 { $name }：请为此任务换个名称，或等它结束。
 
@@ -1089,6 +1065,12 @@ t5e4baa18 = 查看
 
 # Extract…
 t4a09490e = 解压…
+
+# Open with default app
+t5ef80ec5 = 用默认应用打开
+
+# Open as archive
+t3373ce55 = 作为压缩包打开
 
 # Compress…
 t690f9553 = 压缩…
@@ -1180,8 +1162,17 @@ t73690b65 = 压缩包
 # Search inside this archive
 tb35c0c27 = 在此压缩包中搜索
 
+# Too big to show here
+t1b339d35 = 太大，无法在此显示
+
 # Not text it can show
 ta413eca5 = 不是可显示的文本
+
+# It needs the password to show it
+t81f5dbce = 需要密码才能显示
+
+# It could not be read
+tb7927177 = 无法读取
 
 # Open another…
 tff74a552 = 打开其他…
@@ -1227,6 +1218,9 @@ t539b9c10 = 返回 { $name }
 
 # Open an archive…
 t2cf2a8ee = 打开压缩包…
+
+# It could not be shown
+tb60fb288 = 无法显示
 
 # Choose a file to see it here
 t37854216 = 选择一个文件即可在此查看
@@ -2283,6 +2277,24 @@ tb9fa7744 = { $n } 天前
 
 # No folder to download to.
 t2bfc1370 = 没有可用于下载的文件夹。
+
+# packwing can’t show this kind of file
+tb909bf3c = packwing 无法显示这种文件
+
+# It could not be read: {why}
+t26005fe3 = 无法读取：{ $why }
+
+# Fit
+t116f13cc = 适应窗口
+
+# {count} line | {count} lines
+t9fbb1078 =
+    { $n ->
+       *[other] { $count } 行
+    }
+
+# Its first 256 KB are shown
+t7113adfc = 仅显示前 256 KB
 
 # Update available
 t676409df = 有可用更新

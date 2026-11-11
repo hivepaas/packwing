@@ -758,6 +758,41 @@ impl Explorer {
         }
     }
 
+    /// The files the list shows, in its order, for the viewer.
+    pub fn viewer_files(&self) -> Vec<crate::viewer::ViewFile> {
+        let local = self.is_local();
+        self.shown
+            .iter()
+            .filter_map(|&i| self.items.get(i))
+            .filter(|item| !item.dir)
+            .map(|item| crate::viewer::ViewFile {
+                path: self.path_of(&item.name),
+                name: item.name.clone(),
+                size: item.size,
+                app: local && !runs_when_opened(item),
+                edit: local,
+            })
+            .collect()
+    }
+
+    /// The item named `name` in the folder shown, if it is there.
+    pub fn item_named(&self, name: &str) -> Option<Item> {
+        self.items.iter().find(|i| i.name == name).cloned()
+    }
+
+    /// Chooses `name`, brings it into sight, and takes the keys.
+    pub fn choose_and_show(&mut self, name: &str, window: &mut Window, cx: &mut Context<Self>) {
+        self.choose(name, cx);
+        let at = self
+            .shown
+            .iter()
+            .position(|&i| self.items.get(i).is_some_and(|it| it.name == name));
+        if let Some(at) = at {
+            self.scroll.scroll_to_item(at, ScrollStrategy::Center);
+        }
+        window.focus(&self.focus, cx);
+    }
+
     /// Opens `item` in packwing as an archive, whatever its name says: a
     /// package, a document or a book may be one.
     pub fn open_as_archive(&mut self, item: &Item, cx: &mut Context<Self>) {

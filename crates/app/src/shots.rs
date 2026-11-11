@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 98] = [
+const SCREENS: [(&str, SetUp); 100] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -290,9 +290,15 @@ const SCREENS: [(&str, SetUp); 98] = [
             cx,
         )
     }),
-    ("view-entry-not-shown", |ws, window, cx| {
+    ("viewer-not-shown", |ws, window, cx| {
         ws.show_archive(read_named("site-backup-2026-10.zip"), cx);
         ws.view_entry(vec!["site".into(), "manual.pdf".into()], window, cx);
+    }),
+    ("viewer-picture", |ws, window, cx| {
+        view_in_browse(ws, "packwing.png", window, cx)
+    }),
+    ("viewer-text", |ws, window, cx| {
+        view_in_browse(ws, "notes.md", window, cx)
     }),
     ("archive-failed", |ws, _, cx| {
         ws.show_archive(
@@ -702,6 +708,34 @@ fn age_file() -> PathBuf {
 }
 
 /// An archive as packwing-core lists it, shown two folders down.
+/// Browse at a folder of a picture and a text, `name` of them in the viewer.
+fn view_in_browse(ws: &mut Workspace, name: &str, _: &mut Window, cx: &mut Context<Workspace>) {
+    let dir = out_dir().join("viewer-sample");
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).expect("cannot make a folder");
+    std::fs::write(
+        dir.join("packwing.png"),
+        include_bytes!("../../../packaging/icons/png/packwing-512.png"),
+    )
+    .expect("cannot write");
+    std::fs::write(
+        dir.join("notes.md"),
+        "# Site backups\n\nEach month's archive is written on its last day:\n\n\
+         - site-2026-10.zip, 42 MB\n- logs-2026-q3.tar.zst, 9.4 MB\n\n\
+         To put one back:\n\n    ./deploy.sh --restore site-2026-10.zip\n",
+    )
+    .expect("cannot write");
+    ws.browse_page().update(cx, |b, cx| b.go_to(&dir, cx));
+    ws.show_page(Page::Browse, cx);
+    let explorer = ws.browse_page().read(cx).explorer().clone();
+    explorer.update(cx, |e, cx| {
+        e.list_now(cx);
+        if let Some(item) = e.item_named(name) {
+            e.open(&item, cx);
+        }
+    });
+}
+
 /// Where a copy opened from another archive would be: a folder of its own, as
 /// the copies have, which going back removes.
 fn inside_copy() -> PathBuf {

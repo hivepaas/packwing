@@ -1015,30 +1015,6 @@ t8ecbab4e = Cada original se elimina una vez que su copia se ha vuelto a leer y 
 # The originals stay where they are.
 t5937f050 = Los originales se quedan donde están.
 
-# Too big to show here
-t1b339d35 = Demasiado grande para mostrarlo aquí
-
-# packwing can’t show this kind of file
-tb909bf3c = packwing no puede mostrar este tipo de archivo
-
-# It could not be read
-tb7927177 = No se pudo leer
-
-# It could not be read: {why}
-t26005fe3 = No se pudo leer: { $why }
-
-# It needs the password to show it
-t81f5dbce = Necesita la contraseña para mostrarlo
-
-# It could not be shown
-tb60fb288 = No se pudo mostrar
-
-# Open as archive
-t3373ce55 = Abrir como archivo comprimido
-
-# Open with default app
-t5ef80ec5 = Abrir con la app predeterminada
-
 # Another job is making {name} there now: give this one another name, or wait for it to end.
 tc8c2bae0 = Otra tarea está creando { $name } ahí ahora: dale otro nombre a esta o espera a que termine.
 
@@ -1104,6 +1080,12 @@ t5e4baa18 = Ver
 
 # Extract…
 t4a09490e = Extraer…
+
+# Open with default app
+t5ef80ec5 = Abrir con la app predeterminada
+
+# Open as archive
+t3373ce55 = Abrir como archivo comprimido
 
 # Compress…
 t690f9553 = Comprimir…
@@ -1196,8 +1178,17 @@ t73690b65 = Archivo
 # Search inside this archive
 tb35c0c27 = Buscar dentro de este archivo comprimido
 
+# Too big to show here
+t1b339d35 = Demasiado grande para mostrarlo aquí
+
 # Not text it can show
 ta413eca5 = No es texto que pueda mostrar
+
+# It needs the password to show it
+t81f5dbce = Necesita la contraseña para mostrarlo
+
+# It could not be read
+tb7927177 = No se pudo leer
 
 # Open another…
 tff74a552 = Abrir otro…
@@ -1243,6 +1234,9 @@ t539b9c10 = Volver a { $name }
 
 # Open an archive…
 t2cf2a8ee = Abrir un archivo comprimido…
+
+# It could not be shown
+tb60fb288 = No se pudo mostrar
 
 # Choose a file to see it here
 t37854216 = Elige un archivo para verlo aquí
@@ -2318,6 +2312,25 @@ tb9fa7744 =
 
 # No folder to download to.
 t2bfc1370 = No hay ninguna carpeta donde descargar.
+
+# packwing can’t show this kind of file
+tb909bf3c = packwing no puede mostrar este tipo de archivo
+
+# It could not be read: {why}
+t26005fe3 = No se pudo leer: { $why }
+
+# Fit
+t116f13cc = Ajustar
+
+# {count} line | {count} lines
+t9fbb1078 =
+    { $n ->
+        [one] { $count } línea
+       *[other] { $count } líneas
+    }
+
+# Its first 256 KB are shown
+t7113adfc = Se muestran sus primeros 256 KB
 
 # Update available
 t676409df = Actualización disponible
