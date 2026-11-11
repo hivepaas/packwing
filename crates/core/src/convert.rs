@@ -256,6 +256,7 @@ impl<'a> Format<'a> {
         Ok(match new.kind {
             Kind::Zip => {
                 let mut zip = hivepack::zip::Writer::new(out);
+                zip.set_deflate_library(hivepack::deflate::Library::Libdeflate);
                 zip.set_random_source(Some(Arc::new(|buffer: &mut [u8]| {
                     getrandom::fill(buffer).map_err(io::Error::other)
                 })));
@@ -320,7 +321,7 @@ impl<'a> Format<'a> {
                 if stored {
                     zip.set_compression(i32::from(cm::STORE), 0);
                 } else {
-                    zip.set_compression(cm::DEFAULT, new.level.deflate());
+                    zip.set_compression(cm::DEFAULT, new.level.libdeflate());
                 }
                 zip.add_file(&zip_entry(name, mtime, mode, Some(len)), data)?;
             }
