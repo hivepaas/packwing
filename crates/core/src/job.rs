@@ -14,9 +14,9 @@ use hivepack::extract::{
     Cancel, Damaged, ErrorKind, LinkOutside, Links, NameDecoder, NameError, NameRules, OnDamaged,
     OnLinksOutside, OnRefused, OnUnnamable, Options, Owners, Permissions, Progress, ProgressFn,
     RarProblem, Select, Sink, Summary, WrittenKind, extract_7z, extract_7z_to, extract_cpio,
-    extract_cpio_to, extract_iso, extract_iso_to, extract_rar, extract_rar_to, extract_tar,
-    extract_tar_to, extract_udf, extract_udf_to, extract_xar, extract_xar_to, extract_zip,
-    extract_zip_to,
+    extract_cpio_to, extract_iso, extract_iso_to, extract_rar, extract_rar_to, extract_squashfs,
+    extract_squashfs_to, extract_tar, extract_tar_to, extract_udf, extract_udf_to, extract_xar,
+    extract_xar_to, extract_zip, extract_zip_to,
 };
 use hivepack::open::{Container, Opened, Opener};
 use hivepack::tar::Reader;
@@ -28,7 +28,7 @@ use crate::rar;
 use crate::source::Source;
 use crate::spool::spool;
 use crate::unsupported::named;
-use crate::volume::walk;
+use crate::volume::{squashfs, walk, walk_squashfs};
 use crate::{Error, Keys, opener, opener_of, seven_zip, without_layers};
 
 /// What a job tells how far it is, and what stops it.
@@ -901,8 +901,8 @@ fn extract_naming(
             Ok(into!(extract_zip, extract_zip_to, &archive)?)
         }
         // Read twice, as a tar archive into another is: once to check, once
-        // to write.
-        Container::Iso => Ok(into!(
+        // to write. A type 1 AppImage is an ISO 9660 image.
+        Container::Iso | Container::AppImageType1 => Ok(into!(
             extract_iso,
             extract_iso_to,
             reopened(opened, &mut opener)
@@ -916,6 +916,19 @@ fn extract_naming(
             let spooled = spool(&mut opened)?;
             let mut udf = Udf::open(&spooled.file)?;
             Ok(into!(extract_udf, extract_udf_to, &mut udf)?)
+        }
+        // Read by random access, as a UDF volume is: a snap, and a type 2
+        // AppImage's image, after its program.
+        Container::Squashfs | Container::AppImageType2 if layers.is_empty() => {
+            let container = opened.container();
+            drop(opened);
+            let mut fs = squashfs(container, source.reader()?)?;
+            Ok(into!(extract_squashfs, extract_squashfs_to, &mut fs)?)
+        }
+        Container::Squashfs | Container::AppImageType2 => {
+            let spooled = spool(&mut opened)?;
+            let mut fs = squashfs(opened.container(), &spooled.file)?;
+            Ok(into!(extract_squashfs, extract_squashfs_to, &mut fs)?)
         }
         Container::SevenZip if layers.is_empty() => {
             drop(opened);
@@ -972,7 +985,7 @@ fn extract_naming(
             rar_result(result, keys)
         }
         Container::Data if layers.is_empty() => Err(Error::NotAnArchive),
-        _ => {
+        Container::Data => {
             let name = without_layers(&source.name(), &layers);
             match into {
                 WriteTo::Folder(destination) => {
@@ -993,6 +1006,8 @@ fn extract_naming(
                 }
             }
         }
+        // What a later hivepack tells and packwing does not read yet.
+        _ => Err(Error::NotAnArchive),
     }
 }
 
@@ -1241,7 +1256,7 @@ fn test_source(source: &Source, keys: &Keys, control: &Control) -> Result<Summar
             let spooled = spool(&mut opened)?;
             test_zip(zip_archive(&spooled.file)?, keys, control, &mut summary)?;
         }
-        Container::Iso => {
+        Container::Iso | Container::AppImageType1 => {
             test_iso(
                 hivepack::iso::Reader::new(&mut opened),
                 control,
@@ -1256,6 +1271,17 @@ fn test_source(source: &Source, keys: &Keys, control: &Control) -> Result<Summar
         Container::Udf => {
             let spooled = spool(&mut opened)?;
             test_udf(Udf::open(&spooled.file)?, control, &mut summary)?;
+        }
+        Container::Squashfs | Container::AppImageType2 if layers.is_empty() => {
+            let container = opened.container();
+            drop(opened);
+            let fs = squashfs(container, source.reader()?)?;
+            test_squashfs(fs, control, &mut summary)?;
+        }
+        Container::Squashfs | Container::AppImageType2 => {
+            let spooled = spool(&mut opened)?;
+            let fs = squashfs(opened.container(), &spooled.file)?;
+            test_squashfs(fs, control, &mut summary)?;
         }
         Container::SevenZip if layers.is_empty() => {
             drop(opened);
@@ -1300,10 +1326,12 @@ fn test_source(source: &Source, keys: &Keys, control: &Control) -> Result<Summar
             rar::test(arc, keys, control, &mut summary)?;
         }
         Container::Data if layers.is_empty() => return Err(Error::NotAnArchive),
-        _ => {
+        Container::Data => {
             summary.bytes = copy(&mut opened, &mut io::sink(), control, &mut done)?;
             summary.files = 1;
         }
+        // What a later hivepack tells and packwing does not read yet.
+        _ => return Err(Error::NotAnArchive),
     }
     Ok(summary)
 }
@@ -1469,6 +1497,29 @@ fn test_udf<R: Read + Seek>(
         if stat.kind == VType::VREG {
             summary.bytes += copy(&mut udf.file(node), &mut io::sink(), control, &mut done)?;
             summary.files += 1;
+        }
+        done.entries += 1;
+        control.report(&done);
+        Ok(())
+    })
+}
+
+/// Reads every file of a SquashFS image through, a snap's or an AppImage's:
+/// each of its blocks decompressed where the image says, its holes as
+/// zeros, and each link's target. A second name of a file is read once.
+fn test_squashfs<R: Read + Seek>(
+    mut fs: hivepack::squashfs::Squashfs<R>,
+    control: &Control,
+    summary: &mut Summary,
+) -> Result<(), Error> {
+    let mut done = Progress::default();
+    walk_squashfs(&mut fs, |fs, _, inode, first| {
+        control.check()?;
+        if inode.is_file() && first {
+            summary.bytes += copy(&mut fs.file(inode), &mut io::sink(), control, &mut done)?;
+            summary.files += 1;
+        } else if inode.is_symlink() {
+            fs.read_link(inode)?;
         }
         done.entries += 1;
         control.report(&done);

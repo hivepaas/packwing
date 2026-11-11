@@ -1246,8 +1246,8 @@ t843253d0 = И ещё { $more }. Введите больше, чтобы суз�
 # Open an archive
 t8382bd3e = Открыть архив
 
-# ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
-t4a498ac8 = Архивы ZIP, 7z и tar, образы дисков и пакеты, в том числе зашифрованные с помощью age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
+# ZIP, 7z and tar archives, disc images, packages, snaps and AppImages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…
+t2cb379b7 = Архивы ZIP, 7z и tar, образы дисков, пакеты, snap и AppImage, в том числе зашифрованные с помощью age: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…
 
 # Back to {name}
 t539b9c10 = Назад к { $name }
@@ -2611,20 +2611,11 @@ t5af584a0 = { $name } уже есть в папке
 # This file is not an archive packwing can open.
 t660f149b = Этот файл не является архивом, который packwing может открыть.
 
-# This is a Debian package (.deb). packwing can’t open those yet.
-tfba1f7a9 = Это пакет Debian (.deb). packwing пока не умеет их открывать.
-
 # This is an ar archive, as static libraries are. packwing can’t open those yet.
 t9c5564b8 = Это архив ar, как статические библиотеки. packwing пока не умеет их открывать.
 
 # This is a macOS disk image (.dmg). packwing can’t open those yet.
 t080d0cb2 = Это образ диска macOS (.dmg). packwing пока не умеет их открывать.
-
-# This is an AppImage, a Linux program with its files inside. packwing can’t open those yet.
-t0fd14656 = Это AppImage — программа для Linux с файлами внутри. packwing пока не умеет их открывать.
-
-# This is a SquashFS image, as snap packages are. packwing can’t open those yet.
-ta2e5570a = Это образ SquashFS, как пакеты snap. packwing пока не умеет их открывать.
 
 # The password is wrong, or the archive is damaged.
 ta4d3227d = Неверный пароль, или архив повреждён.

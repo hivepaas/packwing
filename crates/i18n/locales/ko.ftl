@@ -1198,8 +1198,8 @@ t843253d0 = 그 외 { $more }개가 더 있습니다. 더 입력하여 좁혀 �
 # Open an archive
 t8382bd3e = 압축 파일 열기
 
-# ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
-t4a498ac8 = ZIP, 7z, tar 압축 파일, 디스크 이미지, 패키지, age로 압축하거나 암호화한 파일: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
+# ZIP, 7z and tar archives, disc images, packages, snaps and AppImages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…
+t2cb379b7 = ZIP, 7z, tar 압축 파일, 디스크 이미지, 패키지, snap, AppImage, age로 압축하거나 암호화한 파일: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…
 
 # Back to {name}
 t539b9c10 = { $name }(으)로 돌아가기
@@ -2515,20 +2515,11 @@ t5af584a0 = { $name }이(가) 이미 폴더에 있습니다
 # This file is not an archive packwing can open.
 t660f149b = packwing에서 열 수 있는 압축 파일이 아닙니다.
 
-# This is a Debian package (.deb). packwing can’t open those yet.
-tfba1f7a9 = Debian 패키지(.deb)입니다. packwing은 아직 이 형식을 열 수 없습니다.
-
 # This is an ar archive, as static libraries are. packwing can’t open those yet.
 t9c5564b8 = 정적 라이브러리 같은 ar 아카이브입니다. packwing은 아직 이 형식을 열 수 없습니다.
 
 # This is a macOS disk image (.dmg). packwing can’t open those yet.
 t080d0cb2 = macOS 디스크 이미지(.dmg)입니다. packwing은 아직 이 형식을 열 수 없습니다.
-
-# This is an AppImage, a Linux program with its files inside. packwing can’t open those yet.
-t0fd14656 = 파일을 안에 담은 Linux 프로그램인 AppImage입니다. packwing은 아직 이 형식을 열 수 없습니다.
-
-# This is a SquashFS image, as snap packages are. packwing can’t open those yet.
-ta2e5570a = snap 패키지 같은 SquashFS 이미지입니다. packwing은 아직 이 형식을 열 수 없습니다.
 
 # The password is wrong, or the archive is damaged.
 ta4d3227d = 비밀번호가 올바르지 않거나 압축 파일이 손상되었습니다.

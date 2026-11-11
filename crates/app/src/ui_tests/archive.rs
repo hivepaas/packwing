@@ -1,12 +1,31 @@
 //! Opening archives, and what comes out of them.
 
+use std::path::PathBuf;
+
 use super::{Ui, fixture, listed, scenario};
 
+/// A type 2 AppImage of `tests/data`'s snap: a 64-bit ELF program marked
+/// `AI` 2, its section headers at its end, then the SquashFS image.
+fn appimage() -> Vec<u8> {
+    let mut f = vec![0u8; 4096 + 7 * 64];
+    f[..4].copy_from_slice(b"\x7fELF");
+    f[4..7].copy_from_slice(&[2, 1, 1]);
+    f[8..11].copy_from_slice(b"AI\x02");
+    f[40..48].copy_from_slice(&4096u64.to_le_bytes());
+    f[58..60].copy_from_slice(&64u16.to_le_bytes());
+    f[60..62].copy_from_slice(&7u16.to_le_bytes());
+    f.extend(std::fs::read(fixture("sample.sqfs")).expect("the snap"));
+    f
+}
+
 scenario!(
-    /// Each format packwing reads opens on the Archive page.
+    /// Each format packwing reads opens on the Archive page: a Debian
+    /// package, a snap and an AppImage among them.
     each_format_opens,
     |ui| {
-        for name in [
+        let tool = ui.work.join("Tool.AppImage");
+        std::fs::write(&tool, appimage()).expect("the AppImage");
+        let mut paths: Vec<PathBuf> = [
             "sample.7z",
             "rar5_multiple_files.rar",
             "sample.iso.zst",
@@ -14,10 +33,48 @@ scenario!(
             "default.xar",
             "tiny.pkg",
             "test_rar_multivolume_multiple_files.part1.rar",
-        ] {
-            ui.open(&fixture(name));
+            "sample-xz.deb",
+            "sample.sqfs",
+        ]
+        .into_iter()
+        .map(fixture)
+        .collect();
+        paths.push(tool);
+        for path in paths {
+            let name = path.display();
+            ui.open(&path);
             assert_eq!(ui.archive_failed(), None, "{name}");
             assert!(!ui.archive_names().is_empty(), "{name} shows nothing");
+        }
+    }
+);
+
+scenario!(
+    /// A Debian package, a snap or an AppImage dropped on the window opens,
+    /// as an archive does, where another file would go in a new archive.
+    a_package_dropped_opens,
+    |ui| {
+        let tool = ui.work.join("Tool.AppImage");
+        std::fs::write(&tool, appimage()).expect("the AppImage");
+        for path in [ui.copy_of("sample-xz.deb"), tool] {
+            let name = path.file_name().map(|n| n.to_string_lossy().into_owned());
+            ui.ws(|ws, window, cx| ws.dropped(vec![path.clone()], window, cx));
+            ui.wait_until("the package read", |ui| {
+                ui.ws(|ws, _, cx| {
+                    let page = ws.archive_page();
+                    let page = page.read(cx);
+                    page.shown_failed().is_some()
+                        || page.archive().is_some_and(|a| {
+                            Some(&a.name) == name.as_ref()
+                                && a.top_names().iter().any(|n| n == "readme.md")
+                        })
+                })
+            });
+            assert_eq!(ui.archive_failed(), None, "{name:?}");
+            assert!(
+                ui.archive_names().iter().any(|n| n == "readme.md"),
+                "{name:?}"
+            );
         }
     }
 );

@@ -1214,8 +1214,8 @@ t843253d0 = Y { $more } más. Escribe más para acotar.
 # Open an archive
 t8382bd3e = Abrir un archivo comprimido
 
-# ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
-t4a498ac8 = Archivos comprimidos ZIP, 7z y tar, imágenes de disco y paquetes, comprimidos o cifrados con age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
+# ZIP, 7z and tar archives, disc images, packages, snaps and AppImages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…
+t2cb379b7 = Archivos comprimidos ZIP, 7z y tar, imágenes de disco, paquetes, snaps y AppImages, comprimidos o cifrados con age: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…
 
 # Back to {name}
 t539b9c10 = Volver a { $name }
@@ -2553,20 +2553,11 @@ t5af584a0 = { $name } ya está en la carpeta
 # This file is not an archive packwing can open.
 t660f149b = Este archivo no es un archivo comprimido que packwing pueda abrir.
 
-# This is a Debian package (.deb). packwing can’t open those yet.
-tfba1f7a9 = Es un paquete de Debian (.deb). packwing aún no puede abrirlos.
-
 # This is an ar archive, as static libraries are. packwing can’t open those yet.
 t9c5564b8 = Es un archivo ar, como las bibliotecas estáticas. packwing aún no puede abrirlos.
 
 # This is a macOS disk image (.dmg). packwing can’t open those yet.
 t080d0cb2 = Es una imagen de disco de macOS (.dmg). packwing aún no puede abrirlas.
-
-# This is an AppImage, a Linux program with its files inside. packwing can’t open those yet.
-t0fd14656 = Es un AppImage, un programa de Linux con sus archivos dentro. packwing aún no puede abrirlos.
-
-# This is a SquashFS image, as snap packages are. packwing can’t open those yet.
-ta2e5570a = Es una imagen SquashFS, como los paquetes snap. packwing aún no puede abrirlas.
 
 # The password is wrong, or the archive is damaged.
 ta4d3227d = La contraseña es incorrecta, o el archivo comprimido está dañado.

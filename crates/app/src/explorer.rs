@@ -261,9 +261,8 @@ impl Focusable for Explorer {
 /// Whether opening a file with its default app could run it. Such a file is only
 /// shown or edited here: a double click must not start a program.
 pub fn runs_when_opened(item: &Item) -> bool {
-    const ALSO: [&str; 13] = [
-        "desktop", "command", "scr", "com", "vbs", "wsf", "hta", "appimage", "run", "bin", "py",
-        "pl", "rb",
+    const ALSO: [&str; 12] = [
+        "desktop", "command", "scr", "com", "vbs", "wsf", "hta", "run", "bin", "py", "pl", "rb",
     ];
     let ext = item
         .name
@@ -2076,7 +2075,16 @@ mod tests {
 
     #[test]
     fn what_could_run_is_not_opened() {
-        for name in ["a.exe", "b.sh", "c.desktop", "d.PY", "e.AppImage", "f.lnk"] {
+        for name in [
+            "a.exe",
+            "b.sh",
+            "c.desktop",
+            "d.PY",
+            "e.AppImage",
+            "f.lnk",
+            "g.deb",
+            "h.snap",
+        ] {
             assert!(runs_when_opened(&file(name, Some(0o644))), "{name}");
         }
         assert!(runs_when_opened(&file("tool", Some(0o755))));

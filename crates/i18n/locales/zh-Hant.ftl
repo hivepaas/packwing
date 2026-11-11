@@ -1198,8 +1198,8 @@ t843253d0 = 另外還有 { $more } 項。請多輸入一些字以縮小範圍。
 # Open an archive
 t8382bd3e = 開啟封存檔
 
-# ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
-t4a498ac8 = ZIP、7z 和 tar 封存檔、光碟映像檔和套件，以及以 age 壓縮或加密的檔案：.zip、.7z、.tar.gz、.tar.zst、.iso、.rpm、.pkg、.zst.age…
+# ZIP, 7z and tar archives, disc images, packages, snaps and AppImages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…
+t2cb379b7 = ZIP、7z 和 tar 封存檔、光碟映像檔、套件、snap 和 AppImage，以及以 age 壓縮或加密的檔案：.zip、.7z、.tar.gz、.tar.zst、.iso、.deb、.rpm、.pkg、.snap、.AppImage、.zst.age…
 
 # Back to {name}
 t539b9c10 = 返回 { $name }
@@ -2524,20 +2524,11 @@ t5af584a0 = { $name } 已在資料夾中
 # This file is not an archive packwing can open.
 t660f149b = 這個檔案不是 packwing 可開啟的封存檔。
 
-# This is a Debian package (.deb). packwing can’t open those yet.
-tfba1f7a9 = 這是 Debian 套件 (.deb)。packwing 目前還無法開啟這類檔案。
-
 # This is an ar archive, as static libraries are. packwing can’t open those yet.
 t9c5564b8 = 這是 ar 封存檔，像靜態函式庫一樣。packwing 目前還無法開啟這類檔案。
 
 # This is a macOS disk image (.dmg). packwing can’t open those yet.
 t080d0cb2 = 這是 macOS 磁碟映像檔 (.dmg)。packwing 目前還無法開啟這類檔案。
-
-# This is an AppImage, a Linux program with its files inside. packwing can’t open those yet.
-t0fd14656 = 這是 AppImage，一種內含其檔案的 Linux 程式。packwing 目前還無法開啟這類檔案。
-
-# This is a SquashFS image, as snap packages are. packwing can’t open those yet.
-ta2e5570a = 這是 SquashFS 映像檔，像 snap 套件一樣。packwing 目前還無法開啟這類檔案。
 
 # The password is wrong, or the archive is damaged.
 ta4d3227d = 密碼錯誤，或封存檔已損毀。

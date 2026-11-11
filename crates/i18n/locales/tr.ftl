@@ -1214,8 +1214,8 @@ t843253d0 = Ve { $more } tane daha. Daraltmak için daha fazla yazın.
 # Open an archive
 t8382bd3e = Bir arşiv açın
 
-# ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
-t4a498ac8 = ZIP, 7z ve tar arşivleri, disk kalıpları ve paketler, sıkıştırılmış veya age ile şifrelenmiş: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
+# ZIP, 7z and tar archives, disc images, packages, snaps and AppImages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…
+t2cb379b7 = ZIP, 7z ve tar arşivleri, disk kalıpları, paketler, snap'ler ve AppImage'lar, sıkıştırılmış veya age ile şifrelenmiş: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…
 
 # Back to {name}
 t539b9c10 = { $name } öğesine dön
@@ -2553,20 +2553,11 @@ t5af584a0 = { $name } klasörde zaten var
 # This file is not an archive packwing can open.
 t660f149b = Bu dosya packwing'in açabileceği bir arşiv değil.
 
-# This is a Debian package (.deb). packwing can’t open those yet.
-tfba1f7a9 = Bu bir Debian paketi (.deb). packwing bunları henüz açamıyor.
-
 # This is an ar archive, as static libraries are. packwing can’t open those yet.
 t9c5564b8 = Bu, statik kitaplıklar gibi bir ar arşivi. packwing bunları henüz açamıyor.
 
 # This is a macOS disk image (.dmg). packwing can’t open those yet.
 t080d0cb2 = Bu bir macOS disk görüntüsü (.dmg). packwing bunları henüz açamıyor.
-
-# This is an AppImage, a Linux program with its files inside. packwing can’t open those yet.
-t0fd14656 = Bu bir AppImage, dosyalarını içinde taşıyan bir Linux programı. packwing bunları henüz açamıyor.
-
-# This is a SquashFS image, as snap packages are. packwing can’t open those yet.
-ta2e5570a = Bu, snap paketleri gibi bir SquashFS görüntüsü. packwing bunları henüz açamıyor.
 
 # The password is wrong, or the archive is damaged.
 ta4d3227d = Parola yanlış veya arşiv bozuk.

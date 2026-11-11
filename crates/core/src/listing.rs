@@ -20,7 +20,7 @@ use crate::rar;
 use crate::source::Source;
 use crate::spool::spool;
 use crate::unsupported::named;
-use crate::volume::walk;
+use crate::volume::{squashfs, walk, walk_squashfs};
 use crate::{Error, Keys, SevenZip, opener_of, seven_zip, without_layers};
 
 /// The names of a macOS package's payloads, which hivepack::extract expands
@@ -46,9 +46,9 @@ const UNIX_EXTENSION: u32 = 0x8000;
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Link {
     /// Where it leads, if the archive says without the link's data being
-    /// decompressed: tar, RAR 5, ISO 9660 (Rock Ridge), XAR, cpio and UDF do,
-    /// and ZIP when the link is not encrypted; 7z and RAR 4 keep it in their
-    /// compressed data, read when the link is extracted.
+    /// decompressed: tar, RAR 5, ISO 9660 (Rock Ridge), XAR, cpio, UDF and
+    /// SquashFS do, and ZIP when the link is not encrypted; 7z and RAR 4
+    /// keep it in their compressed data, read when the link is extracted.
     pub target: Option<String>,
 }
 
@@ -372,15 +372,18 @@ fn listed(source: Source, keys: &Keys, listen: Listen<'_>) -> Result<Listing, Er
             entries
         }
         // Read in order; from the file itself, a file whose data is before
-        // its directory is read by going back.
-        Container::Iso if layers.is_empty() => {
+        // its directory is read by going back. A type 1 AppImage is an ISO
+        // 9660 image, its program in the image's system area.
+        Container::Iso | Container::AppImageType1 if layers.is_empty() => {
             drop(opened);
             iso_entries(
                 hivepack::iso::Reader::seekable(source.reader()?),
                 &mut gather,
             )?
         }
-        Container::Iso => iso_entries(hivepack::iso::Reader::new(&mut opened), &mut gather)?,
+        Container::Iso | Container::AppImageType1 => {
+            iso_entries(hivepack::iso::Reader::new(&mut opened), &mut gather)?
+        }
         Container::Udf if layers.is_empty() => {
             drop(opened);
             udf_entries(source.reader()?)?
@@ -388,6 +391,16 @@ fn listed(source: Source, keys: &Keys, listen: Listen<'_>) -> Result<Listing, Er
         Container::Udf => {
             let spooled = spool(&mut opened)?;
             udf_entries(&spooled.file)?
+        }
+        // Read by random access, as a UDF volume is: a snap, and a type 2
+        // AppImage's image, after its program.
+        Container::Squashfs | Container::AppImageType2 if layers.is_empty() => {
+            drop(opened);
+            squashfs_entries(squashfs(container, source.reader()?)?, &mut gather)?
+        }
+        Container::Squashfs | Container::AppImageType2 => {
+            let spooled = spool(&mut opened)?;
+            squashfs_entries(squashfs(container, &spooled.file)?, &mut gather)?
         }
         Container::SevenZip => {
             let (entries, seven_zip_encryption) = if layers.is_empty() {
@@ -428,11 +441,11 @@ fn listed(source: Source, keys: &Keys, listen: Listen<'_>) -> Result<Listing, Er
             found
         }
         // An RPM package is its payload: the package's lead and headers
-        // are a layer.
+        // are a layer. A Debian package, its data.tar, is a tar archive.
         Container::Cpio => cpio_entries(&mut opened, &mut gather)?,
         Container::Xar => xar_entries(&mut opened)?,
         Container::Data if layers.is_empty() => return Err(Error::NotAnArchive),
-        _ => {
+        Container::Data => {
             let size = io::copy(&mut opened, &mut io::sink())?;
             vec![Entry {
                 path: vec![without_layers(&name, &layers)],
@@ -442,6 +455,8 @@ fn listed(source: Source, keys: &Keys, listen: Listen<'_>) -> Result<Listing, Er
                 link: None,
             }]
         }
+        // What a later hivepack tells and packwing does not read yet.
+        _ => return Err(Error::NotAnArchive),
     };
     let files = entries.iter().filter(|e| !e.dir).count() as u64;
     let unpacked = entries.iter().filter(|e| !e.dir).map(|e| e.size).sum();
@@ -722,6 +737,32 @@ fn udf_entries<R: Read + io::Seek>(image: R) -> Result<Vec<Entry>, Error> {
         Ok(())
     })?;
     Ok(entries)
+}
+
+/// A SquashFS image's entries, as its directories list them: a snap's, an
+/// AppImage's. A second name of a file, a hard link, has no size: its data
+/// is counted at its first, once.
+fn squashfs_entries<R: Read + io::Seek>(
+    mut fs: hivepack::squashfs::Squashfs<R>,
+    gather: &mut Gather,
+) -> Result<Vec<Entry>, Error> {
+    walk_squashfs(&mut fs, |fs, path, inode, first| {
+        let link = inode.is_symlink().then(|| Link {
+            target: fs.read_link(inode).ok().and_then(|t| Link::to(&t).target),
+        });
+        gather.push(Entry {
+            path: path.to_vec(),
+            dir: inode.is_dir(),
+            size: if inode.is_file() && first {
+                inode.file_size()
+            } else {
+                0
+            },
+            modified: Some(i64::from(inode.base.mtime)),
+            link,
+        })
+    })?;
+    Ok(std::mem::take(&mut gather.entries))
 }
 
 #[cfg(test)]

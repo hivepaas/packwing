@@ -216,12 +216,13 @@ fn what_a_drop_means(paths: &[PathBuf], takes_more: bool) -> Dropped {
         return Dropped::AddTo;
     }
     match paths {
+        // A Debian package, a snap or an AppImage too, which the system
+        // installs or runs when opened: dropped here, it is to look inside.
         [one]
             if !one.is_dir()
-                && Kind::of(
+                && crate::model::opens_in_packwing(
                     &one.file_name().unwrap_or_default().to_string_lossy(),
-                    false,
-                ) == Kind::Archive =>
+                ) =>
         {
             Dropped::Open(one.clone())
         }
@@ -2774,6 +2775,16 @@ mod drop_tests {
         assert_eq!(what_a_drop_means(&path("/a/b.zip"), true), Dropped::AddTo);
         assert_eq!(what_a_drop_means(&path("/a/b.txt"), true), Dropped::AddTo);
         assert_eq!(what_a_drop_means(&path("/a/b.txt"), false), Dropped::New);
+        for name in ["/a/b.deb", "/a/b.snap", "/a/Tool.AppImage", "/a/root.sqfs"] {
+            assert_eq!(
+                what_a_drop_means(&path(name), false),
+                Dropped::Open(PathBuf::from(name))
+            );
+        }
+        assert_eq!(
+            what_a_drop_means(&path("/a/setup.exe"), false),
+            Dropped::New
+        );
         let two = [PathBuf::from("/a/b.zip"), PathBuf::from("/a/c.zip")];
         assert_eq!(what_a_drop_means(&two, false), Dropped::New);
     }

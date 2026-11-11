@@ -1214,8 +1214,8 @@ t843253d0 = E altri { $more }. Digita di più per restringere.
 # Open an archive
 t8382bd3e = Apri un archivio
 
-# ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
-t4a498ac8 = Archivi ZIP, 7z e tar, immagini disco e pacchetti, compressi o cifrati con age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
+# ZIP, 7z and tar archives, disc images, packages, snaps and AppImages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…
+t2cb379b7 = Archivi ZIP, 7z e tar, immagini disco, pacchetti, snap e AppImage, compressi o cifrati con age: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…
 
 # Back to {name}
 t539b9c10 = Torna a { $name }
@@ -2553,20 +2553,11 @@ t5af584a0 = { $name } è già nella cartella
 # This file is not an archive packwing can open.
 t660f149b = Questo file non è un archivio che packwing può aprire.
 
-# This is a Debian package (.deb). packwing can’t open those yet.
-tfba1f7a9 = Questo è un pacchetto Debian (.deb). packwing non può ancora aprirli.
-
 # This is an ar archive, as static libraries are. packwing can’t open those yet.
 t9c5564b8 = Questo è un archivio ar, come le librerie statiche. packwing non può ancora aprirli.
 
 # This is a macOS disk image (.dmg). packwing can’t open those yet.
 t080d0cb2 = Questa è un’immagine disco di macOS (.dmg). packwing non può ancora aprirle.
-
-# This is an AppImage, a Linux program with its files inside. packwing can’t open those yet.
-t0fd14656 = Questo è un AppImage, un programma Linux con i suoi file all’interno. packwing non può ancora aprirli.
-
-# This is a SquashFS image, as snap packages are. packwing can’t open those yet.
-ta2e5570a = Questa è un’immagine SquashFS, come i pacchetti snap. packwing non può ancora aprirle.
 
 # The password is wrong, or the archive is damaged.
 ta4d3227d = La password è errata, oppure l'archivio è danneggiato.

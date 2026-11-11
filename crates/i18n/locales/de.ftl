@@ -1214,8 +1214,8 @@ t843253d0 = Und { $more } weitere. Gib mehr ein, um einzugrenzen.
 # Open an archive
 t8382bd3e = Archiv öffnen
 
-# ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
-t4a498ac8 = ZIP-, 7z- und tar-Archive, Datenträgerabbilder und Pakete, komprimiert oder mit age verschlüsselt: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
+# ZIP, 7z and tar archives, disc images, packages, snaps and AppImages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…
+t2cb379b7 = ZIP-, 7z- und tar-Archive, Datenträgerabbilder, Pakete, Snaps und AppImages, komprimiert oder mit age verschlüsselt: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…
 
 # Back to {name}
 t539b9c10 = Zurück zu { $name }
@@ -2553,20 +2553,11 @@ t5af584a0 = { $name } ist schon im Ordner
 # This file is not an archive packwing can open.
 t660f149b = Diese Datei ist kein Archiv, das packwing öffnen kann.
 
-# This is a Debian package (.deb). packwing can’t open those yet.
-tfba1f7a9 = Dies ist ein Debian-Paket (.deb). packwing kann solche noch nicht öffnen.
-
 # This is an ar archive, as static libraries are. packwing can’t open those yet.
 t9c5564b8 = Dies ist ein ar-Archiv, wie es statische Bibliotheken sind. packwing kann solche noch nicht öffnen.
 
 # This is a macOS disk image (.dmg). packwing can’t open those yet.
 t080d0cb2 = Dies ist ein macOS-Image (.dmg). packwing kann solche noch nicht öffnen.
-
-# This is an AppImage, a Linux program with its files inside. packwing can’t open those yet.
-t0fd14656 = Dies ist ein AppImage, ein Linux-Programm mit seinen Dateien darin. packwing kann solche noch nicht öffnen.
-
-# This is a SquashFS image, as snap packages are. packwing can’t open those yet.
-ta2e5570a = Dies ist ein SquashFS-Image, wie es Snap-Pakete sind. packwing kann solche noch nicht öffnen.
 
 # The password is wrong, or the archive is damaged.
 ta4d3227d = Das Passwort ist falsch, oder das Archiv ist beschädigt.

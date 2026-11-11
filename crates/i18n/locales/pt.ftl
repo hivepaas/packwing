@@ -1214,8 +1214,8 @@ t843253d0 = E mais { $more }. Digite mais para refinar.
 # Open an archive
 t8382bd3e = Abrir um arquivo compactado
 
-# ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
-t4a498ac8 = Arquivos ZIP, 7z e tar, imagens de disco e pacotes, compactados ou criptografados com age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
+# ZIP, 7z and tar archives, disc images, packages, snaps and AppImages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…
+t2cb379b7 = Arquivos ZIP, 7z e tar, imagens de disco, pacotes, snaps e AppImages, compactados ou criptografados com age: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…
 
 # Back to {name}
 t539b9c10 = Voltar para { $name }
@@ -2553,20 +2553,11 @@ t5af584a0 = { $name } já está na pasta
 # This file is not an archive packwing can open.
 t660f149b = Este arquivo não é um arquivo compactado que o packwing possa abrir.
 
-# This is a Debian package (.deb). packwing can’t open those yet.
-tfba1f7a9 = Este é um pacote Debian (.deb). O packwing ainda não abre esses arquivos.
-
 # This is an ar archive, as static libraries are. packwing can’t open those yet.
 t9c5564b8 = Este é um arquivo ar, como as bibliotecas estáticas. O packwing ainda não abre esses arquivos.
 
 # This is a macOS disk image (.dmg). packwing can’t open those yet.
 t080d0cb2 = Esta é uma imagem de disco do macOS (.dmg). O packwing ainda não abre essas imagens.
-
-# This is an AppImage, a Linux program with its files inside. packwing can’t open those yet.
-t0fd14656 = Este é um AppImage, um programa Linux com seus arquivos dentro. O packwing ainda não abre esses arquivos.
-
-# This is a SquashFS image, as snap packages are. packwing can’t open those yet.
-ta2e5570a = Esta é uma imagem SquashFS, como os pacotes snap. O packwing ainda não abre essas imagens.
 
 # The password is wrong, or the archive is damaged.
 ta4d3227d = A senha está errada, ou o arquivo compactado está danificado.

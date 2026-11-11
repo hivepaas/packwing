@@ -37,8 +37,24 @@ packwing-core's tests read them.
   libarchive 3.8.10's test archives (`libarchive/test/*rar*.uu`), decoded
   (BSD-2-Clause). packwing never writes RAR, so its tests read what others made.
 
-cpio archives, RPM packages and encrypted ZIP archives are made by the
-tests themselves.
+- `sample-xz.deb`, `sample-zstd.deb`, `sample-gzip.deb`: Debian packages of
+  the files below, made by dpkg-deb 1.23 with their `data.tar` under xz,
+  Zstandard and gzip (commands below).
+- `sample.sqfs`: a SquashFS image of the same files, as a snap is (xz, blocks
+  of 4 KiB), made by mksquashfs 4.7.5.
+- `links.sqfs`: a SquashFS image (zstd) of `hello.txt` and its second name
+  `hello-again.txt`, links to it and to `/etc/passwd`, `sparse.bin` (8 KiB of
+  zeros, two holes, then `end`), and `bin/run`, setuid.
+- `squashfs/*.sqfs`: hivepack-rs's `testdata/squashfs`, one image for each
+  compressor (gzip, LZMA, LZO, xz, LZ4, zstd, and nothing compressed), made by
+  squashfs-tools 4.6.1's mksquashfs from a small tree with a second name of a
+  file, a link, a block device and a FIFO (MIT, Copyright (c) 2026
+  HivePaaS).
+
+cpio archives, RPM packages, AppImages and encrypted ZIP archives are made
+by the tests themselves: an AppImage of type 2 is an ELF program marked `AI`
+2 at its 8th byte, then `sample.sqfs`; one of type 1 is `sample.iso` with an
+ELF program marked `AI` 1 in its first 32 KiB.
 
 ```sh
 mkdir -p src/docs/plans
@@ -53,4 +69,25 @@ zstd -q -19 sample.iso sample-udf.iso
 (cd src && 7zz a -mtc=off -mta=off ../sample.7z -- *)
 (cd src && 7zz a -mtc=off -mta=off -psecret ../secret.7z -- *)
 (cd src && 7zz a -mtc=off -mta=off -psecret -mhe=on ../hidden.7z -- *)
+# The snap and the packages.
+mksquashfs src sample.sqfs -noappend -quiet -no-progress -comp xz -b 4K \
+  -all-root -no-xattrs -mkfs-time 1788264000 -processors 1
+mkdir -p pkg/DEBIAN && cp -a src/. pkg/
+printf 'Package: sample\nVersion: 1.0\nArchitecture: all\nMaintainer: packwing tests <tests@example.invalid>\nDescription: packwing test package\n' \
+  > pkg/DEBIAN/control
+find pkg -exec touch -h -d '2026-09-01 12:00:00 UTC' {} +
+for z in xz zstd gzip; do
+  SOURCE_DATE_EPOCH=1788264000 dpkg-deb --root-owner-group -Z$z --build pkg sample-$z.deb
+done
+# Links, a hole and a setuid program.
+mkdir -p links/bin
+printf 'Hello from a snap.\n' > links/hello.txt
+ln links/hello.txt links/hello-again.txt
+printf '#!/bin/sh\necho run\n' > links/bin/run && chmod 4755 links/bin/run
+ln -s hello.txt links/link-inside
+ln -s /etc/passwd links/link-outside
+truncate -s 8192 links/sparse.bin && printf 'end\n' >> links/sparse.bin
+find links -exec touch -h -d '2026-09-01 12:00:00 UTC' {} +
+mksquashfs links links.sqfs -noappend -quiet -no-progress -comp zstd -b 4K \
+  -all-root -no-xattrs -mkfs-time 1788264000 -processors 1
 ```

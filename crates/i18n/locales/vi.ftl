@@ -1198,8 +1198,8 @@ t843253d0 = Và { $more } mục nữa. Gõ thêm để thu hẹp.
 # Open an archive
 t8382bd3e = Mở tệp nén
 
-# ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
-t4a498ac8 = Tệp nén ZIP, 7z và tar, ảnh đĩa và gói cài đặt, nén hoặc mã hoá bằng age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
+# ZIP, 7z and tar archives, disc images, packages, snaps and AppImages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…
+t2cb379b7 = Tệp nén ZIP, 7z và tar, ảnh đĩa, gói cài đặt, snap và AppImage, nén hoặc mã hoá bằng age: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…
 
 # Back to {name}
 t539b9c10 = Quay lại { $name }
@@ -2515,20 +2515,11 @@ t5af584a0 = { $name } đã có trong thư mục
 # This file is not an archive packwing can open.
 t660f149b = Tệp này không phải tệp nén mà packwing mở được.
 
-# This is a Debian package (.deb). packwing can’t open those yet.
-tfba1f7a9 = Đây là gói Debian (.deb). packwing chưa mở được loại này.
-
 # This is an ar archive, as static libraries are. packwing can’t open those yet.
 t9c5564b8 = Đây là tệp nén ar, như các thư viện tĩnh. packwing chưa mở được loại này.
 
 # This is a macOS disk image (.dmg). packwing can’t open those yet.
 t080d0cb2 = Đây là ảnh đĩa macOS (.dmg). packwing chưa mở được loại này.
-
-# This is an AppImage, a Linux program with its files inside. packwing can’t open those yet.
-t0fd14656 = Đây là AppImage, một chương trình Linux chứa các tệp của nó bên trong. packwing chưa mở được loại này.
-
-# This is a SquashFS image, as snap packages are. packwing can’t open those yet.
-ta2e5570a = Đây là ảnh SquashFS, như các gói snap. packwing chưa mở được loại này.
 
 # The password is wrong, or the archive is damaged.
 ta4d3227d = Mật khẩu sai, hoặc tệp nén bị hỏng.

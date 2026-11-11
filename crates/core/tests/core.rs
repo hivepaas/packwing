@@ -380,14 +380,7 @@ fn what_packwing_does_not_open_yet_is_named() {
     ];
     bzip2_dmg.resize(4096, 0);
     bzip2_dmg.extend(&dmg[dmg.len() - 512..]);
-    let mut appimage = b"\x7fELF\x02\x01\x01\x00AI\x02\x00\x00\x00\x00\x00\x00".to_vec();
-    appimage.resize(2048, 0);
     for (name, bytes, what) in [
-        (
-            "tool.deb",
-            b"!<arch>\ndebian-binary   1342".to_vec(),
-            Unsupported::Deb,
-        ),
         (
             "libz.a",
             b"!<arch>\nadler32.o/      0".to_vec(),
@@ -395,12 +388,6 @@ fn what_packwing_does_not_open_yet_is_named() {
         ),
         ("App.dmg", dmg, Unsupported::Dmg),
         ("Bzip2.dmg", bzip2_dmg, Unsupported::Dmg),
-        ("Tool.AppImage", appimage, Unsupported::AppImage),
-        (
-            "core.snap",
-            b"hsqs\x05\x00\x00\x00".to_vec(),
-            Unsupported::SquashFs,
-        ),
     ] {
         let path = s.file(name, &bytes);
         let listed = list(&path, &Keys::default());
@@ -414,6 +401,25 @@ fn what_packwing_does_not_open_yet_is_named() {
             matches!(extracted, Err(Error::Unsupported(w)) if w == what),
             "{name}"
         );
+        assert!(!out.exists());
+    }
+    // What packwing reads now fails, cut short, as what it is.
+    let mut appimage = b"\x7fELF\x02\x01\x01\x00AI\x02\x00\x00\x00\x00\x00\x00".to_vec();
+    appimage.resize(2048, 0);
+    for (name, bytes) in [
+        ("tool.deb", b"!<arch>\ndebian-binary   1342".to_vec()),
+        ("Tool.AppImage", appimage),
+        ("core.snap", b"hsqs\x05\x00\x00\x00".to_vec()),
+    ] {
+        let path = s.file(name, &bytes);
+        let listed = list(&path, &Keys::default());
+        assert!(
+            matches!(listed, Err(Error::Failed(_))),
+            "{name}: {listed:?}"
+        );
+        let out = s.0.join("out");
+        let extracted = extract(&path, &out, &Keys::default(), &Control::default());
+        assert!(matches!(extracted, Err(Error::Failed(_))), "{name}");
         assert!(!out.exists());
     }
 }

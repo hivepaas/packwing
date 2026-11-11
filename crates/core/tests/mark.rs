@@ -139,3 +139,19 @@ fn what_is_extracted_from_a_storage_is_marked() {
     extract(source, &out, &Keys::default(), &Control::default()).expect("the extraction");
     assert!(marked(&out.join("file.txt")));
 }
+
+#[test]
+fn what_is_extracted_from_a_package_or_snap_on_a_storage_is_marked() {
+    let dir = folder("packages");
+    let data = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data");
+    for name in ["sample-xz.deb", "sample.sqfs"] {
+        fs::copy(data.join(name), dir.join(name)).expect("a copy");
+        let size = fs::metadata(dir.join(name)).expect("the file").len();
+        let far: Arc<dyn Storage> = Arc::new(Far(LocalFolder::new(&dir)));
+        let source = Source::Stored(Stored::new(far, vec![name.to_owned()], size));
+        let out = dir.join(format!("out-{name}"));
+        extract(source, &out, &Keys::default(), &Control::default()).expect("the extraction");
+        assert!(marked(&out.join("readme.md")), "{name}");
+        assert!(marked(&out.join("docs/notes.txt")), "{name}");
+    }
+}

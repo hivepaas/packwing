@@ -1198,8 +1198,8 @@ t843253d0 = ほか { $more } 件あります。入力を増やして絞り込ん
 # Open an archive
 t8382bd3e = アーカイブを開く
 
-# ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
-t4a498ac8 = ZIP、7z、tar アーカイブ、ディスクイメージ、パッケージ、age で圧縮または暗号化したもの：.zip、.7z、.tar.gz、.tar.zst、.iso、.rpm、.pkg、.zst.age…
+# ZIP, 7z and tar archives, disc images, packages, snaps and AppImages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…
+t2cb379b7 = ZIP、7z、tar アーカイブ、ディスクイメージ、パッケージ、snap、AppImage、age で圧縮または暗号化したもの：.zip、.7z、.tar.gz、.tar.zst、.iso、.deb、.rpm、.pkg、.snap、.AppImage、.zst.age…
 
 # Back to {name}
 t539b9c10 = { $name } に戻る
@@ -2515,20 +2515,11 @@ t5af584a0 = { $name } はすでにフォルダにあります
 # This file is not an archive packwing can open.
 t660f149b = このファイルは packwing で開けるアーカイブではありません。
 
-# This is a Debian package (.deb). packwing can’t open those yet.
-tfba1f7a9 = これは Debian パッケージ (.deb) です。packwing はまだ開けません。
-
 # This is an ar archive, as static libraries are. packwing can’t open those yet.
 t9c5564b8 = これは静的ライブラリなどの ar アーカイブです。packwing はまだ開けません。
 
 # This is a macOS disk image (.dmg). packwing can’t open those yet.
 t080d0cb2 = これは macOS のディスクイメージ (.dmg) です。packwing はまだ開けません。
-
-# This is an AppImage, a Linux program with its files inside. packwing can’t open those yet.
-t0fd14656 = これは AppImage (ファイルを内蔵した Linux プログラム) です。packwing はまだ開けません。
-
-# This is a SquashFS image, as snap packages are. packwing can’t open those yet.
-ta2e5570a = これは snap パッケージなどの SquashFS イメージです。packwing はまだ開けません。
 
 # The password is wrong, or the archive is damaged.
 ta4d3227d = パスワードが違うか、アーカイブが壊れています。

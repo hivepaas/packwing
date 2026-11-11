@@ -1786,7 +1786,7 @@ impl ArchivePage {
             Shown::Failed { name, why } => (name.clone(), why.clone(), true),
             _ => (
                 tr!("Open an archive").to_owned(),
-                tr!("ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…")
+                tr!("ZIP, 7z and tar archives, disc images, packages, snaps and AppImages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .deb, .rpm, .pkg, .snap, .AppImage, .zst.age…")
                     .to_owned(),
                 true,
             ),
