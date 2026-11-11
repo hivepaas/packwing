@@ -84,18 +84,38 @@ impl Kind {
             "mp4" | "m4v" | "mkv" | "mov" | "avi" | "webm" | "wmv" | "flv" | "mpg" | "mpeg" => {
                 Kind::Video
             }
-            "exe" | "msi" | "dll" | "app" | "dmg" | "pkg" | "deb" | "rpm" | "sh" | "bat"
-            | "cmd" | "ps1" | "js" | "lnk" | "jar" | "apk" => Kind::Program,
-            // Java's and Android's run, as the packages above install: packwing
-            // opens them when asked, the system when they are opened.
+            "exe" | "msi" | "dll" | "app" | "dmg" | "pkg" | "deb" | "udeb" | "rpm" | "snap"
+            | "appimage" | "sh" | "bat" | "cmd" | "ps1" | "js" | "lnk" | "jar" | "apk" => {
+                Kind::Program
+            }
+            // Java's and Android's run, as the packages above install and an
+            // AppImage runs: packwing opens them when asked, the system when
+            // they are opened.
             "zip" | "tar" | "gz" | "tgz" | "zst" | "tzst" | "xz" | "txz" | "bz2" | "tbz2"
             | "tbz" | "lz" | "lz4" | "tlz4" | "lzma" | "tlz" | "7z" | "rar" | "age" | "iso"
-            | "cpio" | "xar" | "war" | "ear" | "xpi" | "cbz" | "cbr" | "cb7" | "cbt" => {
-                Kind::Archive
-            }
+            | "cpio" | "xar" | "sqfs" | "squashfs" | "war" | "ear" | "xpi" | "cbz" | "cbr"
+            | "cb7" | "cbt" => Kind::Archive,
             _ => Kind::Other,
         }
     }
+}
+
+/// The programs and packages packwing opens as archives when it is asked
+/// to, by their extensions: a Debian package, a snap, an AppImage. Opened,
+/// the system installs or runs them, and packwing is never the app that
+/// does: a double click is the system's, and they are not packwing's in
+/// Open With. A drop of one on the window, Open as archive, and the
+/// right-click menu's Open and Extract items open them in packwing.
+pub const PACKAGES: [&str; 4] = ["deb", "udeb", "snap", "appimage"];
+
+/// Whether `name` is an archive packwing opens, or a package it opens as
+/// one when asked ([`PACKAGES`]).
+pub fn opens_in_packwing(name: &str) -> bool {
+    let ext = name
+        .rsplit_once('.')
+        .map(|(_, e)| e.to_ascii_lowercase())
+        .unwrap_or_default();
+    Kind::of(name, false) == Kind::Archive || PACKAGES.contains(&ext.as_str())
 }
 
 /// Whether packwing shows a file of this name as a text, if its bytes are one
@@ -575,6 +595,10 @@ mod tests {
         assert_eq!(stem("hello-1.0-1.x86_64.rpm"), "hello-1.0-1.x86_64");
         assert_eq!(stem("Install Example.pkg"), "Install Example");
         assert_eq!(stem("initramfs.cpio.zst"), "initramfs");
+        assert_eq!(stem("hello_2.10-3_amd64.deb"), "hello_2.10-3_amd64");
+        assert_eq!(stem("core22_2045.snap"), "core22_2045");
+        assert_eq!(stem("Tool-x86_64.AppImage"), "Tool-x86_64");
+        assert_eq!(stem("rootfs.squashfs"), "rootfs");
         assert_eq!(stem("notes.txt"), "notes.txt");
         assert_eq!(stem(".tar"), ".tar");
     }
@@ -634,6 +658,16 @@ mod tests {
         // Java's and Android's run, as packages do; an epub is a book.
         assert_eq!(Kind::of("a.jar", false), Kind::Program);
         assert_eq!(Kind::of("a.apk", false), Kind::Program);
+        // Packages and AppImages are the system's to install and run;
+        // packwing opens them when asked, and a SquashFS image at once.
+        for name in ["a.deb", "a.udeb", "a.snap", "Tool.AppImage"] {
+            assert_eq!(Kind::of(name, false), Kind::Program, "{name}");
+            assert!(opens_in_packwing(name), "{name}");
+        }
+        assert_eq!(Kind::of("rootfs.sqfs", false), Kind::Archive);
+        assert_eq!(Kind::of("rootfs.squashfs", false), Kind::Archive);
+        assert!(!opens_in_packwing("setup.exe"));
+        assert!(!opens_in_packwing("a.rpm"));
         assert_eq!(Kind::of("a.epub", false), Kind::Document);
         assert_eq!(stem("Báo cáo.apk"), "Báo cáo");
         assert_eq!(stem("ứng dụng.war"), "ứng dụng");
