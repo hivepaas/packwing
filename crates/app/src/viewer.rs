@@ -200,11 +200,8 @@ fn read(reading: &Reading, file: &ViewFile) -> Shown {
             let cut = file.size > MOST_TEXT as u64;
             match text_preview(&bytes, MOST_TEXT) {
                 Some(text) => {
-                    // The last line's end starts no line of its own.
-                    let text = text
-                        .strip_suffix('\n')
-                        .unwrap_or(&text)
-                        .replace('\t', "    ");
+                    // As it is, its last line's end too: Copy all gives the file.
+                    let text = text.replace('\t', "    ");
                     let lines = text.lines().count();
                     Shown::Text(Arc::new(text), lines, cut)
                 }

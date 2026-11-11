@@ -231,8 +231,8 @@ scenario!(
 );
 
 scenario!(
-    /// A text file viewed has the right-click menu of text to read: Copy all, with
-    /// nothing chosen.
+    /// A text file in the viewer has the right-click menu of text to read: Copy
+    /// all, with nothing chosen, gives the file as it is.
     a_text_viewed_has_a_copy_menu,
     |ui| {
         let folder = ui.work.join("place");
@@ -256,7 +256,7 @@ scenario!(
             ui.cx.read_from_clipboard().and_then(|c| c.text()).as_deref(),
             Some(text)
         );
-        assert!(ui.dialog_open(), "the file is still shown");
+        assert!(ui.shows("viewer"), "the file is still shown");
     }
 );
 
