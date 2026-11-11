@@ -2521,6 +2521,21 @@ t5af584a0 = { $name } sudah ada di folder
 # This file is not an archive packwing can open.
 t660f149b = Berkas ini bukan arsip yang dapat dibuka packwing.
 
+# This is a Debian package (.deb). packwing can’t open those yet.
+tfba1f7a9 = Ini paket Debian (.deb). packwing belum bisa membukanya.
+
+# This is an ar archive, as static libraries are. packwing can’t open those yet.
+t9c5564b8 = Ini arsip ar, seperti pustaka statis. packwing belum bisa membukanya.
+
+# This is a macOS disk image (.dmg). packwing can’t open those yet.
+t080d0cb2 = Ini image disk macOS (.dmg). packwing belum bisa membukanya.
+
+# This is an AppImage, a Linux program with its files inside. packwing can’t open those yet.
+t0fd14656 = Ini AppImage, program Linux yang berisi berkas-berkasnya. packwing belum bisa membukanya.
+
+# This is a SquashFS image, as snap packages are. packwing can’t open those yet.
+ta2e5570a = Ini image SquashFS, seperti paket snap. packwing belum bisa membukanya.
+
 # The password is wrong, or the archive is damaged.
 ta4d3227d = Kata sandi salah, atau arsip rusak.
 

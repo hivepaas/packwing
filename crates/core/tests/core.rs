@@ -364,6 +364,61 @@ fn one_file_under_layers() {
 }
 
 #[test]
+fn what_packwing_does_not_open_yet_is_named() {
+    use packwing_core::Unsupported;
+    let s = Scratch::new();
+    let mut dmg = vec![0x78, 0x9c, 1, 2, 3];
+    dmg.resize(4096, 0);
+    let mut trailer = b"koly".to_vec();
+    trailer.resize(512, 0);
+    dmg.extend(trailer);
+    // UDBZ: its first block a bzip2 stream, which more data follows.
+    let mut bzip2_dmg = vec![
+        0x42, 0x5a, 0x68, 0x39, 0x31, 0x41, 0x59, 0x26, 0x53, 0x59, 0x62, 0xa4, 0x89, 0x15, 0x00,
+        0x00, 0x00, 0x81, 0x80, 0x01, 0x40, 0x08, 0x00, 0x20, 0x00, 0x21, 0x98, 0x19, 0x81, 0x61,
+        0x77, 0x24, 0x53, 0x85, 0x09, 0x06, 0x2a, 0x48, 0x91, 0x50,
+    ];
+    bzip2_dmg.resize(4096, 0);
+    bzip2_dmg.extend(&dmg[dmg.len() - 512..]);
+    let mut appimage = b"\x7fELF\x02\x01\x01\x00AI\x02\x00\x00\x00\x00\x00\x00".to_vec();
+    appimage.resize(2048, 0);
+    for (name, bytes, what) in [
+        (
+            "tool.deb",
+            b"!<arch>\ndebian-binary   1342".to_vec(),
+            Unsupported::Deb,
+        ),
+        (
+            "libz.a",
+            b"!<arch>\nadler32.o/      0".to_vec(),
+            Unsupported::Ar,
+        ),
+        ("App.dmg", dmg, Unsupported::Dmg),
+        ("Bzip2.dmg", bzip2_dmg, Unsupported::Dmg),
+        ("Tool.AppImage", appimage, Unsupported::AppImage),
+        (
+            "core.snap",
+            b"hsqs\x05\x00\x00\x00".to_vec(),
+            Unsupported::SquashFs,
+        ),
+    ] {
+        let path = s.file(name, &bytes);
+        let listed = list(&path, &Keys::default());
+        assert!(
+            matches!(listed, Err(Error::Unsupported(w)) if w == what),
+            "{name}: {listed:?}"
+        );
+        let out = s.0.join("out");
+        let extracted = extract(&path, &out, &Keys::default(), &Control::default());
+        assert!(
+            matches!(extracted, Err(Error::Unsupported(w)) if w == what),
+            "{name}"
+        );
+        assert!(!out.exists());
+    }
+}
+
+#[test]
 fn not_an_archive() {
     let s = Scratch::new();
     let path = s.file("photo.jpg", b"\xFF\xD8\xFF\xE0 not an archive");

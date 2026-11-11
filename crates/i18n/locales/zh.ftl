@@ -2512,6 +2512,21 @@ t5af584a0 = { $name } 已在该文件夹中
 # This file is not an archive packwing can open.
 t660f149b = 此文件不是 packwing 能打开的压缩包。
 
+# This is a Debian package (.deb). packwing can’t open those yet.
+tfba1f7a9 = 这是 Debian 软件包 (.deb)。packwing 暂时还无法打开此类文件。
+
+# This is an ar archive, as static libraries are. packwing can’t open those yet.
+t9c5564b8 = 这是 ar 归档，如静态库。packwing 暂时还无法打开此类文件。
+
+# This is a macOS disk image (.dmg). packwing can’t open those yet.
+t080d0cb2 = 这是 macOS 磁盘映像 (.dmg)。packwing 暂时还无法打开此类文件。
+
+# This is an AppImage, a Linux program with its files inside. packwing can’t open those yet.
+t0fd14656 = 这是 AppImage，一种内含其文件的 Linux 程序。packwing 暂时还无法打开此类文件。
+
+# This is a SquashFS image, as snap packages are. packwing can’t open those yet.
+ta2e5570a = 这是 SquashFS 映像，如 snap 软件包。packwing 暂时还无法打开此类文件。
+
 # The password is wrong, or the archive is damaged.
 ta4d3227d = 密码错误，或压缩包已损坏。
 

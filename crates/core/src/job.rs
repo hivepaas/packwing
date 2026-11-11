@@ -27,6 +27,7 @@ use crate::audit;
 use crate::rar;
 use crate::source::Source;
 use crate::spool::spool;
+use crate::unsupported::named;
 use crate::volume::walk;
 use crate::{Error, Keys, opener, opener_of, seven_zip, without_layers};
 
@@ -714,7 +715,10 @@ pub(crate) fn extract_into(
         }
         _ => None,
     };
-    let result = extract_naming(source, into, keys, how, select, control, written.as_ref());
+    let result = named(
+        source,
+        extract_naming(source, into, keys, how, select, control, written.as_ref()),
+    );
     if let Some(written) = written {
         let names = written
             .lock()
@@ -1166,7 +1170,7 @@ fn copy(
 pub fn test(source: impl Into<Source>, keys: &Keys, control: &Control) -> Result<Summary, Error> {
     let source: Source = source.into();
     let job = audit::begin("test", audit::fields([("source", audit::source(&source))]))?;
-    let result = test_source(&source, keys, control);
+    let result = named(&source, test_source(&source, keys, control));
     audit::end(job, &result, |summary| {
         audit::fields([
             ("files", json!(summary.files)),

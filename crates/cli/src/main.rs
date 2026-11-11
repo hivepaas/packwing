@@ -466,7 +466,7 @@ impl From<packwing_core::Error> for Exit {
         use packwing_core::Error;
         let said = e.to_string();
         match e {
-            Error::NotAnArchive => Exit::NotAnArchive(said),
+            Error::NotAnArchive | Error::Unsupported(_) => Exit::NotAnArchive(said),
             Error::Locked { .. }
             | Error::WrongPassword
             | Error::WrongPassphrase
