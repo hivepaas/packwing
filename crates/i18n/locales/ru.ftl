@@ -1210,18 +1210,6 @@ t73690b65 = Архив
 # Search inside this archive
 tb35c0c27 = Поиск в этом архиве
 
-# Too big to show here
-t1b339d35 = Слишком большой для показа
-
-# Not text it can show
-ta413eca5 = Это не текст, который можно показать
-
-# It needs the password to show it
-t81f5dbce = Чтобы показать, нужен пароль
-
-# It could not be read
-tb7927177 = Не удалось прочитать
-
 # Open another…
 tff74a552 = Открыть другой…
 
@@ -2368,6 +2356,12 @@ t2bfc1370 = Нет папки для загрузки.
 # packwing can’t show this kind of file
 tb909bf3c = packwing не может показать файл такого типа
 
+# Too big to show here
+t1b339d35 = Слишком большой для показа
+
+# It needs the password to show it
+t81f5dbce = Чтобы показать, нужен пароль
+
 # It could not be read: {why}
 t26005fe3 = Не удалось прочитать: { $why }
 
@@ -2383,8 +2377,8 @@ t9fbb1078 =
        *[other] { $count } строки
     }
 
-# Its first 256 KB are shown
-t7113adfc = Показаны первые 256 КБ
+# Its first 1 MB is shown
+t329dac80 = Показан первый 1 МБ
 
 # Update available
 t676409df = Доступно обновление

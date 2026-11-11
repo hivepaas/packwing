@@ -1162,18 +1162,6 @@ t73690b65 = 압축 파일
 # Search inside this archive
 tb35c0c27 = 이 압축 파일 안에서 검색
 
-# Too big to show here
-t1b339d35 = 너무 커서 여기에 표시할 수 없습니다
-
-# Not text it can show
-ta413eca5 = 표시할 수 있는 텍스트가 아닙니다
-
-# It needs the password to show it
-t81f5dbce = 표시하려면 비밀번호가 필요합니다
-
-# It could not be read
-tb7927177 = 읽을 수 없습니다
-
 # Open another…
 tff74a552 = 다른 파일 열기…
 
@@ -2281,6 +2269,12 @@ t2bfc1370 = 다운로드할 폴더가 없습니다.
 # packwing can’t show this kind of file
 tb909bf3c = packwing에서 표시할 수 없는 종류의 파일입니다
 
+# Too big to show here
+t1b339d35 = 너무 커서 여기에 표시할 수 없습니다
+
+# It needs the password to show it
+t81f5dbce = 표시하려면 비밀번호가 필요합니다
+
 # It could not be read: {why}
 t26005fe3 = 읽을 수 없습니다: { $why }
 
@@ -2293,8 +2287,8 @@ t9fbb1078 =
        *[other] { $count }줄
     }
 
-# Its first 256 KB are shown
-t7113adfc = 처음 256KB만 표시합니다
+# Its first 1 MB is shown
+t329dac80 = 처음 1MB만 표시합니다
 
 # Update available
 t676409df = 업데이트 가능

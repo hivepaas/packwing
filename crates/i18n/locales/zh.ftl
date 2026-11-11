@@ -1162,18 +1162,6 @@ t73690b65 = 压缩包
 # Search inside this archive
 tb35c0c27 = 在此压缩包中搜索
 
-# Too big to show here
-t1b339d35 = 太大，无法在此显示
-
-# Not text it can show
-ta413eca5 = 不是可显示的文本
-
-# It needs the password to show it
-t81f5dbce = 需要密码才能显示
-
-# It could not be read
-tb7927177 = 无法读取
-
 # Open another…
 tff74a552 = 打开其他…
 
@@ -2281,6 +2269,12 @@ t2bfc1370 = 没有可用于下载的文件夹。
 # packwing can’t show this kind of file
 tb909bf3c = packwing 无法显示这种文件
 
+# Too big to show here
+t1b339d35 = 太大，无法在此显示
+
+# It needs the password to show it
+t81f5dbce = 需要密码才能显示
+
 # It could not be read: {why}
 t26005fe3 = 无法读取：{ $why }
 
@@ -2293,8 +2287,8 @@ t9fbb1078 =
        *[other] { $count } 行
     }
 
-# Its first 256 KB are shown
-t7113adfc = 仅显示前 256 KB
+# Its first 1 MB is shown
+t329dac80 = 仅显示前 1 MB
 
 # Update available
 t676409df = 有可用更新

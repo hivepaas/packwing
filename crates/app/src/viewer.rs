@@ -19,7 +19,7 @@ use packwing_i18n::{tr, tr_n};
 
 use crate::colors::colors;
 use crate::input::{Paint, TextInput};
-use crate::model::{Kind, size, tag_of, text_preview};
+use crate::model::{Kind, reads_as_text, size, tag_of, text_preview};
 use crate::pages::archive::{MOST_PREVIEWED, picture_format};
 use crate::text_size::ui;
 use crate::widgets::{Fill, Size, button, icon, icon_button, kind_tile, mono_font};
@@ -29,8 +29,9 @@ fn unpainted(_: &str) -> Vec<(std::ops::Range<usize>, Paint)> {
     Vec::new()
 }
 
-/// How much of a text the viewer shows.
-const MOST_TEXT: usize = 256 * 1024;
+/// How much of a text the viewer shows: 1 MB draws in about 8 ms a frame,
+/// once shaped (a third of a second, when it is opened).
+const MOST_TEXT: usize = 1024 * 1024;
 
 /// Where the files shown are read from.
 #[derive(Clone)]
@@ -66,7 +67,7 @@ pub enum ViewerEvent {
 
 /// What is shown of a file.
 #[derive(Clone)]
-enum Shown {
+pub(crate) enum Shown {
     Reading,
     /// A picture, and its size in pixels.
     Picture(Arc<Image>, Option<(u32, u32)>),
@@ -106,7 +107,8 @@ impl Focusable for Viewer {
 /// Whether the viewer shows what a file of this name holds: a picture GPUI
 /// draws, or a text.
 pub fn viewable(name: &str) -> bool {
-    picture_format(name).is_some() || Kind::of(name, false) == Kind::Text
+    // What its name says nothing of is shown when chosen, not stepped onto.
+    picture_format(name).is_some() || (reads_as_text(name) && Kind::of(name, false) != Kind::Other)
 }
 
 /// The files of a folder the viewer steps through, from `chosen`: those it
@@ -157,28 +159,38 @@ pub fn natural_order(a: &str, b: &str) -> Ordering {
     }
 }
 
-/// Reads `file` from `reading` and makes what shows of it. It blocks: it is
-/// run in the background.
-fn read(reading: &Reading, file: &ViewFile) -> Shown {
-    let format = picture_format(&file.name);
-    let kind = Kind::of(&file.name, false);
-    // A script is a text; a program that is not says so once read.
-    if format.is_none() && !matches!(kind, Kind::Text | Kind::Other | Kind::Program) {
+/// What shows of the file at `path` named `name`, of `size` bytes, read from
+/// `reading`: the one answer the archive's preview and the viewer both give, a
+/// text cut to `most_text` bytes. It blocks: it is run in the background.
+pub(crate) fn look(
+    reading: &Reading,
+    path: &[String],
+    name: &str,
+    size: u64,
+    most_text: usize,
+    control: &Control,
+) -> Shown {
+    let format = picture_format(name);
+    if format.is_none() && !reads_as_text(name) {
         return Shown::Not(tr!("packwing can’t show this kind of file"));
     }
-    if format.is_some() && file.size > MOST_PREVIEWED {
+    // An archive gives a file whole, and refuses one over what is asked:
+    // what is read of it at most is the same for a picture and a text.
+    let whole = matches!(reading, Reading::Archive { .. }) || format.is_some();
+    if whole && size > MOST_PREVIEWED {
         return Shown::Not(tr!("Too big to show here"));
     }
-    let most = if format.is_some() {
+    let most = if whole {
         MOST_PREVIEWED
     } else {
-        MOST_TEXT as u64
+        most_text as u64 + 4
     };
     let bytes = match reading {
-        Reading::Stored(storage) => storage.read(&file.path, most).map_err(|e| e.to_string()),
+        Reading::Stored(storage) => storage.read(path, most).map_err(|e| e.to_string()),
         Reading::Archive { source, keys } => {
-            match preview_entry(source, &file.path, keys, most, &Control::default()) {
+            match preview_entry(source, path, keys, most, control) {
                 Ok(bytes) => Ok(bytes),
+                Err(Error::Cancelled) => return Shown::Reading,
                 Err(Error::Locked { .. } | Error::WrongPassword) => {
                     return Shown::Not(tr!("It needs the password to show it"));
                 }
@@ -197,8 +209,8 @@ fn read(reading: &Reading, file: &ViewFile) -> Shown {
         }
         Some(_) => Shown::Not(tr!("Too big to show here")),
         None => {
-            let cut = file.size > MOST_TEXT as u64;
-            match text_preview(&bytes, MOST_TEXT) {
+            let cut = size.max(bytes.len() as u64) > most_text as u64;
+            match text_preview(&bytes, most_text) {
                 Some(text) => {
                     // As it is, its last line's end too: Copy all gives the file.
                     let text = text.replace('\t', "    ");
@@ -209,6 +221,18 @@ fn read(reading: &Reading, file: &ViewFile) -> Shown {
             }
         }
     }
+}
+
+/// [`look`] for the viewer.
+fn read(reading: &Reading, file: &ViewFile) -> Shown {
+    look(
+        reading,
+        &file.path,
+        &file.name,
+        file.size,
+        MOST_TEXT,
+        &Control::default(),
+    )
 }
 
 impl Viewer {
@@ -563,7 +587,7 @@ impl Viewer {
                     count = crate::model::count(*lines as u64)
                 ));
                 if *cut {
-                    said.push(tr!("Its first 256 KB are shown"));
+                    said.push(tr!("Its first 1 MB is shown"));
                 }
             }
             _ => {}
@@ -638,16 +662,19 @@ mod tests {
             app: true,
             edit: false,
         };
-        let files = ["a.jpg", "b.pdf", "c.txt", "d.zip", "e.png"]
+        let files = ["a.jpg", "b.pdf", "c.txt", "d.zip", "e.png", "f.sh", "g.dat"]
             .map(file)
             .to_vec();
         let (kept, at) = stepping(files.clone(), "c.txt");
         let names: Vec<_> = kept.iter().map(|f| f.name.as_str()).collect();
-        assert_eq!(names, ["a.jpg", "c.txt", "e.png"]);
+        // A script is a text; what its name says nothing of is not stepped onto.
+        assert_eq!(names, ["a.jpg", "c.txt", "e.png", "f.sh"]);
         assert_eq!(at, 1);
         // What it does not show is still shown, when it was chosen.
-        let (kept, at) = stepping(files, "b.pdf");
-        assert_eq!(kept.len(), 4);
+        let (kept, at) = stepping(files.clone(), "b.pdf");
+        assert_eq!(kept.len(), 5);
         assert_eq!(kept[at].name, "b.pdf");
+        let (kept, at) = stepping(files, "g.dat");
+        assert_eq!(kept[at].name, "g.dat");
     }
 }

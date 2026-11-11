@@ -1162,18 +1162,6 @@ t73690b65 = 封存檔
 # Search inside this archive
 tb35c0c27 = 搜尋此封存檔內部
 
-# Too big to show here
-t1b339d35 = 太大，無法在此顯示
-
-# Not text it can show
-ta413eca5 = 不是可顯示的文字
-
-# It needs the password to show it
-t81f5dbce = 需要密碼才能顯示
-
-# It could not be read
-tb7927177 = 無法讀取
-
 # Open another…
 tff74a552 = 開啟其他…
 
@@ -2290,6 +2278,12 @@ t2bfc1370 = 沒有可下載到的資料夾。
 # packwing can’t show this kind of file
 tb909bf3c = packwing 無法顯示這種檔案
 
+# Too big to show here
+t1b339d35 = 太大，無法在此顯示
+
+# It needs the password to show it
+t81f5dbce = 需要密碼才能顯示
+
 # It could not be read: {why}
 t26005fe3 = 無法讀取：{ $why }
 
@@ -2302,8 +2296,8 @@ t9fbb1078 =
        *[other] { $count } 行
     }
 
-# Its first 256 KB are shown
-t7113adfc = 僅顯示前 256 KB
+# Its first 1 MB is shown
+t329dac80 = 僅顯示前 1 MB
 
 # Update available
 t676409df = 有可用更新

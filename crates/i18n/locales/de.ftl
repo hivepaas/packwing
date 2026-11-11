@@ -1178,18 +1178,6 @@ t73690b65 = Archiv
 # Search inside this archive
 tb35c0c27 = In diesem Archiv suchen
 
-# Too big to show here
-t1b339d35 = Zu groß für die Anzeige
-
-# Not text it can show
-ta413eca5 = Kein Text, den es anzeigen kann
-
-# It needs the password to show it
-t81f5dbce = Zum Anzeigen braucht es das Passwort
-
-# It could not be read
-tb7927177 = Sie ließ sich nicht lesen
-
 # Open another…
 tff74a552 = Anderes öffnen…
 
@@ -2316,6 +2304,12 @@ t2bfc1370 = Kein Ordner zum Herunterladen.
 # packwing can’t show this kind of file
 tb909bf3c = packwing kann diese Art von Datei nicht anzeigen
 
+# Too big to show here
+t1b339d35 = Zu groß für die Anzeige
+
+# It needs the password to show it
+t81f5dbce = Zum Anzeigen braucht es das Passwort
+
 # It could not be read: {why}
 t26005fe3 = Sie ließ sich nicht lesen: { $why }
 
@@ -2329,8 +2323,8 @@ t9fbb1078 =
        *[other] { $count } Zeilen
     }
 
-# Its first 256 KB are shown
-t7113adfc = Die ersten 256 KB werden angezeigt
+# Its first 1 MB is shown
+t329dac80 = Das erste MB wird angezeigt
 
 # Update available
 t676409df = Update verfügbar

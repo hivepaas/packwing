@@ -1162,18 +1162,6 @@ t73690b65 = Arsip
 # Search inside this archive
 tb35c0c27 = Cari di dalam arsip ini
 
-# Too big to show here
-t1b339d35 = Terlalu besar untuk ditampilkan di sini
-
-# Not text it can show
-ta413eca5 = Bukan teks yang dapat ditampilkan
-
-# It needs the password to show it
-t81f5dbce = Memerlukan kata sandi untuk menampilkannya
-
-# It could not be read
-tb7927177 = Tidak dapat dibaca
-
 # Open another…
 tff74a552 = Buka yang lain…
 
@@ -2290,6 +2278,12 @@ t2bfc1370 = Tidak ada folder tujuan unduhan.
 # packwing can’t show this kind of file
 tb909bf3c = packwing tidak dapat menampilkan jenis berkas ini
 
+# Too big to show here
+t1b339d35 = Terlalu besar untuk ditampilkan di sini
+
+# It needs the password to show it
+t81f5dbce = Memerlukan kata sandi untuk menampilkannya
+
 # It could not be read: {why}
 t26005fe3 = Tidak dapat dibaca: { $why }
 
@@ -2302,8 +2296,8 @@ t9fbb1078 =
        *[other] { $count } baris
     }
 
-# Its first 256 KB are shown
-t7113adfc = 256 KB pertamanya ditampilkan
+# Its first 1 MB is shown
+t329dac80 = 1 MB pertamanya ditampilkan
 
 # Update available
 t676409df = Pembaruan tersedia

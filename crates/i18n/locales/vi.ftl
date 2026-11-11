@@ -1162,18 +1162,6 @@ t73690b65 = Tệp nén
 # Search inside this archive
 tb35c0c27 = Tìm trong tệp nén này
 
-# Too big to show here
-t1b339d35 = Quá lớn để hiện ở đây
-
-# Not text it can show
-ta413eca5 = Không phải văn bản để hiện
-
-# It needs the password to show it
-t81f5dbce = Cần mật khẩu để hiện
-
-# It could not be read
-tb7927177 = Không đọc được
-
 # Open another…
 tff74a552 = Mở tệp khác…
 
@@ -2281,6 +2269,12 @@ t2bfc1370 = Không có thư mục để tải xuống.
 # packwing can’t show this kind of file
 tb909bf3c = packwing không hiện được loại tệp này
 
+# Too big to show here
+t1b339d35 = Quá lớn để hiện ở đây
+
+# It needs the password to show it
+t81f5dbce = Cần mật khẩu để hiện
+
 # It could not be read: {why}
 t26005fe3 = Không đọc được: { $why }
 
@@ -2293,8 +2287,8 @@ t9fbb1078 =
        *[other] { $count } dòng
     }
 
-# Its first 256 KB are shown
-t7113adfc = Đang hiện 256 KB đầu tiên
+# Its first 1 MB is shown
+t329dac80 = Đang hiện 1 MB đầu tiên
 
 # Update available
 t676409df = Có bản cập nhật

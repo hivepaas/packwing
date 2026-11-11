@@ -140,3 +140,35 @@ scenario!(
         assert_eq!(chosen, ["y.txt"]);
     }
 );
+
+scenario!(
+    /// The viewer shows what the archive's preview shows: a text longer than
+    /// it showed before (its first MB), and a script, as texts.
+    the_viewer_shows_long_texts_and_scripts,
+    |ui| {
+        let mut long = String::new();
+        let mut n = 0;
+        while long.len() < 1_200_000 {
+            long.push_str(&format!("{n:07} a line of a long log\n"));
+            n += 1;
+        }
+        let paths = vec![
+            file(ui, "logs/long.log", long.as_bytes()),
+            file(ui, "logs/run.sh", b"#!/bin/sh\necho hello\n"),
+        ];
+        let made = zip(ui, &paths, "logs.zip");
+        ui.open(&made);
+        assert_eq!(ui.archive_failed(), None);
+        let at = ui
+            .shown_in_archive()
+            .iter()
+            .position(|n| n == "long.log")
+            .expect("long.log listed");
+        ui.click(&format!("entry-{at}"));
+        ui.wait_for("preview-text");
+        ui.keys("enter");
+        wait_for_shown(ui, "long.log", "text");
+        ui.keys("right");
+        wait_for_shown(ui, "run.sh", "text");
+    }
+);

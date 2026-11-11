@@ -23,17 +23,18 @@ use gpui::{
     StyledImage, Subscription, Task, UniformListScrollHandle, Window, anchored, deferred, div, img,
     prelude::*, px, relative, rgb, uniform_list,
 };
-use packwing_core::{Cancel, Control, Error, Keys, Signed, Source, image_fits, preview_entry};
+use packwing_core::{Cancel, Control, Keys, Signed, Source};
 
 use super::panel;
 use crate::colors::colors;
 use crate::file_manager;
 use crate::input::{Changed, TextInput};
 use crate::list_keys;
-use crate::model::{Archive, Entry, Kind, count, size, text_preview};
+use crate::model::{Archive, Entry, Kind, count, reads_as_text, size};
 use crate::prefs;
 use crate::signatures::{self, Looking, Standing};
 use crate::text_size::ui;
+use crate::viewer::{Reading as From, Shown as Looked, look};
 use crate::widgets::{
     Fill, Size, Tone, button, chip, icon, icon_button, kind_tile, menu_item, menu_panel, note,
     tile, tonal_tint,
@@ -703,46 +704,30 @@ impl ArchivePage {
         if entry.kind == Kind::Link {
             return;
         }
-        let format = picture_format(&entry.name);
-        // A script is a text; a program that is not says it is not.
-        if format.is_none() && !matches!(entry.kind, Kind::Text | Kind::Other | Kind::Program) {
+        // What the viewer shows, the preview shows, the start of a text.
+        if picture_format(&entry.name).is_none() && !reads_as_text(&entry.name) {
             return;
         }
         let Some(source) = a.source.clone() else {
             return;
         };
-        if entry.size > MOST_PREVIEWED {
-            self.preview = Preview::Not(tr!("Too big to show here"));
-            return;
-        }
         let mut path = a.folder.clone();
         path.push(entry.name.clone());
+        let (name, size) = (entry.name.clone(), entry.size);
         let keys = a.keys.clone();
         self.keys_used(cx);
         let cancel = Cancel::new();
         let control = Control {
-            progress: None,
             cancel: Some(cancel.clone()),
-            on_damaged: None,
-            on_unnamable: None,
-            on_links_outside: None,
-            on_gone: None,
+            ..Control::default()
         };
         let reading = cx.background_executor().spawn(async move {
-            match preview_entry(&source, &path, &keys, MOST_PREVIEWED, &control) {
-                Ok(bytes) => match format {
-                    Some(format) if image_fits(&bytes) => {
-                        Preview::Picture(Arc::new(Image::from_bytes(format, bytes)))
-                    }
-                    Some(_) => Preview::Not(tr!("Too big to show here")),
-                    None => text_preview(&bytes, MOST_TEXT)
-                        .map_or(Preview::Not(tr!("Not text it can show")), Preview::Text),
-                },
-                Err(Error::Cancelled) => Preview::Nothing,
-                Err(Error::Locked { .. } | Error::WrongPassword) => {
-                    Preview::Not(tr!("It needs the password to show it"))
-                }
-                Err(_) => Preview::Not(tr!("It could not be read")),
+            let from = From::Archive { source, keys };
+            match look(&from, &path, &name, size, MOST_TEXT, &control) {
+                Looked::Reading => Preview::Nothing,
+                Looked::Picture(picture, _) => Preview::Picture(picture),
+                Looked::Text(text, ..) => Preview::Text(text.to_string()),
+                Looked::Not(why) => Preview::Not(why),
             }
         });
         self.preview = Preview::Reading;

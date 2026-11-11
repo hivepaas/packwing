@@ -1162,18 +1162,6 @@ t73690b65 = アーカイブ
 # Search inside this archive
 tb35c0c27 = このアーカイブ内を検索
 
-# Too big to show here
-t1b339d35 = 大きすぎてここでは表示できません
-
-# Not text it can show
-ta413eca5 = 表示できるテキストではありません
-
-# It needs the password to show it
-t81f5dbce = 表示するにはパスワードが必要です
-
-# It could not be read
-tb7927177 = 読み取れませんでした
-
 # Open another…
 tff74a552 = ほかを開く…
 
@@ -2281,6 +2269,12 @@ t2bfc1370 = ダウンロード先のフォルダーがありません。
 # packwing can’t show this kind of file
 tb909bf3c = packwing ではこの種類のファイルを表示できません
 
+# Too big to show here
+t1b339d35 = 大きすぎてここでは表示できません
+
+# It needs the password to show it
+t81f5dbce = 表示するにはパスワードが必要です
+
 # It could not be read: {why}
 t26005fe3 = 読み取れませんでした：{ $why }
 
@@ -2293,8 +2287,8 @@ t9fbb1078 =
        *[other] { $count } 行
     }
 
-# Its first 256 KB are shown
-t7113adfc = 先頭の 256 KB を表示しています
+# Its first 1 MB is shown
+t329dac80 = 先頭の 1 MB を表示しています
 
 # Update available
 t676409df = アップデートがあります

@@ -1210,18 +1210,6 @@ t73690b65 = Архів
 # Search inside this archive
 tb35c0c27 = Шукати в цьому архіві
 
-# Too big to show here
-t1b339d35 = Завелике, щоб показати тут
-
-# Not text it can show
-ta413eca5 = Не текст, який можна показати
-
-# It needs the password to show it
-t81f5dbce = Щоб показати, потрібен пароль
-
-# It could not be read
-tb7927177 = Не вдалося прочитати
-
 # Open another…
 tff74a552 = Відкрити інший…
 
@@ -2368,6 +2356,12 @@ t2bfc1370 = Немає папки для завантаження.
 # packwing can’t show this kind of file
 tb909bf3c = packwing не може показати файл такого виду
 
+# Too big to show here
+t1b339d35 = Завелике, щоб показати тут
+
+# It needs the password to show it
+t81f5dbce = Щоб показати, потрібен пароль
+
 # It could not be read: {why}
 t26005fe3 = Не вдалося прочитати: { $why }
 
@@ -2383,8 +2377,8 @@ t9fbb1078 =
        *[other] { $count } рядка
     }
 
-# Its first 256 KB are shown
-t7113adfc = Показано перші 256 КБ
+# Its first 1 MB is shown
+t329dac80 = Показано перший 1 МБ
 
 # Update available
 t676409df = Є оновлення

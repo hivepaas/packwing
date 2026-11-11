@@ -436,10 +436,6 @@ t6aef5c37 = Copy all
 tfd0ff0a1 = This system has no folder for settings.
 t73690b65 = Archive
 tb35c0c27 = Search inside this archive
-t1b339d35 = Too big to show here
-ta413eca5 = Not text it can show
-t81f5dbce = It needs the password to show it
-tb7927177 = It could not be read
 tff74a552 = Open another…
 tcfba8fd5 = From a storage…
 t3c93bb70 = Safe to extract
@@ -842,6 +838,8 @@ tb9fa7744 =
     }
 t2bfc1370 = No folder to download to.
 tb909bf3c = packwing can’t show this kind of file
+t1b339d35 = Too big to show here
+t81f5dbce = It needs the password to show it
 t26005fe3 = It could not be read: { $why }
 t116f13cc = Fit
 t9fbb1078 =
@@ -849,7 +847,7 @@ t9fbb1078 =
         [one] { $count } line
        *[other] { $count } lines
     }
-t7113adfc = Its first 256 KB are shown
+t329dac80 = Its first 1 MB is shown
 t676409df = Update available
 tbbbbda26 = Restart to update
 t843cf8f1 =

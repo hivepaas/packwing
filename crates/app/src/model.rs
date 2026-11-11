@@ -75,9 +75,12 @@ impl Kind {
             "doc" | "docx" | "odt" | "rtf" | "pages" | "ppt" | "pptx" | "odp" | "key" | "epub" => {
                 Kind::Document
             }
-            "xls" | "xlsx" | "ods" | "csv" | "numbers" => Kind::Sheet,
+            "xls" | "xlsx" | "ods" | "csv" | "tsv" | "numbers" => Kind::Sheet,
             "txt" | "md" | "markdown" | "rst" | "log" | "json" | "xml" | "yaml" | "yml"
-            | "toml" | "ini" | "conf" | "cfg" | "html" | "htm" | "css" => Kind::Text,
+            | "toml" | "ini" | "conf" | "cfg" | "properties" | "env" | "html" | "htm" | "css"
+            | "py" | "rb" | "pl" | "php" | "go" | "rs" | "c" | "h" | "cc" | "cpp" | "hpp"
+            | "java" | "kt" | "swift" | "ts" | "tsx" | "jsx" | "sql" | "srt" | "vtt" | "tex"
+            | "diff" | "patch" | "gitignore" => Kind::Text,
             "mp4" | "m4v" | "mkv" | "mov" | "avi" | "webm" | "wmv" | "flv" | "mpg" | "mpeg" => {
                 Kind::Video
             }
@@ -93,6 +96,22 @@ impl Kind {
             _ => Kind::Other,
         }
     }
+}
+
+/// Whether packwing shows a file of this name as a text, if its bytes are one
+/// (UTF-8, with no NUL): what its name says is a text, a script, a table of
+/// values (CSV), an SVG picture (shown as its text, not drawn), and anything
+/// its name says nothing of. What its name says is not (a PDF, an office
+/// document, an archive, a program, a video) is not read for it.
+pub fn reads_as_text(name: &str) -> bool {
+    let ext = name
+        .rsplit_once('.')
+        .map(|(_, e)| e.to_ascii_lowercase())
+        .unwrap_or_default();
+    matches!(
+        ext.as_str(),
+        "sh" | "bat" | "cmd" | "ps1" | "js" | "csv" | "tsv" | "svg"
+    ) || matches!(Kind::of(name, false), Kind::Text | Kind::Other)
 }
 
 /// A file or folder in an archive.
@@ -627,6 +646,30 @@ mod tests {
         assert_eq!(Kind::of("teaser.mp4", false), Kind::Video);
         assert_eq!(Kind::of("Phim.MKV", false), Kind::Video);
         assert_eq!(Kind::of("docs", true), Kind::Folder);
+    }
+
+    #[test]
+    fn what_is_read_as_a_text() {
+        for name in [
+            "notes.txt",
+            "deploy.sh",
+            "setup.BAT",
+            "run.cmd",
+            "fix.ps1",
+            "app.js",
+            "costs.csv",
+            "logo.svg",
+            "main.py",
+            "Makefile",
+            "session.dat",
+        ] {
+            assert!(reads_as_text(name), "{name}");
+        }
+        for name in [
+            "a.pdf", "b.docx", "c.xlsx", "d.zip", "e.exe", "f.mp4", "g.png", "h.heic", "i.deb",
+        ] {
+            assert!(!reads_as_text(name), "{name}");
+        }
     }
 
     #[test]

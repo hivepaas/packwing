@@ -1178,18 +1178,6 @@ t73690b65 = Arşiv
 # Search inside this archive
 tb35c0c27 = Bu arşivde ara
 
-# Too big to show here
-t1b339d35 = Burada gösterilemeyecek kadar büyük
-
-# Not text it can show
-ta413eca5 = Gösterilebilecek bir metin değil
-
-# It needs the password to show it
-t81f5dbce = Göstermek için parola gerekir
-
-# It could not be read
-tb7927177 = Okunamadı
-
 # Open another…
 tff74a552 = Başkasını aç…
 
@@ -2316,6 +2304,12 @@ t2bfc1370 = İndirme için klasör yok.
 # packwing can’t show this kind of file
 tb909bf3c = packwing bu tür dosyayı gösteremez
 
+# Too big to show here
+t1b339d35 = Burada gösterilemeyecek kadar büyük
+
+# It needs the password to show it
+t81f5dbce = Göstermek için parola gerekir
+
 # It could not be read: {why}
 t26005fe3 = Okunamadı: { $why }
 
@@ -2329,8 +2323,8 @@ t9fbb1078 =
        *[other] { $count } satır
     }
 
-# Its first 256 KB are shown
-t7113adfc = İlk 256 KB gösteriliyor
+# Its first 1 MB is shown
+t329dac80 = İlk 1 MB gösteriliyor
 
 # Update available
 t676409df = Güncelleme var
