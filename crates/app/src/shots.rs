@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 95] = [
+const SCREENS: [(&str, SetUp); 98] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -270,6 +270,29 @@ const SCREENS: [(&str, SetUp); 95] = [
         cx.set_global(fake_extensions());
         add_far(ws, "Far one", &sample_storage(), false, cx);
         ws.show_archive(read(), cx)
+    }),
+    ("archive-inside", |ws, _, cx| {
+        ws.show_inside(
+            read_named("site-backup-2026-10.zip"),
+            read_named("theme-assets.zip"),
+            inside_copy(),
+            cx,
+        )
+    }),
+    ("archive-inside-failed", |ws, _, cx| {
+        ws.show_inside(
+            read_named("site-backup-2026-10.zip"),
+            Shown::Failed {
+                name: "data.bin".into(),
+                why: packwing_core::Error::NotAnArchive.to_string(),
+            },
+            inside_copy(),
+            cx,
+        )
+    }),
+    ("view-entry-not-shown", |ws, window, cx| {
+        ws.show_archive(read_named("site-backup-2026-10.zip"), cx);
+        ws.view_entry(vec!["site".into(), "manual.pdf".into()], window, cx);
     }),
     ("archive-failed", |ws, _, cx| {
         ws.show_archive(
@@ -679,6 +702,14 @@ fn age_file() -> PathBuf {
 }
 
 /// An archive as packwing-core lists it, shown two folders down.
+/// Where a copy opened from another archive would be: a folder of its own, as
+/// the copies have, which going back removes.
+fn inside_copy() -> PathBuf {
+    let dir = out_dir().join("inside-copy");
+    let _ = std::fs::create_dir_all(&dir);
+    dir.join("theme-assets.zip")
+}
+
 fn read() -> Shown {
     read_named("site-backup-2026-10.tar.zst")
 }

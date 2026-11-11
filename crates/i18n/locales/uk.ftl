@@ -1072,8 +1072,14 @@ tb7927177 = Не вдалося прочитати
 # It could not be read: {why}
 t26005fe3 = Не вдалося прочитати: { $why }
 
+# It needs the password to show it
+t81f5dbce = Щоб показати, потрібен пароль
+
 # It could not be shown
 tb60fb288 = Не вдалося показати
+
+# Open as archive
+t3373ce55 = Відкрити як архів
 
 # Open with default app
 t5ef80ec5 = Відкрити в застосунку за замовчуванням
@@ -1240,9 +1246,6 @@ tb35c0c27 = Шукати в цьому архіві
 # Not text it can show
 ta413eca5 = Не текст, який можна показати
 
-# It needs the password to show it
-t81f5dbce = Щоб показати, потрібен пароль
-
 # Open another…
 tff74a552 = Відкрити інший…
 
@@ -1281,6 +1284,9 @@ t8382bd3e = Відкрити архів
 
 # ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
 t4a498ac8 = Архіви ZIP, 7z і tar, образи дисків і пакунки, стиснуті або зашифровані за допомогою age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
+
+# Back to {name}
+t539b9c10 = Назад до { $name }
 
 # Open an archive…
 t2cf2a8ee = Відкрити архів…

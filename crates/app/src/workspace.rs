@@ -18,7 +18,7 @@ use crate::colors::{self, colors};
 use crate::demo;
 use crate::dialogs::{
     AddDialog, AddStorageDialog, ChecksumDialog, CreateDialog, Creating, DeleteDialog, DialogEvent,
-    EditDialog, ExtractDialog, Job, OpenFileDialog, OpenStoredDialog, PasswordDialog,
+    EditDialog, EntryOpen, ExtractDialog, Job, OpenFileDialog, OpenStoredDialog, PasswordDialog,
     PasswordEvent, ProgressDialog, QuitDialog, RemoveStorageDialog, Saving, SignDialog,
     SplitDialog, State, TransferDialog, Verb, ViewDialog, asked_for,
 };
@@ -356,6 +356,13 @@ impl Workspace {
                     ArchiveEvent::Delete => this.open_edit(false, window, cx),
                     ArchiveEvent::Rename => this.open_edit(true, window, cx),
                     ArchiveEvent::OpenEntry(entry) => this.open_entry(entry.clone(), window, cx),
+                    ArchiveEvent::OpenEntryWithApp(entry) => {
+                        this.open_entry_with_app(entry.clone(), window, cx)
+                    }
+                    ArchiveEvent::OpenEntryAsArchive(entry) => {
+                        this.open_entry_inside(entry.clone(), window, cx)
+                    }
+                    ArchiveEvent::Back(level) => this.back_to(*level, cx),
                 },
             ),
             cx.subscribe_in(&explorer, window, Self::explorer_event),
@@ -863,6 +870,13 @@ impl Workspace {
                     this.close_dialog(cx);
                     this.read_archive(source.clone(), Keys::default(), false, window, cx);
                 }
+                DialogEvent::Entry(entry, how) => {
+                    this.close_dialog(cx);
+                    match how {
+                        EntryOpen::WithApp => this.open_entry_with_app(entry.clone(), window, cx),
+                        EntryOpen::AsArchive => this.open_entry_inside(entry.clone(), window, cx),
+                    }
+                }
                 DialogEvent::ShowLicense => {
                     this.close_dialog(cx);
                     this.settings.update(cx, |s, cx| {
@@ -878,7 +892,8 @@ impl Workspace {
                 DialogEvent::Saved => this.refresh_explorers(cx),
                 DialogEvent::Quit => this.stop_and_quit(window, cx),
                 // Only a job's dialog says these, and they are heard in job_event.
-                DialogEvent::Behind
+                DialogEvent::Inside(_)
+                | DialogEvent::Behind
                 | DialogEvent::Ended
                 | DialogEvent::Attention
                 | DialogEvent::Proved(..) => {}
@@ -952,6 +967,30 @@ impl Workspace {
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn show_archive(&mut self, shown: Shown, cx: &mut Context<Self>) {
         self.archive.update(cx, |p, cx| p.show(shown, cx));
+    }
+
+    /// Shows `inner` as opened from `outer`, through a copy at `copy`.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn show_inside(
+        &mut self,
+        outer: Shown,
+        inner: Shown,
+        copy: PathBuf,
+        cx: &mut Context<Self>,
+    ) {
+        self.archive.update(cx, |p, cx| {
+            p.show(outer, cx);
+            if let Some((Some(from), _, _)) = p.at() {
+                p.go_inside(copy, &from);
+            }
+            p.show(inner, cx);
+        });
+    }
+
+    /// Shows the file at `entry` of the archive open, as Open does.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn view_entry(&mut self, entry: Vec<String>, window: &mut Window, cx: &mut Context<Self>) {
+        self.open_entry(entry, window, cx);
     }
 
     /// The Storages page, browsing the folder at `path`.
@@ -1070,6 +1109,12 @@ impl Workspace {
     ) {
         let name = source.name();
         self.stop_reading();
+        // A copy opened from the archive open is read inside it; any other
+        // archive leaves those it was opened from.
+        let inside = self.archive.read(cx).is_inside(&source);
+        if !inside {
+            self.archive.update(cx, |p, _| p.leave_inside());
+        }
         let (number, cancel) = (self.readings, Cancel::new());
         self.readings += 1;
         self.reading = Some((number, cancel.clone()));
@@ -1108,7 +1153,8 @@ impl Workspace {
                 let shown = match result {
                     Ok(archive) => {
                         // Only what is on this computer: Recent opens it by its path.
-                        if let Some(path) = source.path() {
+                        // A copy is gone once it is left.
+                        if let Some(path) = source.path().filter(|_| !inside) {
                             prefs::change(cx, |p| p.opened(path));
                         }
                         let rows = prefs::prefs(cx).recent.iter().map(Row::of).collect();
@@ -1295,9 +1341,80 @@ impl Workspace {
         self.show(view, true, window, cx);
     }
 
-    /// Opens a file of the archive open, a copy of it: asked first, as
-    /// Settings says, and always for a program.
+    /// Opens a file of the archive open, as a double click does: an archive in
+    /// packwing, which goes back to the one open; another file shown, if
+    /// packwing can show it, and otherwise offered to the system's app.
     pub fn open_entry(&mut self, entry: Vec<String>, window: &mut Window, cx: &mut Context<Self>) {
+        let Some(name) = entry.last() else {
+            return;
+        };
+        if Kind::of(name, false) == Kind::Archive {
+            self.open_entry_inside(entry, window, cx);
+            return;
+        }
+        let page = self.archive.read(cx);
+        let size = page.size_of(&entry);
+        let Some((source, keys)) = page
+            .archive()
+            .and_then(|a| Some((a.source.clone()?, a.keys.clone())))
+        else {
+            return;
+        };
+        let view = cx.new(|cx| ViewDialog::of_entry(source, keys, entry, size, cx));
+        self.show(view, true, window, cx);
+    }
+
+    /// Opens a copy of a file of the archive open in packwing, as an archive,
+    /// whatever its name says. The one open is gone back to from it.
+    pub fn open_entry_inside(
+        &mut self,
+        entry: Vec<String>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let Some(a) = self.archive.read(cx).archive().cloned() else {
+            return;
+        };
+        let Some(source) = a.source else {
+            return;
+        };
+        let mut job = Job::shown(Verb::Open, a.name.into(), None, 1, 0);
+        job.work = vec![(source, None)];
+        job.keys = a.keys;
+        job.picked = vec![entry];
+        job.inside = true;
+        self.open_progress(job, window, cx);
+    }
+
+    /// The copy `copy` of a file of the archive at `from` was made: it is
+    /// opened as an archive, the one open kept to go back to.
+    fn open_inside(
+        &mut self,
+        copy: PathBuf,
+        from: &Source,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        self.archive
+            .update(cx, |p, _| p.go_inside(copy.clone(), from));
+        self.read_archive(copy.into(), Keys::default(), false, window, cx);
+    }
+
+    /// Shows again an archive the one open was opened from.
+    fn back_to(&mut self, level: usize, cx: &mut Context<Self>) {
+        self.stop_reading();
+        self.archive.update(cx, |p, cx| p.back_to(level, cx));
+        self.show_page(Page::Archive, cx);
+    }
+
+    /// Opens a copy of a file of the archive open with the app the system has
+    /// for it: asked first, as Settings says, and always for a program.
+    pub fn open_entry_with_app(
+        &mut self,
+        entry: Vec<String>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
         let Some(a) = self.archive.read(cx).archive().cloned() else {
             return;
         };
@@ -1737,12 +1854,20 @@ impl Workspace {
                 }
             }
             DialogEvent::Ended => self.tell_ended(view, shown, window, cx),
+            DialogEvent::Inside(copy) => {
+                over(self, cx);
+                let from = view.read(cx).job().work.first().map(|(s, _)| s.clone());
+                if let Some(from) = from {
+                    self.open_inside(copy.clone(), &from, window, cx);
+                }
+            }
             DialogEvent::Proved(source, keys) => {
                 self.archive
                     .update(cx, |p, cx| p.remember_keys(source, keys, cx));
             }
             DialogEvent::Start(_)
             | DialogEvent::Open(_)
+            | DialogEvent::Entry(..)
             | DialogEvent::ShowLicense
             | DialogEvent::ShowChecksumSettings
             | DialogEvent::Saved
@@ -1978,7 +2103,9 @@ impl Workspace {
         if self.dialog.is_some() || self.welcome.is_some() {
             return;
         }
+        // A copy opened from another archive is only read.
         let takes_more = self.page == Page::Archive
+            && !self.archive.read(cx).inside()
             && self
                 .archive
                 .read(cx)
@@ -2003,6 +2130,9 @@ impl Workspace {
 
     /// Asks what to add to the archive open; the samples have no file to add to.
     pub fn add_files(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.archive.read(cx).inside() {
+            return;
+        }
         let archive = self.archive.read(cx).archive().cloned();
         let dialog = archive.and_then(|a| AddDialog::new(&a, cx));
         if let Some(dialog) = dialog {

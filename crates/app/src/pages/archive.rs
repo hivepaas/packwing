@@ -12,6 +12,7 @@ use packwing_i18n::{tr, tr_n};
 use std::collections::{BTreeSet, HashSet};
 
 use std::ops::Range;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
 use std::time::{Duration, Instant};
@@ -59,8 +60,42 @@ pub enum ArchiveEvent {
     /// Delete what is selected, or rename the one selected.
     Delete,
     Rename,
-    /// Open this file in it, as its path in the archive says.
+    /// Open this file, as its path in the archive says: an archive in
+    /// packwing, any other file shown, if packwing can show it.
     OpenEntry(Vec<String>),
+    /// Open this file with the app the system has for it.
+    OpenEntryWithApp(Vec<String>),
+    /// Open this file in packwing, as an archive, whatever its name says.
+    OpenEntryAsArchive(Vec<String>),
+    /// Go back to an archive the one shown was opened from: the first, the
+    /// one opened from a storage, is 0.
+    Back(usize),
+}
+
+/// An archive the one shown was opened from, as it was left: the folder shown,
+/// without its keys, which are asked for again.
+#[derive(Clone, Debug)]
+struct Outer {
+    archive: Box<Archive>,
+    /// Its copy, if it was opened from another.
+    copy: Option<PathBuf>,
+}
+
+/// Where a step of the breadcrumb leads.
+#[derive(Clone, Copy)]
+enum Step {
+    /// Back to an archive the one shown was opened from.
+    Back(usize),
+    /// To the folder this deep in the archive shown: 0 its top.
+    Folder(usize),
+}
+
+/// Removes a copy of an archive opened from another, with the folder made
+/// for it alone.
+fn remove_copy(copy: &Path) {
+    if let Some(folder) = copy.parent() {
+        let _ = std::fs::remove_dir_all(folder);
+    }
 }
 
 /// The largest file a preview reads: all of it has to be read, as an archive
@@ -192,6 +227,11 @@ pub struct ArchivePage {
     reading: Option<Reading>,
     /// Where the list is scrolled to.
     scroll: UniformListScrollHandle,
+    /// The archives the one shown was opened from, the first opened first.
+    outer: Vec<Outer>,
+    /// The copy of the archive shown, when it was opened from another: what
+    /// it is changed into would be lost with the copy, so it is only read.
+    copy: Option<PathBuf>,
     _typing: Subscription,
 }
 
@@ -265,8 +305,102 @@ impl ArchivePage {
             focus: cx.focus_handle(),
             reading: None,
             scroll: UniformListScrollHandle::new(),
+            outer: Vec::new(),
+            copy: None,
             _typing: typing,
         }
+    }
+
+    /// The archive shown is left for the one in it at `copy`, made from `from`
+    /// to open it: it is kept, to go back to, without its keys. If another
+    /// is shown by now, there is nothing to go back to, and the copy is only
+    /// read all the same.
+    pub fn go_inside(&mut self, copy: PathBuf, from: &Source) {
+        match &self.shown {
+            Shown::Open(a) if a.source.as_ref() == Some(from) => {
+                let mut archive = a.clone();
+                archive.keys = Keys::default();
+                self.outer.push(Outer {
+                    archive,
+                    copy: self.copy.take(),
+                });
+            }
+            _ => self.leave_inside(),
+        }
+        self.copy = Some(copy);
+    }
+
+    /// The size of the file at `path` of the archive open, as its listing
+    /// says; 0 if it does not.
+    pub fn size_of(&self, path: &[String]) -> u64 {
+        let Some((name, folder)) = path.split_last() else {
+            return 0;
+        };
+        let Some(a) = self.archive() else {
+            return 0;
+        };
+        match &a.listing {
+            Some(listing) => listing
+                .children(folder)
+                .into_iter()
+                .find(|c| &c.name == name)
+                .map_or(0, |c| c.size),
+            None => a
+                .entries
+                .iter()
+                .find(|e| &e.name == name)
+                .map_or(0, |e| e.size),
+        }
+    }
+
+    /// Whether `source` is the copy of an archive opened from the one shown,
+    /// or the one shown, opened from another.
+    pub fn is_inside(&self, source: &Source) -> bool {
+        self.copy
+            .as_deref()
+            .is_some_and(|copy| source.path() == Some(copy))
+    }
+
+    /// The archives the one shown was opened from are left: their copies go.
+    pub fn leave_inside(&mut self) {
+        for copy in self.outer.drain(..).filter_map(|o| o.copy) {
+            remove_copy(&copy);
+        }
+        if let Some(copy) = self.copy.take() {
+            remove_copy(&copy);
+        }
+    }
+
+    /// Shows again the archive the one shown was opened from, `level` of those
+    /// it is in, at the folder it was left at. The copies after it go.
+    pub fn back_to(&mut self, level: usize, cx: &mut Context<Self>) {
+        if level >= self.outer.len() {
+            return;
+        }
+        let mut left = self.outer.split_off(level);
+        let back = left.remove(0);
+        for copy in left.into_iter().filter_map(|o| o.copy) {
+            remove_copy(&copy);
+        }
+        if let Some(copy) = self.copy.take() {
+            remove_copy(&copy);
+        }
+        self.copy = back.copy;
+        let folder = back.archive.folder.clone();
+        self.show(Shown::Open(back.archive), cx);
+        self.enter(folder, cx);
+    }
+
+    /// The names of the archives the one shown was opened from, the first
+    /// first.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn outer_names(&self) -> Vec<String> {
+        self.outer.iter().map(|o| o.archive.name.clone()).collect()
+    }
+
+    /// Whether the archive shown was opened from another, and is only read.
+    pub fn inside(&self) -> bool {
+        self.copy.is_some()
     }
 
     pub fn show(&mut self, shown: Shown, cx: &mut Context<Self>) {
@@ -510,7 +644,8 @@ impl ArchivePage {
             return;
         }
         let format = picture_format(&entry.name);
-        if format.is_none() && !matches!(entry.kind, Kind::Text | Kind::Other) {
+        // A script is a text; a program that is not says it is not.
+        if format.is_none() && !matches!(entry.kind, Kind::Text | Kind::Other | Kind::Program) {
             return;
         }
         let Some(source) = a.source.clone() else {
@@ -957,6 +1092,7 @@ impl ArchivePage {
                     // packwing does not do that yet.
                     .when(
                         reading.is_none()
+                            && !self.inside()
                             && a.listing
                                 .as_ref()
                                 .is_none_or(|l| packwing_core::can_add(l) && a.path.is_some()),
@@ -1027,8 +1163,11 @@ impl ArchivePage {
                 cx.notify();
             }))
         };
+        // A copy is only read: what is made beside it would be lost with it.
+        let inside = self.inside();
         let here = self
             .archive()
+            .filter(|_| !inside)
             .and_then(|a| a.source.as_ref())
             .and_then(|s| s.place())
             .and_then(|(storage, path)| storage.local_path(&path));
@@ -1048,7 +1187,9 @@ impl ArchivePage {
                             this.more_at = None;
                             cx.notify();
                         }))
-                        .child(item("menu-sign", tr!("Sign…"), || ArchiveEvent::Sign))
+                        .when(!inside, |d| {
+                            d.child(item("menu-sign", tr!("Sign…"), || ArchiveEvent::Sign))
+                        })
                         .child(item("menu-checksums", tr!("Checksums…"), || {
                             ArchiveEvent::Checksums
                         }))
@@ -1091,6 +1232,7 @@ impl ArchivePage {
         };
         let searching = !self.search.read(cx).text().trim().is_empty() && a.listing.is_some();
         !searching
+            && !self.inside()
             && !self.selected.is_empty()
             && a.listing
                 .as_ref()
@@ -1137,7 +1279,7 @@ impl ArchivePage {
             .map(|e| {
                 let mut path = folder.clone();
                 path.push(e.name.clone());
-                (path, e.kind == Kind::Folder)
+                (path, e.kind)
             });
         let changeable = self.changeable(cx);
         let renamable = self.renamable(cx);
@@ -1156,7 +1298,21 @@ impl ArchivePage {
                                 cx.notify();
                             }
                         }))
-                        .when_some(open, |d, (path, dir)| {
+                        .when_some(open, |d, (path, kind)| {
+                            let dir = kind == Kind::Folder;
+                            let (app, inside) = (path.clone(), path.clone());
+                            let ask = |id: &'static str,
+                                       label: String,
+                                       path: Vec<String>,
+                                       asked: fn(Vec<String>) -> ArchiveEvent| {
+                                menu_item(id, label, "").on_click(cx.listener(
+                                    move |this, _, _, cx| {
+                                        this.menu_at = None;
+                                        cx.emit(asked(path.clone()));
+                                        cx.notify();
+                                    },
+                                ))
+                            };
                             d.child(
                                 menu_item("menu-open", tr!("Open"), "").on_click(cx.listener(
                                     move |this, _, _, cx| {
@@ -1170,6 +1326,23 @@ impl ArchivePage {
                                     },
                                 )),
                             )
+                            .when(!dir, |d| {
+                                d.child(ask(
+                                    "menu-app",
+                                    tr!("Open with default app"),
+                                    app,
+                                    ArchiveEvent::OpenEntryWithApp,
+                                ))
+                            })
+                            // What Open opens in packwing already is not offered twice.
+                            .when(!dir && kind != Kind::Archive, |d| {
+                                d.child(ask(
+                                    "menu-as-archive",
+                                    tr!("Open as archive"),
+                                    inside,
+                                    ArchiveEvent::OpenEntryAsArchive,
+                                ))
+                            })
                         })
                         .child(item("menu-extract", tr!("Extract…"), "", || {
                             ArchiveEvent::Extract
@@ -1409,15 +1582,25 @@ impl ArchivePage {
     /// it. The samples show theirs as text.
     fn breadcrumb(&self, a: &Archive, cx: &mut Context<Self>) -> Div {
         let c = colors();
-        let steps = if a.listing.is_some() {
-            std::iter::once(a.stem().to_owned())
-                .chain(a.folder.iter().cloned())
-                .collect()
-        } else {
-            a.folder.clone()
-        };
-        let last = steps.len().saturating_sub(1);
+        // The archives it was opened from first, each back to where it was left;
+        // then its own top, and the folders down to the one shown.
+        let mut steps: Vec<(String, Step)> = self
+            .outer
+            .iter()
+            .enumerate()
+            .map(|(level, o)| (o.archive.name.clone(), Step::Back(level)))
+            .collect();
+        if a.listing.is_some() {
+            steps.push((a.stem().to_owned(), Step::Folder(0)));
+        }
         let navigable = a.listing.is_some();
+        steps.extend(
+            a.folder
+                .iter()
+                .enumerate()
+                .map(|(i, name)| (name.clone(), Step::Folder(i + 1))),
+        );
+        let last = steps.len().saturating_sub(1);
         div()
             .flex()
             .flex_wrap()
@@ -1429,8 +1612,9 @@ impl ArchivePage {
             .pb(ui(6.))
             .text_size(ui(13.))
             .text_color(rgb(c.muted))
-            .children(steps.into_iter().enumerate().map(move |(i, step)| {
+            .children(steps.into_iter().enumerate().map(move |(i, (step, to))| {
                 let here = i == last;
+                let goes = !here && (navigable || matches!(to, Step::Back(_)));
                 div()
                     .flex()
                     .min_w_0()
@@ -1444,17 +1628,34 @@ impl ArchivePage {
                             .min_w_0()
                             .truncate()
                             .when(here, |d| d.font_weight(FontWeight::SEMIBOLD))
-                            .when(navigable && !here, |d| {
+                            .when(goes, |d| {
                                 d.cursor_pointer()
                                     .hover(|s| s.text_color(rgb(c.text)))
-                                    .on_click(cx.listener(move |this, _, _, cx| {
-                                        let folder = this
-                                            .current()
-                                            .map(|a| a.folder[..i].to_vec())
-                                            .unwrap_or_default();
-                                        this.enter(folder, cx);
+                                    .on_click(cx.listener(move |this, _, _, cx| match to {
+                                        Step::Back(level) => cx.emit(ArchiveEvent::Back(level)),
+                                        Step::Folder(depth) => {
+                                            let folder = this
+                                                .current()
+                                                .map(|a| a.folder[..depth].to_vec())
+                                                .unwrap_or_default();
+                                            this.enter(folder, cx);
+                                        }
                                     }))
                             })
+                            // An archive it was opened from: a box before its name.
+                            .when_some(
+                                match to {
+                                    Step::Back(level) => Some(level),
+                                    Step::Folder(_) => None,
+                                },
+                                |d, level| {
+                                    d.debug_selector(move || format!("archive-back-{level}"))
+                                        .flex()
+                                        .items_center()
+                                        .gap(ui(4.))
+                                        .child(icon("archive", 13., c.muted))
+                                },
+                            )
                             .child(step),
                     )
             }))
@@ -1474,6 +1675,17 @@ impl ArchivePage {
             ),
         };
         let failed = matches!(self.shown, Shown::Failed { .. });
+        // An archive opened from another that could not be: the way back.
+        let back = self
+            .outer
+            .len()
+            .checked_sub(1)
+            .map(|level| (level, self.outer[level].archive.name.clone()));
+        let open_fill = if back.is_some() {
+            Fill::Raised
+        } else {
+            Fill::Accent
+        };
         panel()
             .flex_1()
             .flex()
@@ -1503,6 +1715,19 @@ impl ArchivePage {
                     .text_color(rgb(c.muted))
                     .child(line),
             )
+            .when_some(back, |d, (level, name)| {
+                d.child(
+                    button(
+                        "archive-back",
+                        tr!("Back to {name}", name = name),
+                        Fill::Accent,
+                        Size::Large,
+                    )
+                    .mt(ui(8.))
+                    .px(ui(28.))
+                    .on_click(cx.listener(move |_, _, _, cx| cx.emit(ArchiveEvent::Back(level)))),
+                )
+            })
             .when(offer, |d| {
                 d.child(
                     button(
@@ -1512,7 +1737,7 @@ impl ArchivePage {
                         } else {
                             tr!("Open an archive…")
                         },
-                        Fill::Accent,
+                        open_fill,
                         Size::Large,
                     )
                     .mt(ui(8.))

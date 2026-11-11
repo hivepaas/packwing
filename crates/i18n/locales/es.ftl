@@ -1042,8 +1042,14 @@ tb7927177 = No se pudo leer
 # It could not be read: {why}
 t26005fe3 = No se pudo leer: { $why }
 
+# It needs the password to show it
+t81f5dbce = Necesita la contraseña para mostrarlo
+
 # It could not be shown
 tb60fb288 = No se pudo mostrar
+
+# Open as archive
+t3373ce55 = Abrir como archivo comprimido
 
 # Open with default app
 t5ef80ec5 = Abrir con la app predeterminada
@@ -1208,9 +1214,6 @@ tb35c0c27 = Buscar dentro de este archivo comprimido
 # Not text it can show
 ta413eca5 = No es texto que pueda mostrar
 
-# It needs the password to show it
-t81f5dbce = Necesita la contraseña para mostrarlo
-
 # Open another…
 tff74a552 = Abrir otro…
 
@@ -1249,6 +1252,9 @@ t8382bd3e = Abrir un archivo comprimido
 
 # ZIP, 7z and tar archives, disc images and packages, compressed or encrypted with age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
 t4a498ac8 = Archivos comprimidos ZIP, 7z y tar, imágenes de disco y paquetes, comprimidos o cifrados con age: .zip, .7z, .tar.gz, .tar.zst, .iso, .rpm, .pkg, .zst.age…
+
+# Back to {name}
+t539b9c10 = Volver a { $name }
 
 # Open an archive…
 t2cf2a8ee = Abrir un archivo comprimido…

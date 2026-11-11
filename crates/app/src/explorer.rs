@@ -757,6 +757,14 @@ impl Explorer {
         }
     }
 
+    /// Opens `item` in packwing as an archive, whatever its name says: a
+    /// package, a document or a book may be one.
+    pub fn open_as_archive(&mut self, item: &Item, cx: &mut Context<Self>) {
+        if let Some(source) = self.source_of(item) {
+            cx.emit(ExplorerEvent::OpenArchive(source));
+        }
+    }
+
     pub fn extract(&mut self, item: &Item, cx: &mut Context<Self>) {
         if let Some(source) = self.source_of(item) {
             cx.emit(ExplorerEvent::Extract(source));
@@ -1566,6 +1574,19 @@ impl Explorer {
                             ),
                         );
                     }
+                }
+                // What is an archive by another name: a package, a document, a
+                // book. Archives open so already.
+                if !one.dir && !archive {
+                    let inside = one.clone();
+                    menu = menu.child(
+                        item("menu-as-archive", tr!("Open as archive"), "", false).on_click(
+                            cx.listener(move |this, _, _, cx| {
+                                this.menu = None;
+                                this.open_as_archive(&inside, cx);
+                            }),
+                        ),
+                    );
                 }
                 let path = self.shown_path_of(&one.name);
                 if local {
