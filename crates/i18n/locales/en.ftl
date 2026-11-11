@@ -842,6 +842,7 @@ t1b339d35 = Too big to show here
 t81f5dbce = It needs the password to show it
 t26005fe3 = It could not be read: { $why }
 t9cbe4be4 = Find in text
+t5b9dcaca = Invalid pattern
 td29421ef = No matches
 t3e1cd17a = Find
 t116f13cc = Fit

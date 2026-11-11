@@ -5332,6 +5332,7 @@ dependencies = [
  "packwing-policy",
  "packwing-remote",
  "packwing-update",
+ "regex",
  "robius-authentication",
  "serde_json",
  "time",

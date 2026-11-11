@@ -1024,7 +1024,7 @@ impl Workspace {
 
     /// What the viewer's search found, and the one chosen, if it is open.
     #[cfg(all(test, feature = "test-hooks"))]
-    pub fn viewer_finding(&self, cx: &gpui::App) -> Option<(usize, usize)> {
+    pub fn viewer_finding(&self, cx: &gpui::App) -> Option<(usize, usize, bool)> {
         self.viewing.as_ref()?.viewer.read(cx).finding()
     }
 

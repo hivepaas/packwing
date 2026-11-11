@@ -2316,6 +2316,9 @@ t26005fe3 = Impossibile leggerlo: { $why }
 # Find in text
 t9cbe4be4 = Trova nel testo
 
+# Invalid pattern
+t5b9dcaca = Schema non valido
+
 # No matches
 td29421ef = Nessuna corrispondenza
 

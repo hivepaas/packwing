@@ -2281,6 +2281,9 @@ t26005fe3 = 読み取れませんでした：{ $why }
 # Find in text
 t9cbe4be4 = テキスト内を検索
 
+# Invalid pattern
+t5b9dcaca = 無効なパターン
+
 # No matches
 td29421ef = 一致なし
 

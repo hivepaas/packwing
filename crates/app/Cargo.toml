@@ -58,6 +58,9 @@ futures-channel = "0.3"
 # The date a license ends.
 time = { version = "0.3", default-features = false, features = ["std"] }
 unicode-segmentation = "1"
+# The viewer's search by pattern (src/viewer.rs): in the build already, as
+# GPUI's; it takes linear time, whatever the pattern.
+regex = "1"
 
 # Asking that it is the user, for a storage that asks it (src/confirm.rs).
 [target.'cfg(any(target_os = "macos", windows))'.dependencies]

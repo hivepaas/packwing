@@ -176,7 +176,8 @@ scenario!(
 scenario!(
     /// A text is searched: Ctrl+F (Cmd+F) opens the search's bar, what is
     /// typed is found whatever its case, Enter goes to the next and round,
-    /// Shift+Enter back; Escape closes the bar, then the viewer.
+    /// Shift+Enter back; by a pattern, and with its case as typed; Escape
+    /// closes the bar, then the viewer.
     a_text_is_searched,
     |ui| {
         let paths = vec![file(
@@ -195,15 +196,25 @@ scenario!(
         ui.keys("secondary-f");
         ui.wait_for("find-count");
         ui.type_in("Find in text", "back");
-        assert_eq!(finding(ui), Some((3, 0)));
+        assert_eq!(finding(ui), Some((3, 0, false)));
         ui.keys("enter");
-        assert_eq!(finding(ui), Some((3, 1)));
+        assert_eq!(finding(ui), Some((3, 1, false)));
         ui.keys("enter enter");
-        assert_eq!(finding(ui), Some((3, 0)), "round to the first");
+        assert_eq!(finding(ui), Some((3, 0, false)), "round to the first");
         ui.keys("shift-enter");
-        assert_eq!(finding(ui), Some((3, 2)));
+        assert_eq!(finding(ui), Some((3, 2, false)));
         ui.replace_in("Find in text", "nowhere");
-        assert_eq!(finding(ui), Some((0, 0)));
+        assert_eq!(finding(ui), Some((0, 0, false)));
+        // By pattern: ^ at each line's start, any case, then the case as typed.
+        ui.click("find-regex");
+        ui.replace_in("Find in text", "^back");
+        assert_eq!(finding(ui), Some((2, 0, false)));
+        ui.click("find-case");
+        assert_eq!(finding(ui), Some((1, 0, false)));
+        ui.replace_in("Find in text", "back(up");
+        assert_eq!(finding(ui), Some((0, 0, true)), "no pattern");
+        ui.click("find-regex");
+        assert_eq!(finding(ui), Some((0, 0, false)), "the brackets are letters");
         ui.keys("escape");
         assert_eq!(finding(ui), None);
         assert!(ui.shows("viewer"), "the viewer stays");
