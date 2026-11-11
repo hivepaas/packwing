@@ -220,21 +220,6 @@ tcef8b0ce = + 資料夾
 # Add the files or a folder to put in the archive.
 t2e5c8c3e = 加入要放進封存檔的檔案或資料夾。
 
-# Windows 11 and Linux open 7z on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tf7f64b21 = Windows 11 和 Linux 可直接開啟 7z；macOS、手機和較舊的 Windows 可能需要封存檔應用程式。若要與任何人分享，請選擇 .zip。
-
-# Linux, macOS and Windows 11 open it on their own; phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-t051031b1 = Linux、macOS 和 Windows 11 可直接開啟；手機和較舊的 Windows 可能需要封存檔應用程式。若要與任何人分享，請選擇 .zip。
-
-# Linux and Windows 11 open it on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tc2c29183 = Linux 和 Windows 11 可直接開啟；macOS、手機和較舊的 Windows 可能需要封存檔應用程式。若要與任何人分享，請選擇 .zip。
-
-# Most computers need an archiver app or the lz4 tool to open it. To share with anyone, pick .zip.
-te9afe1c2 = 多數電腦需要封存檔應用程式或 lz4 工具才能開啟。若要與任何人分享，請選擇 .zip。
-
-# It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
-t16463509 = 僅能存放這一個檔案。命令列工具可開啟；Windows 和 macOS 可能需要封存檔應用程式。若要與任何人分享，請選擇 .zip。
-
 # Don’t split
 t56ee6829 = 不分割
 

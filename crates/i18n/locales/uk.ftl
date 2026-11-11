@@ -226,21 +226,6 @@ tcef8b0ce = + Папка
 # Add the files or a folder to put in the archive.
 t2e5c8c3e = Додайте файли або папку, які потрібно покласти в архів.
 
-# Windows 11 and Linux open 7z on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tf7f64b21 = Windows 11 і Linux відкривають 7z самі; macOS, телефонам і старішим версіям Windows може знадобитися програма-архіватор. Щоб поділитися з будь-ким, виберіть .zip.
-
-# Linux, macOS and Windows 11 open it on their own; phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-t051031b1 = Linux, macOS і Windows 11 відкривають його самі; телефонам і старішим версіям Windows може знадобитися програма-архіватор. Щоб поділитися з будь-ким, виберіть .zip.
-
-# Linux and Windows 11 open it on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tc2c29183 = Linux і Windows 11 відкривають його самі; macOS, телефонам і старішим версіям Windows може знадобитися програма-архіватор. Щоб поділитися з будь-ким, виберіть .zip.
-
-# Most computers need an archiver app or the lz4 tool to open it. To share with anyone, pick .zip.
-te9afe1c2 = Більшості комп’ютерів, щоб його відкрити, потрібні програма-архіватор або інструмент lz4. Щоб поділитися з будь-ким, виберіть .zip.
-
-# It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
-t16463509 = Він містить лише цей один файл. Його відкривають інструменти командного рядка; у Windows і macOS може знадобитися програма-архіватор. Щоб поділитися з будь-ким, виберіть .zip.
-
 # Don’t split
 t56ee6829 = Не ділити
 

@@ -222,21 +222,6 @@ tcef8b0ce = + Cartella
 # Add the files or a folder to put in the archive.
 t2e5c8c3e = Aggiungi i file o una cartella da mettere nell'archivio.
 
-# Windows 11 and Linux open 7z on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tf7f64b21 = Windows 11 e Linux aprono i 7z senza altro; macOS, i telefoni e le versioni più vecchie di Windows possono richiedere un'app per archivi. Per condividere con chiunque, scegli .zip.
-
-# Linux, macOS and Windows 11 open it on their own; phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-t051031b1 = Linux, macOS e Windows 11 lo aprono senza altro; i telefoni e le versioni più vecchie di Windows possono richiedere un'app per archivi. Per condividere con chiunque, scegli .zip.
-
-# Linux and Windows 11 open it on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tc2c29183 = Linux e Windows 11 lo aprono senza altro; macOS, i telefoni e le versioni più vecchie di Windows possono richiedere un'app per archivi. Per condividere con chiunque, scegli .zip.
-
-# Most computers need an archiver app or the lz4 tool to open it. To share with anyone, pick .zip.
-te9afe1c2 = La maggior parte dei computer richiede un'app per archivi o lo strumento lz4 per aprirlo. Per condividere con chiunque, scegli .zip.
-
-# It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
-t16463509 = Contiene questo solo file. Si apre con gli strumenti da riga di comando; Windows e macOS possono richiedere un'app per archivi. Per condividere con chiunque, scegli .zip.
-
 # Don’t split
 t56ee6829 = Non dividere
 

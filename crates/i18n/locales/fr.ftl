@@ -222,21 +222,6 @@ tcef8b0ce = + Dossier
 # Add the files or a folder to put in the archive.
 t2e5c8c3e = Ajoutez les fichiers ou un dossier à mettre dans l'archive.
 
-# Windows 11 and Linux open 7z on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tf7f64b21 = Windows 11 et Linux ouvrent le 7z d'eux-mêmes ; macOS, les téléphones et les anciens Windows peuvent exiger une application d'archivage. Pour partager avec tout le monde, choisissez .zip.
-
-# Linux, macOS and Windows 11 open it on their own; phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-t051031b1 = Linux, macOS et Windows 11 l'ouvrent d'eux-mêmes ; les téléphones et les anciens Windows peuvent exiger une application d'archivage. Pour partager avec tout le monde, choisissez .zip.
-
-# Linux and Windows 11 open it on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tc2c29183 = Linux et Windows 11 l'ouvrent d'eux-mêmes ; macOS, les téléphones et les anciens Windows peuvent exiger une application d'archivage. Pour partager avec tout le monde, choisissez .zip.
-
-# Most computers need an archiver app or the lz4 tool to open it. To share with anyone, pick .zip.
-te9afe1c2 = La plupart des ordinateurs exigent une application d'archivage ou l'outil lz4 pour l'ouvrir. Pour partager avec tout le monde, choisissez .zip.
-
-# It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
-t16463509 = Il ne contient qu'un seul fichier. Les outils en ligne de commande l'ouvrent ; Windows et macOS peuvent exiger une application d'archivage. Pour partager avec tout le monde, choisissez .zip.
-
 # Don’t split
 t56ee6829 = Ne pas découper
 

@@ -222,21 +222,6 @@ tcef8b0ce = + Carpeta
 # Add the files or a folder to put in the archive.
 t2e5c8c3e = Añade los archivos o una carpeta para incluir en el archivo comprimido.
 
-# Windows 11 and Linux open 7z on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tf7f64b21 = Windows 11 y Linux abren 7z por sí solos; macOS, los móviles y las versiones antiguas de Windows pueden necesitar una app de compresión. Para compartir con cualquiera, elige .zip.
-
-# Linux, macOS and Windows 11 open it on their own; phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-t051031b1 = Linux, macOS y Windows 11 lo abren por sí solos; los móviles y las versiones antiguas de Windows pueden necesitar una app de compresión. Para compartir con cualquiera, elige .zip.
-
-# Linux and Windows 11 open it on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tc2c29183 = Linux y Windows 11 lo abren por sí solos; macOS, los móviles y las versiones antiguas de Windows pueden necesitar una app de compresión. Para compartir con cualquiera, elige .zip.
-
-# Most computers need an archiver app or the lz4 tool to open it. To share with anyone, pick .zip.
-te9afe1c2 = La mayoría de los equipos necesitan una app de compresión o la herramienta lz4 para abrirlo. Para compartir con cualquiera, elige .zip.
-
-# It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
-t16463509 = Contiene este único archivo. Las herramientas de línea de comandos lo abren; Windows y macOS pueden necesitar una app de compresión. Para compartir con cualquiera, elige .zip.
-
 # Don’t split
 t56ee6829 = No dividir
 

@@ -220,21 +220,6 @@ tcef8b0ce = + Thư mục
 # Add the files or a folder to put in the archive.
 t2e5c8c3e = Thêm tệp hoặc thư mục để đưa vào tệp nén.
 
-# Windows 11 and Linux open 7z on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tf7f64b21 = Windows 11 và Linux tự mở được 7z; macOS, điện thoại và Windows cũ có thể cần ứng dụng giải nén. Để chia sẻ cho mọi người, hãy chọn .zip.
-
-# Linux, macOS and Windows 11 open it on their own; phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-t051031b1 = Linux, macOS và Windows 11 tự mở được; điện thoại và Windows cũ có thể cần ứng dụng giải nén. Để chia sẻ cho mọi người, hãy chọn .zip.
-
-# Linux and Windows 11 open it on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tc2c29183 = Linux và Windows 11 tự mở được; macOS, điện thoại và Windows cũ có thể cần ứng dụng giải nén. Để chia sẻ cho mọi người, hãy chọn .zip.
-
-# Most computers need an archiver app or the lz4 tool to open it. To share with anyone, pick .zip.
-te9afe1c2 = Hầu hết máy tính cần ứng dụng giải nén hoặc công cụ lz4 để mở. Để chia sẻ cho mọi người, hãy chọn .zip.
-
-# It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
-t16463509 = Nó chỉ chứa một tệp. Công cụ dòng lệnh mở được; Windows và macOS có thể cần ứng dụng giải nén. Để chia sẻ cho mọi người, hãy chọn .zip.
-
 # Don’t split
 t56ee6829 = Không chia nhỏ
 

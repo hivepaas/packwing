@@ -220,21 +220,6 @@ tcef8b0ce = + Folder
 # Add the files or a folder to put in the archive.
 t2e5c8c3e = Tambahkan berkas atau folder untuk dimasukkan ke arsip.
 
-# Windows 11 and Linux open 7z on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tf7f64b21 = Windows 11 dan Linux membuka 7z tanpa aplikasi tambahan; macOS, ponsel, dan Windows lama mungkin memerlukan aplikasi arsip. Untuk dibagikan ke siapa saja, pilih .zip.
-
-# Linux, macOS and Windows 11 open it on their own; phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-t051031b1 = Linux, macOS, dan Windows 11 membukanya tanpa aplikasi tambahan; ponsel dan Windows lama mungkin memerlukan aplikasi arsip. Untuk dibagikan ke siapa saja, pilih .zip.
-
-# Linux and Windows 11 open it on their own; macOS, phones and older Windows may need an archiver app. To share with anyone, pick .zip.
-tc2c29183 = Linux dan Windows 11 membukanya tanpa aplikasi tambahan; macOS, ponsel, dan Windows lama mungkin memerlukan aplikasi arsip. Untuk dibagikan ke siapa saja, pilih .zip.
-
-# Most computers need an archiver app or the lz4 tool to open it. To share with anyone, pick .zip.
-te9afe1c2 = Sebagian besar komputer memerlukan aplikasi arsip atau alat lz4 untuk membukanya. Untuk dibagikan ke siapa saja, pilih .zip.
-
-# It holds this one file. Command-line tools open it; Windows and macOS may need an archiver app. To share with anyone, pick .zip.
-t16463509 = Berisi satu berkas ini saja. Alat baris perintah dapat membukanya; Windows dan macOS mungkin memerlukan aplikasi arsip. Untuk dibagikan ke siapa saja, pilih .zip.
-
 # Don’t split
 t56ee6829 = Jangan dipecah
 
