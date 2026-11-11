@@ -56,7 +56,14 @@ scenario!(
     |ui| {
         let tool = ui.work.join("Tool.AppImage");
         std::fs::write(&tool, appimage()).expect("the AppImage");
-        for path in [ui.copy_of("sample-xz.deb"), tool] {
+        // Each package opens alike: a Debian package, an AppImage, an RPM
+        // package (its payload's `etc/`) and a macOS package (`Payload/`).
+        for (path, top) in [
+            (ui.copy_of("sample-xz.deb"), "readme.md"),
+            (tool, "readme.md"),
+            (ui.copy_of("tiny.rpm"), "etc"),
+            (ui.copy_of("tiny.pkg"), "Payload"),
+        ] {
             let name = path.file_name().map(|n| n.to_string_lossy().into_owned());
             ui.ws(|ws, window, cx| ws.dropped(vec![path.clone()], window, cx));
             ui.wait_until("the package read", |ui| {
@@ -66,15 +73,12 @@ scenario!(
                     page.shown_failed().is_some()
                         || page.archive().is_some_and(|a| {
                             Some(&a.name) == name.as_ref()
-                                && a.top_names().iter().any(|n| n == "readme.md")
+                                && a.top_names().iter().any(|n| n == top)
                         })
                 })
             });
             assert_eq!(ui.archive_failed(), None, "{name:?}");
-            assert!(
-                ui.archive_names().iter().any(|n| n == "readme.md"),
-                "{name:?}"
-            );
+            assert!(ui.archive_names().iter().any(|n| n == top), "{name:?}");
         }
     }
 );

@@ -101,12 +101,13 @@ impl Kind {
 }
 
 /// The programs and packages packwing opens as archives when it is asked
-/// to, by their extensions: a Debian package, a snap, an AppImage. Opened,
-/// the system installs or runs them, and packwing is never the app that
-/// does: a double click is the system's, and they are not packwing's in
-/// Open With. A drop of one on the window, Open as archive, and the
-/// right-click menu's Open and Extract items open them in packwing.
-pub const PACKAGES: [&str; 4] = ["deb", "udeb", "snap", "appimage"];
+/// to, by their extensions: a Debian or RPM package, a macOS package, a
+/// snap, an AppImage. Opened, the system installs or runs them, and
+/// packwing is never the app that does: a double click is the system's, and
+/// they are not packwing's in Open With. A drop of one on the window, Open as
+/// archive, and the right-click menu's Open and Extract items open them in
+/// packwing, each the same way.
+pub const PACKAGES: [&str; 6] = ["deb", "udeb", "rpm", "pkg", "snap", "appimage"];
 
 /// Whether `name` is an archive packwing opens, or a package it opens as
 /// one when asked ([`PACKAGES`]).
@@ -660,14 +661,20 @@ mod tests {
         assert_eq!(Kind::of("a.apk", false), Kind::Program);
         // Packages and AppImages are the system's to install and run;
         // packwing opens them when asked, and a SquashFS image at once.
-        for name in ["a.deb", "a.udeb", "a.snap", "Tool.AppImage"] {
+        for name in [
+            "a.deb",
+            "a.udeb",
+            "a.rpm",
+            "a.pkg",
+            "a.snap",
+            "Tool.AppImage",
+        ] {
             assert_eq!(Kind::of(name, false), Kind::Program, "{name}");
             assert!(opens_in_packwing(name), "{name}");
         }
         assert_eq!(Kind::of("rootfs.sqfs", false), Kind::Archive);
         assert_eq!(Kind::of("rootfs.squashfs", false), Kind::Archive);
         assert!(!opens_in_packwing("setup.exe"));
-        assert!(!opens_in_packwing("a.rpm"));
         assert_eq!(Kind::of("a.epub", false), Kind::Document);
         assert_eq!(stem("Báo cáo.apk"), "Báo cáo");
         assert_eq!(stem("ứng dụng.war"), "ứng dụng");
