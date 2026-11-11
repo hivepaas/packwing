@@ -1098,7 +1098,7 @@ impl Explorer {
                 .iter()
                 .position(|&s| self.items.get(s).is_some_and(|it| &it.name == anchor))
         });
-        let page = list_keys::rows_per_page(&self.scroll);
+        let page = list_keys::rows_per_page(&self.scroll, self.shown.len());
         let Some(to) = list_keys::moved(key, from, self.shown.len(), page) else {
             return;
         };

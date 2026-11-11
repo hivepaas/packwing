@@ -1400,7 +1400,7 @@ impl ArchivePage {
         let from = self
             .chosen
             .and_then(|c| (0..len).find(|&n| index_at(n) == Some(c)));
-        let page = list_keys::rows_per_page(&self.scroll);
+        let page = list_keys::rows_per_page(&self.scroll, len);
         let Some(to) = list_keys::moved(key, from, len, page) else {
             return;
         };

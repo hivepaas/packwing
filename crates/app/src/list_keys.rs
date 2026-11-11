@@ -7,18 +7,24 @@ use gpui::UniformListScrollHandle;
 /// The rows Page Up and Page Down move by before a list is drawn.
 const PAGE_BEFORE_DRAWN: usize = 10;
 
-/// How many rows Page Up and Page Down move by in the list `scroll` scrolls:
-/// as many as are in sight, but one, so that the row chosen last stays in
-/// sight; [`PAGE_BEFORE_DRAWN`] until the list is drawn.
-pub fn rows_per_page(scroll: &UniformListScrollHandle) -> usize {
-    let state = scroll.0.borrow();
-    let Some(row) = state.last_item_size.map(|s| s.item.height) else {
+/// How many rows Page Up and Page Down move by in the list of `len` rows
+/// `scroll` scrolls: as many as are in sight, but one, so that the row chosen
+/// last stays in sight; [`PAGE_BEFORE_DRAWN`] until the list is drawn.
+pub fn rows_per_page(scroll: &UniformListScrollHandle, len: usize) -> usize {
+    // What GPUI keeps of the last layout: the list's own size, in sight, as
+    // its "item", and all its rows' as its contents.
+    let Some(sizes) = scroll.0.borrow().last_item_size else {
         return PAGE_BEFORE_DRAWN;
     };
-    let seen = state.base_handle.bounds().size.height;
-    if row <= gpui::px(0.) || seen <= gpui::px(0.) {
+    page_of(sizes.item.height.into(), sizes.contents.height.into(), len)
+}
+
+/// The rows in sight but one, from the height in sight and all `len` rows'.
+fn page_of(seen: f32, all: f32, len: usize) -> usize {
+    if len == 0 || seen <= 0. || all <= 0. {
         return PAGE_BEFORE_DRAWN;
     }
+    let row = all / len as f32;
     ((seen / row).floor() as usize).saturating_sub(1).max(1)
 }
 
@@ -46,7 +52,15 @@ pub fn moved(key: &str, from: Option<usize>, len: usize, page: usize) -> Option<
 
 #[cfg(test)]
 mod tests {
-    use super::moved;
+    use super::{PAGE_BEFORE_DRAWN, moved, page_of};
+
+    #[test]
+    fn a_page_is_what_is_in_sight_but_a_row() {
+        // 31 rows of 48, 500 in sight: 10 whole rows.
+        assert_eq!(page_of(500., 31. * 48., 31), 9);
+        assert_eq!(page_of(30., 31. * 48., 31), 1);
+        assert_eq!(page_of(500., 0., 0), PAGE_BEFORE_DRAWN);
+    }
 
     #[test]
     fn keys_move_the_choice() {
