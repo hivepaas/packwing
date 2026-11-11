@@ -3562,8 +3562,9 @@ fn stopped_while_the_threads_end_leaves_nothing() {
     }
 }
 
-/// A ZIP archive's large file is deflated in blocks, as pigz does, on every
-/// core: its stream is what one thread makes of it in blocks.
+/// A ZIP archive's large file is deflated in blocks, by libdeflate's
+/// compressor, on every core: its stream is what one thread makes of it in
+/// blocks.
 #[test]
 fn a_large_file_in_zip_is_deflated_in_blocks() {
     let s = Scratch::new("zip-blocks");
@@ -3663,12 +3664,14 @@ fn compressed_entry(zip: &Path, i: u64) -> Vec<u8> {
     stream
 }
 
-/// `data` deflated at level 6 in blocks, as pigz does, raw: as packwing
-/// deflates a ZIP archive's files.
+/// `data` deflated by libdeflate's compressor at level 9, in blocks as its
+/// size says, raw: as packwing deflates a ZIP archive's files at Medium.
 fn in_blocks(data: &[u8]) -> Vec<u8> {
     let mut one = hivepack::deflate::DeflateMt::new(&hivepack::deflate::MtOptions {
-        level: 6,
+        level: 9,
         raw: true,
+        block_size: hivepack::deflate::libdeflate_block_size(Some(data.len() as u64)),
+        library: hivepack::deflate::Library::Libdeflate,
         ..hivepack::deflate::MtOptions::default()
     })
     .unwrap();

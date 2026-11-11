@@ -31,7 +31,7 @@ use hivepack::age::{
     BoxedRecipient, RandomSource, Recipient, ScryptRecipient, parse_recipient,
     parse_recipients_file,
 };
-use hivepack::deflate::{DeflateMt, Flush};
+use hivepack::deflate::{DeflateMt, Flush, Library};
 use hivepack::extract::{NameRules, Progress, check_name_for};
 use hivepack::open::Container;
 use hivepack::xz::{LzmaOptions, MtOptions, Stream, stream_encoder_mt_memusage};
@@ -133,6 +133,20 @@ impl Level {
             Level::Medium => 6,
             Level::High => 8,
             Level::Highest => 9,
+        }
+    }
+
+    /// The level of libdeflate's compressor, which deflates a ZIP archive's
+    /// files: 9 in the middle, smaller than zlib's 9 and as fast as its 6;
+    /// 10, smaller than 7-Zip's ZIP at its own level and faster; 12, as
+    /// small as 7-Zip's highest, at a few times its speed.
+    pub(crate) fn libdeflate(self) -> u32 {
+        match self {
+            Level::Store | Level::Lowest => 1,
+            Level::Low => 6,
+            Level::Medium => 9,
+            Level::High => 10,
+            Level::Highest => 12,
         }
     }
 
@@ -1080,9 +1094,21 @@ fn zip_closed(closed: Closed) -> Result<(), Error> {
     }
 }
 
-/// What each thread compressing a ZIP archive may take: hivepack's 32 MiB of
-/// what waits to be written, the compressor, and what encrypting adds.
-const ZIP_THREAD_MEMORY: u64 = 34 << 20;
+/// What each thread compressing a ZIP archive at `level` may take:
+/// hivepack's 32 MiB of what waits to be written, libdeflate's compressor
+/// with its largest blocks, of 4 MiB, those of a file of 128 MiB or more
+/// (25.7 MiB at levels 2 to 9, 33.6 MiB at 10 to 12), and 1 MiB for what
+/// encrypting adds: 58.7 MiB at Medium, 66.6 MiB at High and Highest.
+fn zip_thread_memory(level: Level) -> u64 {
+    let deflate = hivepack::deflate::MtOptions {
+        level: level.libdeflate() as i32,
+        raw: true,
+        block_size: hivepack::deflate::libdeflate_block_size(Some(u64::MAX)),
+        library: Library::Libdeflate,
+        ..hivepack::deflate::MtOptions::default()
+    };
+    (33 << 20) + deflate.memory_usage(1).unwrap_or(34 << 20)
+}
 
 /// The memory making `new` takes with one thread, in bytes: what it takes
 /// however little memory there is, as fewer threads cannot take less. Close
@@ -1128,7 +1154,7 @@ pub fn memory_needed(new: &NewArchive) -> u64 {
         }
         .memory_usage(1)
         .unwrap_or(0),
-        Kind::Zip => ZIP_THREAD_MEMORY,
+        Kind::Zip => zip_thread_memory(new.level),
         Kind::TarGz | Kind::Gz => gzip_options(new).memory_usage(1).unwrap_or(0),
         _ => 0,
     }
@@ -1206,12 +1232,14 @@ fn new_zip(
     // Files compressed in threads ahead of the one written, the archive the
     // same whatever the threads: as many as the memory there is takes.
     let (threads, held) = crate::memory::hold_threads(crate::threads().count(), |n| {
-        u64::from(n) * ZIP_THREAD_MEMORY
+        u64::from(n) * zip_thread_memory(new.level)
     });
     za.set_threads(hivepack::Threads::of(threads));
-    // Deflate in blocks, as pigz does: one large file on every core, where
-    // it took one; 0.84 MiB a thread more, within what each is held.
+    // Deflate with libdeflate's compressor, in blocks of 1 to 4 MiB as each
+    // file's size says: one large file on every core, where it took one,
+    // the archive the same whatever the threads.
     za.set_deflate_in_blocks(true);
+    za.set_deflate_library(Library::Libdeflate);
     let how = Squeeze {
         level: new.level,
         stored: &new.stored_extensions,
@@ -1445,7 +1473,7 @@ fn add_items<R: ReadAt>(
             if how.level == Level::Store || has_extension_in(&item.name, how.stored) {
                 za.set_file_compression(index, i32::from(cm::STORE), 0)?;
             } else {
-                za.set_file_compression(index, cm::DEFAULT, how.level.deflate())?;
+                za.set_file_compression(index, cm::DEFAULT, how.level.libdeflate())?;
             }
             // Nothing to read, so nothing would count it.
             if item.metadata.len() == 0 {
@@ -2935,10 +2963,11 @@ fn add_zip(
     // written, a large one deflated in blocks on all of them, as many as the
     // memory there is takes, held until the archive is written.
     let (threads, _held) = crate::memory::hold_threads(crate::threads().count(), |n| {
-        u64::from(n) * ZIP_THREAD_MEMORY
+        u64::from(n) * zip_thread_memory(Level::default())
     });
     za.set_threads(hivepack::Threads::of(threads));
     za.set_deflate_in_blocks(true);
+    za.set_deflate_library(Library::Libdeflate);
     if let Err(e) = add_items(&mut za, new, how, encrypted.is_some(), &tally) {
         return why(Err(e), &tally);
     }
