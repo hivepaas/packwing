@@ -1990,6 +1990,9 @@ td2661011 = Hợp lệ
 # Past this, packwing is Free. Nothing is taken away but adding storages.
 td7098137 = Quá mức này, packwing là Free. Chỉ không thêm được nơi lưu trữ, không mất gì khác.
 
+# Your organization manages this license. Once a day, packwing asks the portal for a newer key of it, sending only the key.
+t93c21721 = Tổ chức của bạn quản lý license này. Mỗi ngày một lần, packwing hỏi portal xem có key mới hơn không, chỉ gửi đi key.
+
 # Your organization manages this license.
 te42a0ee6 = Tổ chức của bạn quản lý giấy phép này.
 
@@ -2064,6 +2067,12 @@ t38e70ee4 = Giấy phép
 
 # Your organization’s, in Settings › License
 tff7c594e = Của tổ chức bạn, trong Cài đặt › Giấy phép
+
+# Newer license keys from the portal
+t6a8c1060 = Key license mới hơn từ portal
+
+# Once a day, packwing asks for a newer key of your organization’s, sending only the key
+t8c9b329a = Mỗi ngày một lần, packwing hỏi key mới hơn của tổ chức bạn, chỉ gửi đi key
 
 # Treat files from storages as from the Internet
 t0af8d466 = Coi tệp từ nơi lưu trữ như tải từ Internet

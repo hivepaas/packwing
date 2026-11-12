@@ -1990,6 +1990,9 @@ td2661011 = 유효함
 # Past this, packwing is Free. Nothing is taken away but adding storages.
 td7098137 = 이 기간이 지나면 packwing은 Free가 됩니다. 스토리지 추가만 제한되고 사라지는 기능은 없습니다.
 
+# Your organization manages this license. Once a day, packwing asks the portal for a newer key of it, sending only the key.
+t93c21721 = 이 라이선스는 조직에서 관리합니다. packwing은 하루에 한 번 키만 보내 포털에 새 키가 있는지 확인합니다.
+
 # Your organization manages this license.
 te42a0ee6 = 조직에서 이 라이선스를 관리합니다.
 
@@ -2064,6 +2067,12 @@ t38e70ee4 = 라이선스
 
 # Your organization’s, in Settings › License
 tff7c594e = 조직의 설정: 설정 › 라이선스
+
+# Newer license keys from the portal
+t6a8c1060 = 포털의 새 라이선스 키
+
+# Once a day, packwing asks for a newer key of your organization’s, sending only the key
+t8c9b329a = packwing은 하루에 한 번 키만 보내 조직의 새 키를 확인합니다
 
 # Treat files from storages as from the Internet
 t0af8d466 = 스토리지의 파일을 인터넷에서 받은 것으로 처리

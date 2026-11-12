@@ -2014,6 +2014,9 @@ td2661011 = Válida
 # Past this, packwing is Free. Nothing is taken away but adding storages.
 td7098137 = Pasado este límite, packwing es Free. Solo se pierde la posibilidad de añadir almacenamientos.
 
+# Your organization manages this license. Once a day, packwing asks the portal for a newer key of it, sending only the key.
+t93c21721 = Tu organización gestiona esta licencia. Una vez al día, packwing pide al portal una clave más nueva, enviando solo la clave.
+
 # Your organization manages this license.
 te42a0ee6 = Tu organización administra esta licencia.
 
@@ -2088,6 +2091,12 @@ t38e70ee4 = Licencia
 
 # Your organization’s, in Settings › License
 tff7c594e = La de tu organización, en Ajustes › Licencia
+
+# Newer license keys from the portal
+t6a8c1060 = Claves de licencia más nuevas del portal
+
+# Once a day, packwing asks for a newer key of your organization’s, sending only the key
+t8c9b329a = Una vez al día, packwing pide una clave más nueva de tu organización, enviando solo la clave
 
 # Treat files from storages as from the Internet
 t0af8d466 = Tratar los archivos de los almacenamientos como de Internet

@@ -46,17 +46,24 @@ pub fn audit(settings: &str) -> packwing_core::audit::Chosen {
 /// The plan of the license this computer holds: the organization's, set by
 /// policy, or the one entered in the app, kept beside its settings. Free without.
 pub fn plan() -> packwing_license::Plan {
-    let text = match &packwing_policy::current().license_key {
-        packwing_policy::Setting::Set(key) => Some(key.clone()),
-        _ => file().and_then(|f| std::fs::read_to_string(f.with_file_name("license.key")).ok()),
+    let policy = packwing_policy::current();
+    let beside =
+        |name: &str| file().and_then(|f| std::fs::read_to_string(f.with_file_name(name)).ok());
+    let license = match &policy.license_key {
+        // With a newer key of it the app had from the portal, where the policy asks for one.
+        packwing_policy::Setting::Set(key) => packwing_license::read(key).ok().map(|held| {
+            let refresh = matches!(policy.license_refresh, packwing_policy::Setting::Set(true));
+            let refreshed = refresh.then(|| beside("license.refreshed.key")).flatten();
+            packwing_license::newest(held, refreshed.as_deref())
+        }),
+        _ => beside("license.key").and_then(|t| packwing_license::read(&t).ok()),
     };
-    text.and_then(|t| packwing_license::read(&t).ok())
-        .map_or(packwing_license::Plan::Free, |l| {
-            l.plan(
-                std::time::SystemTime::now().into(),
-                packwing_license::line_released(),
-            )
-        })
+    license.map_or(packwing_license::Plan::Free, |l| {
+        l.plan(
+            std::time::SystemTime::now().into(),
+            packwing_license::line_released(),
+        )
+    })
 }
 
 /// The settings' text, or none.

@@ -15,6 +15,7 @@ pub mod apply;
 pub mod download;
 pub mod envelope;
 pub mod install;
+pub mod license;
 pub mod manifest;
 pub mod platform;
 pub mod version;

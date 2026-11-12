@@ -2014,6 +2014,9 @@ td2661011 = Geçerli
 # Past this, packwing is Free. Nothing is taken away but adding storages.
 td7098137 = Bundan sonra packwing Ücretsiz olur. Depolama alanı eklemek dışında hiçbir şey elinizden alınmaz.
 
+# Your organization manages this license. Once a day, packwing asks the portal for a newer key of it, sending only the key.
+t93c21721 = Bu lisansı kuruluşunuz yönetiyor. packwing günde bir kez, yalnızca anahtarı göndererek portaldan daha yeni bir anahtar ister.
+
 # Your organization manages this license.
 te42a0ee6 = Bu lisansı kuruluşunuz yönetiyor.
 
@@ -2088,6 +2091,12 @@ t38e70ee4 = Lisans
 
 # Your organization’s, in Settings › License
 tff7c594e = Kuruluşunuzun lisansı, Ayarlar › Lisans'ta
+
+# Newer license keys from the portal
+t6a8c1060 = Portaldan daha yeni lisans anahtarları
+
+# Once a day, packwing asks for a newer key of your organization’s, sending only the key
+t8c9b329a = packwing günde bir kez, yalnızca anahtarı göndererek kuruluşunuzun daha yeni anahtarını ister
 
 # Treat files from storages as from the Internet
 t0af8d466 = Depolama alanlarındaki dosyaları İnternet'ten gelmiş say
