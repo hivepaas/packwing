@@ -165,6 +165,7 @@ const ICONS: &[(&str, &[u8])] = icons![
     "file-image-detail",
     "file-program-detail",
     "file-video",
+    "filter",
     "home",
     "image",
     "jobs",

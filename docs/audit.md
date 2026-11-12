@@ -111,7 +111,7 @@ A job is two records with the same `job`: `phase: start`, with what it is of, an
 | `action` | Of | At its end |
 |---|---|---|
 | `extract` | `source`, `destination`, and how: `overwrite`, `keep_mark`, `portable_names`, `links_outside`, `owners`, `xattrs`, `limit`; `picked` where only some were | `format`, `layers`, `files`, `directories`, `links`, `bytes`, how many files were `damaged`, `left_out` and `renamed`, `owners_left`; with `entries`, `damaged_names`, `left_out_names`, `renamed_names` and `extracted_names`. `partial` where some were damaged or left out |
-| `create` | `destination`, `kind`, `level`, `encryption` (`zip-aes256`, `7z-aes256`, `age-passphrase`, `age-key`), `hide_names`, `recipients` (the age keys, which are public), `part_size`, `keep_owners`, `keep_xattrs`, `paths` and `path_names` | `made` |
+| `create` | `destination`, `kind`, `level`, `encryption` (`zip-aes256`, `7z-aes256`, `age-passphrase`, `age-key`), `hide_names`, `recipients` (the age keys, which are public), `part_size`, `keep_owners`, `keep_xattrs`, the patterns to `include` and `exclude` where some were given, `paths` and `path_names` | `made` |
 | `convert` | `source`, `destination`, and as `create` | as `extract`, and `made` |
 | `test` | `source` | `files`, `bytes` |
 | `open_entry` | `source`, `entry`: a file opened from an archive | `copy`: where its copy is |

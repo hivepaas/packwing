@@ -312,7 +312,7 @@ fn what_is_picked_is_extracted_and_a_file_read() {
 
 #[test]
 fn packages_snaps_and_appimages_convert_entry_by_entry() {
-    use packwing_core::{Filter, Kind, NewArchive, convert};
+    use packwing_core::{Kind, NewArchive, convert};
     let s = Scratch::new();
     for (name, bytes, _, _) in packages() {
         let from = s.file(name, &bytes);
@@ -327,7 +327,6 @@ fn packages_snaps_and_appimages_convert_entry_by_entry() {
             &to,
             &new,
             &ExtractOptions::default(),
-            &Filter::default(),
             &Control::default(),
         )
         .unwrap();

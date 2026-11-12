@@ -11,11 +11,11 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use packwing_core::{
-    Blocks, COMPRESSED_EXTENSIONS, Cancel, Control, Error, ExtractOptions, Frames, Item, Keys,
-    Kind, Level, Lister, LocalFolder, NewArchive, OnExisting, Progress, Route, SEVERAL_FRAMES_FROM,
-    Source, Storage, StoredFile, add, add_with, age_key_is_post_quantum, age_key_problem,
-    age_keys_in, can_add, create, create_on, delete, extract, extract_selected, extract_to_open,
-    extract_with, image_fits, list, measure, read_entry, rename, route, test,
+    Blocks, COMPRESSED_EXTENSIONS, Cancel, Control, Error, ExtractOptions, Filter, Frames, Item,
+    Keys, Kind, Level, Lister, LocalFolder, NewArchive, OnExisting, Progress, Route,
+    SEVERAL_FRAMES_FROM, Source, Storage, StoredFile, add, add_with, age_key_is_post_quantum,
+    age_key_problem, age_keys_in, can_add, create, create_on, delete, extract, extract_selected,
+    extract_to_open, extract_with, image_fits, list, measure, read_entry, rename, route, test,
 };
 
 /// A folder of a test's own, gone when it ends.
@@ -268,7 +268,7 @@ fn stopping_leaves_nothing() {
 fn progress_reaches_every_byte_once() {
     let s = Scratch::new("progress");
     let root = s.tree();
-    let measured = measure(std::slice::from_ref(&root)).unwrap();
+    let measured = measure(std::slice::from_ref(&root), &Filter::default()).unwrap();
     assert_eq!(measured.files, 3);
     let (bytes, total) = (Arc::new(AtomicU64::new(0)), Arc::new(AtomicU64::new(0)));
     let (b, t) = (bytes.clone(), total.clone());
@@ -744,7 +744,7 @@ fn a_tar_archive_with_a_password_is_encrypted_rather_than_dropping_it() {
 fn stopping_any_kind_leaves_nothing_and_progress_reaches_the_end() {
     let s = Scratch::new("kind-stop");
     let root = s.tree();
-    let measured = measure(std::slice::from_ref(&root)).unwrap();
+    let measured = measure(std::slice::from_ref(&root), &Filter::default()).unwrap();
     for (kind, extension) in KINDS {
         let path = s.path(&format!("a.{extension}"));
         let new = NewArchive {
@@ -799,7 +799,7 @@ fn every_kind_keeps_a_link_as_a_link() {
     fs::create_dir_all(&root).unwrap();
     fs::write(root.join("file"), "data").unwrap();
     symlink("file", root.join("link")).unwrap();
-    let measured = measure(std::slice::from_ref(&root)).unwrap();
+    let measured = measure(std::slice::from_ref(&root), &Filter::default()).unwrap();
     assert_eq!((measured.files, measured.bytes), (2, 4));
     for (kind, extension) in KINDS {
         let new = NewArchive {
@@ -889,7 +889,7 @@ fn names_some_system_cannot_use_are_found_when_measured() {
     for name in ["a:b.txt", "README", "readme", "fine.txt"] {
         fs::write(root.join(name), name).unwrap();
     }
-    let measured = measure(std::slice::from_ref(&root)).unwrap();
+    let measured = measure(std::slice::from_ref(&root), &Filter::default()).unwrap();
     // A file system that takes `README` and `readme` for one, as macOS's does
     // by default, holds one of them: written twice, under the first name.
     if fs::read_dir(&root).unwrap().count() == 3 {
@@ -899,7 +899,7 @@ fn names_some_system_cannot_use_are_found_when_measured() {
         assert_eq!(measured.files, 4);
         assert_eq!(measured.not_portable, ["d/a:b.txt", "d/readme"]);
     }
-    let fine = measure(&[s.tree()]).unwrap();
+    let fine = measure(&[s.tree()], &Filter::default()).unwrap();
     assert!(fine.not_portable.is_empty());
 }
 
@@ -3887,4 +3887,120 @@ fn extract_selected_leaves_no_private_folder_and_removes_one_left() {
         .collect();
     names.sort();
     assert_eq!(names, ["a.txt"]);
+}
+
+/// `proj/`: sources, some made, packages, a build, notes and logs; and a
+/// log beside it.
+fn project(s: &Scratch) -> Vec<PathBuf> {
+    let root = s.path("proj");
+    for (name, text) in [
+        ("src/main.rs", "fn main() {}\n"),
+        ("src/gen/a.rs", "// made\n"),
+        ("src/x/gen/b.rs", "// made\n"),
+        ("node_modules/pkg/index.js", "x\n"),
+        ("build", "a file, not a folder\n"),
+        ("out/build/o.o", "o\n"),
+        ("docs/Guide.PDF", "%PDF\n"),
+        ("docs/notes.txt", "notes\n"),
+        ("logs/a.log", "log\n"),
+    ] {
+        let path = root.join(name);
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(path, text).unwrap();
+    }
+    fs::write(s.path("top.log"), "log\n").unwrap();
+    vec![root, s.path("top.log")]
+}
+
+/// What `made` holds, folders ending in `/`.
+fn held(made: &Path) -> Vec<String> {
+    let mut names: Vec<String> = list(made, &Keys::default())
+        .unwrap()
+        .entries
+        .iter()
+        .map(|e| e.path.join("/") + if e.dir { "/" } else { "" })
+        .collect();
+    names.sort();
+    names
+}
+
+fn filtered(include: &[&str], exclude: &[&str]) -> NewArchive {
+    let owned = |l: &[&str]| l.iter().map(|p| (*p).to_owned()).collect::<Vec<_>>();
+    NewArchive {
+        filter: Filter::new(&owned(include), &owned(exclude)).unwrap(),
+        ..NewArchive::default()
+    }
+}
+
+#[test]
+fn patterns_leave_out_folders_and_files() {
+    let s = Scratch::new("exclude");
+    let chosen = project(&s);
+    let new = filtered(&[], &["node_modules/", "build/", "*.LOG", "src/**/gen/"]);
+    let made = create(&chosen, &s.path("a.zip"), &new, &Control::default()).unwrap();
+    // A folder pattern leaves the file `build`; the folders it leaves empty stay.
+    assert_eq!(
+        held(&made),
+        [
+            "proj/",
+            "proj/build",
+            "proj/docs/",
+            "proj/docs/Guide.PDF",
+            "proj/docs/notes.txt",
+            "proj/logs/",
+            "proj/out/",
+            "proj/src/",
+            "proj/src/main.rs",
+            "proj/src/x/",
+        ]
+    );
+    // Counted as it is made.
+    let measured = measure(&chosen, &new.filter).unwrap();
+    assert_eq!(measured.files, 4);
+}
+
+#[test]
+fn patterns_to_include_take_only_what_they_name() {
+    let s = Scratch::new("include");
+    let chosen = project(&s);
+    // A name in any case, anywhere: only the folders that lead to it.
+    let made = create(
+        &chosen,
+        &s.path("a.zip"),
+        &filtered(&["*.pdf"], &[]),
+        &Control::default(),
+    )
+    .unwrap();
+    assert_eq!(held(&made), ["proj/", "proj/docs/", "proj/docs/Guide.PDF"]);
+    // A folder, with what it holds, but what is excluded.
+    let made = create(
+        &chosen,
+        &s.path("b.zip"),
+        &filtered(&["src/"], &["gen/"]),
+        &Control::default(),
+    )
+    .unwrap();
+    assert_eq!(
+        held(&made),
+        ["proj/", "proj/src/", "proj/src/main.rs", "proj/src/x/"]
+    );
+    // A folder chosen that a pattern names goes in whole.
+    let made = create(
+        &[s.path("proj/docs")],
+        &s.path("c.zip"),
+        &filtered(&["docs/"], &[]),
+        &Control::default(),
+    )
+    .unwrap();
+    assert_eq!(held(&made), ["docs/", "docs/Guide.PDF", "docs/notes.txt"]);
+    // What nothing matches makes nothing.
+    let e = create(
+        &chosen,
+        &s.path("d.zip"),
+        &filtered(&["*.docx"], &[]),
+        &Control::default(),
+    )
+    .unwrap_err();
+    assert!(e.to_string().contains("patterns"), "{e}");
+    assert!(!s.path("d.zip").exists());
 }

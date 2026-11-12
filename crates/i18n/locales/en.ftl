@@ -232,6 +232,29 @@ t6ed7c612 = Key file
 tcda9a50a = This file is encrypted with age to a key: an age key file or an SSH key. packwing keeps what it reads from it only while the archive is open, and never writes it down.
 t808b85c5 = Enter the key file’s passphrase
 t2a39d1e8 = The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
+t0b7280ee = Version control
+t237b373e = Packages and builds
+te8be6b83 = System files
+td4fe1263 = Temporary files
+t51a96da6 = Logs
+t0d70feae = Pictures
+t5a036285 = Documents
+t63609fed = Videos
+t584a1d74 = Music
+t56c5448d = node_modules/, *.log, src/**/gen/
+t999b68fd = They leave nothing out.
+tc709cfda =
+    { $n ->
+        [one] They leave out { $n } file, { $size }.
+       *[other] They leave out { $n } files, { $size }.
+    }
+t04a57fc2 = Clear
+ta50cc084 = Leave out
+t2fd02f84 = Take only
+t17ad93a1 = Add the usual
+ta0bd7335 = Only what these name goes in, and the folders it is in.
+t524d506a = A name is anywhere; a / at its end names a folder; ** is any folders.
+tf4a9c097 = Filter
 t001f6992 = kept, { $size }
 t73aeedd4 = left out
 t7aa9b778 = renamed { $to }
@@ -300,7 +323,6 @@ tb75acfb1 =
         [one] { $count } file can’t be extracted under its name here. Nothing is written yet: stop, leave it out, or rename it?
        *[other] { $count } files can’t be extracted under their names here. Nothing is written yet: stop, leave them out, or rename them?
     }
-ta50cc084 = Leave out
 t0eeaf0b8 =
     { $n ->
         [one] { $count } link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive?
@@ -912,6 +934,7 @@ t5516dd83 = “{ $to }” is already in that folder. Nothing was changed.
 t8d1ef729 = packwing can add files only to a ZIP or 7z archive that is one file.
 tff43ce74 = An archive can’t go inside itself.
 t2c3e91c4 = “{ $bare }” is already in the archive. Nothing was changed.
+te132289a = Nothing chosen matches the patterns given.
 tdb9326d3 = Before it is uploaded, this archive is made in { $folder }, where it may take up to { $need }. Only { $free } is free there.
 t528232e6 = The upload stopped.
 te17b2bfa = “{ $pattern }” names no file or folder.

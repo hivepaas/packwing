@@ -25,7 +25,7 @@ use gpui::{
     relative, rgb,
 };
 use packwing_core::{
-    BadName, Cancel, Control, Damage, DamagedFn, Error, Filter, GoneFn, LinksOutsideFn, OnDamaged,
+    BadName, Cancel, Control, Damage, DamagedFn, Error, GoneFn, LinksOutsideFn, OnDamaged,
     OnLinksOutside, OnUnnamable, OutsideLink, Progress, Renaming, Summary, UnnamableFn, damages,
     left_out, renamings,
 };
@@ -401,15 +401,7 @@ impl ProgressDialog {
                 return packwing_core::join_parts(&part, &control).map(Some);
             }
             if let Some(c) = convert {
-                let done = packwing_core::convert(
-                    c.from,
-                    &keys,
-                    &c.to,
-                    &c.how,
-                    &how,
-                    &Filter::default(),
-                    &control,
-                )?;
+                let done = packwing_core::convert(c.from, &keys, &c.to, &c.how, &how, &control)?;
                 converted
                     .lock()
                     .unwrap_or_else(PoisonError::into_inner)

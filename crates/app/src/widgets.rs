@@ -255,6 +255,27 @@ pub fn button(
     fill: Fill,
     size: Size,
 ) -> Stateful<Div> {
+    labelled(id, None, label, fill, size)
+}
+
+/// A [`button`] with an icon before its label.
+pub fn icon_text_button(
+    id: impl Into<ElementId>,
+    glyph: &str,
+    label: impl Into<SharedString>,
+    fill: Fill,
+    size: Size,
+) -> Stateful<Div> {
+    labelled(id, Some(glyph), label, fill, size)
+}
+
+fn labelled(
+    id: impl Into<ElementId>,
+    glyph: Option<&str>,
+    label: impl Into<SharedString>,
+    fill: Fill,
+    size: Size,
+) -> Stateful<Div> {
     let c = colors();
     let id = id.into();
     let selector = id.to_string();
@@ -290,6 +311,7 @@ pub fn button(
         .whitespace_nowrap()
         .cursor_pointer()
         .hover(move |s| s.bg(rgb(hover)))
+        .when_some(glyph, |d, glyph| d.child(icon(glyph, 16., ink)))
         .child(label.into())
 }
 

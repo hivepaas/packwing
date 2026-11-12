@@ -1,11 +1,19 @@
-//! Which entries of an archive are taken, by their paths in it: patterns to
-//! include and to exclude, as `.gitignore` has them.
+//! Which entries are taken, by their paths: patterns to include and to
+//! exclude, as `.gitignore` has them.
 //!
 //! - `*` is any part of a name, and `?` one character of it: neither goes past `/`.
-//! - `**`, a whole part of the path, is any folders, or none.
-//! - A pattern with no `/` is a name anywhere: `*.log` is `**/*.log`.
+//! - `**`, a whole part of the path, is any folders, or none: `src/**/gen/`.
+//! - A pattern with no `/` but at its end is a name anywhere: `*.log` is
+//!   `**/*.log`, `node_modules/` is `**/node_modules/`. One with a `/` before
+//!   its end starts where the paths do: `docs/drafts/`, or `/docs` with the
+//!   `/` that says so.
+//! - A pattern that ends in `/` names folders only: `build/` leaves a file
+//!   named `build` alone.
 //! - A pattern that names a folder names what is in it too: `docs` takes
 //!   `docs/a.txt`, as `docs/**` does.
+//! - Letters match in either case: `*.jpg` takes `IMG_001.JPG`, as cameras
+//!   name their photos.
+//! - On Windows, `\` is taken for `/` as its paths are typed.
 //!
 //! An entry is taken if it is included (everything is, if nothing is said to be)
 //! and not excluded: excluding wins.
@@ -34,27 +42,73 @@ impl Filter {
         })
     }
 
+    /// Why `typed` is no pattern, if it is not.
+    pub fn check(typed: &str) -> Result<(), Error> {
+        Pattern::new(typed).map(|_| ())
+    }
+
     /// Whether it takes everything.
     pub fn is_everything(&self) -> bool {
         self.include.is_empty() && self.exclude.is_empty()
     }
 
-    /// Whether the entry at `path`, a part at a time, is taken.
+    /// The patterns to include, as they were typed.
+    pub fn included(&self) -> Vec<String> {
+        self.include.iter().map(|p| p.typed.clone()).collect()
+    }
+
+    /// The patterns to exclude, as they were typed.
+    pub fn excluded(&self) -> Vec<String> {
+        self.exclude.iter().map(|p| p.typed.clone()).collect()
+    }
+
+    /// Whether the entry at `path`, a part at a time, is taken, as a file is
+    /// (or anything whose kind is not known): a folder's own pattern takes it
+    /// only as what holds it.
     pub fn takes(&self, path: &[String]) -> bool {
-        let included = self.include.is_empty() || self.include.iter().any(|p| p.names(path));
-        included && !self.exclude.iter().any(|p| p.names(path))
+        self.includes(path, false) && !self.excludes(path, false)
+    }
+
+    /// Whether the folder at `path` is taken.
+    pub fn takes_folder(&self, path: &[String]) -> bool {
+        self.includes(path, true) && !self.excludes(path, true)
+    }
+
+    /// Whether an include pattern names `path` (a folder, if `folder`), or
+    /// none is given.
+    pub fn includes(&self, path: &[String], folder: bool) -> bool {
+        self.include.is_empty() || self.include.iter().any(|p| p.names(path, folder))
+    }
+
+    /// Whether some include pattern is given, so that what none names is left out.
+    pub fn has_includes(&self) -> bool {
+        !self.include.is_empty()
+    }
+
+    /// Whether an exclude pattern names `path` (a folder, if `folder`).
+    pub fn excludes(&self, path: &[String], folder: bool) -> bool {
+        self.exclude.iter().any(|p| p.names(path, folder))
     }
 }
 
-/// A pattern, a part of the path at a time.
+/// A pattern, a part of the path at a time, in lower case.
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct Pattern {
+    typed: String,
     parts: Vec<String>,
+    /// It ends in `/`: it names folders only.
+    folders: bool,
 }
 
 impl Pattern {
     fn new(typed: &str) -> Result<Pattern, Error> {
-        let trimmed = typed.trim_matches('/');
+        let slashed = if cfg!(windows) {
+            typed.trim().replace('\\', "/")
+        } else {
+            typed.trim().to_owned()
+        };
+        let folders = slashed.ends_with('/');
+        let trimmed = slashed.trim_matches('/');
         if trimmed.is_empty() {
             return Err(Error::Failed(tr!(
                 "“{pattern}” names no file or folder.",
@@ -64,18 +118,25 @@ impl Pattern {
         let mut parts: Vec<String> = trimmed
             .split('/')
             .filter(|p| !p.is_empty())
-            .map(str::to_owned)
+            .map(str::to_lowercase)
             .collect();
-        // A name alone is a name anywhere.
-        if parts.len() == 1 && parts[0] != "**" {
+        // A name alone is a name anywhere, unless a `/` before it says not.
+        if parts.len() == 1 && parts[0] != "**" && !slashed.starts_with('/') {
             parts.insert(0, "**".to_owned());
         }
-        Ok(Pattern { parts })
+        Ok(Pattern {
+            typed: typed.trim().to_owned(),
+            parts,
+            folders,
+        })
     }
 
-    /// Whether it names `path`, or a folder `path` is in.
-    fn names(&self, path: &[String]) -> bool {
-        (1..=path.len()).any(|n| whole(&self.parts, &path[..n]))
+    /// Whether it names `path` (a folder, if `folder`), or a folder `path` is in.
+    fn names(&self, path: &[String], folder: bool) -> bool {
+        let lower: Vec<String> = path.iter().map(|p| p.to_lowercase()).collect();
+        (1..=lower.len()).any(|n| {
+            (n < lower.len() || folder || !self.folders) && whole(&self.parts, &lower[..n])
+        })
     }
 }
 
@@ -164,6 +225,42 @@ mod tests {
 
         let anchored = filter(&["/src/*.rs"], &[]);
         assert!(anchored.takes(&path("src/lib.rs")) && !anchored.takes(&path("x/src/lib.rs")));
+    }
+
+    #[test]
+    fn a_pattern_ending_in_a_slash_names_folders_only() {
+        let build = filter(&[], &["build/"]);
+        assert!(!build.takes_folder(&path("app/build")));
+        assert!(!build.takes(&path("app/build/out.o")));
+        // A file of that name is not a folder.
+        assert!(build.takes(&path("app/build")));
+        // Folders a pattern names at any depth, and anchored ones.
+        let deep = filter(&[], &["src/**/gen/"]);
+        assert!(!deep.takes(&path("src/gen/a.rs")) && !deep.takes(&path("src/a/b/gen/c.rs")));
+        assert!(deep.takes(&path("lib/gen/a.rs")) && deep.takes(&path("src/gen.rs")));
+        let sub = filter(&["dir/subdir/"], &[]);
+        assert!(sub.takes(&path("dir/subdir/a.txt")) && sub.takes_folder(&path("dir/subdir")));
+        assert!(!sub.takes(&path("dir/a.txt")) && !sub.takes(&path("x/dir/subdir/a.txt")));
+        // A name with a `/` before it is at the top only.
+        let top = filter(&[], &["/notes.txt"]);
+        assert!(!top.takes(&path("notes.txt")) && top.takes(&path("docs/notes.txt")));
+    }
+
+    #[test]
+    fn letters_match_in_either_case() {
+        let photos = filter(&["*.jpg"], &["Thumbs/"]);
+        assert!(photos.takes(&path("DCIM/IMG_001.JPG")) && photos.takes(&path("a.Jpg")));
+        assert!(!photos.takes(&path("thumbs/a.jpg")));
+        assert!(part("ảnh*", "ảnh 1.jpg"));
+        assert!(filter(&["ẢNH*"], &[]).takes(&path("ảnh 1.jpg")));
+    }
+
+    #[test]
+    fn what_was_typed_is_kept() {
+        let f = filter(&[" *.PDF "], &["node_modules/"]);
+        assert_eq!(f.included(), ["*.PDF"]);
+        assert_eq!(f.excluded(), ["node_modules/"]);
+        assert!(Filter::check("a/").is_ok() && Filter::check("//").is_err());
     }
 
     #[test]

@@ -646,6 +646,67 @@ t808b85c5 = Inserisci la passphrase del file di chiave
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Il file di chiave è a sua volta protetto. packwing conserva la sua passphrase solo finché l'archivio è aperto e non la scrive mai.
 
+# Version control
+t0b7280ee = Controllo versione
+
+# Packages and builds
+t237b373e = Pacchetti e build
+
+# System files
+te8be6b83 = File di sistema
+
+# Temporary files
+td4fe1263 = File temporanei
+
+# Logs
+t51a96da6 = Log
+
+# Pictures
+t0d70feae = Immagini
+
+# Documents
+t5a036285 = Documenti
+
+# Videos
+t63609fed = Video
+
+# Music
+t584a1d74 = Musica
+
+# node_modules/, *.log, src/**/gen/
+t56c5448d = node_modules/, *.log, src/**/gen/
+
+# They leave nothing out.
+t999b68fd = Non escludono nulla.
+
+# They leave out {n} file, {size}. | They leave out {n} files, {size}.
+tc709cfda =
+    { $n ->
+        [one] Escludono { $n } file, { $size }.
+       *[other] Escludono { $n } file, { $size }.
+    }
+
+# Clear
+t04a57fc2 = Cancella
+
+# Leave out
+ta50cc084 = Escludi
+
+# Take only
+t2fd02f84 = Prendi solo
+
+# Add the usual
+t17ad93a1 = Aggiungi i soliti
+
+# Only what these name goes in, and the folders it is in.
+ta0bd7335 = Entra solo ciò che nominano, con le cartelle in cui si trova.
+
+# A name is anywhere; a / at its end names a folder; ** is any folders.
+t524d506a = Un nome vale ovunque; una / finale indica una cartella; ** indica qualsiasi cartella.
+
+# Filter
+tf4a9c097 = Filtro
+
 # kept, {size}
 t001f6992 = tenuto, { $size }
 
@@ -825,9 +886,6 @@ tb75acfb1 =
         [one] { $count } file non può essere estratto qui con il suo nome. Non è ancora stato scritto nulla: fermarsi, escluderlo o rinominarlo?
        *[other] { $count } file non possono essere estratti qui con i loro nomi. Non è ancora stato scritto nulla: fermarsi, escluderli o rinominarli?
     }
-
-# Leave out
-ta50cc084 = Escludi
 
 # {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
 t0eeaf0b8 =
@@ -2501,6 +2559,9 @@ tff43ce74 = Un archivio non può stare dentro sé stesso.
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = «{ $bare }» è già nell'archivio. Nulla è cambiato.
+
+# Nothing chosen matches the patterns given.
+te132289a = Niente di ciò che è scelto corrisponde ai modelli.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = Prima di essere caricato, questo archivio viene creato in { $folder }, dove può occupare fino a { $need }. Lì sono liberi solo { $free }.

@@ -640,6 +640,66 @@ t808b85c5 = キーファイルのパスフレーズを入力
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = このキーファイル自体が保護されています。packwing はそのパスフレーズをアーカイブを開いている間だけ保持し、書き留めることはありません。
 
+# Version control
+t0b7280ee = バージョン管理
+
+# Packages and builds
+t237b373e = パッケージとビルド
+
+# System files
+te8be6b83 = システムファイル
+
+# Temporary files
+td4fe1263 = 一時ファイル
+
+# Logs
+t51a96da6 = ログ
+
+# Pictures
+t0d70feae = 画像
+
+# Documents
+t5a036285 = 文書
+
+# Videos
+t63609fed = 動画
+
+# Music
+t584a1d74 = 音楽
+
+# node_modules/, *.log, src/**/gen/
+t56c5448d = node_modules/, *.log, src/**/gen/
+
+# They leave nothing out.
+t999b68fd = 除外されるものはありません。
+
+# They leave out {n} file, {size}. | They leave out {n} files, {size}.
+tc709cfda =
+    { $n ->
+       *[other] { $n } 個のファイル ({ $size }) を除外します。
+    }
+
+# Clear
+t04a57fc2 = クリア
+
+# Leave out
+ta50cc084 = 除外
+
+# Take only
+t2fd02f84 = これだけ含める
+
+# Add the usual
+t17ad93a1 = よく使うものを追加
+
+# Only what these name goes in, and the folders it is in.
+ta0bd7335 = 名前が一致するものと、それを含むフォルダーだけが入ります。
+
+# A name is anywhere; a / at its end names a folder; ** is any folders.
+t524d506a = 名前だけならどこでも一致。末尾の / はフォルダー、** は任意のフォルダーです。
+
+# Filter
+tf4a9c097 = フィルター
+
 # kept, {size}
 t001f6992 = 残しました、{ $size }
 
@@ -816,9 +876,6 @@ tb75acfb1 =
     { $n ->
        *[other] { $count } 個のファイルは、ここではその名前で展開できません。まだ何も書き込んでいません。中止、除外、名前の変更のどれにしますか?
     }
-
-# Leave out
-ta50cc084 = 除外
 
 # {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
 t0eeaf0b8 =
@@ -2463,6 +2520,9 @@ tff43ce74 = アーカイブを自分自身の中に入れることはできま�
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = 「{ $bare }」はすでにアーカイブにあります。何も変更されていません。
+
+# Nothing chosen matches the patterns given.
+te132289a = 選んだものに、パターンに一致するものがありません。
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = アップロードの前に、このアーカイブは { $folder } に作成されます。最大 { $need } 必要になる場合がありますが、空きは { $free } しかありません。

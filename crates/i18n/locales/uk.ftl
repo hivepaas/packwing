@@ -658,6 +658,69 @@ t808b85c5 = Введіть парольну фразу файлу ключа
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Сам файл ключа захищено. packwing зберігає його парольну фразу лише доки архів відкритий і ніколи її не записує.
 
+# Version control
+t0b7280ee = Контроль версій
+
+# Packages and builds
+t237b373e = Пакети та збірки
+
+# System files
+te8be6b83 = Системні файли
+
+# Temporary files
+td4fe1263 = Тимчасові файли
+
+# Logs
+t51a96da6 = Журнали
+
+# Pictures
+t0d70feae = Зображення
+
+# Documents
+t5a036285 = Документи
+
+# Videos
+t63609fed = Відео
+
+# Music
+t584a1d74 = Музика
+
+# node_modules/, *.log, src/**/gen/
+t56c5448d = node_modules/, *.log, src/**/gen/
+
+# They leave nothing out.
+t999b68fd = Нічого не виключено.
+
+# They leave out {n} file, {size}. | They leave out {n} files, {size}.
+tc709cfda =
+    { $n ->
+        [one] Виключають { $n } файл, { $size }.
+        [few] Виключають { $n } файли, { $size }.
+        [many] Виключають { $n } файлів, { $size }.
+       *[other] Виключають { $n } файла, { $size }.
+    }
+
+# Clear
+t04a57fc2 = Очистити
+
+# Leave out
+ta50cc084 = Пропустити
+
+# Take only
+t2fd02f84 = Лише це
+
+# Add the usual
+t17ad93a1 = Додати звичні
+
+# Only what these name goes in, and the folders it is in.
+ta0bd7335 = Потрапляє лише те, що вони називають, і теки, де воно лежить.
+
+# A name is anywhere; a / at its end names a folder; ** is any folders.
+t524d506a = Ім’я без / підходить будь-де; / у кінці означає теку; ** — будь-які теки.
+
+# Filter
+tf4a9c097 = Фільтр
+
 # kept, {size}
 t001f6992 = збережено, { $size }
 
@@ -843,9 +906,6 @@ tb75acfb1 =
         [many] { $count } файлів не можна видобути тут під їхніми іменами. Ще нічого не записано: зупинити, пропустити чи перейменувати?
        *[other] { $count } файли не можна видобути тут під їхніми іменами. Ще нічого не записано: зупинити, пропустити чи перейменувати?
     }
-
-# Leave out
-ta50cc084 = Пропустити
 
 # {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
 t0eeaf0b8 =
@@ -2559,6 +2619,9 @@ tff43ce74 = Архів не можна помістити сам у себе.
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = «{ $bare }» уже є в архіві. Нічого не змінено.
+
+# Nothing chosen matches the patterns given.
+te132289a = Ніщо з вибраного не відповідає шаблонам.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = Перш ніж вивантажити, цей архів створюється в { $folder }, де він може зайняти до { $need }. Там вільно лише { $free }.

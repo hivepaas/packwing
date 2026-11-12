@@ -41,6 +41,7 @@ use hivepack::zip::{
 };
 
 use crate::audit;
+use crate::filter::Filter;
 use crate::job::opened_subfolder;
 use crate::storage::{Item as StoredItem, Storage};
 use crate::transfer::Watched;
@@ -419,6 +420,11 @@ pub struct NewArchive {
     pub frames: Frames,
     /// How LZMA2 is cut into blocks, in a `.tar.xz`, a `.xz` or a 7z archive.
     pub blocks: Blocks,
+    /// What goes in of what is chosen ([`Filter`]): each path chosen by its
+    /// name, and what is in a folder chosen by its path in that folder, as a
+    /// `.gitignore` in it would have them. Converting, the entries of the
+    /// archive read, by their paths in it.
+    pub filter: Filter,
 }
 
 /// How `new` is encrypted, if it is.
@@ -452,12 +458,23 @@ pub(crate) fn making(paths: &[PathBuf], new: &NewArchive) -> Map<String, Value> 
         ("part_size", json!(new.part_size)),
         ("keep_owners", json!(new.keep.owners)),
         ("keep_xattrs", json!(new.keep.xattrs)),
+        ("include", patterns(new.filter.included())),
+        ("exclude", patterns(new.filter.excluded())),
         ("paths", json!(paths.len())),
         (
             "path_names",
             audit::list(paths.iter().map(|p| audit::path_text(p))),
         ),
     ])
+}
+
+/// The patterns of a [`Filter`], or none.
+fn patterns(typed: Vec<String>) -> Value {
+    if typed.is_empty() {
+        Value::Null
+    } else {
+        audit::list(typed)
+    }
 }
 
 /// Why `policy` stops `new` being made, if it does: what the window asks before
@@ -548,60 +565,88 @@ struct Item {
 /// is left out. So is what was listed in a folder and is gone by the time it
 /// is looked at, as another program's files may go while it runs: not a
 /// path that was chosen (`chosen`), which is an error.
-fn walk(
-    path: &Path,
-    name: String,
-    items: &mut Vec<Item>,
-    control: &Control,
-    chosen: bool,
-) -> Result<(), Error> {
-    control.check()?;
-    let read = |e: io::Error| {
-        Error::Failed(tr!(
-            "Could not read {path}: {e}",
-            path = path.display(),
-            e = e
-        ))
-    };
-    let metadata = match fs::symlink_metadata(path) {
-        Ok(metadata) => metadata,
-        Err(e) if !chosen && is_gone(&e) => {
-            control.gone(path);
-            return Ok(());
-        }
-        Err(e) => return Err(read(e)),
-    };
-    let kind = metadata.file_type();
-    if kind.is_dir() {
-        let listed = match fs::read_dir(path) {
-            Ok(listed) => listed,
+///
+/// `within` is where `filter` finds it: a path chosen by its name, and what
+/// is in a folder chosen by its path in that folder. A folder it excludes is
+/// not looked in. With patterns to include, a folder goes in if one names it,
+/// with all it holds, or if something under it goes in; `taken` says one
+/// above it was named.
+struct Walk<'a> {
+    items: &'a mut Vec<Item>,
+    control: &'a Control,
+    filter: &'a Filter,
+}
+
+impl Walk<'_> {
+    fn walk(
+        &mut self,
+        path: &Path,
+        name: String,
+        within: Vec<String>,
+        chosen: bool,
+        taken: bool,
+    ) -> Result<(), Error> {
+        self.control.check()?;
+        let read = |e: io::Error| {
+            Error::Failed(tr!(
+                "Could not read {path}: {e}",
+                path = path.display(),
+                e = e
+            ))
+        };
+        let metadata = match fs::symlink_metadata(path) {
+            Ok(metadata) => metadata,
             Err(e) if !chosen && is_gone(&e) => {
-                control.gone(path);
+                self.control.gone(path);
                 return Ok(());
             }
             Err(e) => return Err(read(e)),
         };
-        let mut children = listed.collect::<io::Result<Vec<_>>>().map_err(read)?;
-        children.sort_by_key(|c| c.file_name());
-        items.push(Item {
-            name: format!("{name}/"),
-            path: path.to_path_buf(),
-            mtime: seconds(&metadata),
-            metadata,
-        });
-        for child in children {
-            let under = format!("{name}/{}", unicode_name(&child.path())?);
-            walk(&child.path(), under, items, control, false)?;
+        let kind = metadata.file_type();
+        let folder = kind.is_dir();
+        if self.filter.excludes(&within, folder) {
+            return Ok(());
         }
-    } else if kind.is_file() || (cfg!(unix) && kind.is_symlink()) {
-        items.push(Item {
-            name,
-            path: path.to_path_buf(),
-            mtime: seconds(&metadata),
-            metadata,
-        });
+        let named = taken || self.filter.includes(&within, folder);
+        if folder {
+            let listed = match fs::read_dir(path) {
+                Ok(listed) => listed,
+                Err(e) if !chosen && is_gone(&e) => {
+                    self.control.gone(path);
+                    return Ok(());
+                }
+                Err(e) => return Err(read(e)),
+            };
+            let mut children = listed.collect::<io::Result<Vec<_>>>().map_err(read)?;
+            children.sort_by_key(|c| c.file_name());
+            let at = self.items.len();
+            self.items.push(Item {
+                name: format!("{name}/"),
+                path: path.to_path_buf(),
+                mtime: seconds(&metadata),
+                metadata,
+            });
+            for child in children {
+                let child_name = unicode_name(&child.path())?;
+                let under = format!("{name}/{child_name}");
+                let mut inside = if chosen { Vec::new() } else { within.clone() };
+                inside.push(child_name);
+                self.walk(&child.path(), under, inside, false, named)?;
+            }
+            // Only what holds something taken goes in, where patterns say what does.
+            if !named && self.items.len() == at + 1 {
+                self.items.pop();
+            }
+        } else if named && (kind.is_file() || (cfg!(unix) && kind.is_symlink())) {
+            self.items.push(Item {
+                name,
+                path: path.to_path_buf(),
+                mtime: seconds(&metadata),
+                metadata,
+            });
+        }
+        Ok(())
     }
-    Ok(())
 }
 
 /// Whether `e` says that what was to be read is gone: removed, or a folder
@@ -624,10 +669,16 @@ fn unicode_name(path: &Path) -> Result<String, Error> {
     })
 }
 
-fn items_of(paths: &[PathBuf], control: &Control) -> Result<Vec<Item>, Error> {
+fn items_of(paths: &[PathBuf], filter: &Filter, control: &Control) -> Result<Vec<Item>, Error> {
     let mut items = Vec::new();
+    let mut walk = Walk {
+        items: &mut items,
+        control,
+        filter,
+    };
     for path in paths {
-        walk(path, unicode_name(path)?, &mut items, control, true)?;
+        let name = unicode_name(path)?;
+        walk.walk(path, name.clone(), vec![name], true, false)?;
     }
     Ok(items)
 }
@@ -639,9 +690,9 @@ fn is_mac_file(name: &str) -> bool {
     parts.any(|part| part == ".DS_Store" || part == "__MACOSX" || part.starts_with("._"))
 }
 
-/// Counts the files in `paths`, and the bytes in them.
-pub fn measure(paths: &[PathBuf]) -> Result<Measured, Error> {
-    Ok(measured(&items_of(paths, &Control::default())?))
+/// Counts the files in `paths` that `filter` takes, and the bytes in them.
+pub fn measure(paths: &[PathBuf], filter: &Filter) -> Result<Measured, Error> {
+    Ok(measured(&items_of(paths, filter, &Control::default())?))
 }
 
 /// The files in `items`, links too, and the bytes in the files: a link's
@@ -2795,7 +2846,7 @@ fn add_into(
             "packwing can add files only to a ZIP or 7z archive that is one file."
         )));
     };
-    let mut items = items_of(paths, control)?;
+    let mut items = items_of(paths, &Filter::default(), control)?;
     let inside = archive.canonicalize()?;
     let mut prefix = folder.join("/");
     if !prefix.is_empty() {
@@ -3634,7 +3685,12 @@ fn chosen_items(
     new: &NewArchive,
     control: &Control,
 ) -> Result<Vec<Item>, Error> {
-    let mut items = items_of(paths, control)?;
+    let mut items = items_of(paths, &new.filter, control)?;
+    if !new.filter.is_everything() && items.is_empty() {
+        return Err(Error::Failed(tr!(
+            "Nothing chosen matches the patterns given."
+        )));
+    }
     if new.skip_mac_files {
         items.retain(|item| !is_mac_file(&item.name));
     }

@@ -640,6 +640,66 @@ t808b85c5 = 輸入金鑰檔案的密碼片語
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = 這個金鑰檔案本身有密碼保護。packwing 只會在封存檔開啟期間保留其密碼片語，絕不會寫入儲存。
 
+# Version control
+t0b7280ee = 版本控制
+
+# Packages and builds
+t237b373e = 套件與建置產物
+
+# System files
+te8be6b83 = 系統檔案
+
+# Temporary files
+td4fe1263 = 暫存檔案
+
+# Logs
+t51a96da6 = 記錄檔
+
+# Pictures
+t0d70feae = 圖片
+
+# Documents
+t5a036285 = 文件
+
+# Videos
+t63609fed = 影片
+
+# Music
+t584a1d74 = 音樂
+
+# node_modules/, *.log, src/**/gen/
+t56c5448d = node_modules/, *.log, src/**/gen/
+
+# They leave nothing out.
+t999b68fd = 不排除任何內容。
+
+# They leave out {n} file, {size}. | They leave out {n} files, {size}.
+tc709cfda =
+    { $n ->
+       *[other] 將排除 { $n } 個檔案，共 { $size }。
+    }
+
+# Clear
+t04a57fc2 = 清除
+
+# Leave out
+ta50cc084 = 略過
+
+# Take only
+t2fd02f84 = 僅包含
+
+# Add the usual
+t17ad93a1 = 加入常用項目
+
+# Only what these name goes in, and the folders it is in.
+ta0bd7335 = 只有符合的內容及其所在資料夾會放入。
+
+# A name is anywhere; a / at its end names a folder; ** is any folders.
+t524d506a = 單獨的名稱在任何位置都相符；結尾的 / 表示資料夾；** 表示任意層資料夾。
+
+# Filter
+tf4a9c097 = 篩選
+
 # kept, {size}
 t001f6992 = 已保留，{ $size }
 
@@ -816,9 +876,6 @@ tb75acfb1 =
     { $n ->
        *[other] { $count } 個檔案無法以其名稱在這裡解壓縮。尚未寫入任何內容：停止、略過還是重新命名？
     }
-
-# Leave out
-ta50cc084 = 略過
 
 # {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
 t0eeaf0b8 =
@@ -2472,6 +2529,9 @@ tff43ce74 = 封存檔不能放進它自己裡面。
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = 「{ $bare }」已在封存檔中。未做任何變更。
+
+# Nothing chosen matches the patterns given.
+te132289a = 所選內容中沒有符合這些模式的項目。
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = 上傳前，這個封存檔會先在 { $folder } 中建立，可能需要多達 { $need }，但該處只剩 { $free } 可用。

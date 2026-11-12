@@ -13,6 +13,7 @@ mod extract;
 mod open_file;
 mod open_stored;
 mod password;
+mod patterns;
 mod places;
 mod progress;
 mod quit;

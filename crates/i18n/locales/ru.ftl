@@ -658,6 +658,69 @@ t808b85c5 = Введите парольную фразу файла ключа
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Сам файл ключа защищён. packwing хранит его парольную фразу, только пока архив открыт, и нигде её не записывает.
 
+# Version control
+t0b7280ee = Контроль версий
+
+# Packages and builds
+t237b373e = Пакеты и сборки
+
+# System files
+te8be6b83 = Системные файлы
+
+# Temporary files
+td4fe1263 = Временные файлы
+
+# Logs
+t51a96da6 = Журналы
+
+# Pictures
+t0d70feae = Изображения
+
+# Documents
+t5a036285 = Документы
+
+# Videos
+t63609fed = Видео
+
+# Music
+t584a1d74 = Музыка
+
+# node_modules/, *.log, src/**/gen/
+t56c5448d = node_modules/, *.log, src/**/gen/
+
+# They leave nothing out.
+t999b68fd = Ничего не исключается.
+
+# They leave out {n} file, {size}. | They leave out {n} files, {size}.
+tc709cfda =
+    { $n ->
+        [one] Исключается { $n } файл, { $size }.
+        [few] Исключается { $n } файла, { $size }.
+        [many] Исключается { $n } файлов, { $size }.
+       *[other] Исключается { $n } файла, { $size }.
+    }
+
+# Clear
+t04a57fc2 = Очистить
+
+# Leave out
+ta50cc084 = Пропустить
+
+# Take only
+t2fd02f84 = Только это
+
+# Add the usual
+t17ad93a1 = Добавить обычные
+
+# Only what these name goes in, and the folders it is in.
+ta0bd7335 = Попадает только то, что они называют, и папки, где оно лежит.
+
+# A name is anywhere; a / at its end names a folder; ** is any folders.
+t524d506a = Имя без / подходит везде; / в конце означает папку; ** — любые папки.
+
+# Filter
+tf4a9c097 = Фильтр
+
 # kept, {size}
 t001f6992 = сохранено, { $size }
 
@@ -843,9 +906,6 @@ tb75acfb1 =
         [many] { $count } файлов нельзя извлечь здесь под их именами. Пока ничего не записано: остановить, пропустить или переименовать?
        *[other] { $count } файла нельзя извлечь здесь под их именами. Пока ничего не записано: остановить, пропустить или переименовать?
     }
-
-# Leave out
-ta50cc084 = Пропустить
 
 # {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
 t0eeaf0b8 =
@@ -2559,6 +2619,9 @@ tff43ce74 = Архив нельзя поместить внутрь самого
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = «{ $bare }» уже есть в архиве. Ничего не изменено.
+
+# Nothing chosen matches the patterns given.
+te132289a = Ничто из выбранного не подходит под шаблоны.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = Перед загрузкой этот архив создаётся в { $folder }, где ему может понадобиться до { $need }. Там свободно только { $free }.

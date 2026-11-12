@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 101] = [
+const SCREENS: [(&str, SetUp); 103] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -489,6 +489,25 @@ const SCREENS: [(&str, SetUp); 101] = [
             d.choose_age(cx);
             d.show_advanced(cx);
             d.scroll_to_end(cx);
+        });
+    }),
+    ("create-filter", |ws, window, cx| {
+        let dialog = ws.open_create_sample(window, cx);
+        dialog.read(cx).patterns().update(cx, |p, cx| {
+            p.set(
+                &[],
+                &["node_modules/", ".git/", "*.log", "src/**/gen/"],
+                false,
+                cx,
+            );
+            p.set_left_out(Some((812, 356 << 20)), cx);
+        });
+    }),
+    ("create-filter-usual", |ws, window, cx| {
+        let dialog = ws.open_create_sample(window, cx);
+        dialog.read(cx).patterns().update(cx, |p, cx| {
+            p.set(&["*.pdf"], &["node_modules/"], true, cx);
+            p.open_presets(cx);
         });
     }),
     ("create-missing", |ws, window, cx| {
@@ -2494,7 +2513,7 @@ fn a_click_takes_a_row_out_and_the_eye_closes_the_list() {
     let left = dialog.read_with(&cx, |d, _| d.selection_paths());
     assert_eq!(left, paths[1..]);
     assert!(dialog.read_with(&cx, |d, _| d.list_is_open()));
-    click(&mut cx, window, gpui::point(px(722.), px(148.)));
+    click(&mut cx, window, gpui::point(px(600.), px(148.)));
     assert!(!dialog.read_with(&cx, |d, _| d.list_is_open()));
     assert_eq!(
         dialog.read_with(&cx, |d, _| d.selection_paths()),
