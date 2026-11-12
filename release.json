@@ -8,25 +8,33 @@
       "archives": {
         "macos_aarch64": {
           "file": "packwing_0.1.0_macos_aarch64.app.tar.gz",
-          "sha256": "8e324b4d0c76e6600dcba2b50a3c310e5dcb653d80d51ac44645c7f29f967475"
+          "sha256": "470201684eff8ac86c249ca61740e0f7f83c34115a2763b4a9169ad55679ee37"
         },
         "macos_x86_64": {
           "file": "packwing_0.1.0_macos_x86_64.app.tar.gz",
-          "sha256": "2967fdf6a4e1bc0959eed4b278442e4833a7ada65c85b9222b6357870bb9d5b4"
+          "sha256": "93ff943a4759127789ecfeb199f05d7bb3bc7821382166fd58096a0211048b6b"
         },
         "windows_x86_64": {
           "file": "packwing_0.1.0_windows_x86_64-setup.exe",
-          "sha256": "d2b98e675acb8dc63f6f1ca88760e6dd8ffde99743993df28165c33527c297ee"
+          "sha256": "6f01a7856798d6ee3d05c7eeed8c7e76413beeb2e62fa90e91d995e9f9987d77"
         }
       },
       "packages": {
         "deb_x86_64": {
           "file": "packwing_0.1.0_amd64.deb",
-          "sha256": "72404f0df57e033ad18763f54ebec1138a09da737fc491693b6e304a0bf75518"
+          "sha256": "bf1af135a5caee8fd55bccd65c86ed284d89c0ac20f4169f8a4ba5ced944d256"
         },
         "deb_aarch64": {
           "file": "packwing_0.1.0_arm64.deb",
-          "sha256": "4ad1ab0d70232440e4452727e86ec2f4e61433f3cb37522d6cc5104a82007e58"
+          "sha256": "02ee702ef8daede67c217afb15b795c0bdce2c2679e5a9273a7e54a3db0552e2"
+        },
+        "rpm_x86_64": {
+          "file": "packwing_0.1.0_x86_64.rpm",
+          "sha256": "e1457008e03cf342c73250d5a94f51eafbed3a87333789fc3e974fd6ab75909d"
+        },
+        "rpm_aarch64": {
+          "file": "packwing_0.1.0_aarch64.rpm",
+          "sha256": "7af359b124e76da0d5a396d49aba7b0dddaf1646c02db5de987e3269e2f1c2df"
         }
       }
     }
