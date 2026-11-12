@@ -492,6 +492,11 @@ impl TextInput {
         self.marked = None;
         self.menu_at = None;
         self.found.clear();
+        // Another text: from its top, then to what is chosen in it.
+        if let Some(l) = self.lines.as_mut() {
+            l.scroll_y = px(0.);
+            l.caret_seen = None;
+        }
         cx.emit(Changed);
         cx.notify();
     }
@@ -515,6 +520,26 @@ impl TextInput {
         self.selected = range.start.min(end)..end;
         self.reversed = false;
         cx.notify();
+    }
+
+    /// Scrolls a field of several lines by `rows` of its lines, up for less
+    /// than none, as far as it goes; false where it has nothing to scroll.
+    pub fn scroll_rows(&mut self, rows: f32, cx: &mut Context<Self>) -> bool {
+        let Some(l) = self.lines.as_mut() else {
+            return false;
+        };
+        if l.most() <= px(0.) {
+            return false;
+        }
+        l.scroll_y = (l.scroll_y + l.line_height * rows).clamp(px(0.), l.most());
+        cx.notify();
+        true
+    }
+
+    /// How far a field of several lines is scrolled down, for tests.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn scrolled(&self) -> f32 {
+        self.lines.as_ref().map_or(0., |l| f32::from(l.scroll_y))
     }
 
     /// Whether its right-click menu is open, for tests.

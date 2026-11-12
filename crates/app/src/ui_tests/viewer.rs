@@ -266,3 +266,74 @@ scenario!(
         assert!(ui.shows("view-at-size"), "round to its own size");
     }
 );
+
+scenario!(
+    /// Up and Down step through the files as Left and Right do, but for what
+    /// does not fit: a long text, a picture at its own size larger than the
+    /// window. Those they scroll, and step no further at its top or bottom;
+    /// each picture shows from its top.
+    up_and_down_scroll_what_does_not_fit_and_step_otherwise,
+    |ui| {
+        const LARGE: &[u8] = include_bytes!("../../../../packaging/icons/png/packwing-1024.png");
+        let long: String = (0..400).map(|n| format!("line {n}\n")).collect();
+        let paths = vec![
+            file(ui, "updown/a.png", PICTURE),
+            file(ui, "updown/b.txt", b"short"),
+            file(ui, "updown/c.log", long.as_bytes()),
+            file(ui, "updown/cc.log", long.as_bytes()),
+            file(ui, "updown/d.png", LARGE),
+        ];
+        let made = zip(ui, &paths, "updown.zip");
+        ui.open(&made);
+        assert_eq!(ui.archive_failed(), None);
+        let at = ui
+            .shown_in_archive()
+            .iter()
+            .position(|n| n == "a.png")
+            .expect("a.png listed");
+        ui.click(&format!("entry-{at}"));
+        ui.keys("enter");
+        wait_for_shown(ui, "a.png", "picture");
+        let scrolled = |ui: &mut Ui| ui.ws(|ws, _, cx| ws.viewer_scrolled(cx)).expect("viewing");
+        // A picture that fits, a short text: Down steps.
+        ui.keys("down");
+        wait_for_shown(ui, "b.txt", "text");
+        ui.keys("down");
+        wait_for_shown(ui, "c.log", "text");
+        // A long text: Down and Up scroll it, and at its top Up stays.
+        assert_eq!(scrolled(ui), 0.);
+        ui.keys("down down");
+        let down = scrolled(ui);
+        assert!(down > 0., "scrolled down");
+        assert_eq!(viewing(ui).expect("the viewer").1, "c.log");
+        ui.keys("up up up");
+        assert_eq!(scrolled(ui), 0.);
+        assert_eq!(viewing(ui).expect("the viewer").1, "c.log", "Up stays at its top");
+        // The next text shows from its top, the one before scrolled or not.
+        ui.keys("down down");
+        ui.keys("right");
+        wait_for_shown(ui, "cc.log", "text");
+        assert_eq!(scrolled(ui), 0., "the next text from its top");
+        // A large picture, higher than the window (its 1024 pixels are 512
+        // on this screen of 2): at its own size, Down scrolls it.
+        ui.resize(900., 400.);
+        ui.keys("right");
+        wait_for_shown(ui, "d.png", "picture");
+        ui.keys("1");
+        ui.wait_for("view-at-size");
+        ui.keys("down down");
+        assert!(scrolled(ui) > 0., "the picture scrolled");
+        assert_eq!(viewing(ui).expect("the viewer").1, "d.png");
+        ui.keys("left");
+        wait_for_shown(ui, "cc.log", "text");
+        ui.keys("right");
+        wait_for_shown(ui, "d.png", "picture");
+        assert_eq!(scrolled(ui), 0., "from its top again");
+        // A small picture at its own size has nothing to scroll: Down steps.
+        ui.keys("home");
+        wait_for_shown(ui, "a.png", "picture");
+        assert!(ui.shows("view-at-size"));
+        ui.keys("down");
+        wait_for_shown(ui, "b.txt", "text");
+    }
+);
