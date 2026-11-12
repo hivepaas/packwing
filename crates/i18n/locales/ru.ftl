@@ -2461,6 +2461,12 @@ t5b9dcaca = Неверный шаблон
 # No matches
 td29421ef = Совпадений нет
 
+# Hide the list of files ({keys})
+t165a997f = Скрыть список файлов ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = Показать список файлов ({ $keys })
+
 # Find
 t3e1cd17a = Найти
 

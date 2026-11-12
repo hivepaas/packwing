@@ -2371,6 +2371,12 @@ t5b9dcaca = 잘못된 패턴
 # No matches
 td29421ef = 일치 항목 없음
 
+# Hide the list of files ({keys})
+t165a997f = 파일 목록 숨기기 ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = 파일 목록 보기 ({ $keys })
+
 # Find
 t3e1cd17a = 찾기
 

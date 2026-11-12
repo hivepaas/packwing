@@ -2407,6 +2407,12 @@ t5b9dcaca = Patrón no válido
 # No matches
 td29421ef = Sin coincidencias
 
+# Hide the list of files ({keys})
+t165a997f = Ocultar la lista de archivos ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = Mostrar la lista de archivos ({ $keys })
+
 # Find
 t3e1cd17a = Buscar
 

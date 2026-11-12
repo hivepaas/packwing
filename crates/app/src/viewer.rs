@@ -10,11 +10,12 @@
 use std::cmp::Ordering;
 use std::ops::Range;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering as Atomic};
 
 use gpui::{
-    Context, Entity, EventEmitter, FocusHandle, Focusable, FontWeight, Image, KeyDownEvent,
-    ObjectFit, Point, Render, ScrollHandle, StyledImage, Subscription, Task, Window, div, img,
-    point, prelude::*, px, rgb,
+    Context, Div, Entity, EventEmitter, FocusHandle, Focusable, FontWeight, Image, KeyDownEvent,
+    ObjectFit, Point, Render, ScrollHandle, ScrollStrategy, Stateful, StyledImage, Subscription,
+    Task, UniformListScrollHandle, Window, div, img, point, prelude::*, px, rgb, uniform_list,
 };
 use packwing_core::{Control, Error, Keys, Source, Storage, image_fits, image_size, preview_entry};
 use packwing_i18n::{tr, tr_n};
@@ -94,6 +95,8 @@ pub struct Viewer {
     actual: bool,
     /// Where a picture at its own size is scrolled to: the top left for each.
     at_size: ScrollHandle,
+    /// The list of files, scrolled to the one shown.
+    side: UniformListScrollHandle,
     /// The file after the one shown, read ahead, and what it showed.
     ahead: Option<(usize, Shown)>,
     _read: Option<Task<()>>,
@@ -309,6 +312,22 @@ pub(crate) fn look(
     }
 }
 
+/// Whether the viewer shows its list of files beside what it shows: hidden at
+/// first, then as the user last left it, for as long as packwing runs.
+static SIDEBAR: AtomicBool = AtomicBool::new(false);
+
+/// The list's width, and where the window is too narrow for it beside the
+/// file: then it lies over the file's left.
+const SIDEBAR_W: f32 = 260.;
+const SIDEBAR_BESIDE: f32 = 760.;
+
+/// Shows the list of files, or hides it, in the viewers to come: for the
+/// screenshots, which draw both.
+#[cfg(all(test, feature = "shots", target_os = "linux"))]
+pub fn show_sidebar(shown: bool) {
+    SIDEBAR.store(shown, Atomic::Relaxed);
+}
+
 /// [`look`] for the viewer.
 fn read(reading: &Reading, file: &ViewFile) -> Shown {
     look(
@@ -339,6 +358,7 @@ impl Viewer {
             text: cx.new(|cx| TextInput::new("", cx).read_only().code(unpainted)),
             actual: false,
             at_size: ScrollHandle::new(),
+            side: UniformListScrollHandle::new(),
             ahead: None,
             _read: None,
             _read_ahead: None,
@@ -347,6 +367,7 @@ impl Viewer {
             focus: cx.focus_handle(),
         };
         viewer.show(at, cx);
+        viewer.side.scroll_to_item(at, ScrollStrategy::Center);
         viewer
     }
 
@@ -583,6 +604,7 @@ impl Viewer {
         };
         self.at = at;
         self.at_size.set_offset(Point::default());
+        self.side.scroll_to_item(at, ScrollStrategy::Nearest);
         if let Some((ahead, shown)) = self.ahead.take()
             && ahead == at
         {
@@ -672,6 +694,7 @@ impl Viewer {
             .is_some_and(|f| f.field.focus_handle(cx).is_focused(window));
         match key {
             "f" if m.secondary() => self.open_find(window, cx),
+            "b" if m.secondary() => self.toggle_sidebar(cx),
             "f3" => self.find_next(m.shift, cx),
             "enter" if finding => self.find_next(m.shift, cx),
             "escape" if finding => self.close_find(window, cx),
@@ -712,6 +735,96 @@ impl Viewer {
         cx.stop_propagation();
     }
 
+    /// Shows the list of files, or hides it.
+    fn toggle_sidebar(&mut self, cx: &mut Context<Self>) {
+        let shown = !SIDEBAR.fetch_xor(true, Atomic::Relaxed);
+        if shown {
+            self.side.scroll_to_item(self.at, ScrollStrategy::Center);
+        }
+        cx.notify();
+    }
+
+    /// The list of files: those Previous and Next step through, in their
+    /// order, the one shown chosen; a click shows another.
+    fn sidebar(&self, cx: &mut Context<Self>) -> Stateful<Div> {
+        let c = colors();
+        div()
+            .id("view-files")
+            .debug_selector(|| "view-files".to_owned())
+            .w(ui(SIDEBAR_W))
+            .flex_shrink_0()
+            .flex()
+            .flex_col()
+            .p(ui(6.))
+            .rounded(ui(20.))
+            .bg(rgb(c.well))
+            .child(
+                uniform_list(
+                    "view-files-rows",
+                    self.files.len(),
+                    cx.processor(|this, range: Range<usize>, _, cx| {
+                        range.map(|i| this.side_row(i, cx)).collect::<Vec<_>>()
+                    }),
+                )
+                .track_scroll(&self.side)
+                .flex_1()
+                .min_h_0(),
+            )
+    }
+
+    fn side_row(&self, i: usize, cx: &mut Context<Self>) -> gpui::AnyElement {
+        let c = colors();
+        let Some(file) = self.files.get(i) else {
+            return div().into_any_element();
+        };
+        let on = i == self.at;
+        let kind = Kind::of(&file.name, false);
+        div()
+            .id(("view-file", i))
+            .debug_selector(move || format!("view-file-{i}"))
+            .w_full()
+            .h(ui(48.))
+            .flex()
+            .items_center()
+            .gap(ui(10.))
+            .px(ui(10.))
+            .rounded(ui(14.))
+            .cursor_pointer()
+            // In the soft fill, as the button that shows the list.
+            .when(on, |d| d.bg(rgb(c.tonal)).text_color(rgb(c.on_tonal)))
+            .when(!on, |d| d.hover(|s| s.bg(rgb(c.well_hover))))
+            .tooltip(tip(file.name.clone()))
+            .child(kind_tile(
+                kind,
+                tag_of(&file.name, kind),
+                36.,
+                32.,
+                11.,
+                10.,
+            ))
+            .child(
+                div()
+                    .flex_1()
+                    .min_w_0()
+                    .truncate()
+                    .text_size(ui(14.))
+                    .font_weight(if on {
+                        FontWeight::SEMIBOLD
+                    } else {
+                        FontWeight::MEDIUM
+                    })
+                    .child(file.name.clone()),
+            )
+            // The keys stay the viewer's.
+            .on_click(cx.listener(move |this, _, window, cx| {
+                if i != this.at {
+                    this.show(i, cx);
+                }
+                window.focus(&this.focus, cx);
+            }))
+            .into_any_element()
+    }
+
     fn toolbar(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
         let file = self.file().cloned();
@@ -732,6 +845,40 @@ impl Viewer {
             .flex_wrap()
             .items_center()
             .gap(ui(10.))
+            .child({
+                let shown = SIDEBAR.load(Atomic::Relaxed);
+                let keys = if cfg!(target_os = "macos") {
+                    "⌘B"
+                } else {
+                    "Ctrl+B"
+                };
+                let said = if shown {
+                    tr!("Hide the list of files ({keys})", keys = keys)
+                } else {
+                    tr!("Show the list of files ({keys})", keys = keys)
+                };
+                // As an icon button, in the soft fill while the list shows.
+                let (ground, over, ink) = if shown {
+                    (c.tonal, c.tonal_hover, c.on_tonal)
+                } else {
+                    (c.well, c.well_hover, c.muted)
+                };
+                div()
+                    .id("view-sidebar")
+                    .debug_selector(|| "view-sidebar".to_owned())
+                    .size(ui(40.))
+                    .flex_shrink_0()
+                    .rounded_full()
+                    .bg(rgb(ground))
+                    .hover(move |s| s.bg(rgb(over)))
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .cursor_pointer()
+                    .child(icon("sidebar", 20., ink))
+                    .tooltip(tip(said))
+                    .on_click(cx.listener(|this, _, _, cx| this.toggle_sidebar(cx)))
+            })
             .child(
                 button(
                     "view-back",
@@ -838,6 +985,7 @@ impl Viewer {
         let c = colors();
         let stage = div()
             .id("view-stage")
+            .debug_selector(|| "view-stage".to_owned())
             .flex_1()
             .min_h_0()
             .rounded(ui(20.))
@@ -951,6 +1099,9 @@ impl Viewer {
 impl Render for Viewer {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
+        let sidebar = SIDEBAR.load(Atomic::Relaxed);
+        let width = f32::from(window.viewport_size().width) * 16. / f32::from(window.rem_size());
+        let beside = width >= SIDEBAR_BESIDE;
         div()
             .id("viewer")
             .debug_selector(|| "viewer".to_owned())
@@ -967,13 +1118,44 @@ impl Render for Viewer {
             .bg(rgb(c.surface))
             .child(self.toolbar(cx))
             .children(self.find_bar(cx))
-            .child(self.stage(window, cx))
             .child(
                 div()
-                    .px(ui(6.))
-                    .text_size(ui(13.))
-                    .text_color(rgb(c.muted))
-                    .child(self.status()),
+                    .relative()
+                    .flex_1()
+                    .min_h_0()
+                    .flex()
+                    .gap(ui(12.))
+                    .when(sidebar && beside, |d| d.child(self.sidebar(cx)))
+                    .child(
+                        div()
+                            .flex_1()
+                            .min_w_0()
+                            .min_h_0()
+                            .flex()
+                            .flex_col()
+                            .gap(ui(12.))
+                            .child(self.stage(window, cx))
+                            .child(
+                                div()
+                                    .px(ui(6.))
+                                    .text_size(ui(13.))
+                                    .text_color(rgb(c.muted))
+                                    .child(self.status()),
+                            ),
+                    )
+                    // Too narrow beside it: over the file's left.
+                    .when(sidebar && !beside, |d| {
+                        d.child(
+                            self.sidebar(cx)
+                                .absolute()
+                                .top_0()
+                                .left_0()
+                                .bottom_0()
+                                .border_1()
+                                .border_color(rgb(c.outline))
+                                .shadow_lg(),
+                        )
+                    }),
             )
     }
 }

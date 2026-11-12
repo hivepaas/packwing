@@ -2407,6 +2407,12 @@ t5b9dcaca = Motif non valide
 # No matches
 td29421ef = Aucun résultat
 
+# Hide the list of files ({keys})
+t165a997f = Masquer la liste des fichiers ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = Afficher la liste des fichiers ({ $keys })
+
 # Find
 t3e1cd17a = Rechercher
 

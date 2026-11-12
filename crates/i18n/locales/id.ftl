@@ -2380,6 +2380,12 @@ t5b9dcaca = Pola tidak valid
 # No matches
 td29421ef = Tidak ada yang cocok
 
+# Hide the list of files ({keys})
+t165a997f = Sembunyikan daftar file ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = Tampilkan daftar file ({ $keys })
+
 # Find
 t3e1cd17a = Cari
 

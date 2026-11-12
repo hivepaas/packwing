@@ -2407,6 +2407,12 @@ t5b9dcaca = Geçersiz desen
 # No matches
 td29421ef = Eşleşme yok
 
+# Hide the list of files ({keys})
+t165a997f = Dosya listesini gizle ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = Dosya listesini göster ({ $keys })
+
 # Find
 t3e1cd17a = Bul
 

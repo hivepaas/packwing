@@ -2380,6 +2380,12 @@ t5b9dcaca = 無效的模式
 # No matches
 td29421ef = 沒有符合的結果
 
+# Hide the list of files ({keys})
+t165a997f = 隱藏檔案清單 ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = 顯示檔案清單 ({ $keys })
+
 # Find
 t3e1cd17a = 尋找
 

@@ -2371,6 +2371,12 @@ t5b9dcaca = Mẫu không hợp lệ
 # No matches
 td29421ef = Không tìm thấy
 
+# Hide the list of files ({keys})
+t165a997f = Ẩn danh sách tệp ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = Hiện danh sách tệp ({ $keys })
+
 # Find
 t3e1cd17a = Tìm
 

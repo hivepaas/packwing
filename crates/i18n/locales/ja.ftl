@@ -2371,6 +2371,12 @@ t5b9dcaca = 無効なパターン
 # No matches
 td29421ef = 一致なし
 
+# Hide the list of files ({keys})
+t165a997f = ファイル一覧を隠す ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = ファイル一覧を表示 ({ $keys })
+
 # Find
 t3e1cd17a = 検索
 

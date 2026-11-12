@@ -2407,6 +2407,12 @@ t5b9dcaca = Padrão inválido
 # No matches
 td29421ef = Nenhuma correspondência
 
+# Hide the list of files ({keys})
+t165a997f = Ocultar a lista de arquivos ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = Mostrar a lista de arquivos ({ $keys })
+
 # Find
 t3e1cd17a = Localizar
 

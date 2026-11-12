@@ -2407,6 +2407,12 @@ t5b9dcaca = Ungültiges Muster
 # No matches
 td29421ef = Keine Treffer
 
+# Hide the list of files ({keys})
+t165a997f = Dateiliste ausblenden ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = Dateiliste einblenden ({ $keys })
+
 # Find
 t3e1cd17a = Suchen
 

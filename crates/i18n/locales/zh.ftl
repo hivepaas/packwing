@@ -2371,6 +2371,12 @@ t5b9dcaca = 无效的模式
 # No matches
 td29421ef = 无匹配项
 
+# Hide the list of files ({keys})
+t165a997f = 隐藏文件列表 ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = 显示文件列表 ({ $keys })
+
 # Find
 t3e1cd17a = 查找
 

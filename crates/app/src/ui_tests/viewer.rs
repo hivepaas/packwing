@@ -337,3 +337,65 @@ scenario!(
         wait_for_shown(ui, "b.txt", "text");
     }
 );
+
+scenario!(
+    /// The list of files beside the viewer: hidden at first, shown by its
+    /// button left of Back, the files Previous and Next step through in their
+    /// order, the one shown chosen; a click shows another, and the keys stay
+    /// the viewer's. Kept as left when the viewer opens again; Ctrl+B (Cmd+B)
+    /// hides it; over the file's left in a narrow window.
+    the_list_of_files_beside_the_viewer,
+    |ui| {
+        let paths = vec![
+            file(ui, "list/p10.png", PICTURE),
+            file(ui, "list/p2.png", PICTURE),
+            file(ui, "list/p1.png", PICTURE),
+            file(ui, "list/notes.pdf", b"%PDF-1.7"),
+            file(ui, "list/p3.png", PICTURE),
+        ];
+        let made = zip(ui, &paths, "list.zip");
+        ui.open(&made);
+        assert_eq!(ui.archive_failed(), None);
+        let at = ui
+            .shown_in_archive()
+            .iter()
+            .position(|n| n == "p1.png")
+            .expect("p1.png listed");
+        ui.click(&format!("entry-{at}"));
+        ui.keys("enter");
+        wait_for_shown(ui, "p1.png", "picture");
+        assert!(!ui.shows("view-files"), "hidden at first");
+        ui.click("view-sidebar");
+        ui.wait_for("view-files");
+        // As Previous and Next go, the PDF they pass over left out.
+        let (names, _, _) = viewing(ui).expect("the viewer");
+        assert_eq!(names.len(), 4);
+        assert!(!names.iter().any(|n| n == "notes.pdf"));
+        for i in 0..names.len() {
+            assert!(ui.shows(&format!("view-file-{i}")), "row {i}");
+        }
+        assert!(!ui.shows(&format!("view-file-{}", names.len())));
+        // Beside the file, in a wide window.
+        let list = ui.find("view-files").expect("the list");
+        let stage = ui.find("view-stage").expect("the stage");
+        assert!(stage.left() >= list.right(), "beside");
+        // A row shows its file; Left goes on from it, as Previous does.
+        ui.click("view-file-2");
+        wait_for_shown(ui, &names[2], "picture");
+        ui.keys("left");
+        wait_for_shown(ui, &names[1], "picture");
+        // Opened again, it is as it was left.
+        ui.keys("escape");
+        ui.wait_until("the viewer closed", |ui| viewing(ui).is_none());
+        ui.keys("enter");
+        wait_for_shown(ui, &names[1], "picture");
+        assert!(ui.shows("view-files"), "kept shown");
+        // Over the file in a narrow window.
+        ui.resize(600., 500.);
+        let list = ui.find("view-files").expect("the list");
+        let stage = ui.find("view-stage").expect("the stage");
+        assert!(stage.left() < list.right(), "over the file");
+        ui.keys("secondary-b");
+        assert!(!ui.shows("view-files"), "hidden by its keys");
+    }
+);
