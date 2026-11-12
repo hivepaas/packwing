@@ -2377,9 +2377,6 @@ t165a997f = 파일 목록 숨기기 ({ $keys })
 # Show the list of files ({keys})
 tde6e8c38 = 파일 목록 보기 ({ $keys })
 
-# Find
-t3e1cd17a = 찾기
-
 # Fit the window (0)
 tbe39720a = 창에 맞춤 (0)
 
@@ -2388,6 +2385,9 @@ t116f13cc = 맞춤
 
 # Show at its own size (1)
 tb1eec64a = 실제 크기로 보기 (1)
+
+# Find
+t3e1cd17a = 찾기
 
 # {count} line | {count} lines
 t9fbb1078 =

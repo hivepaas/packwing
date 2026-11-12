@@ -877,10 +877,10 @@ t5b9dcaca = Invalid pattern
 td29421ef = No matches
 t165a997f = Hide the list of files ({ $keys })
 tde6e8c38 = Show the list of files ({ $keys })
-t3e1cd17a = Find
 tbe39720a = Fit the window (0)
 t116f13cc = Fit
 tb1eec64a = Show at its own size (1)
+t3e1cd17a = Find
 t9fbb1078 =
     { $n ->
         [one] { $count } line

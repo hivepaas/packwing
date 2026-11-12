@@ -2413,9 +2413,6 @@ t165a997f = Ocultar la lista de archivos ({ $keys })
 # Show the list of files ({keys})
 tde6e8c38 = Mostrar la lista de archivos ({ $keys })
 
-# Find
-t3e1cd17a = Buscar
-
 # Fit the window (0)
 tbe39720a = Ajustar a la ventana (0)
 
@@ -2424,6 +2421,9 @@ t116f13cc = Ajustar
 
 # Show at its own size (1)
 tb1eec64a = Mostrar a tamaño real (1)
+
+# Find
+t3e1cd17a = Buscar
 
 # {count} line | {count} lines
 t9fbb1078 =

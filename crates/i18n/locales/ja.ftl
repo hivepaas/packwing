@@ -2377,9 +2377,6 @@ t165a997f = ファイル一覧を隠す ({ $keys })
 # Show the list of files ({keys})
 tde6e8c38 = ファイル一覧を表示 ({ $keys })
 
-# Find
-t3e1cd17a = 検索
-
 # Fit the window (0)
 tbe39720a = ウィンドウに合わせる (0)
 
@@ -2388,6 +2385,9 @@ t116f13cc = 全体表示
 
 # Show at its own size (1)
 tb1eec64a = 実際のサイズで表示 (1)
+
+# Find
+t3e1cd17a = 検索
 
 # {count} line | {count} lines
 t9fbb1078 =

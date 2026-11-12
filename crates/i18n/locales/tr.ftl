@@ -2413,9 +2413,6 @@ t165a997f = Dosya listesini gizle ({ $keys })
 # Show the list of files ({keys})
 tde6e8c38 = Dosya listesini göster ({ $keys })
 
-# Find
-t3e1cd17a = Bul
-
 # Fit the window (0)
 tbe39720a = Pencereye sığdır (0)
 
@@ -2424,6 +2421,9 @@ t116f13cc = Sığdır
 
 # Show at its own size (1)
 tb1eec64a = Gerçek boyutunda göster (1)
+
+# Find
+t3e1cd17a = Bul
 
 # {count} line | {count} lines
 t9fbb1078 =

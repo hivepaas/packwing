@@ -65,7 +65,8 @@ scenario!(
         ui.click("menu-open");
         wait_for_shown(ui, "a.png", "picture");
         let (names, _, _) = viewing(ui).expect("the viewer");
-        assert_eq!(names, ["a.png", "b.txt", "d.png"]);
+        // All the folder's files, for the list; Next passes over the PDF.
+        assert_eq!(names, ["a.png", "b.txt", "c.pdf", "d.png"]);
         assert!(!ui.shows("archive-more"), "the page is hidden");
         ui.click("view-next");
         wait_for_shown(ui, "b.txt", "text");
@@ -367,10 +368,10 @@ scenario!(
         assert!(!ui.shows("view-files"), "hidden at first");
         ui.click("view-sidebar");
         ui.wait_for("view-files");
-        // As Previous and Next go, the PDF they pass over left out.
+        // All the folder's files, the PDF that Previous and Next pass over too.
         let (names, _, _) = viewing(ui).expect("the viewer");
-        assert_eq!(names.len(), 4);
-        assert!(!names.iter().any(|n| n == "notes.pdf"));
+        assert_eq!(names.len(), 5);
+        let pdf = names.iter().position(|n| n == "notes.pdf").expect("the PDF listed");
         for i in 0..names.len() {
             assert!(ui.shows(&format!("view-file-{i}")), "row {i}");
         }
@@ -379,16 +380,24 @@ scenario!(
         let list = ui.find("view-files").expect("the list");
         let stage = ui.find("view-stage").expect("the stage");
         assert!(stage.left() >= list.right(), "beside");
-        // A row shows its file; Left goes on from it, as Previous does.
-        ui.click("view-file-2");
-        wait_for_shown(ui, &names[2], "picture");
+        // The PDF chosen in the list: it says it cannot be shown, and offers
+        // the system's app.
+        ui.click(&format!("view-file-{pdf}"));
+        wait_for_shown(ui, "notes.pdf", "not");
+        assert!(ui.shows("view-app"), "Open with default app");
+        // A row shows its file; Left goes on from it, as Previous does, past
+        // what it does not show.
+        let pictures: Vec<&String> = names.iter().filter(|n| n.ends_with(".png")).collect();
+        let row = names.iter().position(|n| n == pictures[2]).expect("listed");
+        ui.click(&format!("view-file-{row}"));
+        wait_for_shown(ui, pictures[2], "picture");
         ui.keys("left");
-        wait_for_shown(ui, &names[1], "picture");
+        wait_for_shown(ui, pictures[1], "picture");
         // Opened again, it is as it was left.
         ui.keys("escape");
         ui.wait_until("the viewer closed", |ui| viewing(ui).is_none());
         ui.keys("enter");
-        wait_for_shown(ui, &names[1], "picture");
+        wait_for_shown(ui, pictures[1], "picture");
         assert!(ui.shows("view-files"), "kept shown");
         // Over the file in a narrow window.
         ui.resize(600., 500.);

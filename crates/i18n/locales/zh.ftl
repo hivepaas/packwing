@@ -2377,9 +2377,6 @@ t165a997f = 隐藏文件列表 ({ $keys })
 # Show the list of files ({keys})
 tde6e8c38 = 显示文件列表 ({ $keys })
 
-# Find
-t3e1cd17a = 查找
-
 # Fit the window (0)
 tbe39720a = 适应窗口 (0)
 
@@ -2388,6 +2385,9 @@ t116f13cc = 适应窗口
 
 # Show at its own size (1)
 tb1eec64a = 按实际大小显示 (1)
+
+# Find
+t3e1cd17a = 查找
 
 # {count} line | {count} lines
 t9fbb1078 =

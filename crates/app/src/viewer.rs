@@ -84,8 +84,11 @@ pub struct Viewer {
     reading: Reading,
     /// What Back goes back to, as the user knows it.
     from: String,
+    /// All the folder's files, as its list shows them.
     files: Vec<ViewFile>,
     at: usize,
+    /// The file the viewer was opened on: stepped onto whatever it is.
+    opened: usize,
     shown: Shown,
     /// The text shown, when it is one: it can be chosen and copied, with a
     /// right-click menu, its lines numbered.
@@ -200,15 +203,12 @@ pub fn viewable(name: &str) -> bool {
     picture_format(name).is_some() || (reads_as_text(name) && Kind::of(name, false) != Kind::Other)
 }
 
-/// The files of a folder the viewer steps through, from `chosen`: those it
-/// shows, and `chosen` whatever it is, in the folder's order.
+/// The files of a folder for the viewer, all of them in the folder's order,
+/// for its list, and where `chosen` is. Previous and Next step onto those it
+/// shows, and `chosen` whatever it is (see [`Viewer::steps_onto`]).
 pub fn stepping(files: Vec<ViewFile>, chosen: &str) -> (Vec<ViewFile>, usize) {
-    let kept: Vec<ViewFile> = files
-        .into_iter()
-        .filter(|f| f.name == chosen || viewable(&f.name))
-        .collect();
-    let at = kept.iter().position(|f| f.name == chosen).unwrap_or(0);
-    (kept, at)
+    let at = files.iter().position(|f| f.name == chosen).unwrap_or(0);
+    (files, at)
 }
 
 /// A comic book's pages: by their names as people number them, `page2`
@@ -354,6 +354,7 @@ impl Viewer {
             from,
             files,
             at,
+            opened: at,
             shown: Shown::Reading,
             text: cx.new(|cx| TextInput::new("", cx).read_only().code(unpainted)),
             actual: false,
@@ -631,7 +632,9 @@ impl Viewer {
 
     /// Reads the file after the one shown, so that Next shows it at once.
     fn read_ahead(&mut self, cx: &mut Context<Self>) {
-        let next = self.at + 1;
+        let Some(next) = self.neighbour(1) else {
+            return;
+        };
         let Some(file) = self.files.get(next).cloned() else {
             return;
         };
@@ -640,17 +643,31 @@ impl Viewer {
         self._read_ahead = Some(cx.spawn(async move |this, cx| {
             let shown = task.await;
             let _ = this.update(cx, |this, _| {
-                if this.at + 1 == next {
+                if this.neighbour(1) == Some(next) {
                     this.ahead = Some((next, shown));
                 }
             });
         }));
     }
 
+    /// Whether Previous and Next stop at the file at `i`: one the viewer
+    /// shows, by its name, or the one it was opened on. The list shows the
+    /// others too, to be chosen there.
+    fn steps_onto(&self, i: usize) -> bool {
+        i == self.opened || self.files.get(i).is_some_and(|f| viewable(&f.name))
+    }
+
+    /// The file Previous (`by` -1) or Next (1) goes to from the one shown.
+    fn neighbour(&self, by: isize) -> Option<usize> {
+        if by < 0 {
+            (0..self.at).rev().find(|&i| self.steps_onto(i))
+        } else {
+            (self.at + 1..self.files.len()).find(|&i| self.steps_onto(i))
+        }
+    }
+
     fn step(&mut self, by: isize, cx: &mut Context<Self>) {
-        let last = self.files.len().saturating_sub(1);
-        let to = self.at.saturating_add_signed(by).min(last);
-        if to != self.at {
+        if let Some(to) = self.neighbour(by) {
             self.show(to, cx);
         }
     }
@@ -716,8 +733,16 @@ impl Viewer {
                     self.step(by, cx);
                 }
             }
-            "home" => self.show(0, cx),
-            "end" => self.show(self.files.len().saturating_sub(1), cx),
+            "home" => {
+                if let Some(to) = (0..self.files.len()).find(|&i| self.steps_onto(i)) {
+                    self.show(to, cx);
+                }
+            }
+            "end" => {
+                if let Some(to) = (0..self.files.len()).rev().find(|&i| self.steps_onto(i)) {
+                    self.show(to, cx);
+                }
+            }
             "f11" => window.toggle_fullscreen(),
             // Out of the full screen first, then out of the viewer.
             "escape" if window.is_fullscreen() => window.toggle_fullscreen(),
@@ -779,6 +804,9 @@ impl Viewer {
         };
         let on = i == self.at;
         let kind = Kind::of(&file.name, false);
+        // What Previous and Next pass over, quieter: chosen here, it says
+        // whether it shows, and offers the system's app.
+        let quiet = !on && !self.steps_onto(i);
         div()
             .id(("view-file", i))
             .debug_selector(move || format!("view-file-{i}"))
@@ -808,6 +836,7 @@ impl Viewer {
                     .min_w_0()
                     .truncate()
                     .text_size(ui(14.))
+                    .when(quiet, |d| d.text_color(rgb(c.muted)))
                     .font_weight(if on {
                         FontWeight::SEMIBOLD
                     } else {
@@ -832,7 +861,7 @@ impl Viewer {
         let kind = Kind::of(&name, false);
         let picture = matches!(self.shown, Shown::Picture(..));
         let not = matches!(self.shown, Shown::Not(_));
-        let (first, last) = (self.at == 0, self.at + 1 >= self.files.len());
+        let (first, last) = (self.neighbour(-1).is_none(), self.neighbour(1).is_none());
         let step = |id: &'static str, name: &str, by: isize, off: bool| {
             icon_button(id, name, 40.)
                 .when(off, |d| d.opacity(0.4).cursor_default())
@@ -845,6 +874,18 @@ impl Viewer {
             .flex_wrap()
             .items_center()
             .gap(ui(10.))
+            .child(
+                button(
+                    "view-back",
+                    tr!("Back to {name}", name = self.from.clone()),
+                    Fill::Tonal,
+                    Size::Medium,
+                )
+                // The arrow before the words, which are the button's first child.
+                .flex_row_reverse()
+                .child(icon("arrow-left", 16., c.on_tonal))
+                .on_click(cx.listener(|this, _, _, cx| this.ask(ViewerEvent::Close, cx))),
+            )
             .child({
                 let shown = SIDEBAR.load(Atomic::Relaxed);
                 let keys = if cfg!(target_os = "macos") {
@@ -879,28 +920,6 @@ impl Viewer {
                     .tooltip(tip(said))
                     .on_click(cx.listener(|this, _, _, cx| this.toggle_sidebar(cx)))
             })
-            .child(
-                button(
-                    "view-back",
-                    tr!("Back to {name}", name = self.from.clone()),
-                    Fill::Tonal,
-                    Size::Medium,
-                )
-                // The arrow before the words, which are the button's first child.
-                .flex_row_reverse()
-                .child(icon("arrow-left", 16., c.on_tonal))
-                .on_click(cx.listener(|this, _, _, cx| this.ask(ViewerEvent::Close, cx))),
-            )
-            .child(kind_tile(kind, tag_of(&name, kind), 36., 32., 11., 10.))
-            .child(
-                div()
-                    .flex_1()
-                    .min_w(ui(120.))
-                    .truncate()
-                    .text_size(ui(17.))
-                    .font_weight(FontWeight::BOLD)
-                    .child(name),
-            )
             .child(step("view-previous", "chevron-left", -1, first))
             .child(
                 div()
@@ -912,20 +931,6 @@ impl Viewer {
                     .child(format!("{} / {}", self.at + 1, self.files.len())),
             )
             .child(step("view-next", "chevron-right", 1, last))
-            // Its bar open, the bar is where it is.
-            .when(
-                matches!(self.shown, Shown::Text(..)) && self.finding.is_none(),
-                |d| {
-                    d.child(
-                        button("view-find", tr!("Find"), Fill::Outline, Size::Medium)
-                            .flex_row_reverse()
-                            .child(icon("search", 16., c.text))
-                            .on_click(
-                                cx.listener(|this, _, window, cx| this.open_find(window, cx)),
-                            ),
-                    )
-                },
-            )
             // One button for the picture's size: it says how it shows, and a
             // click goes round to the other.
             .when(picture, |d| {
@@ -943,6 +948,30 @@ impl Viewer {
                         })),
                 )
             })
+            .child(kind_tile(kind, tag_of(&name, kind), 36., 32., 11., 10.))
+            .child(
+                div()
+                    .flex_1()
+                    .min_w(ui(120.))
+                    .truncate()
+                    .text_size(ui(17.))
+                    .font_weight(FontWeight::BOLD)
+                    .child(name),
+            )
+            // Its bar open, the bar is where it is.
+            .when(
+                matches!(self.shown, Shown::Text(..)) && self.finding.is_none(),
+                |d| {
+                    d.child(
+                        button("view-find", tr!("Find"), Fill::Outline, Size::Medium)
+                            .flex_row_reverse()
+                            .child(icon("search", 16., c.text))
+                            .on_click(
+                                cx.listener(|this, _, window, cx| this.open_find(window, cx)),
+                            ),
+                    )
+                },
+            )
             .when(file.as_ref().is_some_and(|f| f.edit) && !picture, |d| {
                 d.child(
                     button(
@@ -1252,16 +1281,19 @@ mod tests {
         let files = ["a.jpg", "b.pdf", "c.txt", "d.zip", "e.png", "f.sh", "g.dat"]
             .map(file)
             .to_vec();
+        // All of them, for the list; where the one chosen is.
         let (kept, at) = stepping(files.clone(), "c.txt");
-        let names: Vec<_> = kept.iter().map(|f| f.name.as_str()).collect();
-        // A script is a text; what its name says nothing of is not stepped onto.
-        assert_eq!(names, ["a.jpg", "c.txt", "e.png", "f.sh"]);
-        assert_eq!(at, 1);
-        // What it does not show is still shown, when it was chosen.
-        let (kept, at) = stepping(files.clone(), "b.pdf");
-        assert_eq!(kept.len(), 5);
-        assert_eq!(kept[at].name, "b.pdf");
+        assert_eq!(kept.len(), files.len());
+        assert_eq!(at, 2);
         let (kept, at) = stepping(files, "g.dat");
         assert_eq!(kept[at].name, "g.dat");
+        // What Previous and Next stop at, by its name: a script is a text;
+        // what its name says nothing of, or a PDF, is passed over.
+        let stops: Vec<_> = kept
+            .iter()
+            .filter(|f| viewable(&f.name))
+            .map(|f| f.name.as_str())
+            .collect();
+        assert_eq!(stops, ["a.jpg", "c.txt", "e.png", "f.sh"]);
     }
 }
