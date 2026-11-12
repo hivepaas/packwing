@@ -2410,8 +2410,14 @@ td29421ef = Eşleşme yok
 # Find
 t3e1cd17a = Bul
 
+# Fit the window (0)
+tbe39720a = Pencereye sığdır (0)
+
 # Fit
 t116f13cc = Sığdır
+
+# Show at its own size (1)
+tb1eec64a = Gerçek boyutunda göster (1)
 
 # {count} line | {count} lines
 t9fbb1078 =

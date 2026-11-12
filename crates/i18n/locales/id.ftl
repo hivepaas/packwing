@@ -2383,8 +2383,14 @@ td29421ef = Tidak ada yang cocok
 # Find
 t3e1cd17a = Cari
 
+# Fit the window (0)
+tbe39720a = Paskan ke jendela (0)
+
 # Fit
 t116f13cc = Paskan
+
+# Show at its own size (1)
+tb1eec64a = Tampilkan dalam ukuran asli (1)
 
 # {count} line | {count} lines
 t9fbb1078 =

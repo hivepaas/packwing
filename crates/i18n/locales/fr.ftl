@@ -2410,8 +2410,14 @@ td29421ef = Aucun résultat
 # Find
 t3e1cd17a = Rechercher
 
+# Fit the window (0)
+tbe39720a = Ajuster à la fenêtre (0)
+
 # Fit
 t116f13cc = Ajuster
+
+# Show at its own size (1)
+tb1eec64a = Afficher en taille réelle (1)
 
 # {count} line | {count} lines
 t9fbb1078 =

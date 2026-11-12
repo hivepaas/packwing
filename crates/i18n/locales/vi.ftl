@@ -2374,8 +2374,14 @@ td29421ef = Không tìm thấy
 # Find
 t3e1cd17a = Tìm
 
+# Fit the window (0)
+tbe39720a = Vừa khung cửa sổ (0)
+
 # Fit
 t116f13cc = Vừa khung
+
+# Show at its own size (1)
+tb1eec64a = Hiện đúng kích thước gốc (1)
 
 # {count} line | {count} lines
 t9fbb1078 =

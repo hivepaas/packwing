@@ -2464,8 +2464,14 @@ td29421ef = Совпадений нет
 # Find
 t3e1cd17a = Найти
 
+# Fit the window (0)
+tbe39720a = Вписать в окно (0)
+
 # Fit
 t116f13cc = Вписать
+
+# Show at its own size (1)
+tb1eec64a = Показать в реальном размере (1)
 
 # {count} line | {count} lines
 t9fbb1078 =

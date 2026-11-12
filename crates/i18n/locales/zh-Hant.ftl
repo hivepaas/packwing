@@ -2383,8 +2383,14 @@ td29421ef = 沒有符合的結果
 # Find
 t3e1cd17a = 尋找
 
+# Fit the window (0)
+tbe39720a = 符合視窗 (0)
+
 # Fit
 t116f13cc = 符合視窗
+
+# Show at its own size (1)
+tb1eec64a = 以實際大小顯示 (1)
 
 # {count} line | {count} lines
 t9fbb1078 =
