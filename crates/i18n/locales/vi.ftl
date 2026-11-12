@@ -1630,6 +1630,12 @@ tc52ab62f = Ghi chú phát hành
 # packwing {version} is out
 t36a30d8b = packwing { $version } đã phát hành
 
+# Your license covers versions released until {date}. This one came out after: with it, packwing is Free until you renew. The version you have stays Pro.
+tfd489117 = License của bạn bao gồm các phiên bản phát hành đến { $date }. Bản này ra sau đó: với nó, packwing ở mức Free cho tới khi bạn gia hạn. Bản bạn đang dùng vẫn giữ Pro.
+
+# Renew
+t9a23808e = Gia hạn
+
 # Run these in a terminal. They check the download against the signed list of releases, and sudo asks for your password.
 t98b9753c = Chạy các lệnh này trong terminal. Chúng kiểm tra bản tải về theo danh sách phát hành đã ký, và sudo sẽ hỏi mật khẩu của bạn.
 
@@ -1957,17 +1963,26 @@ t8f706321 = Số chỗ
 # What your organization’s agreement covers
 t60b0c6c9 = Phạm vi thoả thuận của tổ chức bạn
 
-# Trial, until {date}
-t9ffc2b63 = Dùng thử, đến { $date }
+# Ended {date}
+tfccb9305 = Đã hết hạn { $date }
+
+# This version came out after your updates ended, so it is Free. Renew, or use a version released by then: those stay Pro.
+t545a1cd3 = Bản này ra sau khi hạn cập nhật của bạn kết thúc, nên nó ở mức Free. Hãy gia hạn, hoặc dùng một bản phát hành trước đó: những bản đó vẫn giữ Pro.
+
+# This version stays Pro for good, with its fixes. Versions released after need a renewal.
+tbf1ce5b8 = Bản này giữ Pro mãi mãi, cùng các bản vá của nó. Các bản phát hành sau cần gia hạn.
 
 # Until {date}
 t4d9bac91 = Đến { $date }
 
+# Every version released by then is yours for good, with its fixes. Renew for a year more of new versions.
+t5d8058ff = Mọi phiên bản phát hành đến ngày đó là của bạn mãi mãi, cùng các bản vá. Gia hạn để có thêm một năm phiên bản mới.
+
+# Trial, until {date}
+t9ffc2b63 = Dùng thử, đến { $date }
+
 # Ended {date}. It keeps working for {days} days more.
 t7b9eb499 = Đã hết hạn { $date }. Vẫn dùng được thêm { $days } ngày.
-
-# Ended {date}
-tfccb9305 = Đã hết hạn { $date }
 
 # Valid
 td2661011 = Hợp lệ
@@ -1980,6 +1995,9 @@ te42a0ee6 = Tổ chức của bạn quản lý giấy phép này.
 
 # Activate
 t3b8f0190 = Kích hoạt
+
+# Buy
+tcada780b = Mua
 
 # A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
 t9e6ecd3d = Khoá được kiểm tra ngay trên máy tính này. Không có gì được gửi đi đâu, và không giấy phép nào thay đổi chính sách của tổ chức bạn.

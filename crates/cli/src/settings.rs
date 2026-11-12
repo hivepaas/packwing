@@ -52,7 +52,10 @@ pub fn plan() -> packwing_license::Plan {
     };
     text.and_then(|t| packwing_license::read(&t).ok())
         .map_or(packwing_license::Plan::Free, |l| {
-            l.plan(std::time::SystemTime::now().into())
+            l.plan(
+                std::time::SystemTime::now().into(),
+                packwing_license::line_released(),
+            )
         })
 }
 

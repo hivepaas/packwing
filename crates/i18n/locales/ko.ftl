@@ -1630,6 +1630,12 @@ tc52ab62f = 릴리스 노트
 # packwing {version} is out
 t36a30d8b = packwing { $version } 출시
 
+# Your license covers versions released until {date}. This one came out after: with it, packwing is Free until you renew. The version you have stays Pro.
+tfd489117 = 라이선스는 { $date }까지 출시된 버전을 포함합니다. 이 버전은 그 이후에 나왔으므로, 갱신할 때까지 packwing은 Free입니다. 지금 쓰는 버전은 Pro로 유지됩니다.
+
+# Renew
+t9a23808e = 갱신
+
 # Run these in a terminal. They check the download against the signed list of releases, and sudo asks for your password.
 t98b9753c = 터미널에서 이 명령을 실행하세요. 서명된 릴리스 목록과 대조해 다운로드를 확인하며, sudo가 비밀번호를 묻습니다.
 
@@ -1957,17 +1963,26 @@ t8f706321 = 사용자 수
 # What your organization’s agreement covers
 t60b0c6c9 = 조직의 계약에 포함된 내용
 
-# Trial, until {date}
-t9ffc2b63 = 체험판, { $date }까지
+# Ended {date}
+tfccb9305 = { $date }에 종료되었습니다
+
+# This version came out after your updates ended, so it is Free. Renew, or use a version released by then: those stay Pro.
+t545a1cd3 = 이 버전은 업데이트 기간이 끝난 뒤에 나왔으므로 Free입니다. 갱신하거나, 그때까지 출시된 버전을 사용하세요. 그 버전들은 Pro로 유지됩니다.
+
+# This version stays Pro for good, with its fixes. Versions released after need a renewal.
+tbf1ce5b8 = 이 버전은 수정판과 함께 계속 Pro로 유지됩니다. 이후 출시된 버전은 갱신이 필요합니다.
 
 # Until {date}
 t4d9bac91 = { $date }까지
 
+# Every version released by then is yours for good, with its fixes. Renew for a year more of new versions.
+t5d8058ff = 그때까지 출시된 모든 버전은 수정판과 함께 계속 사용할 수 있습니다. 갱신하면 새 버전을 1년 더 받습니다.
+
+# Trial, until {date}
+t9ffc2b63 = 체험판, { $date }까지
+
 # Ended {date}. It keeps working for {days} days more.
 t7b9eb499 = { $date }에 종료되었습니다. { $days }일 더 계속 사용할 수 있습니다.
-
-# Ended {date}
-tfccb9305 = { $date }에 종료되었습니다
 
 # Valid
 td2661011 = 유효함
@@ -1980,6 +1995,9 @@ te42a0ee6 = 조직에서 이 라이선스를 관리합니다.
 
 # Activate
 t3b8f0190 = 활성화
+
+# Buy
+tcada780b = 구매
 
 # A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
 t9e6ecd3d = 키는 이 컴퓨터에서 확인합니다. 어디로도 전송되지 않으며, 라이선스가 조직 정책의 동작을 바꾸지 않습니다.

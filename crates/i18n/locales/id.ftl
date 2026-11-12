@@ -1630,6 +1630,12 @@ tc52ab62f = Catatan rilis
 # packwing {version} is out
 t36a30d8b = packwing { $version } telah rilis
 
+# Your license covers versions released until {date}. This one came out after: with it, packwing is Free until you renew. The version you have stays Pro.
+tfd489117 = Lisensi Anda mencakup versi yang dirilis hingga { $date }. Versi ini keluar sesudahnya: dengannya, packwing menjadi Free sampai Anda memperpanjang. Versi yang Anda punya tetap Pro.
+
+# Renew
+t9a23808e = Perpanjang
+
 # Run these in a terminal. They check the download against the signed list of releases, and sudo asks for your password.
 t98b9753c = Jalankan perintah ini di terminal. Perintah ini memeriksa unduhan terhadap daftar rilis yang ditandatangani, dan sudo akan meminta kata sandi Anda.
 
@@ -1957,17 +1963,26 @@ t8f706321 = Jumlah pengguna
 # What your organization’s agreement covers
 t60b0c6c9 = Apa yang dicakup perjanjian organisasi Anda
 
-# Trial, until {date}
-t9ffc2b63 = Percobaan, hingga { $date }
+# Ended {date}
+tfccb9305 = Berakhir { $date }
+
+# This version came out after your updates ended, so it is Free. Renew, or use a version released by then: those stay Pro.
+t545a1cd3 = Versi ini keluar setelah masa pembaruan Anda berakhir, jadi versi ini Free. Perpanjang, atau gunakan versi yang dirilis sebelum itu: versi tersebut tetap Pro.
+
+# This version stays Pro for good, with its fixes. Versions released after need a renewal.
+tbf1ce5b8 = Versi ini tetap Pro selamanya, beserta perbaikannya. Versi yang dirilis sesudahnya memerlukan perpanjangan.
 
 # Until {date}
 t4d9bac91 = Hingga { $date }
 
+# Every version released by then is yours for good, with its fixes. Renew for a year more of new versions.
+t5d8058ff = Setiap versi yang dirilis hingga saat itu milik Anda selamanya, beserta perbaikannya. Perpanjang untuk satu tahun lagi versi baru.
+
+# Trial, until {date}
+t9ffc2b63 = Percobaan, hingga { $date }
+
 # Ended {date}. It keeps working for {days} days more.
 t7b9eb499 = Berakhir { $date }. Masih berfungsi { $days } hari lagi.
-
-# Ended {date}
-tfccb9305 = Berakhir { $date }
 
 # Valid
 td2661011 = Berlaku
@@ -1980,6 +1995,9 @@ te42a0ee6 = Organisasi Anda mengelola lisensi ini.
 
 # Activate
 t3b8f0190 = Aktifkan
+
+# Buy
+tcada780b = Beli
 
 # A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
 t9e6ecd3d = Kunci diperiksa di komputer ini. Tidak ada yang dikirim ke mana pun, dan tidak ada lisensi yang mengubah apa yang dilakukan kebijakan organisasi Anda.

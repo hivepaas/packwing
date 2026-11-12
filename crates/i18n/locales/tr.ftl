@@ -1654,6 +1654,12 @@ tc52ab62f = Sürüm notları
 # packwing {version} is out
 t36a30d8b = packwing { $version } yayımlandı
 
+# Your license covers versions released until {date}. This one came out after: with it, packwing is Free until you renew. The version you have stays Pro.
+tfd489117 = Lisansınız { $date } tarihine kadar yayımlanan sürümleri kapsar. Bu sürüm daha sonra çıktı: onunla packwing, yenileyene kadar Free olur. Kullandığınız sürüm Pro kalır.
+
+# Renew
+t9a23808e = Yenile
+
 # Run these in a terminal. They check the download against the signed list of releases, and sudo asks for your password.
 t98b9753c = Bu komutları bir terminalde çalıştırın. İndirilen dosyayı imzalı sürüm listesiyle karşılaştırırlar ve sudo parolanızı sorar.
 
@@ -1981,17 +1987,26 @@ t8f706321 = Kullanıcı sayısı
 # What your organization’s agreement covers
 t60b0c6c9 = Kuruluşunuzun sözleşmesinin kapsadığı
 
-# Trial, until {date}
-t9ffc2b63 = Deneme, { $date } tarihine kadar
+# Ended {date}
+tfccb9305 = { $date } tarihinde bitti
+
+# This version came out after your updates ended, so it is Free. Renew, or use a version released by then: those stay Pro.
+t545a1cd3 = Bu sürüm güncellemeleriniz bittikten sonra çıktı, bu yüzden Free. Yenileyin ya da o tarihe kadar yayımlanmış bir sürüm kullanın: onlar Pro kalır.
+
+# This version stays Pro for good, with its fixes. Versions released after need a renewal.
+tbf1ce5b8 = Bu sürüm, düzeltmeleriyle birlikte kalıcı olarak Pro kalır. Sonra yayımlanan sürümler yenileme gerektirir.
 
 # Until {date}
 t4d9bac91 = { $date } tarihine kadar
 
+# Every version released by then is yours for good, with its fixes. Renew for a year more of new versions.
+t5d8058ff = O tarihe kadar yayımlanan her sürüm, düzeltmeleriyle birlikte kalıcı olarak sizindir. Bir yıl daha yeni sürüm için yenileyin.
+
+# Trial, until {date}
+t9ffc2b63 = Deneme, { $date } tarihine kadar
+
 # Ended {date}. It keeps working for {days} days more.
 t7b9eb499 = { $date } tarihinde bitti. { $days } gün daha çalışmaya devam eder.
-
-# Ended {date}
-tfccb9305 = { $date } tarihinde bitti
 
 # Valid
 td2661011 = Geçerli
@@ -2004,6 +2019,9 @@ te42a0ee6 = Bu lisansı kuruluşunuz yönetiyor.
 
 # Activate
 t3b8f0190 = Etkinleştir
+
+# Buy
+tcada780b = Satın al
 
 # A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
 t9e6ecd3d = Anahtar bu bilgisayarda denetlenir. Hiçbir yere bir şey gönderilmez ve hiçbir lisans, kuruluşunuzun ilkelerinin yaptığı şeyi değiştirmez.

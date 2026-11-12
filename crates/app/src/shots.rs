@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 103] = [
+const SCREENS: [(&str, SetUp); 106] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -376,6 +376,19 @@ const SCREENS: [(&str, SetUp); 103] = [
         });
         ws.show_settings(Section::License, cx);
     }),
+    ("settings-license-pro", |ws, _, cx| {
+        pro_license(cx);
+        ws.show_settings(Section::License, cx);
+    }),
+    ("settings-license-pro-ended", |ws, _, cx| {
+        // Its updates ended in 2020, before this version came out.
+        cx.set_global(crate::licensing::Licensed {
+            license: packwing_license::read(include_str!("../../license/testdata/expired.key"))
+                .ok(),
+            ..Default::default()
+        });
+        ws.show_settings(Section::License, cx);
+    }),
     ("settings-security", |ws, _, cx| {
         ws.show_settings(Section::Security, cx)
     }),
@@ -433,6 +446,15 @@ const SCREENS: [(&str, SetUp); 103] = [
     ("settings-about-update", |ws, _, cx| {
         ws.updates()
             .update(cx, |u, cx| u.offer_for_test("v99.0.0", None, cx));
+        ws.show_updates(cx);
+    }),
+    ("settings-about-update-outside-license", |ws, _, cx| {
+        // Pro's updates end in 2099: a version of a line from 2100 is not covered.
+        pro_license(cx);
+        ws.updates().update(cx, |u, cx| {
+            u.offer_for_test("v99.0.0", None, cx);
+            u.offer_line_for_test("2100-01-01", cx);
+        });
         ws.show_updates(cx);
     }),
     ("settings-about-more", |ws, _, cx| {

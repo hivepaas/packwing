@@ -1702,6 +1702,12 @@ tc52ab62f = Примечания к выпуску
 # packwing {version} is out
 t36a30d8b = Вышел packwing { $version }
 
+# Your license covers versions released until {date}. This one came out after: with it, packwing is Free until you renew. The version you have stays Pro.
+tfd489117 = Ваша лицензия распространяется на версии, выпущенные до { $date }. Эта вышла позже: с ней packwing работает как Free, пока вы не продлите лицензию. Ваша нынешняя версия остаётся Pro.
+
+# Renew
+t9a23808e = Продлить
+
 # Run these in a terminal. They check the download against the signed list of releases, and sudo asks for your password.
 t98b9753c = Выполните эти команды в терминале. Они сверяют загруженный файл с подписанным списком выпусков, а sudo запросит ваш пароль.
 
@@ -2029,17 +2035,26 @@ t8f706321 = Места
 # What your organization’s agreement covers
 t60b0c6c9 = Что охватывает соглашение вашей организации
 
-# Trial, until {date}
-t9ffc2b63 = Пробная, до { $date }
+# Ended {date}
+tfccb9305 = Истекла { $date }
+
+# This version came out after your updates ended, so it is Free. Renew, or use a version released by then: those stay Pro.
+t545a1cd3 = Эта версия вышла после окончания ваших обновлений, поэтому она Free. Продлите лицензию или используйте версию, выпущенную до того: они остаются Pro.
+
+# This version stays Pro for good, with its fixes. Versions released after need a renewal.
+tbf1ce5b8 = Эта версия остаётся Pro навсегда, вместе с её исправлениями. Для более поздних версий нужно продление.
 
 # Until {date}
 t4d9bac91 = До { $date }
 
+# Every version released by then is yours for good, with its fixes. Renew for a year more of new versions.
+t5d8058ff = Каждая версия, выпущенная до этой даты, остаётся вашей навсегда, вместе с исправлениями. Продлите, чтобы получать новые версии ещё год.
+
+# Trial, until {date}
+t9ffc2b63 = Пробная, до { $date }
+
 # Ended {date}. It keeps working for {days} days more.
 t7b9eb499 = Истекла { $date }. Будет работать ещё дней: { $days }.
-
-# Ended {date}
-tfccb9305 = Истекла { $date }
 
 # Valid
 td2661011 = Действует
@@ -2052,6 +2067,9 @@ te42a0ee6 = Эту лицензию ведёт ваша организация.
 
 # Activate
 t3b8f0190 = Активировать
+
+# Buy
+tcada780b = Купить
 
 # A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
 t9e6ecd3d = Ключ проверяется на этом компьютере. Ничего никуда не отправляется, и никакая лицензия не меняет политики вашей организации.

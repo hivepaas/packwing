@@ -214,6 +214,13 @@ pub fn package_steps(
     ]
 }
 
+/// The day `version`'s line was first released, from a signed list: what a license
+/// bought outright is held to.
+pub fn line_released(envelope: &[u8], version: &Version) -> Result<Option<String>, CheckError> {
+    let data = envelope::open(&trusted_keys()?, envelope, CONTEXT)?;
+    Ok(Manifest::parse(&data)?.line_released(version))
+}
+
 /// What a signed list offers the app at `current`: None when it is the
 /// newest of its channel.
 pub fn offer(envelope: &[u8], current: &Version) -> Result<Option<Version>, CheckError> {

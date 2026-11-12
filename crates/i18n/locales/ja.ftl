@@ -1630,6 +1630,12 @@ tc52ab62f = リリースノート
 # packwing {version} is out
 t36a30d8b = packwing { $version } がリリースされました
 
+# Your license covers versions released until {date}. This one came out after: with it, packwing is Free until you renew. The version you have stays Pro.
+tfd489117 = ご利用のライセンスは { $date } までにリリースされたバージョンが対象です。このバージョンはその後に出たため、更新するまで packwing は Free になります。今お使いのバージョンは Pro のままです。
+
+# Renew
+t9a23808e = 更新する
+
 # Run these in a terminal. They check the download against the signed list of releases, and sudo asks for your password.
 t98b9753c = これらのコマンドをターミナルで実行してください。署名付きリリース一覧と照合してダウンロードを確認し、sudo がパスワードを尋ねます。
 
@@ -1957,17 +1963,26 @@ t8f706321 = シート数
 # What your organization’s agreement covers
 t60b0c6c9 = 組織の契約が対象とする範囲
 
-# Trial, until {date}
-t9ffc2b63 = トライアル、{ $date } まで
+# Ended {date}
+tfccb9305 = { $date } に終了しました
+
+# This version came out after your updates ended, so it is Free. Renew, or use a version released by then: those stay Pro.
+t545a1cd3 = このバージョンはアップデート期間の終了後に出たため Free です。更新するか、それまでにリリースされたバージョンをお使いください。それらは Pro のままです。
+
+# This version stays Pro for good, with its fixes. Versions released after need a renewal.
+tbf1ce5b8 = このバージョンは修正版も含めてずっと Pro のままです。その後のバージョンには更新が必要です。
 
 # Until {date}
 t4d9bac91 = { $date } まで
 
+# Every version released by then is yours for good, with its fixes. Renew for a year more of new versions.
+t5d8058ff = それまでにリリースされたバージョンは、修正版も含めてずっとお使いいただけます。更新すると新しいバージョンをさらに 1 年間受け取れます。
+
+# Trial, until {date}
+t9ffc2b63 = トライアル、{ $date } まで
+
 # Ended {date}. It keeps working for {days} days more.
 t7b9eb499 = { $date } に終了しました。あと { $days } 日間は引き続き使えます。
-
-# Ended {date}
-tfccb9305 = { $date } に終了しました
 
 # Valid
 td2661011 = 有効
@@ -1980,6 +1995,9 @@ te42a0ee6 = このライセンスは組織が管理しています。
 
 # Activate
 t3b8f0190 = 有効化
+
+# Buy
+tcada780b = 購入
 
 # A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
 t9e6ecd3d = キーはこのコンピューター上で確認されます。何も外部には送信されず、ライセンスによって組織のポリシーの効果が変わることもありません。

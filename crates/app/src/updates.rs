@@ -40,6 +40,9 @@ pub struct UpdateState {
     pub skipped: Option<String>,
     /// The offered release's `.deb` or `.rpm`: its file and SHA-256.
     pub package: Option<(String, String)>,
+    /// The day the offered release's line was first released (`2027-02-01`): what a
+    /// license bought outright is held to.
+    pub offered_line: Option<String>,
     /// A release downloaded and checked: its version, and where it is.
     pub staged: Option<(String, PathBuf)>,
 }
@@ -52,6 +55,7 @@ impl Default for UpdateState {
             offered: None,
             skipped: None,
             package: None,
+            offered_line: None,
             staged: None,
         }
     }
@@ -109,17 +113,32 @@ fn install() -> Install {
     packwing_update::install_of(&exe, |k| std::env::var(k).ok())
 }
 
-/// The release a list offers, and its package's file and SHA-256.
-type Found = (Option<Version>, Option<(String, String)>);
+/// What a list offers this copy.
+#[derive(Default)]
+struct Found {
+    offered: Option<Version>,
+    /// Its package's file and SHA-256.
+    package: Option<(String, String)>,
+    /// The day its line was first released.
+    line: Option<String>,
+}
 
-/// What a signed list offers this copy, and that release's package for it.
+/// What a signed list offers this copy, that release's package for it, and its line's day.
 fn found_in(list: &[u8]) -> Result<Found, CheckError> {
     let offered = packwing_update::offer(list, &packwing_update::current())?;
     let package = match (&offered, install()) {
         (Some(v), Install::Package(tool)) => packwing_update::package_file(list, v, tool)?,
         _ => None,
     };
-    Ok((offered, package))
+    let line = match &offered {
+        Some(v) => packwing_update::line_released(list, v)?,
+        None => None,
+    };
+    Ok(Found {
+        offered,
+        package,
+        line,
+    })
 }
 
 /// What updates this copy, in the language in use: names stay as they are, the others
@@ -278,7 +297,7 @@ impl Updates {
             match packwing_update::fetch_blocking(&url) {
                 Ok(list) => found_in(&list).map_err(|e| e.to_string()),
                 // Before the first release: up to date.
-                Err(CheckError::NoList) => Ok((None, None)),
+                Err(CheckError::NoList) => Ok(Found::default()),
                 Err(e) => Err(e.to_string()),
             }
         });
@@ -287,11 +306,12 @@ impl Updates {
             let _ = this.update(cx, |this, cx| {
                 this.checking = false;
                 match found {
-                    Ok((offered, package)) => {
+                    Ok(found) => {
                         this.problem = None;
                         this.state.checked_at = Some(now_secs());
-                        this.state.offered = offered.map(|v| v.to_string());
-                        this.state.package = package;
+                        this.state.offered = found.offered.map(|v| v.to_string());
+                        this.state.package = found.package;
+                        this.state.offered_line = found.line;
                     }
                     Err(e) => this.problem = Some(e),
                 }
@@ -452,6 +472,16 @@ impl Updates {
     }
 
     /// As if the offered release had been downloaded, for the pictures.
+    /// Whether this computer's license keeps Pro with the offered release: not when it
+    /// was bought outright and its updates end before the release's line came out.
+    /// What the license is held to, if so: the day its updates end.
+    pub fn outside_license(&self, cx: &App) -> Option<time::Date> {
+        let line = packwing_license::day(self.state.offered_line.as_deref()?)?;
+        let held = cx.try_global::<crate::licensing::Licensed>()?;
+        let license = held.license.as_ref()?;
+        (license.owned && !license.covers(line)).then(|| license.expires.date())
+    }
+
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn ready_for_test(&mut self, cx: &mut Context<Self>) {
         self.stage = self.offered().map_or(Stage::Idle, Stage::Ready);
@@ -468,6 +498,13 @@ impl Updates {
     ) {
         self.state.offered = Some(version.to_owned());
         self.state.package = package;
+        cx.notify();
+    }
+
+    /// As if the release offered were of a line first released on `day`.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn offer_line_for_test(&mut self, day: &str, cx: &mut Context<Self>) {
+        self.state.offered_line = Some(day.to_owned());
         cx.notify();
     }
 }

@@ -168,6 +168,25 @@ impl Manifest {
     pub fn offer(&self, current: &Version) -> Option<Version> {
         self.newest(current.channel()).filter(|n| n > current)
     }
+
+    /// The day `version`'s line, its major and minor numbers, was first released: the
+    /// earliest `releaseDate` of its releases, or of its pre-releases when it is one
+    /// and the line has no release yet. A license bought outright is held to it, as
+    /// packwing-license's build holds its own line.
+    pub fn line_released(&self, version: &Version) -> Option<String> {
+        let dates = |pre: bool| {
+            self.releases
+                .iter()
+                .filter_map(|(name, release)| Some((Version::parse(name)?, release)))
+                .filter(|(v, _)| {
+                    v.major == version.major && v.minor == version.minor && (pre || v.pre.is_none())
+                })
+                .map(|(_, release)| release.release_date.clone())
+                .filter(|d| d.len() == 10)
+                .min()
+        };
+        dates(false).or_else(|| version.pre.as_ref().and_then(|_| dates(true)))
+    }
 }
 
 #[cfg(test)]
@@ -184,6 +203,29 @@ mod tests {
                 "releases": {{"{stable}": {{"archives": {{}}}}, "{beta}": {{"archives": {{}}}}}}}}"#
         );
         Manifest::parse(json.as_bytes()).expect("list")
+    }
+
+    #[test]
+    fn a_line_is_as_old_as_its_first_release() {
+        let m = Manifest::parse(
+            br#"{"channels": {"stable": "v0.2.1"},
+                "releases": {
+                  "v0.1.0": {"releaseDate": "2026-11-06", "archives": {}},
+                  "v0.2.0-beta1": {"releaseDate": "2027-01-10", "archives": {}},
+                  "v0.2.0": {"releaseDate": "2027-02-01", "archives": {}},
+                  "v0.2.1": {"releaseDate": "2027-06-20", "archives": {}},
+                  "v0.3.0-beta1": {"releaseDate": "2027-08-01", "archives": {}}}}"#,
+        )
+        .expect("list");
+        // A fix is as old as its line.
+        assert_eq!(m.line_released(&v("0.2.1")).as_deref(), Some("2027-02-01"));
+        assert_eq!(m.line_released(&v("0.1.0")).as_deref(), Some("2026-11-06"));
+        // A beta, before its line has a release.
+        assert_eq!(
+            m.line_released(&v("0.3.0-beta1")).as_deref(),
+            Some("2027-08-01")
+        );
+        assert_eq!(m.line_released(&v("0.4.0")), None);
     }
 
     #[test]

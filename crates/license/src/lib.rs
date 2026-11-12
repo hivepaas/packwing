@@ -4,7 +4,15 @@
 //! here with no server, and nothing is ever sent anywhere.
 //!
 //! packwing does everything without a key but keep more than [`FREE_REMOTE_STORAGES`]
-//! storages across a network. No key ever turns a policy or a security feature on or off:
+//! storages across a network, sign files and keep an audit log.
+//!
+//! Pro is bought outright: a Pro key that is not a trial is the user's for good, and its
+//! `expiresAt` is when its updates end. It gives Pro to every version whose line (its
+//! major and minor numbers) was first released by then, and to every fix of that line
+//! released after, security fixes among them, with no end: the clock is never asked.
+//! A version of a line released later is Free with it, until it is renewed. Enterprise
+//! is held by the year, as are trials: past its end and its grace, Free.
+//! No key ever turns a policy or a security feature on or off:
 //! a bill unpaid must not be a security incident. The code is free software, so this
 //! asks people to pay rather than stopping them: anyone can build it without the check.
 
@@ -15,8 +23,8 @@ use base64::engine::general_purpose::{STANDARD, STANDARD_NO_PAD};
 use packwing_i18n::tr;
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
-use time::OffsetDateTime;
 use time::format_description::well_known::Rfc3339;
+use time::{Date, OffsetDateTime};
 
 /// The signing context of packwing's keys.
 const CONTEXT: &[u8] = b"packwing-license-v1";
@@ -100,6 +108,18 @@ impl Plan {
     }
 }
 
+/// The day this build's line, its major and minor version, was first released: what a
+/// license bought outright is held to. A fix of the line keeps its line's day.
+pub fn line_released() -> Date {
+    day(env!("PACKWING_LINE_RELEASED")).unwrap_or(Date::MIN)
+}
+
+/// A day written `2026-11-12`, as the list of releases writes them.
+pub fn day(text: &str) -> Option<Date> {
+    let format = time::macros::format_description!("[year]-[month]-[day]");
+    Date::parse(text, &format).ok()
+}
+
 /// A key that verified.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct License {
@@ -110,6 +130,10 @@ pub struct License {
     /// How many computers or people it is for, if it says.
     pub seats: Option<u64>,
     pub trial: bool,
+    /// Bought outright (Pro, not a trial): `expires` is when its updates end, and what
+    /// it gives does not end.
+    pub owned: bool,
+    /// When it ends; bought outright, when its updates end.
     pub expires: OffsetDateTime,
     grace_days: i64,
 }
@@ -136,13 +160,22 @@ impl License {
         }
     }
 
-    /// What it gives on a day: nothing past its grace.
-    pub fn plan(&self, now: OffsetDateTime) -> Plan {
-        if self.standing(now) == Standing::Over {
-            Plan::Free
+    /// What it gives on a day to a build of the line first released on `line`
+    /// ([`line_released`]): bought outright, what it was bought for while its updates
+    /// cover the line, whatever the day; held by the year, nothing past its grace.
+    pub fn plan(&self, now: OffsetDateTime, line: Date) -> Plan {
+        let gives = if self.owned {
+            self.covers(line)
         } else {
-            self.bought
-        }
+            self.standing(now) != Standing::Over
+        };
+        if gives { self.bought } else { Plan::Free }
+    }
+
+    /// Whether its updates cover the line first released on `line`: always, for a
+    /// license held by the year, which ends by the day instead.
+    pub fn covers(&self, line: Date) -> bool {
+        !self.owned || line <= self.expires.date()
     }
 }
 
@@ -273,6 +306,7 @@ fn license_of(data: &[u8]) -> Option<License> {
         holder,
         seats: payload.limits.get("seats").copied(),
         trial: payload.trial,
+        owned: bought == Plan::Pro && !payload.trial,
         expires,
         grace_days: payload.grace_days,
     })
@@ -384,21 +418,82 @@ mod tests {
     }
 
     #[cfg(debug_assertions)]
+    fn date(text: &str) -> Date {
+        day(text).expect("a day")
+    }
+
+    /// `ENTERPRISE`, held by the year, ending as `EXPIRED` does.
+    #[cfg(debug_assertions)]
+    fn by_the_year() -> License {
+        License {
+            expires: at("2020-06-01T00:00:00Z"),
+            ..read(ENTERPRISE).expect("it verifies")
+        }
+    }
+
+    #[cfg(debug_assertions)]
     #[test]
-    fn a_license_past_its_end_works_through_its_grace_then_is_free() {
+    fn pro_bought_outright_keeps_the_lines_its_updates_cover() {
+        // Its updates end on 2020-06-01.
         let license = read(EXPIRED).expect("it verifies");
+        assert!(license.owned);
+        // A line released by then is Pro for good, whatever the clock says.
+        for now in ["2020-05-01T00:00:00Z", "2031-01-01T00:00:00Z"] {
+            assert_eq!(license.plan(at(now), date("2020-03-01")), Plan::Pro);
+            assert_eq!(license.plan(at(now), date("2020-06-01")), Plan::Pro);
+        }
+        // A line released after is Free with it, even on a clock set back.
+        assert_eq!(
+            license.plan(at("2020-05-01T00:00:00Z"), date("2020-06-02")),
+            Plan::Free
+        );
+        assert!(!license.covers(date("2020-06-02")));
+    }
+
+    #[cfg(debug_assertions)]
+    #[test]
+    fn enterprise_and_trials_are_held_by_the_year() {
+        let enterprise = read(ENTERPRISE).expect("it verifies");
+        assert!(!enterprise.owned && enterprise.covers(date("2090-01-01")));
+        let trial = License {
+            trial: true,
+            owned: false,
+            ..read(EXPIRED).expect("it verifies")
+        };
+        assert_eq!(
+            trial.plan(at("2020-07-02T00:00:00Z"), date("2020-01-01")),
+            Plan::Free
+        );
+    }
+
+    #[test]
+    fn this_builds_line_has_a_day() {
+        assert!(line_released() > day("2026-01-01").expect("a day"));
+    }
+
+    #[cfg(debug_assertions)]
+    #[test]
+    fn a_license_held_by_the_year_works_through_its_grace_then_is_free() {
+        let license = by_the_year();
+        let line = date("2020-01-01");
         assert_eq!(
             license.standing(at("2020-05-01T00:00:00Z")),
             Standing::Current
         );
-        assert_eq!(license.plan(at("2020-05-01T00:00:00Z")), Plan::Pro);
+        assert_eq!(
+            license.plan(at("2020-05-01T00:00:00Z"), line),
+            Plan::Enterprise
+        );
         assert_eq!(
             license.standing(at("2020-06-11T00:00:00Z")),
             Standing::InGrace(20)
         );
-        assert_eq!(license.plan(at("2020-06-11T00:00:00Z")), Plan::Pro);
+        assert_eq!(
+            license.plan(at("2020-06-11T00:00:00Z"), line),
+            Plan::Enterprise
+        );
         assert_eq!(license.standing(at("2020-07-02T00:00:00Z")), Standing::Over);
-        assert_eq!(license.plan(at("2020-07-02T00:00:00Z")), Plan::Free);
+        assert_eq!(license.plan(at("2020-07-02T00:00:00Z"), line), Plan::Free);
     }
 
     #[test]
