@@ -13,7 +13,8 @@ use std::sync::Arc;
 
 use gpui::{
     Context, Entity, EventEmitter, FocusHandle, Focusable, FontWeight, Image, KeyDownEvent,
-    ObjectFit, Render, StyledImage, Subscription, Task, Window, div, img, prelude::*, px, rgb,
+    ObjectFit, Point, Render, ScrollHandle, StyledImage, Subscription, Task, Window, div, img,
+    point, prelude::*, px, rgb,
 };
 use packwing_core::{Control, Error, Keys, Source, Storage, image_fits, image_size, preview_entry};
 use packwing_i18n::{tr, tr_n};
@@ -91,6 +92,8 @@ pub struct Viewer {
     /// A picture at its own size, where it fits the window otherwise: kept
     /// from one picture to the next, as the user chose it.
     actual: bool,
+    /// Where a picture at its own size is scrolled to: the top left for each.
+    at_size: ScrollHandle,
     /// The file after the one shown, read ahead, and what it showed.
     ahead: Option<(usize, Shown)>,
     _read: Option<Task<()>>,
@@ -335,6 +338,7 @@ impl Viewer {
             shown: Shown::Reading,
             text: cx.new(|cx| TextInput::new("", cx).read_only().code(unpainted)),
             actual: false,
+            at_size: ScrollHandle::new(),
             ahead: None,
             _read: None,
             _read_ahead: None,
@@ -363,6 +367,16 @@ impl Viewer {
         self.finding
             .as_ref()
             .map(|f| (f.found.len(), f.at, f.invalid))
+    }
+
+    /// How far the text, or the picture at its own size, is scrolled down,
+    /// for tests.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn scrolled(&self, cx: &gpui::App) -> f32 {
+        match self.shown {
+            Shown::Text(..) => self.text.read(cx).scrolled(),
+            _ => -f32::from(self.at_size.offset().y),
+        }
     }
 
     /// Whether what is shown is read, and what kind it is, for tests.
@@ -568,6 +582,7 @@ impl Viewer {
             return;
         };
         self.at = at;
+        self.at_size.set_offset(Point::default());
         if let Some((ahead, shown)) = self.ahead.take()
             && ahead == at
         {
@@ -618,6 +633,29 @@ impl Viewer {
         }
     }
 
+    /// Scrolls the text, or the picture at its own size, a little up or down;
+    /// false where it all shows, nothing to scroll.
+    fn scroll(&mut self, by: isize, window: &Window, cx: &mut Context<Self>) -> bool {
+        match &self.shown {
+            Shown::Text(..) => self
+                .text
+                .update(cx, |t, cx| t.scroll_rows(3. * by as f32, cx)),
+            Shown::Picture(_, Some(_)) if self.actual => {
+                let most = self.at_size.max_offset().y;
+                if most <= px(0.) {
+                    return false;
+                }
+                let by = ui(60.).to_pixels(window.rem_size()) * by as f32;
+                let at = self.at_size.offset();
+                self.at_size
+                    .set_offset(point(at.x, (at.y - by).clamp(-most, px(0.))));
+                cx.notify();
+                true
+            }
+            _ => false,
+        }
+    }
+
     fn ask(&self, what: fn(ViewFile) -> ViewerEvent, cx: &mut Context<Self>) {
         if let Some(file) = self.file().cloned() {
             cx.emit(what(file));
@@ -648,6 +686,13 @@ impl Viewer {
         match e.keystroke.key.as_str() {
             "left" | "pageup" => self.step(-1, cx),
             "right" | "pagedown" | "space" => self.step(1, cx),
+            // Up and Down scroll what does not fit; what fits, they step.
+            "up" | "down" => {
+                let by = if e.keystroke.key == "down" { 1 } else { -1 };
+                if !self.scroll(by, window, cx) {
+                    self.step(by, cx);
+                }
+            }
             "home" => self.show(0, cx),
             "end" => self.show(self.files.len().saturating_sub(1), cx),
             "f11" => window.toggle_fullscreen(),
@@ -827,9 +872,9 @@ impl Viewer {
                             .items_start()
                             .justify_start()
                             .child(
-                                // Each picture's own scroll, from its top left.
                                 div()
-                                    .id(("view-actual-scroll", self.at))
+                                    .id("view-actual-scroll")
+                                    .track_scroll(&self.at_size)
                                     .debug_selector(|| "view-at-size".to_owned())
                                     .size_full()
                                     .overflow_scroll()

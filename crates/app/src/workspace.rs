@@ -1014,6 +1014,12 @@ impl Workspace {
         ))
     }
 
+    /// How far the viewer's text or picture is scrolled down.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn viewer_scrolled(&self, cx: &gpui::App) -> Option<f32> {
+        Some(self.viewing.as_ref()?.viewer.read(cx).scrolled(cx))
+    }
+
     /// Searches the viewer's text for `query`, as the screenshots draw it.
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn find_in_viewer(&mut self, query: &str, window: &mut Window, cx: &mut Context<Self>) {
