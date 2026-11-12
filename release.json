@@ -4,7 +4,7 @@
   },
   "releases": {
     "v0.1.0": {
-      "releaseDate": "2026-11-06",
+      "releaseDate": "2026-11-12",
       "archives": {
         "macos_aarch64": {
           "file": "packwing_0.1.0_macos_aarch64.app.tar.gz",
