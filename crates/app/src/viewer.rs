@@ -88,7 +88,8 @@ pub struct Viewer {
     /// The text shown, when it is one: it can be chosen and copied, with a
     /// right-click menu, its lines numbered.
     text: Entity<TextInput>,
-    /// A picture at its own size, where it fits the window otherwise.
+    /// A picture at its own size, where it fits the window otherwise: kept
+    /// from one picture to the next, as the user chose it.
     actual: bool,
     /// The file after the one shown, read ahead, and what it showed.
     ahead: Option<(usize, Shown)>,
@@ -567,7 +568,6 @@ impl Viewer {
             return;
         };
         self.at = at;
-        self.actual = false;
         if let Some((ahead, shown)) = self.ahead.take()
             && ahead == at
         {
@@ -826,8 +826,10 @@ impl Viewer {
                             .items_start()
                             .justify_start()
                             .child(
+                                // Each picture's own scroll, from its top left.
                                 div()
-                                    .id("view-actual-scroll")
+                                    .id(("view-actual-scroll", self.at))
+                                    .debug_selector(|| "view-at-size".to_owned())
                                     .size_full()
                                     .overflow_scroll()
                                     .cursor_pointer()

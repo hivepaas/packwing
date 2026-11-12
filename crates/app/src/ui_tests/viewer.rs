@@ -222,3 +222,44 @@ scenario!(
         ui.wait_until("the viewer closed", |ui| !ui.shows("viewer"));
     }
 );
+
+scenario!(
+    /// A picture fits the window when the viewer opens; once the user shows
+    /// it at its own size (1), Next and Previous keep that, past a text, until
+    /// Fit is chosen again.
+    the_size_chosen_stays_from_picture_to_picture,
+    |ui| {
+        let paths = vec![
+            file(ui, "sizes/a.png", PICTURE),
+            file(ui, "sizes/b.txt", b"between"),
+            file(ui, "sizes/c.png", PICTURE),
+        ];
+        let made = zip(ui, &paths, "sizes.zip");
+        ui.open(&made);
+        assert_eq!(ui.archive_failed(), None);
+        let at = ui
+            .shown_in_archive()
+            .iter()
+            .position(|n| n == "a.png")
+            .expect("a.png listed");
+        ui.click(&format!("entry-{at}"));
+        ui.keys("enter");
+        wait_for_shown(ui, "a.png", "picture");
+        assert!(!ui.shows("view-at-size"), "it fits at first");
+        ui.keys("1");
+        ui.wait_for("view-at-size");
+        ui.keys("right");
+        wait_for_shown(ui, "b.txt", "text");
+        ui.keys("right");
+        wait_for_shown(ui, "c.png", "picture");
+        assert!(ui.shows("view-at-size"), "still at its own size");
+        ui.keys("left left");
+        wait_for_shown(ui, "a.png", "picture");
+        assert!(ui.shows("view-at-size"), "back, at its own size");
+        ui.click("view-fit");
+        assert!(!ui.shows("view-at-size"));
+        ui.keys("right right");
+        wait_for_shown(ui, "c.png", "picture");
+        assert!(!ui.shows("view-at-size"), "it fits, as chosen");
+    }
+);
