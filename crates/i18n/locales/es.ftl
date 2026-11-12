@@ -1654,6 +1654,12 @@ tc52ab62f = Notas de la versión
 # packwing {version} is out
 t36a30d8b = packwing { $version } ya está disponible
 
+# Your license covers versions released until {date}. This one came out after: with it, packwing is Free until you renew. The version you have stays Pro.
+tfd489117 = Tu licencia cubre las versiones publicadas hasta el { $date }. Esta salió después: con ella, packwing es Free hasta que renueves. La versión que tienes sigue siendo Pro.
+
+# Renew
+t9a23808e = Renovar
+
 # Run these in a terminal. They check the download against the signed list of releases, and sudo asks for your password.
 t98b9753c = Ejecuta estos comandos en un terminal. Comprueban la descarga con la lista firmada de versiones, y sudo te pedirá la contraseña.
 
@@ -1981,17 +1987,26 @@ t8f706321 = Puestos
 # What your organization’s agreement covers
 t60b0c6c9 = Qué cubre el acuerdo de tu organización
 
-# Trial, until {date}
-t9ffc2b63 = Prueba, hasta el { $date }
+# Ended {date}
+tfccb9305 = Terminó el { $date }
+
+# This version came out after your updates ended, so it is Free. Renew, or use a version released by then: those stay Pro.
+t545a1cd3 = Esta versión salió después de que terminaran tus actualizaciones, así que es Free. Renueva, o usa una versión publicada hasta entonces: esas siguen siendo Pro.
+
+# This version stays Pro for good, with its fixes. Versions released after need a renewal.
+tbf1ce5b8 = Esta versión sigue siendo Pro para siempre, con sus correcciones. Las versiones posteriores necesitan una renovación.
 
 # Until {date}
 t4d9bac91 = Hasta el { $date }
 
+# Every version released by then is yours for good, with its fixes. Renew for a year more of new versions.
+t5d8058ff = Cada versión publicada hasta entonces es tuya para siempre, con sus correcciones. Renueva para un año más de versiones nuevas.
+
+# Trial, until {date}
+t9ffc2b63 = Prueba, hasta el { $date }
+
 # Ended {date}. It keeps working for {days} days more.
 t7b9eb499 = Terminó el { $date }. Sigue funcionando { $days } días más.
-
-# Ended {date}
-tfccb9305 = Terminó el { $date }
 
 # Valid
 td2661011 = Válida
@@ -2004,6 +2019,9 @@ te42a0ee6 = Tu organización administra esta licencia.
 
 # Activate
 t3b8f0190 = Activar
+
+# Buy
+tcada780b = Comprar
 
 # A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
 t9e6ecd3d = Una clave se comprueba en este equipo. No se envía nada a ningún sitio, y ninguna licencia cambia lo que hacen las políticas de tu organización.

@@ -237,3 +237,22 @@ scenario!(
         assert!(report.breaks.is_empty(), "{report:?}");
     }
 );
+
+scenario!(
+    /// Pro bought outright is held to its updates: a key whose updates ended before
+    /// this version came out leaves it Free, and says so; one whose updates cover it is Pro.
+    pro_bought_outright_is_held_to_its_updates,
+    |ui| {
+        ui.settings(5);
+        let ended = include_str!("../../../license/testdata/expired.key").trim();
+        ui.type_in("Paste your license key", ended);
+        ui.click("license-enter");
+        assert_eq!(ui.plan(), Plan::Free);
+        assert!(ui.shows("license-updates"));
+        let pro = include_str!("../../../license/testdata/pro.key").trim();
+        ui.replace_in("Paste your license key", pro);
+        ui.click("license-enter");
+        assert_eq!(ui.plan(), Plan::Pro);
+        assert!(ui.shows("license-updates"));
+    }
+);

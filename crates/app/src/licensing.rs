@@ -59,7 +59,9 @@ impl Licensed {
 /// What this computer's license gives today.
 pub fn plan(cx: &App) -> Plan {
     let license = cx.try_global::<Licensed>().and_then(|l| l.license.as_ref());
-    license.map_or(Plan::Free, |l| l.plan(SystemTime::now().into()))
+    license.map_or(Plan::Free, |l| {
+        l.plan(SystemTime::now().into(), packwing_license::line_released())
+    })
 }
 
 /// Takes `text` as the user's key, keeping it if it is one.

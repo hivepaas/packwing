@@ -358,6 +358,7 @@ impl Prefs {
                 "update_checked_at" => p.update.checked_at = value.parse().ok(),
                 "update_offered" => p.update.offered = Some(value.to_owned()),
                 "update_skipped" => p.update.skipped = Some(value.to_owned()),
+                "update_offered_line" => p.update.offered_line = Some(value.to_owned()),
                 "update_package" => {
                     p.update.package = value
                         .split_once('\t')
@@ -501,6 +502,9 @@ impl Prefs {
         }
         if let Some(skipped) = &u.skipped {
             text.push_str(&format!("update_skipped={skipped}\n"));
+        }
+        if let Some(line) = &u.offered_line {
+            text.push_str(&format!("update_offered_line={line}\n"));
         }
         if let Some((file, sha)) = &u.package {
             text.push_str(&format!("update_package={file}\t{sha}\n"));
@@ -779,6 +783,7 @@ mod tests {
             offered: Some("v0.3.0".into()),
             skipped: Some("v0.2.0".into()),
             package: Some(("packwing_0.3.0_amd64.deb".into(), "abc".into())),
+            offered_line: Some("2027-02-01".into()),
             staged: Some(("v0.3.0".into(), PathBuf::from("/home/me/.cache/a b/x"))),
         };
         assert_eq!(Prefs::parse(&p.text()).update, p.update);

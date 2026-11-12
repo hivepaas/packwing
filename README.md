@@ -137,6 +137,14 @@ packwing is built and maintained by HivePaaS, who also make:
 
 ⭐ If packwing, or any of these, is useful to you, please give it a star on GitHub: it helps others find it, and helps us keep making them.
 
+## 💳 Plans
+
+- **Free**: every feature but signing files and keeping an audit log of your own, with one storage across a network. Folders on the computer are not limited, any signature can be checked, and what an organization's policy turns on is never held back.
+- **Pro, $15 once**: everything, with any number of storages. It is yours for good: every version released in the year after you buy it stays Pro, with all of its fixes, security fixes among them, released after. Renewing adds a year of new versions; a version released after your year is Free until you do, and the app says so before you update to it.
+- **Enterprise, $4 per person a month**: Pro for an organization, by the year, with its policies.
+
+A key is checked on the computer: nothing is sent anywhere. packwing is free software, so a key asks you to pay rather than stopping you.
+
 ## 📜 License
 
 packwing is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License, version 3 or (at your option) any later version. See [LICENSE](LICENSE). Copyright (C) 2026 HivePaaS.

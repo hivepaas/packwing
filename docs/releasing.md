@@ -86,7 +86,8 @@ scripts/package_macos.sh
    checks that the tag is `Cargo.toml`'s version, builds the five platforms,
    and makes a **draft** release with the files and `SHA256SUMS`.
 4. **Check the draft** ([Checking a release](#checking-a-release)), and publish it.
-5. **The list.** Add the release to `release.json` with the SHA-256 of the
+5. **The list.** Add the release to `release.json`, its `releaseDate` the day
+   it is published, with the SHA-256 of the
    `.app.tar.gz` files and the installer under `archives`, and of the `.deb`
    and `.rpm` files under `packages` (never `archives`: [updates.md](updates.md#the-list-of-releases)),
    all from `SHA256SUMS`, and merge it. Sign what is on `main`
@@ -95,6 +96,14 @@ scripts/package_macos.sh
 
 A release that went wrong is not deleted once the list names it: the next one
 replaces it.
+
+**Lines and Pro.** A version's line is its major and minor numbers (0.2), and is
+as old as its first release in `release.json`: a Pro license bought outright
+keeps every line released before its updates end, with all of its fixes. So a
+fix goes out as a patch of each line still in use (0.2.3, beside 0.3.1), and a
+new feature as a new line. The build reads the list for its line's day
+(`crates/license/build.rs`); a line's first release, not listed yet when it is
+built, takes the day it is built.
 
 ## Checking a release
 

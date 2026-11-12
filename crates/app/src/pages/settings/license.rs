@@ -7,6 +7,9 @@ use packwing_i18n::tr;
 use packwing_license::{FREE_REMOTE_STORAGES, Plan, Standing};
 
 use super::{rows, section, setting};
+
+/// Where a license is bought and renewed.
+pub const BUY: &str = "https://packwing.app/pricing";
 use crate::colors::colors;
 use crate::input::TextInput;
 use crate::licensing::{self, Licensed};
@@ -83,21 +86,58 @@ impl Render for LicenseSection {
                 ));
             }
             let date = license.expires.date().to_string();
-            let until = match license.standing(now) {
-                Standing::Current if license.trial => tr!("Trial, until {date}", date = date),
-                Standing::Current => tr!("Until {date}", date = date),
-                Standing::InGrace(days) => tr!(
-                    "Ended {date}. It keeps working for {days} days more.",
-                    date = date,
-                    days = days
-                ),
-                Standing::Over => tr!("Ended {date}", date = date),
-            };
-            lines.push(setting(
-                tr!("Valid"),
-                tr!("Past this, packwing is Free. Nothing is taken away but adding storages."),
-                div().text_size(ui(15.)).child(until),
-            ));
+            if license.owned {
+                let ended = license.expires < now;
+                let (until, said) = if !license.covers(packwing_license::line_released()) {
+                    (
+                        tr!("Ended {date}", date = date),
+                        tr!(
+                            "This version came out after your updates ended, so it is Free. \
+                             Renew, or use a version released by then: those stay Pro."
+                        ),
+                    )
+                } else if ended {
+                    (
+                        tr!("Ended {date}", date = date),
+                        tr!("This version stays Pro for good, with its fixes. Versions \
+                             released after need a renewal."),
+                    )
+                } else {
+                    (
+                        tr!("Until {date}", date = date),
+                        tr!(
+                            "Every version released by then is yours for good, with its \
+                             fixes. Renew for a year more of new versions."
+                        ),
+                    )
+                };
+                lines.push(setting(
+                    tr!("Updates"),
+                    said,
+                    div()
+                        .debug_selector(|| "license-updates".to_owned())
+                        .text_size(ui(15.))
+                        .child(until),
+                ));
+            } else {
+                let until = match license.standing(now) {
+                    Standing::Current if license.trial => {
+                        tr!("Trial, until {date}", date = date)
+                    }
+                    Standing::Current => tr!("Until {date}", date = date),
+                    Standing::InGrace(days) => tr!(
+                        "Ended {date}. It keeps working for {days} days more.",
+                        date = date,
+                        days = days
+                    ),
+                    Standing::Over => tr!("Ended {date}", date = date),
+                };
+                lines.push(setting(
+                    tr!("Valid"),
+                    tr!("Past this, packwing is Free. Nothing is taken away but adding storages."),
+                    div().text_size(ui(15.)).child(until),
+                ));
+            }
         }
         let problem = self.problem.clone().or(held.problem.clone());
         section()
@@ -126,6 +166,19 @@ impl Render for LicenseSection {
                         .child(
                             button("license-enter", tr!("Activate"), Fill::Accent, Size::Medium)
                                 .on_click(cx.listener(|this, _, _, cx| this.enter(cx))),
+                        )
+                        .child(
+                            button(
+                                "license-buy",
+                                if held.license.as_ref().is_some_and(|l| l.owned) {
+                                    tr!("Renew")
+                                } else {
+                                    tr!("Buy")
+                                },
+                                Fill::Outline,
+                                Size::Medium,
+                            )
+                            .on_click(|_, _, cx| cx.open_url(BUY)),
                         )
                         .when(held.license.is_some(), |d| {
                             d.child(

@@ -254,6 +254,27 @@ impl About {
                 })
             };
             let title = tr!("packwing {version} is out", version = version);
+            // Bought outright, a license whose updates end before this release's line
+            // leaves it Free: said before it is taken, never after.
+            let outside = u.outside_license(cx);
+            let license_note = move || {
+                outside.map(|until| {
+                    note(Tone::Warn)
+                        .debug_selector(|| "update-outside-license".to_owned())
+                        .child(tr!(
+                            "Your license covers versions released until {date}. This one came \
+                             out after: with it, packwing is Free until you renew. The version \
+                             you have stays Pro.",
+                            date = until.to_string()
+                        ))
+                })
+            };
+            let renew = move || {
+                outside.map(|_| {
+                    button("update-renew", tr!("Renew"), Fill::Outline, Size::Medium)
+                        .on_click(|_, _, cx| cx.open_url(super::license::BUY))
+                })
+            };
             if let Some(steps) = u.steps() {
                 let line = steps.join(" && ");
                 let mono = mono_font(window);
@@ -282,6 +303,7 @@ impl About {
                             div().child(format!("{step}{more}"))
                         })),
                 )
+                .children(license_note())
                 .child(
                     actions()
                         .child(
@@ -291,6 +313,7 @@ impl About {
                                 }),
                             ),
                         )
+                        .children(renew())
                         .child(notes)
                         .child(skip(handle)),
                 );
@@ -328,6 +351,7 @@ impl About {
             };
             let getter = handle.clone();
             return card(title, explain(said))
+                .children(license_note())
                 .when_some(failed, |d, why| d.child(note(Tone::Warn).child(why)))
                 .child(
                     actions()
@@ -337,6 +361,7 @@ impl About {
                                     .on_click(move |_, _, cx| getter.update(cx, |u, cx| u.get(cx))),
                             )
                         })
+                        .children(renew())
                         .child(notes)
                         .child(skip(handle)),
                 );

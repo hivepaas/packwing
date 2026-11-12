@@ -1702,6 +1702,12 @@ tc52ab62f = Примітки до випуску
 # packwing {version} is out
 t36a30d8b = Вийшов packwing { $version }
 
+# Your license covers versions released until {date}. This one came out after: with it, packwing is Free until you renew. The version you have stays Pro.
+tfd489117 = Ваша ліцензія охоплює версії, випущені до { $date }. Ця вийшла пізніше: з нею packwing працює як Free, доки ви не подовжите ліцензію. Ваша теперішня версія лишається Pro.
+
+# Renew
+t9a23808e = Подовжити
+
 # Run these in a terminal. They check the download against the signed list of releases, and sudo asks for your password.
 t98b9753c = Виконайте ці команди в терміналі. Вони звіряють завантажений файл із підписаним списком випусків, а sudo запитає ваш пароль.
 
@@ -2029,17 +2035,26 @@ t8f706321 = Місця
 # What your organization’s agreement covers
 t60b0c6c9 = Що охоплює угода вашої організації
 
-# Trial, until {date}
-t9ffc2b63 = Пробна, до { $date }
+# Ended {date}
+tfccb9305 = Закінчилась { $date }
+
+# This version came out after your updates ended, so it is Free. Renew, or use a version released by then: those stay Pro.
+t545a1cd3 = Ця версія вийшла після завершення ваших оновлень, тому вона Free. Подовжте ліцензію або користуйтеся версією, випущеною до того: вони лишаються Pro.
+
+# This version stays Pro for good, with its fixes. Versions released after need a renewal.
+tbf1ce5b8 = Ця версія лишається Pro назавжди, разом з її виправленнями. Для пізніших версій потрібне подовження.
 
 # Until {date}
 t4d9bac91 = До { $date }
 
+# Every version released by then is yours for good, with its fixes. Renew for a year more of new versions.
+t5d8058ff = Кожна версія, випущена до цієї дати, лишається вашою назавжди, разом з виправленнями. Подовжте, щоб отримувати нові версії ще рік.
+
+# Trial, until {date}
+t9ffc2b63 = Пробна, до { $date }
+
 # Ended {date}. It keeps working for {days} days more.
 t7b9eb499 = Закінчилась { $date }. Вона діятиме ще { $days } дн.
-
-# Ended {date}
-tfccb9305 = Закінчилась { $date }
 
 # Valid
 td2661011 = Дійсна
@@ -2052,6 +2067,9 @@ te42a0ee6 = Цією ліцензією керує ваша організаці
 
 # Activate
 t3b8f0190 = Активувати
+
+# Buy
+tcada780b = Купити
 
 # A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
 t9e6ecd3d = Ключ перевіряється на цьому комп’ютері. Нічого нікуди не надсилається, і жодна ліцензія не змінює того, що роблять політики вашої організації.

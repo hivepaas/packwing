@@ -1630,6 +1630,12 @@ tc52ab62f = 发行说明
 # packwing {version} is out
 t36a30d8b = packwing { $version } 已发布
 
+# Your license covers versions released until {date}. This one came out after: with it, packwing is Free until you renew. The version you have stays Pro.
+tfd489117 = 你的许可证涵盖 { $date } 之前发布的版本。此版本在那之后发布：使用它时，packwing 为 Free，直到你续订。你当前的版本仍为 Pro。
+
+# Renew
+t9a23808e = 续订
+
 # Run these in a terminal. They check the download against the signed list of releases, and sudo asks for your password.
 t98b9753c = 请在终端中运行这些命令。它们会根据已签名的版本列表校验下载内容，sudo 会询问你的密码。
 
@@ -1957,17 +1963,26 @@ t8f706321 = 席位
 # What your organization’s agreement covers
 t60b0c6c9 = 贵组织的协议所涵盖的内容
 
-# Trial, until {date}
-t9ffc2b63 = 试用，截至 { $date }
+# Ended {date}
+tfccb9305 = 已于 { $date } 结束
+
+# This version came out after your updates ended, so it is Free. Renew, or use a version released by then: those stay Pro.
+t545a1cd3 = 此版本在你的更新期结束后发布，因此为 Free。请续订，或使用在那之前发布的版本：那些版本仍为 Pro。
+
+# This version stays Pro for good, with its fixes. Versions released after need a renewal.
+tbf1ce5b8 = 此版本及其修复永久保持 Pro。之后发布的版本需要续订。
 
 # Until {date}
 t4d9bac91 = 截至 { $date }
 
+# Every version released by then is yours for good, with its fixes. Renew for a year more of new versions.
+t5d8058ff = 在那之前发布的每个版本及其修复永久归你所有。续订可再获得一年的新版本。
+
+# Trial, until {date}
+t9ffc2b63 = 试用，截至 { $date }
+
 # Ended {date}. It keeps working for {days} days more.
 t7b9eb499 = 已于 { $date } 结束。仍可继续使用 { $days } 天。
-
-# Ended {date}
-tfccb9305 = 已于 { $date } 结束
 
 # Valid
 td2661011 = 有效
@@ -1980,6 +1995,9 @@ te42a0ee6 = 此许可证由你的组织管理。
 
 # Activate
 t3b8f0190 = 激活
+
+# Buy
+tcada780b = 购买
 
 # A key is checked on this computer. Nothing is sent anywhere, and no license changes what your organization’s policies do.
 t9e6ecd3d = 密钥在此电脑上验证。不会向任何地方发送任何内容，许可证也不会改变你所在组织的策略效果。
