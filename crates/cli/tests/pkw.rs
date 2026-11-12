@@ -411,6 +411,80 @@ fn an_archive_is_converted_and_a_passphrase_suggested() {
 }
 
 #[test]
+fn patterns_say_what_goes_in() {
+    let s = Scratch::new("patterns");
+    for name in [
+        "src/build/o.o",
+        "src/docs/build",
+        "src/app.LOG",
+        "src/gen/x/made.rs",
+    ] {
+        let path = s.path(name);
+        std::fs::create_dir_all(path.parent().expect("a folder")).expect("a folder");
+        std::fs::write(path, "x\n").expect("a file");
+    }
+    let files = |archive: &str| -> Vec<String> {
+        let listed = ok(&s.pkw(&["list", archive]));
+        let mut files: Vec<String> = listed
+            .lines()
+            .filter(|l| !l.ends_with('/'))
+            .map(str::to_owned)
+            .collect();
+        files.sort();
+        files
+    };
+    // A folder pattern leaves a file of that name; letters match in either
+    // case; `**` is any folders; a path is in the folder given.
+    ok(&s.pkw(&[
+        "create",
+        "-q",
+        "out.zip",
+        "src",
+        "--exclude",
+        "build/",
+        "--exclude",
+        "*.log",
+        "--exclude",
+        "gen/**/made.rs",
+    ]));
+    assert_eq!(
+        files("out.zip"),
+        ["src/docs/build", "src/docs/notes.txt", "src/numbers.txt"]
+    );
+    ok(&s.pkw(&[
+        "create",
+        "-q",
+        "docs.zip",
+        "src",
+        "--include",
+        "docs/",
+        "--exclude",
+        "build",
+    ]));
+    assert_eq!(files("docs.zip"), ["src/docs/notes.txt"]);
+    // Converting, the paths are the archive's.
+    ok(&s.pkw(&["create", "-q", "all.tar", "src"]));
+    ok(&s.pkw(&[
+        "convert",
+        "-q",
+        "all.tar",
+        "picked.7z",
+        "--exclude",
+        "src/build/",
+    ]));
+    let picked = files("picked.7z");
+    assert!(
+        !picked.iter().any(|f| f.starts_with("src/build/")),
+        "{picked:?}"
+    );
+    assert!(picked.contains(&"src/docs/build".to_owned()), "{picked:?}");
+    // What nothing matches is said.
+    let none = s.pkw(&["create", "-q", "none.zip", "src", "--include", "*.pdf"]);
+    assert_eq!(none.status.code(), Some(1), "{none:?}");
+    assert!(!s.path("none.zip").exists());
+}
+
+#[test]
 fn a_folder_is_listed_and_files_copied_and_moved() {
     let s = Scratch::new("folders");
     std::fs::create_dir_all(s.path("out")).expect("a folder");

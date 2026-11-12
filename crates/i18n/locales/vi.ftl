@@ -640,6 +640,81 @@ t808b85c5 = Nhập cụm mật khẩu của tệp khoá
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Bản thân tệp khoá cũng được bảo vệ. packwing chỉ giữ cụm mật khẩu của nó khi tệp nén còn mở, và không bao giờ ghi lại.
 
+# Version control
+t0b7280ee = Quản lý phiên bản
+
+# Packages and builds
+t237b373e = Gói và bản build
+
+# System files
+te8be6b83 = Tệp hệ thống
+
+# Temporary files
+td4fe1263 = Tệp tạm
+
+# Logs
+t51a96da6 = Nhật ký
+
+# Pictures
+t0d70feae = Ảnh
+
+# Documents
+t5a036285 = Tài liệu
+
+# Videos
+t63609fed = Video
+
+# Music
+t584a1d74 = Nhạc
+
+# node_modules/, *.log, src/**/gen/
+t56c5448d = node_modules/, *.log, src/**/gen/
+
+# Only {list}
+te15bdb01 = Chỉ { $list }
+
+# Not {list}
+t1a289d6e = Bỏ { $list }
+
+# Everything chosen
+tb453b09a = Mọi thứ đã chọn
+
+# {n} file left out | {n} files left out
+t22bcfff6 =
+    { $n ->
+       *[other] Bỏ { $n } tệp
+    }
+
+# They leave nothing out.
+t999b68fd = Không bỏ tệp nào.
+
+# They leave out {n} file, {size}. | They leave out {n} files, {size}.
+tc709cfda =
+    { $n ->
+       *[other] Bỏ { $n } tệp, { $size }.
+    }
+
+# Leave out
+ta50cc084 = Bỏ qua
+
+# Take only
+t2fd02f84 = Chỉ lấy
+
+# Add the usual
+t17ad93a1 = Thêm nhanh
+
+# Only what these name goes in, and the folders it is in.
+ta0bd7335 = Chỉ những gì khớp mới được nén, cùng các thư mục chứa chúng.
+
+# A name is anywhere; a / at its end names a folder; ** is any folders.
+t524d506a = Tên đứng một mình khớp ở mọi nơi; / ở cuối là thư mục; ** là bao nhiêu thư mục cũng được.
+
+# Filter
+tf4a9c097 = Lọc
+
+# Edit…
+t8e7efcd7 = Sửa…
+
 # kept, {size}
 t001f6992 = đã giữ, { $size }
 
@@ -816,9 +891,6 @@ tb75acfb1 =
     { $n ->
        *[other] { $count } tệp không giải nén được với tên của nó ở đây. Chưa có gì được ghi: dừng, bỏ qua, hay đổi tên?
     }
-
-# Leave out
-ta50cc084 = Bỏ qua
 
 # {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
 t0eeaf0b8 =
@@ -2188,9 +2260,6 @@ t87f62cb7 = Đang kiểm tra…
 # It asks again after 5 minutes left unused.
 t69c22a3b = Nó hỏi lại sau 5 phút không dùng.
 
-# Edit…
-t8e7efcd7 = Sửa…
-
 # Remove from this list
 t8c7c7c57 = Gỡ khỏi danh sách này
 
@@ -2463,6 +2532,9 @@ tff43ce74 = Tệp nén không thể nằm trong chính nó.
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = “{ $bare }” đã có trong tệp nén. Không có gì thay đổi.
+
+# Nothing chosen matches the patterns given.
+te132289a = Không có gì trong phần đã chọn khớp với các mẫu.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = Trước khi tải lên, tệp nén này được tạo trong { $folder }, có thể cần tới { $need }. Ở đó chỉ còn trống { $free }.

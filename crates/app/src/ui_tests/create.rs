@@ -561,3 +561,42 @@ scenario!(
         }
     }
 );
+
+scenario!(
+    /// Patterns typed and added from the usual ones leave files out of it.
+    patterns_leave_files_out,
+    |ui| {
+        let work = ui.work.clone();
+        let proj = work.join("proj");
+        for name in ["a.txt", "b.log", "node_modules/pkg/x.js", "docs/c.pdf"] {
+            let path = proj.join(name);
+            std::fs::create_dir_all(path.parent().expect("a folder")).expect("a folder");
+            std::fs::write(path, "x").expect("a file");
+        }
+        ui.ws(|ws, window, cx| ws.open_create(vec![proj], window, cx));
+        ui.wait_for("create");
+        ui.click("edit-patterns");
+        ui.type_in("node_modules/, *.log, src/**/gen/", "*.LOG");
+        ui.keys("enter");
+        assert!(ui.shows("pattern: *.LOG"));
+        ui.click("presets");
+        ui.click("preset-builds");
+        assert!(ui.shows("pattern: node_modules/"));
+        // Backspace in the empty field takes the last back.
+        ui.type_in("node_modules/, *.log, src/**/gen/", "*.tmp");
+        ui.keys("enter");
+        assert!(ui.shows("pattern: *.tmp"));
+        ui.keys("backspace");
+        assert!(!ui.shows("pattern: *.tmp"));
+        // Counted: what they leave out is said.
+        ui.wait_for("left-out");
+        ui.click("create");
+        ui.wait_for_no_dialog();
+        let mut files: Vec<String> = listed(&work.join("proj.zip"), None)
+            .into_iter()
+            .filter(|n| n.contains('.'))
+            .collect();
+        files.sort();
+        assert_eq!(files, ["proj/a.txt", "proj/docs/c.pdf"]);
+    }
+);

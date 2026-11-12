@@ -19,6 +19,7 @@ use packwing_core::{Blocks, Frames, Keep, Kind, NewArchive, Route, Source};
 pub(crate) use packwing_core::Level;
 
 use super::chosen::{self, Choosing};
+use super::patterns::{Patterns, PatternsChanged};
 use super::{
     Converting, Creating, DialogEvent, Job, Saving, SavingOn, Verb, footer, header, places,
 };
@@ -275,6 +276,8 @@ pub struct CreateDialog {
     suggested: String,
     /// What the files are counted to hold, being counted.
     _counting: Option<Task<()>>,
+    /// What goes in of what is chosen.
+    patterns: Entity<Patterns>,
     name: Entity<TextInput>,
     format: Entity<Select>,
     level: Level,
@@ -376,6 +379,7 @@ impl CreateDialog {
             cx.new(|_| Select::new(&UNITS.map(|(u, _)| u), 0, SelectLook::Pill).marked("unit"));
         let password = cx.new(|cx| TextInput::new(tr!("Password"), cx).masked());
         let key = cx.new(|cx| TextInput::new(tr!("age1…, age1pq1… or ssh-ed25519 …"), cx));
+        let patterns = cx.new(Patterns::new);
         // What is drawn follows what is typed and chosen: the extension, the
         // notes, the password's strength.
         let follow = vec![
@@ -388,6 +392,9 @@ impl CreateDialog {
             cx.subscribe(&unit, |_, _, _: &Chosen, cx| cx.notify()),
             cx.subscribe(&password, |_, _, _: &Changed, cx| cx.notify()),
             cx.subscribe(&key, |_, _, _: &Changed, cx| cx.notify()),
+            cx.subscribe(&patterns, |this: &mut Self, _, _: &PatternsChanged, cx| {
+                this.count(cx);
+            }),
         ];
         CreateDialog {
             converting: false,
@@ -403,6 +410,7 @@ impl CreateDialog {
             body_scroll: ScrollHandle::new(),
             suggested,
             _counting: None,
+            patterns,
             name,
             format,
             level: kept.level,
@@ -474,6 +482,12 @@ impl CreateDialog {
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn frames_chosen(&self, cx: &App) -> Frames {
         self.frames(cx)
+    }
+
+    /// The patterns' part of it.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn patterns(&self) -> Entity<Patterns> {
+        self.patterns.clone()
     }
 
     #[cfg(all(test, feature = "test-hooks"))]
@@ -677,21 +691,47 @@ impl CreateDialog {
     fn changed_what_goes_in(&mut self, cx: &mut Context<Self>) {
         self.follow_formats(cx);
         self.follow_name(cx);
+        self.count(cx);
+        cx.notify();
+    }
+
+    /// Counts what goes in, as the patterns take it, and what they leave out.
+    fn count(&mut self, cx: &mut Context<Self>) {
+        if self.converting {
+            return;
+        }
         let paths = self.selection.paths.clone();
-        let counting = cx
-            .background_executor()
-            .spawn(async move { packwing_core::measure(&paths) });
+        let filter = self.patterns.read(cx).filter();
+        let counting = cx.background_executor().spawn(async move {
+            let taken = packwing_core::measure(&paths, &filter)?;
+            let all = if filter.is_everything() {
+                None
+            } else {
+                Some(packwing_core::measure(
+                    &paths,
+                    &packwing_core::Filter::default(),
+                )?)
+            };
+            Ok::<_, packwing_core::Error>((taken, all))
+        });
         self._counting = Some(cx.spawn(async move |this, cx| {
             // One that cannot be read says so when the archive is made.
-            let measured = counting.await.unwrap_or_default();
+            let (measured, all) = counting.await.unwrap_or_default();
             let _ = this.update(cx, |this, cx| {
                 this.selection.files = measured.files;
                 this.selection.bytes = measured.bytes;
                 this.selection.not_portable = measured.not_portable;
+                let left_out = all.map(|all| {
+                    (
+                        all.files.saturating_sub(measured.files),
+                        all.bytes.saturating_sub(measured.bytes),
+                    )
+                });
+                this.patterns
+                    .update(cx, |p, cx| p.set_left_out(left_out, cx));
                 cx.notify();
             });
         }));
-        cx.notify();
     }
 
     /// Asks for files, or for a folder, to add.
@@ -1076,6 +1116,7 @@ impl CreateDialog {
                 blocks: self.blocks(cx),
                 keep: self.kept(cx),
                 times: Default::default(),
+                filter: self.patterns.read(cx).filter(),
             },
         });
         if self.converting
@@ -1244,6 +1285,7 @@ impl CreateDialog {
                         ),
                 )
             })
+            .child(self.patterns.clone())
             .child(
                 div()
                     .flex()

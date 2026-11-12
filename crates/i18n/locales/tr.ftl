@@ -646,6 +646,83 @@ t808b85c5 = Anahtar dosyasının parola ifadesini girin
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Anahtar dosyasının kendisi korunuyor. packwing parola ifadesini yalnızca arşiv açıkken tutar ve hiçbir yere yazmaz.
 
+# Version control
+t0b7280ee = Sürüm denetimi
+
+# Packages and builds
+t237b373e = Paketler ve derlemeler
+
+# System files
+te8be6b83 = Sistem dosyaları
+
+# Temporary files
+td4fe1263 = Geçici dosyalar
+
+# Logs
+t51a96da6 = Günlükler
+
+# Pictures
+t0d70feae = Resimler
+
+# Documents
+t5a036285 = Belgeler
+
+# Videos
+t63609fed = Videolar
+
+# Music
+t584a1d74 = Müzik
+
+# node_modules/, *.log, src/**/gen/
+t56c5448d = node_modules/, *.log, src/**/gen/
+
+# Only {list}
+te15bdb01 = Yalnızca { $list }
+
+# Not {list}
+t1a289d6e = { $list } hariç
+
+# Everything chosen
+tb453b09a = Seçilen her şey
+
+# {n} file left out | {n} files left out
+t22bcfff6 =
+    { $n ->
+        [one] { $n } dosya dışarıda
+       *[other] { $n } dosya dışarıda
+    }
+
+# They leave nothing out.
+t999b68fd = Hiçbir şeyi dışarıda bırakmıyorlar.
+
+# They leave out {n} file, {size}. | They leave out {n} files, {size}.
+tc709cfda =
+    { $n ->
+        [one] { $n } dosyayı dışarıda bırakıyorlar, { $size }.
+       *[other] { $n } dosyayı dışarıda bırakıyorlar, { $size }.
+    }
+
+# Leave out
+ta50cc084 = Atla
+
+# Take only
+t2fd02f84 = Yalnızca bunlar
+
+# Add the usual
+t17ad93a1 = Sık kullanılanları ekle
+
+# Only what these name goes in, and the folders it is in.
+ta0bd7335 = Yalnızca adlandırdıkları ve bulundukları klasörler girer.
+
+# A name is anywhere; a / at its end names a folder; ** is any folders.
+t524d506a = Tek başına bir ad her yerde geçerli; sondaki / klasör demek; ** herhangi klasörler demek.
+
+# Filter
+tf4a9c097 = Filtre
+
+# Edit…
+t8e7efcd7 = Düzenle…
+
 # kept, {size}
 t001f6992 = tutuldu, { $size }
 
@@ -825,9 +902,6 @@ tb75acfb1 =
         [one] { $count } dosya burada kendi adıyla çıkarılamıyor. Henüz hiçbir şey yazılmadı: durdurulsun mu, atlansın mı, yeniden mi adlandırılsın?
        *[other] { $count } dosya burada kendi adlarıyla çıkarılamıyor. Henüz hiçbir şey yazılmadı: durdurulsun mu, atlansın mı, yeniden mi adlandırılsın?
     }
-
-# Leave out
-ta50cc084 = Atla
 
 # {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
 t0eeaf0b8 =
@@ -2211,9 +2285,6 @@ t87f62cb7 = Denetleniyor…
 # It asks again after 5 minutes left unused.
 t69c22a3b = 5 dakika kullanılmazsa yeniden sorar.
 
-# Edit…
-t8e7efcd7 = Düzenle…
-
 # Remove from this list
 t8c7c7c57 = Bu listeden kaldır
 
@@ -2501,6 +2572,9 @@ tff43ce74 = Bir arşiv kendi içine konamaz.
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = “{ $bare }” arşivde zaten var. Hiçbir şey değiştirilmedi.
+
+# Nothing chosen matches the patterns given.
+te132289a = Seçilenlerden hiçbiri desenlerle eşleşmiyor.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = Yüklenmeden önce bu arşiv { $folder } içinde oluşturulur ve orada { $need } kadar yer tutabilir. Orada yalnızca { $free } boş.

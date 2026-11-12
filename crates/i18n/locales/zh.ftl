@@ -640,6 +640,81 @@ t808b85c5 = 输入密钥文件的密码短语
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = 密钥文件本身受到保护。packwing 仅在压缩包打开期间保留其密码短语，且从不将其写下来。
 
+# Version control
+t0b7280ee = 版本控制
+
+# Packages and builds
+t237b373e = 依赖包与构建产物
+
+# System files
+te8be6b83 = 系统文件
+
+# Temporary files
+td4fe1263 = 临时文件
+
+# Logs
+t51a96da6 = 日志
+
+# Pictures
+t0d70feae = 图片
+
+# Documents
+t5a036285 = 文档
+
+# Videos
+t63609fed = 视频
+
+# Music
+t584a1d74 = 音乐
+
+# node_modules/, *.log, src/**/gen/
+t56c5448d = node_modules/, *.log, src/**/gen/
+
+# Only {list}
+te15bdb01 = 仅 { $list }
+
+# Not {list}
+t1a289d6e = 排除 { $list }
+
+# Everything chosen
+tb453b09a = 所有选中的内容
+
+# {n} file left out | {n} files left out
+t22bcfff6 =
+    { $n ->
+       *[other] 排除 { $n } 个文件
+    }
+
+# They leave nothing out.
+t999b68fd = 不排除任何内容。
+
+# They leave out {n} file, {size}. | They leave out {n} files, {size}.
+tc709cfda =
+    { $n ->
+       *[other] 将排除 { $n } 个文件，共 { $size }。
+    }
+
+# Leave out
+ta50cc084 = 跳过
+
+# Take only
+t2fd02f84 = 仅包含
+
+# Add the usual
+t17ad93a1 = 添加常用项
+
+# Only what these name goes in, and the folders it is in.
+ta0bd7335 = 只有匹配的内容及其所在文件夹会放入。
+
+# A name is anywhere; a / at its end names a folder; ** is any folders.
+t524d506a = 单独的名称在任何位置都匹配；末尾的 / 表示文件夹；** 表示任意层文件夹。
+
+# Filter
+tf4a9c097 = 筛选
+
+# Edit…
+t8e7efcd7 = 编辑…
+
 # kept, {size}
 t001f6992 = 已保留，{ $size }
 
@@ -816,9 +891,6 @@ tb75acfb1 =
     { $n ->
        *[other] { $count } 个文件无法以其名称在这里解压。尚未写入任何内容：停止、跳过还是重命名？
     }
-
-# Leave out
-ta50cc084 = 跳过
 
 # {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
 t0eeaf0b8 =
@@ -2188,9 +2260,6 @@ t87f62cb7 = 正在检查…
 # It asks again after 5 minutes left unused.
 t69c22a3b = 闲置 5 分钟后会再次询问。
 
-# Edit…
-t8e7efcd7 = 编辑…
-
 # Remove from this list
 t8c7c7c57 = 从此列表中移除
 
@@ -2463,6 +2532,9 @@ tff43ce74 = 压缩包不能放入它自身。
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = “{ $bare }”已在压缩包中。未做任何更改。
+
+# Nothing chosen matches the patterns given.
+te132289a = 所选内容中没有与这些模式匹配的项。
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = 上传前，此压缩包会先在 { $folder } 中生成，可能需要多达 { $need }。那里只有 { $free } 可用。

@@ -1557,7 +1557,6 @@ fn converts_an_archive_into_each_format_entry_by_entry() {
             &s.0.join(name),
             &new,
             &ExtractOptions::default(),
-            &packwing_core::Filter::default(),
             &Control::default(),
         )
         .unwrap();
@@ -1574,7 +1573,6 @@ fn converts_an_archive_into_each_format_entry_by_entry() {
         &s.0.join("b.zip"),
         &NewArchive::default(),
         &ExtractOptions::default(),
-        &packwing_core::Filter::default(),
         &Control::default(),
     )
     .unwrap();
@@ -1585,9 +1583,11 @@ fn converts_an_archive_into_each_format_entry_by_entry() {
         &from,
         &Keys::default(),
         &s.0.join("picked.zip"),
-        &NewArchive::default(),
+        &NewArchive {
+            filter,
+            ..NewArchive::default()
+        },
         &ExtractOptions::default(),
-        &filter,
         &Control::default(),
     )
     .unwrap();
@@ -1607,7 +1607,6 @@ fn a_damaged_file_is_left_out_of_what_is_converted() {
     let from = s.file("a.zip", &data);
     let to = s.0.join("b.7z");
     let how = ExtractOptions::default();
-    let all = packwing_core::Filter::default();
     // Stopped, it leaves nothing.
     let e = convert(
         &from,
@@ -1615,7 +1614,6 @@ fn a_damaged_file_is_left_out_of_what_is_converted() {
         &to,
         &NewArchive::default(),
         &how,
-        &all,
         &Control::default(),
     );
     assert!(matches!(e, Err(Error::Failed(_))), "{e:?}");
@@ -1628,7 +1626,7 @@ fn a_damaged_file_is_left_out_of_what_is_converted() {
         kind: packwing_core::Kind::SevenZip,
         ..packwing_core::NewArchive::default()
     };
-    let done = convert(&from, &Keys::default(), &to, &new, &how, &all, &control).unwrap();
+    let done = convert(&from, &Keys::default(), &to, &new, &how, &control).unwrap();
     assert_eq!(damages(&done.summary).len(), 1);
     let out = s.0.join("out");
     extract(&done.made, &out, &Keys::default(), &Control::default()).unwrap();

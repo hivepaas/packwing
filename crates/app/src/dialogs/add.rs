@@ -134,9 +134,9 @@ impl AddDialog {
 
     fn count_what_goes_in(&mut self, cx: &mut Context<Self>) {
         let paths = self.selection.paths.clone();
-        let counting = cx
-            .background_executor()
-            .spawn(async move { packwing_core::measure(&paths) });
+        let counting = cx.background_executor().spawn(async move {
+            packwing_core::measure(&paths, &packwing_core::Filter::default())
+        });
         self._counting = Some(cx.spawn(async move |this, cx| {
             // One that cannot be read says so when it is added.
             let measured = counting.await.unwrap_or_default();

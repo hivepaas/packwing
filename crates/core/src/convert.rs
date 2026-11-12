@@ -14,8 +14,9 @@
 //! one. The new archive keeps the mark of the one read, if it came from the
 //! Internet.
 //!
-//! A [`Filter`] takes only some of its entries. A hard link to a file it leaves
-//! out stops the job, as extracting it would: the file's data is not read.
+//! A [`Filter`](crate::Filter), [`NewArchive::filter`], takes only some of its
+//! entries. A hard link to a file it leaves out stops the job, as extracting it
+//! would: the file's data is not read.
 
 use crate::audit;
 use packwing_i18n::tr;
@@ -33,7 +34,6 @@ use crate::create::{
     Kind, Level, NewArchive, PIECE, Squeezed, WriteSeek, age_recipients, age_writer,
     has_extension_in, obey_policy, seven_zip_options, with_age, write_new,
 };
-use crate::filter::Filter;
 use crate::job::{ExtractOptions, Taker, WriteTo, extract_into};
 use crate::source::Source;
 use crate::spool::{Spooled, scratch};
@@ -59,15 +59,14 @@ pub struct Converted {
 
 /// Makes an archive of what the archive of `source` holds, as `new` says, named after
 /// `wanted` or the first name after it that is free; see the module's documentation.
-/// `keys` open the one read, `how` limits what it may come to, and `filter` says
-/// which of its entries go in.
+/// `keys` open the one read, `how` limits what it may come to, and `new.filter`
+/// says which of its entries go in.
 pub fn convert(
     source: impl Into<Source>,
     keys: &Keys,
     wanted: &Path,
     new: &NewArchive,
     how: &ExtractOptions,
-    filter: &Filter,
     control: &Control,
 ) -> Result<Converted, Error> {
     let source: Source = source.into();
@@ -76,9 +75,8 @@ pub fn convert(
     fields.remove("path_names");
     fields.insert("source".into(), audit::source(&source));
     fields.insert("destination".into(), json!(audit::path_text(wanted)));
-    fields.insert("filtered".into(), json!(!filter.is_everything()));
     let job = audit::begin("convert", fields)?;
-    let result = convert_from(source, keys, wanted, new, how, filter, control);
+    let result = convert_from(source, keys, wanted, new, how, control);
     audit::end(job, &result, |done| {
         let mut fields = crate::job::extracted(&done.summary);
         fields.insert("made".into(), json!(audit::path_text(&done.made)));
@@ -93,9 +91,9 @@ fn convert_from(
     wanted: &Path,
     new: &NewArchive,
     how: &ExtractOptions,
-    filter: &Filter,
     control: &Control,
 ) -> Result<Converted, Error> {
+    let filter = &new.filter;
     // Refused before anything is read.
     obey_policy(new)?;
     let recipients = age_recipients(new)?;
@@ -581,6 +579,11 @@ fn name_of(entry: &Entry<'_>) -> String {
 
 impl Sink for Converter<'_, '_> {
     fn directory(&mut self, entry: &Entry<'_>) -> io::Result<()> {
+        // What is selected is told by its path alone: a pattern of folders
+        // only names this one as a folder here.
+        if !self.new.filter.takes_folder(entry.path) {
+            return Ok(());
+        }
         let mtime = entry.mtime.map(seconds);
         let result = self.format.directory(&name_of(entry), mtime, entry.mode);
         self.told(result)

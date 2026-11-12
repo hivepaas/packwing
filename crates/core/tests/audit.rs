@@ -9,7 +9,7 @@ use std::path::PathBuf;
 
 use packwing_core::audit::{self, Config};
 use packwing_core::{
-    Control, ExtractOptions, Filter, Keys, Kind, NewArchive, convert, create, extract_selected,
+    Control, ExtractOptions, Keys, Kind, NewArchive, convert, create, extract_selected,
     extract_with, preview_entry, read_entry, test,
 };
 use serde_json::{Map, Value};
@@ -110,7 +110,6 @@ fn jobs_are_recorded_as_they_start_and_end_and_the_chain_holds() {
             ..NewArchive::default()
         },
         &ExtractOptions::default(),
-        &Filter::default(),
         &Control::default(),
     )
     .unwrap();

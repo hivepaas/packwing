@@ -19,7 +19,7 @@ use crate::names::{
 };
 use crate::places::Place;
 use crate::signing::{keygen_cmd, sign_cmd, verify_cmd};
-use crate::{Backup, Command, Context, Exit, Making, Restore};
+use crate::{Backup, Command, Context, Exit, Making, Patterns, Restore};
 
 pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
     match command {
@@ -62,10 +62,12 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
         Command::Create {
             archive,
             paths,
+            patterns,
             make,
             backup,
         } => {
             let (archive, mut new) = making(&archive, make, cx)?;
+            new.filter = filter_of(&patterns)?;
             new.keep = kept_for_backup(&backup, new.kind)?;
             new.times = times_of(
                 backup.mtime.as_deref(),
@@ -76,14 +78,10 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
         Command::Convert {
             from,
             to,
-            include,
-            exclude,
+            patterns,
             make,
             damaging,
-        } => {
-            let filter = Filter::new(&include, &exclude)?;
-            convert_cmd(&from, &to, make, &filter, &damaging, cx)
-        }
+        } => convert_cmd(&from, &to, make, &patterns, &damaging, cx),
         Command::Split { file, size } => split_cmd(&file, &size, cx),
         Command::Join { part } => join_cmd(&part, cx),
         Command::Keygen { output } => keygen_cmd(&output, cx),
@@ -458,6 +456,11 @@ fn info_cmd(archive: &str, cx: &mut Context) -> Result<(), Exit> {
 
 /// What `m` asks for, of an archive to make at `archive`: the path it is made
 /// at, an age file's `.age` added as the app adds it, and how it is made.
+/// What `--include` and `--exclude` say goes in.
+fn filter_of(patterns: &Patterns) -> Result<Filter, Exit> {
+    Ok(Filter::new(&patterns.include, &patterns.exclude)?)
+}
+
 fn making(archive: &Path, m: Making, cx: &Context) -> Result<(PathBuf, NewArchive), Exit> {
     let kind: Kind = match &m.format {
         Some(word) => format_named(word).ok_or_else(|| {
@@ -1102,18 +1105,19 @@ fn convert_cmd(
     from: &Path,
     to: &Path,
     make: Making,
-    filter: &Filter,
+    patterns: &Patterns,
     damaging: &Damaging,
     cx: &mut Context,
 ) -> Result<(), Exit> {
-    let (to, new) = making(to, make, cx)?;
+    let (to, mut new) = making(to, make, cx)?;
+    new.filter = filter_of(patterns)?;
     let name = named(from);
     // An archive holds any name: none is asked about, but what leads outside.
     let how = ExtractOptions::default();
     let (control, bar) = crate::progress::control("Converting", cx.progress);
     let control = damaging.control(control, cx)?;
     let converted = cx.secrets.unlocking(&name, |keys| {
-        convert(Source::from(from), keys, &to, &new, &how, filter, &control)
+        convert(Source::from(from), keys, &to, &new, &how, &control)
     })?;
     drop(bar);
     let outcome = outcome_of(&converted.summary);

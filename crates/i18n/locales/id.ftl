@@ -640,6 +640,81 @@ t808b85c5 = Masukkan frasa sandi berkas kunci
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Berkas kunci itu sendiri dilindungi. packwing menyimpan frasa sandinya hanya selama arsip terbuka, dan tidak pernah menuliskannya.
 
+# Version control
+t0b7280ee = Kontrol versi
+
+# Packages and builds
+t237b373e = Paket dan hasil build
+
+# System files
+te8be6b83 = Berkas sistem
+
+# Temporary files
+td4fe1263 = Berkas sementara
+
+# Logs
+t51a96da6 = Log
+
+# Pictures
+t0d70feae = Gambar
+
+# Documents
+t5a036285 = Dokumen
+
+# Videos
+t63609fed = Video
+
+# Music
+t584a1d74 = Musik
+
+# node_modules/, *.log, src/**/gen/
+t56c5448d = node_modules/, *.log, src/**/gen/
+
+# Only {list}
+te15bdb01 = Hanya { $list }
+
+# Not {list}
+t1a289d6e = Kecuali { $list }
+
+# Everything chosen
+tb453b09a = Semua yang dipilih
+
+# {n} file left out | {n} files left out
+t22bcfff6 =
+    { $n ->
+       *[other] { $n } berkas dikecualikan
+    }
+
+# They leave nothing out.
+t999b68fd = Tidak ada yang dikecualikan.
+
+# They leave out {n} file, {size}. | They leave out {n} files, {size}.
+tc709cfda =
+    { $n ->
+       *[other] Mengecualikan { $n } berkas, { $size }.
+    }
+
+# Leave out
+ta50cc084 = Lewati
+
+# Take only
+t2fd02f84 = Hanya ambil
+
+# Add the usual
+t17ad93a1 = Tambah yang umum
+
+# Only what these name goes in, and the folders it is in.
+ta0bd7335 = Hanya yang disebut yang masuk, beserta folder tempatnya.
+
+# A name is anywhere; a / at its end names a folder; ** is any folders.
+t524d506a = Nama saja berlaku di mana pun; / di akhir berarti folder; ** berarti folder apa pun.
+
+# Filter
+tf4a9c097 = Filter
+
+# Edit…
+t8e7efcd7 = Edit…
+
 # kept, {size}
 t001f6992 = disimpan, { $size }
 
@@ -816,9 +891,6 @@ tb75acfb1 =
     { $n ->
        *[other] { $count } berkas tidak bisa diekstrak dengan namanya di sini. Belum ada yang ditulis: hentikan, lewati, atau ganti nama?
     }
-
-# Leave out
-ta50cc084 = Lewati
 
 # {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
 t0eeaf0b8 =
@@ -2188,9 +2260,6 @@ t87f62cb7 = Memeriksa…
 # It asks again after 5 minutes left unused.
 t69c22a3b = Diminta lagi setelah 5 menit tidak digunakan.
 
-# Edit…
-t8e7efcd7 = Edit…
-
 # Remove from this list
 t8c7c7c57 = Hapus dari daftar ini
 
@@ -2472,6 +2541,9 @@ tff43ce74 = Arsip tidak bisa dimasukkan ke dalam dirinya sendiri.
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = “{ $bare }” sudah ada di arsip. Tidak ada yang diubah.
+
+# Nothing chosen matches the patterns given.
+te132289a = Tidak ada pilihan yang cocok dengan pola.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = Sebelum diunggah, arsip ini dibuat di { $folder }, yang mungkin memerlukan hingga { $need }. Hanya { $free } yang kosong di sana.

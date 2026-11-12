@@ -646,6 +646,83 @@ t808b85c5 = Saisissez la phrase secrète du fichier de clé
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Le fichier de clé est lui-même protégé. packwing ne garde sa phrase secrète que tant que l'archive est ouverte, et ne l'écrit jamais.
 
+# Version control
+t0b7280ee = Gestion de versions
+
+# Packages and builds
+t237b373e = Paquets et builds
+
+# System files
+te8be6b83 = Fichiers système
+
+# Temporary files
+td4fe1263 = Fichiers temporaires
+
+# Logs
+t51a96da6 = Journaux
+
+# Pictures
+t0d70feae = Images
+
+# Documents
+t5a036285 = Documents
+
+# Videos
+t63609fed = Vidéos
+
+# Music
+t584a1d74 = Musique
+
+# node_modules/, *.log, src/**/gen/
+t56c5448d = node_modules/, *.log, src/**/gen/
+
+# Only {list}
+te15bdb01 = Seulement { $list }
+
+# Not {list}
+t1a289d6e = Sauf { $list }
+
+# Everything chosen
+tb453b09a = Tout ce qui est choisi
+
+# {n} file left out | {n} files left out
+t22bcfff6 =
+    { $n ->
+        [one] { $n } fichier écarté
+       *[other] { $n } fichiers écartés
+    }
+
+# They leave nothing out.
+t999b68fd = Ils n’écartent rien.
+
+# They leave out {n} file, {size}. | They leave out {n} files, {size}.
+tc709cfda =
+    { $n ->
+        [one] Ils écartent { $n } fichier, { $size }.
+       *[other] Ils écartent { $n } fichiers, { $size }.
+    }
+
+# Leave out
+ta50cc084 = Omettre
+
+# Take only
+t2fd02f84 = Garder seulement
+
+# Add the usual
+t17ad93a1 = Ajouter les habituels
+
+# Only what these name goes in, and the folders it is in.
+ta0bd7335 = Seul ce qu’ils nomment entre, avec les dossiers où il se trouve.
+
+# A name is anywhere; a / at its end names a folder; ** is any folders.
+t524d506a = Un nom vaut partout ; un / final désigne un dossier ; ** désigne n’importe quels dossiers.
+
+# Filter
+tf4a9c097 = Filtre
+
+# Edit…
+t8e7efcd7 = Modifier…
+
 # kept, {size}
 t001f6992 = gardé, { $size }
 
@@ -825,9 +902,6 @@ tb75acfb1 =
         [one] { $count } fichier ne peut pas être extrait ici sous son nom. Rien n’est encore écrit : arrêter, l’omettre ou le renommer ?
        *[other] { $count } fichiers ne peuvent pas être extraits ici sous leur nom. Rien n’est encore écrit : arrêter, les omettre ou les renommer ?
     }
-
-# Leave out
-ta50cc084 = Omettre
 
 # {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
 t0eeaf0b8 =
@@ -2211,9 +2285,6 @@ t87f62cb7 = Vérification…
 # It asks again after 5 minutes left unused.
 t69c22a3b = La demande revient après 5 minutes d'inactivité.
 
-# Edit…
-t8e7efcd7 = Modifier…
-
 # Remove from this list
 t8c7c7c57 = Retirer de cette liste
 
@@ -2501,6 +2572,9 @@ tff43ce74 = Une archive ne peut pas être placée dans elle-même.
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = « { $bare } » est déjà dans l'archive. Rien n'a été modifié.
+
+# Nothing chosen matches the patterns given.
+te132289a = Rien de ce qui est choisi ne correspond aux motifs.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = Avant son téléversement, cette archive est créée dans { $folder }, où elle peut atteindre { $need }. Seuls { $free } y sont libres.

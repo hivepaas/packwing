@@ -646,6 +646,83 @@ t808b85c5 = Passphrase der Schlüsseldatei eingeben
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = Die Schlüsseldatei ist selbst geschützt. packwing behält ihre Passphrase nur, solange das Archiv geöffnet ist, und schreibt sie nie auf.
 
+# Version control
+t0b7280ee = Versionsverwaltung
+
+# Packages and builds
+t237b373e = Pakete und Builds
+
+# System files
+te8be6b83 = Systemdateien
+
+# Temporary files
+td4fe1263 = Temporäre Dateien
+
+# Logs
+t51a96da6 = Protokolle
+
+# Pictures
+t0d70feae = Bilder
+
+# Documents
+t5a036285 = Dokumente
+
+# Videos
+t63609fed = Videos
+
+# Music
+t584a1d74 = Musik
+
+# node_modules/, *.log, src/**/gen/
+t56c5448d = node_modules/, *.log, src/**/gen/
+
+# Only {list}
+te15bdb01 = Nur { $list }
+
+# Not {list}
+t1a289d6e = Ohne { $list }
+
+# Everything chosen
+tb453b09a = Alles Ausgewählte
+
+# {n} file left out | {n} files left out
+t22bcfff6 =
+    { $n ->
+        [one] { $n } Datei ausgelassen
+       *[other] { $n } Dateien ausgelassen
+    }
+
+# They leave nothing out.
+t999b68fd = Sie lassen nichts aus.
+
+# They leave out {n} file, {size}. | They leave out {n} files, {size}.
+tc709cfda =
+    { $n ->
+        [one] Sie lassen { $n } Datei aus, { $size }.
+       *[other] Sie lassen { $n } Dateien aus, { $size }.
+    }
+
+# Leave out
+ta50cc084 = Auslassen
+
+# Take only
+t2fd02f84 = Nur übernehmen
+
+# Add the usual
+t17ad93a1 = Übliche hinzufügen
+
+# Only what these name goes in, and the folders it is in.
+ta0bd7335 = Nur was sie nennen, kommt hinein, mit den Ordnern, in denen es liegt.
+
+# A name is anywhere; a / at its end names a folder; ** is any folders.
+t524d506a = Ein Name gilt überall; ein / am Ende nennt einen Ordner; ** sind beliebige Ordner.
+
+# Filter
+tf4a9c097 = Filter
+
+# Edit…
+t8e7efcd7 = Bearbeiten…
+
 # kept, {size}
 t001f6992 = behalten, { $size }
 
@@ -825,9 +902,6 @@ tb75acfb1 =
         [one] { $count } Datei kann hier nicht unter ihrem Namen entpackt werden. Noch ist nichts geschrieben: anhalten, auslassen oder umbenennen?
        *[other] { $count } Dateien können hier nicht unter ihren Namen entpackt werden. Noch ist nichts geschrieben: anhalten, auslassen oder umbenennen?
     }
-
-# Leave out
-ta50cc084 = Auslassen
 
 # {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
 t0eeaf0b8 =
@@ -2211,9 +2285,6 @@ t87f62cb7 = Wird geprüft…
 # It asks again after 5 minutes left unused.
 t69c22a3b = Nach 5 Minuten ohne Nutzung wird erneut gefragt.
 
-# Edit…
-t8e7efcd7 = Bearbeiten…
-
 # Remove from this list
 t8c7c7c57 = Aus dieser Liste entfernen
 
@@ -2501,6 +2572,9 @@ tff43ce74 = Ein Archiv kann nicht in sich selbst liegen.
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = „{ $bare }“ ist schon im Archiv. Nichts wurde geändert.
+
+# Nothing chosen matches the patterns given.
+te132289a = Nichts Ausgewähltes passt zu den Mustern.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = Vor dem Hochladen wird dieses Archiv in { $folder } erstellt und braucht dort bis zu { $need }. Dort sind nur { $free } frei.

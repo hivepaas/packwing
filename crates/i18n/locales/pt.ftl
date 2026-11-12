@@ -646,6 +646,83 @@ t808b85c5 = Digite a frase secreta do arquivo de chave
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = O próprio arquivo de chave é protegido. O packwing guarda a frase secreta dele só enquanto o arquivo compactado está aberto e nunca a grava.
 
+# Version control
+t0b7280ee = Controle de versão
+
+# Packages and builds
+t237b373e = Pacotes e builds
+
+# System files
+te8be6b83 = Arquivos do sistema
+
+# Temporary files
+td4fe1263 = Arquivos temporários
+
+# Logs
+t51a96da6 = Logs
+
+# Pictures
+t0d70feae = Imagens
+
+# Documents
+t5a036285 = Documentos
+
+# Videos
+t63609fed = Vídeos
+
+# Music
+t584a1d74 = Música
+
+# node_modules/, *.log, src/**/gen/
+t56c5448d = node_modules/, *.log, src/**/gen/
+
+# Only {list}
+te15bdb01 = Só { $list }
+
+# Not {list}
+t1a289d6e = Sem { $list }
+
+# Everything chosen
+tb453b09a = Tudo o que foi escolhido
+
+# {n} file left out | {n} files left out
+t22bcfff6 =
+    { $n ->
+        [one] { $n } arquivo deixado de fora
+       *[other] { $n } arquivos deixados de fora
+    }
+
+# They leave nothing out.
+t999b68fd = Não deixam nada de fora.
+
+# They leave out {n} file, {size}. | They leave out {n} files, {size}.
+tc709cfda =
+    { $n ->
+        [one] Deixam de fora { $n } arquivo, { $size }.
+       *[other] Deixam de fora { $n } arquivos, { $size }.
+    }
+
+# Leave out
+ta50cc084 = Ignorar
+
+# Take only
+t2fd02f84 = Só incluir
+
+# Add the usual
+t17ad93a1 = Adicionar os habituais
+
+# Only what these name goes in, and the folders it is in.
+ta0bd7335 = Só entra o que eles nomeiam, com as pastas onde está.
+
+# A name is anywhere; a / at its end names a folder; ** is any folders.
+t524d506a = Um nome vale em qualquer lugar; uma / no fim indica uma pasta; ** é qualquer pasta.
+
+# Filter
+tf4a9c097 = Filtro
+
+# Edit…
+t8e7efcd7 = Editar…
+
 # kept, {size}
 t001f6992 = mantido, { $size }
 
@@ -825,9 +902,6 @@ tb75acfb1 =
         [one] { $count } arquivo não pode ser extraído aqui com o seu nome. Nada foi gravado ainda: parar, ignorá-lo ou renomeá-lo?
        *[other] { $count } arquivos não podem ser extraídos aqui com os seus nomes. Nada foi gravado ainda: parar, ignorá-los ou renomeá-los?
     }
-
-# Leave out
-ta50cc084 = Ignorar
 
 # {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
 t0eeaf0b8 =
@@ -2211,9 +2285,6 @@ t87f62cb7 = Verificando…
 # It asks again after 5 minutes left unused.
 t69c22a3b = Pede de novo após 5 minutos sem uso.
 
-# Edit…
-t8e7efcd7 = Editar…
-
 # Remove from this list
 t8c7c7c57 = Remover desta lista
 
@@ -2501,6 +2572,9 @@ tff43ce74 = Um arquivo compactado não pode entrar em si mesmo.
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = “{ $bare }” já está no arquivo compactado. Nada foi alterado.
+
+# Nothing chosen matches the patterns given.
+te132289a = Nada do que foi escolhido corresponde aos padrões.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = Antes de ser enviado, este arquivo compactado é criado em { $folder }, onde pode ocupar até { $need }. Só há { $free } livres lá.

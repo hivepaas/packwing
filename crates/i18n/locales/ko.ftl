@@ -640,6 +640,81 @@ t808b85c5 = 키 파일의 암호 문구 입력
 # The key file is itself protected. packwing keeps its passphrase only while the archive is open, and never writes it down.
 t2a39d1e8 = 키 파일 자체가 보호되어 있습니다. packwing은 압축 파일을 열어 둔 동안에만 암호 문구를 보관하며 어디에도 기록하지 않습니다.
 
+# Version control
+t0b7280ee = 버전 관리
+
+# Packages and builds
+t237b373e = 패키지와 빌드
+
+# System files
+te8be6b83 = 시스템 파일
+
+# Temporary files
+td4fe1263 = 임시 파일
+
+# Logs
+t51a96da6 = 로그
+
+# Pictures
+t0d70feae = 사진
+
+# Documents
+t5a036285 = 문서
+
+# Videos
+t63609fed = 동영상
+
+# Music
+t584a1d74 = 음악
+
+# node_modules/, *.log, src/**/gen/
+t56c5448d = node_modules/, *.log, src/**/gen/
+
+# Only {list}
+te15bdb01 = { $list }만
+
+# Not {list}
+t1a289d6e = { $list } 제외
+
+# Everything chosen
+tb453b09a = 선택한 모든 항목
+
+# {n} file left out | {n} files left out
+t22bcfff6 =
+    { $n ->
+       *[other] 파일 { $n }개 제외
+    }
+
+# They leave nothing out.
+t999b68fd = 제외되는 것이 없습니다.
+
+# They leave out {n} file, {size}. | They leave out {n} files, {size}.
+tc709cfda =
+    { $n ->
+       *[other] 파일 { $n }개({ $size })를 제외합니다.
+    }
+
+# Leave out
+ta50cc084 = 제외
+
+# Take only
+t2fd02f84 = 이것만 포함
+
+# Add the usual
+t17ad93a1 = 자주 쓰는 항목 추가
+
+# Only what these name goes in, and the folders it is in.
+ta0bd7335 = 이름이 일치하는 것과 그것이 든 폴더만 들어갑니다.
+
+# A name is anywhere; a / at its end names a folder; ** is any folders.
+t524d506a = 이름만 쓰면 어디서나 일치하고, 끝의 /는 폴더, **는 아무 폴더나 뜻합니다.
+
+# Filter
+tf4a9c097 = 필터
+
+# Edit…
+t8e7efcd7 = 편집…
+
 # kept, {size}
 t001f6992 = 남김, { $size }
 
@@ -816,9 +891,6 @@ tb75acfb1 =
     { $n ->
        *[other] 파일 { $count }개를 여기서 원래 이름으로 풀 수 없습니다. 아직 아무것도 쓰지 않았습니다. 중지, 제외, 이름 바꾸기 중 무엇을 할까요?
     }
-
-# Leave out
-ta50cc084 = 제외
 
 # {count} link leads outside the folder, elsewhere on this computer. Nothing is written yet: leave it out, or create it as it is if you trust this archive? | {count} links lead outside the folder, elsewhere on this computer. Nothing is written yet: leave them out, or create them as they are if you trust this archive?
 t0eeaf0b8 =
@@ -2188,9 +2260,6 @@ t87f62cb7 = 확인 중…
 # It asks again after 5 minutes left unused.
 t69c22a3b = 5분간 사용하지 않으면 다시 묻습니다.
 
-# Edit…
-t8e7efcd7 = 편집…
-
 # Remove from this list
 t8c7c7c57 = 목록에서 제거
 
@@ -2463,6 +2532,9 @@ tff43ce74 = 압축 파일을 자기 자신 안에 넣을 수 없습니다.
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = “{ $bare }”이(가) 이미 압축 파일에 있습니다. 변경된 것이 없습니다.
+
+# Nothing chosen matches the patterns given.
+te132289a = 선택한 항목 중 패턴에 맞는 것이 없습니다.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = 업로드하기 전에 이 압축 파일을 { $folder }에 만드는데, 최대 { $need }가 필요할 수 있습니다. 그곳의 여유 공간은 { $free }뿐입니다.

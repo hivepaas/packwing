@@ -154,6 +154,8 @@ enum Command {
         #[arg(required = true)]
         paths: Vec<PathBuf>,
         #[command(flatten)]
+        patterns: Patterns,
+        #[command(flatten)]
         make: Making,
         #[command(flatten)]
         backup: Backup,
@@ -168,14 +170,8 @@ enum Command {
         from: PathBuf,
         /// The archive to make: its extension says its format, unless --format does.
         to: PathBuf,
-        /// Only what is under these paths, or has these names: `docs/**`, `*.pdf`; again
-        /// for more. `*` and `?` stay within a name, `**` is any folders.
-        #[arg(long, value_name = "PATTERN")]
-        include: Vec<String>,
-        /// Not what is under these paths, or has these names: `**/node_modules`, `*.log`;
-        /// again for more. It wins over --include.
-        #[arg(long, value_name = "PATTERN")]
-        exclude: Vec<String>,
+        #[command(flatten)]
+        patterns: Patterns,
         #[command(flatten)]
         make: Making,
         #[command(flatten)]
@@ -335,6 +331,22 @@ pub enum AuditCommand {
     Verify,
     /// Whether it is kept, where, for how long, and who decides.
     Status,
+}
+
+/// What goes in, by `create` and `convert`: patterns as `.gitignore` has them.
+/// Creating, a path given is matched by its name, and what is in a folder given
+/// by its path in that folder; converting, an entry by its path in the archive.
+#[derive(Args)]
+pub struct Patterns {
+    /// Only what these name: `*.pdf`, `docs/`, `src/**/*.rs`; again for more. A name
+    /// alone is anywhere, one ending in `/` is a folder's, with what it holds; `*` and
+    /// `?` stay within a name, `**` is any folders; letters match in either case.
+    #[arg(long, value_name = "PATTERN")]
+    pub include: Vec<String>,
+    /// Not what these name: `node_modules/`, `*.log`, `src/**/gen/`; again for more.
+    /// It wins over --include.
+    #[arg(long, value_name = "PATTERN")]
+    pub exclude: Vec<String>,
 }
 
 /// How an archive is made, by `create` and `convert`.
