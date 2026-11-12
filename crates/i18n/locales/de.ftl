@@ -2410,8 +2410,14 @@ td29421ef = Keine Treffer
 # Find
 t3e1cd17a = Suchen
 
+# Fit the window (0)
+tbe39720a = An das Fenster anpassen (0)
+
 # Fit
 t116f13cc = Einpassen
+
+# Show at its own size (1)
+tb1eec64a = In Originalgröße anzeigen (1)
 
 # {count} line | {count} lines
 t9fbb1078 =

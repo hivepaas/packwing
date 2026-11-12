@@ -226,7 +226,7 @@ scenario!(
 scenario!(
     /// A picture fits the window when the viewer opens; once the user shows
     /// it at its own size (1), Next and Previous keep that, past a text, until
-    /// Fit is chosen again.
+    /// Fit is chosen again; the size's one button goes round the two.
     the_size_chosen_stays_from_picture_to_picture,
     |ui| {
         let paths = vec![
@@ -256,10 +256,13 @@ scenario!(
         ui.keys("left left");
         wait_for_shown(ui, "a.png", "picture");
         assert!(ui.shows("view-at-size"), "back, at its own size");
-        ui.click("view-fit");
+        // The one button goes round: back to Fit, then to 1:1 again.
+        ui.click("view-size");
         assert!(!ui.shows("view-at-size"));
         ui.keys("right right");
         wait_for_shown(ui, "c.png", "picture");
         assert!(!ui.shows("view-at-size"), "it fits, as chosen");
+        ui.click("view-size");
+        assert!(ui.shows("view-at-size"), "round to its own size");
     }
 );

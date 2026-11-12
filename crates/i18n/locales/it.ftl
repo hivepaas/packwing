@@ -2410,8 +2410,14 @@ td29421ef = Nessuna corrispondenza
 # Find
 t3e1cd17a = Trova
 
+# Fit the window (0)
+tbe39720a = Adatta alla finestra (0)
+
 # Fit
 t116f13cc = Adatta
+
+# Show at its own size (1)
+tb1eec64a = Mostra a dimensione reale (1)
 
 # {count} line | {count} lines
 t9fbb1078 =

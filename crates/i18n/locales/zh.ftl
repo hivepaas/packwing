@@ -2374,8 +2374,14 @@ td29421ef = 无匹配项
 # Find
 t3e1cd17a = 查找
 
+# Fit the window (0)
+tbe39720a = 适应窗口 (0)
+
 # Fit
 t116f13cc = 适应窗口
+
+# Show at its own size (1)
+tb1eec64a = 按实际大小显示 (1)
 
 # {count} line | {count} lines
 t9fbb1078 =

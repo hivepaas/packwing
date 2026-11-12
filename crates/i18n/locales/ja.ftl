@@ -2374,8 +2374,14 @@ td29421ef = 一致なし
 # Find
 t3e1cd17a = 検索
 
+# Fit the window (0)
+tbe39720a = ウィンドウに合わせる (0)
+
 # Fit
 t116f13cc = 全体表示
+
+# Show at its own size (1)
+tb1eec64a = 実際のサイズで表示 (1)
 
 # {count} line | {count} lines
 t9fbb1078 =

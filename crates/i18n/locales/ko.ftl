@@ -2374,8 +2374,14 @@ td29421ef = 일치 항목 없음
 # Find
 t3e1cd17a = 찾기
 
+# Fit the window (0)
+tbe39720a = 창에 맞춤 (0)
+
 # Fit
 t116f13cc = 맞춤
+
+# Show at its own size (1)
+tb1eec64a = 실제 크기로 보기 (1)
 
 # {count} line | {count} lines
 t9fbb1078 =

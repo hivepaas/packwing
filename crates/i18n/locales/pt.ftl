@@ -2410,8 +2410,14 @@ td29421ef = Nenhuma correspondência
 # Find
 t3e1cd17a = Localizar
 
+# Fit the window (0)
+tbe39720a = Ajustar à janela (0)
+
 # Fit
 t116f13cc = Ajustar
+
+# Show at its own size (1)
+tb1eec64a = Mostrar em tamanho real (1)
 
 # {count} line | {count} lines
 t9fbb1078 =

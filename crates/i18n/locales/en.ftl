@@ -876,7 +876,9 @@ t9cbe4be4 = Find in text
 t5b9dcaca = Invalid pattern
 td29421ef = No matches
 t3e1cd17a = Find
+tbe39720a = Fit the window (0)
 t116f13cc = Fit
+tb1eec64a = Show at its own size (1)
 t9fbb1078 =
     { $n ->
         [one] { $count } line

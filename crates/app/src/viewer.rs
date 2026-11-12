@@ -23,7 +23,7 @@ use crate::input::{Changed, Paint, TextInput};
 use crate::model::{Kind, count, reads_as_text, size, tag_of, text_preview};
 use crate::pages::archive::{MOST_PREVIEWED, picture_format};
 use crate::text_size::ui;
-use crate::widgets::{Fill, Size, button, icon, icon_button, kind_tile, mono_font};
+use crate::widgets::{Fill, Size, button, icon, icon_button, kind_tile, mono_font, tip};
 
 /// A text's paint: none, all in the text's color.
 fn unpainted(_: &str) -> Vec<(std::ops::Range<usize>, Paint)> {
@@ -682,18 +682,6 @@ impl Viewer {
                     d.on_click(cx.listener(move |this, _, _, cx| this.step(by, cx)))
                 })
         };
-        let toggle = |id: &'static str, label: String, on: bool, actual: bool| {
-            button(
-                id,
-                label,
-                if on { Fill::Tonal } else { Fill::Outline },
-                Size::Medium,
-            )
-            .on_click(cx.listener(move |this, _, _, cx| {
-                this.actual = actual;
-                cx.notify();
-            }))
-        };
         div()
             .flex()
             .flex_wrap()
@@ -746,9 +734,22 @@ impl Viewer {
                     )
                 },
             )
+            // One button for the picture's size: it says how it shows, and a
+            // click goes round to the other.
             .when(picture, |d| {
-                d.child(toggle("view-fit", tr!("Fit"), !self.actual, false))
-                    .child(toggle("view-actual", "1:1".into(), self.actual, true))
+                let (label, next) = if self.actual {
+                    ("1:1".to_owned(), tr!("Fit the window (0)"))
+                } else {
+                    (tr!("Fit"), tr!("Show at its own size (1)"))
+                };
+                d.child(
+                    button("view-size", label, Fill::Outline, Size::Medium)
+                        .tooltip(tip(next))
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.actual = !this.actual;
+                            cx.notify();
+                        })),
+                )
             })
             .when(file.as_ref().is_some_and(|f| f.edit) && !picture, |d| {
                 d.child(
