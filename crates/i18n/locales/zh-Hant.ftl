@@ -2380,8 +2380,11 @@ t5b9dcaca = 無效的模式
 # No matches
 td29421ef = 沒有符合的結果
 
-# Find
-t3e1cd17a = 尋找
+# Hide the list of files ({keys})
+t165a997f = 隱藏檔案清單 ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = 顯示檔案清單 ({ $keys })
 
 # Fit the window (0)
 tbe39720a = 符合視窗 (0)
@@ -2391,6 +2394,9 @@ t116f13cc = 符合視窗
 
 # Show at its own size (1)
 tb1eec64a = 以實際大小顯示 (1)
+
+# Find
+t3e1cd17a = 尋找
 
 # {count} line | {count} lines
 t9fbb1078 =

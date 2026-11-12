@@ -2407,8 +2407,11 @@ t5b9dcaca = Ungültiges Muster
 # No matches
 td29421ef = Keine Treffer
 
-# Find
-t3e1cd17a = Suchen
+# Hide the list of files ({keys})
+t165a997f = Dateiliste ausblenden ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = Dateiliste einblenden ({ $keys })
 
 # Fit the window (0)
 tbe39720a = An das Fenster anpassen (0)
@@ -2418,6 +2421,9 @@ t116f13cc = Einpassen
 
 # Show at its own size (1)
 tb1eec64a = In Originalgröße anzeigen (1)
+
+# Find
+t3e1cd17a = Suchen
 
 # {count} line | {count} lines
 t9fbb1078 =

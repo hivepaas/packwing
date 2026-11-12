@@ -2371,8 +2371,11 @@ t5b9dcaca = 无效的模式
 # No matches
 td29421ef = 无匹配项
 
-# Find
-t3e1cd17a = 查找
+# Hide the list of files ({keys})
+t165a997f = 隐藏文件列表 ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = 显示文件列表 ({ $keys })
 
 # Fit the window (0)
 tbe39720a = 适应窗口 (0)
@@ -2382,6 +2385,9 @@ t116f13cc = 适应窗口
 
 # Show at its own size (1)
 tb1eec64a = 按实际大小显示 (1)
+
+# Find
+t3e1cd17a = 查找
 
 # {count} line | {count} lines
 t9fbb1078 =

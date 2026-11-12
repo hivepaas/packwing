@@ -179,6 +179,7 @@ const ICONS: &[(&str, &[u8])] = icons![
     "search",
     "shellwing",
     "shield",
+    "sidebar",
     "sliders",
     "storages",
     "tracewing",

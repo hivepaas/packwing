@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 106] = [
+const SCREENS: [(&str, SetUp); 107] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -299,6 +299,10 @@ const SCREENS: [(&str, SetUp); 106] = [
     }),
     ("viewer-text", |ws, window, cx| {
         view_in_browse(ws, "notes.md", window, cx)
+    }),
+    ("viewer-list", |ws, window, cx| {
+        view_in_browse(ws, "packwing.png", window, cx);
+        crate::viewer::show_sidebar(true);
     }),
     ("viewer-find", |ws, window, cx| {
         view_in_browse(ws, "notes.md", window, cx);
@@ -758,6 +762,8 @@ fn age_file() -> PathBuf {
 /// An archive as packwing-core lists it, shown two folders down.
 /// Browse at a folder of a picture and a text, `name` of them in the viewer.
 fn view_in_browse(ws: &mut Workspace, name: &str, _: &mut Window, cx: &mut Context<Workspace>) {
+    // The list of files hidden, as it is at first; viewer-list shows it.
+    crate::viewer::show_sidebar(false);
     let dir = out_dir().join("viewer-sample");
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).expect("cannot make a folder");

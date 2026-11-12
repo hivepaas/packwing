@@ -2371,8 +2371,11 @@ t5b9dcaca = Mẫu không hợp lệ
 # No matches
 td29421ef = Không tìm thấy
 
-# Find
-t3e1cd17a = Tìm
+# Hide the list of files ({keys})
+t165a997f = Ẩn danh sách tệp ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = Hiện danh sách tệp ({ $keys })
 
 # Fit the window (0)
 tbe39720a = Vừa khung cửa sổ (0)
@@ -2382,6 +2385,9 @@ t116f13cc = Vừa khung
 
 # Show at its own size (1)
 tb1eec64a = Hiện đúng kích thước gốc (1)
+
+# Find
+t3e1cd17a = Tìm
 
 # {count} line | {count} lines
 t9fbb1078 =

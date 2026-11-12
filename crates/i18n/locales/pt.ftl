@@ -2407,8 +2407,11 @@ t5b9dcaca = Padrão inválido
 # No matches
 td29421ef = Nenhuma correspondência
 
-# Find
-t3e1cd17a = Localizar
+# Hide the list of files ({keys})
+t165a997f = Ocultar a lista de arquivos ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = Mostrar a lista de arquivos ({ $keys })
 
 # Fit the window (0)
 tbe39720a = Ajustar à janela (0)
@@ -2418,6 +2421,9 @@ t116f13cc = Ajustar
 
 # Show at its own size (1)
 tb1eec64a = Mostrar em tamanho real (1)
+
+# Find
+t3e1cd17a = Localizar
 
 # {count} line | {count} lines
 t9fbb1078 =

@@ -2407,8 +2407,11 @@ t5b9dcaca = Schema non valido
 # No matches
 td29421ef = Nessuna corrispondenza
 
-# Find
-t3e1cd17a = Trova
+# Hide the list of files ({keys})
+t165a997f = Nascondi l’elenco dei file ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = Mostra l’elenco dei file ({ $keys })
 
 # Fit the window (0)
 tbe39720a = Adatta alla finestra (0)
@@ -2418,6 +2421,9 @@ t116f13cc = Adatta
 
 # Show at its own size (1)
 tb1eec64a = Mostra a dimensione reale (1)
+
+# Find
+t3e1cd17a = Trova
 
 # {count} line | {count} lines
 t9fbb1078 =

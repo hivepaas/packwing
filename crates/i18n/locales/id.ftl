@@ -2380,8 +2380,11 @@ t5b9dcaca = Pola tidak valid
 # No matches
 td29421ef = Tidak ada yang cocok
 
-# Find
-t3e1cd17a = Cari
+# Hide the list of files ({keys})
+t165a997f = Sembunyikan daftar file ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = Tampilkan daftar file ({ $keys })
 
 # Fit the window (0)
 tbe39720a = Paskan ke jendela (0)
@@ -2391,6 +2394,9 @@ t116f13cc = Paskan
 
 # Show at its own size (1)
 tb1eec64a = Tampilkan dalam ukuran asli (1)
+
+# Find
+t3e1cd17a = Cari
 
 # {count} line | {count} lines
 t9fbb1078 =

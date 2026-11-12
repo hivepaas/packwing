@@ -2461,8 +2461,11 @@ t5b9dcaca = Неправильний шаблон
 # No matches
 td29421ef = Збігів немає
 
-# Find
-t3e1cd17a = Знайти
+# Hide the list of files ({keys})
+t165a997f = Сховати список файлів ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = Показати список файлів ({ $keys })
 
 # Fit the window (0)
 tbe39720a = Вписати у вікно (0)
@@ -2472,6 +2475,9 @@ t116f13cc = Вписати
 
 # Show at its own size (1)
 tb1eec64a = Показати в реальному розмірі (1)
+
+# Find
+t3e1cd17a = Знайти
 
 # {count} line | {count} lines
 t9fbb1078 =

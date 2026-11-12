@@ -2407,8 +2407,11 @@ t5b9dcaca = Motif non valide
 # No matches
 td29421ef = Aucun résultat
 
-# Find
-t3e1cd17a = Rechercher
+# Hide the list of files ({keys})
+t165a997f = Masquer la liste des fichiers ({ $keys })
+
+# Show the list of files ({keys})
+tde6e8c38 = Afficher la liste des fichiers ({ $keys })
 
 # Fit the window (0)
 tbe39720a = Ajuster à la fenêtre (0)
@@ -2418,6 +2421,9 @@ t116f13cc = Ajuster
 
 # Show at its own size (1)
 tb1eec64a = Afficher en taille réelle (1)
+
+# Find
+t3e1cd17a = Rechercher
 
 # {count} line | {count} lines
 t9fbb1078 =

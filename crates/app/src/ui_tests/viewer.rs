@@ -65,7 +65,8 @@ scenario!(
         ui.click("menu-open");
         wait_for_shown(ui, "a.png", "picture");
         let (names, _, _) = viewing(ui).expect("the viewer");
-        assert_eq!(names, ["a.png", "b.txt", "d.png"]);
+        // All the folder's files, for the list; Next passes over the PDF.
+        assert_eq!(names, ["a.png", "b.txt", "c.pdf", "d.png"]);
         assert!(!ui.shows("archive-more"), "the page is hidden");
         ui.click("view-next");
         wait_for_shown(ui, "b.txt", "text");
@@ -335,5 +336,75 @@ scenario!(
         assert!(ui.shows("view-at-size"));
         ui.keys("down");
         wait_for_shown(ui, "b.txt", "text");
+    }
+);
+
+scenario!(
+    /// The list of files beside the viewer: hidden at first, shown by its
+    /// button left of Back, the files Previous and Next step through in their
+    /// order, the one shown chosen; a click shows another, and the keys stay
+    /// the viewer's. Kept as left when the viewer opens again; Ctrl+B (Cmd+B)
+    /// hides it; over the file's left in a narrow window.
+    the_list_of_files_beside_the_viewer,
+    |ui| {
+        let paths = vec![
+            file(ui, "list/p10.png", PICTURE),
+            file(ui, "list/p2.png", PICTURE),
+            file(ui, "list/p1.png", PICTURE),
+            file(ui, "list/notes.pdf", b"%PDF-1.7"),
+            file(ui, "list/p3.png", PICTURE),
+        ];
+        let made = zip(ui, &paths, "list.zip");
+        ui.open(&made);
+        assert_eq!(ui.archive_failed(), None);
+        let at = ui
+            .shown_in_archive()
+            .iter()
+            .position(|n| n == "p1.png")
+            .expect("p1.png listed");
+        ui.click(&format!("entry-{at}"));
+        ui.keys("enter");
+        wait_for_shown(ui, "p1.png", "picture");
+        assert!(!ui.shows("view-files"), "hidden at first");
+        ui.click("view-sidebar");
+        ui.wait_for("view-files");
+        // All the folder's files, the PDF that Previous and Next pass over too.
+        let (names, _, _) = viewing(ui).expect("the viewer");
+        assert_eq!(names.len(), 5);
+        let pdf = names.iter().position(|n| n == "notes.pdf").expect("the PDF listed");
+        for i in 0..names.len() {
+            assert!(ui.shows(&format!("view-file-{i}")), "row {i}");
+        }
+        assert!(!ui.shows(&format!("view-file-{}", names.len())));
+        // Beside the file, in a wide window.
+        let list = ui.find("view-files").expect("the list");
+        let stage = ui.find("view-stage").expect("the stage");
+        assert!(stage.left() >= list.right(), "beside");
+        // The PDF chosen in the list: it says it cannot be shown, and offers
+        // the system's app.
+        ui.click(&format!("view-file-{pdf}"));
+        wait_for_shown(ui, "notes.pdf", "not");
+        assert!(ui.shows("view-app"), "Open with default app");
+        // A row shows its file; Left goes on from it, as Previous does, past
+        // what it does not show.
+        let pictures: Vec<&String> = names.iter().filter(|n| n.ends_with(".png")).collect();
+        let row = names.iter().position(|n| n == pictures[2]).expect("listed");
+        ui.click(&format!("view-file-{row}"));
+        wait_for_shown(ui, pictures[2], "picture");
+        ui.keys("left");
+        wait_for_shown(ui, pictures[1], "picture");
+        // Opened again, it is as it was left.
+        ui.keys("escape");
+        ui.wait_until("the viewer closed", |ui| viewing(ui).is_none());
+        ui.keys("enter");
+        wait_for_shown(ui, pictures[1], "picture");
+        assert!(ui.shows("view-files"), "kept shown");
+        // Over the file in a narrow window.
+        ui.resize(600., 500.);
+        let list = ui.find("view-files").expect("the list");
+        let stage = ui.find("view-stage").expect("the stage");
+        assert!(stage.left() < list.right(), "over the file");
+        ui.keys("secondary-b");
+        assert!(!ui.shows("view-files"), "hidden by its keys");
     }
 );
