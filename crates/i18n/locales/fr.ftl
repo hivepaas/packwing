@@ -2521,6 +2521,9 @@ tbd0e16dc = { $path } n'a pas de nom.
 # The name of {path} is not valid Unicode, so it cannot go in an archive.
 t2588efb5 = Le nom de { $path } n'est pas de l'Unicode valide, il ne peut donc pas aller dans une archive.
 
+# Nothing chosen matches the patterns given.
+te132289a = Rien de ce qui est choisi ne correspond aux motifs.
+
 # Could not write {path}: {e}
 t8dd055c6 = Impossible d'écrire { $path } : { $e }
 
@@ -2598,9 +2601,6 @@ tff43ce74 = Une archive ne peut pas être placée dans elle-même.
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = « { $bare } » est déjà dans l'archive. Rien n'a été modifié.
-
-# Nothing chosen matches the patterns given.
-te132289a = Rien de ce qui est choisi ne correspond aux motifs.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = Avant son téléversement, cette archive est créée dans { $folder }, où elle peut atteindre { $need }. Seuls { $free } y sont libres.

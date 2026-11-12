@@ -2482,6 +2482,9 @@ tbd0e16dc = { $path } không có tên.
 # The name of {path} is not valid Unicode, so it cannot go in an archive.
 t2588efb5 = Tên của { $path } không phải Unicode hợp lệ, nên không đưa vào tệp nén được.
 
+# Nothing chosen matches the patterns given.
+te132289a = Không có gì trong phần đã chọn khớp với các mẫu.
+
 # Could not write {path}: {e}
 t8dd055c6 = Không ghi được { $path }: { $e }
 
@@ -2559,9 +2562,6 @@ tff43ce74 = Tệp nén không thể nằm trong chính nó.
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = “{ $bare }” đã có trong tệp nén. Không có gì thay đổi.
-
-# Nothing chosen matches the patterns given.
-te132289a = Không có gì trong phần đã chọn khớp với các mẫu.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = Trước khi tải lên, tệp nén này được tạo trong { $folder }, có thể cần tới { $need }. Ở đó chỉ còn trống { $free }.

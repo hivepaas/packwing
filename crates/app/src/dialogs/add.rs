@@ -7,11 +7,12 @@ use std::path::{Path, PathBuf};
 
 use gpui::{
     App, AppContext as _, Context, Entity, EventEmitter, ExternalPaths, PathPromptOptions, Render,
-    SharedString, Task, UniformListScrollHandle, Window, div, prelude::*, rgb,
+    SharedString, Subscription, Task, UniformListScrollHandle, Window, div, prelude::*, rgb,
 };
-use packwing_core::{Keys, OnExisting};
+use packwing_core::{AddOptions, Keys, OnExisting};
 
 use super::chosen::{self, Choosing};
+use super::patterns::{Patterns, PatternsChanged, filter_button};
 use super::{Adding, DialogEvent, Job, Verb, footer, header};
 use crate::colors::colors;
 use crate::model::{Archive, Selection, count, size};
@@ -45,6 +46,9 @@ pub struct AddDialog {
     list_scroll: UniformListScrollHandle,
     _counting: Option<Task<()>>,
     on_existing: Entity<Select>,
+    /// What goes in of what is chosen.
+    patterns: Entity<Patterns>,
+    _follow: Vec<Subscription>,
     /// Add was pressed with nothing chosen: a note says so.
     checked: bool,
 }
@@ -70,6 +74,10 @@ impl Choosing for AddDialog {
 
     fn pick(&mut self, folders: bool, cx: &mut Context<Self>) {
         self.pick_paths(folders, cx);
+    }
+
+    fn more(&self, cx: &Context<Self>) -> Option<gpui::AnyElement> {
+        Some(filter_button(&self.patterns, cx).into_any_element())
     }
 
     fn remove(&mut self, path: &Path, cx: &mut Context<Self>) {
@@ -101,8 +109,25 @@ impl AddDialog {
             list_scroll: UniformListScrollHandle::new(),
             _counting: None,
             on_existing,
+            patterns: cx.new(Patterns::new),
+            _follow: Vec::new(),
             checked: false,
         })
+    }
+
+    /// Counts again as the patterns change, and draws the button that says
+    /// how many there are.
+    pub fn following(mut self, cx: &mut Context<Self>) -> Self {
+        self._follow = vec![
+            cx.subscribe(
+                &self.patterns,
+                |this: &mut Self, _, _: &PatternsChanged, cx| {
+                    this.count_what_goes_in(cx);
+                },
+            ),
+            cx.observe(&self.patterns, |_, _, cx| cx.notify()),
+        ];
+        self
     }
 
     /// For the screenshots: the sample's name, with what they choose.
@@ -122,8 +147,16 @@ impl AddDialog {
             list_scroll: UniformListScrollHandle::new(),
             _counting: None,
             on_existing,
+            patterns: cx.new(Patterns::new),
+            _follow: Vec::new(),
             checked: false,
         }
+    }
+
+    /// The patterns' part of it.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn patterns(&self) -> Entity<Patterns> {
+        self.patterns.clone()
     }
 
     /// Adds `paths` to what goes in, and counts what is in them.
@@ -132,17 +165,36 @@ impl AddDialog {
         self.count_what_goes_in(cx);
     }
 
+    /// Counts what goes in, as the patterns take it, and what they leave out.
     fn count_what_goes_in(&mut self, cx: &mut Context<Self>) {
         let paths = self.selection.paths.clone();
+        let filter = self.patterns.read(cx).filter();
         let counting = cx.background_executor().spawn(async move {
-            packwing_core::measure(&paths, &packwing_core::Filter::default())
+            let taken = packwing_core::measure(&paths, &filter)?;
+            let all = if filter.is_everything() {
+                None
+            } else {
+                Some(packwing_core::measure(
+                    &paths,
+                    &packwing_core::Filter::default(),
+                )?)
+            };
+            Ok::<_, packwing_core::Error>((taken, all))
         });
         self._counting = Some(cx.spawn(async move |this, cx| {
             // One that cannot be read says so when it is added.
-            let measured = counting.await.unwrap_or_default();
+            let (measured, all) = counting.await.unwrap_or_default();
             let _ = this.update(cx, |this, cx| {
                 this.selection.files = measured.files;
                 this.selection.bytes = measured.bytes;
+                let left_out = all.map(|all| {
+                    (
+                        all.files.saturating_sub(measured.files),
+                        all.bytes.saturating_sub(measured.bytes),
+                    )
+                });
+                this.patterns
+                    .update(cx, |p, cx| p.set_left_out(left_out, cx));
                 cx.notify();
             });
         }));
@@ -182,8 +234,11 @@ impl AddDialog {
             paths: self.selection.paths.clone(),
             archive: self.archive.clone(),
             folder: self.folder.clone(),
-            on_existing: on_existing()[self.on_existing.read(cx).chosen().min(2)].1,
-            stored_extensions: crate::prefs::stored_extensions(cx),
+            how: AddOptions {
+                on_existing: on_existing()[self.on_existing.read(cx).chosen().min(2)].1,
+                stored_extensions: crate::prefs::stored_extensions(cx),
+                filter: self.patterns.read(cx).filter(),
+            },
         });
         cx.emit(DialogEvent::Start(job));
     }
@@ -249,6 +304,7 @@ impl Render for AddDialog {
                 Some(close),
             ))
             .child(chosen::section(self, self.checked, cx))
+            .child(self.patterns.clone())
             .child(div().flex().child(row(tr!("Goes in"), self.goes_in())))
             .child(
                 div()

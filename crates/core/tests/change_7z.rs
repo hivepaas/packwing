@@ -16,8 +16,8 @@ use hivepack::sevenz::{
     Archive, Coding, Compression, Filter, Method, NewEntry, Options, WriteOptions, Writer,
 };
 use packwing_core::{
-    COMPRESSED_EXTENSIONS, Cancel, Control, Error, Keys, Kind, NewArchive, OnExisting, Progress,
-    add, add_with, can_add, can_rename, create, delete, extract, list, rename, test,
+    AddOptions, COMPRESSED_EXTENSIONS, Cancel, Control, Error, Keys, Kind, NewArchive, OnExisting,
+    Progress, add, add_with, can_add, can_rename, create, delete, extract, list, rename, test,
 };
 
 /// A folder of a test's own, gone when it ends.
@@ -276,8 +276,10 @@ fn a_name_it_holds_is_replaced_skipped_or_stops_it() {
             std::slice::from_ref(&source),
             &archive,
             &[],
-            on_existing,
-            &[],
+            &AddOptions {
+                on_existing,
+                ..Default::default()
+            },
             &none,
             &control,
         )
@@ -585,8 +587,11 @@ fn what_is_added_is_compressed_as_the_archive_was() {
         std::slice::from_ref(&zip),
         &filtered,
         &[],
-        OnExisting::Replace,
-        &stored,
+        &AddOptions {
+            on_existing: OnExisting::Replace,
+            stored_extensions: stored.clone(),
+            ..Default::default()
+        },
         &none,
         &Control::default(),
     )

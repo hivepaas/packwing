@@ -46,8 +46,7 @@ use std::sync::{Arc, Mutex};
 
 use gpui::{Div, FontWeight, MouseButton, SharedString, Stateful, div, prelude::*, rgb};
 use packwing_core::{
-    Asked, ExtractOptions, Keys, NewArchive, OnExisting, SigningKey, Source, Storage, Transfer,
-    Transferred,
+    Asked, ExtractOptions, Keys, NewArchive, SigningKey, Source, Storage, Transfer, Transferred,
 };
 use packwing_i18n::tr;
 
@@ -119,9 +118,9 @@ pub struct Adding {
     pub archive: PathBuf,
     /// The folder of it they go in.
     pub folder: Vec<String>,
-    pub on_existing: OnExisting,
-    /// See [`packwing_core::NewArchive::stored_extensions`].
-    pub stored_extensions: Vec<String>,
+    /// What a file of a name it holds comes to, which go in as they are, and
+    /// what goes in of what is chosen.
+    pub how: packwing_core::AddOptions,
 }
 
 /// A change to what an archive holds, by paths in it.

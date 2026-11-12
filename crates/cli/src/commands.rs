@@ -5,11 +5,12 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, PoisonError};
 
 use packwing_core::{
-    Algorithm, Blocks, COMPRESSED_EXTENSIONS, Entry, ExtractOptions, Filter, Frames, Keep, Kind,
-    Listing, LocalFolder, NewArchive, OnExisting, Owners, Source, Times, Transfer, add_with,
-    algorithms_of, came_from_internet, checksum_line, checksums, convert, create, damages, delete,
-    extract_selected, extract_with, has_signature, join_parts, left_out, list, read_entry, rename,
-    renamings, save_checksum, signature_name, size, split_file, stem, test, transfer,
+    AddOptions, Algorithm, Blocks, COMPRESSED_EXTENSIONS, Entry, ExtractOptions, Filter, Frames,
+    Keep, Kind, Listing, LocalFolder, NewArchive, OnExisting, Owners, Source, Times, Transfer,
+    add_with, algorithms_of, came_from_internet, checksum_line, checksums, convert, create,
+    damages, delete, extract_selected, extract_with, has_signature, join_parts, left_out, list,
+    read_entry, rename, renamings, save_checksum, signature_name, size, split_file, stem, test,
+    transfer,
 };
 use serde_json::{Value, json};
 
@@ -106,7 +107,8 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
             paths,
             into,
             on_existing,
-        } => add_cmd(&archive, &paths, &into, &on_existing, cx),
+            patterns,
+        } => add_cmd(&archive, &paths, &into, &on_existing, &patterns, cx),
         Command::Delete { archive, files } => delete_cmd(&archive, &files, cx),
         Command::Rename {
             archive,
@@ -730,25 +732,21 @@ fn add_cmd(
     paths: &[PathBuf],
     into: &str,
     on_existing: &str,
+    patterns: &Patterns,
     cx: &mut Context,
 ) -> Result<(), Exit> {
-    let on_existing = on_existing_named(on_existing)?;
+    let how = AddOptions {
+        on_existing: on_existing_named(on_existing)?,
+        stored_extensions: COMPRESSED_EXTENSIONS
+            .iter()
+            .map(|e| (*e).to_owned())
+            .collect(),
+        filter: filter_of(patterns)?,
+    };
     let folder = entry_path(into);
-    let stored: Vec<String> = COMPRESSED_EXTENSIONS
-        .iter()
-        .map(|e| (*e).to_owned())
-        .collect();
     let (control, bar) = crate::progress::control("Adding", cx.progress);
     cx.secrets.unlocking(&named(archive), |keys| {
-        add_with(
-            paths,
-            archive,
-            &folder,
-            on_existing,
-            &stored,
-            keys,
-            &control,
-        )
+        add_with(paths, archive, &folder, &how, keys, &control)
     })?;
     drop(bar);
     done(cx, format!("added to {}", archive.display()))

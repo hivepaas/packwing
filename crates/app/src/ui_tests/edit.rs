@@ -73,6 +73,35 @@ scenario!(
 );
 
 scenario!(
+    /// Patterns say what of a folder dropped goes in, as they do making one.
+    patterns_say_what_is_added,
+    |ui| {
+        let zip = opened_zip(ui);
+        let more = ui.work.join("more");
+        for name in ["c.txt", "d.log", "node_modules/x.js"] {
+            let path = more.join(name);
+            std::fs::create_dir_all(path.parent().expect("a folder")).expect("a folder");
+            std::fs::write(path, "x").expect("a file");
+        }
+        ui.ws(|ws, window, cx| ws.dropped(vec![more], window, cx));
+        ui.wait_for("add");
+        ui.click("filter");
+        ui.type_in("node_modules/, *.log, src/**/gen/", "*.log");
+        ui.keys("enter");
+        ui.type_in("node_modules/, *.log, src/**/gen/", "node_modules/");
+        ui.keys("enter");
+        ui.wait_for("left-out");
+        ui.click("add");
+        ui.wait_for_no_dialog();
+        let held: Vec<String> = sorted(&zip, None)
+            .into_iter()
+            .filter(|n| n.contains('.'))
+            .collect();
+        assert_eq!(held, ["a.txt", "b.txt", "more/c.txt"]);
+    }
+);
+
+scenario!(
     /// A right click on an entry opens its menu, which deletes it: the page
     /// has no buttons for it.
     the_right_click_menu_deletes,

@@ -11,8 +11,8 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use packwing_core::{
-    Blocks, COMPRESSED_EXTENSIONS, Cancel, Control, Error, ExtractOptions, Filter, Frames, Item,
-    Keys, Kind, Level, Lister, LocalFolder, NewArchive, OnExisting, Progress, Route,
+    AddOptions, Blocks, COMPRESSED_EXTENSIONS, Cancel, Control, Error, ExtractOptions, Filter,
+    Frames, Item, Keys, Kind, Level, Lister, LocalFolder, NewArchive, OnExisting, Progress, Route,
     SEVERAL_FRAMES_FROM, Source, Storage, StoredFile, add, add_with, age_key_is_post_quantum,
     age_key_problem, age_keys_in, can_add, create, create_on, delete, extract, extract_selected,
     extract_to_open, extract_with, image_fits, list, measure, read_entry, rename, route, test,
@@ -538,8 +538,11 @@ fn a_zip_archive_stores_the_extensions_it_is_told() {
             &[more],
             &made,
             &[],
-            OnExisting::Stop,
-            &stored_extensions,
+            &AddOptions {
+                on_existing: OnExisting::Stop,
+                stored_extensions: stored_extensions.clone(),
+                ..Default::default()
+            },
             &Keys::default(),
             &Control::default(),
         )
@@ -1612,8 +1615,10 @@ fn a_name_it_holds_can_be_replaced_or_skipped() {
         std::slice::from_ref(&source),
         &made,
         &[],
-        OnExisting::Skip,
-        &[],
+        &AddOptions {
+            on_existing: OnExisting::Skip,
+            ..Default::default()
+        },
         &keys,
         &control,
     )
@@ -1625,8 +1630,10 @@ fn a_name_it_holds_can_be_replaced_or_skipped() {
         std::slice::from_ref(&source),
         &made,
         &[],
-        OnExisting::Replace,
-        &[],
+        &AddOptions {
+            on_existing: OnExisting::Replace,
+            ..Default::default()
+        },
         &keys,
         &control,
     )
@@ -1648,8 +1655,10 @@ fn a_name_it_holds_can_be_replaced_or_skipped() {
             &file,
             &made,
             &inner,
-            OnExisting::Replace,
-            &[],
+            &AddOptions {
+                on_existing: OnExisting::Replace,
+                ..Default::default()
+            },
             &keys,
             &control
         )
@@ -3709,8 +3718,10 @@ fn a_large_file_added_to_a_zip_is_deflated_in_blocks() {
         &[big],
         &made,
         &[],
-        OnExisting::Stop,
-        &[],
+        &AddOptions {
+            on_existing: OnExisting::Stop,
+            ..Default::default()
+        },
         &Keys::default(),
         &Control::default(),
     )
@@ -4003,4 +4014,60 @@ fn patterns_to_include_take_only_what_they_name() {
     .unwrap_err();
     assert!(e.to_string().contains("patterns"), "{e}");
     assert!(!s.path("d.zip").exists());
+}
+
+#[test]
+fn patterns_say_what_is_added() {
+    let s = Scratch::new("add-patterns");
+    let chosen = project(&s);
+    for (kind, extension) in [(Kind::Zip, "zip"), (Kind::SevenZip, "7z")] {
+        let name = format!("held.{extension}");
+        let empty = s.path(&format!("empty-{extension}"));
+        fs::create_dir_all(&empty).unwrap();
+        fs::write(empty.join("readme.txt"), "x").unwrap();
+        let new = NewArchive {
+            kind,
+            ..NewArchive::default()
+        };
+        let made = create(
+            &[empty.join("readme.txt")],
+            &s.path(&name),
+            &new,
+            &Control::default(),
+        )
+        .unwrap();
+        let how = |include: &[&str], exclude: &[&str]| AddOptions {
+            filter: filtered(include, exclude).filter,
+            ..AddOptions::default()
+        };
+        let control = Control::default();
+        let keys = Keys::default();
+        add_with(
+            &chosen,
+            &made,
+            &["in".to_owned()],
+            &how(&["src/", "*.pdf"], &["gen/"]),
+            &keys,
+            &control,
+        )
+        .unwrap();
+        assert_eq!(
+            held(&made),
+            [
+                "in/proj/",
+                "in/proj/docs/",
+                "in/proj/docs/Guide.PDF",
+                "in/proj/src/",
+                "in/proj/src/main.rs",
+                "in/proj/src/x/",
+                "readme.txt",
+            ],
+            "{kind:?}"
+        );
+        // What nothing matches adds nothing, and says why.
+        let before = fs::read(&made).unwrap();
+        let e = add_with(&chosen, &made, &[], &how(&["*.docx"], &[]), &keys, &control).unwrap_err();
+        assert!(e.to_string().contains("patterns"), "{e}");
+        assert_eq!(fs::read(&made).unwrap(), before);
+    }
 }

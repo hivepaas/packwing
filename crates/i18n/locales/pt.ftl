@@ -2521,6 +2521,9 @@ tbd0e16dc = { $path } não tem nome.
 # The name of {path} is not valid Unicode, so it cannot go in an archive.
 t2588efb5 = O nome de { $path } não é Unicode válido, então não pode ir em um arquivo compactado.
 
+# Nothing chosen matches the patterns given.
+te132289a = Nada do que foi escolhido corresponde aos padrões.
+
 # Could not write {path}: {e}
 t8dd055c6 = Não foi possível gravar { $path }: { $e }
 
@@ -2598,9 +2601,6 @@ tff43ce74 = Um arquivo compactado não pode entrar em si mesmo.
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = “{ $bare }” já está no arquivo compactado. Nada foi alterado.
-
-# Nothing chosen matches the patterns given.
-te132289a = Nada do que foi escolhido corresponde aos padrões.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = Antes de ser enviado, este arquivo compactado é criado em { $folder }, onde pode ocupar até { $need }. Só há { $free } livres lá.
