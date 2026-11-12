@@ -27,6 +27,7 @@ pub const REQUIRE_ENCRYPTION: &str = "RequireEncryption";
 pub const ALLOWED_ENCRYPTION_METHODS: &str = "AllowedEncryptionMethods";
 pub const MIN_PASSWORD_LENGTH: &str = "MinPasswordLength";
 pub const LICENSE_KEY: &str = "LicenseKey";
+pub const LICENSE_REFRESH: &str = "LicenseRefresh";
 pub const ORGANIZATION_NAME: &str = "ManagedByOrganizationName";
 pub const ORGANIZATION_URL: &str = "ManagedByURL";
 pub const AUDIT_LOG: &str = "AuditLog";
@@ -38,8 +39,9 @@ pub const AUDIT_LOG_SYSTEM: &str = "AuditLogSystem";
 pub const AUDIT_LOG_REQUIRED: &str = "AuditLogRequired";
 
 /// Every policy there is, as the systems' readers look for them.
-pub const KEYS: [&str; 15] = [
+pub const KEYS: [&str; 16] = [
     LICENSE_KEY,
+    LICENSE_REFRESH,
     PROPAGATE_MOTW,
     MARK_STORAGE_FILES,
     REQUIRE_ENCRYPTION,
@@ -241,6 +243,8 @@ pub struct Policy {
     pub min_password_length: Setting<u32>,
     /// The organization's license key, for packwing-license to read.
     pub license_key: Setting<String>,
+    /// Whether packwing asks the portal for a newer key of `license_key`, once a day.
+    pub license_refresh: Setting<bool>,
     pub organization: Setting<String>,
     pub url: Setting<String>,
     pub audit_log: Setting<bool>,
@@ -270,6 +274,7 @@ impl Policy {
             allowed_methods: Setting::of(value(ALLOWED_ENCRYPTION_METHODS), read_methods),
             min_password_length: Setting::of(value(MIN_PASSWORD_LENGTH), read_length),
             license_key: Setting::of(value(LICENSE_KEY), read_text),
+            license_refresh: Setting::of(value(LICENSE_REFRESH), read_bool),
             organization: Setting::of(value(ORGANIZATION_NAME), read_text),
             url: Setting::of(value(ORGANIZATION_URL), read_url),
             audit_log: Setting::of(value(AUDIT_LOG), read_bool),
@@ -527,6 +532,7 @@ impl Policy {
         row(&mut rows, LICENSE_KEY, &self.license_key, |_| {
             "(set)".to_owned()
         });
+        row(&mut rows, LICENSE_REFRESH, &self.license_refresh, on_off);
         row(
             &mut rows,
             ORGANIZATION_NAME,
@@ -968,6 +974,21 @@ mod tests {
         assert_eq!(p.license_key, Setting::Set("secret-key-text".into()));
         assert!(!p.report().contains("secret-key-text"));
         assert_eq!(p.rows()[0].value, "(set)");
+    }
+
+    #[test]
+    fn asking_for_newer_license_keys_is_the_organizations_to_turn_on() {
+        assert_eq!(policy(&[]).license_refresh, Setting::Unset);
+        let on = policy(&[
+            (LICENSE_KEY, Value::Text("key".into())),
+            (LICENSE_REFRESH, Value::Int(1)),
+        ]);
+        assert_eq!(on.license_refresh, Setting::Set(true));
+        assert!(
+            on.rows()
+                .iter()
+                .any(|r| r.key == LICENSE_REFRESH && r.value == "true")
+        );
     }
 
     #[test]

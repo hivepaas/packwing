@@ -1990,6 +1990,9 @@ td2661011 = 有効
 # Past this, packwing is Free. Nothing is taken away but adding storages.
 td7098137 = この期間を過ぎると、packwing は Free になります。ストレージの追加ができなくなるだけで、ほかは変わりません。
 
+# Your organization manages this license. Once a day, packwing asks the portal for a newer key of it, sending only the key.
+t93c21721 = このライセンスは組織が管理しています。packwing は 1 日に 1 回、キーだけを送ってポータルに新しいキーがないか確認します。
+
 # Your organization manages this license.
 te42a0ee6 = このライセンスは組織が管理しています。
 
@@ -2064,6 +2067,12 @@ t38e70ee4 = ライセンス
 
 # Your organization’s, in Settings › License
 tff7c594e = 組織のものです。設定 › ライセンス をご覧ください
+
+# Newer license keys from the portal
+t6a8c1060 = ポータルからの新しいライセンスキー
+
+# Once a day, packwing asks for a newer key of your organization’s, sending only the key
+t8c9b329a = packwing は 1 日に 1 回、キーだけを送って組織の新しいキーを確認します
 
 # Treat files from storages as from the Internet
 t0af8d466 = ストレージのファイルをインターネット由来として扱う

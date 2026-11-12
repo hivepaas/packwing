@@ -1990,6 +1990,9 @@ td2661011 = Berlaku
 # Past this, packwing is Free. Nothing is taken away but adding storages.
 td7098137 = Setelah ini, packwing menjadi Free. Tidak ada yang dicabut selain menambah penyimpanan.
 
+# Your organization manages this license. Once a day, packwing asks the portal for a newer key of it, sending only the key.
+t93c21721 = Organisasi Anda mengelola lisensi ini. Sekali sehari, packwing meminta kunci yang lebih baru ke portal, hanya mengirim kuncinya.
+
 # Your organization manages this license.
 te42a0ee6 = Organisasi Anda mengelola lisensi ini.
 
@@ -2064,6 +2067,12 @@ t38e70ee4 = Lisensi
 
 # Your organization’s, in Settings › License
 tff7c594e = Milik organisasi Anda, di Pengaturan › Lisensi
+
+# Newer license keys from the portal
+t6a8c1060 = Kunci lisensi lebih baru dari portal
+
+# Once a day, packwing asks for a newer key of your organization’s, sending only the key
+t8c9b329a = Sekali sehari, packwing meminta kunci organisasi Anda yang lebih baru, hanya mengirim kuncinya
 
 # Treat files from storages as from the Internet
 t0af8d466 = Perlakukan berkas dari penyimpanan sebagai dari Internet

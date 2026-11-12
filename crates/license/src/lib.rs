@@ -123,6 +123,10 @@ pub fn day(text: &str) -> Option<Date> {
 /// A key that verified.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct License {
+    /// The license every key of it names: a newer key of the same license replaces it.
+    pub id: String,
+    /// When this key of it was issued.
+    pub issued: OffsetDateTime,
     /// What it is for, past its grace or not.
     pub bought: Plan,
     /// Who it was issued to.
@@ -170,6 +174,12 @@ impl License {
             self.standing(now) != Standing::Over
         };
         if gives { self.bought } else { Plan::Free }
+    }
+
+    /// Whether it is a newer key of `held`'s license, as the portal issues on a renewal, a
+    /// change of seats or a new year of a subscription.
+    pub fn replaces(&self, held: &License) -> bool {
+        self.id == held.id && self.issued > held.issued
     }
 
     /// Whether its updates cover the line first released on `line`: always, for a
@@ -302,6 +312,8 @@ fn license_of(data: &[u8]) -> Option<License> {
         payload.customer.name
     };
     Some(License {
+        id: payload.license_id,
+        issued,
         bought,
         holder,
         seats: payload.limits.get("seats").copied(),
@@ -310,6 +322,15 @@ fn license_of(data: &[u8]) -> Option<License> {
         expires,
         grace_days: payload.grace_days,
     })
+}
+
+/// `held`, or the key in `refreshed` where it is a newer key of the same license: the one
+/// the portal answered last, where the organization's `LicenseRefresh` policy asks for one.
+pub fn newest(held: License, refreshed: Option<&str>) -> License {
+    match refreshed.and_then(|text| read(text).ok()) {
+        Some(newer) if newer.replaces(&held) => newer,
+        _ => held,
+    }
 }
 
 /// What `text` says, if it is a license key for packwing that this build trusts. It says
@@ -464,6 +485,34 @@ mod tests {
             trial.plan(at("2020-07-02T00:00:00Z"), date("2020-01-01")),
             Plan::Free
         );
+    }
+
+    #[cfg(debug_assertions)]
+    #[test]
+    fn a_newer_key_of_the_same_license_replaces_it() {
+        let held = read(PRO).expect("it verifies");
+        let newer = License {
+            issued: held.issued + time::Duration::days(1),
+            ..held.clone()
+        };
+        assert!(newer.replaces(&held) && !held.replaces(&newer) && !held.replaces(&held));
+        let other = License {
+            id: "lic-other".into(),
+            ..newer
+        };
+        assert!(!other.replaces(&held));
+    }
+
+    #[cfg(debug_assertions)]
+    #[test]
+    fn a_refreshed_key_is_taken_only_as_a_newer_key_of_the_same_license() {
+        let held = read(PRO).expect("it verifies");
+        // EXPIRED is of the same license (lic-pro), but issued no later: the key held stays.
+        assert_eq!(newest(held.clone(), Some(EXPIRED)), held);
+        assert_eq!(newest(held.clone(), Some("not a key")), held);
+        assert_eq!(newest(held.clone(), None), held);
+        // ENTERPRISE is another license's.
+        assert_eq!(newest(held.clone(), Some(ENTERPRISE)), held);
     }
 
     #[test]

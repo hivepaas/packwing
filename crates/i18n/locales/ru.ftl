@@ -2062,6 +2062,9 @@ td2661011 = Действует
 # Past this, packwing is Free. Nothing is taken away but adding storages.
 td7098137 = После этого packwing переходит на Free. Отнимается только возможность добавлять хранилища.
 
+# Your organization manages this license. Once a day, packwing asks the portal for a newer key of it, sending only the key.
+t93c21721 = Этой лицензией управляет ваша организация. Раз в день packwing запрашивает у портала более новый ключ, отправляя только сам ключ.
+
 # Your organization manages this license.
 te42a0ee6 = Эту лицензию ведёт ваша организация.
 
@@ -2136,6 +2139,12 @@ t38e70ee4 = Лицензия
 
 # Your organization’s, in Settings › License
 tff7c594e = Лицензия вашей организации, в Настройки › Лицензия
+
+# Newer license keys from the portal
+t6a8c1060 = Новые ключи лицензии с портала
+
+# Once a day, packwing asks for a newer key of your organization’s, sending only the key
+t8c9b329a = Раз в день packwing запрашивает более новый ключ вашей организации, отправляя только ключ
 
 # Treat files from storages as from the Internet
 t0af8d466 = Считать файлы из хранилищ полученными из Интернета

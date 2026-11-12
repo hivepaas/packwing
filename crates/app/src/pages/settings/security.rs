@@ -11,7 +11,7 @@ use packwing_core::audit::RETENTION_CHOICES;
 use packwing_i18n::tr;
 use packwing_policy::{
     ALLOWED_ENCRYPTION_METHODS, AUDIT_LOG, AUDIT_LOG_DETAIL, AUDIT_LOG_MAX_SIZE_MB, AUDIT_LOG_PATH,
-    AUDIT_LOG_REQUIRED, AUDIT_LOG_RETENTION_DAYS, AUDIT_LOG_SYSTEM, LICENSE_KEY,
+    AUDIT_LOG_REQUIRED, AUDIT_LOG_RETENTION_DAYS, AUDIT_LOG_SYSTEM, LICENSE_KEY, LICENSE_REFRESH,
     MARK_STORAGE_FILES, MIN_PASSWORD_LENGTH, ORGANIZATION_NAME, ORGANIZATION_URL, PROPAGATE_MOTW,
     Policy, REQUIRE_ENCRYPTION, Row, Setting,
 };
@@ -89,6 +89,12 @@ fn told(key: &str) -> (String, String) {
         LICENSE_KEY => (
             tr!("License"),
             tr!("Your organization’s, in Settings › License"),
+        ),
+        LICENSE_REFRESH => (
+            tr!("Newer license keys from the portal"),
+            tr!(
+                "Once a day, packwing asks for a newer key of your organization’s, sending only the key"
+            ),
         ),
         MARK_STORAGE_FILES => (
             tr!("Treat files from storages as from the Internet"),

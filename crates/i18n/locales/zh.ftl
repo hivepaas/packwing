@@ -1990,6 +1990,9 @@ td2661011 = 有效
 # Past this, packwing is Free. Nothing is taken away but adding storages.
 td7098137 = 过期后，packwing 将变为免费版。除无法添加存储外，其他功能都不受影响。
 
+# Your organization manages this license. Once a day, packwing asks the portal for a newer key of it, sending only the key.
+t93c21721 = 此许可证由你的组织管理。packwing 每天向门户请求一次更新的密钥，只发送密钥本身。
+
 # Your organization manages this license.
 te42a0ee6 = 此许可证由你的组织管理。
 
@@ -2064,6 +2067,12 @@ t38e70ee4 = 许可证
 
 # Your organization’s, in Settings › License
 tff7c594e = 由你的组织管理，位于 设置 › 许可证
+
+# Newer license keys from the portal
+t6a8c1060 = 来自门户的更新许可证密钥
+
+# Once a day, packwing asks for a newer key of your organization’s, sending only the key
+t8c9b329a = packwing 每天请求一次你组织的更新密钥，只发送密钥本身
 
 # Treat files from storages as from the Internet
 t0af8d466 = 将来自存储的文件视为来自互联网

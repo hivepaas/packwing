@@ -143,7 +143,14 @@ impl Render for LicenseSection {
         section()
             .child(rows(lines))
             .when(held.by_policy, |d| {
-                d.child(note(Tone::Good).child(tr!("Your organization manages this license.")))
+                d.child(note(Tone::Good).child(if held.refreshes {
+                    tr!(
+                        "Your organization manages this license. Once a day, packwing asks the \
+                         portal for a newer key of it, sending only the key."
+                    )
+                } else {
+                    tr!("Your organization manages this license.")
+                }))
             })
             .when(!held.by_policy, |d| {
                 d.child(
@@ -200,9 +207,11 @@ impl Render for LicenseSection {
                 )
             })
             .when_some(problem, |d, why| d.child(note(Tone::Warn).child(why)))
-            .child(div().text_size(ui(13.)).text_color(rgb(c.muted)).child(tr!(
-                "A key is checked on this computer. Nothing is sent anywhere, and no \
-                         license changes what your organization’s policies do."
-            )))
+            .when(!held.refreshes, |d| {
+                d.child(div().text_size(ui(13.)).text_color(rgb(c.muted)).child(tr!(
+                    "A key is checked on this computer. Nothing is sent anywhere, and no \
+                             license changes what your organization’s policies do."
+                )))
+            })
     }
 }
