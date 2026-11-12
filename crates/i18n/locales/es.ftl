@@ -2521,6 +2521,9 @@ tbd0e16dc = { $path } no tiene nombre.
 # The name of {path} is not valid Unicode, so it cannot go in an archive.
 t2588efb5 = El nombre de { $path } no es Unicode válido, así que no puede ir en un archivo comprimido.
 
+# Nothing chosen matches the patterns given.
+te132289a = Nada de lo elegido coincide con los patrones.
+
 # Could not write {path}: {e}
 t8dd055c6 = No se pudo escribir { $path }: { $e }
 
@@ -2598,9 +2601,6 @@ tff43ce74 = Un archivo comprimido no puede ir dentro de sí mismo.
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = “{ $bare }” ya está en el archivo comprimido. No se cambió nada.
-
-# Nothing chosen matches the patterns given.
-te132289a = Nada de lo elegido coincide con los patrones.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = Antes de subirse, este archivo comprimido se crea en { $folder }, donde puede ocupar hasta { $need }. Allí solo hay { $free } libres.

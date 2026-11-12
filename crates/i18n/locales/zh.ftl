@@ -2482,6 +2482,9 @@ tbd0e16dc = { $path } 没有名称。
 # The name of {path} is not valid Unicode, so it cannot go in an archive.
 t2588efb5 = { $path } 的名称不是有效的 Unicode，因此无法放入压缩包。
 
+# Nothing chosen matches the patterns given.
+te132289a = 所选内容中没有与这些模式匹配的项。
+
 # Could not write {path}: {e}
 t8dd055c6 = 无法写入 { $path }：{ $e }
 
@@ -2559,9 +2562,6 @@ tff43ce74 = 压缩包不能放入它自身。
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = “{ $bare }”已在压缩包中。未做任何更改。
-
-# Nothing chosen matches the patterns given.
-te132289a = 所选内容中没有与这些模式匹配的项。
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = 上传前，此压缩包会先在 { $folder } 中生成，可能需要多达 { $need }。那里只有 { $free } 可用。

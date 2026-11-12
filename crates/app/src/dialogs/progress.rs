@@ -435,15 +435,7 @@ impl ProgressDialog {
                 };
             }
             if let Some(a) = add {
-                packwing_core::add_with(
-                    &a.paths,
-                    &a.archive,
-                    &a.folder,
-                    a.on_existing,
-                    &a.stored_extensions,
-                    &keys,
-                    &control,
-                )?;
+                packwing_core::add_with(&a.paths, &a.archive, &a.folder, &a.how, &keys, &control)?;
                 return Ok(None);
             }
             if let Some((archive, _, edit)) = edit {

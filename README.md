@@ -89,7 +89,7 @@ pkw create --blocks small home.tar.xz home/       # xz or 7z in blocks for every
 pkw create --owners --xattrs home.tar.zst ~/      # for a backup: owners, extended attributes and ACLs
 pkw create --mtime 2026-01-01 src.tar.gz src/     # one time for every file; SOURCE_DATE_EPOCH caps them
 pkw create app.zip app/ --exclude node_modules/ --exclude '*.log'   # --include too: a / at the end names folders, `src/**/gen/` any depth
-pkw add archive.zip new.txt --into docs  # and delete, rename: a ZIP or 7z archive, in place
+pkw add archive.zip new.txt --into docs  # and delete, rename: a ZIP or 7z archive, in place; --exclude, --include too
 pkw split backup.iso --size 4GB         # into parts beside it, as 7-Zip cuts one: backup.iso.001, .002…
 pkw join backup.iso.001                 # back into backup.iso, the parts checked first
 pkw checksum -a sha256 -a blake3 *.iso   # --save beside each, or --check SHA256SUMS

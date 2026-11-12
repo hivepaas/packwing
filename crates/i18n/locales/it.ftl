@@ -2521,6 +2521,9 @@ tbd0e16dc = { $path } non ha un nome.
 # The name of {path} is not valid Unicode, so it cannot go in an archive.
 t2588efb5 = Il nome di { $path } non è Unicode valido, quindi non può andare in un archivio.
 
+# Nothing chosen matches the patterns given.
+te132289a = Niente di ciò che è scelto corrisponde ai modelli.
+
 # Could not write {path}: {e}
 t8dd055c6 = Impossibile scrivere { $path }: { $e }
 
@@ -2598,9 +2601,6 @@ tff43ce74 = Un archivio non può stare dentro sé stesso.
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = «{ $bare }» è già nell'archivio. Nulla è cambiato.
-
-# Nothing chosen matches the patterns given.
-te132289a = Niente di ciò che è scelto corrisponde ai modelli.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = Prima di essere caricato, questo archivio viene creato in { $folder }, dove può occupare fino a { $need }. Lì sono liberi solo { $free }.

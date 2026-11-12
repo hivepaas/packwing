@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 107] = [
+const SCREENS: [(&str, SetUp); 108] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -471,7 +471,17 @@ const SCREENS: [(&str, SetUp); 107] = [
     ("create", |ws, window, cx| {
         ws.open_create_sample(window, cx);
     }),
-    ("add", |ws, window, cx| ws.open_add_sample(window, cx)),
+    ("add", |ws, window, cx| {
+        ws.open_add_sample(window, cx);
+    }),
+    ("add-filter", |ws, window, cx| {
+        if let Some(dialog) = ws.open_add_sample(window, cx) {
+            dialog.read(cx).patterns().update(cx, |p, cx| {
+                p.set(&[], &["*.tmp", "~$*"], false, cx);
+                p.set_left_out(Some((3, 48 << 10)), cx);
+            });
+        }
+    }),
     ("create-chosen", |ws, window, cx| {
         ws.open_create_many(window, cx);
     }),

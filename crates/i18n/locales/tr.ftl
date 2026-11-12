@@ -2521,6 +2521,9 @@ tbd0e16dc = { $path } için ad yok.
 # The name of {path} is not valid Unicode, so it cannot go in an archive.
 t2588efb5 = { $path } adı geçerli Unicode değil; bu yüzden arşive konamaz.
 
+# Nothing chosen matches the patterns given.
+te132289a = Seçilenlerden hiçbiri desenlerle eşleşmiyor.
+
 # Could not write {path}: {e}
 t8dd055c6 = { $path } yazılamadı: { $e }
 
@@ -2598,9 +2601,6 @@ tff43ce74 = Bir arşiv kendi içine konamaz.
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = “{ $bare }” arşivde zaten var. Hiçbir şey değiştirilmedi.
-
-# Nothing chosen matches the patterns given.
-te132289a = Seçilenlerden hiçbiri desenlerle eşleşmiyor.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = Yüklenmeden önce bu arşiv { $folder } içinde oluşturulur ve orada { $need } kadar yer tutabilir. Orada yalnızca { $free } boş.

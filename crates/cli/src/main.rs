@@ -277,6 +277,8 @@ enum Command {
         /// When a name is taken: stop, replace or skip.
         #[arg(long, value_name = "WHAT", default_value = "stop")]
         on_existing: String,
+        #[command(flatten)]
+        patterns: Patterns,
     },
     /// Delete files or folders from a ZIP or 7z archive.
     #[command(visible_alias = "rm")]
@@ -333,8 +335,8 @@ pub enum AuditCommand {
     Status,
 }
 
-/// What goes in, by `create` and `convert`: patterns as `.gitignore` has them.
-/// Creating, a path given is matched by its name, and what is in a folder given
+/// What goes in, by `create`, `add` and `convert`: patterns as `.gitignore` has
+/// them. Creating or adding, a path given is matched by its name, and what is in a folder given
 /// by its path in that folder; converting, an entry by its path in the archive.
 #[derive(Args)]
 pub struct Patterns {

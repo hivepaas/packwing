@@ -2482,6 +2482,9 @@ tbd0e16dc = { $path }에는 이름이 없습니다.
 # The name of {path} is not valid Unicode, so it cannot go in an archive.
 t2588efb5 = { $path }의 이름이 올바른 유니코드가 아니어서 압축 파일에 넣을 수 없습니다.
 
+# Nothing chosen matches the patterns given.
+te132289a = 선택한 항목 중 패턴에 맞는 것이 없습니다.
+
 # Could not write {path}: {e}
 t8dd055c6 = { $path }에 쓸 수 없습니다: { $e }
 
@@ -2559,9 +2562,6 @@ tff43ce74 = 압축 파일을 자기 자신 안에 넣을 수 없습니다.
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = “{ $bare }”이(가) 이미 압축 파일에 있습니다. 변경된 것이 없습니다.
-
-# Nothing chosen matches the patterns given.
-te132289a = 선택한 항목 중 패턴에 맞는 것이 없습니다.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = 업로드하기 전에 이 압축 파일을 { $folder }에 만드는데, 최대 { $need }가 필요할 수 있습니다. 그곳의 여유 공간은 { $free }뿐입니다.

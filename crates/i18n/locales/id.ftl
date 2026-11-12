@@ -2491,6 +2491,9 @@ tbd0e16dc = { $path } tidak punya nama.
 # The name of {path} is not valid Unicode, so it cannot go in an archive.
 t2588efb5 = Nama { $path } bukan Unicode yang valid, jadi tidak bisa dimasukkan ke arsip.
 
+# Nothing chosen matches the patterns given.
+te132289a = Tidak ada pilihan yang cocok dengan pola.
+
 # Could not write {path}: {e}
 t8dd055c6 = Tidak dapat menulis { $path }: { $e }
 
@@ -2568,9 +2571,6 @@ tff43ce74 = Arsip tidak bisa dimasukkan ke dalam dirinya sendiri.
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = “{ $bare }” sudah ada di arsip. Tidak ada yang diubah.
-
-# Nothing chosen matches the patterns given.
-te132289a = Tidak ada pilihan yang cocok dengan pola.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = Sebelum diunggah, arsip ini dibuat di { $folder }, yang mungkin memerlukan hingga { $need }. Hanya { $free } yang kosong di sana.

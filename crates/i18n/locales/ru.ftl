@@ -2581,6 +2581,9 @@ tbd0e16dc = У { $path } нет имени.
 # The name of {path} is not valid Unicode, so it cannot go in an archive.
 t2588efb5 = Имя { $path } не является допустимым Unicode, поэтому его нельзя поместить в архив.
 
+# Nothing chosen matches the patterns given.
+te132289a = Ничто из выбранного не подходит под шаблоны.
+
 # Could not write {path}: {e}
 t8dd055c6 = Не удалось записать { $path }: { $e }
 
@@ -2658,9 +2661,6 @@ tff43ce74 = Архив нельзя поместить внутрь самого
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = «{ $bare }» уже есть в архиве. Ничего не изменено.
-
-# Nothing chosen matches the patterns given.
-te132289a = Ничто из выбранного не подходит под шаблоны.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = Перед загрузкой этот архив создаётся в { $folder }, где ему может понадобиться до { $need }. Там свободно только { $free }.

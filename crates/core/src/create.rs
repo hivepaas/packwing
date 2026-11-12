@@ -683,6 +683,18 @@ fn items_of(paths: &[PathBuf], filter: &Filter, control: &Control) -> Result<Vec
     Ok(items)
 }
 
+/// What `filter` takes of `paths`, or why none: patterns that take nothing
+/// are more likely mistyped than meant.
+fn taken_items(paths: &[PathBuf], filter: &Filter, control: &Control) -> Result<Vec<Item>, Error> {
+    let items = items_of(paths, filter, control)?;
+    if !filter.is_everything() && items.is_empty() {
+        return Err(Error::Failed(tr!(
+            "Nothing chosen matches the patterns given."
+        )));
+    }
+    Ok(items)
+}
+
 /// Whether `name`, in an archive, is what only a Mac uses. A path chosen by
 /// name is that path's own business: only what is under it is looked at.
 fn is_mac_file(name: &str) -> bool {
@@ -2558,6 +2570,17 @@ pub enum OnExisting {
     Skip,
 }
 
+/// How files are added to an archive, by [`add_with`].
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct AddOptions {
+    /// What a file whose name the archive holds comes to.
+    pub on_existing: OnExisting,
+    /// Files with these go in as they are, as [`NewArchive::stored_extensions`] says.
+    pub stored_extensions: Vec<String>,
+    /// What goes in of what is chosen, as [`NewArchive::filter`] says.
+    pub filter: Filter,
+}
+
 /// [`add_with`], stopping at a name the archive holds.
 pub fn add(
     paths: &[PathBuf],
@@ -2566,7 +2589,14 @@ pub fn add(
     keys: &Keys,
     control: &Control,
 ) -> Result<(), Error> {
-    add_with(paths, archive, folder, OnExisting::Stop, &[], keys, control)
+    add_with(
+        paths,
+        archive,
+        folder,
+        &AddOptions::default(),
+        keys,
+        control,
+    )
 }
 
 /// The archive at `path`, if it is one that can be changed, as [`can_add`]
@@ -2787,19 +2817,18 @@ fn rename_in(
     replace_with(za, archive, entries.len() as u64, |r| r)
 }
 
-/// Adds `paths`, each with what is under it, to the ZIP archive at `archive`,
-/// in its folder `folder`. A file whose name it holds goes as `on_existing` says;
-/// a file where it holds a folder, or the other way, always stops it. In an
-/// archive with encrypted files, the new ones are encrypted too, with its
-/// password. Files with `stored_extensions` go in as they are, as
-/// [`NewArchive::stored_extensions`] says.
+/// Adds `paths`, each with what is under it that `how.filter` takes, to the
+/// ZIP or 7z archive at `archive`, in its folder `folder`. A file whose name it
+/// holds goes as `how.on_existing` says; a file where it holds a folder, or the
+/// other way, always stops it. In an archive with encrypted files, the new ones
+/// are encrypted too, with its password. Files with `how.stored_extensions` go
+/// in as they are.
 /// If this fails or is stopped, the archive is as it was.
 pub fn add_with(
     paths: &[PathBuf],
     archive: &Path,
     folder: &[String],
-    on_existing: OnExisting,
-    stored_extensions: &[String],
+    how: &AddOptions,
     keys: &Keys,
     control: &Control,
 ) -> Result<(), Error> {
@@ -2810,8 +2839,10 @@ pub fn add_with(
             ("into", json!(folder.join("/"))),
             (
                 "on_existing",
-                json!(format!("{on_existing:?}").to_lowercase()),
+                json!(format!("{:?}", how.on_existing).to_lowercase()),
             ),
+            ("include", patterns(how.filter.included())),
+            ("exclude", patterns(how.filter.excluded())),
             ("paths", json!(paths.len())),
             (
                 "path_names",
@@ -2819,15 +2850,7 @@ pub fn add_with(
             ),
         ]),
     )?;
-    let result = add_into(
-        paths,
-        archive,
-        folder,
-        on_existing,
-        stored_extensions,
-        keys,
-        control,
-    );
+    let result = add_into(paths, archive, folder, how, keys, control);
     audit::end(job, &result, |_| Map::new());
     result
 }
@@ -2836,8 +2859,7 @@ fn add_into(
     paths: &[PathBuf],
     archive: &Path,
     folder: &[String],
-    on_existing: OnExisting,
-    stored_extensions: &[String],
+    how: &AddOptions,
     keys: &Keys,
     control: &Control,
 ) -> Result<(), Error> {
@@ -2846,7 +2868,8 @@ fn add_into(
             "packwing can add files only to a ZIP or 7z archive that is one file."
         )));
     };
-    let mut items = items_of(paths, &Filter::default(), control)?;
+    let (on_existing, stored_extensions) = (how.on_existing, &how.stored_extensions[..]);
+    let mut items = taken_items(paths, &how.filter, control)?;
     let inside = archive.canonicalize()?;
     let mut prefix = folder.join("/");
     if !prefix.is_empty() {
@@ -3685,12 +3708,7 @@ fn chosen_items(
     new: &NewArchive,
     control: &Control,
 ) -> Result<Vec<Item>, Error> {
-    let mut items = items_of(paths, &new.filter, control)?;
-    if !new.filter.is_everything() && items.is_empty() {
-        return Err(Error::Failed(tr!(
-            "Nothing chosen matches the patterns given."
-        )));
-    }
+    let mut items = taken_items(paths, &new.filter, control)?;
     if new.skip_mac_files {
         items.retain(|item| !is_mac_file(&item.name));
     }

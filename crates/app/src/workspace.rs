@@ -1679,13 +1679,16 @@ impl Workspace {
 
     /// Add files, holding the screenshots' sample.
     #[cfg(all(test, feature = "test-hooks"))]
-    pub fn open_add_sample(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let archive = self.archive.read(cx).archive().cloned();
-        let dialog = archive.map(|a| AddDialog::sample(&a, cx));
-        if let Some(dialog) = dialog {
-            let view = cx.new(|_| dialog);
-            self.show(view, true, window, cx);
-        }
+    pub fn open_add_sample(
+        &mut self,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Option<Entity<AddDialog>> {
+        let archive = self.archive.read(cx).archive().cloned()?;
+        let dialog = AddDialog::sample(&archive, cx);
+        let view = cx.new(|cx| dialog.following(cx));
+        self.show(view.clone(), true, window, cx);
+        Some(view)
     }
 
     /// New archive, holding more than its list shows at once, the list open.
@@ -2307,7 +2310,7 @@ impl Workspace {
                 let archive = self.archive.read(cx).archive().cloned();
                 let dialog = archive.and_then(|a| AddDialog::new(&a, cx));
                 if let Some(dialog) = dialog {
-                    let view = cx.new(|_| dialog);
+                    let view = cx.new(|cx| dialog.following(cx));
                     view.update(cx, |d, cx| d.add(paths, cx));
                     self.show(view, true, window, cx);
                 }
@@ -2325,7 +2328,7 @@ impl Workspace {
         let archive = self.archive.read(cx).archive().cloned();
         let dialog = archive.and_then(|a| AddDialog::new(&a, cx));
         if let Some(dialog) = dialog {
-            let view = cx.new(|_| dialog);
+            let view = cx.new(|cx| dialog.following(cx));
             self.show(view, true, window, cx);
         }
     }

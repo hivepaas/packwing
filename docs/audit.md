@@ -116,7 +116,7 @@ A job is two records with the same `job`: `phase: start`, with what it is of, an
 | `test` | `source` | `files`, `bytes` |
 | `open_entry` | `source`, `entry`: a file opened from an archive | `copy`: where its copy is |
 | `read_entry` | `source`, `entry`: `pkw cat`, or a file shown beside its archive (`via: preview`) | `bytes` |
-| `add`, `delete`, `rename` | `archive`, and what goes in, out, or the new name | |
+| `add`, `delete`, `rename` | `archive`, and what goes in, out, or the new name; adding, the patterns to `include` and `exclude` where some were given | |
 | `copy`, `move` | `from`, `to`, `names` | `files`, `bytes`, `skipped`, `links_left` |
 | `sign` | `file`, `fingerprint` | |
 | `verify` | `file` | `signature` (`good`, `mismatch`, `untrusted_key`…), `fingerprint` |

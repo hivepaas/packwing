@@ -2482,6 +2482,9 @@ tbd0e16dc = { $path } には名前がありません。
 # The name of {path} is not valid Unicode, so it cannot go in an archive.
 t2588efb5 = { $path } の名前は有効な Unicode ではないため、アーカイブに入れられません。
 
+# Nothing chosen matches the patterns given.
+te132289a = 選んだものに、パターンに一致するものがありません。
+
 # Could not write {path}: {e}
 t8dd055c6 = { $path } を書き込めませんでした：{ $e }
 
@@ -2559,9 +2562,6 @@ tff43ce74 = アーカイブを自分自身の中に入れることはできま�
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = 「{ $bare }」はすでにアーカイブにあります。何も変更されていません。
-
-# Nothing chosen matches the patterns given.
-te132289a = 選んだものに、パターンに一致するものがありません。
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = アップロードの前に、このアーカイブは { $folder } に作成されます。最大 { $need } 必要になる場合がありますが、空きは { $free } しかありません。

@@ -2581,6 +2581,9 @@ tbd0e16dc = У { $path } немає назви.
 # The name of {path} is not valid Unicode, so it cannot go in an archive.
 t2588efb5 = Назва { $path } не є дійсним Unicode, тому її не можна помістити в архів.
 
+# Nothing chosen matches the patterns given.
+te132289a = Ніщо з вибраного не відповідає шаблонам.
+
 # Could not write {path}: {e}
 t8dd055c6 = Не вдалося записати { $path }: { $e }
 
@@ -2658,9 +2661,6 @@ tff43ce74 = Архів не можна помістити сам у себе.
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = «{ $bare }» уже є в архіві. Нічого не змінено.
-
-# Nothing chosen matches the patterns given.
-te132289a = Ніщо з вибраного не відповідає шаблонам.
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = Перш ніж вивантажити, цей архів створюється в { $folder }, де він може зайняти до { $need }. Там вільно лише { $free }.

@@ -2491,6 +2491,9 @@ tbd0e16dc = { $path } 沒有名稱。
 # The name of {path} is not valid Unicode, so it cannot go in an archive.
 t2588efb5 = { $path } 的名稱不是有效的 Unicode，因此無法放進封存檔。
 
+# Nothing chosen matches the patterns given.
+te132289a = 所選內容中沒有符合這些模式的項目。
+
 # Could not write {path}: {e}
 t8dd055c6 = 無法寫入 { $path }：{ $e }
 
@@ -2568,9 +2571,6 @@ tff43ce74 = 封存檔不能放進它自己裡面。
 
 # “{bare}” is already in the archive. Nothing was changed.
 t2c3e91c4 = 「{ $bare }」已在封存檔中。未做任何變更。
-
-# Nothing chosen matches the patterns given.
-te132289a = 所選內容中沒有符合這些模式的項目。
 
 # Before it is uploaded, this archive is made in {folder}, where it may take up to {need}. Only {free} is free there.
 tdb9326d3 = 上傳前，這個封存檔會先在 { $folder } 中建立，可能需要多達 { $need }，但該處只剩 { $free } 可用。

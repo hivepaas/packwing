@@ -478,6 +478,32 @@ fn patterns_say_what_goes_in() {
         "{picked:?}"
     );
     assert!(picked.contains(&"src/docs/build".to_owned()), "{picked:?}");
+    // Adding, as creating.
+    ok(&s.pkw(&[
+        "add",
+        "-q",
+        "docs.zip",
+        "src",
+        "--into",
+        "more",
+        "--exclude",
+        "*.log",
+        "--exclude",
+        "build/",
+        "--exclude",
+        "gen/",
+    ]));
+    assert_eq!(
+        files("docs.zip"),
+        [
+            "more/src/docs/build",
+            "more/src/docs/notes.txt",
+            "more/src/numbers.txt",
+            "src/docs/notes.txt",
+        ]
+    );
+    let none = s.pkw(&["add", "-q", "docs.zip", "src", "--include", "*.pdf"]);
+    assert_eq!(none.status.code(), Some(1), "{none:?}");
     // What nothing matches is said.
     let none = s.pkw(&["create", "-q", "none.zip", "src", "--include", "*.pdf"]);
     assert_eq!(none.status.code(), Some(1), "{none:?}");
