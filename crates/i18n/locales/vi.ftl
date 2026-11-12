@@ -670,21 +670,6 @@ t584a1d74 = Nhạc
 # node_modules/, *.log, src/**/gen/
 t56c5448d = node_modules/, *.log, src/**/gen/
 
-# Only {list}
-te15bdb01 = Chỉ { $list }
-
-# Not {list}
-t1a289d6e = Bỏ { $list }
-
-# Everything chosen
-tb453b09a = Mọi thứ đã chọn
-
-# {n} file left out | {n} files left out
-t22bcfff6 =
-    { $n ->
-       *[other] Bỏ { $n } tệp
-    }
-
 # They leave nothing out.
 t999b68fd = Không bỏ tệp nào.
 
@@ -693,6 +678,9 @@ tc709cfda =
     { $n ->
        *[other] Bỏ { $n } tệp, { $size }.
     }
+
+# Clear
+t04a57fc2 = Xoá hết
 
 # Leave out
 ta50cc084 = Bỏ qua
@@ -711,9 +699,6 @@ t524d506a = Tên đứng một mình khớp ở mọi nơi; / ở cuối là th�
 
 # Filter
 tf4a9c097 = Lọc
-
-# Edit…
-t8e7efcd7 = Sửa…
 
 # kept, {size}
 t001f6992 = đã giữ, { $size }
@@ -2259,6 +2244,9 @@ t87f62cb7 = Đang kiểm tra…
 
 # It asks again after 5 minutes left unused.
 t69c22a3b = Nó hỏi lại sau 5 phút không dùng.
+
+# Edit…
+t8e7efcd7 = Sửa…
 
 # Remove from this list
 t8c7c7c57 = Gỡ khỏi danh sách này

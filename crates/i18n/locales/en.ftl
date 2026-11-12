@@ -242,27 +242,19 @@ t5a036285 = Documents
 t63609fed = Videos
 t584a1d74 = Music
 t56c5448d = node_modules/, *.log, src/**/gen/
-te15bdb01 = Only { $list }
-t1a289d6e = Not { $list }
-tb453b09a = Everything chosen
-t22bcfff6 =
-    { $n ->
-        [one] { $n } file left out
-       *[other] { $n } files left out
-    }
 t999b68fd = They leave nothing out.
 tc709cfda =
     { $n ->
         [one] They leave out { $n } file, { $size }.
        *[other] They leave out { $n } files, { $size }.
     }
+t04a57fc2 = Clear
 ta50cc084 = Leave out
 t2fd02f84 = Take only
 t17ad93a1 = Add the usual
 ta0bd7335 = Only what these name goes in, and the folders it is in.
 t524d506a = A name is anywhere; a / at its end names a folder; ** is any folders.
 tf4a9c097 = Filter
-t8e7efcd7 = Edit…
 t001f6992 = kept, { $size }
 t73aeedd4 = left out
 t7aa9b778 = renamed { $to }
@@ -829,6 +821,7 @@ tb544cd9b = Type the password you log in to this computer with to open it.
 tfb4c635b = Show this computer it is you to open it.
 t87f62cb7 = Checking…
 t69c22a3b = It asks again after 5 minutes left unused.
+t8e7efcd7 = Edit…
 t8c7c7c57 = Remove from this list
 tc5e54e4a = Extract here with packwing
 tda62691f = Extract to new folder

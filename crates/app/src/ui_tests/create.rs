@@ -575,7 +575,7 @@ scenario!(
         }
         ui.ws(|ws, window, cx| ws.open_create(vec![proj], window, cx));
         ui.wait_for("create");
-        ui.click("edit-patterns");
+        ui.click("filter");
         ui.type_in("node_modules/, *.log, src/**/gen/", "*.LOG");
         ui.keys("enter");
         assert!(ui.shows("pattern: *.LOG"));
@@ -588,6 +588,16 @@ scenario!(
         assert!(ui.shows("pattern: *.tmp"));
         ui.keys("backspace");
         assert!(!ui.shows("pattern: *.tmp"));
+        // Clear takes away what the tab shown holds, and only that.
+        ui.click("take-only");
+        assert!(!ui.shows("clear-patterns"));
+        ui.type_in("node_modules/, *.log, src/**/gen/", "*.zzz");
+        ui.keys("enter");
+        assert!(ui.shows("pattern: *.zzz"));
+        ui.click("clear-patterns");
+        assert!(!ui.shows("pattern: *.zzz"));
+        ui.click("leave-out");
+        assert!(ui.shows("pattern: *.LOG"));
         // Counted: what they leave out is said.
         ui.wait_for("left-out");
         ui.click("create");

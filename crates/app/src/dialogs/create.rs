@@ -19,7 +19,7 @@ use packwing_core::{Blocks, Frames, Keep, Kind, NewArchive, Route, Source};
 pub(crate) use packwing_core::Level;
 
 use super::chosen::{self, Choosing};
-use super::patterns::{Patterns, PatternsChanged};
+use super::patterns::{Patterns, PatternsChanged, filter_button};
 use super::{
     Converting, Creating, DialogEvent, Job, Saving, SavingOn, Verb, footer, header, places,
 };
@@ -341,6 +341,10 @@ impl Choosing for CreateDialog {
         self.pick_paths(folders, cx);
     }
 
+    fn more(&self, cx: &Context<Self>) -> Option<gpui::AnyElement> {
+        Some(filter_button(&self.patterns, cx).into_any_element())
+    }
+
     fn remove(&mut self, path: &Path, cx: &mut Context<Self>) {
         self.selection.remove(path);
         self.list_shown &= !self.selection.paths.is_empty();
@@ -395,6 +399,8 @@ impl CreateDialog {
             cx.subscribe(&patterns, |this: &mut Self, _, _: &PatternsChanged, cx| {
                 this.count(cx);
             }),
+            // The button says whether they are open, and how many there are.
+            cx.observe(&patterns, |_, _, cx| cx.notify()),
         ];
         CreateDialog {
             converting: false,
@@ -1274,15 +1280,24 @@ impl CreateDialog {
                 d.child(
                     div()
                         .flex()
-                        .flex_col()
-                        .child(legend(tr!("What it holds, from")))
+                        .items_center()
+                        .gap(ui(8.))
                         .child(
                             div()
-                                .truncate()
-                                .text_size(ui(13.))
-                                .text_color(rgb(c.muted))
-                                .child(self.selection.whole_name()),
-                        ),
+                                .flex_1()
+                                .min_w_0()
+                                .flex()
+                                .flex_col()
+                                .child(legend(tr!("What it holds, from")))
+                                .child(
+                                    div()
+                                        .truncate()
+                                        .text_size(ui(13.))
+                                        .text_color(rgb(c.muted))
+                                        .child(self.selection.whole_name()),
+                                ),
+                        )
+                        .child(filter_button(&self.patterns, cx)),
                 )
             })
             .child(self.patterns.clone())

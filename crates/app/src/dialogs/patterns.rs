@@ -1,20 +1,23 @@
 //! What goes in of what is chosen: patterns to leave out, and to take only, as
-//! chips, with sets of the usual ones to add from a menu. A line says what they
-//! come to while it is closed; open, it says how much they leave out.
+//! chips, with sets of the usual ones to add from a menu, and how much they
+//! leave out. A button beside what goes in opens them ([`filter_button`]).
 
 use packwing_core::Filter;
 use packwing_i18n::{tr, tr_n};
 
 use gpui::{
-    Context, Entity, EventEmitter, Focusable, FontWeight, KeyDownEvent, MouseButton, Render,
-    SharedString, Subscription, Window, anchored, deferred, div, point, prelude::*, px, rgb,
+    Context, Div, Entity, EventEmitter, Focusable, FontWeight, KeyDownEvent, MouseButton, Render,
+    SharedString, Stateful, Subscription, Window, anchored, deferred, div, point, prelude::*, px,
+    rgb,
 };
 
 use crate::colors::colors;
 use crate::input::{Changed, TextInput};
 use crate::model::{count, size};
 use crate::text_size::ui;
-use crate::widgets::{Fill, Size, Tone, button, icon, legend, menu_panel, note, segment, segments};
+use crate::widgets::{
+    Fill, Size, Tone, button, icon, icon_text_button, menu_panel, note, segment, segments,
+};
 
 /// A set of patterns the menu adds at once.
 struct Preset {
@@ -257,27 +260,31 @@ impl Patterns {
         cx.stop_propagation();
     }
 
-    /// The line beside the heading: what the patterns come to.
-    fn said(&self) -> String {
-        let mut said = Vec::new();
-        if !self.include.is_empty() {
-            said.push(tr!("Only {list}", list = self.include.join(", ")));
+    /// Opens the patterns, the field ready to type in; or closes them, with
+    /// what is typed put in, unless it is no pattern, which keeps them open
+    /// to say why.
+    pub fn toggle(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.presets = false;
+        if !self.open {
+            self.open = true;
+            let focus = self.field.focus_handle(cx);
+            window.focus(&focus, cx);
+        } else {
+            if !self.field.read(cx).text().trim().is_empty() {
+                self.add_typed(cx);
+            }
+            self.open = self.problem.is_some();
         }
-        if !self.exclude.is_empty() {
-            said.push(tr!("Not {list}", list = self.exclude.join(", ")));
+        cx.notify();
+    }
+
+    /// Takes away every pattern of the tab shown.
+    fn clear(&mut self, cx: &mut Context<Self>) {
+        if !self.list().is_empty() {
+            self.list().clear();
+            cx.emit(PatternsChanged);
         }
-        if said.is_empty() {
-            return tr!("Everything chosen");
-        }
-        if let Some((files, _)) = self.left_out.filter(|(files, _)| *files > 0) {
-            said.push(tr_n!(
-                files,
-                "{n} file left out",
-                "{n} files left out",
-                n = count(files)
-            ));
-        }
-        said.join(" · ")
+        cx.notify();
     }
 
     fn chip(
@@ -415,11 +422,36 @@ impl Patterns {
             )),
             _ => None,
         };
+        let clear = (!shown.is_empty()).then(|| {
+            div()
+                .debug_selector(|| "clear-patterns".to_owned())
+                .id("clear-patterns")
+                .flex_shrink_0()
+                .px(ui(4.))
+                .py(ui(8.))
+                .text_size(ui(14.))
+                .font_weight(FontWeight::SEMIBOLD)
+                .text_color(rgb(c.accent))
+                .cursor_pointer()
+                .hover(|s| s.underline())
+                .on_click(cx.listener(|this, _, _, cx| this.clear(cx)))
+                .child(tr!("Clear"))
+        });
         div()
+            .debug_selector(|| "patterns".to_owned())
             .flex()
             .flex_col()
-            .gap(ui(8.))
-            .child(segments([
+            .gap(ui(10.))
+            .p(ui(12.))
+            .rounded(ui(20.))
+            .border_1()
+            .border_color(rgb(c.outline))
+            .child(
+                div()
+                    .flex()
+                    .items_center()
+                    .gap(ui(10.))
+                    .child(div().flex_1().min_w_0().child(segments([
                 tab(
                     "leave-out",
                     tr!("Leave out"),
@@ -438,7 +470,9 @@ impl Patterns {
                         cx.notify();
                     }),
                 ),
-            ]))
+            ])))
+                    .children(clear),
+            )
             .child(
                 div()
                     .flex()
@@ -454,7 +488,8 @@ impl Patterns {
                             .debug_selector(|| "pattern-field".to_owned())
                             .flex_1()
                             .min_w(ui(180.))
-                            .on_key_down(cx.listener(Self::on_key))
+                            // Before the field: it takes Backspace for its own.
+                            .capture_key_down(cx.listener(Self::on_key))
                             .child(self.field.clone()),
                     ),
             )
@@ -503,52 +538,28 @@ impl Patterns {
 
 impl Render for Patterns {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let c = colors();
-        let open = self.open;
-        div()
-            .flex()
-            .flex_col()
-            .gap(ui(10.))
-            .child(
-                div()
-                    .flex()
-                    .items_center()
-                    .gap(ui(8.))
-                    .child(
-                        div().flex_1().min_w_0().child(legend(tr!("Filter"))).child(
-                            div()
-                                .debug_selector(|| "patterns-said".to_owned())
-                                .truncate()
-                                .text_size(ui(13.))
-                                .text_color(rgb(c.muted))
-                                .child(self.said()),
-                        ),
-                    )
-                    .child(
-                        button(
-                            "edit-patterns",
-                            if open { tr!("Done") } else { tr!("Edit…") },
-                            Fill::Outline,
-                            Size::Medium,
-                        )
-                        .on_click(cx.listener(|this, _, window, cx| {
-                            this.open = !this.open;
-                            this.presets = false;
-                            if this.open {
-                                let focus = this.field.focus_handle(cx);
-                                window.focus(&focus, cx);
-                            } else if !this.field.read(cx).text().trim().is_empty() {
-                                // What is typed and not put in yet goes in on Done,
-                                // or it stays open to say why it cannot.
-                                this.add_typed(cx);
-                                this.open = this.problem.is_some();
-                            }
-                            cx.notify();
-                        })),
-                    ),
-            )
-            .when(open, |d| d.child(self.editor(window, cx)))
+        div().when(self.open, |d| d.child(self.editor(window, cx)))
     }
+}
+
+/// The button beside what goes in that opens the patterns, and closes them:
+/// tinted, with how many there are, while some are given.
+pub fn filter_button<V: 'static>(patterns: &Entity<Patterns>, cx: &Context<V>) -> Stateful<Div> {
+    let p = patterns.read(cx);
+    let n = p.include.len() + p.exclude.len();
+    let label = if n == 0 {
+        tr!("Filter")
+    } else {
+        format!("{} · {n}", tr!("Filter"))
+    };
+    let fill = if n > 0 || p.open {
+        Fill::Tonal
+    } else {
+        Fill::Outline
+    };
+    let patterns = patterns.clone();
+    icon_text_button("filter", "filter", label, fill, Size::Medium)
+        .on_click(move |_, window, cx| patterns.update(cx, |p, cx| p.toggle(window, cx)))
 }
 
 #[cfg(test)]

@@ -676,22 +676,6 @@ t584a1d74 = Müzik
 # node_modules/, *.log, src/**/gen/
 t56c5448d = node_modules/, *.log, src/**/gen/
 
-# Only {list}
-te15bdb01 = Yalnızca { $list }
-
-# Not {list}
-t1a289d6e = { $list } hariç
-
-# Everything chosen
-tb453b09a = Seçilen her şey
-
-# {n} file left out | {n} files left out
-t22bcfff6 =
-    { $n ->
-        [one] { $n } dosya dışarıda
-       *[other] { $n } dosya dışarıda
-    }
-
 # They leave nothing out.
 t999b68fd = Hiçbir şeyi dışarıda bırakmıyorlar.
 
@@ -701,6 +685,9 @@ tc709cfda =
         [one] { $n } dosyayı dışarıda bırakıyorlar, { $size }.
        *[other] { $n } dosyayı dışarıda bırakıyorlar, { $size }.
     }
+
+# Clear
+t04a57fc2 = Temizle
 
 # Leave out
 ta50cc084 = Atla
@@ -719,9 +706,6 @@ t524d506a = Tek başına bir ad her yerde geçerli; sondaki / klasör demek; ** 
 
 # Filter
 tf4a9c097 = Filtre
-
-# Edit…
-t8e7efcd7 = Düzenle…
 
 # kept, {size}
 t001f6992 = tutuldu, { $size }
@@ -2284,6 +2268,9 @@ t87f62cb7 = Denetleniyor…
 
 # It asks again after 5 minutes left unused.
 t69c22a3b = 5 dakika kullanılmazsa yeniden sorar.
+
+# Edit…
+t8e7efcd7 = Düzenle…
 
 # Remove from this list
 t8c7c7c57 = Bu listeden kaldır

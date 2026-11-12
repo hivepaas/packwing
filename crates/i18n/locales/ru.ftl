@@ -688,24 +688,6 @@ t584a1d74 = Музыка
 # node_modules/, *.log, src/**/gen/
 t56c5448d = node_modules/, *.log, src/**/gen/
 
-# Only {list}
-te15bdb01 = Только { $list }
-
-# Not {list}
-t1a289d6e = Без { $list }
-
-# Everything chosen
-tb453b09a = Всё выбранное
-
-# {n} file left out | {n} files left out
-t22bcfff6 =
-    { $n ->
-        [one] { $n } файл исключён
-        [few] { $n } файла исключено
-        [many] { $n } файлов исключено
-       *[other] { $n } файла исключено
-    }
-
 # They leave nothing out.
 t999b68fd = Ничего не исключается.
 
@@ -717,6 +699,9 @@ tc709cfda =
         [many] Исключается { $n } файлов, { $size }.
        *[other] Исключается { $n } файла, { $size }.
     }
+
+# Clear
+t04a57fc2 = Очистить
 
 # Leave out
 ta50cc084 = Пропустить
@@ -735,9 +720,6 @@ t524d506a = Имя без / подходит везде; / в конце озн�
 
 # Filter
 tf4a9c097 = Фильтр
-
-# Edit…
-t8e7efcd7 = Изменить…
 
 # kept, {size}
 t001f6992 = сохранено, { $size }
@@ -2334,6 +2316,9 @@ t87f62cb7 = Проверка…
 
 # It asks again after 5 minutes left unused.
 t69c22a3b = Запрос повторится через 5 минут бездействия.
+
+# Edit…
+t8e7efcd7 = Изменить…
 
 # Remove from this list
 t8c7c7c57 = Убрать из списка

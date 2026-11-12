@@ -1002,7 +1002,7 @@ fn a_menu_option_takes_a_click() {
     // The format's pill, then the second option under it (.7z), as
     // `create-light.png` draws them.
     let (pill, option) = (
-        gpui::point(px(890.), px(481.)),
+        gpui::point(px(890.), px(449.)),
         gpui::point(px(890.), px(540.)),
     );
     click(&mut cx, window, pill);
@@ -2513,7 +2513,7 @@ fn a_click_takes_a_row_out_and_the_eye_closes_the_list() {
     let left = dialog.read_with(&cx, |d, _| d.selection_paths());
     assert_eq!(left, paths[1..]);
     assert!(dialog.read_with(&cx, |d, _| d.list_is_open()));
-    click(&mut cx, window, gpui::point(px(722.), px(148.)));
+    click(&mut cx, window, gpui::point(px(600.), px(148.)));
     assert!(!dialog.read_with(&cx, |d, _| d.list_is_open()));
     assert_eq!(
         dialog.read_with(&cx, |d, _| d.selection_paths()),

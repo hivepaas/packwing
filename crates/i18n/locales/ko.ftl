@@ -670,21 +670,6 @@ t584a1d74 = 음악
 # node_modules/, *.log, src/**/gen/
 t56c5448d = node_modules/, *.log, src/**/gen/
 
-# Only {list}
-te15bdb01 = { $list }만
-
-# Not {list}
-t1a289d6e = { $list } 제외
-
-# Everything chosen
-tb453b09a = 선택한 모든 항목
-
-# {n} file left out | {n} files left out
-t22bcfff6 =
-    { $n ->
-       *[other] 파일 { $n }개 제외
-    }
-
 # They leave nothing out.
 t999b68fd = 제외되는 것이 없습니다.
 
@@ -693,6 +678,9 @@ tc709cfda =
     { $n ->
        *[other] 파일 { $n }개({ $size })를 제외합니다.
     }
+
+# Clear
+t04a57fc2 = 모두 지우기
 
 # Leave out
 ta50cc084 = 제외
@@ -711,9 +699,6 @@ t524d506a = 이름만 쓰면 어디서나 일치하고, 끝의 /는 폴더, **�
 
 # Filter
 tf4a9c097 = 필터
-
-# Edit…
-t8e7efcd7 = 편집…
 
 # kept, {size}
 t001f6992 = 남김, { $size }
@@ -2259,6 +2244,9 @@ t87f62cb7 = 확인 중…
 
 # It asks again after 5 minutes left unused.
 t69c22a3b = 5분간 사용하지 않으면 다시 묻습니다.
+
+# Edit…
+t8e7efcd7 = 편집…
 
 # Remove from this list
 t8c7c7c57 = 목록에서 제거

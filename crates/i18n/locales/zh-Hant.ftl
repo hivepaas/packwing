@@ -670,21 +670,6 @@ t584a1d74 = 音樂
 # node_modules/, *.log, src/**/gen/
 t56c5448d = node_modules/, *.log, src/**/gen/
 
-# Only {list}
-te15bdb01 = 僅 { $list }
-
-# Not {list}
-t1a289d6e = 排除 { $list }
-
-# Everything chosen
-tb453b09a = 所有選取的內容
-
-# {n} file left out | {n} files left out
-t22bcfff6 =
-    { $n ->
-       *[other] 排除 { $n } 個檔案
-    }
-
 # They leave nothing out.
 t999b68fd = 不排除任何內容。
 
@@ -693,6 +678,9 @@ tc709cfda =
     { $n ->
        *[other] 將排除 { $n } 個檔案，共 { $size }。
     }
+
+# Clear
+t04a57fc2 = 清除
 
 # Leave out
 ta50cc084 = 略過
@@ -711,9 +699,6 @@ t524d506a = 單獨的名稱在任何位置都相符；結尾的 / 表示資料�
 
 # Filter
 tf4a9c097 = 篩選
-
-# Edit…
-t8e7efcd7 = 編輯…
 
 # kept, {size}
 t001f6992 = 已保留，{ $size }
@@ -2259,6 +2244,9 @@ t87f62cb7 = 正在檢查…
 
 # It asks again after 5 minutes left unused.
 t69c22a3b = 閒置 5 分鐘後會再次詢問。
+
+# Edit…
+t8e7efcd7 = 編輯…
 
 # Remove from this list
 t8c7c7c57 = 從此清單移除

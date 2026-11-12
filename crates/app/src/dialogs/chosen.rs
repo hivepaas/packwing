@@ -27,6 +27,10 @@ pub trait Choosing: Sized + 'static {
     fn pick(&mut self, folders: bool, cx: &mut Context<Self>);
     /// Takes `path` out of what goes in.
     fn remove(&mut self, path: &Path, cx: &mut Context<Self>);
+    /// A button after the others, if it has one: New archive's filter.
+    fn more(&self, _cx: &Context<Self>) -> Option<gpui::AnyElement> {
+        None
+    }
 }
 
 /// The first few names, and how many more there are.
@@ -204,7 +208,8 @@ pub fn section<V: Choosing>(this: &V, checked: bool, cx: &mut Context<V>) -> imp
                 .child(
                     button("add-folder", tr!("+ Folder"), Fill::Outline, Size::Medium)
                         .on_click(cx.listener(|this, _, _, cx| this.pick(true, cx))),
-                ),
+                )
+                .children(this.more(cx)),
         )
         .children(list)
         .when(count == 0 && checked, |d| {

@@ -670,21 +670,6 @@ t584a1d74 = Musik
 # node_modules/, *.log, src/**/gen/
 t56c5448d = node_modules/, *.log, src/**/gen/
 
-# Only {list}
-te15bdb01 = Hanya { $list }
-
-# Not {list}
-t1a289d6e = Kecuali { $list }
-
-# Everything chosen
-tb453b09a = Semua yang dipilih
-
-# {n} file left out | {n} files left out
-t22bcfff6 =
-    { $n ->
-       *[other] { $n } berkas dikecualikan
-    }
-
 # They leave nothing out.
 t999b68fd = Tidak ada yang dikecualikan.
 
@@ -693,6 +678,9 @@ tc709cfda =
     { $n ->
        *[other] Mengecualikan { $n } berkas, { $size }.
     }
+
+# Clear
+t04a57fc2 = Hapus semua
 
 # Leave out
 ta50cc084 = Lewati
@@ -711,9 +699,6 @@ t524d506a = Nama saja berlaku di mana pun; / di akhir berarti folder; ** berarti
 
 # Filter
 tf4a9c097 = Filter
-
-# Edit…
-t8e7efcd7 = Edit…
 
 # kept, {size}
 t001f6992 = disimpan, { $size }
@@ -2259,6 +2244,9 @@ t87f62cb7 = Memeriksa…
 
 # It asks again after 5 minutes left unused.
 t69c22a3b = Diminta lagi setelah 5 menit tidak digunakan.
+
+# Edit…
+t8e7efcd7 = Edit…
 
 # Remove from this list
 t8c7c7c57 = Hapus dari daftar ini

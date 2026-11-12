@@ -670,21 +670,6 @@ t584a1d74 = 音楽
 # node_modules/, *.log, src/**/gen/
 t56c5448d = node_modules/, *.log, src/**/gen/
 
-# Only {list}
-te15bdb01 = { $list } のみ
-
-# Not {list}
-t1a289d6e = { $list } を除く
-
-# Everything chosen
-tb453b09a = 選んだものすべて
-
-# {n} file left out | {n} files left out
-t22bcfff6 =
-    { $n ->
-       *[other] { $n } 個のファイルを除外
-    }
-
 # They leave nothing out.
 t999b68fd = 除外されるものはありません。
 
@@ -693,6 +678,9 @@ tc709cfda =
     { $n ->
        *[other] { $n } 個のファイル ({ $size }) を除外します。
     }
+
+# Clear
+t04a57fc2 = クリア
 
 # Leave out
 ta50cc084 = 除外
@@ -711,9 +699,6 @@ t524d506a = 名前だけならどこでも一致。末尾の / はフォルダ�
 
 # Filter
 tf4a9c097 = フィルター
-
-# Edit…
-t8e7efcd7 = 編集…
 
 # kept, {size}
 t001f6992 = 残しました、{ $size }
@@ -2259,6 +2244,9 @@ t87f62cb7 = 確認中…
 
 # It asks again after 5 minutes left unused.
 t69c22a3b = 5 分間使わないと再度求められます。
+
+# Edit…
+t8e7efcd7 = 編集…
 
 # Remove from this list
 t8c7c7c57 = この一覧から削除

@@ -676,22 +676,6 @@ t584a1d74 = Música
 # node_modules/, *.log, src/**/gen/
 t56c5448d = node_modules/, *.log, src/**/gen/
 
-# Only {list}
-te15bdb01 = Só { $list }
-
-# Not {list}
-t1a289d6e = Sem { $list }
-
-# Everything chosen
-tb453b09a = Tudo o que foi escolhido
-
-# {n} file left out | {n} files left out
-t22bcfff6 =
-    { $n ->
-        [one] { $n } arquivo deixado de fora
-       *[other] { $n } arquivos deixados de fora
-    }
-
 # They leave nothing out.
 t999b68fd = Não deixam nada de fora.
 
@@ -701,6 +685,9 @@ tc709cfda =
         [one] Deixam de fora { $n } arquivo, { $size }.
        *[other] Deixam de fora { $n } arquivos, { $size }.
     }
+
+# Clear
+t04a57fc2 = Limpar
 
 # Leave out
 ta50cc084 = Ignorar
@@ -719,9 +706,6 @@ t524d506a = Um nome vale em qualquer lugar; uma / no fim indica uma pasta; ** é
 
 # Filter
 tf4a9c097 = Filtro
-
-# Edit…
-t8e7efcd7 = Editar…
 
 # kept, {size}
 t001f6992 = mantido, { $size }
@@ -2284,6 +2268,9 @@ t87f62cb7 = Verificando…
 
 # It asks again after 5 minutes left unused.
 t69c22a3b = Pede de novo após 5 minutos sem uso.
+
+# Edit…
+t8e7efcd7 = Editar…
 
 # Remove from this list
 t8c7c7c57 = Remover desta lista
