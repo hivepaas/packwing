@@ -93,6 +93,11 @@ scripts/package_macos.sh
    all from `SHA256SUMS`, and merge it. Sign what is on `main`
    ([updates.md › Signing](updates.md#signing)); commit `release.signed.json`,
    then move the `release` branch ([updates.md › Publishing a release's list](updates.md#publishing-a-releases-list)).
+6. **Homebrew.** Within three hours of the `release` branch moving,
+   [hivepaas/homebrew-tap](https://github.com/hivepaas/homebrew-tap)'s Bump
+   opens a pull request for `pkw` and the `packwing` cask at the new stable
+   release (*Actions › Bump › Run workflow* there, sooner). Merge it once its
+   Tests pass.
 
 A release that went wrong is not deleted once the list names it: the next one
 replaces it.

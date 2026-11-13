@@ -62,7 +62,9 @@ Get packwing at **[packwing.app](https://packwing.app/#get)**, or from the [late
 | **macOS** 13 or later | `.dmg` for Apple silicon and Intel, signed and notarized |
 | **Windows** 10 and 11 | an installer, or a `.zip` to run from a folder |
 | **Linux** | `.deb` for Debian and Ubuntu, `.rpm` for Fedora and openSUSE |
-| **Command line only** | `pkw` alone, for Linux, macOS and Windows |
+| **Command line only** | `pkw` alone, for Linux, macOS and Windows, or `brew install hivepaas/tap/pkw` |
+
+On macOS, `brew install --cask hivepaas/tap/packwing` installs the app with [Homebrew](https://brew.sh).
 
 packwing tells you when a new version is out, and installs it when you say so.
 
