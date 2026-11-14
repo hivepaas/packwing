@@ -323,9 +323,19 @@ pub fn extract_with(
 
 /// What a record of extracting says of where from, where to and how.
 fn extracting(source: &Source, destination: &Path, how: &ExtractOptions) -> Map<String, Value> {
+    extracting_into(source, json!(audit::path_text(destination)), how)
+}
+
+/// [`extracting`], where what is written to is not a folder: see
+/// [`extract_to`](crate::extract_to).
+pub(crate) fn extracting_into(
+    source: &Source,
+    destination: Value,
+    how: &ExtractOptions,
+) -> Map<String, Value> {
     audit::fields([
         ("source", audit::source(source)),
-        ("destination", json!(audit::path_text(destination))),
+        ("destination", destination),
         ("overwrite", json!(how.overwrite)),
         ("keep_mark", json!(how.keep_mark)),
         ("portable_names", json!(how.portable_names)),

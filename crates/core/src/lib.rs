@@ -15,6 +15,7 @@ pub mod audit;
 mod checksum;
 mod convert;
 mod create;
+mod destination;
 mod filter;
 mod job;
 mod joined;
@@ -59,6 +60,7 @@ pub use create::{
     delete, free_archive_path, measure, memory_needed, memory_warning, refused_by, rename, route,
     within_memory,
 };
+pub use destination::{Destination, extract_to};
 pub use filter::Filter;
 pub use hivepack::extract::{
     Cancel, OnDamaged, OnLinksOutside, OnUnnamable, Owners, Progress, Summary,

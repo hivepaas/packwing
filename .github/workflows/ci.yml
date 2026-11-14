@@ -88,6 +88,35 @@ jobs:
         if: success() || failure()
         run: make test-ui
 
+  # What crates/mobile builds for Android alone (its `Document`, behind
+  # #[cfg(target_os = "android")]) is compiled by no other job: every one of
+  # them builds for this computer, where that cfg leaves it out. The app
+  # itself is built by hand, on a computer with the SDK (make android).
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rust
+        run: |
+          rustup toolchain install
+          rustup target add aarch64-linux-android
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: android
+
+      # For the C the archive libraries bring: cargo-ndk points it at the NDK
+      # the runner has, as scripts/build_android.sh does on a computer.
+      - name: cargo-ndk
+        run: cargo install cargo-ndk --locked
+
+      # Checked, not linted: clippy turned on `-D warnings` for this target
+      # fails on packwing-core over a lint that is wrong about code that
+      # already does what it asks (missing_const_for_thread_local).
+      - name: The mobile crate, for Android
+        run: cargo ndk -t arm64-v8a -P 29 check --locked -p packwing-mobile
+
   build:
     name: build-${{ matrix.name }}
     if: >-

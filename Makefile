@@ -32,8 +32,8 @@ SFTP_UNTRUST := touch $(HOME)/.ssh/known_hosts; \
 	printf '%s\n' "$$lines" >$(HOME)/.ssh/known_hosts
 
 .DEFAULT_GOAL := help
-.PHONY: help debug release build build-debug ios ios-sim ios-test cli cli-slim test test-window test-ui lint fmt clean \
-	s3-start s3-stop webdav-start webdav-stop sftp-start sftp-stop
+.PHONY: help debug release build build-debug ios ios-sim ios-test android android-install cli cli-slim test \
+	test-window test-ui lint fmt clean s3-start s3-stop webdav-start webdav-stop sftp-start sftp-stop
 
 help: ## List the targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F ':.*## ' '{printf "  make %-14s %s\n", $$1, $$2}'
@@ -60,6 +60,14 @@ ios-sim: ## Build the iOS app for the Simulator (after make ios)
 ios-test: ## Run the iOS app's UI tests on the iPhone 17 Simulator (after make ios)
 	cd ios && xcodebuild test -project Packwing.xcodeproj -scheme Packwing \
 		-destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath ../target/ios
+
+android: ## The Android app: its Rust library, its Kotlin and a debug APK
+	rustup target add aarch64-linux-android x86_64-linux-android
+	CARGO=$(CARGO) scripts/build_android.sh --debug
+	cd android && ./gradlew assembleDebug
+
+android-install: ## Install the Android app on the device or emulator that is running
+	cd android && ./gradlew installDebug
 
 cli: ## Build the command line, with no window: target/release/pkw
 	$(CARGO) build --release -p packwing-cli
