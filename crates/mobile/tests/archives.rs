@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex};
 
 use packwing_mobile::{
     Archive, ArchiveFormat, CompressionLevel, Job, JobListener, JobProgress, MobileError,
-    NewArchiveHow, Secrets, create_archive,
+    NewArchiveHow, Secrets, create_archive, stem,
 };
 
 /// A folder of files to make archives of: `Báo cáo/tổng hợp.txt` and
@@ -226,4 +226,27 @@ fn a_job_cancelled_stops_and_leaves_nothing() {
         "{stopped:?}"
     );
     assert!(fs::read_dir(&out).map_or(true, |mut d| d.next().is_none()));
+}
+
+#[test]
+fn a_file_opened_is_a_copy_of_its_own() {
+    let dir = tempfile::tempdir().expect("dir");
+    let archive = Archive::open(
+        make(dir.path(), ArchiveFormat::SevenZip, None, false),
+        Secrets::default(),
+        Job::quiet(),
+    )
+    .expect("opened");
+    let copy = archive
+        .open_copy(vec!["Báo cáo".into(), "ghi chú.txt".into()], Job::quiet())
+        .expect("copied");
+    assert!(copy.ends_with("ghi chú.txt"), "{copy}");
+    assert_eq!(fs::read_to_string(&copy).expect("read"), "hello");
+    let _ = fs::remove_dir_all(Path::new(&copy).parent().expect("folder"));
+}
+
+#[test]
+fn a_folder_extracted_is_named_without_the_extensions() {
+    assert_eq!(stem("Báo cáo.tar.gz".into()), "Báo cáo");
+    assert_eq!(stem("notes".into()), "notes");
 }

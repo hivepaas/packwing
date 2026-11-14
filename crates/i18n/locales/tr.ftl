@@ -1990,6 +1990,33 @@ tc3e75ecf = Her özellik ve sınırsız sayıda depolama alanı.
 # Every feature, and any number of storages, for your organization.
 t69b29f66 = Her özellik ve kuruluşunuz için sınırsız sayıda depolama alanı.
 
+# Bought
+t5c52217e = Satın alındı
+
+# Buy Pro · {price}
+t93567162 = Pro'yu Satın Al · { $price }
+
+# Buy Pro
+t1bdcbb74 = Pro'yu Satın Al
+
+# Restore Purchases
+t8ade61c5 = Satın Alınanları Geri Yükle
+
+# Waiting for approval: packwing turns Pro once it is given.
+td36209de = Onay bekleniyor: onay verilince packwing Pro olur.
+
+# The App Store found nothing bought with this Apple Account.
+tf996dc19 = App Store bu Apple Hesabı ile satın alınmış bir şey bulamadı.
+
+# The App Store could not do it: {why}
+t07f7f00e = App Store bunu yapamadı: { $why }
+
+# App Store
+t56b8f375 = App Store
+
+# Pro, bought once in the App Store: yours on every Mac with your Apple Account.
+ta6e8e46d = App Store'dan bir kez satın alınan Pro: Apple Hesabınızla her Mac'te sizin.
+
 # Plan
 t1eab5e32 = Plan
 

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="packaging/icons/png/packwing-128.png" width="104" alt="packwing">
+  <img src="packaging/icons/packwing.svg" width="104" alt="packwing">
 </p>
 
 <h1 align="center">packwing</h1>

@@ -29,6 +29,9 @@ targets:
     dependencies:
       - framework: Generated/PackwingCore.xcframework
         embed: false
+    scheme:
+      testTargets:
+        - PackwingUITests
     info:
       path: Packwing/Info.plist
       properties:
@@ -61,6 +64,11 @@ targets:
         UIFileSharingEnabled: true
         LSSupportsOpeningDocumentsInPlace: true
         ITSAppUsesNonExemptEncryption: false
+        # A long job goes on once packwing is left (BGContinuedProcessingTask),
+        # one identifier for each: com.hivepaas.packwing.job.<its id>.
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.hivepaas.packwing.job.*
+        NSPhotoLibraryAddUsageDescription: packwing adds the pictures and videos of an archive to Photos when you ask it to.
         CFBundleDocumentTypes:
           - CFBundleTypeName: Archive
             CFBundleTypeRole: Viewer
@@ -88,3 +96,17 @@ targets:
         EXCLUDED_ARCHS[sdk=iphonesimulator*]: x86_64
         # What the Rust library needs from the system.
         OTHER_LDFLAGS: ["-lc++", "-lz", "-liconv", "-framework", "Security", "-framework", "SystemConfiguration"]
+
+  # The app as a person uses it, on the Simulator (make ios-test).
+  PackwingUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: PackwingUITests
+    dependencies:
+      - target: Packwing
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.hivepaas.packwing.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: Packwing

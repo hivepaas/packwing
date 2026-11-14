@@ -165,6 +165,8 @@ struct KindTile: View {
     let name: String
     let kind: FileKind
     var size: CGFloat = 42
+    /// Its own colors, where its kind's would not show (on a ground as its own).
+    var tint: Tint?
 
     var body: some View {
         Group {
@@ -179,9 +181,9 @@ struct KindTile: View {
                     .padding(.horizontal, 3)
             }
         }
-        .foregroundStyle(kind.tint.ink)
+        .foregroundStyle((tint ?? kind.tint).ink)
         .frame(width: size, height: size)
-        .background(kind.tint.ground, in: .rect(cornerRadius: size * 0.31))
+        .background((tint ?? kind.tint).ground, in: .rect(cornerRadius: size * 0.31))
         .accessibilityHidden(true)
     }
 }

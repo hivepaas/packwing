@@ -31,7 +31,15 @@ ui-tests = ["gpui/test-support", "test-hooks"]
 # The Mac App Store's build, sandboxed: the App Store updates it, it leaves the
 # right-click menu and Open With to the bundle (packaging/macos/Info.plist), and
 # has no SFTP. `cargo build --release -p packwing --features app-store`.
-app-store = ["packwing-update/app-store", "packwing-remote/app-store"]
+# Pro is bought there, through StoreKit (packwing-store, src/store.rs), and GPUI
+# leaves out AppKit's private methods (vendor/README.md).
+app-store = [
+    "packwing-update/app-store",
+    "packwing-remote/app-store",
+    "packwing-store/storekit",
+    "dep:gpui_macos",
+    "gpui_macos/app-store",
+]
 # What the tests above look in through.
 test-hooks = ["packwing-update/test-source"]
 
@@ -51,6 +59,8 @@ packwing-policy.workspace = true
 # The Mac App Store's sandbox: folders asked for, and kept as bookmarks (src/access.rs).
 packwing-sandbox.workspace = true
 base64 = "0.22"
+# Pro bought in the Mac App Store, in its build (src/store.rs).
+packwing-store.workspace = true
 # Storages across the network: S3, WebDAV and SFTP.
 packwing-remote.workspace = true
 # Telling that a newer packwing is out, and installing it.
@@ -77,6 +87,11 @@ robius-authentication = "0.3"
 
 # The screenshots' text system and PNG writer; `image` is the version GPUI uses.
 # PAM, to check the login password, without bindgen or the system's headers.
+# GPUI's macOS platform, which gpui_platform brings in: named here for the
+# app-store feature only.
+[target.'cfg(target_os = "macos")'.dependencies]
+gpui_macos = { package = "gpui-pre-macos", version = "=0.3.9", default-features = false, optional = true }
+
 [target.'cfg(target_os = "linux")'.dependencies]
 nonstick = "0.1"
 nix = { version = "0.31", default-features = false, features = ["user"] }

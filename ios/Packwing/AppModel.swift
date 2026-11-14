@@ -73,7 +73,18 @@ final class AppModel {
     /// The language in use: the screens are drawn again when it changes.
     var language = Packwing.language()
 
+    /// The long job running or last run, and whether its screen shows.
+    var job: RunningJob?
+    var showingJob = false
+    /// The copy of a file Quick Look shows.
+    var previewing: URL?
+    /// The name of the file being read to preview it, while it is.
+    var reading: String?
+    /// Counts the folders chosen for Extract, so that what shows it is drawn again.
+    var extractFolderChanged = 0
+
     @ObservationIgnored private var openJob: Job?
+    @ObservationIgnored var readJob: Job?
 
     init() {
         start(supportFolder: Self.support.path(percentEncoded: false),

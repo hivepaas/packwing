@@ -2312,8 +2312,14 @@ impl Workspace {
     /// The Recent page as the screenshots draw it.
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn show_recent_samples(&mut self, cx: &mut Context<Self>) {
-        let rows = demo::RECENT
-            .iter()
+        self.show_recent_samples_times(1, cx);
+    }
+
+    /// The sample archives `times` over, as a long history is shown.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn show_recent_samples_times(&mut self, times: usize, cx: &mut Context<Self>) {
+        let rows = std::iter::repeat_n(demo::RECENT.iter(), times)
+            .flatten()
             .map(|r| Row {
                 path: std::path::Path::new(r.location).join(r.name),
                 name: r.name.to_owned(),

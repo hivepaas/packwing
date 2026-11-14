@@ -3125,8 +3125,6 @@ dependencies = [
 [[package]]
 name = "gpui-pre-macos"
 version = "0.3.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c7c988b7e49775cc8542dbe48d5a10e073d8e898a023ef3ff3d24f33363e9863"
 dependencies = [
  "accesskit",
  "accesskit_macos",
@@ -5451,7 +5449,7 @@ dependencies = [
 
 [[package]]
 name = "packwing"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "base64 0.22.1",
  "context-menu",
@@ -5459,6 +5457,7 @@ dependencies = [
  "futures",
  "futures-channel",
  "gpui-pre",
+ "gpui-pre-macos",
  "gpui-pre-platform",
  "gpui-pre-wgpu",
  "hivepack",
@@ -5471,6 +5470,7 @@ dependencies = [
  "packwing-policy",
  "packwing-remote",
  "packwing-sandbox",
+ "packwing-store",
  "packwing-update",
  "regex",
  "robius-authentication",
@@ -5484,7 +5484,7 @@ dependencies = [
 
 [[package]]
 name = "packwing-audit"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "cc",
  "getrandom 0.4.3",
@@ -5496,7 +5496,7 @@ dependencies = [
 
 [[package]]
 name = "packwing-cli"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "clap",
  "clap_complete",
@@ -5515,7 +5515,7 @@ dependencies = [
 
 [[package]]
 name = "packwing-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "blake3",
  "fs4",
@@ -5537,7 +5537,7 @@ dependencies = [
 
 [[package]]
 name = "packwing-i18n"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "fluent-bundle",
  "sys-locale",
@@ -5546,7 +5546,7 @@ dependencies = [
 
 [[package]]
 name = "packwing-license"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "base64 0.22.1",
  "curve25519-dalek",
@@ -5560,7 +5560,7 @@ dependencies = [
 
 [[package]]
 name = "packwing-mobile"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "packwing-core",
  "packwing-i18n",
@@ -5571,7 +5571,7 @@ dependencies = [
 
 [[package]]
 name = "packwing-policy"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "core-foundation 0.10.1",
  "packwing-i18n",
@@ -5581,7 +5581,7 @@ dependencies = [
 
 [[package]]
 name = "packwing-remote"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "futures",
  "keyring",
@@ -5594,7 +5594,7 @@ dependencies = [
 
 [[package]]
 name = "packwing-sandbox"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "block2 0.6.2",
  "futures-channel",
@@ -5606,8 +5606,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "packwing-store"
+version = "0.2.0"
+dependencies = [
+ "futures",
+ "futures-channel",
+ "serde_json",
+]
+
+[[package]]
 name = "packwing-update"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "base64 0.22.1",
  "flate2",

@@ -162,12 +162,17 @@ fn key_text_of(held: &License) -> Option<String> {
     }
 }
 
-/// What this computer's license gives today.
+/// What this computer's license gives today: Pro at least, once bought in the Mac App
+/// Store.
 pub fn plan(cx: &App) -> Plan {
     let license = cx.try_global::<Licensed>().and_then(|l| l.license.as_ref());
-    license.map_or(Plan::Free, |l| {
+    let plan = license.map_or(Plan::Free, |l| {
         l.plan(SystemTime::now().into(), packwing_license::line_released())
-    })
+    });
+    if plan == Plan::Free && crate::store::holds(cx) {
+        return Plan::Pro;
+    }
+    plan
 }
 
 /// Takes `text` as the user's key, keeping it if it is one.

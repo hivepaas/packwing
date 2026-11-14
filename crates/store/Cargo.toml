@@ -1,0 +1,33 @@
+[package]
+name = "packwing-store"
+description = "In-app purchases for the Mac App Store's packwing, through StoreKit 2"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+build = "build.rs"
+
+[features]
+# StoreKit itself: the Swift library built and linked, on macOS. Without it (every
+# build but the App Store's), every call says there is no App Store.
+storekit = []
+
+[dependencies]
+# Each answer, to whoever awaits it.
+futures-channel = "0.3"
+
+[dev-dependencies]
+futures = { version = "0.3", default-features = false, features = ["executor"] }
+
+[build-dependencies]
+# What `swift -print-target-info` says: where the Swift runtime is.
+serde_json = "1"
+
+# As the workspace's, but that src/macos.rs may call the Swift library's C functions.
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+unwrap_used = "warn"
+dbg_macro = "deny"

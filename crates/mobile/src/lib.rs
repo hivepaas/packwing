@@ -365,6 +365,18 @@ impl Archive {
         )?)
     }
 
+    /// A copy of the file at `entry`, to open (Quick Look shows it): in a new
+    /// folder of the temporary one, readable by the app only, gone a day later.
+    pub fn open_copy(&self, entry: Vec<String>, job: Arc<Job>) -> Result<String, MobileError> {
+        let copy = packwing_core::extract_to_open(
+            self.source.clone(),
+            &entry,
+            &self.secrets.keys(),
+            &job.control(),
+        )?;
+        Ok(copy.display().to_string())
+    }
+
     /// Extracts it into `destination`, made if it is not there: all of it, as
     /// its folders have it, or only `picked` (paths in it), each straight
     /// into `destination` with what is under it. Nothing is written outside
@@ -518,4 +530,11 @@ pub fn create_archive(
 #[uniffi::export]
 pub fn picture_fits(bytes: Vec<u8>) -> bool {
     packwing_core::image_fits(&bytes)
+}
+
+/// `name` without its archive extensions: what a folder
+/// extracted from it is called (`Báo cáo.tar.gz` → `Báo cáo`).
+#[uniffi::export]
+pub fn stem(name: String) -> String {
+    packwing_core::stem(&name).to_owned()
 }

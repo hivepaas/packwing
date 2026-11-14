@@ -37,7 +37,9 @@ mod pages;
 mod placement;
 mod prefs;
 mod right_click;
+mod scrollbar;
 mod signatures;
+mod store;
 mod text_size;
 mod updates;
 mod viewer;
@@ -297,6 +299,7 @@ pub fn run(extensions: Extensions) {
         cx.set_global(access::Access::load());
         cx.set_global(licensing::Licensed::load());
         licensing::start_refreshing(cx);
+        store::start(cx);
         audit_log::apply(cx, audit_log::By::Startup);
         cx.set_global(text_size::SystemSize(text_size::read_system()));
         packwing_core::clean_opened_files();

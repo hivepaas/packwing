@@ -32,8 +32,8 @@ SFTP_UNTRUST := touch $(HOME)/.ssh/known_hosts; \
 	printf '%s\n' "$$lines" >$(HOME)/.ssh/known_hosts
 
 .DEFAULT_GOAL := help
-.PHONY: help debug release build build-debug ios ios-sim android android-install cli cli-slim test test-window \
-	test-ui lint fmt clean s3-start s3-stop webdav-start webdav-stop sftp-start sftp-stop
+.PHONY: help debug release build build-debug ios ios-sim ios-test android android-install cli cli-slim test \
+	test-window test-ui lint fmt clean s3-start s3-stop webdav-start webdav-stop sftp-start sftp-stop
 
 help: ## List the targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F ':.*## ' '{printf "  make %-14s %s\n", $$1, $$2}'
@@ -56,6 +56,10 @@ ios: ## The iOS app's Rust library, its Swift and the Xcode project: ios/Packwin
 ios-sim: ## Build the iOS app for the Simulator (after make ios)
 	cd ios && xcodebuild -project Packwing.xcodeproj -scheme Packwing \
 		-destination 'generic/platform=iOS Simulator' -derivedDataPath ../target/ios build
+
+ios-test: ## Run the iOS app's UI tests on the iPhone 17 Simulator (after make ios)
+	cd ios && xcodebuild test -project Packwing.xcodeproj -scheme Packwing \
+		-destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath ../target/ios
 
 android: ## The Android app: its Rust library, its Kotlin and a debug APK
 	rustup target add aarch64-linux-android x86_64-linux-android
@@ -80,6 +84,8 @@ test: ## Run every test, without the ones that draw the window
 	$(CARGO) test -p packwing-cli
 	@# The Mac App Store's build (the app's `app-store`): what it leaves out.
 	$(CARGO) test -p packwing-update -p packwing-remote --features app-store --lib
+	@# StoreKit, built from Swift and asked, on macOS; elsewhere it says there is none.
+	$(CARGO) test -p packwing-store --features storekit
 	$(CARGO) test $(APP),ui-tests,app-store ui_tests::store::
 
 test-window: ## Run every test, drawing every screen to target/shots with no display (Linux)

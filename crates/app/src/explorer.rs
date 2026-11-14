@@ -33,6 +33,7 @@ use crate::input::{Changed, TextInput};
 use crate::list_keys;
 use crate::model::{Kind, date, tag_of};
 use crate::prefs;
+use crate::scrollbar::edge_bar;
 use crate::signatures::{self, Looking};
 use crate::text_size::ui;
 use crate::widgets::{Fill, Size, button, icon, icon_button, kind_tile, menu_item, menu_panel};
@@ -1983,17 +1984,26 @@ impl Render for Explorer {
                 .child(text)
                 .into_any_element()
         } else {
-            uniform_list(
-                "explorer-rows",
-                rows,
-                cx.processor(|this, range: std::ops::Range<usize>, _, cx| {
-                    range.map(|i| this.row(i, cx)).collect::<Vec<_>>()
-                }),
-            )
-            .track_scroll(&self.scroll)
-            .flex_1()
-            .min_h_0()
-            .into_any_element()
+            div()
+                .relative()
+                .flex_1()
+                .min_h_0()
+                .flex()
+                .flex_col()
+                .child(
+                    uniform_list(
+                        "explorer-rows",
+                        rows,
+                        cx.processor(|this, range: std::ops::Range<usize>, _, cx| {
+                            range.map(|i| this.row(i, cx)).collect::<Vec<_>>()
+                        }),
+                    )
+                    .track_scroll(&self.scroll)
+                    .flex_1()
+                    .min_h_0(),
+                )
+                .child(edge_bar("explorer-bar", &self.scroll))
+                .into_any_element()
         };
         let menu = self.menu.map(|(at, target)| self.menu(at, target, cx));
         let toolbar = self.toolbar(cx);

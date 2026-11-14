@@ -4,7 +4,8 @@ use std::path::PathBuf;
 
 use gpui::{
     ClipboardItem, Context, EventEmitter, FocusHandle, FontWeight, KeyDownEvent, MouseButton,
-    MouseDownEvent, Pixels, Point, Render, Window, anchored, deferred, div, prelude::*, px, rgb,
+    MouseDownEvent, Pixels, Point, Render, ScrollHandle, Window, anchored, deferred, div,
+    prelude::*, px, rgb,
 };
 use packwing_i18n::tr;
 
@@ -13,6 +14,7 @@ use crate::colors::colors;
 use crate::file_manager;
 use crate::model::{Kind, date, size, tag_of};
 use crate::prefs::Opened;
+use crate::scrollbar::card_bar;
 use crate::text_size::ui;
 use crate::widgets::{kind_tile, menu_item, menu_panel};
 
@@ -70,6 +72,7 @@ pub struct RecentPage {
     menu: Option<(Point<Pixels>, usize)>,
     /// The list's, for Escape to close the menu.
     focus: FocusHandle,
+    scroll: ScrollHandle,
 }
 
 impl EventEmitter<RecentEvent> for RecentPage {}
@@ -80,6 +83,7 @@ impl RecentPage {
             archives,
             menu: None,
             focus: cx.focus_handle(),
+            scroll: ScrollHandle::new(),
         }
     }
 
@@ -282,27 +286,36 @@ impl Render for RecentPage {
                         .child(r.opened.clone()),
                 )
         });
+        let list = panel()
+            .id("recent-list")
+            .track_focus(&self.focus)
+            .on_key_down(cx.listener(Self::on_key))
+            .flex_shrink(1.)
+            .min_h_0()
+            .overflow_y_scroll()
+            .track_scroll(&self.scroll)
+            .flex()
+            .flex_col()
+            .p(ui(10.))
+            .when(self.archives.is_empty(), |d| {
+                d.child(
+                    div()
+                        .p(ui(16.))
+                        .text_size(ui(14.))
+                        .text_color(rgb(c.muted))
+                        .child(tr!("The archives you open will show here.")),
+                )
+            })
+            .children(rows);
         div().size_full().flex().flex_col().children(menu).child(
-            panel()
-                .id("recent-list")
-                .track_focus(&self.focus)
-                .on_key_down(cx.listener(Self::on_key))
-                .max_h_full()
-                .min_h_0()
-                .overflow_y_scroll()
+            div()
+                .relative()
                 .flex()
                 .flex_col()
-                .p(ui(10.))
-                .when(self.archives.is_empty(), |d| {
-                    d.child(
-                        div()
-                            .p(ui(16.))
-                            .text_size(ui(14.))
-                            .text_color(rgb(c.muted))
-                            .child(tr!("The archives you open will show here.")),
-                    )
-                })
-                .children(rows),
+                .max_h_full()
+                .min_h_0()
+                .child(list)
+                .child(card_bar("recent-bar", &self.scroll)),
         )
     }
 }

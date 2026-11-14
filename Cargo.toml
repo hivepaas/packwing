@@ -1,9 +1,11 @@
 [workspace]
 resolver = "3"
 members = ["crates/*"]
+# Crates patched for packwing (vendor/README.md), not packwing's own.
+exclude = ["vendor"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 # The latest stable Rust: packwing follows it rather than keeping old ones working.
 rust-version = "1.99"
@@ -43,6 +45,7 @@ packwing-i18n = { path = "crates/i18n" }
 packwing-license = { path = "crates/license" }
 packwing-policy = { path = "crates/policy" }
 packwing-sandbox = { path = "crates/sandbox" }
+packwing-store = { path = "crates/store" }
 packwing-update = { path = "crates/update" }
 
 [workspace.lints.rust]
@@ -62,3 +65,7 @@ strip = true
 [profile.dev.package."*"]
 opt-level = 2
 
+# GPUI's macOS platform, as published, with an `app-store` feature that leaves
+# out AppKit's private methods for the Mac App Store's build (vendor/README.md).
+[patch.crates-io]
+gpui-pre-macos = { path = "vendor/gpui-pre-macos" }
