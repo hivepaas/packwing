@@ -59,27 +59,36 @@ struct RootView: View {
         } message: { failure in
             Text(failure)
         }
+        .fullScreenCover(isPresented: $model.showingJob) {
+            if let job = model.job { JobScreen(job: job) }
+        }
         .overlay(alignment: .bottom) {
-            if let name = model.opening {
-                OpeningBanner(name: name)
-                    .padding(.bottom, 96)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            VStack(spacing: 10) {
+                if let job = model.job, job.state == .running, !model.showingJob {
+                    JobBanner(job: job)
+                }
+                if let name = model.opening {
+                    BusyBanner(title: tr("Opening"), name: name) { model.stopOpening() }
+                }
             }
+            .padding(.bottom, 96)
+            .transition(.move(edge: .bottom).combined(with: .opacity))
         }
         .animation(.default, value: model.opening)
     }
 }
 
-/// Said while an archive opens, as a big one takes a moment: with a way to stop.
-struct OpeningBanner: View {
-    @Environment(AppModel.self) private var model
+/// Said while something is read, as a big one takes a moment: with a way to stop.
+struct BusyBanner: View {
+    let title: String
     let name: String
+    let stop: () -> Void
 
     var body: some View {
         HStack(spacing: 12) {
             ProgressView()
             VStack(alignment: .leading, spacing: 1) {
-                Text(tr("Opening"))
+                Text(title)
                     .font(.nunito(13, .medium, relativeTo: .caption))
                     .foregroundStyle(Tonal.muted)
                 Text(name)
@@ -87,7 +96,7 @@ struct OpeningBanner: View {
                     .lineLimit(1)
             }
             Spacer(minLength: 8)
-            Button(tr("Stop")) { model.stopOpening() }
+            Button(tr("Stop"), action: stop)
                 .buttonStyle(.bordered)
         }
         .padding(.horizontal, 16)

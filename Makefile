@@ -32,7 +32,7 @@ SFTP_UNTRUST := touch $(HOME)/.ssh/known_hosts; \
 	printf '%s\n' "$$lines" >$(HOME)/.ssh/known_hosts
 
 .DEFAULT_GOAL := help
-.PHONY: help debug release build build-debug ios ios-sim cli cli-slim test test-window test-ui lint fmt clean \
+.PHONY: help debug release build build-debug ios ios-sim ios-test cli cli-slim test test-window test-ui lint fmt clean \
 	s3-start s3-stop webdav-start webdav-stop sftp-start sftp-stop
 
 help: ## List the targets
@@ -56,6 +56,10 @@ ios: ## The iOS app's Rust library, its Swift and the Xcode project: ios/Packwin
 ios-sim: ## Build the iOS app for the Simulator (after make ios)
 	cd ios && xcodebuild -project Packwing.xcodeproj -scheme Packwing \
 		-destination 'generic/platform=iOS Simulator' -derivedDataPath ../target/ios build
+
+ios-test: ## Run the iOS app's UI tests on the iPhone 17 Simulator (after make ios)
+	cd ios && xcodebuild test -project Packwing.xcodeproj -scheme Packwing \
+		-destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath ../target/ios
 
 cli: ## Build the command line, with no window: target/release/pkw
 	$(CARGO) build --release -p packwing-cli
