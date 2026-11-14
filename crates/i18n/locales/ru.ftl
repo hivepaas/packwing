@@ -2995,12 +2995,6 @@ t1c18cb9b = Пароль или токен приложения
 # This archive is not where it was any more.
 t4d0917ba = Этого архива больше нет там, где он был.
 
-# Tap a file to preview it.
-td670fcf3 = Нажмите на файл, чтобы просмотреть его.
-
-# Case and accents don’t matter: bao cao finds Báo cáo.
-t2e705b26 = Регистр и диакритика не важны: елка найдёт Ёлка.
-
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->
@@ -3010,11 +3004,23 @@ t76dbca4b =
        *[other] Поиск по { $n } файлам
     }
 
+# Show a list
+t78956399 = Показать списком
+
+# Show a grid
+tb50700d9 = Показать сеткой
+
 # Select
 t3e892b4d = Выбрать
 
 # Opening
 t015825b7 = Открытие
+
+# Tap a file to preview it.
+td670fcf3 = Нажмите на файл, чтобы просмотреть его.
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = Регистр и диакритика не важны: елка найдёт Ёлка.
 
 # Extract {n} | Extract {n}
 tfda523f9 =
@@ -3024,6 +3030,9 @@ tfda523f9 =
         [many] Извлечь { $n }
        *[other] Извлечь { $n }
     }
+
+# Save all to Photos
+te19bb6d5 = Сохранить всё в «Фото»
 
 # Extract all
 t9beae641 = Извлечь всё
@@ -3333,12 +3342,6 @@ td2cca604 = Галерея не приняла { $name }.
 
 # Back
 tc2954bc2 = Назад
-
-# Show a list
-t78956399 = Показать списком
-
-# Show a grid
-tb50700d9 = Показать сеткой
 
 # Search in this archive
 tfda7010a = Поиск в этом архиве

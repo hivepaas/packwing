@@ -2902,17 +2902,17 @@ t1c18cb9b = 密碼或應用程式權杖
 # This archive is not where it was any more.
 t4d0917ba = 這個封存檔已不在原來的位置。
 
-# Tap a file to preview it.
-td670fcf3 = 點一下檔案即可預覽。
-
-# Case and accents don’t matter: bao cao finds Báo cáo.
-t2e705b26 = 不分大小寫和重音：搜尋 bao cao 也能找到 Báo cáo。
-
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->
        *[other] 在 { $n } 個檔案中搜尋
     }
+
+# Show a list
+t78956399 = 以列表顯示
+
+# Show a grid
+tb50700d9 = 以格狀顯示
 
 # Select
 t3e892b4d = 選取
@@ -2920,11 +2920,20 @@ t3e892b4d = 選取
 # Opening
 t015825b7 = 正在開啟
 
+# Tap a file to preview it.
+td670fcf3 = 點一下檔案即可預覽。
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = 不分大小寫和重音：搜尋 bao cao 也能找到 Báo cáo。
+
 # Extract {n} | Extract {n}
 tfda523f9 =
     { $n ->
        *[other] 解壓縮 { $n } 項
     }
+
+# Save all to Photos
+te19bb6d5 = 全部儲存到「照片」
 
 # Extract all
 t9beae641 = 全部解壓縮
@@ -3210,12 +3219,6 @@ td2cca604 = 圖庫無法接收 { $name }。
 
 # Back
 tc2954bc2 = 返回
-
-# Show a list
-t78956399 = 以列表顯示
-
-# Show a grid
-tb50700d9 = 以格狀顯示
 
 # Search in this archive
 tfda7010a = 在此封存檔中搜尋

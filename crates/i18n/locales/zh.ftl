@@ -2893,17 +2893,17 @@ t1c18cb9b = 密码或应用令牌
 # This archive is not where it was any more.
 t4d0917ba = 此压缩包已不在原来的位置。
 
-# Tap a file to preview it.
-td670fcf3 = 轻点文件即可预览。
-
-# Case and accents don’t matter: bao cao finds Báo cáo.
-t2e705b26 = 不区分大小写和重音：搜索 bao cao 也能找到 Báo cáo。
-
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->
        *[other] 在 { $n } 个文件中搜索
     }
+
+# Show a list
+t78956399 = 以列表显示
+
+# Show a grid
+tb50700d9 = 以网格显示
 
 # Select
 t3e892b4d = 选择
@@ -2911,11 +2911,20 @@ t3e892b4d = 选择
 # Opening
 t015825b7 = 正在打开
 
+# Tap a file to preview it.
+td670fcf3 = 轻点文件即可预览。
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = 不区分大小写和重音：搜索 bao cao 也能找到 Báo cáo。
+
 # Extract {n} | Extract {n}
 tfda523f9 =
     { $n ->
        *[other] 解压 { $n } 项
     }
+
+# Save all to Photos
+te19bb6d5 = 全部保存到“照片”
 
 # Extract all
 t9beae641 = 全部解压
@@ -3201,12 +3210,6 @@ td2cca604 = 图库无法接收 { $name }。
 
 # Back
 tc2954bc2 = 返回
-
-# Show a list
-t78956399 = 以列表显示
-
-# Show a grid
-tb50700d9 = 以网格显示
 
 # Search in this archive
 tfda7010a = 在此压缩包中搜索

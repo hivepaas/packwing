@@ -2995,12 +2995,6 @@ t1c18cb9b = Пароль або токен застосунку
 # This archive is not where it was any more.
 t4d0917ba = Цього архіву вже немає там, де він був.
 
-# Tap a file to preview it.
-td670fcf3 = Торкніться файлу, щоб переглянути його.
-
-# Case and accents don’t matter: bao cao finds Báo cáo.
-t2e705b26 = Регістр і діакритика не важливі: cafe знаходить Café.
-
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->
@@ -3010,11 +3004,23 @@ t76dbca4b =
        *[other] Шукати в { $n } файлах
     }
 
+# Show a list
+t78956399 = Показати списком
+
+# Show a grid
+tb50700d9 = Показати сіткою
+
 # Select
 t3e892b4d = Вибрати
 
 # Opening
 t015825b7 = Відкриття
+
+# Tap a file to preview it.
+td670fcf3 = Торкніться файлу, щоб переглянути його.
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = Регістр і діакритика не важливі: cafe знаходить Café.
 
 # Extract {n} | Extract {n}
 tfda523f9 =
@@ -3024,6 +3030,9 @@ tfda523f9 =
         [many] Видобути { $n }
        *[other] Видобути { $n }
     }
+
+# Save all to Photos
+te19bb6d5 = Зберегти все у «Фотографії»
 
 # Extract all
 t9beae641 = Видобути все
@@ -3333,12 +3342,6 @@ td2cca604 = Галерея не прийняла { $name }.
 
 # Back
 tc2954bc2 = Назад
-
-# Show a list
-t78956399 = Показати списком
-
-# Show a grid
-tb50700d9 = Показати сіткою
 
 # Search in this archive
 tfda7010a = Шукати в цьому архіві

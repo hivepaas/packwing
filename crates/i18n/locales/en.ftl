@@ -1061,20 +1061,23 @@ t700560f3 = Address
 te0a63e12 = User
 t1c18cb9b = Password or app token
 t4d0917ba = This archive is not where it was any more.
-td670fcf3 = Tap a file to preview it.
-t2e705b26 = Case and accents don’t matter: bao cao finds Báo cáo.
 t76dbca4b =
     { $n ->
         [one] Search its { $n } file
        *[other] Search all { $n } files
     }
+t78956399 = Show a list
+tb50700d9 = Show a grid
 t3e892b4d = Select
 t015825b7 = Opening
+td670fcf3 = Tap a file to preview it.
+t2e705b26 = Case and accents don’t matter: bao cao finds Báo cáo.
 tfda523f9 =
     { $n ->
         [one] Extract { $n }
        *[other] Extract { $n }
     }
+te19bb6d5 = Save all to Photos
 t9beae641 = Extract all
 tfdda4cf7 = Preview
 te71d1b30 = Files
@@ -1194,8 +1197,6 @@ t9f263b45 = packwing could not make the folder { $name }.
 t899e6af1 = packwing can no longer reach that folder.
 td2cca604 = The gallery would not take { $name }.
 tc2954bc2 = Back
-t78956399 = Show a list
-tb50700d9 = Show a grid
 tfda7010a = Search in this archive
 t1ef504d9 = packwing cannot show this file.
 t9c81b89f = AES-256. In 7z the names are hidden too.

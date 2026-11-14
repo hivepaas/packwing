@@ -2933,12 +2933,6 @@ t1c18cb9b = Mot de passe ou jeton d'application
 # This archive is not where it was any more.
 t4d0917ba = Cette archive n'est plus là où elle était.
 
-# Tap a file to preview it.
-td670fcf3 = Touchez un fichier pour en voir l'aperçu.
-
-# Case and accents don’t matter: bao cao finds Báo cáo.
-t2e705b26 = Majuscules et accents ne comptent pas : ete trouve Été.
-
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->
@@ -2946,11 +2940,23 @@ t76dbca4b =
        *[other] Rechercher dans ses { $n } fichiers
     }
 
+# Show a list
+t78956399 = Afficher en liste
+
+# Show a grid
+tb50700d9 = Afficher en grille
+
 # Select
 t3e892b4d = Sélectionner
 
 # Opening
 t015825b7 = Ouverture
+
+# Tap a file to preview it.
+td670fcf3 = Touchez un fichier pour en voir l'aperçu.
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = Majuscules et accents ne comptent pas : ete trouve Été.
 
 # Extract {n} | Extract {n}
 tfda523f9 =
@@ -2958,6 +2964,9 @@ tfda523f9 =
         [one] Extraire { $n }
        *[other] Extraire { $n }
     }
+
+# Save all to Photos
+te19bb6d5 = Tout enregistrer dans Photos
 
 # Extract all
 t9beae641 = Tout extraire
@@ -3251,12 +3260,6 @@ td2cca604 = La galerie n'a pas accepté { $name }.
 
 # Back
 tc2954bc2 = Retour
-
-# Show a list
-t78956399 = Afficher en liste
-
-# Show a grid
-tb50700d9 = Afficher en grille
 
 # Search in this archive
 tfda7010a = Rechercher dans cette archive

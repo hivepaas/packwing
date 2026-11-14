@@ -2902,17 +2902,17 @@ t1c18cb9b = Kata sandi atau token aplikasi
 # This archive is not where it was any more.
 t4d0917ba = Arsip ini sudah tidak ada di tempatnya semula.
 
-# Tap a file to preview it.
-td670fcf3 = Ketuk berkas untuk melihat pratinjaunya.
-
-# Case and accents don’t matter: bao cao finds Báo cáo.
-t2e705b26 = Huruf besar/kecil dan aksen tidak berpengaruh: cafe menemukan Café.
-
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->
        *[other] Cari di { $n } berkas
     }
+
+# Show a list
+t78956399 = Tampilkan daftar
+
+# Show a grid
+tb50700d9 = Tampilkan kisi
 
 # Select
 t3e892b4d = Pilih
@@ -2920,11 +2920,20 @@ t3e892b4d = Pilih
 # Opening
 t015825b7 = Membuka
 
+# Tap a file to preview it.
+td670fcf3 = Ketuk berkas untuk melihat pratinjaunya.
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = Huruf besar/kecil dan aksen tidak berpengaruh: cafe menemukan Café.
+
 # Extract {n} | Extract {n}
 tfda523f9 =
     { $n ->
        *[other] Ekstrak { $n }
     }
+
+# Save all to Photos
+te19bb6d5 = Simpan semua ke Foto
 
 # Extract all
 t9beae641 = Ekstrak semua
@@ -3210,12 +3219,6 @@ td2cca604 = Galeri tidak mau menerima { $name }.
 
 # Back
 tc2954bc2 = Kembali
-
-# Show a list
-t78956399 = Tampilkan daftar
-
-# Show a grid
-tb50700d9 = Tampilkan kisi
 
 # Search in this archive
 tfda7010a = Cari di arsip ini
