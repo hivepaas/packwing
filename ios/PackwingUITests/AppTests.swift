@@ -175,4 +175,34 @@ final class AppTests: XCTestCase {
         XCTAssert(app.staticTexts["Done"].waitForExistence(timeout: 30))
         XCTAssert(app.buttons["Share"].exists)
     }
+
+    func testAnArchiveOfPicturesShowsAsAGridOfThem() {
+        let app = launch(opening: "photos.zip")
+        // Its pictures as themselves, a HEIC too, once read from it.
+        for name in ["IMG_0001.jpg", "IMG_0002.jpg", "IMG_0003.heic", "IMG_0004.png"] {
+            let tile = app.buttons.matching(NSPredicate(format: "label == %@ AND identifier == 'picture'", name)).firstMatch
+            XCTAssert(tile.waitForExistence(timeout: 20), "no picture of \(name)")
+        }
+        // A file that is not a picture, as its kind.
+        XCTAssertEqual(app.buttons["Ghi chú.txt"].identifier, "tile")
+        keep(app, "gallery")
+
+        // Chosen in the grid, then extracted.
+        app.buttons["Select"].tap()
+        app.buttons["IMG_0002.jpg"].tap()
+        app.buttons["IMG_0003.heic"].tap()
+        XCTAssert(app.buttons["Extract 2"].waitForExistence(timeout: 5))
+        keep(app, "gallery-selecting")
+        app.buttons["Done"].tap()
+
+        // All of it to Photos, from the grid.
+        app.buttons["Save all to Photos"].tap()
+        XCTAssert(app.buttons["Save to Photos"].waitForExistence(timeout: 5))
+        app.buttons["Close"].firstMatch.tap()
+
+        // As a list, when asked.
+        app.buttons["Show a list"].tap()
+        XCTAssert(app.staticTexts["IMG_0001.jpg"].waitForExistence(timeout: 5))
+        XCTAssert(app.buttons["Extract all"].exists)
+    }
 }

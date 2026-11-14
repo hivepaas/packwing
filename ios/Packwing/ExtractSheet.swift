@@ -7,7 +7,13 @@ struct ExtractSheet: View {
     let archive: OpenedArchive
     /// Paths in it; none for all of it.
     let picked: [[String]]
-    @State private var toPhotos = false
+    @State private var toPhotos: Bool
+
+    init(archive: OpenedArchive, picked: [[String]], toPhotos: Bool = false) {
+        self.archive = archive
+        self.picked = picked
+        _toPhotos = State(initialValue: toPhotos)
+    }
     @State private var choosing = false
     @AppStorage("showInFiles") private var showInFiles = false
 

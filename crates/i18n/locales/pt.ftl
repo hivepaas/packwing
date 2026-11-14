@@ -2933,12 +2933,6 @@ t1c18cb9b = Senha ou token de app
 # This archive is not where it was any more.
 t4d0917ba = Este arquivo compactado não está mais onde estava.
 
-# Tap a file to preview it.
-td670fcf3 = Toque em um arquivo para pré-visualizá-lo.
-
-# Case and accents don’t matter: bao cao finds Báo cáo.
-t2e705b26 = Maiúsculas e acentos não importam: relatorio encontra Relatório.
-
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->
@@ -2946,11 +2940,23 @@ t76dbca4b =
        *[other] Pesquisar em seus { $n } arquivos
     }
 
+# Show a list
+t78956399 = Mostrar em lista
+
+# Show a grid
+tb50700d9 = Mostrar em grade
+
 # Select
 t3e892b4d = Selecionar
 
 # Opening
 t015825b7 = Abrindo
+
+# Tap a file to preview it.
+td670fcf3 = Toque em um arquivo para pré-visualizá-lo.
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = Maiúsculas e acentos não importam: relatorio encontra Relatório.
 
 # Extract {n} | Extract {n}
 tfda523f9 =
@@ -2958,6 +2964,9 @@ tfda523f9 =
         [one] Extrair { $n }
        *[other] Extrair { $n }
     }
+
+# Save all to Photos
+te19bb6d5 = Salvar tudo no Fotos
 
 # Extract all
 t9beae641 = Extrair tudo
@@ -3251,12 +3260,6 @@ td2cca604 = A galeria não aceitou { $name }.
 
 # Back
 tc2954bc2 = Voltar
-
-# Show a list
-t78956399 = Mostrar em lista
-
-# Show a grid
-tb50700d9 = Mostrar em grade
 
 # Search in this archive
 tfda7010a = Pesquisar neste arquivo compactado

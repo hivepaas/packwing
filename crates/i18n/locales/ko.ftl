@@ -2893,17 +2893,17 @@ t1c18cb9b = 비밀번호 또는 앱 토큰
 # This archive is not where it was any more.
 t4d0917ba = 이 압축 파일이 더 이상 원래 위치에 없습니다.
 
-# Tap a file to preview it.
-td670fcf3 = 파일을 탭하면 미리 볼 수 있습니다.
-
-# Case and accents don’t matter: bao cao finds Báo cáo.
-t2e705b26 = 대소문자와 악센트는 구분하지 않습니다. bao cao로 Báo cáo도 찾을 수 있습니다.
-
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->
        *[other] 파일 { $n }개에서 검색
     }
+
+# Show a list
+t78956399 = 목록으로 보기
+
+# Show a grid
+tb50700d9 = 격자로 보기
 
 # Select
 t3e892b4d = 선택
@@ -2911,11 +2911,20 @@ t3e892b4d = 선택
 # Opening
 t015825b7 = 여는 중
 
+# Tap a file to preview it.
+td670fcf3 = 파일을 탭하면 미리 볼 수 있습니다.
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = 대소문자와 악센트는 구분하지 않습니다. bao cao로 Báo cáo도 찾을 수 있습니다.
+
 # Extract {n} | Extract {n}
 tfda523f9 =
     { $n ->
        *[other] { $n }개 압축 풀기
     }
+
+# Save all to Photos
+te19bb6d5 = 모두 사진에 저장
 
 # Extract all
 t9beae641 = 모두 압축 풀기
@@ -3201,12 +3210,6 @@ td2cca604 = 갤러리에 { $name }을(를) 추가할 수 없습니다.
 
 # Back
 tc2954bc2 = 뒤로
-
-# Show a list
-t78956399 = 목록으로 보기
-
-# Show a grid
-tb50700d9 = 격자로 보기
 
 # Search in this archive
 tfda7010a = 이 압축 파일에서 검색

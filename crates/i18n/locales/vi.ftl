@@ -2893,17 +2893,17 @@ t1c18cb9b = Mật khẩu hoặc token ứng dụng
 # This archive is not where it was any more.
 t4d0917ba = Tệp nén này không còn ở chỗ cũ nữa.
 
-# Tap a file to preview it.
-td670fcf3 = Chạm vào một tệp để xem trước.
-
-# Case and accents don’t matter: bao cao finds Báo cáo.
-t2e705b26 = Không phân biệt hoa thường hay dấu: bao cao tìm ra Báo cáo.
-
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->
        *[other] Tìm trong { $n } tệp
     }
+
+# Show a list
+t78956399 = Xem dạng danh sách
+
+# Show a grid
+tb50700d9 = Xem dạng lưới
 
 # Select
 t3e892b4d = Chọn
@@ -2911,11 +2911,20 @@ t3e892b4d = Chọn
 # Opening
 t015825b7 = Đang mở
 
+# Tap a file to preview it.
+td670fcf3 = Chạm vào một tệp để xem trước.
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = Không phân biệt hoa thường hay dấu: bao cao tìm ra Báo cáo.
+
 # Extract {n} | Extract {n}
 tfda523f9 =
     { $n ->
        *[other] Giải nén { $n }
     }
+
+# Save all to Photos
+te19bb6d5 = Lưu tất cả vào Ảnh
 
 # Extract all
 t9beae641 = Giải nén tất cả
@@ -3201,12 +3210,6 @@ td2cca604 = Thư viện ảnh không nhận { $name }.
 
 # Back
 tc2954bc2 = Quay lại
-
-# Show a list
-t78956399 = Xem dạng danh sách
-
-# Show a grid
-tb50700d9 = Xem dạng lưới
 
 # Search in this archive
 tfda7010a = Tìm trong tệp nén này

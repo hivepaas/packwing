@@ -2933,12 +2933,6 @@ t1c18cb9b = Contraseña o token de app
 # This archive is not where it was any more.
 t4d0917ba = Este archivo comprimido ya no está donde estaba.
 
-# Tap a file to preview it.
-td670fcf3 = Toca un archivo para ver una vista previa.
-
-# Case and accents don’t matter: bao cao finds Báo cáo.
-t2e705b26 = Da igual mayúsculas o tildes: cancion encuentra Canción.
-
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->
@@ -2946,11 +2940,23 @@ t76dbca4b =
        *[other] Buscar en sus { $n } archivos
     }
 
+# Show a list
+t78956399 = Ver como lista
+
+# Show a grid
+tb50700d9 = Ver como cuadrícula
+
 # Select
 t3e892b4d = Seleccionar
 
 # Opening
 t015825b7 = Abriendo
+
+# Tap a file to preview it.
+td670fcf3 = Toca un archivo para ver una vista previa.
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = Da igual mayúsculas o tildes: cancion encuentra Canción.
 
 # Extract {n} | Extract {n}
 tfda523f9 =
@@ -2958,6 +2964,9 @@ tfda523f9 =
         [one] Extraer { $n }
        *[other] Extraer { $n }
     }
+
+# Save all to Photos
+te19bb6d5 = Guardar todo en Fotos
 
 # Extract all
 t9beae641 = Extraer todo
@@ -3251,12 +3260,6 @@ td2cca604 = La galería no aceptó { $name }.
 
 # Back
 tc2954bc2 = Atrás
-
-# Show a list
-t78956399 = Ver como lista
-
-# Show a grid
-tb50700d9 = Ver como cuadrícula
 
 # Search in this archive
 tfda7010a = Buscar en este archivo comprimido

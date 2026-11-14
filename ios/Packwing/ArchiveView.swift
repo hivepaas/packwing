@@ -11,12 +11,86 @@ struct ArchiveView: View {
     @State private var found: [FoundRow] = []
     @State private var selecting = false
     @State private var picked = Set<[String]>()
-    @State private var extracting: [[String]]?
+    @State private var extracting: Picked?
+    /// The grid or the list, as chosen here; else the grid for pictures.
+    @State private var grid: Bool?
 
     private var info: ArchiveInfo { place.archive.info }
 
+    /// Whether this folder shows as a grid: not while searching.
+    private var showingGrid: Bool { query.isEmpty && (grid ?? mostlyPictures(entries)) }
+
     var body: some View {
         @Bindable var model = model
+        Group {
+            if showingGrid {
+                GalleryGrid(opened: place.archive, folder: place.folder, entries: entries,
+                            selecting: selecting, picked: $picked) { extracting = Picked(paths: [$0]) }
+            } else {
+                list
+            }
+        }
+        // Its own bar at the bottom, Select and Extract, in the tabs' place.
+        .toolbar(.hidden, for: .tabBar)
+        .navigationTitle(place.folder.last ?? info.name)
+        .navigationSubtitle(subtitle)
+        .navigationBarTitleDisplayMode(.inline)
+        .searchable(text: $query, prompt: trN(Int(info.files), "Search its {n} file", "Search all {n} files"))
+        .toolbar {
+            if query.isEmpty && !entries.isEmpty {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        grid = !showingGrid
+                    } label: {
+                        Image(systemName: showingGrid ? "list.bullet" : "square.grid.3x3")
+                    }
+                    .accessibilityLabel(showingGrid ? tr("Show a list") : tr("Show a grid"))
+                }
+            }
+            ToolbarItem(placement: .bottomBar) {
+                Button(selecting ? tr("Done") : tr("Select")) {
+                    selecting.toggle()
+                    picked = []
+                }
+            }
+            ToolbarSpacer(.flexible, placement: .bottomBar)
+            ToolbarItem(placement: .bottomBar) {
+                Button {
+                    extracting = selecting
+                        ? Picked(paths: Array(picked))
+                        : Picked(paths: [], toPhotos: forPhotos)
+                } label: {
+                    // Its words too, not only its icon, as a toolbar shows a Label.
+                    HStack(spacing: 8) {
+                        Image(systemName: forPhotos && !selecting ? "photo.on.rectangle" : "square.and.arrow.down")
+                        Text(extractLabel).font(.nunito(16, .bold, relativeTo: .headline))
+                    }
+                    .padding(.horizontal, 8)
+                }
+                .buttonStyle(.glassProminent)
+                .disabled(selecting && picked.isEmpty)
+            }
+        }
+        .sheet(item: $extracting, onDismiss: model.sheetGone) { what in
+            ExtractSheet(archive: place.archive, picked: what.paths, toPhotos: what.toPhotos)
+        }
+        .quickLookPreview($model.previewing)
+        .overlay(alignment: .bottom) {
+            if let name = model.reading {
+                BusyBanner(title: tr("Opening"), name: name) { model.stopReading() }
+                    .padding(.bottom, 80)
+            }
+        }
+        .task { entries = place.archive.archive.children(folder: place.folder) }
+        .onChange(of: query) { _, now in
+            found = now.isEmpty ? [] : place.archive.archive.search(query: now)
+        }
+    }
+
+    /// Whether Extract's place is Save to Photos': a grid of pictures.
+    private var forPhotos: Bool { showingGrid && mostlyPictures(entries) }
+
+    private var list: some View {
         List(selection: $picked) {
             if query.isEmpty {
                 Section {
@@ -44,54 +118,11 @@ struct ArchiveView: View {
         .scrollContentBackground(.hidden)
         .background(Tonal.page)
         .environment(\.editMode, .constant(selecting ? .active : .inactive))
-        // Its own bar at the bottom, Select and Extract, in the tabs' place.
-        .toolbar(.hidden, for: .tabBar)
-        .navigationTitle(place.folder.last ?? info.name)
-        .navigationSubtitle(subtitle)
-        .navigationBarTitleDisplayMode(.inline)
-        .searchable(text: $query, prompt: trN(Int(info.files), "Search its {n} file", "Search all {n} files"))
-        .toolbar {
-            ToolbarItem(placement: .bottomBar) {
-                Button(selecting ? tr("Done") : tr("Select")) {
-                    selecting.toggle()
-                    picked = []
-                }
-            }
-            ToolbarSpacer(.flexible, placement: .bottomBar)
-            ToolbarItem(placement: .bottomBar) {
-                Button {
-                    extracting = selecting ? Array(picked) : []
-                } label: {
-                    // Its words too, not only its icon, as a toolbar shows a Label.
-                    HStack(spacing: 8) {
-                        Image(systemName: "square.and.arrow.down")
-                        Text(extractLabel).font(.nunito(16, .bold, relativeTo: .headline))
-                    }
-                    .padding(.horizontal, 8)
-                }
-                .buttonStyle(.glassProminent)
-                .disabled(selecting && picked.isEmpty)
-            }
-        }
-        .sheet(item: Binding(get: { extracting.map(Picked.init) }, set: { extracting = $0?.paths }),
-               onDismiss: model.sheetGone) { what in
-            ExtractSheet(archive: place.archive, picked: what.paths)
-        }
-        .quickLookPreview($model.previewing)
-        .overlay(alignment: .bottom) {
-            if let name = model.reading {
-                BusyBanner(title: tr("Opening"), name: name) { model.stopReading() }
-                    .padding(.bottom, 80)
-            }
-        }
-        .task { entries = place.archive.archive.children(folder: place.folder) }
-        .onChange(of: query) { _, now in
-            found = now.isEmpty ? [] : place.archive.archive.search(query: now)
-        }
     }
 
     private var extractLabel: String {
-        selecting ? trN(picked.count, "Extract {n}", "Extract {n}") : tr("Extract all")
+        if selecting { return trN(picked.count, "Extract {n}", "Extract {n}") }
+        return forPhotos ? tr("Save all to Photos") : tr("Extract all")
     }
 
     private var subtitle: String {
@@ -121,15 +152,16 @@ struct ArchiveView: View {
             if !entry.folder && !entry.link {
                 Button(tr("Preview"), systemImage: "eye") { model.preview(place.archive, path) }
             }
-            Button(tr("Extract"), systemImage: "square.and.arrow.down") { extracting = [path] }
+            Button(tr("Extract"), systemImage: "square.and.arrow.down") { extracting = Picked(paths: [path]) }
         }
     }
 }
 
-/// What the Extract sheet is for: paths, none for all.
+/// What the Extract sheet is for: paths, none for all; and where to, first.
 private struct Picked: Identifiable {
     let paths: [[String]]
-    var id: [[String]] { paths }
+    var toPhotos = false
+    let id = UUID()
 }
 
 struct EntryLabel: View {

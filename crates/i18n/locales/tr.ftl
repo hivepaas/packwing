@@ -2933,12 +2933,6 @@ t1c18cb9b = Parola veya uygulama belirteci
 # This archive is not where it was any more.
 t4d0917ba = Bu arşiv artık eskiden olduğu yerde değil.
 
-# Tap a file to preview it.
-td670fcf3 = Önizlemek için bir dosyaya dokunun.
-
-# Case and accents don’t matter: bao cao finds Báo cáo.
-t2e705b26 = Büyük/küçük harf ve aksanlar fark etmez: ozet, Özet'i bulur.
-
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->
@@ -2946,11 +2940,23 @@ t76dbca4b =
        *[other] { $n } dosyanın tümünde ara
     }
 
+# Show a list
+t78956399 = Liste olarak göster
+
+# Show a grid
+tb50700d9 = Izgara olarak göster
+
 # Select
 t3e892b4d = Seç
 
 # Opening
 t015825b7 = Açılıyor
+
+# Tap a file to preview it.
+td670fcf3 = Önizlemek için bir dosyaya dokunun.
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = Büyük/küçük harf ve aksanlar fark etmez: ozet, Özet'i bulur.
 
 # Extract {n} | Extract {n}
 tfda523f9 =
@@ -2958,6 +2964,9 @@ tfda523f9 =
         [one] { $n } öğeyi çıkar
        *[other] { $n } öğeyi çıkar
     }
+
+# Save all to Photos
+te19bb6d5 = Tümünü Fotoğraflar'a kaydet
 
 # Extract all
 t9beae641 = Tümünü çıkar
@@ -3251,12 +3260,6 @@ td2cca604 = Galeri { $name } dosyasını kabul etmedi.
 
 # Back
 tc2954bc2 = Geri
-
-# Show a list
-t78956399 = Liste olarak göster
-
-# Show a grid
-tb50700d9 = Izgara olarak göster
 
 # Search in this archive
 tfda7010a = Bu arşivde ara

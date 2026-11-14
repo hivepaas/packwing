@@ -20,7 +20,7 @@ Then Run in Xcode, on a Simulator (Apple silicon) or an iPhone; signing uses
 the team in `ios/project.yml`. `make ios-sim` builds for the Simulator from
 the command line, and `make ios-test` runs the UI tests
 (`PackwingUITests`: the samples in `PackwingUITests/Samples` opened,
-extracted, unlocked, previewed, saved to Photos and put in new archives) on the iPhone 17
+extracted, unlocked, previewed, saved to Photos, shown as a grid of pictures and put in new archives) on the iPhone 17
 Simulator. After changing `crates/mobile`, run `make ios` again
 (`scripts/build_ios.sh --debug` builds its library quicker).
 
@@ -55,6 +55,7 @@ xcrun simctl launch booted com.hivepaas.packwing -open "<that folder>/Documents/
 | `Packwing/AppModel.swift` | Opening an archive (and asking for its password), the Recent list |
 | `Packwing/HomeView.swift` | The Archives tab: open from Files, Recent; the Search tab |
 | `Packwing/ArchiveView.swift` | A folder of an archive, and a search through all of it |
+| `Packwing/Gallery.swift` | A folder as a grid: its pictures as themselves (read from the archive, made small as they decode), the rest by kind; the grid first where it is pictures mostly |
 | `Packwing/PasswordSheet.swift` | An archive's password, or an age file's passphrase |
 | `Packwing/ExtractSheet.swift`, `Extracting.swift` | Extract: to a new folder in Files (packwing's own, or one chosen), or the pictures and videos to Photos; a file previewed in Quick Look |
 | `Packwing/RunningJob.swift`, `JobScreen.swift` | A long job: how far it is, going on once packwing is left (BGContinuedProcessingTask), how it ended |
@@ -62,4 +63,4 @@ xcrun simctl launch booted com.hivepaas.packwing -open "<that folder>/Documents/
 | `Packwing/SettingsView.swift` | The language, how new archives are made, the version |
 | `Packwing/Theme.swift` | The desktop's colors, light and dark; Nunito; a file's tag |
 
-Not yet: the photo grid of an archive, and the Share sheet's own extension.
+Not yet: the Share sheet's own extension.

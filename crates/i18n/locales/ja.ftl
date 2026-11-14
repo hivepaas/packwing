@@ -2893,17 +2893,17 @@ t1c18cb9b = パスワードまたはアプリトークン
 # This archive is not where it was any more.
 t4d0917ba = このアーカイブは、もう元の場所にありません。
 
-# Tap a file to preview it.
-td670fcf3 = ファイルをタップするとプレビューできます。
-
-# Case and accents don’t matter: bao cao finds Báo cáo.
-t2e705b26 = 大文字と小文字、アクセントは区別しません。bao cao で Báo cáo も見つかります。
-
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->
        *[other] { $n } 個のファイルを検索
     }
+
+# Show a list
+t78956399 = リスト表示
+
+# Show a grid
+tb50700d9 = グリッド表示
 
 # Select
 t3e892b4d = 選択
@@ -2911,11 +2911,20 @@ t3e892b4d = 選択
 # Opening
 t015825b7 = 開いています
 
+# Tap a file to preview it.
+td670fcf3 = ファイルをタップするとプレビューできます。
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = 大文字と小文字、アクセントは区別しません。bao cao で Báo cáo も見つかります。
+
 # Extract {n} | Extract {n}
 tfda523f9 =
     { $n ->
        *[other] { $n } 個を展開
     }
+
+# Save all to Photos
+te19bb6d5 = すべて「写真」に保存
 
 # Extract all
 t9beae641 = すべて展開
@@ -3201,12 +3210,6 @@ td2cca604 = { $name } をギャラリーに追加できませんでした。
 
 # Back
 tc2954bc2 = 戻る
-
-# Show a list
-t78956399 = リスト表示
-
-# Show a grid
-tb50700d9 = グリッド表示
 
 # Search in this archive
 tfda7010a = このアーカイブ内を検索

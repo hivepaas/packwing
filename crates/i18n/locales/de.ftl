@@ -2933,12 +2933,6 @@ t1c18cb9b = Passwort oder App-Token
 # This archive is not where it was any more.
 t4d0917ba = Dieses Archiv ist nicht mehr dort, wo es war.
 
-# Tap a file to preview it.
-td670fcf3 = Tippe auf eine Datei, um sie dir anzusehen.
-
-# Case and accents don’t matter: bao cao finds Báo cáo.
-t2e705b26 = Groß- und Kleinschreibung und Akzente sind egal: cafe findet Café.
-
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->
@@ -2946,11 +2940,23 @@ t76dbca4b =
        *[other] Alle { $n } Dateien durchsuchen
     }
 
+# Show a list
+t78956399 = Als Liste anzeigen
+
+# Show a grid
+tb50700d9 = Als Raster anzeigen
+
 # Select
 t3e892b4d = Auswählen
 
 # Opening
 t015825b7 = Wird geöffnet
+
+# Tap a file to preview it.
+td670fcf3 = Tippe auf eine Datei, um sie dir anzusehen.
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = Groß- und Kleinschreibung und Akzente sind egal: cafe findet Café.
 
 # Extract {n} | Extract {n}
 tfda523f9 =
@@ -2958,6 +2964,9 @@ tfda523f9 =
         [one] { $n } entpacken
        *[other] { $n } entpacken
     }
+
+# Save all to Photos
+te19bb6d5 = Alle in Fotos speichern
 
 # Extract all
 t9beae641 = Alle entpacken
@@ -3251,12 +3260,6 @@ td2cca604 = Die Galerie hat { $name } nicht angenommen.
 
 # Back
 tc2954bc2 = Zurück
-
-# Show a list
-t78956399 = Als Liste anzeigen
-
-# Show a grid
-tb50700d9 = Als Raster anzeigen
 
 # Search in this archive
 tfda7010a = In diesem Archiv suchen
