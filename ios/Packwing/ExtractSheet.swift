@@ -13,7 +13,7 @@ struct ExtractSheet: View {
 
     var body: some View {
         // Read, so that a folder chosen draws it again.
-        let _ = model.extractFolderChanged
+        let _ = model.foldersChanged
         let folder = model.extractFolder
         NavigationStack {
             Form {
@@ -130,7 +130,8 @@ struct ExtractSheet: View {
     }
 
     private func start(_ folder: URL) {
+        let target: ExtractTarget = toPhotos ? .photos : .files(folder)
+        model.afterSheet = { [model, archive, picked] in model.extract(archive, picked: picked, to: target) }
         dismiss()
-        model.extract(archive, picked: picked, to: toPhotos ? .photos : .files(folder))
     }
 }

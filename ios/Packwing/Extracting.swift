@@ -49,8 +49,11 @@ extension AppModel {
     static var ownFolder: URL { URL.documentsDirectory }
 
     /// Where Extract puts its folders: the one chosen last, else packwing's own.
-    var extractFolder: URL {
-        guard let data = UserDefaults.standard.data(forKey: "extractTo") else { return Self.ownFolder }
+    var extractFolder: URL { keptFolder("extractTo") }
+
+    /// The folder kept under `key`, else packwing's own.
+    func keptFolder(_ key: String) -> URL {
+        guard let data = UserDefaults.standard.data(forKey: key) else { return Self.ownFolder }
         var stale = false
         return (try? URL(resolvingBookmarkData: data, bookmarkDataIsStale: &stale)) ?? Self.ownFolder
     }
@@ -63,12 +66,15 @@ extension AppModel {
     }
 
     /// Keeps `folder`, chosen in Files, for the next extractions too.
-    func extractTo(_ folder: URL) {
+    func extractTo(_ folder: URL) { keep(folder, as: "extractTo") }
+
+    /// Keeps `folder`, chosen in Files, under `key`.
+    func keep(_ folder: URL, as key: String) {
         let scoped = folder.startAccessingSecurityScopedResource()
         defer { if scoped { folder.stopAccessingSecurityScopedResource() } }
         guard let data = try? folder.bookmarkData() else { return }
-        UserDefaults.standard.set(data, forKey: "extractTo")
-        extractFolderChanged += 1
+        UserDefaults.standard.set(data, forKey: key)
+        foldersChanged += 1
     }
 
     // MARK: Extracting
@@ -183,7 +189,7 @@ extension AppModel {
         }
     }
 
-    private static func ended(by error: Error) -> RunningJob.State {
+    static func ended(by error: Error) -> RunningJob.State {
         if case .Cancelled = error as? MobileError { return .cancelled }
         return .failed(message: said(error))
     }

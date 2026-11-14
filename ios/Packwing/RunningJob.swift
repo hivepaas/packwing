@@ -2,7 +2,7 @@ import BackgroundTasks
 import Foundation
 import Observation
 
-/// A long job (extracting, saving to Photos), as its screen shows it: how far
+/// A long job (extracting, saving to Photos, compressing), as its screen shows it: how far
 /// it is, and how it ended. It runs whether or not iOS lets it go on in the
 /// background; when it does (BGContinuedProcessingTask), iOS shows its
 /// progress while packwing is left, and a stop there cancels it.
@@ -26,6 +26,8 @@ final class RunningJob: Identifiable {
     var state: State = .running
     /// The folder the files went to, to show in Files.
     var folder: URL?
+    /// The archive it made, to share.
+    var made: URL?
     let started = Date()
 
     @ObservationIgnored let job: Job

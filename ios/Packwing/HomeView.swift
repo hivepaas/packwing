@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 struct HomeView: View {
     @Environment(AppModel.self) private var model
     @State private var importing = false
+    @State private var adding: NewSource?
 
     var body: some View {
         @Bindable var model = model
@@ -23,6 +24,22 @@ struct HomeView: View {
             }
             .background(Tonal.page)
             .navigationTitle(tr("Archives"))
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    AddMenu(source: $adding) {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityLabel(tr("New archive"))
+                }
+            }
+            .choosingNewItems(
+                $adding,
+                chosen: { model.drafting = NewArchiveDraft($0) },
+                photos: { picked in
+                    let draft = NewArchiveDraft()
+                    draft.add(picked)
+                    model.drafting = draft
+                })
             .navigationDestination(for: Place.self) { place in
                 ArchiveView(place: place)
             }

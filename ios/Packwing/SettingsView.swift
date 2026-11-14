@@ -3,6 +3,8 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @AppStorage("language") private var chosen: String = ""
+    @AppStorage("newFormat") private var formatKey = ArchiveFormat.zip.key
+    @AppStorage("newCompression") private var levelKey = CompressionLevel.medium.key
 
     var body: some View {
         NavigationStack {
@@ -16,6 +18,15 @@ struct SettingsView: View {
                     }
                     .onChange(of: chosen) { _, now in
                         model.speak(now.isEmpty ? nil : now)
+                    }
+                }
+                .listRowBackground(Tonal.surface)
+                Section(tr("New archives")) {
+                    Picker(tr("Format"), selection: $formatKey) {
+                        ForEach(ArchiveFormat.all, id: \.key) { Text($0.label).tag($0.key) }
+                    }
+                    Picker(tr("Compression"), selection: $levelKey) {
+                        ForEach(CompressionLevel.all, id: \.key) { Text($0.label).tag($0.key) }
                     }
                 }
                 .listRowBackground(Tonal.surface)

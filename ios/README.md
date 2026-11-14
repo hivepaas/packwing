@@ -20,7 +20,7 @@ Then Run in Xcode, on a Simulator (Apple silicon) or an iPhone; signing uses
 the team in `ios/project.yml`. `make ios-sim` builds for the Simulator from
 the command line, and `make ios-test` runs the UI tests
 (`PackwingUITests`: the samples in `PackwingUITests/Samples` opened,
-extracted, unlocked, previewed and saved to Photos) on the iPhone 17
+extracted, unlocked, previewed, saved to Photos and put in new archives) on the iPhone 17
 Simulator. After changing `crates/mobile`, run `make ios` again
 (`scripts/build_ios.sh --debug` builds its library quicker).
 
@@ -39,7 +39,8 @@ sips -s format png /tmp/icon.jpg --out ios/Packwing/Assets.xcassets/AppIcon.appi
 
 ## Trying it
 
-`-open <path>` as a launch argument (debug builds) opens that archive at once.
+`-open <path>` as a launch argument (debug builds) opens that archive at once;
+`-new <path>|<path>…` shows New archive, of those files and folders.
 Files put in the app's `Documents` show in Files as On My iPhone › packwing:
 
 ```sh
@@ -57,8 +58,8 @@ xcrun simctl launch booted com.hivepaas.packwing -open "<that folder>/Documents/
 | `Packwing/PasswordSheet.swift` | An archive's password, or an age file's passphrase |
 | `Packwing/ExtractSheet.swift`, `Extracting.swift` | Extract: to a new folder in Files (packwing's own, or one chosen), or the pictures and videos to Photos; a file previewed in Quick Look |
 | `Packwing/RunningJob.swift`, `JobScreen.swift` | A long job: how far it is, going on once packwing is left (BGContinuedProcessingTask), how it ended |
-| `Packwing/SettingsView.swift` | The language, the version |
+| `Packwing/CreateSheet.swift`, `Creating.swift` | New archive: files, folders and photos chosen, ZIP or 7z, a password (AES-256, and 7z's names hidden too), made in a folder of Files and shared |
+| `Packwing/SettingsView.swift` | The language, how new archives are made, the version |
 | `Packwing/Theme.swift` | The desktop's colors, light and dark; Nunito; a file's tag |
 
-Not yet: new archives, the photo grid of an archive, and the Share sheet's
-own extension.
+Not yet: the photo grid of an archive, and the Share sheet's own extension.

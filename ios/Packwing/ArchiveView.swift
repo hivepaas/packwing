@@ -73,7 +73,8 @@ struct ArchiveView: View {
                 .disabled(selecting && picked.isEmpty)
             }
         }
-        .sheet(item: Binding(get: { extracting.map(Picked.init) }, set: { extracting = $0?.paths })) { what in
+        .sheet(item: Binding(get: { extracting.map(Picked.init) }, set: { extracting = $0?.paths }),
+               onDismiss: model.sheetGone) { what in
             ExtractSheet(archive: place.archive, picked: what.paths)
         }
         .quickLookPreview($model.previewing)

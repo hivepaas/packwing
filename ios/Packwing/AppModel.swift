@@ -76,15 +76,27 @@ final class AppModel {
     /// The long job running or last run, and whether its screen shows.
     var job: RunningJob?
     var showingJob = false
+    /// What the New archive sheet is making an archive of, while it shows.
+    var drafting: NewArchiveDraft?
     /// The copy of a file Quick Look shows.
     var previewing: URL?
     /// The name of the file being read to preview it, while it is.
     var reading: String?
-    /// Counts the folders chosen for Extract, so that what shows it is drawn again.
-    var extractFolderChanged = 0
+    /// Counts the folders chosen to save in, so that what shows it is drawn again.
+    var foldersChanged = 0
 
     @ObservationIgnored private var openJob: Job?
     @ObservationIgnored var readJob: Job?
+    /// What a sheet starts once it is gone: a job's screen shown while a
+    /// sheet is still going is not shown at all.
+    @ObservationIgnored var afterSheet: (() -> Void)?
+
+    /// Starts what the sheet just gone left to start.
+    func sheetGone() {
+        let then = afterSheet
+        afterSheet = nil
+        then?()
+    }
 
     init() {
         start(supportFolder: Self.support.path(percentEncoded: false),
