@@ -123,6 +123,20 @@ impl Action {
         Action::ALL.into_iter().find(|a| a.id() == id)
     }
 
+    /// The action of a macOS service of the Mac App Store's build, by its message in
+    /// Info.plist's NSServices (`packaging/macos/app-store-services.json`): the right-click
+    /// menu there, but Open, which is Finder's Open With.
+    pub fn of_service(message: &str) -> Option<Action> {
+        Some(match message {
+            "extractHere" => Action::ExtractHere,
+            "extractToFolder" => Action::ExtractToFolder,
+            "extract" => Action::Extract,
+            "compressZip" => Action::CompressZip,
+            "compress" => Action::Compress,
+            _ => return None,
+        })
+    }
+
     /// Its item in the menu, running `program`, in packwing's submenu or not.
     fn item(self, program: &Path, submenu: bool) -> Item {
         let item = Item::new(self.id(), self.label(submenu), program).arg(self.option());

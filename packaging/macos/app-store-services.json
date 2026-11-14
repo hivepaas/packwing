@@ -1,0 +1,37 @@
+[
+  {
+    "NSMenuItem": { "default": "Extract Here with packwing" },
+    "NSMessage": "extractHere",
+    "NSPortName": "packwing",
+    "NSRequiredContext": {},
+    "NSSendFileTypes": ["public.archive"]
+  },
+  {
+    "NSMenuItem": { "default": "Extract to New Folder with packwing" },
+    "NSMessage": "extractToFolder",
+    "NSPortName": "packwing",
+    "NSRequiredContext": {},
+    "NSSendFileTypes": ["public.archive"]
+  },
+  {
+    "NSMenuItem": { "default": "Extract with packwing…" },
+    "NSMessage": "extract",
+    "NSPortName": "packwing",
+    "NSRequiredContext": {},
+    "NSSendFileTypes": ["public.archive"]
+  },
+  {
+    "NSMenuItem": { "default": "Compress to ZIP with packwing" },
+    "NSMessage": "compressZip",
+    "NSPortName": "packwing",
+    "NSRequiredContext": {},
+    "NSSendFileTypes": ["public.item"]
+  },
+  {
+    "NSMenuItem": { "default": "Compress with packwing…" },
+    "NSMessage": "compress",
+    "NSPortName": "packwing",
+    "NSRequiredContext": {},
+    "NSSendFileTypes": ["public.item"]
+  }
+]

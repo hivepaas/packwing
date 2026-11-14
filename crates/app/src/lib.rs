@@ -275,16 +275,21 @@ pub fn run(extensions: Extensions) {
     // What macOS asks packwing to open: an archive opened in Finder, chosen in
     // its Open With or dropped on the Dock's icon. It comes as an event, not on
     // the command line, and may come before the window is there; each is
-    // opened as Open with packwing's item opens it.
-    let (asked, mut to_open) = futures_channel::mpsc::unbounded::<Vec<PathBuf>>();
+    // opened as Open with packwing's item opens it. The Mac App Store's build's
+    // Services, its right-click menu, ask the same way.
+    let (asked, mut to_do) = futures_channel::mpsc::unbounded::<Request>();
     let app = gpui_platform::application().with_assets(Assets);
+    let open = asked.clone();
     app.on_open_urls(move |urls| {
         let paths: Vec<PathBuf> = urls
             .iter()
             .filter_map(|u| open_with::path_of_url(u))
             .collect();
         if !paths.is_empty() {
-            let _ = asked.unbounded_send(paths);
+            let _ = open.unbounded_send(Request {
+                action: Action::Open,
+                paths,
+            });
         }
     });
     app.run(move |cx: &mut App| {
@@ -300,6 +305,14 @@ pub fn run(extensions: Extensions) {
         cx.set_global(licensing::Licensed::load());
         licensing::start_refreshing(cx);
         store::start(cx);
+        if right_click::STORE_BUILD {
+            let asked = asked.clone();
+            packwing_sandbox::serve(move |message, paths| {
+                if let Some(action) = Action::of_service(message) {
+                    let _ = asked.unbounded_send(Request { action, paths });
+                }
+            });
+        }
         audit_log::apply(cx, audit_log::By::Startup);
         cx.set_global(text_size::SystemSize(text_size::read_system()));
         packwing_core::clean_opened_files();
@@ -347,11 +360,7 @@ pub fn run(extensions: Extensions) {
             return;
         };
         cx.spawn(async move |cx| {
-            while let Some(paths) = to_open.next().await {
-                let request = Request {
-                    action: Action::Open,
-                    paths,
-                };
+            while let Some(request) = to_do.next().await {
                 let _ = window.update(cx, |ws, window, cx| {
                     access::remember(cx, &request.paths);
                     ws.start(request, window, cx);

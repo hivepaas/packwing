@@ -45,10 +45,18 @@ fn origin(path: Option<&Path>) -> Result<Option<Origin>, Error> {
     }
 }
 
+/// In the App Sandbox (the Mac App Store's packwing), macOS marks every file packwing
+/// makes as quarantined, by packwing, and lets no one write that mark but itself: there
+/// packwing writes none, and what it makes is marked all the same, whether the user
+/// would keep the mark or not.
+fn the_system_marks() -> bool {
+    cfg!(target_os = "macos") && std::env::var_os("APP_SANDBOX_CONTAINER_ID").is_some()
+}
+
 /// The mark to put on what is extracted from `source`, as the user chose and the
 /// organization allows.
 pub(crate) fn for_extracting(source: &Source, keep: bool) -> Result<Option<Origin>, Error> {
-    if !packwing_policy::current().keeps_mark(keep) {
+    if the_system_marks() || !packwing_policy::current().keeps_mark(keep) {
         return Ok(None);
     }
     origin(source.path())
@@ -81,7 +89,7 @@ pub(crate) fn on_a_copy(
     to: &Path,
     keep: bool,
 ) -> Result<(), Error> {
-    if !packwing_policy::current().keeps_mark(keep) {
+    if the_system_marks() || !packwing_policy::current().keeps_mark(keep) {
         return Ok(());
     }
     let Some(origin) = origin(from.local_path(path).as_deref())? else {
