@@ -61,7 +61,8 @@ impl Destination for Recorded {
     }
 
     fn finish_file(&mut self) -> io::Result<()> {
-        self.files.push(self.open.take().expect("no file to finish"));
+        self.files
+            .push(self.open.take().expect("no file to finish"));
         Ok(())
     }
 
