@@ -103,6 +103,11 @@ and `UPLOAD=1` with the `APPLE_API_KEY_*` variables to send it. A version is
 then released from App Store Connect: its page, screenshots and review, with
 the in-app purchase sent for review with the first version.
 
+A tag sends the package, so on a tag the job fails while the repository does
+not have the store's secrets. The GitHub release does not wait for it: its
+draft is made from the other jobs' files all the same.
+
+## Making one
 
 1. **The version.** `version` under `[workspace.package]` in `Cargo.toml` is
    the release's (`0.2.0`, or `0.3.0-beta1`). Write its notes in
@@ -130,7 +135,18 @@ the in-app purchase sent for review with the first version.
    Tests pass.
 
 A release that went wrong is not deleted once the list names it: the next one
-replaces it.
+replaces it. Until then, a tag can be made again: delete it
+(`git push origin :refs/tags/v0.2.0`), with no draft left of it, and tag the
+commit that should be released.
+
+**Who does what.** Claude Code makes a release when asked, from the version's
+pull request to the Homebrew bump: it tags, checks the draft, and writes the
+list's pull request. It stops to ask before publishing the draft, which is
+public from then on. The list is signed by a maintainer on the signing
+machine, where the offline keys are ([updates.md › Signing](updates.md#signing));
+Claude Code then commits `release.signed.json` and moves the `release` branch
+if asked to. The tags' ruleset asks for a signature, which a maintainer's
+account bypasses: the push says so.
 
 **Lines and Pro.** A version's line is its major and minor numbers (0.2), and is
 as old as its first release in `release.json`: a Pro license bought outright
