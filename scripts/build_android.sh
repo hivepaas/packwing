@@ -53,16 +53,4 @@ rm -rf "$OUT"
 	generate --library "target/x86_64-linux-android/$PROFILE/libpackwing_mobile.so" \
 	--language kotlin --out-dir "$OUT" --no-format
 
-# Every MobileError holds a `message`, which Kotlin's Throwable has already:
-# UniFFI writes the field and an `override val message` getter beside it in the
-# same class, which Kotlin rejects as a redeclaration (Swift has no such
-# clash, so the iOS side needs nothing). Making the field itself the override
-# says the same thing and keeps `e.message` the error's own words. Drop this
-# when UniFFI writes it that way (or when the field is renamed in
-# crates/mobile/src/lib.rs, which would change the Swift API too).
-perl -0777 -i -pe '
-	s/^(\s*)val `message`: kotlin\.String/$1override val `message`: kotlin.String/gm;
-	s/^[ \t]*override val message\n[ \t]*get\(\) = "message=[^\n]*\n//gm;
-' "$OUT/uniffi/packwing_mobile/packwing_mobile.kt"
-
 echo "built $APP/src/main/jniLibs and $OUT"

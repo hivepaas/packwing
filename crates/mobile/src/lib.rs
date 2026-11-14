@@ -1,15 +1,29 @@
-//! What the iOS app calls: an archive opened and what it holds, folder by
-//! folder; a file of it read, to preview it; its files extracted; and new ZIP
-//! and 7z archives made. The work is packwing-core's, as on the desktop.
+//! What the iOS and Android apps call: an archive opened and what it holds,
+//! folder by folder; a file of it read, to preview it; its files extracted;
+//! and new ZIP and 7z archives made. The work is packwing-core's, as on the
+//! desktop.
 //!
 //! Every call that reads or writes a file blocks until it is done, so the app
 //! makes them off its main thread; a [`Job`] tells how far one is, and stops
-//! it. The Swift side is generated from this crate by UniFFI
-//! (`scripts/build_ios.sh`); names here are what Swift sees, in its case.
+//! it. Swift and Kotlin are both generated from this crate by UniFFI
+//! (`scripts/build_ios.sh`, `scripts/build_android.sh`), so one API serves
+//! both; names here are what each language sees, in its own case.
+//!
+//! What only one system has goes behind its own `#[cfg(target_os)]`, and the
+//! other's bindings never see it: the bindings are read from the library
+//! built for that system. [`Document`] is the one such thing so far, for
+//! Android's document picker, which hands out no paths.
 
 uniffi::setup_scaffolding!();
 
 mod i18n;
+
+/// Android's document picker hands out no paths: see [`Document`].
+#[cfg(target_os = "android")]
+mod document;
+
+#[cfg(target_os = "android")]
+pub use document::Document;
 
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -17,54 +31,55 @@ use std::time::{Duration, Instant};
 
 use packwing_core::{
     Asked, COMPRESSED_EXTENSIONS, Cancel, Child, Control, Error, ExtractOptions, Keys, Kind, Level,
-    Listen, Listing, NewArchive, Progress, Summary,
+    Listen, Listing, NewArchive, Progress, Source, Summary,
 };
 
 pub use i18n::LanguageRow;
 
-/// Why a call did not do what it was asked, as the app says it: `message` is
-/// in the user's language already.
+/// Why a call did not do what it was asked, as the app says it: `reason` is
+/// in the user's language already. It is not called `message`, which Kotlin's
+/// own `Throwable` has: an exception of its own would not compile beside it.
 #[derive(Debug, thiserror::Error, uniffi::Error)]
 pub enum MobileError {
     /// Not an archive packwing opens, or a kind it does not read yet.
-    #[error("{message}")]
-    NotAnArchive { message: String },
+    #[error("{reason}")]
+    NotAnArchive { reason: String },
     /// Encrypted, and nothing given opens it: it needs a password (ZIP, 7z,
     /// RAR), or a passphrase (an age file) with `passphrase`.
-    #[error("{message}")]
-    Locked { message: String, passphrase: bool },
+    #[error("{reason}")]
+    Locked { reason: String, passphrase: bool },
     /// The password or passphrase given is not its own, or its data is damaged.
-    #[error("{message}")]
-    WrongPassword { message: String },
+    #[error("{reason}")]
+    WrongPassword { reason: String },
     /// Stopped by [`Job::cancel`].
-    #[error("{message}")]
-    Cancelled { message: String },
-    #[error("{message}")]
-    Failed { message: String },
+    #[error("{reason}")]
+    Cancelled { reason: String },
+    #[error("{reason}")]
+    Failed { reason: String },
 }
 
 impl From<Error> for MobileError {
     fn from(e: Error) -> MobileError {
-        let message = e.to_string();
+        let reason = e.to_string();
         match e {
-            Error::NotAnArchive | Error::Unsupported(_) => MobileError::NotAnArchive { message },
+            Error::NotAnArchive | Error::Unsupported(_) => MobileError::NotAnArchive { reason },
             Error::Locked { needs } => match Keys::asks_for(&needs) {
                 Some(Asked::Password) => MobileError::Locked {
-                    message,
+                    reason,
                     passphrase: false,
                 },
                 Some(Asked::Passphrase) => MobileError::Locked {
-                    message,
+                    reason,
                     passphrase: true,
                 },
                 // Age keys, and their files' passphrases: not on the phone yet.
-                _ => MobileError::Failed { message },
+                _ => MobileError::Failed { reason },
             },
             Error::WrongPassword | Error::WrongPassphrase | Error::WrongKeyPassphrase => {
-                MobileError::WrongPassword { message }
+                MobileError::WrongPassword { reason }
             }
-            Error::Cancelled => MobileError::Cancelled { message },
-            Error::Failed(_) => MobileError::Failed { message },
+            Error::Cancelled => MobileError::Cancelled { reason },
+            Error::Failed(_) => MobileError::Failed { reason },
         }
     }
 }
@@ -275,13 +290,15 @@ impl From<Summary> for Extracted {
 }
 
 /// An archive, open: what it holds is read once, as it opens, and kept.
-/// Reading a file of it, or extracting, reads its file again: the app keeps
-/// access to it (a security-scoped URL) for as long as it keeps this.
+/// Reading a file of it, or extracting, reads it again, from wherever it came
+/// from: a file (iOS, whose picker gives one, and whose security-scoped URL
+/// the app keeps for as long as it keeps this) or a document (Android, whose
+/// picker does not).
 #[derive(uniffi::Object)]
 pub struct Archive {
-    path: PathBuf,
-    secrets: Secrets,
-    listing: Listing,
+    pub(crate) source: Source,
+    pub(crate) secrets: Secrets,
+    pub(crate) listing: Listing,
 }
 
 #[uniffi::export]
@@ -294,17 +311,7 @@ impl Archive {
         secrets: Secrets,
         job: Arc<Job>,
     ) -> Result<Arc<Archive>, MobileError> {
-        let path = PathBuf::from(path);
-        let listen = Listen {
-            cancel: Some(job.cancel.clone()),
-            ..Listen::default()
-        };
-        let listing = packwing_core::list_as_read(path.clone(), &secrets.keys(), listen)?;
-        Ok(Arc::new(Archive {
-            path,
-            secrets,
-            listing,
-        }))
+        Archive::of(Source::File(PathBuf::from(path)), secrets, job)
     }
 
     pub fn info(&self) -> ArchiveInfo {
@@ -350,7 +357,7 @@ impl Archive {
         job: Arc<Job>,
     ) -> Result<Vec<u8>, MobileError> {
         Ok(packwing_core::preview_entry(
-            self.path.clone(),
+            self.source.clone(),
             &entry,
             &self.secrets.keys(),
             most,
@@ -380,10 +387,16 @@ impl Archive {
         let keys = self.secrets.keys();
         let control = job.control();
         let summary = if picked.is_empty() {
-            packwing_core::extract_with(self.path.clone(), &destination, &keys, &options, &control)?
+            packwing_core::extract_with(
+                self.source.clone(),
+                &destination,
+                &keys,
+                &options,
+                &control,
+            )?
         } else {
             packwing_core::extract_selected(
-                self.path.clone(),
+                self.source.clone(),
                 &destination,
                 &picked,
                 &keys,
@@ -392,6 +405,26 @@ impl Archive {
             )?
         };
         Ok(Extracted::from(summary))
+    }
+}
+
+impl Archive {
+    /// Reads what `source` holds, as every way of opening one does.
+    pub(crate) fn of(
+        source: Source,
+        secrets: Secrets,
+        job: Arc<Job>,
+    ) -> Result<Arc<Archive>, MobileError> {
+        let listen = Listen {
+            cancel: Some(job.cancel.clone()),
+            ..Listen::default()
+        };
+        let listing = packwing_core::list_as_read(source.clone(), &secrets.keys(), listen)?;
+        Ok(Arc::new(Archive {
+            source,
+            secrets,
+            listing,
+        }))
     }
 }
 

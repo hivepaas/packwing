@@ -33,14 +33,28 @@ import java.io.Closeable
 import java.io.File
 
 /** An archive open: the core's, and what keeps its file reachable. */
-class Opened(val uri: Uri, private val file: Documents.OpenFile, val archive: Archive) : Closeable {
+class Opened(val uri: Uri, private val held: Documents.Opening, val archive: Archive) : Closeable {
     val info: ArchiveInfo = archive.info()
 
     override fun close() {
         runCatching { archive.close() }
-        runCatching { file.close() }
+        runCatching { held.close() }
     }
 }
+
+/**
+ * What went wrong, in the user's language. Each kind of [MobileException]
+ * holds its own `reason`; what `message` gives is the whole error written
+ * out, for a log rather than for a person.
+ */
+val MobileException.said: String
+    get() = when (this) {
+        is MobileException.NotAnArchive -> reason
+        is MobileException.Locked -> reason
+        is MobileException.WrongPassword -> reason
+        is MobileException.Cancelled -> reason
+        is MobileException.Failed -> reason
+    }
 
 /** Where the app is. */
 sealed interface Screen {
@@ -175,11 +189,11 @@ class AppModel(private val context: Context) {
         scope.launch {
             val result = withContext(Dispatchers.IO) {
                 runCatching {
-                    val file = Documents.open(context, uri)
+                    val held = Documents.open(context, uri)
                     try {
-                        Opened(uri, file, Archive.open(file.path, secrets, Job.quiet()))
+                        Opened(uri, held, read(held, secrets))
                     } catch (e: Throwable) {
-                        file.close()
+                        held.close()
                         throw e
                     }
                 }
@@ -196,6 +210,18 @@ class AppModel(private val context: Context) {
         }
     }
 
+    /**
+     * The core's archive, read however what was opened can be read: where it
+     * asks, through the system's descriptor, or from the copy made for a
+     * provider whose descriptor cannot be read at an offset.
+     */
+    private fun read(held: Documents.Opening, secrets: Secrets): Archive = when (held) {
+        is Documents.Opening.AsDocument ->
+            Archive.openDocument(held.document, secrets, Job.quiet())
+        is Documents.Opening.AsFile ->
+            Archive.open(held.path, secrets, Job.quiet())
+    }
+
     /** What to say, or ask, when an archive would not open. */
     private fun failed(uri: Uri, name: String, e: Throwable) {
         Log.w("packwing", "could not open $name", e)
@@ -204,9 +230,9 @@ class AppModel(private val context: Context) {
                 sheet = Sheet.Password(uri, name, e.passphrase)
             is MobileException.WrongPassword -> {
                 val asking = sheet as? Sheet.Password
-                sheet = Sheet.Password(uri, name, asking?.passphrase ?: false, e.message)
+                sheet = Sheet.Password(uri, name, asking?.passphrase ?: false, e.said)
             }
-            is MobileException -> failure = e.message
+            is MobileException -> failure = e.said
             else -> failure = tr("packwing could not open {name}.", "name" to name)
         }
     }
@@ -317,7 +343,7 @@ class AppModel(private val context: Context) {
                     "n" to files.toString(),
                 )
             }.onFailure { e ->
-                job.failed = (e as? MobileException)?.message
+                job.failed = (e as? MobileException)?.said
                     ?: tr("packwing could not extract {name}.", "name" to archive.info.name)
             }
             finished(job)
@@ -347,7 +373,7 @@ class AppModel(private val context: Context) {
             }
             result.onSuccess { job.done = tr("{name} is ready", "name" to name) }
                 .onFailure { e ->
-                    job.failed = (e as? MobileException)?.message
+                    job.failed = (e as? MobileException)?.said
                         ?: tr("packwing could not make {name}.", "name" to name)
                 }
             finished(job)

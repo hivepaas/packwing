@@ -28,11 +28,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.ViewList
+import androidx.compose.material.icons.automirrored.outlined.ViewList
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -85,7 +85,7 @@ fun ArchiveScreen(model: AppModel, screen: Screen.Folder) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(onClick = { model.back() }) {
-                    Icon(Icons.Outlined.ArrowBack, tr("Back"), tint = c.text)
+                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, tr("Back"), tint = c.text)
                 }
                 Column(Modifier.weight(1f)) {
                     Text(
@@ -112,7 +112,7 @@ fun ArchiveScreen(model: AppModel, screen: Screen.Folder) {
                 }
                 IconButton(onClick = { grid = !grid }) {
                     Icon(
-                        if (grid) Icons.Outlined.ViewList else Icons.Outlined.GridView,
+                        if (grid) Icons.AutoMirrored.Outlined.ViewList else Icons.Outlined.GridView,
                         if (grid) tr("Show a list") else tr("Show a grid"),
                         tint = c.text,
                     )

@@ -44,22 +44,31 @@ with AES-256. The work is all `packwing-core`'s, as on the desktop.
 Android hands out `content://` URIs; the core works on paths. Each way in and
 out is bridged in `Documents.kt`:
 
-- **Reading usually costs a copy.** The descriptor the system opens for an
-  archive is a path of its own, `/proc/self/fd/N`, and the core needs a path it
-  can open again for every file it reads. Opening that path is a fresh open of
-  the file underneath, checked against the app's own rights rather than the
-  grant that handed over the descriptor — so for a file from the document
-  picker or MediaStore, which the app has no rights of its own to, it is
-  refused. The app tries the descriptor, checks whether it opens again, and
-  copies the archive into its cache when it does not, which is the usual case.
-  A core that could read an archive from a file descriptor would remove that
-  copy.
+- **Reading costs no copy.** packwing-core already reads an archive it cannot
+  reach by path by asking for the ranges it wants, as it does for one kept on
+  a storage; `crates/mobile` gives Android the same way in (`Document`, which
+  only that system's build has), and `pread` answers from the descriptor the
+  system opened. ZIP and 7z archives, which is what a phone opens and makes,
+  are listed, previewed and extracted straight from the document. Two things
+  still cost a copy: a RAR archive, because the library that reads one takes a
+  filename, and a provider whose descriptor cannot be read at an offset, which
+  a stream's cannot.
+
+  What does not work is the obvious thing: `/proc/self/fd/N` is a path, but
+  opening it is a fresh open of the file underneath, checked against the app's
+  own rights rather than against the grant that handed over the descriptor, so
+  for a file from the document picker or MediaStore it is refused.
 - **Writing costs a second pass.** A document tree cannot be written to by
   path, so the core extracts into the app's own folder and what it wrote is
   then copied into the folder the user pointed at, or to the gallery through
-  MediaStore. Every extracted byte is therefore written twice. A core that
-  could extract into a file descriptor (or a `Sink`, which `hivepack` already
-  has) would remove that second pass; until then, large archives pay for it.
+  MediaStore. Every extracted byte is therefore written twice. packwing-core
+  already knows how to write an archive's entries somewhere that is not a
+  folder (`WriteTo::Taker`, which making an archive from another uses); until
+  something public is built on it, large archives pay for the second pass.
+- **A file keeps the name it came with.** A document provider adds an
+  extension of its own when the name it is given disagrees with the kind, so
+  what is extracted is made as the kind that provider's own table gives for
+  the name's extension, and as nothing it knows when there is none.
 - **No storage permission is asked for.** The document picker and MediaStore
   are the only ways in and out, which is also why the folder a user picks is
   kept with `takePersistableUriPermission` instead of being found again by

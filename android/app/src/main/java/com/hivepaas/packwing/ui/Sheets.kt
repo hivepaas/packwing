@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Folder
@@ -73,7 +75,9 @@ fun PasswordSheet(model: AppModel, ask: Sheet.Password) {
         contentColor = c.text,
     ) {
         Column(
-            Modifier.padding(start = 20.dp, end = 20.dp, bottom = 28.dp),
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(start = 20.dp, end = 20.dp, bottom = 28.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -185,7 +189,9 @@ fun ExtractSheet(model: AppModel, ask: Sheet.Extract) {
         contentColor = c.text,
     ) {
         Column(
-            Modifier.padding(start = 16.dp, end = 16.dp, bottom = 28.dp),
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(start = 16.dp, end = 16.dp, bottom = 28.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             Text(

@@ -8,37 +8,95 @@ import android.os.ParcelFileDescriptor
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import android.system.ErrnoException
 import android.system.Os
-import android.system.OsConstants
 import android.util.Log
+import android.webkit.MimeTypeMap
 import androidx.documentfile.provider.DocumentFile
+import uniffi.packwing_mobile.Document
+import uniffi.packwing_mobile.MobileException
 import java.io.Closeable
 import java.io.File
 import java.util.UUID
 
 /**
  * Where the app's files come from and go: Android hands out `content://` URIs,
- * and packwing-core works on paths, so each way in and out is bridged here.
+ * so each way in and out is bridged here.
  *
- * Reading an archive needs no copy: the file descriptor the system opens is a
- * path of its own, `/proc/self/fd/N`, for as long as it is held. Writing does
- * need one, because a document tree cannot be written to by path: the core
+ * An archive is read with no copy. The core asks for the ranges it wants
+ * (`Document`, which crates/mobile exports for Android alone), and `pread`
+ * answers them from the descriptor the system opened. Writing still costs a
+ * copy, because a document tree cannot be written to by path: the core
  * extracts into the app's own folder, and what it wrote is then copied where
- * the user pointed. See android/README.md › What costs a second pass.
+ * the user pointed. See android/README.md › How Android's storage shapes it.
  */
 object Documents {
 
     /** What was picked: its URI, and what the system says about it. */
     data class Picked(val uri: Uri, val name: String, val size: Long)
 
+    /** An archive's file, however it has to be read, until it is let go. */
+    sealed interface Opening : Closeable {
+        /**
+         * Read where the core asks, through the descriptor the system
+         * opened: nothing is copied.
+         */
+        class AsDocument(val document: OpenDocument) : Opening {
+            override fun close() = document.close()
+        }
+
+        /**
+         * A copy in the app's own folder, for a provider whose descriptor
+         * cannot be read at an offset: a stream's cannot.
+         */
+        class AsFile(val path: String, private val remove: File?) : Opening {
+            override fun close() {
+                remove?.deleteRecursively()
+            }
+        }
+    }
+
     /**
-     * An archive's file as a path the core can open again and again, with
-     * what keeps it reachable. Closed when the archive is let go.
+     * An archive the core reads where it asks. `pread` reads at an offset
+     * without moving the descriptor's position, so reads can come in any
+     * order and from more than one thread, and it asks no rights of its own
+     * — unlike opening `/proc/self/fd/N`, which is a fresh open of the file
+     * underneath, checked against the app's own rights rather than against
+     * the grant that handed over the descriptor.
      */
-    class OpenFile(val path: String, private val holds: Closeable?, private val remove: File?) : Closeable {
+    class OpenDocument(
+        private val called: String,
+        private val fd: ParcelFileDescriptor,
+        private val length: Long,
+    ) : Document, Closeable {
+
+        override fun `name`(): String = called
+
+        override fun `size`(): ULong = length.toULong()
+
+        override fun `readAt`(offset: ULong, length: UInt): ByteArray {
+            val at = offset.toLong()
+            if (at < 0 || at >= this.length) return ByteArray(0)
+            val want = minOf(length.toLong(), this.length - at).toInt()
+            val buffer = ByteArray(want)
+            var done = 0
+            while (done < want) {
+                val got = try {
+                    Os.pread(fd.fileDescriptor, buffer, done, want - done, at + done)
+                } catch (e: ErrnoException) {
+                    Log.w("packwing", "could not read $called at ${at + done}", e)
+                    throw MobileException.Failed(
+                        tr("packwing could not read {name}.", "name" to called),
+                    )
+                }
+                if (got <= 0) break
+                done += got
+            }
+            return if (done == want) buffer else buffer.copyOf(done)
+        }
+
         override fun close() {
-            runCatching { holds?.close() }
-            remove?.deleteRecursively()
+            runCatching { fd.close() }
         }
     }
 
@@ -59,50 +117,41 @@ object Documents {
     }
 
     /**
-     * Opens `uri` as a path. A file on this device is its own path; anything
-     * else is read through its descriptor, and only a provider that hands out
-     * a pipe (which cannot be read twice, nor seeked) is copied to the cache
-     * first.
+     * Opens `uri` for the core to read: through the system's descriptor where
+     * that can be read at an offset, and otherwise from a copy in the app's
+     * own folder. Call this off the main thread.
      */
-    fun open(context: Context, uri: Uri): OpenFile {
-        if (uri.scheme == "file") {
-            uri.path?.let { return OpenFile(it, null, null) }
-        }
+    fun open(context: Context, uri: Uri): Opening {
+        val name = picked(context, uri).name
         val fd = runCatching { context.contentResolver.openFileDescriptor(uri, "r") }.getOrNull()
-        if (fd != null && seekable(fd) && readableAgain(fd)) {
-            Log.i("packwing", "reading $uri through its descriptor, with no copy")
-            return OpenFile("/proc/self/fd/${fd.fd}", fd, null)
+        val length = fd?.let { readableAt(it) }
+        if (fd != null && length != null) {
+            Log.i("packwing", "reading $name where the core asks, with no copy")
+            return Opening.AsDocument(OpenDocument(name, fd, length))
         }
-        Log.i("packwing", "copying $uri to the cache: its descriptor cannot be opened again")
         runCatching { fd?.close() }
+        Log.i("packwing", "copying $uri in: its descriptor cannot be read at an offset")
         // Under a folder of its own, so the copy keeps the name the archive
         // came with: that name is what the app shows for it.
         val into = File(cache(context, "opened"), UUID.randomUUID().toString()).apply { mkdirs() }
-        val copy = File(into, picked(context, uri).name)
+        val copy = File(into, name)
         context.contentResolver.openInputStream(uri)?.use { from ->
             copy.outputStream().use { to -> from.copyTo(to, DEFAULT_BUFFER_SIZE) }
         } ?: error("cannot read the file")
-        return OpenFile(copy.path, null, into)
+        return Opening.AsFile(copy.path, into)
     }
 
-    /** Whether the descriptor is a file that can be read again from any point. */
-    private fun seekable(fd: ParcelFileDescriptor): Boolean = runCatching {
-        Os.lseek(fd.fileDescriptor, 0, OsConstants.SEEK_SET)
-        fd.statSize >= 0
-    }.getOrDefault(false)
-
     /**
-     * Whether `/proc/self/fd/N` opens again. Opening that path is a fresh
-     * open of the file underneath, which is checked against the app's own
-     * rights, not against the grant that handed us the descriptor: for a file
-     * the document picker or MediaStore gave, the app has no rights of its
-     * own and the open is refused. The core opens an archive's file once per
-     * call, so a descriptor that will not open again is no use to it.
+     * How long the file behind `fd` is, if it can be read at an offset; none
+     * if it cannot, as a pipe cannot — which is what a provider that makes
+     * its answer up as it is read hands over.
      */
-    private fun readableAgain(fd: ParcelFileDescriptor): Boolean = runCatching {
-        File("/proc/self/fd/${fd.fd}").inputStream().use { it.read() }
-        true
-    }.getOrDefault(false)
+    private fun readableAt(fd: ParcelFileDescriptor): Long? = runCatching {
+        val length = fd.statSize
+        require(length >= 0)
+        if (length > 0) Os.pread(fd.fileDescriptor, ByteArray(1), 0, 1, 0)
+        length
+    }.getOrNull()
 
     /** The app's own folder for `what`, made if it is not there. */
     fun cache(context: Context, what: String): File =
@@ -137,7 +186,7 @@ object Documents {
             } else {
                 val existing = into.findFile(child.name)
                 val file = existing?.takeIf { it.isFile }
-                    ?: into.createFile(mimeOf(child.name), child.name) ?: continue
+                    ?: into.createFile(saveMime(child.name), child.name) ?: continue
                 context.contentResolver.openOutputStream(file.uri, "wt")?.use { to ->
                     child.inputStream().use { source -> source.copyTo(to, DEFAULT_BUFFER_SIZE) }
                     written++
@@ -204,7 +253,20 @@ object Documents {
         }
     }
 
-    /** What a name says the file is, for the providers that ask. */
+    /**
+     * What to make a file as, so that the folder it is written to keeps the
+     * name it came with. A document provider checks the name's extension
+     * against the kind it is handed and adds an extension of its own when the
+     * two disagree, so the answer has to come from the table it asks:
+     * `ghi chú.md`, made as `text/plain`, was written as `ghi chú.md.txt`.
+     * A kind it does not know adds nothing.
+     */
+    private fun saveMime(name: String): String =
+        MimeTypeMap.getSingleton()
+            .getMimeTypeFromExtension(name.substringAfterLast('.', "").lowercase())
+            ?: "application/octet-stream"
+
+    /** What a name says the file is: what goes in the gallery, and as what. */
     fun mimeOf(name: String): String = when (name.substringAfterLast('.', "").lowercase()) {
         "jpg", "jpeg" -> "image/jpeg"
         "png" -> "image/png"
