@@ -2908,6 +2908,9 @@ t78956399 = リスト表示
 # Show a grid
 tb50700d9 = グリッド表示
 
+# More
+t4f34d900 = その他
+
 # Select
 t3e892b4d = 選択
 
@@ -2934,6 +2937,9 @@ t9beae641 = すべて展開
 
 # Preview
 tfdda4cf7 = プレビュー
+
+# Paste
+tb34a0288 = ペースト
 
 # Files
 te71d1b30 = ファイル
@@ -3132,9 +3138,6 @@ tcd577cde = パスワードを隠す
 
 # Show password
 t500e3555 = パスワードを表示
-
-# Paste
-tb34a0288 = ペースト
 
 # Kept in memory only, never saved, and forgotten when the archive is closed.
 t6641f326 = メモリ内にだけ保持し、保存はしません。アーカイブを閉じると消去します。

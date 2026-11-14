@@ -2908,6 +2908,9 @@ t78956399 = 목록으로 보기
 # Show a grid
 tb50700d9 = 격자로 보기
 
+# More
+t4f34d900 = 더 보기
+
 # Select
 t3e892b4d = 선택
 
@@ -2934,6 +2937,9 @@ t9beae641 = 모두 압축 풀기
 
 # Preview
 tfdda4cf7 = 미리 보기
+
+# Paste
+tb34a0288 = 붙여넣기
 
 # Files
 te71d1b30 = 파일
@@ -3132,9 +3138,6 @@ tcd577cde = 비밀번호 숨기기
 
 # Show password
 t500e3555 = 비밀번호 보기
-
-# Paste
-tb34a0288 = 붙여넣기
 
 # Kept in memory only, never saved, and forgotten when the archive is closed.
 t6641f326 = 메모리에만 보관되고 저장되지 않으며, 압축 파일을 닫으면 지워집니다.

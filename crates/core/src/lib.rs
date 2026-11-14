@@ -50,7 +50,7 @@ use crate::source::SourceReader;
 
 pub use checksum::{
     Algorithm, algorithms_of, checksum_file_name, checksum_in, checksum_line, checksums,
-    checksums_of, save_checksum,
+    checksums_of, save_checksum, source_checksums,
 };
 pub use convert::{Converted, convert};
 pub use create::{

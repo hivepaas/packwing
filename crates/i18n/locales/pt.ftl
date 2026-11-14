@@ -2949,6 +2949,9 @@ t78956399 = Mostrar em lista
 # Show a grid
 tb50700d9 = Mostrar em grade
 
+# More
+t4f34d900 = Mais
+
 # Select
 t3e892b4d = Selecionar
 
@@ -2976,6 +2979,9 @@ t9beae641 = Extrair tudo
 
 # Preview
 tfdda4cf7 = Pré-visualizar
+
+# Paste
+tb34a0288 = Colar
 
 # Files
 te71d1b30 = Arquivos
@@ -3181,9 +3187,6 @@ tcd577cde = Ocultar senha
 
 # Show password
 t500e3555 = Mostrar senha
-
-# Paste
-tb34a0288 = Colar
 
 # Kept in memory only, never saved, and forgotten when the archive is closed.
 t6641f326 = Fica só na memória, nunca é salva e é esquecida quando o arquivo compactado é fechado.

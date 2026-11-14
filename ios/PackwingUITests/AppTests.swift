@@ -241,4 +241,37 @@ final class AppTests: XCTestCase {
         keep(files, "files-packwing")
         XCTAssertFalse(files.cells.matching(NSPredicate(format: "identifier BEGINSWITH 'Inbox'")).firstMatch.exists)
     }
+
+    func testAnArchiveSChecksumIsComparedWithTheOneGiven() {
+        // Its SHA-256 and MD5, as `shasum -a 256` and `md5` say them.
+        let sha256 = "ff5b00b6e9f828d6a94e05f8f4487dd8aa6c0132a3674008ef14dd50a82b6e5d"
+        let md5 = "4af0f880e412e4c0abdca3ecbb0e8367"
+        let app = launch(opening: "report.zip")
+        XCTAssert(app.buttons["Extract all"].waitForExistence(timeout: 15))
+        app.buttons["More"].tap()
+        app.buttons["Checksums"].tap()
+
+        let made = app.staticTexts["checksum-sha256"]
+        XCTAssert(made.waitForExistence(timeout: 10))
+        let read = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == %@", sha256), object: made)
+        XCTAssertEqual(XCTWaiter.wait(for: [read], timeout: 15), .completed)
+
+        // As sha256sum writes it, in capitals.
+        let field = app.textFields["checksum-pasted"]
+        field.tap()
+        field.typeText(sha256.uppercased() + "  report.zip")
+        XCTAssert(app.staticTexts["It matches the file’s SHA-256 checksum."].waitForExistence(timeout: 5))
+        keep(app, "checksum-matches")
+
+        // An MD5: not made until asked.
+        field.press(forDuration: 1.2)
+        if app.menuItems["Select All"].waitForExistence(timeout: 3) { app.menuItems["Select All"].tap() }
+        field.typeText(md5)
+        let makeIt = app.buttons["Make it"]
+        XCTAssert(makeIt.waitForExistence(timeout: 5))
+        makeIt.tap()
+        XCTAssert(app.staticTexts["It matches the file’s MD5 checksum."].waitForExistence(timeout: 15))
+        XCTAssert(app.staticTexts["checksum-md5"].exists)
+        keep(app, "checksum-md5")
+    }
 }

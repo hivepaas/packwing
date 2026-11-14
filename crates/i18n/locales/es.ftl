@@ -2949,6 +2949,9 @@ t78956399 = Ver como lista
 # Show a grid
 tb50700d9 = Ver como cuadrícula
 
+# More
+t4f34d900 = Más
+
 # Select
 t3e892b4d = Seleccionar
 
@@ -2976,6 +2979,9 @@ t9beae641 = Extraer todo
 
 # Preview
 tfdda4cf7 = Vista previa
+
+# Paste
+tb34a0288 = Pegar
 
 # Files
 te71d1b30 = Archivos
@@ -3181,9 +3187,6 @@ tcd577cde = Ocultar contraseña
 
 # Show password
 t500e3555 = Mostrar contraseña
-
-# Paste
-tb34a0288 = Pegar
 
 # Kept in memory only, never saved, and forgotten when the archive is closed.
 t6641f326 = Solo se mantiene en memoria, nunca se guarda y se olvida al cerrar el archivo comprimido.

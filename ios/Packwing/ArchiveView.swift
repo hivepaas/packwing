@@ -14,6 +14,7 @@ struct ArchiveView: View {
     @State private var extracting: Picked?
     /// The grid or the list, as chosen here; else the grid for pictures.
     @State private var grid: Bool?
+    @State private var checksums = false
 
     private var info: ArchiveInfo { place.archive.info }
 
@@ -47,6 +48,14 @@ struct ArchiveView: View {
                     .accessibilityLabel(showingGrid ? tr("Show a list") : tr("Show a grid"))
                 }
             }
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button(tr("Checksums"), systemImage: "number") { checksums = true }
+                } label: {
+                    Image(systemName: "ellipsis")
+                }
+                .accessibilityLabel(tr("More"))
+            }
             ToolbarItem(placement: .bottomBar) {
                 Button(selecting ? tr("Done") : tr("Select")) {
                     selecting.toggle()
@@ -73,6 +82,9 @@ struct ArchiveView: View {
         }
         .sheet(item: $extracting, onDismiss: model.sheetGone) { what in
             ExtractSheet(archive: place.archive, picked: what.paths, toPhotos: what.toPhotos)
+        }
+        .sheet(isPresented: $checksums) {
+            ChecksumSheet(archive: place.archive)
         }
         .quickLookPreview($model.previewing)
         .overlay(alignment: .bottom) {

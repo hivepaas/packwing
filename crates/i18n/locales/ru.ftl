@@ -3013,6 +3013,9 @@ t78956399 = Показать списком
 # Show a grid
 tb50700d9 = Показать сеткой
 
+# More
+t4f34d900 = Ещё
+
 # Select
 t3e892b4d = Выбрать
 
@@ -3042,6 +3045,9 @@ t9beae641 = Извлечь всё
 
 # Preview
 tfdda4cf7 = Предпросмотр
+
+# Paste
+tb34a0288 = Вставить
 
 # Files
 te71d1b30 = Файлы
@@ -3261,9 +3267,6 @@ tcd577cde = Скрыть пароль
 
 # Show password
 t500e3555 = Показать пароль
-
-# Paste
-tb34a0288 = Вставить
 
 # Kept in memory only, never saved, and forgotten when the archive is closed.
 t6641f326 = Хранится только в памяти, никогда не сохраняется и забывается при закрытии архива.

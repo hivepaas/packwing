@@ -2908,6 +2908,9 @@ t78956399 = Xem dạng danh sách
 # Show a grid
 tb50700d9 = Xem dạng lưới
 
+# More
+t4f34d900 = Thêm
+
 # Select
 t3e892b4d = Chọn
 
@@ -2934,6 +2937,9 @@ t9beae641 = Giải nén tất cả
 
 # Preview
 tfdda4cf7 = Xem trước
+
+# Paste
+tb34a0288 = Dán
 
 # Files
 te71d1b30 = Tệp
@@ -3132,9 +3138,6 @@ tcd577cde = Ẩn mật khẩu
 
 # Show password
 t500e3555 = Hiện mật khẩu
-
-# Paste
-tb34a0288 = Dán
 
 # Kept in memory only, never saved, and forgotten when the archive is closed.
 t6641f326 = Chỉ giữ trong bộ nhớ, không bao giờ lưu lại, và bị quên ngay khi đóng tệp nén.
