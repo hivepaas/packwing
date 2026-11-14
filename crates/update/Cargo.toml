@@ -11,6 +11,9 @@ publish.workspace = true
 # The app's tests point the updater at a list and keys of their own
 # (set_test_source); a build without it reads only LIST_URL and the keys built in.
 test-source = []
+# The Mac App Store's build: the App Store updates it, so it never looks for a
+# release, and has nothing that downloads or installs one (STORE_BUILD).
+app-store = []
 
 [dependencies]
 base64 = "0.22"

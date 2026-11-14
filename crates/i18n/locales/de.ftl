@@ -1612,6 +1612,9 @@ t5d2a9fa0 = Ein Dateiarchivierer, der jeden Prozessorkern nutzt und Archive sich
 # Updates
 t483075a5 = Updates
 
+# The App Store keeps packwing up to date.
+tbc30b02e = Der App Store hält packwing auf dem neuesten Stand.
+
 # This is a beta: you are told of newer betas, and of the release that follows them.
 t1d6a96bc = Dies ist eine Beta: Du erfährst von neueren Betas und von der stabilen Version, die auf sie folgt.
 

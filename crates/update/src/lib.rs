@@ -58,10 +58,18 @@ pub fn current() -> Version {
 // KEYS: every keys/<id>.pub.pem, by id (build.rs).
 include!(concat!(env!("OUT_DIR"), "/keys.rs"));
 
+/// Built for the Mac App Store, which updates it (the `app-store` feature): it never
+/// looks for a release, and never downloads nor installs one, as the App Store's
+/// rules ask (App Review Guidelines 2.4.5).
+pub const STORE_BUILD: bool = cfg!(feature = "app-store");
+
+/// What a store build says when asked to download or install a release.
+const STORE_UPDATES_IT: &str = "the App Store updates this copy";
+
 /// This build has release keys: it can tell of updates. One without (a
-/// build before the keys were made) does not look.
+/// build before the keys were made) does not look, nor does a store build.
 pub fn has_keys() -> bool {
-    !KEYS.is_empty()
+    !STORE_BUILD && !KEYS.is_empty()
 }
 
 /// The release keys this app trusts (keys/README.md), or the test's.
@@ -249,6 +257,9 @@ pub fn download_blocking(
     dest: &std::path::Path,
     progress: impl Fn(u64, Option<u64>),
 ) -> Result<(), CheckError> {
+    if STORE_BUILD {
+        return Err(CheckError::Io(STORE_UPDATES_IT.to_string()));
+    }
     blocking(download::download(&file.url, &file.sha256, dest, progress))
 }
 

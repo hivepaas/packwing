@@ -53,6 +53,10 @@ pub const ARCHIVES: [&str; 44] = [
     "tar.xz.001", "tar.bz2.001", "tar.lz4.001", "iso.001",
 ];
 
+/// Built for the Mac App Store: the system's right-click menu is not packwing's
+/// to change, and Settings has no section for it.
+pub const STORE_BUILD: bool = cfg!(feature = "app-store");
+
 /// One of packwing's items.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Action {
@@ -247,6 +251,19 @@ impl RightClickMenu {
     /// The menu as installed for the user. When it is, it is brought up to
     /// date in the background: packwing may have moved, or been updated.
     pub fn installed(cx: &mut Context<Self>) -> Self {
+        // The Mac App Store's build changes nothing outside its sandbox: no
+        // Quick Actions nor Finder extension of its own to put in.
+        if STORE_BUILD {
+            return RightClickMenu {
+                shown: false,
+                choice: Choice::default(),
+                one_entry: false,
+                status: Status::Idle,
+                system: false,
+                changes: 0,
+                job: None,
+            };
+        }
         let mut this = RightClickMenu {
             shown: false,
             choice: Choice::default(),

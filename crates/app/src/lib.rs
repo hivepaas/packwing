@@ -239,7 +239,8 @@ pub fn run(extensions: Extensions) {
                 println!("{}", usage());
                 return;
             }
-            "--first-run" => first_run = true,
+            // The Mac App Store's build has no right-click menu to offer at first.
+            "--first-run" => first_run = !right_click::STORE_BUILD,
             "--policies" => {
                 let policy = packwing_policy::current();
                 print!("{}", policy.report());
@@ -247,7 +248,7 @@ pub fn run(extensions: Extensions) {
                     policy.failure().is_some() || policy.rows().iter().any(|r| r.problem.is_some());
                 std::process::exit(i32::from(wrong));
             }
-            "--uninstall" => {
+            "--uninstall" if !right_click::STORE_BUILD => {
                 let gone = [
                     context_menu::uninstall(right_click::ID),
                     context_menu::open_with::uninstall(right_click::ID),

@@ -1660,6 +1660,9 @@ t5d2a9fa0 = Архиватор, который задействует все я�
 # Updates
 t483075a5 = Обновления
 
+# The App Store keeps packwing up to date.
+tbc30b02e = App Store поддерживает packwing в актуальном состоянии.
+
 # This is a beta: you are told of newer betas, and of the release that follows them.
 t1d6a96bc = Это бета-версия: вы узнаете о новых бета-версиях и о стабильной версии, которая за ними последует.
 

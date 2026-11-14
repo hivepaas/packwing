@@ -1588,6 +1588,9 @@ t5d2a9fa0 = Pengarsip berkas yang memanfaatkan setiap inti prosesor dan membuka 
 # Updates
 t483075a5 = Pembaruan
 
+# The App Store keeps packwing up to date.
+tbc30b02e = App Store menjaga packwing tetap mutakhir.
+
 # This is a beta: you are told of newer betas, and of the release that follows them.
 t1d6a96bc = Ini versi beta: Anda diberi tahu tentang beta yang lebih baru, dan rilis yang menyusulnya.
 

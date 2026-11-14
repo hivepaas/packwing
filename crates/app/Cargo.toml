@@ -28,6 +28,10 @@ shots = ["gpui_platform/test-support", "dep:gpui_wgpu", "dep:image", "test-hooks
 # display. `make test-ui`; on CI on Linux for every pull request (.github/workflows/ci.yml),
 # and by hand and daily on all three systems (.github/workflows/ui-tests.yml).
 ui-tests = ["gpui/test-support", "test-hooks"]
+# The Mac App Store's build, sandboxed: the App Store updates it, it leaves the
+# right-click menu and Open With to the bundle (packaging/macos/Info.plist), and
+# has no SFTP. `cargo build --release -p packwing --features app-store`.
+app-store = ["packwing-update/app-store", "packwing-remote/app-store"]
 # What the tests above look in through.
 test-hooks = ["packwing-update/test-source"]
 
