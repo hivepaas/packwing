@@ -8,6 +8,10 @@ name: Release
 # A pull request that changes the packaging, or a run by hand (Actions >
 # Release > Run workflow), builds and packages the branch the same way and
 # keeps the files as the run's artifacts: a rehearsal, with no release.
+#
+# The Mac App Store's package is built beside them (job app-store), and a tag
+# sends it to App Store Connect, for TestFlight and review; a run by hand sends
+# it when asked to.
 
 on:
   push:
@@ -21,6 +25,11 @@ on:
       - scripts/check_linux_package.sh
       - scripts/check_windows_installer.ps1
   workflow_dispatch:
+    inputs:
+      app_store_upload:
+        description: Send the Mac App Store's package to App Store Connect
+        type: boolean
+        default: false
 
 concurrency:
   group: release-${{ github.ref }}
@@ -178,6 +187,104 @@ jobs:
         with:
           name: packwing-${{ matrix.name }}
           path: dist/*
+          if-no-files-found: error
+          retention-days: 30
+
+  # The Mac App Store's Packwing.app, for Apple silicon and Intel, in the
+  # sandbox, in an installer package (scripts/package_macos_appstore.sh): signed
+  # when the repository has the store's certificates and profile, and sent to
+  # App Store Connect for a tag. Not part of the GitHub release.
+  app-store:
+    name: macos-app-store
+    needs: version
+    runs-on: macos-15
+    env:
+      MACOSX_DEPLOYMENT_TARGET: '13.0'
+      # Whether the repository holds the store's certificates (not the secrets).
+      MAS_SIGNING: ${{ secrets.MAS_APP_CERTIFICATE != '' }}
+      UPLOAD: ${{ (github.ref_type == 'tag' || inputs.app_store_upload) && '1' || '' }}
+    steps:
+      # Every commit, for the build number: their count, which grows with main.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rust, for both Macs
+        run: |
+          rustup toolchain install
+          rustup target add aarch64-apple-darwin x86_64-apple-darwin
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-about@0.9.3
+
+      # The store's two certificates (the app's and the installer's) in a
+      # keychain of this run's own, its profile, and the API key that uploads.
+      - name: Signing keys
+        if: env.MAS_SIGNING == 'true'
+        env:
+          MAS_APP_CERTIFICATE: ${{ secrets.MAS_APP_CERTIFICATE }}
+          MAS_INSTALLER_CERTIFICATE: ${{ secrets.MAS_INSTALLER_CERTIFICATE }}
+          MAS_CERTIFICATE_PASSWORD: ${{ secrets.MAS_CERTIFICATE_PASSWORD }}
+          MAS_PROVISIONING_PROFILE: ${{ secrets.MAS_PROVISIONING_PROFILE }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+        run: |
+          keychain="$RUNNER_TEMP/app-store.keychain-db"
+          password="$(openssl rand -hex 24)"
+          security create-keychain -p "$password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$password" "$keychain"
+          # Apple's intermediate, should the runner lack it: the chain must build.
+          curl -fsSL --retry 5 --retry-all-errors --retry-delay 10 -o "$RUNNER_TEMP/AppleWWDRCAG3.cer" https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer
+          security import "$RUNNER_TEMP/AppleWWDRCAG3.cer" -k "$keychain" || true
+          for cert in MAS_APP_CERTIFICATE MAS_INSTALLER_CERTIFICATE; do
+            printf '%s' "${!cert}" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+            security import "$RUNNER_TEMP/cert.p12" -k "$keychain" -P "$MAS_CERTIFICATE_PASSWORD" \
+              -T /usr/bin/codesign -T /usr/bin/productbuild
+          done
+          rm -f "$RUNNER_TEMP/cert.p12"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$password" "$keychain" > /dev/null
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          identities="$(security find-identity -v "$keychain")"
+          app="$(sed -n 's/.*"\(Apple Distribution: .*\)"/\1/p' <<<"$identities" | head -n 1)"
+          installer="$(sed -n 's/.*"\(3rd Party Mac Developer Installer: .*\)"/\1/p' <<<"$identities" | head -n 1)"
+          if [ -z "$app" ] || [ -z "$installer" ]; then
+            echo "::error::MAS_APP_CERTIFICATE and MAS_INSTALLER_CERTIFICATE need an Apple Distribution and a 3rd Party Mac Developer Installer identity"
+            exit 1
+          fi
+          printf '%s' "$MAS_PROVISIONING_PROFILE" | base64 --decode > "$RUNNER_TEMP/app-store.provisionprofile"
+          {
+            echo "MAS_APP_IDENTITY=$app"
+            echo "MAS_INSTALLER_IDENTITY=$installer"
+            echo "MAS_KEYCHAIN=$keychain"
+            echo "MAS_PROFILE=$RUNNER_TEMP/app-store.provisionprofile"
+          } >> "$GITHUB_ENV"
+          if [ -n "$APPLE_API_KEY" ]; then
+            printf '%s' "$APPLE_API_KEY" > "$RUNNER_TEMP/app-store.p8"
+            echo "APPLE_API_KEY_PATH=$RUNNER_TEMP/app-store.p8" >> "$GITHUB_ENV"
+          fi
+
+      - name: Package
+        env:
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+        run: |
+          if [ -n "$UPLOAD" ] && [ "$MAS_SIGNING" != true ]; then
+            echo "::error::sending to App Store Connect needs the store's certificates (docs/releasing.md)"
+            exit 1
+          fi
+          scripts/package_macos_appstore.sh
+
+      - name: Forget the signing keys
+        if: always() && env.MAS_SIGNING == 'true'
+        run: |
+          security delete-keychain "$RUNNER_TEMP/app-store.keychain-db" || true
+          rm -f "$RUNNER_TEMP/app-store.p8" "$RUNNER_TEMP/app-store.provisionprofile"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packwing-macos-app-store
+          path: dist/*.pkg
           if-no-files-found: error
           retention-days: 30
 
