@@ -2889,3 +2889,441 @@ te0a63e12 = 사용자
 
 # Password or app token
 t1c18cb9b = 비밀번호 또는 앱 토큰
+
+# This archive is not where it was any more.
+t4d0917ba = 이 압축 파일이 더 이상 원래 위치에 없습니다.
+
+# Tap a file to preview it.
+td670fcf3 = 파일을 탭하면 미리 볼 수 있습니다.
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = 대소문자와 악센트는 구분하지 않습니다. bao cao로 Báo cáo도 찾을 수 있습니다.
+
+# Search its {n} file | Search all {n} files
+t76dbca4b =
+    { $n ->
+       *[other] 파일 { $n }개에서 검색
+    }
+
+# Select
+t3e892b4d = 선택
+
+# Opening
+t015825b7 = 여는 중
+
+# Extract {n} | Extract {n}
+tfda523f9 =
+    { $n ->
+       *[other] { $n }개 압축 풀기
+    }
+
+# Extract all
+t9beae641 = 모두 압축 풀기
+
+# Preview
+tfdda4cf7 = 미리 보기
+
+# Files
+te71d1b30 = 파일
+
+# A folder
+te84ceb50 = 폴더
+
+# Photos
+tcde554d0 = 사진
+
+# Add more
+t5d2a8a05 = 더 추가
+
+# Format
+tffb0ff72 = 형식
+
+# Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
+t96cb3408 = 어디서나 열립니다. 비밀번호를 설정하면 AES-256이 되어 Windows 탐색기로는 열 수 없지만, 7-Zip과 packwing으로는 열 수 있습니다.
+
+# Smaller. Opens with packwing, 7-Zip and most archivers.
+tae66e6b2 = 더 작습니다. packwing, 7-Zip 및 대부분의 압축 프로그램으로 열 수 있습니다.
+
+# Compression
+t961abb95 = 압축
+
+# Hide the password
+te44ecfcb = 비밀번호 숨기기
+
+# Show the password
+t6d746fd8 = 비밀번호 보기
+
+# Hide the file names too
+t0ea5cc72 = 파일 이름도 숨기기
+
+# No one sees what is inside without the password.
+td4f90f22 = 비밀번호가 없으면 아무도 안의 내용을 볼 수 없습니다.
+
+# 7z only: ZIP always shows its names.
+tac4ad1d6 = 7z만 해당: ZIP은 항상 파일 이름이 보입니다.
+
+# Save to
+tf1c67ab1 = 저장 위치
+
+# Change
+ta1de2fdd = 변경
+
+# Getting {n} photo | Getting {n} photos
+tab55edae =
+    { $n ->
+       *[other] 사진 { $n }장 가져오는 중
+    }
+
+# A photo could not be read: {error}
+tb12cc03b = 사진 하나를 읽을 수 없습니다: { $error }
+
+# {n} photo | {n} photos
+t1a7850b2 =
+    { $n ->
+       *[other] 사진 { $n }장
+    }
+
+# Nothing yet
+tbd00747c = 아직 없음
+
+# {name} in {folder}
+t866c0601 = { $folder }의 { $name }
+
+# The pictures and videos go to Photos. The other files stay in the archive.
+tad6172e7 = 사진과 동영상은 사진 앱에 저장됩니다. 나머지 파일은 압축 파일에 그대로 남습니다.
+
+# In a new folder, {name}
+tf816656c = 새 폴더 { $name } 안에
+
+# Show in Files when done
+t5525892c = 완료되면 파일 앱에서 보기
+
+# Options
+t353e0d45 = 옵션
+
+# Nothing is written outside this folder or through links, and an archive bomb stops at its size limit.
+tab679ca5 = 이 폴더 밖이나 링크를 통해서는 아무것도 쓰지 않으며, 압축 폭탄은 크기 한도에서 멈춥니다.
+
+# Extract now
+t97070e5a = 지금 압축 풀기
+
+# {files} · {size} once extracted
+t16e47887 = { $files } · 풀면 { $size }
+
+# {n} item chosen | {n} items chosen
+tea658088 =
+    { $n ->
+       *[other] { $n }개 항목 선택됨
+    }
+
+# Save to Photos
+t6383180a = 사진에 저장
+
+# Extract {n} file | Extract {n} files
+tc5371694 =
+    { $n ->
+       *[other] 파일 { $n }개 압축 풀기
+    }
+
+# Extract {n} item | Extract {n} items
+t3dfb389a =
+    { $n ->
+       *[other] 항목 { $n }개 압축 풀기
+    }
+
+# On My iPhone › packwing
+ted9ff11b = 나의 iPhone › packwing
+
+# Saving to Photos
+t898fa67d = 사진에 저장하는 중
+
+# {n} file in {folder} | {n} files in {folder}
+t689fbe82 =
+    { $n ->
+       *[other] { $folder }에 파일 { $n }개
+    }
+
+# packwing may not add to Photos. Settings › Privacy & Security › Photos lets it.
+t9ec0ea7f = packwing에 사진 추가 권한이 없습니다. 설정 › 개인정보 보호 및 보안 › 사진에서 허용할 수 있습니다.
+
+# There are no pictures or videos in it.
+tacc0f9ec = 사진이나 동영상이 들어 있지 않습니다.
+
+# {n} picture or video added to Photos | {n} pictures and videos added to Photos
+t7d8cbf49 =
+    { $n ->
+       *[other] 사진 및 동영상 { $n }개를 사진 앱에 추가했습니다
+    }
+
+# Archives
+tc45c73a2 = 압축 파일
+
+# From Files, iCloud Drive or a USB drive
+tcc778cba = 파일 앱, iCloud Drive 또는 USB 드라이브에서
+
+# A ZIP or RAR in Mail or Messages? Tap Share, then packwing, to look inside without saving it.
+t0efd0e35 = 메일이나 메시지로 받은 ZIP이나 RAR가 있나요? 공유를 탭한 다음 packwing을 선택하면 저장하지 않고 안을 볼 수 있습니다.
+
+# Locked
+t406a5eb3 = 잠김
+
+# Search
+tc646a2c9 = 검색
+
+# Archives opened before
+t87c5327e = 전에 열었던 압축 파일
+
+# Hide, and keep going
+t8a27e8a1 = 숨기고 계속하기
+
+# files and folders
+t7f784a54 = 파일 및 폴더
+
+# of {size}
+t028b5a2f = / { $size }
+
+# It didn’t finish
+t17ce9c89 = 끝나지 않았습니다
+
+# You can leave packwing. iOS keeps it going and shows how far it is.
+t0bb23efc = packwing을 떠나도 됩니다. iOS가 작업을 계속하며 진행 상황을 보여 줍니다.
+
+# Nothing was left behind.
+t1db928f6 = 남은 파일은 없습니다.
+
+# Share
+t4f856dd8 = 공유
+
+# Show in Files
+t9c7dbb8c = 파일 앱에서 보기
+
+# about {time} left
+td87d0ee6 = 약 { $time } 남음
+
+# Can’t open it
+t0923b4df = 열 수 없음
+
+# OK
+t85e4b82f = 확인
+
+# {name} is encrypted with a passphrase. Ask the person who sent it for it.
+ta6455c99 = { $name }은(는) 암호 문구로 암호화되어 있습니다. 보낸 사람에게 암호 문구를 물어보세요.
+
+# {name} is locked. Ask the person who sent it for its password.
+te1845608 = { $name }은(는) 잠겨 있습니다. 보낸 사람에게 비밀번호를 물어보세요.
+
+# Hide password
+tcd577cde = 비밀번호 숨기기
+
+# Show password
+t500e3555 = 비밀번호 보기
+
+# Paste
+tb34a0288 = 붙여넣기
+
+# Kept in memory only, never saved, and forgotten when the archive is closed.
+t6641f326 = 메모리에만 보관되고 저장되지 않으며, 압축 파일을 닫으면 지워집니다.
+
+# Unlock
+t9c799975 = 잠금 해제
+
+# As the system
+t29f671f7 = 시스템 설정 따르기
+
+# New archives
+t9341f018 = 새 압축 파일
+
+# packwing can no longer reach {name}. Open it again to look inside.
+ta6e47f44 = packwing이 더 이상 { $name }에 접근할 수 없습니다. 안을 보려면 다시 여세요.
+
+# packwing could not open {name}.
+t56e426f0 = packwing이 { $name }을(를) 열 수 없습니다.
+
+# {n} file is ready | {n} files are ready
+t09d5ea2a =
+    { $n ->
+       *[other] 파일 { $n }개가 준비되었습니다
+    }
+
+# packwing could not extract {name}.
+t7e40b6ef = packwing이 { $name }의 압축을 풀 수 없습니다.
+
+# {name} is ready
+t17060a6b = { $name } 준비 완료
+
+# packwing could not make {name}.
+t25251132 = packwing이 { $name }을(를) 만들 수 없습니다.
+
+# packwing could not read {name}.
+t7c55848c = packwing이 { $name }을(를) 읽을 수 없습니다.
+
+# Extracting {name}
+t77dce80b = { $name } 압축 푸는 중
+
+# Making {name}
+t5245af2d = { $name } 만드는 중
+
+# {done} of {all}
+tede81435 = { $done } / { $all }
+
+# Getting ready
+tfbae3374 = 준비 중
+
+# Extracting and making archives
+t5ad35487 = 압축 풀기 및 압축 파일 만들기
+
+# How far a job has got, while packwing is not on screen
+te78d6807 = packwing이 화면에 없을 때 작업 진행 상황
+
+# Finished jobs
+t2339ecd9 = 끝난 작업
+
+# When a job is through, or could not finish
+tfdbeaf1a = 작업이 끝났거나 끝내지 못했을 때
+
+# packwing could not write a file with no name.
+te0bf8e8f = packwing이 이름 없는 파일을 쓸 수 없습니다.
+
+# packwing could not write {name}.
+teb1bce81 = packwing이 { $name }을(를) 쓸 수 없습니다.
+
+# packwing could not write what it extracted.
+ted881a0f = packwing이 압축을 푼 내용을 쓸 수 없습니다.
+
+# packwing could not make the folder {name}.
+t9f263b45 = packwing이 { $name } 폴더를 만들 수 없습니다.
+
+# packwing can no longer reach that folder.
+t899e6af1 = packwing이 더 이상 그 폴더에 접근할 수 없습니다.
+
+# The gallery would not take {name}.
+td2cca604 = 갤러리에 { $name }을(를) 추가할 수 없습니다.
+
+# Back
+tc2954bc2 = 뒤로
+
+# Show a list
+t78956399 = 목록으로 보기
+
+# Show a grid
+tb50700d9 = 격자로 보기
+
+# Search in this archive
+tfda7010a = 이 압축 파일에서 검색
+
+# packwing cannot show this file.
+t1ef504d9 = packwing에서 이 파일을 표시할 수 없습니다.
+
+# AES-256. In 7z the names are hidden too.
+t9c81b89f = AES-256. 7z에서는 파일 이름도 숨겨집니다.
+
+# AES-256.
+tf18b3f5a = AES-256.
+
+# No files yet
+t129e61cf = 아직 파일 없음
+
+# Copying them in…
+taf5cb443 = 가져오는 중…
+
+# Where it goes
+t6e56ac09 = 저장 위치
+
+# No folder chosen yet
+t9c10d9de = 아직 선택한 폴더 없음
+
+# Make {kind}
+ted3ef83b = { $kind } 만들기
+
+# Store, fastest
+ta65137d8 = 저장만, 가장 빠름
+
+# Normal
+t58de2772 = 보통
+
+# Smallest
+t39eb3f74 = 가장 작게
+
+# From the Files app, a USB drive or Drive
+te849b010 = 파일 앱, USB 드라이브 또는 Google 드라이브에서
+
+# A ZIP or RAR in a chat or an email? Tap Share, then packwing, to look inside without saving it.
+t541e4ba0 = 채팅이나 이메일로 받은 ZIP이나 RAR가 있나요? 공유를 탭한 다음 packwing을 선택하면 저장하지 않고 안을 볼 수 있습니다.
+
+# Opening {name}
+te629c104 = { $name } 여는 중
+
+# Nothing opened yet.
+t5009c129 = 아직 연 파일이 없습니다.
+
+# Yesterday
+t93ae68c7 = 어제
+
+# {n} month ago | {n} months ago
+t5af2ebc0 =
+    { $n ->
+       *[other] { $n }개월 전
+    }
+
+# Making an archive
+tff4bea1d = 압축 파일 만드는 중
+
+# file | files
+t2defd942 =
+    { $n ->
+       *[other] 파일
+    }
+
+# of {all}
+t601e2927 = / { $all }
+
+# You can leave the app. A notification shows how far it got.
+t018c236f = 앱을 떠나도 됩니다. 진행 상황은 알림으로 보여 줍니다.
+
+# Where files go
+t7621af9b = 저장 위치
+
+# Ask every time
+t26ab736e = 매번 묻기
+
+# Replace a file already there
+t3c16bbc4 = 이미 있는 파일 바꾸기
+
+# While it works
+t28634679 = 작업 중
+
+# Tell me when a job is through
+t51e39cf5 = 작업이 끝나면 알리기
+
+# How it looks
+te7ee60d2 = 화면
+
+# Follow the system
+t37548210 = 시스템 설정 따르기
+
+# Licence
+t58c031d4 = 라이선스
+
+# The password is never saved
+t98c65e5a = 비밀번호는 저장되지 않습니다
+
+# Not now
+t2c3d6fce = 나중에
+
+# The gallery
+t59937d9a = 갤러리
+
+# Android asks for this folder once. packwing keeps no other access to your storage.
+t684d18e2 = Android는 이 폴더에 대해 한 번만 묻습니다. packwing은 저장공간의 다른 곳에는 접근하지 않습니다.
+
+# The pictures and videos go to your gallery. The other files stay in the archive.
+tc93762ab = 사진과 동영상은 갤러리에 저장됩니다. 나머지 파일은 압축 파일에 그대로 남습니다.
+
+# Nothing is written through links, and an archive bomb stops at its size limit.
+t2d95067b = 링크를 통해서는 아무것도 쓰지 않으며, 압축 폭탄은 크기 한도에서 멈춥니다.
+
+# Nothing is written outside that folder or through links, and an archive bomb stops at its size limit.
+tea731324 = 그 폴더 밖이나 링크를 통해서는 아무것도 쓰지 않으며, 압축 폭탄은 크기 한도에서 멈춥니다.
+
+# Extract the pictures
+t5dc33540 = 사진 및 동영상 압축 풀기

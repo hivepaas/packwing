@@ -161,7 +161,7 @@ struct RecentRow: View {
 
     private var meta: String {
         let files = trN(Int(item.files), "{n} file", "{n} files")
-        let when = item.opened.formatted(.relative(presentation: .named))
+        let when = item.opened.formatted(.relative(presentation: .named).locale(appLocale))
         return "\(files) · \(sizeText(item.size)) · \(when)"
     }
 }

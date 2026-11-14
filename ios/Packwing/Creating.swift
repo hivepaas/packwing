@@ -118,9 +118,11 @@ final class NewArchiveDraft: Identifiable {
         if photos > 0 { said.append(trN(photos, "{n} photo", "{n} photos")) }
         if files > 0 { said.append(trN(files, "{n} file", "{n} files")) }
         if folders > 0 { said.append(trN(folders, "{n} folder", "{n} folders")) }
-        guard let last = said.popLast() else { return tr("Nothing yet") }
-        if said.isEmpty { return last }
-        return tr("{list} and {last}", ["list": said.joined(separator: ", "), "last": last])
+        guard !said.isEmpty else { return tr("Nothing yet") }
+        // Joined as the language packwing speaks joins a list: its own commas, its own "and".
+        let list = ListFormatter()
+        list.locale = appLocale
+        return list.string(from: said) ?? said.joined(separator: ", ")
     }
 
     /// What the archive is called unless it is told otherwise: after what it

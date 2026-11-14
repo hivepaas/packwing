@@ -168,7 +168,7 @@ private struct Ring: View {
                     .monospacedDigit()
                 if job.state == .running, let left = job.timeLeft {
                     Text(tr("about {time} left",
-                            ["time": Duration.seconds(left).formatted(.units(allowed: [.hours, .minutes, .seconds], width: .narrow, maximumUnitCount: 1))]))
+                            ["time": Duration.seconds(left).formatted(.units(allowed: [.hours, .minutes, .seconds], width: .narrow, maximumUnitCount: 1).locale(appLocale))]))
                         .font(.nunito(14, relativeTo: .subheadline))
                         .foregroundStyle(Tonal.muted)
                 }

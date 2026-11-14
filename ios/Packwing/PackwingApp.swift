@@ -48,7 +48,8 @@ struct RootView: View {
             Tab(tr("Settings"), systemImage: "slider.horizontal.3", value: AppTab.settings) {
                 SettingsView()
             }
-            Tab(value: AppTab.search, role: .search) {
+            // Named here: iOS's own name for it is in the system's language.
+            Tab(tr("Search"), systemImage: "magnifyingglass", value: AppTab.search, role: .search) {
                 SearchView()
             }
         }

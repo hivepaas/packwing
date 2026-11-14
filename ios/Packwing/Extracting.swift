@@ -133,7 +133,7 @@ extension AppModel {
     ) async -> RunningJob.State {
         let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         guard status == .authorized || status == .limited else {
-            return .failed(message: tr("packwing may not add to Photos. Settings › Privacy › Photos lets it."))
+            return .failed(message: tr("packwing may not add to Photos. Settings › Privacy & Security › Photos lets it."))
         }
         let temp = URL.temporaryDirectory.appending(path: "photos-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: temp) }

@@ -2889,3 +2889,441 @@ te0a63e12 = Người dùng
 
 # Password or app token
 t1c18cb9b = Mật khẩu hoặc token ứng dụng
+
+# This archive is not where it was any more.
+t4d0917ba = Tệp nén này không còn ở chỗ cũ nữa.
+
+# Tap a file to preview it.
+td670fcf3 = Chạm vào một tệp để xem trước.
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = Không phân biệt hoa thường hay dấu: bao cao tìm ra Báo cáo.
+
+# Search its {n} file | Search all {n} files
+t76dbca4b =
+    { $n ->
+       *[other] Tìm trong { $n } tệp
+    }
+
+# Select
+t3e892b4d = Chọn
+
+# Opening
+t015825b7 = Đang mở
+
+# Extract {n} | Extract {n}
+tfda523f9 =
+    { $n ->
+       *[other] Giải nén { $n }
+    }
+
+# Extract all
+t9beae641 = Giải nén tất cả
+
+# Preview
+tfdda4cf7 = Xem trước
+
+# Files
+te71d1b30 = Tệp
+
+# A folder
+te84ceb50 = Một thư mục
+
+# Photos
+tcde554d0 = Ảnh
+
+# Add more
+t5d2a8a05 = Thêm nữa
+
+# Format
+tffb0ff72 = Định dạng
+
+# Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
+t96cb3408 = Mở được ở mọi nơi. Có mật khẩu (AES-256) thì File Explorer của Windows không mở được, nhưng 7-Zip và packwing thì mở được.
+
+# Smaller. Opens with packwing, 7-Zip and most archivers.
+tae66e6b2 = Nhỏ hơn. Mở được bằng packwing, 7-Zip và hầu hết ứng dụng giải nén.
+
+# Compression
+t961abb95 = Mức nén
+
+# Hide the password
+te44ecfcb = Ẩn mật khẩu
+
+# Show the password
+t6d746fd8 = Hiện mật khẩu
+
+# Hide the file names too
+t0ea5cc72 = Ẩn cả tên tệp
+
+# No one sees what is inside without the password.
+td4f90f22 = Không có mật khẩu thì không ai thấy được bên trong có gì.
+
+# 7z only: ZIP always shows its names.
+tac4ad1d6 = Chỉ với 7z: ZIP luôn để lộ tên tệp.
+
+# Save to
+tf1c67ab1 = Lưu vào
+
+# Change
+ta1de2fdd = Đổi
+
+# Getting {n} photo | Getting {n} photos
+tab55edae =
+    { $n ->
+       *[other] Đang lấy { $n } ảnh
+    }
+
+# A photo could not be read: {error}
+tb12cc03b = Không đọc được một ảnh: { $error }
+
+# {n} photo | {n} photos
+t1a7850b2 =
+    { $n ->
+       *[other] { $n } ảnh
+    }
+
+# Nothing yet
+tbd00747c = Chưa có gì
+
+# {name} in {folder}
+t866c0601 = { $name } trong { $folder }
+
+# The pictures and videos go to Photos. The other files stay in the archive.
+tad6172e7 = Ảnh và video sẽ được lưu vào Ảnh. Các tệp khác vẫn ở trong tệp nén.
+
+# In a new folder, {name}
+tf816656c = Trong thư mục mới, { $name }
+
+# Show in Files when done
+t5525892c = Hiện trong Tệp khi xong
+
+# Options
+t353e0d45 = Tuỳ chọn
+
+# Nothing is written outside this folder or through links, and an archive bomb stops at its size limit.
+tab679ca5 = Không có gì được ghi ra ngoài thư mục này hay qua liên kết, và bom nén sẽ dừng ở giới hạn dung lượng.
+
+# Extract now
+t97070e5a = Giải nén ngay
+
+# {files} · {size} once extracted
+t16e47887 = { $files } · { $size } khi giải nén
+
+# {n} item chosen | {n} items chosen
+tea658088 =
+    { $n ->
+       *[other] Đã chọn { $n } mục
+    }
+
+# Save to Photos
+t6383180a = Lưu vào Ảnh
+
+# Extract {n} file | Extract {n} files
+tc5371694 =
+    { $n ->
+       *[other] Giải nén { $n } tệp
+    }
+
+# Extract {n} item | Extract {n} items
+t3dfb389a =
+    { $n ->
+       *[other] Giải nén { $n } mục
+    }
+
+# On My iPhone › packwing
+ted9ff11b = Trên iPhone › packwing
+
+# Saving to Photos
+t898fa67d = Đang lưu vào Ảnh
+
+# {n} file in {folder} | {n} files in {folder}
+t689fbe82 =
+    { $n ->
+       *[other] { $n } tệp trong { $folder }
+    }
+
+# packwing may not add to Photos. Settings › Privacy & Security › Photos lets it.
+t9ec0ea7f = packwing chưa được phép thêm vào Ảnh. Bạn có thể cho phép trong Cài đặt › Quyền riêng tư & Bảo mật › Ảnh.
+
+# There are no pictures or videos in it.
+tacc0f9ec = Trong này không có ảnh hay video nào.
+
+# {n} picture or video added to Photos | {n} pictures and videos added to Photos
+t7d8cbf49 =
+    { $n ->
+       *[other] Đã thêm { $n } ảnh/video vào Ảnh
+    }
+
+# Archives
+tc45c73a2 = Tệp nén
+
+# From Files, iCloud Drive or a USB drive
+tcc778cba = Từ Tệp, iCloud Drive hoặc ổ USB
+
+# A ZIP or RAR in Mail or Messages? Tap Share, then packwing, to look inside without saving it.
+t0efd0e35 = Có ZIP hay RAR trong Mail hoặc Tin nhắn? Chạm Chia sẻ, rồi packwing, để xem bên trong mà không cần lưu.
+
+# Locked
+t406a5eb3 = Đã khoá
+
+# Search
+tc646a2c9 = Tìm kiếm
+
+# Archives opened before
+t87c5327e = Tệp nén đã mở trước đây
+
+# Hide, and keep going
+t8a27e8a1 = Ẩn và tiếp tục chạy
+
+# files and folders
+t7f784a54 = tệp và thư mục
+
+# of {size}
+t028b5a2f = trên { $size }
+
+# It didn’t finish
+t17ce9c89 = Không hoàn tất được
+
+# You can leave packwing. iOS keeps it going and shows how far it is.
+t0bb23efc = Bạn có thể rời packwing. iOS vẫn tiếp tục chạy và cho biết tiến độ.
+
+# Nothing was left behind.
+t1db928f6 = Không để lại tệp dở dang nào.
+
+# Share
+t4f856dd8 = Chia sẻ
+
+# Show in Files
+t9c7dbb8c = Hiện trong Tệp
+
+# about {time} left
+td87d0ee6 = còn khoảng { $time }
+
+# Can’t open it
+t0923b4df = Không mở được
+
+# OK
+t85e4b82f = OK
+
+# {name} is encrypted with a passphrase. Ask the person who sent it for it.
+ta6455c99 = { $name } được mã hoá bằng cụm mật khẩu. Hãy hỏi người gửi cụm mật khẩu đó.
+
+# {name} is locked. Ask the person who sent it for its password.
+te1845608 = { $name } đã bị khoá. Hãy hỏi người gửi mật khẩu.
+
+# Hide password
+tcd577cde = Ẩn mật khẩu
+
+# Show password
+t500e3555 = Hiện mật khẩu
+
+# Paste
+tb34a0288 = Dán
+
+# Kept in memory only, never saved, and forgotten when the archive is closed.
+t6641f326 = Chỉ giữ trong bộ nhớ, không bao giờ lưu lại, và bị quên ngay khi đóng tệp nén.
+
+# Unlock
+t9c799975 = Mở khoá
+
+# As the system
+t29f671f7 = Theo hệ thống
+
+# New archives
+t9341f018 = Tệp nén mới
+
+# packwing can no longer reach {name}. Open it again to look inside.
+ta6e47f44 = packwing không còn truy cập được { $name }. Hãy mở lại để xem bên trong.
+
+# packwing could not open {name}.
+t56e426f0 = packwing không mở được { $name }.
+
+# {n} file is ready | {n} files are ready
+t09d5ea2a =
+    { $n ->
+       *[other] { $n } tệp đã sẵn sàng
+    }
+
+# packwing could not extract {name}.
+t7e40b6ef = packwing không giải nén được { $name }.
+
+# {name} is ready
+t17060a6b = { $name } đã sẵn sàng
+
+# packwing could not make {name}.
+t25251132 = packwing không tạo được { $name }.
+
+# packwing could not read {name}.
+t7c55848c = packwing không đọc được { $name }.
+
+# Extracting {name}
+t77dce80b = Đang giải nén { $name }
+
+# Making {name}
+t5245af2d = Đang tạo { $name }
+
+# {done} of {all}
+tede81435 = { $done } / { $all }
+
+# Getting ready
+tfbae3374 = Đang chuẩn bị
+
+# Extracting and making archives
+t5ad35487 = Giải nén và tạo tệp nén
+
+# How far a job has got, while packwing is not on screen
+te78d6807 = Tiến độ tác vụ khi packwing không hiện trên màn hình
+
+# Finished jobs
+t2339ecd9 = Tác vụ đã xong
+
+# When a job is through, or could not finish
+tfdbeaf1a = Khi một tác vụ xong, hoặc không hoàn tất được
+
+# packwing could not write a file with no name.
+te0bf8e8f = packwing không ghi được một tệp không có tên.
+
+# packwing could not write {name}.
+teb1bce81 = packwing không ghi được { $name }.
+
+# packwing could not write what it extracted.
+ted881a0f = packwing không ghi được những gì đã giải nén.
+
+# packwing could not make the folder {name}.
+t9f263b45 = packwing không tạo được thư mục { $name }.
+
+# packwing can no longer reach that folder.
+t899e6af1 = packwing không còn truy cập được thư mục đó.
+
+# The gallery would not take {name}.
+td2cca604 = Thư viện ảnh không nhận { $name }.
+
+# Back
+tc2954bc2 = Quay lại
+
+# Show a list
+t78956399 = Xem dạng danh sách
+
+# Show a grid
+tb50700d9 = Xem dạng lưới
+
+# Search in this archive
+tfda7010a = Tìm trong tệp nén này
+
+# packwing cannot show this file.
+t1ef504d9 = packwing không hiển thị được tệp này.
+
+# AES-256. In 7z the names are hidden too.
+t9c81b89f = AES-256. Với 7z, tên tệp cũng được ẩn.
+
+# AES-256.
+tf18b3f5a = AES-256.
+
+# No files yet
+t129e61cf = Chưa có tệp nào
+
+# Copying them in…
+taf5cb443 = Đang sao chép vào…
+
+# Where it goes
+t6e56ac09 = Lưu ở đâu
+
+# No folder chosen yet
+t9c10d9de = Chưa chọn thư mục
+
+# Make {kind}
+ted3ef83b = Tạo { $kind }
+
+# Store, fastest
+ta65137d8 = Không nén, nhanh nhất
+
+# Normal
+t58de2772 = Bình thường
+
+# Smallest
+t39eb3f74 = Nhỏ nhất
+
+# From the Files app, a USB drive or Drive
+te849b010 = Từ ứng dụng Files, ổ USB hoặc Drive
+
+# A ZIP or RAR in a chat or an email? Tap Share, then packwing, to look inside without saving it.
+t541e4ba0 = Có ZIP hay RAR trong cuộc trò chuyện hoặc email? Chạm Chia sẻ, rồi packwing, để xem bên trong mà không cần lưu.
+
+# Opening {name}
+te629c104 = Đang mở { $name }
+
+# Nothing opened yet.
+t5009c129 = Chưa mở tệp nén nào.
+
+# Yesterday
+t93ae68c7 = Hôm qua
+
+# {n} month ago | {n} months ago
+t5af2ebc0 =
+    { $n ->
+       *[other] { $n } tháng trước
+    }
+
+# Making an archive
+tff4bea1d = Đang tạo tệp nén
+
+# file | files
+t2defd942 =
+    { $n ->
+       *[other] tệp
+    }
+
+# of {all}
+t601e2927 = trên { $all }
+
+# You can leave the app. A notification shows how far it got.
+t018c236f = Bạn có thể rời ứng dụng. Một thông báo sẽ cho biết tiến độ.
+
+# Where files go
+t7621af9b = Nơi lưu tệp
+
+# Ask every time
+t26ab736e = Hỏi mỗi lần
+
+# Replace a file already there
+t3c16bbc4 = Thay tệp đã có sẵn
+
+# While it works
+t28634679 = Khi đang chạy
+
+# Tell me when a job is through
+t51e39cf5 = Báo khi tác vụ xong
+
+# How it looks
+te7ee60d2 = Giao diện
+
+# Follow the system
+t37548210 = Theo hệ thống
+
+# Licence
+t58c031d4 = Giấy phép
+
+# The password is never saved
+t98c65e5a = Mật khẩu không bao giờ được lưu
+
+# Not now
+t2c3d6fce = Để sau
+
+# The gallery
+t59937d9a = Thư viện ảnh
+
+# Android asks for this folder once. packwing keeps no other access to your storage.
+t684d18e2 = Android chỉ hỏi quyền cho thư mục này một lần. packwing không giữ quyền truy cập nào khác vào bộ nhớ của bạn.
+
+# The pictures and videos go to your gallery. The other files stay in the archive.
+tc93762ab = Ảnh và video sẽ được lưu vào thư viện ảnh. Các tệp khác vẫn ở trong tệp nén.
+
+# Nothing is written through links, and an archive bomb stops at its size limit.
+t2d95067b = Không có gì được ghi qua liên kết, và bom nén sẽ dừng ở giới hạn dung lượng.
+
+# Nothing is written outside that folder or through links, and an archive bomb stops at its size limit.
+tea731324 = Không có gì được ghi ra ngoài thư mục đó hay qua liên kết, và bom nén sẽ dừng ở giới hạn dung lượng.
+
+# Extract the pictures
+t5dc33540 = Giải nén ảnh

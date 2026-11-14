@@ -2991,3 +2991,477 @@ te0a63e12 = Пользователь
 
 # Password or app token
 t1c18cb9b = Пароль или токен приложения
+
+# This archive is not where it was any more.
+t4d0917ba = Этого архива больше нет там, где он был.
+
+# Tap a file to preview it.
+td670fcf3 = Нажмите на файл, чтобы просмотреть его.
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = Регистр и диакритика не важны: елка найдёт Ёлка.
+
+# Search its {n} file | Search all {n} files
+t76dbca4b =
+    { $n ->
+        [one] Поиск по { $n } файлу
+        [few] Поиск по { $n } файлам
+        [many] Поиск по { $n } файлам
+       *[other] Поиск по { $n } файлам
+    }
+
+# Select
+t3e892b4d = Выбрать
+
+# Opening
+t015825b7 = Открытие
+
+# Extract {n} | Extract {n}
+tfda523f9 =
+    { $n ->
+        [one] Извлечь { $n }
+        [few] Извлечь { $n }
+        [many] Извлечь { $n }
+       *[other] Извлечь { $n }
+    }
+
+# Extract all
+t9beae641 = Извлечь всё
+
+# Preview
+tfdda4cf7 = Предпросмотр
+
+# Files
+te71d1b30 = Файлы
+
+# A folder
+te84ceb50 = Папка
+
+# Photos
+tcde554d0 = Фото
+
+# Add more
+t5d2a8a05 = Добавить ещё
+
+# Format
+tffb0ff72 = Формат
+
+# Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
+t96cb3408 = Открывается везде. С паролем — AES-256: Проводник Windows его не откроет, а 7-Zip и packwing откроют.
+
+# Smaller. Opens with packwing, 7-Zip and most archivers.
+tae66e6b2 = Меньше. Открывается в packwing, 7-Zip и большинстве архиваторов.
+
+# Compression
+t961abb95 = Сжатие
+
+# Hide the password
+te44ecfcb = Скрыть пароль
+
+# Show the password
+t6d746fd8 = Показать пароль
+
+# Hide the file names too
+t0ea5cc72 = Скрыть и имена файлов
+
+# No one sees what is inside without the password.
+td4f90f22 = Без пароля никто не увидит, что внутри.
+
+# 7z only: ZIP always shows its names.
+tac4ad1d6 = Только для 7z: ZIP всегда показывает имена.
+
+# Save to
+tf1c67ab1 = Сохранить в
+
+# Change
+ta1de2fdd = Изменить
+
+# Getting {n} photo | Getting {n} photos
+tab55edae =
+    { $n ->
+        [one] Получение { $n } фото
+        [few] Получение { $n } фото
+        [many] Получение { $n } фото
+       *[other] Получение { $n } фото
+    }
+
+# A photo could not be read: {error}
+tb12cc03b = Не удалось прочитать фото: { $error }
+
+# {n} photo | {n} photos
+t1a7850b2 =
+    { $n ->
+        [one] { $n } фото
+        [few] { $n } фото
+        [many] { $n } фото
+       *[other] { $n } фото
+    }
+
+# Nothing yet
+tbd00747c = Пока ничего
+
+# {name} in {folder}
+t866c0601 = { $name } в «{ $folder }»
+
+# The pictures and videos go to Photos. The other files stay in the archive.
+tad6172e7 = Изображения и видео попадут в «Фото». Остальные файлы останутся в архиве.
+
+# In a new folder, {name}
+tf816656c = В новой папке { $name }
+
+# Show in Files when done
+t5525892c = Показать в «Файлах» по завершении
+
+# Options
+t353e0d45 = Параметры
+
+# Nothing is written outside this folder or through links, and an archive bomb stops at its size limit.
+tab679ca5 = Ничего не записывается за пределы этой папки или по ссылкам, а архивная бомба останавливается на пределе размера.
+
+# Extract now
+t97070e5a = Извлечь сейчас
+
+# {files} · {size} once extracted
+t16e47887 = { $files } · { $size } после извлечения
+
+# {n} item chosen | {n} items chosen
+tea658088 =
+    { $n ->
+        [one] Выбран { $n } элемент
+        [few] Выбрано { $n } элемента
+        [many] Выбрано { $n } элементов
+       *[other] Выбрано { $n } элемента
+    }
+
+# Save to Photos
+t6383180a = Сохранить в «Фото»
+
+# Extract {n} file | Extract {n} files
+tc5371694 =
+    { $n ->
+        [one] Извлечь { $n } файл
+        [few] Извлечь { $n } файла
+        [many] Извлечь { $n } файлов
+       *[other] Извлечь { $n } файла
+    }
+
+# Extract {n} item | Extract {n} items
+t3dfb389a =
+    { $n ->
+        [one] Извлечь { $n } элемент
+        [few] Извлечь { $n } элемента
+        [many] Извлечь { $n } элементов
+       *[other] Извлечь { $n } элемента
+    }
+
+# On My iPhone › packwing
+ted9ff11b = На iPhone › packwing
+
+# Saving to Photos
+t898fa67d = Сохранение в «Фото»
+
+# {n} file in {folder} | {n} files in {folder}
+t689fbe82 =
+    { $n ->
+        [one] { $n } файл в «{ $folder }»
+        [few] { $n } файла в «{ $folder }»
+        [many] { $n } файлов в «{ $folder }»
+       *[other] { $n } файла в «{ $folder }»
+    }
+
+# packwing may not add to Photos. Settings › Privacy & Security › Photos lets it.
+t9ec0ea7f = packwing не может добавлять в «Фото». Разрешить это можно в Настройки › Конфиденциальность и безопасность › Фото.
+
+# There are no pictures or videos in it.
+tacc0f9ec = В нём нет изображений и видео.
+
+# {n} picture or video added to Photos | {n} pictures and videos added to Photos
+t7d8cbf49 =
+    { $n ->
+        [one] Добавлено в «Фото»: { $n }
+        [few] Добавлено в «Фото»: { $n }
+        [many] Добавлено в «Фото»: { $n }
+       *[other] Добавлено в «Фото»: { $n }
+    }
+
+# Archives
+tc45c73a2 = Архивы
+
+# From Files, iCloud Drive or a USB drive
+tcc778cba = Из приложения «Файлы», iCloud Drive или с USB-накопителя
+
+# A ZIP or RAR in Mail or Messages? Tap Share, then packwing, to look inside without saving it.
+t0efd0e35 = ZIP или RAR в «Почте» или «Сообщениях»? Нажмите «Поделиться», затем packwing, чтобы заглянуть внутрь, не сохраняя его.
+
+# Locked
+t406a5eb3 = С паролем
+
+# Search
+tc646a2c9 = Поиск
+
+# Archives opened before
+t87c5327e = Ранее открытые архивы
+
+# Hide, and keep going
+t8a27e8a1 = Скрыть и продолжить
+
+# files and folders
+t7f784a54 = файлов и папок
+
+# of {size}
+t028b5a2f = из { $size }
+
+# It didn’t finish
+t17ce9c89 = Не завершено
+
+# You can leave packwing. iOS keeps it going and shows how far it is.
+t0bb23efc = Можно выйти из packwing: iOS продолжит работу и покажет ход выполнения.
+
+# Nothing was left behind.
+t1db928f6 = Ничего лишнего не осталось.
+
+# Share
+t4f856dd8 = Поделиться
+
+# Show in Files
+t9c7dbb8c = Показать в «Файлах»
+
+# about {time} left
+td87d0ee6 = осталось около { $time }
+
+# Can’t open it
+t0923b4df = Не удаётся открыть
+
+# OK
+t85e4b82f = ОК
+
+# {name} is encrypted with a passphrase. Ask the person who sent it for it.
+ta6455c99 = { $name } зашифрован парольной фразой. Попросите её у того, кто его прислал.
+
+# {name} is locked. Ask the person who sent it for its password.
+te1845608 = { $name } защищён паролем. Попросите пароль у того, кто его прислал.
+
+# Hide password
+tcd577cde = Скрыть пароль
+
+# Show password
+t500e3555 = Показать пароль
+
+# Paste
+tb34a0288 = Вставить
+
+# Kept in memory only, never saved, and forgotten when the archive is closed.
+t6641f326 = Хранится только в памяти, никогда не сохраняется и забывается при закрытии архива.
+
+# Unlock
+t9c799975 = Разблокировать
+
+# As the system
+t29f671f7 = Как в системе
+
+# New archives
+t9341f018 = Новые архивы
+
+# packwing can no longer reach {name}. Open it again to look inside.
+ta6e47f44 = packwing больше не может получить доступ к { $name }. Откройте его снова, чтобы заглянуть внутрь.
+
+# packwing could not open {name}.
+t56e426f0 = packwing не удалось открыть { $name }.
+
+# {n} file is ready | {n} files are ready
+t09d5ea2a =
+    { $n ->
+        [one] { $n } файл готов
+        [few] { $n } файла готовы
+        [many] { $n } файлов готово
+       *[other] { $n } файла готово
+    }
+
+# packwing could not extract {name}.
+t7e40b6ef = packwing не удалось извлечь { $name }.
+
+# {name} is ready
+t17060a6b = { $name } готов
+
+# packwing could not make {name}.
+t25251132 = packwing не удалось создать { $name }.
+
+# packwing could not read {name}.
+t7c55848c = packwing не удалось прочитать { $name }.
+
+# Extracting {name}
+t77dce80b = Извлечение { $name }
+
+# Making {name}
+t5245af2d = Создание { $name }
+
+# {done} of {all}
+tede81435 = { $done } из { $all }
+
+# Getting ready
+tfbae3374 = Подготовка
+
+# Extracting and making archives
+t5ad35487 = Извлечение и создание архивов
+
+# How far a job has got, while packwing is not on screen
+te78d6807 = Ход выполнения задачи, пока packwing не на экране
+
+# Finished jobs
+t2339ecd9 = Завершённые задачи
+
+# When a job is through, or could not finish
+tfdbeaf1a = Когда задача выполнена или прервалась
+
+# packwing could not write a file with no name.
+te0bf8e8f = packwing не удалось записать файл без имени.
+
+# packwing could not write {name}.
+teb1bce81 = packwing не удалось записать { $name }.
+
+# packwing could not write what it extracted.
+ted881a0f = packwing не удалось записать извлечённое.
+
+# packwing could not make the folder {name}.
+t9f263b45 = packwing не удалось создать папку { $name }.
+
+# packwing can no longer reach that folder.
+t899e6af1 = packwing больше не может получить доступ к этой папке.
+
+# The gallery would not take {name}.
+td2cca604 = Галерея не приняла { $name }.
+
+# Back
+tc2954bc2 = Назад
+
+# Show a list
+t78956399 = Показать списком
+
+# Show a grid
+tb50700d9 = Показать сеткой
+
+# Search in this archive
+tfda7010a = Поиск в этом архиве
+
+# packwing cannot show this file.
+t1ef504d9 = packwing не может показать этот файл.
+
+# AES-256. In 7z the names are hidden too.
+t9c81b89f = AES-256. В 7z скрываются и имена.
+
+# AES-256.
+tf18b3f5a = AES-256.
+
+# No files yet
+t129e61cf = Файлов пока нет
+
+# Copying them in…
+taf5cb443 = Копирование…
+
+# Where it goes
+t6e56ac09 = Куда сохранить
+
+# No folder chosen yet
+t9c10d9de = Папка ещё не выбрана
+
+# Make {kind}
+ted3ef83b = Создать { $kind }
+
+# Store, fastest
+ta65137d8 = Без сжатия, быстрее всего
+
+# Normal
+t58de2772 = Обычный
+
+# Smallest
+t39eb3f74 = Минимальный размер
+
+# From the Files app, a USB drive or Drive
+te849b010 = Из приложения «Файлы», с USB-накопителя или Google Диска
+
+# A ZIP or RAR in a chat or an email? Tap Share, then packwing, to look inside without saving it.
+t541e4ba0 = ZIP или RAR в чате или письме? Нажмите «Поделиться», затем packwing, чтобы заглянуть внутрь, не сохраняя его.
+
+# Opening {name}
+te629c104 = Открытие { $name }
+
+# Nothing opened yet.
+t5009c129 = Пока ничего не открывали.
+
+# Yesterday
+t93ae68c7 = Вчера
+
+# {n} month ago | {n} months ago
+t5af2ebc0 =
+    { $n ->
+        [one] { $n } месяц назад
+        [few] { $n } месяца назад
+        [many] { $n } месяцев назад
+       *[other] { $n } месяца назад
+    }
+
+# Making an archive
+tff4bea1d = Создание архива
+
+# file | files
+t2defd942 =
+    { $n ->
+        [one] файл
+        [few] файла
+        [many] файлов
+       *[other] файла
+    }
+
+# of {all}
+t601e2927 = из { $all }
+
+# You can leave the app. A notification shows how far it got.
+t018c236f = Можно выйти из приложения: ход выполнения покажет уведомление.
+
+# Where files go
+t7621af9b = Куда сохранять файлы
+
+# Ask every time
+t26ab736e = Спрашивать каждый раз
+
+# Replace a file already there
+t3c16bbc4 = Заменять уже существующий файл
+
+# While it works
+t28634679 = Во время работы
+
+# Tell me when a job is through
+t51e39cf5 = Сообщать о завершении задачи
+
+# How it looks
+te7ee60d2 = Внешний вид
+
+# Follow the system
+t37548210 = Как в системе
+
+# Licence
+t58c031d4 = Лицензия
+
+# The password is never saved
+t98c65e5a = Пароль никогда не сохраняется
+
+# Not now
+t2c3d6fce = Не сейчас
+
+# The gallery
+t59937d9a = Галерея
+
+# Android asks for this folder once. packwing keeps no other access to your storage.
+t684d18e2 = Android запросит доступ к этой папке один раз. Другого доступа к памяти устройства у packwing нет.
+
+# The pictures and videos go to your gallery. The other files stay in the archive.
+tc93762ab = Изображения и видео попадут в галерею. Остальные файлы останутся в архиве.
+
+# Nothing is written through links, and an archive bomb stops at its size limit.
+t2d95067b = Ничего не записывается по ссылкам, а архивная бомба останавливается на пределе размера.
+
+# Nothing is written outside that folder or through links, and an archive bomb stops at its size limit.
+tea731324 = Ничего не записывается за пределы той папки или по ссылкам, а архивная бомба останавливается на пределе размера.
+
+# Extract the pictures
+t5dc33540 = Извлечь изображения

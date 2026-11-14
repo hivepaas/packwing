@@ -2898,3 +2898,441 @@ te0a63e12 = 使用者
 
 # Password or app token
 t1c18cb9b = 密碼或應用程式權杖
+
+# This archive is not where it was any more.
+t4d0917ba = 這個封存檔已不在原來的位置。
+
+# Tap a file to preview it.
+td670fcf3 = 點一下檔案即可預覽。
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = 不分大小寫和重音：搜尋 bao cao 也能找到 Báo cáo。
+
+# Search its {n} file | Search all {n} files
+t76dbca4b =
+    { $n ->
+       *[other] 在 { $n } 個檔案中搜尋
+    }
+
+# Select
+t3e892b4d = 選取
+
+# Opening
+t015825b7 = 正在開啟
+
+# Extract {n} | Extract {n}
+tfda523f9 =
+    { $n ->
+       *[other] 解壓縮 { $n } 項
+    }
+
+# Extract all
+t9beae641 = 全部解壓縮
+
+# Preview
+tfdda4cf7 = 預覽
+
+# Files
+te71d1b30 = 檔案
+
+# A folder
+te84ceb50 = 資料夾
+
+# Photos
+tcde554d0 = 照片
+
+# Add more
+t5d2a8a05 = 繼續加入
+
+# Format
+tffb0ff72 = 格式
+
+# Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
+t96cb3408 = 到處都能開啟。設定密碼後使用 AES-256：Windows 內建的檔案總管打不開，7-Zip 和 packwing 可以。
+
+# Smaller. Opens with packwing, 7-Zip and most archivers.
+tae66e6b2 = 更小。可用 packwing、7-Zip 和大多數封存檔軟體開啟。
+
+# Compression
+t961abb95 = 壓縮
+
+# Hide the password
+te44ecfcb = 隱藏密碼
+
+# Show the password
+t6d746fd8 = 顯示密碼
+
+# Hide the file names too
+t0ea5cc72 = 一併隱藏檔名
+
+# No one sees what is inside without the password.
+td4f90f22 = 沒有密碼，誰也看不到裡面的內容。
+
+# 7z only: ZIP always shows its names.
+tac4ad1d6 = 僅限 7z：ZIP 一律會顯示檔名。
+
+# Save to
+tf1c67ab1 = 儲存到
+
+# Change
+ta1de2fdd = 更改
+
+# Getting {n} photo | Getting {n} photos
+tab55edae =
+    { $n ->
+       *[other] 正在取得 { $n } 張照片
+    }
+
+# A photo could not be read: {error}
+tb12cc03b = 有一張照片無法讀取：{ $error }
+
+# {n} photo | {n} photos
+t1a7850b2 =
+    { $n ->
+       *[other] { $n } 張照片
+    }
+
+# Nothing yet
+tbd00747c = 尚未加入
+
+# {name} in {folder}
+t866c0601 = { $folder } 中的 { $name }
+
+# The pictures and videos go to Photos. The other files stay in the archive.
+tad6172e7 = 照片和影片會存入「照片」，其他檔案留在封存檔中。
+
+# In a new folder, {name}
+tf816656c = 放在新資料夾「{ $name }」中
+
+# Show in Files when done
+t5525892c = 完成後在「檔案」中顯示
+
+# Options
+t353e0d45 = 選項
+
+# Nothing is written outside this folder or through links, and an archive bomb stops at its size limit.
+tab679ca5 = 不會寫入此資料夾以外的位置，也不會經由連結寫入；封存檔炸彈達到大小上限就會停止。
+
+# Extract now
+t97070e5a = 立即解壓縮
+
+# {files} · {size} once extracted
+t16e47887 = { $files } · 解壓縮後 { $size }
+
+# {n} item chosen | {n} items chosen
+tea658088 =
+    { $n ->
+       *[other] 已選取 { $n } 項
+    }
+
+# Save to Photos
+t6383180a = 儲存到「照片」
+
+# Extract {n} file | Extract {n} files
+tc5371694 =
+    { $n ->
+       *[other] 解壓縮 { $n } 個檔案
+    }
+
+# Extract {n} item | Extract {n} items
+t3dfb389a =
+    { $n ->
+       *[other] 解壓縮 { $n } 項
+    }
+
+# On My iPhone › packwing
+ted9ff11b = 我的 iPhone › packwing
+
+# Saving to Photos
+t898fa67d = 正在儲存到「照片」
+
+# {n} file in {folder} | {n} files in {folder}
+t689fbe82 =
+    { $n ->
+       *[other] { $folder } 中的 { $n } 個檔案
+    }
+
+# packwing may not add to Photos. Settings › Privacy & Security › Photos lets it.
+t9ec0ea7f = packwing 沒有加入「照片」的權限。可在「設定」›「隱私權與安全性」›「照片」中允許。
+
+# There are no pictures or videos in it.
+tacc0f9ec = 裡面沒有照片或影片。
+
+# {n} picture or video added to Photos | {n} pictures and videos added to Photos
+t7d8cbf49 =
+    { $n ->
+       *[other] 已將 { $n } 張照片和影片加入「照片」
+    }
+
+# Archives
+tc45c73a2 = 封存檔
+
+# From Files, iCloud Drive or a USB drive
+tcc778cba = 來自「檔案」、iCloud Drive 或 USB 磁碟
+
+# A ZIP or RAR in Mail or Messages? Tap Share, then packwing, to look inside without saving it.
+t0efd0e35 = 在「郵件」或「訊息」中收到 ZIP 或 RAR？點一下「分享」，再選 packwing，不必儲存就能查看內容。
+
+# Locked
+t406a5eb3 = 已鎖定
+
+# Search
+tc646a2c9 = 搜尋
+
+# Archives opened before
+t87c5327e = 開啟過的封存檔
+
+# Hide, and keep going
+t8a27e8a1 = 隱藏並繼續
+
+# files and folders
+t7f784a54 = 檔案和資料夾
+
+# of {size}
+t028b5a2f = 共 { $size }
+
+# It didn’t finish
+t17ce9c89 = 未能完成
+
+# You can leave packwing. iOS keeps it going and shows how far it is.
+t0bb23efc = 你可以離開 packwing。iOS 會繼續處理，並顯示進度。
+
+# Nothing was left behind.
+t1db928f6 = 沒有留下任何殘餘檔案。
+
+# Share
+t4f856dd8 = 分享
+
+# Show in Files
+t9c7dbb8c = 在「檔案」中顯示
+
+# about {time} left
+td87d0ee6 = 剩餘約 { $time }
+
+# Can’t open it
+t0923b4df = 無法開啟
+
+# OK
+t85e4b82f = 好
+
+# {name} is encrypted with a passphrase. Ask the person who sent it for it.
+ta6455c99 = { $name } 以密碼片語加密。請向傳送者索取密碼片語。
+
+# {name} is locked. Ask the person who sent it for its password.
+te1845608 = { $name } 受密碼保護。請向傳送者索取密碼。
+
+# Hide password
+tcd577cde = 隱藏密碼
+
+# Show password
+t500e3555 = 顯示密碼
+
+# Paste
+tb34a0288 = 貼上
+
+# Kept in memory only, never saved, and forgotten when the archive is closed.
+t6641f326 = 只保留在記憶體中，絕不會儲存，關閉封存檔後即忘記。
+
+# Unlock
+t9c799975 = 解鎖
+
+# As the system
+t29f671f7 = 依系統
+
+# New archives
+t9341f018 = 新封存檔
+
+# packwing can no longer reach {name}. Open it again to look inside.
+ta6e47f44 = packwing 已無法存取 { $name }。請重新開啟以查看內容。
+
+# packwing could not open {name}.
+t56e426f0 = packwing 無法開啟 { $name }。
+
+# {n} file is ready | {n} files are ready
+t09d5ea2a =
+    { $n ->
+       *[other] { $n } 個檔案已就緒
+    }
+
+# packwing could not extract {name}.
+t7e40b6ef = packwing 無法解壓縮 { $name }。
+
+# {name} is ready
+t17060a6b = { $name } 已就緒
+
+# packwing could not make {name}.
+t25251132 = packwing 無法建立 { $name }。
+
+# packwing could not read {name}.
+t7c55848c = packwing 無法讀取 { $name }。
+
+# Extracting {name}
+t77dce80b = 正在解壓縮 { $name }
+
+# Making {name}
+t5245af2d = 正在建立 { $name }
+
+# {done} of {all}
+tede81435 = { $done } / { $all }
+
+# Getting ready
+tfbae3374 = 正在準備
+
+# Extracting and making archives
+t5ad35487 = 解壓縮和建立封存檔
+
+# How far a job has got, while packwing is not on screen
+te78d6807 = packwing 不在螢幕上時顯示工作進度
+
+# Finished jobs
+t2339ecd9 = 已結束的工作
+
+# When a job is through, or could not finish
+tfdbeaf1a = 工作完成或未能完成時
+
+# packwing could not write a file with no name.
+te0bf8e8f = packwing 無法寫入沒有名稱的檔案。
+
+# packwing could not write {name}.
+teb1bce81 = packwing 無法寫入 { $name }。
+
+# packwing could not write what it extracted.
+ted881a0f = packwing 無法寫入解壓縮出的內容。
+
+# packwing could not make the folder {name}.
+t9f263b45 = packwing 無法建立資料夾 { $name }。
+
+# packwing can no longer reach that folder.
+t899e6af1 = packwing 已無法存取該資料夾。
+
+# The gallery would not take {name}.
+td2cca604 = 圖庫無法接收 { $name }。
+
+# Back
+tc2954bc2 = 返回
+
+# Show a list
+t78956399 = 以列表顯示
+
+# Show a grid
+tb50700d9 = 以格狀顯示
+
+# Search in this archive
+tfda7010a = 在此封存檔中搜尋
+
+# packwing cannot show this file.
+t1ef504d9 = packwing 無法顯示這個檔案。
+
+# AES-256. In 7z the names are hidden too.
+t9c81b89f = AES-256。7z 還會隱藏檔名。
+
+# AES-256.
+tf18b3f5a = AES-256。
+
+# No files yet
+t129e61cf = 還沒有檔案
+
+# Copying them in…
+taf5cb443 = 正在複製…
+
+# Where it goes
+t6e56ac09 = 儲存位置
+
+# No folder chosen yet
+t9c10d9de = 尚未選擇資料夾
+
+# Make {kind}
+ted3ef83b = 建立 { $kind }
+
+# Store, fastest
+ta65137d8 = 僅儲存，最快
+
+# Normal
+t58de2772 = 標準
+
+# Smallest
+t39eb3f74 = 最小
+
+# From the Files app, a USB drive or Drive
+te849b010 = 來自「檔案」應用程式、USB 隨身碟或 Google 雲端硬碟
+
+# A ZIP or RAR in a chat or an email? Tap Share, then packwing, to look inside without saving it.
+t541e4ba0 = 在聊天或電子郵件中收到 ZIP 或 RAR？輕觸「分享」，再選 packwing，不必儲存就能查看內容。
+
+# Opening {name}
+te629c104 = 正在開啟 { $name }
+
+# Nothing opened yet.
+t5009c129 = 還沒有開啟過任何封存檔。
+
+# Yesterday
+t93ae68c7 = 昨天
+
+# {n} month ago | {n} months ago
+t5af2ebc0 =
+    { $n ->
+       *[other] { $n } 個月前
+    }
+
+# Making an archive
+tff4bea1d = 正在建立封存檔
+
+# file | files
+t2defd942 =
+    { $n ->
+       *[other] 個檔案
+    }
+
+# of {all}
+t601e2927 = 共 { $all }
+
+# You can leave the app. A notification shows how far it got.
+t018c236f = 你可以離開應用程式，通知會顯示進度。
+
+# Where files go
+t7621af9b = 檔案儲存位置
+
+# Ask every time
+t26ab736e = 每次詢問
+
+# Replace a file already there
+t3c16bbc4 = 取代已有的檔案
+
+# While it works
+t28634679 = 處理期間
+
+# Tell me when a job is through
+t51e39cf5 = 工作完成時通知我
+
+# How it looks
+te7ee60d2 = 外觀
+
+# Follow the system
+t37548210 = 依系統
+
+# Licence
+t58c031d4 = 授權
+
+# The password is never saved
+t98c65e5a = 密碼絕不會被儲存
+
+# Not now
+t2c3d6fce = 稍後再說
+
+# The gallery
+t59937d9a = 圖庫
+
+# Android asks for this folder once. packwing keeps no other access to your storage.
+t684d18e2 = Android 只會就這個資料夾詢問一次。packwing 不會保留對你儲存空間的其他存取權。
+
+# The pictures and videos go to your gallery. The other files stay in the archive.
+tc93762ab = 照片和影片會存入圖庫，其他檔案留在封存檔中。
+
+# Nothing is written through links, and an archive bomb stops at its size limit.
+t2d95067b = 不會經由連結寫入；封存檔炸彈達到大小上限就會停止。
+
+# Nothing is written outside that folder or through links, and an archive bomb stops at its size limit.
+tea731324 = 不會寫入該資料夾以外的位置，也不會經由連結寫入；封存檔炸彈達到大小上限就會停止。
+
+# Extract the pictures
+t5dc33540 = 解壓縮照片和影片

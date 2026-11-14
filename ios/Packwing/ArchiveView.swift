@@ -166,7 +166,7 @@ struct EntryLabel: View {
             parts.append(sizeText(entry.size))
         }
         if let modified = entry.modified {
-            parts.append(Date(timeIntervalSince1970: TimeInterval(modified)).formatted(date: .abbreviated, time: .omitted))
+            parts.append(Date(timeIntervalSince1970: TimeInterval(modified)).formatted(Date.FormatStyle(date: .abbreviated, time: .omitted).locale(appLocale)))
         }
         return parts.joined(separator: " · ")
     }
