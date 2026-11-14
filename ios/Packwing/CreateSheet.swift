@@ -244,6 +244,8 @@ struct CreateSheet: View {
             }
         }
         .presentationDetents([.large])
+        // On an iPad, a page: all of it shows, the keyboard up or not.
+        .presentationSizing(.page)
         .onAppear { name = draft.suggestedName }
         .onChange(of: draft.suggestedName) { _, now in
             if !named { name = now }

@@ -223,12 +223,13 @@ final class AppTests: XCTestCase {
         recent.tap()
         XCTAssert(app.buttons["Extract all"].waitForExistence(timeout: 15))
 
-        // And not in packwing's folder in Files: no Inbox there.
+        // And not in packwing's folder in Files (On My iPhone, or iPad): no Inbox there.
         let files = XCUIApplication(bundleIdentifier: "com.apple.DocumentsApp")
         files.launch()
-        let browse = files.tabBars.buttons["Browse"]
+        // A tab bar's on an iPhone, buttons at the top on an iPad.
+        let browse = files.buttons["Browse"].firstMatch
         if browse.waitForExistence(timeout: 5) { browse.tap() }
-        let onPhone = files.cells.matching(NSPredicate(format: "label BEGINSWITH 'On My iPhone'")).firstMatch
+        let onPhone = files.descendants(matching: .any).matching(NSPredicate(format: "label BEGINSWITH 'On My i'")).firstMatch
         if onPhone.waitForExistence(timeout: 3) { onPhone.tap() }
         let own = files.cells.matching(NSPredicate(format: "identifier BEGINSWITH 'packwing'")).firstMatch
         XCTAssert(own.waitForExistence(timeout: 10))

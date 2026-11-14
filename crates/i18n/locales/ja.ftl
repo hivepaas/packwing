@@ -3043,6 +3043,9 @@ t3dfb389a =
        *[other] { $n } 個の項目を展開
     }
 
+# On My iPad › packwing
+ta308a480 = このiPad内 › packwing
+
 # On My iPhone › packwing
 ted9ff11b = このiPhone内 › packwing
 

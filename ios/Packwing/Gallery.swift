@@ -113,9 +113,15 @@ struct GalleryGrid: View {
     @Binding var picked: Set<[String]>
     let extract: ([String]) -> Void
 
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 3)
+    /// How many tiles a row has: three on an iPhone held upright, more as
+    /// there is room for them (an iPad, an iPhone turned).
+    @State private var across = 3
+
+    /// The narrowest a tile is, but on the narrowest screens.
+    private static let tile: CGFloat = 140
 
     var body: some View {
+        let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: across)
         ScrollView {
             LazyVGrid(columns: columns, spacing: 4) {
                 ForEach(Array(entries.enumerated()), id: \.element.name) { i, entry in
@@ -127,17 +133,21 @@ struct GalleryGrid: View {
             .padding(.top, 8)
             .padding(.bottom, 24)
         }
+        .onGeometryChange(for: Int.self) { geometry in
+            max(3, Int((geometry.size.width - 24 + 4) / (Self.tile + 4)))
+        } action: { across = $0 }
         .background(Tonal.page)
     }
 
-    /// The grid's own corners round with the screen's; the rest are small.
+    /// The grid's own corners round with the screen's: its first row's ends.
+    /// The rest are small.
     private func corner(_ i: Int) -> UnevenRoundedRectangle {
         let big: CGFloat = 22, small: CGFloat = 6
         return UnevenRoundedRectangle(
             topLeadingRadius: i == 0 ? big : small,
             bottomLeadingRadius: small,
             bottomTrailingRadius: small,
-            topTrailingRadius: i == 2 ? big : small)
+            topTrailingRadius: i == across - 1 ? big : small)
     }
 
     @ViewBuilder

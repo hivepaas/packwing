@@ -3166,6 +3166,9 @@ t3dfb389a =
        *[other] Видобути { $n } елемента
     }
 
+# On My iPad › packwing
+ta308a480 = На iPad › packwing
+
 # On My iPhone › packwing
 ted9ff11b = На iPhone › packwing
 

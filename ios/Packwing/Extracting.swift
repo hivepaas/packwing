@@ -45,7 +45,7 @@ extension AppModel {
 
     // MARK: Where files go
 
-    /// packwing's own folder, which Files shows as On My iPhone › packwing.
+    /// packwing's own folder, which Files shows as On My iPhone (or iPad) › packwing.
     static var ownFolder: URL { URL.documentsDirectory }
 
     /// Where Extract puts its folders: the one chosen last, else packwing's own.
@@ -61,7 +61,7 @@ extension AppModel {
     /// `folder` as the person knows it.
     func shown(_ folder: URL) -> String {
         folder.standardizedFileURL == Self.ownFolder.standardizedFileURL
-            ? tr("On My iPhone › packwing")
+            ? (UIDevice.current.userInterfaceIdiom == .pad ? tr("On My iPad › packwing") : tr("On My iPhone › packwing"))
             : folder.lastPathComponent
     }
 

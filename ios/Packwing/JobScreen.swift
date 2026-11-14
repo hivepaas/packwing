@@ -6,6 +6,9 @@ struct JobScreen: View {
     let job: RunningJob
     @AppStorage("showInFiles") private var showInFiles = false
 
+    /// As wide as it goes on an iPad: what it says is short.
+    private static let widest: CGFloat = 560
+
     var body: some View {
         VStack(spacing: 0) {
             HStack {
@@ -46,11 +49,14 @@ struct JobScreen: View {
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 16)
+                .frame(maxWidth: Self.widest)
+                .frame(maxWidth: .infinity)
             }
 
             footer
                 .padding(.horizontal, 20)
                 .padding(.bottom, 12)
+                .frame(maxWidth: Self.widest)
         }
         .background(Tonal.page)
         .onChange(of: job.state) { _, now in
