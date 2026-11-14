@@ -205,4 +205,39 @@ final class AppTests: XCTestCase {
         XCTAssert(app.staticTexts["IMG_0001.jpg"].waitForExistence(timeout: 5))
         XCTAssert(app.buttons["Extract all"].exists)
     }
+
+    func testAnArchiveSharedFromMailIsSeenWithoutBeingSavedInFiles() {
+        // Given as Mail gives one: a copy in packwing's Documents/Inbox.
+        let sample = Bundle(for: Self.self).url(forResource: "report.zip", withExtension: nil)!
+        let app = XCUIApplication()
+        app.launchArguments = ["-receive", sample.path, "-AppleLanguages", "(en)", "-language", ""]
+        app.launch()
+        XCTAssert(app.buttons["Extract all"].waitForExistence(timeout: 15))
+        app.terminate()
+
+        // Opened again from Recent, where packwing keeps it now.
+        app.launchArguments = ["-AppleLanguages", "(en)", "-language", ""]
+        app.launch()
+        let recent = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'report.zip'")).firstMatch
+        XCTAssert(recent.waitForExistence(timeout: 10))
+        recent.tap()
+        XCTAssert(app.buttons["Extract all"].waitForExistence(timeout: 15))
+
+        // And not in packwing's folder in Files: no Inbox there.
+        let files = XCUIApplication(bundleIdentifier: "com.apple.DocumentsApp")
+        files.launch()
+        let browse = files.tabBars.buttons["Browse"]
+        if browse.waitForExistence(timeout: 5) { browse.tap() }
+        let onPhone = files.cells.matching(NSPredicate(format: "label BEGINSWITH 'On My iPhone'")).firstMatch
+        if onPhone.waitForExistence(timeout: 3) { onPhone.tap() }
+        let own = files.cells.matching(NSPredicate(format: "identifier BEGINSWITH 'packwing'")).firstMatch
+        XCTAssert(own.waitForExistence(timeout: 10))
+        own.tap()
+        // In it: what it holds, and no longer packwing's own folder among them.
+        let inside = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: own)
+        XCTAssertEqual(XCTWaiter.wait(for: [inside], timeout: 10), .completed)
+        XCTAssert(files.cells.firstMatch.waitForExistence(timeout: 10))
+        keep(files, "files-packwing")
+        XCTAssertFalse(files.cells.matching(NSPredicate(format: "identifier BEGINSWITH 'Inbox'")).firstMatch.exists)
+    }
 }

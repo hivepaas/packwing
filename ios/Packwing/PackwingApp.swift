@@ -17,13 +17,24 @@ struct PackwingApp: App {
                 // Drawn again in a language chosen in Settings.
                 .id(model.language)
                 // An archive opened in packwing from Files, Mail or another
-                // app's Share sheet: read where it is.
+                // app's Share sheet: read where it is, or, a copy Mail gave,
+                // kept out of Files (AppModel.receive).
                 .onOpenURL { model.open($0) }
                 #if DEBUG
                 // `-open <path>` at launch: opens that archive at once.
                 .task {
                     if let path = UserDefaults.standard.string(forKey: "open") {
                         model.open(URL(filePath: path))
+                    }
+                    // `-receive <path>`: that archive given as Mail gives one, a
+                    // copy in packwing's Documents/Inbox.
+                    if let path = UserDefaults.standard.string(forKey: "receive") {
+                        let inbox = URL.documentsDirectory.appending(path: "Inbox", directoryHint: .isDirectory)
+                        let copy = inbox.appending(path: URL(filePath: path).lastPathComponent)
+                        try? FileManager.default.createDirectory(at: inbox, withIntermediateDirectories: true)
+                        try? FileManager.default.removeItem(at: copy)
+                        try? FileManager.default.copyItem(at: URL(filePath: path), to: copy)
+                        model.open(copy)
                     }
                     // `-new <path>|<path>…`: New archive, of those.
                     if let paths = UserDefaults.standard.string(forKey: "new") {
