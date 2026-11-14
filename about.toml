@@ -52,6 +52,9 @@ accepted = ["GPL-3.0-or-later"]
 [packwing-remote]
 accepted = ["GPL-3.0-or-later"]
 
+[packwing-sandbox]
+accepted = ["GPL-3.0-or-later"]
+
 [packwing-update]
 accepted = ["GPL-3.0-or-later"]
 
