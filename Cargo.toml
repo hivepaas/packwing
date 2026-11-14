@@ -5,7 +5,7 @@ members = ["crates/*"]
 exclude = ["vendor"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 # The latest stable Rust: packwing follows it rather than keeping old ones working.
 rust-version = "1.99"
