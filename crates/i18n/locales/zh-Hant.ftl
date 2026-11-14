@@ -1588,6 +1588,9 @@ t5d2a9fa0 = 讓每個核心都投入運作、安全開啟封存檔的檔案壓�
 # Updates
 t483075a5 = 更新
 
+# The App Store keeps packwing up to date.
+tbc30b02e = App Store 會讓 packwing 保持最新。
+
 # This is a beta: you are told of newer betas, and of the release that follows them.
 t1d6a96bc = 這是測試版：會通知你較新的測試版，以及隨後推出的正式版。
 

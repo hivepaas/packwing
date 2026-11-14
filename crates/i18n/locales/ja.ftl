@@ -1588,6 +1588,9 @@ t5d2a9fa0 = すべてのコアを働かせ、アーカイブを安全に開く�
 # Updates
 t483075a5 = アップデート
 
+# The App Store keeps packwing up to date.
+tbc30b02e = packwing は App Store で最新の状態に保たれます。
+
 # This is a beta: you are told of newer betas, and of the release that follows them.
 t1d6a96bc = これはベータ版です：新しいベータ版と、それに続く安定版をお知らせします。
 

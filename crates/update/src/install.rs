@@ -89,6 +89,10 @@ fn bundle_of(exe: &Path) -> Option<PathBuf> {
 /// How the app at `exe` was installed; `var` reads the environment.
 pub fn install_of(exe: &Path, var: impl Fn(&str) -> Option<String>) -> Install {
     let managed = |by, command| Install::Managed { by, command };
+    // Built for the Mac App Store: wherever it runs from, before its receipt is there too.
+    if crate::STORE_BUILD {
+        return managed("the App Store", None);
+    }
     if var("FLATPAK_ID").is_some() {
         return managed("Flatpak", Some("flatpak update"));
     }
@@ -148,6 +152,37 @@ mod tests {
         })
     }
 
+    /// Built for the Mac App Store, it is the App Store's wherever it runs from, with
+    /// no receipt yet (a build run by hand, before TestFlight's) and none of what
+    /// otherwise says it.
+    #[cfg(feature = "app-store")]
+    #[test]
+    fn a_store_build_is_the_app_store_s_wherever_it_runs() {
+        let store = Install::Managed {
+            by: "the App Store",
+            command: None,
+        };
+        for exe in [
+            "/Applications/Packwing.app/Contents/MacOS/packwing",
+            "/Users/a/Downloads/packwing",
+            "/opt/homebrew/Caskroom/packwing/0.1.0/Packwing.app/Contents/MacOS/packwing",
+        ] {
+            assert_eq!(install_of(Path::new(exe), |_| None), store, "{exe}");
+        }
+        assert!(!store.updates_itself());
+        let staged = Path::new("/nowhere/packwing.app.tar.gz");
+        let refused = crate::apply::apply(
+            &Install::MacBundle("/Applications/Packwing.app".into()),
+            staged,
+            true,
+        );
+        assert_eq!(
+            refused.map_err(|e| e.kind()),
+            Err(std::io::ErrorKind::Unsupported)
+        );
+    }
+
+    #[cfg(not(feature = "app-store"))]
     #[test]
     fn what_updates_the_app_is_told_by_where_it_runs() {
         assert_eq!(install("/home/me/bin/packwing", &[]), Install::Manual);

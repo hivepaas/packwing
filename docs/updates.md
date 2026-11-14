@@ -6,6 +6,10 @@ leads to the Updates group of *Settings › About*. Where the system draws the t
 looks once a day while *Look for updates once a day* is on (the default), and when asked
 (*Check now*). Nothing is downloaded or installed until the user says so.
 
+The Mac App Store's build (the app's `app-store` feature) never looks, and holds nothing
+that downloads or installs a release: the App Store updates it, as its rules ask, and
+*Settings › About* says so.
+
 *Skip this version* offers that release no more. With the daily look off, the badge shows
 only a release already downloaded.
 

@@ -33,6 +33,8 @@ mod keys;
 mod policy;
 mod settings;
 mod storages;
+#[cfg(feature = "app-store")]
+mod store;
 mod viewer;
 
 /// How long a step may take before the scenario fails: CI machines are slow.

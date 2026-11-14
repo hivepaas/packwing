@@ -23,6 +23,12 @@ use crate::install::Install;
 /// Installs the release in `staged` over the app installed as `install`,
 /// then starts it when `relaunch`. Call it as the app quits.
 pub fn apply(install: &Install, staged: &Path, relaunch: bool) -> io::Result<()> {
+    if crate::STORE_BUILD {
+        return Err(io::Error::new(
+            io::ErrorKind::Unsupported,
+            crate::STORE_UPDATES_IT,
+        ));
+    }
     match install {
         Install::AppImage(image) => {
             replace_file(image, staged)?;

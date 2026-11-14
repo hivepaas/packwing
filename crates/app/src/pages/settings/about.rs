@@ -124,6 +124,12 @@ impl About {
 
     /// Which channel this build is on, what a look found, and getting it.
     fn updates(&self, window: &Window, cx: &mut Context<Self>) -> Div {
+        if packwing_update::STORE_BUILD {
+            return group().gap(ui(14.)).child(heading(
+                tr!("Updates"),
+                tr!("The App Store keeps packwing up to date."),
+            ));
+        }
         let u = self.updates.read(cx);
         let keys = u.has_keys();
         let (checking, on) = (u.checking(), u.checks());

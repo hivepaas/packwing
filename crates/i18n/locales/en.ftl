@@ -602,6 +602,7 @@ t3d37483c = Copy version info
 t6bead5ae = Version { $version } · { $os } { $arch }
 t5d2a9fa0 = A file archiver that puts every core to work and opens archives safely.
 t483075a5 = Updates
+tbc30b02e = The App Store keeps packwing up to date.
 t1d6a96bc = This is a beta: you are told of newer betas, and of the release that follows them.
 t9d2d8250 = This is a release: you are told of newer releases, not of betas.
 t4f0e0677 = Check now

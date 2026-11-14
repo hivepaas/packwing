@@ -146,30 +146,35 @@ impl SettingsPage {
 
     fn menu(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
-        let items = Section::ALL.into_iter().enumerate().map(|(i, s)| {
-            let on = s == self.section;
-            div()
-                .debug_selector(|| format!("section-{i}"))
-                .id(("section", i))
-                .flex()
-                .items_center()
-                .h(ui(52.))
-                .px(ui(18.))
-                .rounded_full()
-                .text_size(ui(15.))
-                .cursor_pointer()
-                .when(on, |d| {
-                    d.bg(rgb(c.tonal))
-                        .text_color(rgb(c.on_tonal))
-                        .font_weight(FontWeight::BOLD)
-                })
-                .when(!on, |d| {
-                    d.font_weight(FontWeight::MEDIUM)
-                        .hover(|st| st.bg(rgb(c.hover)))
-                })
-                .on_click(cx.listener(move |this, _, _, cx| this.show_section(s, cx)))
-                .child(s.name())
-        });
+        // The Mac App Store's build has no right-click menu of its own to set.
+        let items = Section::ALL
+            .into_iter()
+            .enumerate()
+            .filter(|(_, s)| !(crate::right_click::STORE_BUILD && *s == Section::RightClick))
+            .map(|(i, s)| {
+                let on = s == self.section;
+                div()
+                    .debug_selector(|| format!("section-{i}"))
+                    .id(("section", i))
+                    .flex()
+                    .items_center()
+                    .h(ui(52.))
+                    .px(ui(18.))
+                    .rounded_full()
+                    .text_size(ui(15.))
+                    .cursor_pointer()
+                    .when(on, |d| {
+                        d.bg(rgb(c.tonal))
+                            .text_color(rgb(c.on_tonal))
+                            .font_weight(FontWeight::BOLD)
+                    })
+                    .when(!on, |d| {
+                        d.font_weight(FontWeight::MEDIUM)
+                            .hover(|st| st.bg(rgb(c.hover)))
+                    })
+                    .on_click(cx.listener(move |this, _, _, cx| this.show_section(s, cx)))
+                    .child(s.name())
+            });
         div()
             .w(ui(240.))
             .flex_shrink_0()

@@ -1588,6 +1588,9 @@ t5d2a9fa0 = 모든 코어를 활용하고 압축 파일을 안전하게 여는 �
 # Updates
 t483075a5 = 업데이트
 
+# The App Store keeps packwing up to date.
+tbc30b02e = App Store에서 packwing을 최신 상태로 유지합니다.
+
 # This is a beta: you are told of newer betas, and of the release that follows them.
 t1d6a96bc = 베타 버전입니다: 새 베타 버전과 그 뒤에 나오는 정식 버전의 알림을 받습니다.
 

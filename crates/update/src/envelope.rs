@@ -263,8 +263,10 @@ mod tests {
 
     #[test]
     fn the_keys_built_in_read_and_both_algorithms_are_needed() {
-        // The real ones: a build without them would never tell of an update.
-        assert!(crate::has_keys());
+        // The real ones: a build without them would never tell of an update. A store
+        // build has them too, and never looks.
+        assert!(!crate::KEYS.is_empty());
+        assert_eq!(crate::has_keys(), !crate::STORE_BUILD);
         assert!(crate::trusted_keys().is_ok());
         assert!(matches!(
             parse_keys(&[("test-ed", TEST_ED)]),

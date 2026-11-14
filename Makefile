@@ -60,6 +60,9 @@ test: ## Run every test, without the ones that draw the window
 	$(CARGO) test $(ALL)
 	@# $(ALL) builds pkw without its default `remote`: once more with it.
 	$(CARGO) test -p packwing-cli
+	@# The Mac App Store's build (the app's `app-store`): what it leaves out.
+	$(CARGO) test -p packwing-update -p packwing-remote --features app-store --lib
+	$(CARGO) test $(APP),ui-tests,app-store ui_tests::store::
 
 test-window: ## Run every test, drawing every screen to target/shots with no display (Linux)
 	$(CARGO) test $(ALL),shots
@@ -72,6 +75,7 @@ lint: ## Check the format, the catalogs and clippy, as CI does
 	python3 scripts/i18n.py check
 	$(CARGO) clippy $(ALL) --all-targets -- -D warnings
 	$(CARGO) clippy $(APP),ui-tests --all-targets -- -D warnings
+	$(CARGO) clippy $(APP),ui-tests,app-store --all-targets -- -D warnings
 	$(CARGO) clippy -p packwing-cli --all-targets -- -D warnings
 ifeq ($(shell uname -s),Linux)
 	# The screenshots' build, which only Linux has (make test-window).
