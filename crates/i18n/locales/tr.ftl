@@ -1,6 +1,15 @@
 # packwing in Turkish. Each message is found by its English, the
 # comment above it; scripts/i18n.py keeps this file in step with the code.
 
+# packwing needs your permission to read this folder. Choose Allow, or a folder that holds it.
+tbc74efc5 = packwing'in bu klasörü okumak için izninize ihtiyacı var. İzin Ver'i ya da bu klasörü içeren bir klasörü seçin.
+
+# packwing needs your permission to write in this folder. Choose Allow, or a folder that holds it.
+tab0752f7 = packwing'in bu klasöre yazmak için izninize ihtiyacı var. İzin Ver'i ya da bu klasörü içeren bir klasörü seçin.
+
+# Allow
+t546d19d2 = İzin Ver
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Görünüm: { $name }. { $name2 } için tıklayın.
 
@@ -1190,6 +1199,12 @@ tebda8468 = { $n } seçili
 
 # Try again
 t213e90fa = Tekrar dene
+
+# packwing needs your permission to show this folder.
+t837b77c0 = packwing'in bu klasörü göstermek için izninize ihtiyacı var.
+
+# Allow access…
+t98c9598c = Erişime İzin Ver…
 
 # Nothing here matches that.
 t0f9a8a58 = Buna uyan bir şey yok.
@@ -2469,6 +2484,9 @@ tbd048b4e = Bu dosya bir anahtara şifrelenmiş.
 
 # This key file needs its passphrase.
 t81f4c775 = Bu anahtar dosyasının parola ifadesi gerekiyor.
+
+# packwing was not given {folder}, so it cannot work there.
+t000cc083 = packwing'e { $folder } için erişim verilmedi, bu yüzden orada çalışamıyor.
 
 # {paths} archives
 t27f3b860 = { $paths } arşiv

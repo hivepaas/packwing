@@ -54,3 +54,9 @@ nautilus -q   # Nautilus loads extensions when it starts
 On macOS, `scripts/package_macos.sh` makes `Packwing.app`, with `pkw` beside the program and context-menu-rs's native Finder extension and its helper, downloaded from its release and checked alike, in a disk image and a `.app.tar.gz` for the updater. The extension is signed with the team's Developer ID, so it is in the app only when one is given; then the app is notarized too ([docs/releasing.md](releasing.md)). Windows' installer, from `scripts/package_windows.sh`, holds the extension for Windows 11's menu. A release builds them all from a tag ([docs/releasing.md](releasing.md)).
 
 packwing's next start moves its items for Nautilus out of the Scripts submenu, into Nautilus's own menu. The package depends on the glibc of the system it was built on, so the packages are built on the oldest Ubuntu supported, and the .rpm names the glibc it needs. Removing the package leaves each user's items for Dolphin, Nemo and Thunar, which Settings takes away before.
+
+## The Mac App Store's build
+
+`--features app-store` builds packwing as the Mac App Store has it: in the App Sandbox (`packaging/macos/app-store.entitlements`), updated by the store, with no right-click menu of its own and no SFTP. In the sandbox packwing reaches only what the user gives it: an archive opened from Finder, chosen or dropped, while it runs. A folder beside it, to extract there or to read the archive's other parts, is asked for in an open panel on that folder, and what the user chooses is kept as a security-scoped bookmark for the next runs (`crates/app/src/access.rs`, through `crates/sandbox`). Browse and Storages start from the user's home, and a folder not given yet shows **Allow access…**.
+
+`scripts/run_sandboxed.sh [ARCHIVE…]` builds it and runs it so, opening the archives as Finder does; the UI scenarios of `ui_tests::sandbox` play the sandbox anywhere, and `ui_tests::store` checks what the build leaves out.

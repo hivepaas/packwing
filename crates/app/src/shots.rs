@@ -561,7 +561,7 @@ const SCREENS: [(&str, SetUp); 108] = [
             a.files,
             a.unpacked,
         );
-        ws.open_progress(job, window, cx)
+        ws.start_progress(job, window, cx)
             .update(cx, |p, cx| p.set_done(0.64, cx));
     }),
     ("key-file", |ws, window, cx| {
@@ -588,7 +588,7 @@ const SCREENS: [(&str, SetUp); 108] = [
             1284,
             131_000_000,
         );
-        ws.open_progress(job, window, cx)
+        ws.start_progress(job, window, cx)
             .update(cx, |p, cx| p.set_passed(1284, 131_000_000, cx));
     }),
     ("progress-failed", |ws, window, cx| {
@@ -599,7 +599,7 @@ const SCREENS: [(&str, SetUp); 108] = [
             6,
             131_000_000,
         );
-        ws.open_progress(job, window, cx).update(cx, |p, cx| {
+        ws.start_progress(job, window, cx).update(cx, |p, cx| {
             p.set_failed(
                 "entry 3 (site/../evil.sh): the name climbs out of the folder".into(),
                 cx,
@@ -2007,7 +2007,7 @@ fn tested(archive: PathBuf) -> (Option<(u64, u64)>, Option<String>) {
                 0,
             );
             job.work = vec![(archive.clone().into(), None)];
-            ws.open_progress(job, window, cx)
+            ws.start_progress(job, window, cx)
         })
         .expect("the window");
     for _ in 0..200 {

@@ -134,6 +134,9 @@ enum State {
     /// More on their way, or the same ones again.
     Loading,
     Failed(String),
+    /// The sandbox keeps packwing from this folder on this computer, until the user
+    /// gives it.
+    Denied(PathBuf),
 }
 
 /// A name being typed.
@@ -550,8 +553,16 @@ impl Explorer {
                     Err(e) => {
                         this.items.clear();
                         this.shown.clear();
-                        this.state =
-                            State::Failed(tr!("This folder could not be read: {why}", why = e));
+                        let denied = (e.kind() == std::io::ErrorKind::PermissionDenied
+                            && crate::access::asks())
+                        .then(|| this.place.as_ref()?.storage.local_path(&this.folder))
+                        .flatten();
+                        this.state = match denied {
+                            Some(path) => State::Denied(path),
+                            None => {
+                                State::Failed(tr!("This folder could not be read: {why}", why = e))
+                            }
+                        };
                     }
                 }
                 cx.notify();
@@ -1914,6 +1925,43 @@ impl Render for Explorer {
                 .child(
                     button("try-again", tr!("Try again"), Fill::Tonal, Size::Medium)
                         .on_click(cx.listener(|this, _, _, cx| this.refresh(cx))),
+                )
+                .into_any_element()
+        } else if let State::Denied(path) = &self.state {
+            let path = path.clone();
+            div()
+                .flex_1()
+                .flex()
+                .flex_col()
+                .items_center()
+                .justify_center()
+                .gap(ui(14.))
+                .p(ui(24.))
+                .text_size(ui(14.))
+                .text_color(rgb(c.muted))
+                .child(
+                    div()
+                        .text_center()
+                        .child(tr!("packwing needs your permission to show this folder.")),
+                )
+                .child(
+                    button(
+                        "allow-access",
+                        tr!("Allow access…"),
+                        Fill::Tonal,
+                        Size::Medium,
+                    )
+                    .on_click(cx.listener(move |_, _, _, cx| {
+                        let asked = crate::access::ensure(
+                            vec![(path.clone(), crate::access::Need::Read)],
+                            cx,
+                        );
+                        cx.spawn(async move |this, cx| {
+                            asked.await;
+                            let _ = this.update(cx, |this, cx| this.refresh(cx));
+                        })
+                        .detach();
+                    })),
                 )
                 .into_any_element()
         } else if rows == 0 {

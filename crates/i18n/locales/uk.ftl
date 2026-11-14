@@ -1,6 +1,15 @@
 # packwing in Ukrainian. Each message is found by its English, the
 # comment above it; scripts/i18n.py keeps this file in step with the code.
 
+# packwing needs your permission to read this folder. Choose Allow, or a folder that holds it.
+tbc74efc5 = packwing потрібен ваш дозвіл, щоб читати цю папку. Виберіть «Дозволити» або папку, що її містить.
+
+# packwing needs your permission to write in this folder. Choose Allow, or a folder that holds it.
+tab0752f7 = packwing потрібен ваш дозвіл, щоб записувати в цю папку. Виберіть «Дозволити» або папку, що її містить.
+
+# Allow
+t546d19d2 = Дозволити
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Вигляд: { $name }. Натисніть, щоб перейти на { $name2 }.
 
@@ -1224,6 +1233,12 @@ tebda8468 = Вибрано: { $n }
 
 # Try again
 t213e90fa = Спробувати ще раз
+
+# packwing needs your permission to show this folder.
+t837b77c0 = packwing потрібен ваш дозвіл, щоб показати цю папку.
+
+# Allow access…
+t98c9598c = Дозволити доступ…
 
 # Nothing here matches that.
 t0f9a8a58 = Нічого відповідного.
@@ -2529,6 +2544,9 @@ tbd048b4e = Цей файл зашифровано для ключа.
 
 # This key file needs its passphrase.
 t81f4c775 = Цьому файлу ключа потрібна парольна фраза.
+
+# packwing was not given {folder}, so it cannot work there.
+t000cc083 = packwing не отримав доступу до { $folder }, тому не може там працювати.
 
 # {paths} archives
 t27f3b860 = Архівів: { $paths }

@@ -14,6 +14,7 @@
     allow(dead_code)
 )]
 
+mod access;
 mod audit_log;
 mod chrome;
 mod colors;
@@ -293,6 +294,7 @@ pub fn run(extensions: Extensions) {
         packwing_core::use_threads(kept.threads);
         let window_bounds = placement::initial(kept.window, cx);
         cx.set_global(kept);
+        cx.set_global(access::Access::load());
         cx.set_global(licensing::Licensed::load());
         licensing::start_refreshing(cx);
         audit_log::apply(cx, audit_log::By::Startup);
@@ -348,6 +350,7 @@ pub fn run(extensions: Extensions) {
                     paths,
                 };
                 let _ = window.update(cx, |ws, window, cx| {
+                    access::remember(cx, &request.paths);
                     ws.start(request, window, cx);
                     cx.activate(true);
                 });

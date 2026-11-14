@@ -1,6 +1,15 @@
 # packwing in Japanese. Each message is found by its English, the
 # comment above it; scripts/i18n.py keeps this file in step with the code.
 
+# packwing needs your permission to read this folder. Choose Allow, or a folder that holds it.
+tbc74efc5 = このフォルダを読み取るには許可が必要です。「許可」を選ぶか、このフォルダを含むフォルダを選んでください。
+
+# packwing needs your permission to write in this folder. Choose Allow, or a folder that holds it.
+tab0752f7 = このフォルダに書き込むには許可が必要です。「許可」を選ぶか、このフォルダを含むフォルダを選んでください。
+
+# Allow
+t546d19d2 = 許可
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = 外観：{ $name }。クリックすると { $name2 } になります。
 
@@ -1173,6 +1182,12 @@ tebda8468 = { $n } 件を選択中
 
 # Try again
 t213e90fa = もう一度試す
+
+# packwing needs your permission to show this folder.
+t837b77c0 = このフォルダを表示するには packwing への許可が必要です。
+
+# Allow access…
+t98c9598c = アクセスを許可…
 
 # Nothing here matches that.
 t0f9a8a58 = 一致するものがありません。
@@ -2430,6 +2445,9 @@ tbd048b4e = このファイルはキーを宛先として暗号化されてい�
 
 # This key file needs its passphrase.
 t81f4c775 = このキーファイルにはパスフレーズが必要です。
+
+# packwing was not given {folder}, so it cannot work there.
+t000cc083 = { $folder } へのアクセスが許可されなかったため、packwing はそこで作業できません。
 
 # {paths} archives
 t27f3b860 = { $paths } 個のアーカイブ

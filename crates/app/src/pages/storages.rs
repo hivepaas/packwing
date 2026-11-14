@@ -34,9 +34,14 @@ fn named(path: &Path) -> String {
 /// The storages there are before the user changes them: the home folder, and
 /// the Downloads folder if there is one.
 fn at_first() -> Vec<KeptStorage> {
-    let home = std::env::var_os(if cfg!(windows) { "USERPROFILE" } else { "HOME" })
-        .filter(|h| !h.is_empty())
-        .map(PathBuf::from);
+    // In the sandbox, HOME is the container's.
+    let home = if packwing_sandbox::active() {
+        packwing_sandbox::home()
+    } else {
+        std::env::var_os(if cfg!(windows) { "USERPROFILE" } else { "HOME" })
+            .filter(|h| !h.is_empty())
+            .map(PathBuf::from)
+    };
     let Some(home) = home else {
         return Vec::new();
     };
@@ -552,7 +557,11 @@ impl StoragesPage {
             if let Ok(Ok(Some(paths))) = picked.await
                 && let Some(path) = paths.into_iter().next()
             {
-                let _ = this.update(cx, |this, cx| this.add(path, cx));
+                // Kept, in the sandbox, so that it can be browsed on the next runs too.
+                let _ = this.update(cx, |this, cx| {
+                    crate::access::remember(cx, std::slice::from_ref(&path));
+                    this.add(path, cx)
+                });
             }
         })
         .detach();

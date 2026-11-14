@@ -1,6 +1,15 @@
 # packwing in Brazilian Portuguese. Each message is found by its English, the
 # comment above it; scripts/i18n.py keeps this file in step with the code.
 
+# packwing needs your permission to read this folder. Choose Allow, or a folder that holds it.
+tbc74efc5 = O packwing precisa da sua permissão para ler esta pasta. Escolha Permitir, ou uma pasta que a contenha.
+
+# packwing needs your permission to write in this folder. Choose Allow, or a folder that holds it.
+tab0752f7 = O packwing precisa da sua permissão para gravar nesta pasta. Escolha Permitir, ou uma pasta que a contenha.
+
+# Allow
+t546d19d2 = Permitir
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Aparência: { $name }. Clique para { $name2 }.
 
@@ -1190,6 +1199,12 @@ tebda8468 = { $n } selecionados
 
 # Try again
 t213e90fa = Tentar de novo
+
+# packwing needs your permission to show this folder.
+t837b77c0 = O packwing precisa da sua permissão para mostrar esta pasta.
+
+# Allow access…
+t98c9598c = Permitir acesso…
 
 # Nothing here matches that.
 t0f9a8a58 = Nada aqui corresponde a isso.
@@ -2469,6 +2484,9 @@ tbd048b4e = Este arquivo está criptografado para uma chave.
 
 # This key file needs its passphrase.
 t81f4c775 = Esta chave precisa da frase secreta dela.
+
+# packwing was not given {folder}, so it cannot work there.
+t000cc083 = O packwing não recebeu acesso a { $folder }, por isso não pode trabalhar lá.
 
 # {paths} archives
 t27f3b860 = { $paths } arquivos compactados

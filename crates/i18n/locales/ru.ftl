@@ -1,6 +1,15 @@
 # packwing in Russian. Each message is found by its English, the
 # comment above it; scripts/i18n.py keeps this file in step with the code.
 
+# packwing needs your permission to read this folder. Choose Allow, or a folder that holds it.
+tbc74efc5 = packwing нужно ваше разрешение, чтобы читать эту папку. Выберите «Разрешить» или папку, в которой она находится.
+
+# packwing needs your permission to write in this folder. Choose Allow, or a folder that holds it.
+tab0752f7 = packwing нужно ваше разрешение, чтобы записывать в эту папку. Выберите «Разрешить» или папку, в которой она находится.
+
+# Allow
+t546d19d2 = Разрешить
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Оформление: { $name }. Нажмите, чтобы выбрать: { $name2 }.
 
@@ -1224,6 +1233,12 @@ tebda8468 = Выбрано: { $n }
 
 # Try again
 t213e90fa = Повторить
+
+# packwing needs your permission to show this folder.
+t837b77c0 = packwing нужно ваше разрешение, чтобы показать эту папку.
+
+# Allow access…
+t98c9598c = Разрешить доступ…
 
 # Nothing here matches that.
 t0f9a8a58 = Здесь ничего не найдено.
@@ -2529,6 +2544,9 @@ tbd048b4e = Этот файл зашифрован для ключа.
 
 # This key file needs its passphrase.
 t81f4c775 = Для этого файла ключа нужна парольная фраза.
+
+# packwing was not given {folder}, so it cannot work there.
+t000cc083 = packwing не получил доступ к { $folder }, поэтому не может там работать.
 
 # {paths} archives
 t27f3b860 = Архивов: { $paths }

@@ -1,6 +1,15 @@
 # packwing in Korean. Each message is found by its English, the
 # comment above it; scripts/i18n.py keeps this file in step with the code.
 
+# packwing needs your permission to read this folder. Choose Allow, or a folder that holds it.
+tbc74efc5 = 이 폴더를 읽으려면 packwing에 권한이 필요합니다. 허용을 선택하거나 이 폴더를 포함하는 폴더를 선택하세요.
+
+# packwing needs your permission to write in this folder. Choose Allow, or a folder that holds it.
+tab0752f7 = 이 폴더에 쓰려면 packwing에 권한이 필요합니다. 허용을 선택하거나 이 폴더를 포함하는 폴더를 선택하세요.
+
+# Allow
+t546d19d2 = 허용
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = 모양: { $name }. 클릭하면 { $name2 }(으)로 바뀝니다.
 
@@ -1173,6 +1182,12 @@ tebda8468 = { $n }개 선택됨
 
 # Try again
 t213e90fa = 다시 시도
+
+# packwing needs your permission to show this folder.
+t837b77c0 = 이 폴더를 표시하려면 packwing에 권한이 필요합니다.
+
+# Allow access…
+t98c9598c = 접근 허용…
 
 # Nothing here matches that.
 t0f9a8a58 = 일치하는 항목이 없습니다.
@@ -2430,6 +2445,9 @@ tbd048b4e = 이 파일은 키로 암호화되어 있습니다.
 
 # This key file needs its passphrase.
 t81f4c775 = 이 키 파일은 암호 문구가 필요합니다.
+
+# packwing was not given {folder}, so it cannot work there.
+t000cc083 = { $folder }에 대한 접근이 허용되지 않아 packwing이 그곳에서 작업할 수 없습니다.
 
 # {paths} archives
 t27f3b860 = 압축 파일 { $paths }개

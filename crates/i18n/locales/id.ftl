@@ -1,6 +1,15 @@
 # packwing in Indonesian. Each message is found by its English, the
 # comment above it; scripts/i18n.py keeps this file in step with the code.
 
+# packwing needs your permission to read this folder. Choose Allow, or a folder that holds it.
+tbc74efc5 = packwing memerlukan izin Anda untuk membaca folder ini. Pilih Izinkan, atau folder yang memuatnya.
+
+# packwing needs your permission to write in this folder. Choose Allow, or a folder that holds it.
+tab0752f7 = packwing memerlukan izin Anda untuk menulis di folder ini. Pilih Izinkan, atau folder yang memuatnya.
+
+# Allow
+t546d19d2 = Izinkan
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Tampilan: { $name }. Klik untuk { $name2 }.
 
@@ -1173,6 +1182,12 @@ tebda8468 = { $n } dipilih
 
 # Try again
 t213e90fa = Coba lagi
+
+# packwing needs your permission to show this folder.
+t837b77c0 = packwing memerlukan izin Anda untuk menampilkan folder ini.
+
+# Allow access…
+t98c9598c = Izinkan akses…
 
 # Nothing here matches that.
 t0f9a8a58 = Tidak ada yang cocok.
@@ -2439,6 +2454,9 @@ tbd048b4e = Berkas ini dienkripsi ke sebuah kunci.
 
 # This key file needs its passphrase.
 t81f4c775 = Berkas kunci ini memerlukan frasa sandinya.
+
+# packwing was not given {folder}, so it cannot work there.
+t000cc083 = packwing tidak diberi akses ke { $folder }, jadi tidak dapat bekerja di sana.
 
 # {paths} archives
 t27f3b860 = { $paths } arsip
