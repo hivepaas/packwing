@@ -336,11 +336,45 @@ pub fn check_signature(
     if matches!(read_signature(storage, path), Err(Signed::No)) {
         return Ok(Signed::No);
     }
+    audited_check(storage, path, || match read_signature(storage, path) {
+        Ok(signature) => check_with(storage, path, &signature, trusted, control),
+        Err(known) => Ok(known),
+    })
+}
+
+/// [`check_signature`], with the signature in `signature`, not beside the file: one
+/// the user chose, as on a phone, where the file beside is out of reach.
+pub fn check_signature_given(
+    storage: &dyn Storage,
+    path: &[String],
+    signature: &[u8],
+    trusted: &[PublicKey],
+    control: &Control,
+) -> Result<Signed, Error> {
+    audited_check(storage, path, || match Signature::parse(signature) {
+        Ok(signature) => check_with(storage, path, &signature, trusted, control),
+        Err(e) => Ok(Signed::Unreadable(e.to_string())),
+    })
+}
+
+/// The key that made `signature`, to trust it: the signature holds it whole.
+pub fn signature_key(signature: &[u8]) -> Result<PublicKey, String> {
+    Signature::parse(signature)
+        .map(|s| s.public_key().clone())
+        .map_err(|e| e.to_string())
+}
+
+/// A check of the file at `path`'s signature, as the audit log records it.
+fn audited_check(
+    storage: &dyn Storage,
+    path: &[String],
+    check: impl FnOnce() -> Result<Signed, Error>,
+) -> Result<Signed, Error> {
     let job = audit::begin(
         "verify",
         audit::fields([("file", json!(audit::place(storage, path)))]),
     )?;
-    let result = check_on(storage, path, trusted, control);
+    let result = check();
     audit::end(job, &result, |signed| {
         let (said, fingerprint) = match signed {
             Signed::No => ("no_signature", None),
@@ -359,16 +393,15 @@ pub fn check_signature(
     result
 }
 
-fn check_on(
+/// `signature` compared with the keys trusted, and, if one made it, with all of
+/// the file at `path`.
+fn check_with(
     storage: &dyn Storage,
     path: &[String],
+    signature: &Signature,
     trusted: &[PublicKey],
     control: &Control,
 ) -> Result<Signed, Error> {
-    let signature = match read_signature(storage, path) {
-        Ok(signature) => signature,
-        Err(known) => return Ok(known),
-    };
     let fingerprint = signature.public_key().fingerprint();
     let Some(key) = trusted.iter().find(|k| *k == signature.public_key()) else {
         return Ok(Signed::Stranger { fingerprint });
@@ -384,7 +417,7 @@ fn check_on(
         control,
         progress: &mut progress,
     };
-    Ok(match verify(&signature, key, FILE_NAMESPACE, reader) {
+    Ok(match verify(signature, key, FILE_NAMESPACE, reader) {
         Ok(()) => Signed::Good { fingerprint },
         Err(_) if control.check().is_err() => return Err(Error::Cancelled),
         Err(SignError::BadSignature) => Signed::Mismatch { fingerprint },
@@ -494,6 +527,43 @@ mod tests {
                 }
             );
         }
+    }
+
+    #[test]
+    fn a_signature_given_checks_as_one_beside_does_and_names_its_key() {
+        let s = Scratch::new("given");
+        let key = new_key(&s);
+        sign_file(&s.storage(), &file(), &key, &none()).expect("sign");
+        // Taken away from beside it, as a phone finds it: chosen elsewhere.
+        let signature = fs::read(s.0.join("a.zip.sig")).expect("read");
+        fs::remove_file(s.0.join("a.zip.sig")).expect("remove");
+        let fingerprint = key.public().fingerprint();
+        assert_eq!(signature_key(&signature).as_ref(), Ok(key.public()));
+        assert_eq!(
+            check_signature_given(&s.storage(), &file(), &signature, &[], &none()).expect("check"),
+            Signed::Stranger {
+                fingerprint: fingerprint.clone()
+            }
+        );
+        let trusted = [key.public().clone()];
+        assert_eq!(
+            check_signature_given(&s.storage(), &file(), &signature, &trusted, &none())
+                .expect("check"),
+            Signed::Good {
+                fingerprint: fingerprint.clone()
+            }
+        );
+        fs::write(s.0.join("a.zip"), vec![8u8; 300_000]).expect("write");
+        assert_eq!(
+            check_signature_given(&s.storage(), &file(), &signature, &trusted, &none())
+                .expect("check"),
+            Signed::Mismatch { fingerprint }
+        );
+        assert!(matches!(
+            check_signature_given(&s.storage(), &file(), b"not one", &trusted, &none()),
+            Ok(Signed::Unreadable(_))
+        ));
+        assert!(signature_key(b"not one").is_err());
     }
 
     #[test]

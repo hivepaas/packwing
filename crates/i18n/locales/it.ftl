@@ -3200,6 +3200,18 @@ t29f671f7 = Come il sistema
 # New archives
 t9341f018 = Nuovi archivi
 
+# Choose its signature…
+tf1c29e90 = Scegli la sua firma…
+
+# A signature says who signed a file only by a key you trust: Settings › Keys you trust. One by any other key proves nothing, whatever it matches.
+te63f7819 = Una firma dice chi ha firmato un file solo con una chiave di cui ti fidi: Impostazioni › Chiavi di cui ti fidi. Una di qualsiasi altra chiave non prova nulla, comunque corrisponda.
+
+# Trust this key
+tecf6b414 = Fidati di questa chiave
+
+# There is no signature beside it.
+te7a28cb7 = Accanto non c’è nessuna firma.
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing non riesce più a raggiungere { $name }. Aprilo di nuovo per guardarci dentro.
 

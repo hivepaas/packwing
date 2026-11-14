@@ -3151,6 +3151,18 @@ t29f671f7 = システムに従う
 # New archives
 t9341f018 = 新規アーカイブ
 
+# Choose its signature…
+tf1c29e90 = 署名を選択…
+
+# A signature says who signed a file only by a key you trust: Settings › Keys you trust. One by any other key proves nothing, whatever it matches.
+te63f7819 = 署名が誰がファイルに署名したかを示すのは、信頼するキーによる場合だけです（設定 › 信頼するキー）。それ以外のキーによる署名は、一致していても何の証明にもなりません。
+
+# Trust this key
+tecf6b414 = このキーを信頼
+
+# There is no signature beside it.
+te7a28cb7 = 隣に署名がありません。
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing から { $name } にアクセスできなくなりました。中を見るには、もう一度開いてください。
 

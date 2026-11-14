@@ -7,8 +7,8 @@ use std::sync::{Arc, Mutex};
 
 use packwing_mobile::{
     Archive, ArchiveFormat, Checksum, ChecksumKind, Compared, CompressionLevel, Job, JobListener,
-    JobProgress, MobileError, NewArchiveHow, Secrets, checksum_kinds, compare_checksum,
-    create_archive, stem,
+    JobProgress, MobileError, NewArchiveHow, Secrets, SignatureState, checksum_kinds,
+    compare_checksum, create_archive, read_key, stem,
 };
 
 /// A folder of files to make archives of: `Báo cáo/tổng hợp.txt` and
@@ -326,4 +326,54 @@ fn a_checksum_pasted_matches_differs_or_waits() {
     let kinds = checksum_kinds();
     assert_eq!(kinds[0].name, "SHA-256");
     assert!(kinds.iter().any(|k| k.kind == ChecksumKind::Md5 && k.weak));
+}
+
+#[test]
+fn an_archive_s_signature_says_who_signed_it_only_by_a_key_trusted() {
+    let dir = tempfile::tempdir().expect("dir");
+    let path = make(dir.path(), ArchiveFormat::Zip, None, false);
+    let keys = dir.path().join("keys");
+    fs::create_dir_all(&keys).expect("keys");
+    let (key, _) = packwing_core::make_signing_key(&keys, b"a passphrase").expect("a key");
+    let control = packwing_core::Control::default();
+    packwing_core::sign_file(
+        &packwing_core::LocalFolder::new(dir.path()),
+        &["a.zip".to_owned()],
+        &key,
+        &control,
+    )
+    .expect("signed");
+    let signature = format!("{path}.sig");
+    let mine = read_key(key.public().to_string()).expect("a key");
+    assert_eq!(mine.fingerprint, key.public().fingerprint());
+
+    let archive = Archive::open(path.clone(), Secrets::default(), Job::quiet()).expect("opened");
+    let check = |trusted: Vec<String>| {
+        archive
+            .check_signature(signature.clone(), trusted, Job::quiet())
+            .expect("checked")
+    };
+    // Not trusted: who it is by, and the key to trust.
+    assert_eq!(
+        check(vec![]),
+        SignatureState::Stranger {
+            fingerprint: mine.fingerprint.clone(),
+            key: mine.line.clone(),
+        }
+    );
+    assert_eq!(
+        check(vec![mine.line.clone()]),
+        SignatureState::Good {
+            fingerprint: mine.fingerprint.clone()
+        }
+    );
+
+    // Another archive, under the same signature.
+    fs::write(&path, b"not what was signed").expect("write");
+    let changed = Archive::open(path, Secrets::default(), Job::quiet());
+    assert!(changed.is_err(), "no archive any more");
+    assert!(matches!(
+        read_key("not a key".to_owned()),
+        Err(MobileError::Failed { .. })
+    ));
 }

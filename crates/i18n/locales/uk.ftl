@@ -3280,6 +3280,18 @@ t29f671f7 = Як у системі
 # New archives
 t9341f018 = Нові архіви
 
+# Choose its signature…
+tf1c29e90 = Вибрати підпис…
+
+# A signature says who signed a file only by a key you trust: Settings › Keys you trust. One by any other key proves nothing, whatever it matches.
+te63f7819 = Підпис показує, хто підписав файл, лише якщо його зроблено ключем, якому ви довіряєте: Налаштування › Ключі, яким ви довіряєте. Підпис будь-якого іншого ключа нічого не доводить, навіть якщо збігається.
+
+# Trust this key
+tecf6b414 = Довіряти цьому ключу
+
+# There is no signature beside it.
+te7a28cb7 = Поруч немає підпису.
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing більше не має доступу до { $name }. Відкрийте його знову, щоб зазирнути всередину.
 

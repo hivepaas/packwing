@@ -76,9 +76,9 @@ pub use listing::{Child, Entry, Found, Link, Listen, Listing, list, list_as_read
 pub use mark::came_from_internet;
 pub use passphrase::suggest_passphrase;
 pub use sign::{
-    KeyRefused, PublicKey, Signed, SigningKey, check_signature, has_signature, is_part_name,
-    is_signature_name, look_at_signature, make_signing_key, read_public_key, read_signing_key,
-    sign_file, signature_name,
+    KeyRefused, PublicKey, Signed, SigningKey, check_signature, check_signature_given,
+    has_signature, is_part_name, is_signature_name, look_at_signature, make_signing_key,
+    read_public_key, read_signing_key, sign_file, signature_key, signature_name,
 };
 pub use source::{Source, Stored};
 pub use split::{join_parts, parts_of, split_file};

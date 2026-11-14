@@ -3160,6 +3160,18 @@ t29f671f7 = 依系統
 # New archives
 t9341f018 = 新封存檔
 
+# Choose its signature…
+tf1c29e90 = 選擇它的簽章…
+
+# A signature says who signed a file only by a key you trust: Settings › Keys you trust. One by any other key proves nothing, whatever it matches.
+te63f7819 = 只有你信任的金鑰所簽的章，才代表簽署者的身分：設定 › 你信任的金鑰。其他任何金鑰所簽的章，無論是否相符，都不能證明什麼。
+
+# Trust this key
+tecf6b414 = 信任此金鑰
+
+# There is no signature beside it.
+te7a28cb7 = 旁邊沒有簽章。
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing 已無法存取 { $name }。請重新開啟以查看內容。
 
