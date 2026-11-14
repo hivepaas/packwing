@@ -2059,6 +2059,9 @@ tf996dc19 = App Store не знайшов покупок із цим облік�
 # The App Store could not do it: {why}
 t07f7f00e = App Store не зміг це зробити: { $why }
 
+# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
+t4294db10 = App Store не продає Pro у вашій країні чи регіоні. Pro, придбаний з цим обліковим записом Apple в іншій країні, усе одно можна відновити.
+
 # App Store
 t56b8f375 = App Store
 

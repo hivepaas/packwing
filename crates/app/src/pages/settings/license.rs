@@ -72,6 +72,10 @@ fn app_store(cx: &App) -> Div {
             .text_size(ui(15.))
             .child(tr!("Bought"))
     } else {
+        // Where the App Store has no Pro (the user's country is not among the
+        // purchase's), there is nothing to buy; what was bought elsewhere can still be
+        // restored. Until it answers, or when it fails to, Buy asks it again.
+        let sold = store.sold != Some(false);
         let buy = match &store.price {
             Some(price) => tr!("Buy Pro · {price}", price = price.clone()),
             None => tr!("Buy Pro"),
@@ -79,11 +83,13 @@ fn app_store(cx: &App) -> Div {
         div()
             .flex()
             .gap(ui(10.))
-            .child(
-                button("store-buy", buy, Fill::Accent, Size::Medium)
-                    .when(store.busy, |d| d.opacity(0.5))
-                    .on_click(|_, _, cx| crate::store::buy(cx)),
-            )
+            .when(sold, |d| {
+                d.child(
+                    button("store-buy", buy, Fill::Accent, Size::Medium)
+                        .when(store.busy, |d| d.opacity(0.5))
+                        .on_click(|_, _, cx| crate::store::buy(cx)),
+                )
+            })
             .child(
                 button(
                     "store-restore",
@@ -106,6 +112,14 @@ fn app_store(cx: &App) -> Div {
             note(Tone::Warn).child(tr!("The App Store could not do it: {why}", why = why))
         }
     });
+    let not_sold = (!store.holds && store.sold == Some(false)).then(|| {
+        note(Tone::Warn)
+            .debug_selector(|| "store-not-sold".to_owned())
+            .child(tr!(
+                "The App Store does not sell Pro in your country or region. Pro bought with \
+                 this Apple Account in another one can still be restored."
+            ))
+    });
     div()
         .flex()
         .flex_col()
@@ -115,6 +129,7 @@ fn app_store(cx: &App) -> Div {
             tr!("Pro, bought once in the App Store: yours on every Mac with your Apple Account."),
             control,
         ))
+        .children(not_sold)
         .children(said.map(|n| n.debug_selector(|| "store-said".to_owned())))
 }
 

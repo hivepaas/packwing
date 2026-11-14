@@ -1987,6 +1987,9 @@ tf996dc19 = App Store tidak menemukan pembelian dengan Akun Apple ini.
 # The App Store could not do it: {why}
 t07f7f00e = App Store tidak dapat melakukannya: { $why }
 
+# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
+t4294db10 = App Store tidak menjual Pro di negara atau wilayah Anda. Pro yang dibeli dengan Akun Apple ini di negara lain tetap dapat dipulihkan.
+
 # App Store
 t56b8f375 = App Store
 

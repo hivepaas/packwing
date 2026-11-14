@@ -2011,6 +2011,9 @@ tf996dc19 = App Store bu Apple Hesabı ile satın alınmış bir şey bulamadı.
 # The App Store could not do it: {why}
 t07f7f00e = App Store bunu yapamadı: { $why }
 
+# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
+t4294db10 = App Store, ülkenizde veya bölgenizde Pro satmıyor. Bu Apple Hesabıyla başka bir ülkede satın alınan Pro yine de geri yüklenebilir.
+
 # App Store
 t56b8f375 = App Store
 
