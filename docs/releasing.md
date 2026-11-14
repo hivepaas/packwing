@@ -72,7 +72,37 @@ APPLE_API_KEY_PATH=AuthKey_XXXX.p8 APPLE_API_KEY_ID=XXXX APPLE_API_ISSUER_ID=…
 scripts/package_macos.sh
 ```
 
-## Making one
+## The Mac App Store
+
+The store's build ([building.md](building.md#the-mac-app-stores-build)) is
+packaged by the Release workflow's `macos-app-store` job, beside the others but
+not in the GitHub release. A tag sends it to App Store Connect (app **Packwing**,
+`6834744685`), where it shows in TestFlight once Apple has processed it; a run by
+hand sends it with **app_store_upload**. Each upload needs a build number the
+store has not seen: the count of commits, so a commit is sent once.
+
+- **Apple's side**: the team's **Apple Distribution** and **Mac Installer
+  Distribution** certificates, and a **Mac App Store** provisioning profile for
+  `com.hivepaas.packwing` ("packwing Mac App Store"). The API key above uploads.
+- **The repository's secrets**: `MAS_APP_CERTIFICATE` and
+  `MAS_INSTALLER_CERTIFICATE` (the two `.p12`, base64), `MAS_CERTIFICATE_PASSWORD`
+  (one password for both), `MAS_PROVISIONING_PROFILE` (base64), and the
+  `APPLE_API_KEY*` above. Without them the job still builds and checks the
+  package, signed ad hoc and not sendable.
+
+**On a Mac**, with both certificates in a keychain:
+
+```sh
+MAS_APP_IDENTITY="Apple Distribution: Name (TEAMID)" \
+MAS_INSTALLER_IDENTITY="3rd Party Mac Developer Installer: Name (TEAMID)" \
+MAS_PROFILE=packwing_app_store.provisionprofile [MAS_KEYCHAIN=…] \
+scripts/package_macos_appstore.sh
+```
+
+and `UPLOAD=1` with the `APPLE_API_KEY_*` variables to send it. A version is
+then released from App Store Connect: its page, screenshots and review, with
+the in-app purchase sent for review with the first version.
+
 
 1. **The version.** `version` under `[workspace.package]` in `Cargo.toml` is
    the release's (`0.2.0`, or `0.3.0-beta1`). Write its notes in
