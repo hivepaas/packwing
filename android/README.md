@@ -88,8 +88,6 @@ writes what it reads to whatever takes it (`Documents.kt`, `Trees.kt`).
 - Picking only some files to extract. The core takes a list of paths
   (`Archive.extractInto`'s `picked`), and the screen has no way to choose
   them yet.
-- Pictures in the grid. An archive that is mostly pictures opens on a grid,
-  but each is a tile saying its kind, not a thumbnail of it.
 - Pausing a job. The core can stop one, not hold it; the progress screen
   offers Cancel alone. The design's Pause button has nothing behind it.
 - The comic reader, storages (S3, WebDAV, SFTP), signatures, checksums,

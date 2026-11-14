@@ -2,18 +2,23 @@ package com.hivepaas.packwing
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import uniffi.packwing_mobile.Archive
 import uniffi.packwing_mobile.ArchiveFormat
@@ -29,6 +34,7 @@ import uniffi.packwing_mobile.MobileException
 import uniffi.packwing_mobile.NewArchiveHow
 import uniffi.packwing_mobile.Secrets
 import uniffi.packwing_mobile.createArchive
+import uniffi.packwing_mobile.pictureFits
 import java.io.Closeable
 import java.io.File
 import java.io.FileNotFoundException
@@ -177,6 +183,7 @@ class AppModel(private val context: Context) {
     private fun letGo() {
         opened?.close()
         opened = null
+        synchronized(pictures) { pictures.clear() }
         rows = emptyList()
         found = emptyList()
         query = ""
@@ -304,6 +311,42 @@ class AppModel(private val context: Context) {
         }
     }
 
+    /**
+     * The pictures the grid has shown, so that scrolling back to one does not
+     * read it out of the archive again. The oldest goes once there are more
+     * than a screenful or two; a name that is not a picture is kept as none,
+     * so it is not tried twice.
+     */
+    private val pictures = object : LinkedHashMap<String, ImageBitmap?>(16, 0.75f, true) {
+        override fun removeEldestEntry(eldest: Map.Entry<String, ImageBitmap?>) = size > 120
+    }
+
+    /** How many pictures are read and decoded at once. */
+    private val decoding = Semaphore(2)
+
+    /**
+     * A picture of what is at `path`, no smaller than `edge` across, for the
+     * grid; none if it is not a picture, or is one too big to decode. The
+     * whole entry is read to make it, as an archive holds no thumbnail of
+     * its own.
+     */
+    suspend fun picture(path: List<String>, edge: Int): ImageBitmap? {
+        val key = path.joinToString("/")
+        synchronized(pictures) { if (pictures.containsKey(key)) return pictures[key] }
+        val archive = opened ?: return null
+        val made = decoding.withPermit {
+            withContext(Dispatchers.IO) {
+                runCatching {
+                    val bytes = archive.archive.preview(path, MOST_PICTURE, Job.quiet())
+                    if (pictureFits(bytes)) smallerBy(bytes, edge) else null
+                }.onFailure { Log.i("packwing", "no picture of ${path.lastOrNull()}", it) }
+                    .getOrNull()
+            }
+        }
+        synchronized(pictures) { pictures[key] = made }
+        return made
+    }
+
     /** What the file at `path` holds, at most `most` bytes, to show it. */
     suspend fun preview(path: List<String>, most: ULong = 32UL * 1024UL * 1024UL): ByteArray? {
         val archive = opened ?: return null
@@ -366,8 +409,13 @@ class AppModel(private val context: Context) {
         }
     }
 
-    /** Makes an archive of `paths` (files the picker gave) under `name`. */
-    fun create(paths: List<File>, name: String, how: NewArchiveHow, destination: Destination) {
+    /**
+     * Makes an archive of `paths` (files the picker gave) called `name`, in
+     * the folder `into`. The core writes it in the app's own folder first,
+     * which a new archive still needs: it is written as it is made, in no
+     * order, and a document tree takes a file only from its start.
+     */
+    fun create(paths: List<File>, name: String, how: NewArchiveHow, into: Uri) {
         if (running != null) return
         val job = Running(Running.What.Create, name, Job.quiet())
         val held = Job(job.listener)
@@ -376,18 +424,14 @@ class AppModel(private val context: Context) {
         ExtractService.start(context)
         scope.launch {
             val result = withContext(Dispatchers.IO) {
-                val staging = Documents.staging(context, name)
+                val staging = Documents.staging(context)
                 val wanted = File(staging, name + if (how.format == ArchiveFormat.ZIP) ".zip" else ".7z")
                 runCatching {
-                    createArchive(paths.map { it.path }, wanted.path, how, held)
-                    when (destination) {
-                        is Destination.Folder ->
-                            Documents.exportToTree(context, staging, destination.uri, name)
-                        Destination.Gallery -> 0
-                    }
+                    val made = createArchive(paths.map { it.path }, wanted.path, how, held)
+                    Documents.exportFileToTree(context, File(made), into)
                 }.also { staging.deleteRecursively() }
             }
-            result.onSuccess { job.done = tr("{name} is ready", "name" to name) }
+            result.onSuccess { called -> job.done = tr("{name} is ready", "name" to called) }
                 .onFailure { e ->
                     job.failed = (e as? MobileException)?.said
                         ?: tr("packwing could not make {name}.", "name" to name)
@@ -425,6 +469,29 @@ class AppModel(private val context: Context) {
     }
 
     companion object {
+        /** The most of an entry read to make a picture of it: 64 MiB. */
+        val MOST_PICTURE: ULong = 64UL * 1024UL * 1024UL
+
+        /**
+         * `bytes` decoded no smaller than `edge` across, halving as many
+         * times as it can on the way: a picture for a tile is a fraction of
+         * the one in the archive, and decoding it whole only to shrink it
+         * would be the whole of it in memory.
+         */
+        private fun smallerBy(bytes: ByteArray, edge: Int): ImageBitmap? {
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+            if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+            var by = 1
+            while (
+                bounds.outWidth / (by * 2) >= edge && bounds.outHeight / (by * 2) >= edge
+            ) {
+                by *= 2
+            }
+            val how = BitmapFactory.Options().apply { inSampleSize = by }
+            return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, how)?.asImageBitmap()
+        }
+
         fun isPicture(name: String): Boolean =
             Documents.mimeOf(name).startsWith("image/")
 

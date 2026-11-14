@@ -1,6 +1,7 @@
 package com.hivepaas.packwing.ui
 
 import android.graphics.BitmapFactory
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -50,6 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
@@ -150,7 +152,7 @@ fun ArchiveScreen(model: AppModel, screen: Screen.Folder) {
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     items(rows, key = { it.name }) { row ->
-                        Tile(row) {
+                        Tile(model, paths(row), row) {
                             if (row.folder) model.go(Screen.Folder(screen.path + row.name, photos = true))
                             else preview = paths(row)
                         }
@@ -263,10 +265,23 @@ private fun EntryLine(row: EntryRow, open: () -> Unit) {
     }
 }
 
+/** How many pixels across a picture in the grid is, at the least. */
+private const val TILE_PIXELS = 320
+
 @Composable
-private fun Tile(row: EntryRow, open: () -> Unit) {
+private fun Tile(model: AppModel, path: List<String>, row: EntryRow, open: () -> Unit) {
     val c = tonal()
     val kind = FileKind.of(row.name, row.folder, row.link)
+    // The archive holds no thumbnail, so a picture is read whole to show a
+    // tile of it: only one the grid can show, and only once (AppModel keeps
+    // what it made).
+    val picture = !row.folder && !row.link &&
+        AppModel.isPicture(row.name) &&
+        row.size <= AppModel.MOST_PICTURE
+    var small by remember(path) { mutableStateOf<ImageBitmap?>(null) }
+    if (picture) {
+        LaunchedEffect(path) { small = model.picture(path, TILE_PIXELS) }
+    }
     Box(
         modifier = Modifier
             .aspectRatio(1f)
@@ -275,7 +290,15 @@ private fun Tile(row: EntryRow, open: () -> Unit) {
             .clickable(onClick = open),
         contentAlignment = Alignment.Center,
     ) {
-        if (row.folder) {
+        val made = small
+        if (made != null) {
+            Image(
+                bitmap = made,
+                contentDescription = row.name,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+        } else if (row.folder) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 KindTile(row.name, kind, size = 34.dp)
                 Text(

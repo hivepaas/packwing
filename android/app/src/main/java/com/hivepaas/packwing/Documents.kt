@@ -156,42 +156,29 @@ object Documents {
         File(context.cacheDir, what).apply { mkdirs() }
 
     /**
-     * Where the core writes before what it wrote is copied out: the app's own
-     * folder, so nothing outside it is touched if a job fails.
+     * Where a new archive is written before it is copied where the user
+     * asked: the app's own folder, so nothing outside it is touched if the
+     * job fails. Extracting needs none of this — it writes where the user
+     * asked as it goes (`Trees.kt`).
      */
-    fun staging(context: Context, name: String): File =
-        File(cache(context, "extract"), "${UUID.randomUUID()}").apply { mkdirs() }
+    fun staging(context: Context): File =
+        File(cache(context, "making"), "${UUID.randomUUID()}").apply { mkdirs() }
 
     /**
-     * Copies everything under `from` into the document tree `tree`, keeping
-     * its folders, under a folder named `folder`. Says how many files landed.
+     * Copies one file into the tree the user pointed at, under its own name,
+     * and says what it ended up called: a new archive goes in that folder
+     * itself, not in a folder of its own. A name already taken is not
+     * written over — the provider gives the next one that is free, which is
+     * why the name it chose is what comes back.
      */
-    fun exportToTree(context: Context, from: File, tree: Uri, folder: String): Int {
+    fun exportFileToTree(context: Context, from: File, tree: Uri): String {
         val root = DocumentFile.fromTreeUri(context, tree) ?: error("that folder is not reachable")
-        val top = root.findFile(folder)?.takeIf { it.isDirectory }
-            ?: root.createDirectory(folder)
-            ?: error("cannot make a folder there")
-        return copyInto(context, from, top)
-    }
-
-    private fun copyInto(context: Context, from: File, into: DocumentFile): Int {
-        var written = 0
-        for (child in from.listFiles().orEmpty()) {
-            if (child.isDirectory) {
-                val sub = into.findFile(child.name)?.takeIf { it.isDirectory }
-                    ?: into.createDirectory(child.name) ?: continue
-                written += copyInto(context, child, sub)
-            } else {
-                val existing = into.findFile(child.name)
-                val file = existing?.takeIf { it.isFile }
-                    ?: into.createFile(saveMime(child.name), child.name) ?: continue
-                context.contentResolver.openOutputStream(file.uri, "wt")?.use { to ->
-                    child.inputStream().use { source -> source.copyTo(to, DEFAULT_BUFFER_SIZE) }
-                    written++
-                }
-            }
-        }
-        return written
+        val made = root.createFile(saveMime(from.name), from.name)
+            ?: error("cannot write there")
+        context.contentResolver.openOutputStream(made.uri, "wt")?.use { to ->
+            from.inputStream().use { source -> source.copyTo(to, DEFAULT_BUFFER_SIZE) }
+        } ?: error("cannot write there")
+        return made.name ?: from.name
     }
 
     /**

@@ -52,7 +52,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hivepaas.packwing.AppModel
-import com.hivepaas.packwing.Destination
 import com.hivepaas.packwing.Documents
 import com.hivepaas.packwing.tr
 import com.hivepaas.packwing.trN
@@ -337,7 +336,7 @@ fun CreateScreen(model: AppModel) {
                             password = password.takeIf { locked && it.isNotEmpty() },
                             hideNames = sevenZip && locked,
                         ),
-                        destination = Destination.Folder(folder ?: return@Button),
+                        into = folder ?: return@Button,
                     )
                 },
                 enabled = files.isNotEmpty() && !copying && folder != null && (!locked || password.isNotEmpty()),

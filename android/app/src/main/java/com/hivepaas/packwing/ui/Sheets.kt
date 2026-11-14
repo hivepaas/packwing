@@ -340,7 +340,11 @@ fun ExtractSheet(model: AppModel, ask: Sheet.Extract) {
             }
 
             Text(
-                tr("Nothing is written outside that folder or through links, and an archive bomb stops at its size limit."),
+                if (toGallery) {
+                    tr("Nothing is written through links, and an archive bomb stops at its size limit.")
+                } else {
+                    tr("Nothing is written outside that folder or through links, and an archive bomb stops at its size limit.")
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
@@ -362,12 +366,18 @@ fun ExtractSheet(model: AppModel, ask: Sheet.Extract) {
                 modifier = Modifier.fillMaxWidth().height(56.dp),
             ) {
                 Text(
-                    trN(
-                        opened.info.files,
-                        "Extract {n} file",
-                        "Extract {n} files",
-                        "n" to opened.info.files.toString(),
-                    ),
+                    // How many go to the gallery is not known until they are
+                    // read: what is neither picture nor video stays behind.
+                    if (toGallery) {
+                        tr("Extract the pictures")
+                    } else {
+                        trN(
+                            opened.info.files,
+                            "Extract {n} file",
+                            "Extract {n} files",
+                            "n" to opened.info.files.toString(),
+                        )
+                    },
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
                 )
