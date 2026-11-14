@@ -1966,6 +1966,33 @@ tc3e75ecf = Đủ mọi tính năng, số nơi lưu trữ không giới hạn.
 # Every feature, and any number of storages, for your organization.
 t69b29f66 = Đủ mọi tính năng, số nơi lưu trữ không giới hạn, cho tổ chức của bạn.
 
+# Bought
+t5c52217e = Đã mua
+
+# Buy Pro · {price}
+t93567162 = Mua Pro · { $price }
+
+# Buy Pro
+t1bdcbb74 = Mua Pro
+
+# Restore Purchases
+t8ade61c5 = Khôi phục giao dịch mua
+
+# Waiting for approval: packwing turns Pro once it is given.
+td36209de = Đang chờ duyệt: packwing sẽ thành Pro ngay khi được duyệt.
+
+# The App Store found nothing bought with this Apple Account.
+tf996dc19 = App Store không tìm thấy gì đã mua bằng Tài khoản Apple này.
+
+# The App Store could not do it: {why}
+t07f7f00e = App Store không thể thực hiện: { $why }
+
+# App Store
+t56b8f375 = App Store
+
+# Pro, bought once in the App Store: yours on every Mac with your Apple Account.
+ta6e8e46d = Pro, mua một lần trên App Store: của bạn trên mọi máy Mac dùng Tài khoản Apple của bạn.
+
 # Plan
 t1eab5e32 = Gói
 

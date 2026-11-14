@@ -2,7 +2,7 @@
 
 use std::time::SystemTime;
 
-use gpui::{App, Context, Entity, Render, Window, div, prelude::*, rgb};
+use gpui::{App, Context, Div, Entity, Render, Window, div, prelude::*, rgb};
 use packwing_i18n::tr;
 use packwing_license::{FREE_REMOTE_STORAGES, Plan, Standing};
 
@@ -13,6 +13,7 @@ pub const BUY: &str = "https://packwing.app/pricing";
 use crate::colors::colors;
 use crate::input::TextInput;
 use crate::licensing::{self, Licensed};
+use crate::store::Said;
 use crate::text_size::ui;
 use crate::widgets::{Fill, Size, Tone, button, note};
 
@@ -59,6 +60,62 @@ fn gives(plan: Plan) -> String {
 
 fn read(cx: &App) -> Licensed {
     cx.try_global::<Licensed>().cloned().unwrap_or_default()
+}
+
+/// The Mac App Store's build: Pro bought there, or Buy and Restore Purchases, and what
+/// the last of them came to.
+fn app_store(cx: &App) -> Div {
+    let store = crate::store::read(cx);
+    let control = if store.holds {
+        div()
+            .debug_selector(|| "store-held".to_owned())
+            .text_size(ui(15.))
+            .child(tr!("Bought"))
+    } else {
+        let buy = match &store.price {
+            Some(price) => tr!("Buy Pro · {price}", price = price.clone()),
+            None => tr!("Buy Pro"),
+        };
+        div()
+            .flex()
+            .gap(ui(10.))
+            .child(
+                button("store-buy", buy, Fill::Accent, Size::Medium)
+                    .when(store.busy, |d| d.opacity(0.5))
+                    .on_click(|_, _, cx| crate::store::buy(cx)),
+            )
+            .child(
+                button(
+                    "store-restore",
+                    tr!("Restore Purchases"),
+                    Fill::Outline,
+                    Size::Medium,
+                )
+                .when(store.busy, |d| d.opacity(0.5))
+                .on_click(|_, _, cx| crate::store::restore(cx)),
+            )
+    };
+    let said = store.said.map(|said| match said {
+        Said::Pending => note(Tone::Good).child(tr!(
+            "Waiting for approval: packwing turns Pro once it is given."
+        )),
+        Said::NothingToRestore => note(Tone::Warn).child(tr!(
+            "The App Store found nothing bought with this Apple Account."
+        )),
+        Said::Failed(why) => {
+            note(Tone::Warn).child(tr!("The App Store could not do it: {why}", why = why))
+        }
+    });
+    div()
+        .flex()
+        .flex_col()
+        .gap(ui(10.))
+        .child(setting(
+            tr!("App Store"),
+            tr!("Pro, bought once in the App Store: yours on every Mac with your Apple Account."),
+            control,
+        ))
+        .children(said.map(|n| n.debug_selector(|| "store-said".to_owned())))
 }
 
 impl Render for LicenseSection {
@@ -140,8 +197,10 @@ impl Render for LicenseSection {
             }
         }
         let problem = self.problem.clone().or(held.problem.clone());
+        let store = crate::store::there();
         section()
             .child(rows(lines))
+            .when(store && !held.by_policy, |d| d.child(app_store(cx)))
             .when(held.by_policy, |d| {
                 d.child(note(Tone::Good).child(if held.refreshes {
                     tr!(
@@ -174,19 +233,23 @@ impl Render for LicenseSection {
                             button("license-enter", tr!("Activate"), Fill::Accent, Size::Medium)
                                 .on_click(cx.listener(|this, _, _, cx| this.enter(cx))),
                         )
-                        .child(
-                            button(
-                                "license-buy",
-                                if held.license.as_ref().is_some_and(|l| l.owned) {
-                                    tr!("Renew")
-                                } else {
-                                    tr!("Buy")
-                                },
-                                Fill::Outline,
-                                Size::Medium,
+                        // The App Store's rules: what it sells is bought there, with no
+                        // way out to another shop.
+                        .when(!store, |d| {
+                            d.child(
+                                button(
+                                    "license-buy",
+                                    if held.license.as_ref().is_some_and(|l| l.owned) {
+                                        tr!("Renew")
+                                    } else {
+                                        tr!("Buy")
+                                    },
+                                    Fill::Outline,
+                                    Size::Medium,
+                                )
+                                .on_click(|_, _, cx| cx.open_url(BUY)),
                             )
-                            .on_click(|_, _, cx| cx.open_url(BUY)),
-                        )
+                        })
                         .when(held.license.is_some(), |d| {
                             d.child(
                                 button(

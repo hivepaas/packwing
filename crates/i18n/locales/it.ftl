@@ -1990,6 +1990,33 @@ tc3e75ecf = Ogni funzione e un numero qualsiasi di spazi di archiviazione.
 # Every feature, and any number of storages, for your organization.
 t69b29f66 = Ogni funzione e un numero qualsiasi di spazi di archiviazione, per la tua organizzazione.
 
+# Bought
+t5c52217e = Acquistato
+
+# Buy Pro · {price}
+t93567162 = Acquista Pro · { $price }
+
+# Buy Pro
+t1bdcbb74 = Acquista Pro
+
+# Restore Purchases
+t8ade61c5 = Ripristina acquisti
+
+# Waiting for approval: packwing turns Pro once it is given.
+td36209de = In attesa di approvazione: packwing diventa Pro appena viene data.
+
+# The App Store found nothing bought with this Apple Account.
+tf996dc19 = L’App Store non ha trovato acquisti con questo Apple Account.
+
+# The App Store could not do it: {why}
+t07f7f00e = L’App Store non è riuscito a farlo: { $why }
+
+# App Store
+t56b8f375 = App Store
+
+# Pro, bought once in the App Store: yours on every Mac with your Apple Account.
+ta6e8e46d = Pro, acquistato una volta sull’App Store: tuo su ogni Mac con il tuo Apple Account.
+
 # Plan
 t1eab5e32 = Piano
 

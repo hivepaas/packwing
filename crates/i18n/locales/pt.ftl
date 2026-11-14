@@ -1990,6 +1990,33 @@ tc3e75ecf = Todos os recursos e qualquer número de armazenamentos.
 # Every feature, and any number of storages, for your organization.
 t69b29f66 = Todos os recursos e qualquer número de armazenamentos, para sua organização.
 
+# Bought
+t5c52217e = Comprado
+
+# Buy Pro · {price}
+t93567162 = Comprar Pro · { $price }
+
+# Buy Pro
+t1bdcbb74 = Comprar Pro
+
+# Restore Purchases
+t8ade61c5 = Restaurar compras
+
+# Waiting for approval: packwing turns Pro once it is given.
+td36209de = Aguardando aprovação: o packwing passa a Pro assim que ela for dada.
+
+# The App Store found nothing bought with this Apple Account.
+tf996dc19 = A App Store não encontrou nada comprado com esta Conta Apple.
+
+# The App Store could not do it: {why}
+t07f7f00e = A App Store não conseguiu fazer isso: { $why }
+
+# App Store
+t56b8f375 = App Store
+
+# Pro, bought once in the App Store: yours on every Mac with your Apple Account.
+ta6e8e46d = Pro, comprado uma vez na App Store: seu em todo Mac com sua Conta Apple.
+
 # Plan
 t1eab5e32 = Plano
 

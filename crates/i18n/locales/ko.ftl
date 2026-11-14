@@ -1966,6 +1966,33 @@ tc3e75ecf = 모든 기능과 무제한 스토리지를 사용할 수 있습니�
 # Every feature, and any number of storages, for your organization.
 t69b29f66 = 조직을 위한 모든 기능과 무제한 스토리지를 사용할 수 있습니다.
 
+# Bought
+t5c52217e = 구입함
+
+# Buy Pro · {price}
+t93567162 = Pro 구입 · { $price }
+
+# Buy Pro
+t1bdcbb74 = Pro 구입
+
+# Restore Purchases
+t8ade61c5 = 구입 항목 복원
+
+# Waiting for approval: packwing turns Pro once it is given.
+td36209de = 승인을 기다리는 중: 승인되면 packwing이 Pro가 됩니다.
+
+# The App Store found nothing bought with this Apple Account.
+tf996dc19 = App Store에서 이 Apple 계정으로 구입한 항목을 찾지 못했습니다.
+
+# The App Store could not do it: {why}
+t07f7f00e = App Store에서 처리하지 못했습니다: { $why }
+
+# App Store
+t56b8f375 = App Store
+
+# Pro, bought once in the App Store: yours on every Mac with your Apple Account.
+ta6e8e46d = App Store에서 한 번 구입한 Pro는 같은 Apple 계정의 모든 Mac에서 사용할 수 있습니다.
+
 # Plan
 t1eab5e32 = 플랜
 

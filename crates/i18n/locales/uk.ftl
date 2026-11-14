@@ -2038,6 +2038,33 @@ tc3e75ecf = Усі можливості й будь-яка кількість с
 # Every feature, and any number of storages, for your organization.
 t69b29f66 = Усі можливості й будь-яка кількість сховищ для вашої організації.
 
+# Bought
+t5c52217e = Придбано
+
+# Buy Pro · {price}
+t93567162 = Придбати Pro · { $price }
+
+# Buy Pro
+t1bdcbb74 = Придбати Pro
+
+# Restore Purchases
+t8ade61c5 = Відновити покупки
+
+# Waiting for approval: packwing turns Pro once it is given.
+td36209de = Очікування схвалення: packwing стане Pro, щойно його нададуть.
+
+# The App Store found nothing bought with this Apple Account.
+tf996dc19 = App Store не знайшов покупок із цим обліковим записом Apple.
+
+# The App Store could not do it: {why}
+t07f7f00e = App Store не зміг це зробити: { $why }
+
+# App Store
+t56b8f375 = App Store
+
+# Pro, bought once in the App Store: yours on every Mac with your Apple Account.
+ta6e8e46d = Pro, придбаний один раз в App Store: ваш на кожному Mac з вашим обліковим записом Apple.
+
 # Plan
 t1eab5e32 = Тариф
 

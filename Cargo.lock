@@ -5471,6 +5471,7 @@ dependencies = [
  "packwing-policy",
  "packwing-remote",
  "packwing-sandbox",
+ "packwing-store",
  "packwing-update",
  "regex",
  "robius-authentication",
@@ -5603,6 +5604,15 @@ dependencies = [
  "objc2-app-kit 0.3.2",
  "objc2-foundation 0.3.2",
  "tempfile",
+]
+
+[[package]]
+name = "packwing-store"
+version = "0.1.0"
+dependencies = [
+ "futures",
+ "futures-channel",
+ "serde_json",
 ]
 
 [[package]]
