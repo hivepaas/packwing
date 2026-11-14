@@ -35,7 +35,7 @@
 - 👀 **Look before you extract.** Search inside an archive, preview its files, and step through its pictures and texts in a full-window viewer.
 - ☁️ **Your storages, too.** Browse S3, WebDAV and SFTP like folders, and open an archive there without downloading it.
 - 🔏 **Signed and checked.** Sign files, verify signatures, and compare checksums with the ones on a download page.
-- 🖱️ **Right where you are.** Compress and Extract in the right-click menu of Finder, Windows Explorer and Linux file managers.
+- 🖱️ **Right where you are.** Compress and Extract in the right-click menu of Finder, Windows Explorer and Linux file managers, and archives open in packwing from Open With there.
 - ⌨️ **`pkw`, the command line.** The same engine for terminals, servers and scripts.
 - 🏢 **Ready for organizations.** Policies by Group Policy or a configuration profile, and an audit log of what was extracted and made.
 - 🌍 **Made for every day.** 15 languages, light and dark, and updates you can trust.
