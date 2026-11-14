@@ -2908,6 +2908,9 @@ t78956399 = 以列表显示
 # Show a grid
 tb50700d9 = 以网格显示
 
+# More
+t4f34d900 = 更多
+
 # Select
 t3e892b4d = 选择
 
@@ -2934,6 +2937,9 @@ t9beae641 = 全部解压
 
 # Preview
 tfdda4cf7 = 预览
+
+# Paste
+tb34a0288 = 粘贴
 
 # Files
 te71d1b30 = 文件
@@ -3132,9 +3138,6 @@ tcd577cde = 隐藏密码
 
 # Show password
 t500e3555 = 显示密码
-
-# Paste
-tb34a0288 = 粘贴
 
 # Kept in memory only, never saved, and forgotten when the archive is closed.
 t6641f326 = 仅保存在内存中，从不写入存储，关闭压缩包后即忘记。

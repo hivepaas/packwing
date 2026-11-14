@@ -2917,6 +2917,9 @@ t78956399 = Tampilkan daftar
 # Show a grid
 tb50700d9 = Tampilkan kisi
 
+# More
+t4f34d900 = Lainnya
+
 # Select
 t3e892b4d = Pilih
 
@@ -2943,6 +2946,9 @@ t9beae641 = Ekstrak semua
 
 # Preview
 tfdda4cf7 = Pratinjau
+
+# Paste
+tb34a0288 = Tempel
 
 # Files
 te71d1b30 = File
@@ -3141,9 +3147,6 @@ tcd577cde = Sembunyikan kata sandi
 
 # Show password
 t500e3555 = Tampilkan kata sandi
-
-# Paste
-tb34a0288 = Tempel
 
 # Kept in memory only, never saved, and forgotten when the archive is closed.
 t6641f326 = Hanya ada di memori, tidak pernah disimpan, dan dilupakan saat arsip ditutup.

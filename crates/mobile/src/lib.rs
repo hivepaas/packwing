@@ -1,6 +1,6 @@
 //! What the iOS and Android apps call: an archive opened and what it holds,
 //! folder by folder; a file of it read, to preview it; its files extracted;
-//! and new ZIP and 7z archives made. The work is packwing-core's, as on the
+//! new ZIP and 7z archives made; and an archive's own checksums. The work is packwing-core's, as on the
 //! desktop.
 //!
 //! Every call that reads or writes a file blocks until it is done, so the app
@@ -16,6 +16,7 @@
 
 uniffi::setup_scaffolding!();
 
+mod checksum;
 mod i18n;
 
 /// Android's document picker hands out no paths: see [`Document`].
@@ -34,6 +35,9 @@ use packwing_core::{
     Listen, Listing, NewArchive, Progress, Source, Summary,
 };
 
+pub use checksum::{
+    Checksum, ChecksumKind, ChecksumKindRow, Compared, checksum_kinds, compare_checksum,
+};
 pub use i18n::LanguageRow;
 
 /// Why a call did not do what it was asked, as the app says it: `reason` is

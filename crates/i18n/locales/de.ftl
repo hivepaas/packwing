@@ -2949,6 +2949,9 @@ t78956399 = Als Liste anzeigen
 # Show a grid
 tb50700d9 = Als Raster anzeigen
 
+# More
+t4f34d900 = Mehr
+
 # Select
 t3e892b4d = Auswählen
 
@@ -2976,6 +2979,9 @@ t9beae641 = Alle entpacken
 
 # Preview
 tfdda4cf7 = Vorschau
+
+# Paste
+tb34a0288 = Einsetzen
 
 # Files
 te71d1b30 = Dateien
@@ -3181,9 +3187,6 @@ tcd577cde = Passwort ausblenden
 
 # Show password
 t500e3555 = Passwort anzeigen
-
-# Paste
-tb34a0288 = Einsetzen
 
 # Kept in memory only, never saved, and forgotten when the archive is closed.
 t6641f326 = Nur im Arbeitsspeicher gehalten, nie gespeichert und vergessen, sobald das Archiv geschlossen wird.

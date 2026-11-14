@@ -13,6 +13,7 @@ use sha1::Sha1;
 use sha2::{Digest, Sha256, Sha512};
 
 use crate::job::Control;
+use crate::source::Source;
 use crate::storage::{Item, Storage};
 use crate::{Error, Progress};
 
@@ -191,6 +192,24 @@ pub fn checksums(
         audit::fields([("sums", json!(sums))])
     });
     result
+}
+
+/// The checksums of the file an archive was opened from, wherever it is: a file
+/// (that file alone, not the other parts of a split archive, as a checksum is given
+/// for each part), or one of a storage, read where it is. The phones' way: their
+/// archives come from a file or from a document the system opened.
+pub fn source_checksums(
+    source: &Source,
+    algorithms: &[Algorithm],
+    control: &Control,
+) -> Result<Vec<(Algorithm, String)>, Error> {
+    match source {
+        Source::File(path) => {
+            let file = std::fs::File::open(path).map_err(|e| Error::Failed(e.to_string()))?;
+            checksums_of(file, algorithms, control)
+        }
+        Source::Stored(stored) => checksums_of(stored.stored_reader(), algorithms, control),
+    }
 }
 
 /// The name of the file beside the one called `name` that keeps its `algorithm`

@@ -2949,6 +2949,9 @@ t78956399 = Liste olarak göster
 # Show a grid
 tb50700d9 = Izgara olarak göster
 
+# More
+t4f34d900 = Diğer
+
 # Select
 t3e892b4d = Seç
 
@@ -2976,6 +2979,9 @@ t9beae641 = Tümünü çıkar
 
 # Preview
 tfdda4cf7 = Önizle
+
+# Paste
+tb34a0288 = Yapıştır
 
 # Files
 te71d1b30 = Dosyalar
@@ -3181,9 +3187,6 @@ tcd577cde = Parolayı gizle
 
 # Show password
 t500e3555 = Parolayı göster
-
-# Paste
-tb34a0288 = Yapıştır
 
 # Kept in memory only, never saved, and forgotten when the archive is closed.
 t6641f326 = Yalnızca bellekte tutulur, hiç kaydedilmez ve arşiv kapanınca unutulur.

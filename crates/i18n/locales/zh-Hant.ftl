@@ -2917,6 +2917,9 @@ t78956399 = 以列表顯示
 # Show a grid
 tb50700d9 = 以格狀顯示
 
+# More
+t4f34d900 = 更多
+
 # Select
 t3e892b4d = 選取
 
@@ -2943,6 +2946,9 @@ t9beae641 = 全部解壓縮
 
 # Preview
 tfdda4cf7 = 預覽
+
+# Paste
+tb34a0288 = 貼上
 
 # Files
 te71d1b30 = 檔案
@@ -3141,9 +3147,6 @@ tcd577cde = 隱藏密碼
 
 # Show password
 t500e3555 = 顯示密碼
-
-# Paste
-tb34a0288 = 貼上
 
 # Kept in memory only, never saved, and forgotten when the archive is closed.
 t6641f326 = 只保留在記憶體中，絕不會儲存，關閉封存檔後即忘記。

@@ -2949,6 +2949,9 @@ t78956399 = Mostra come elenco
 # Show a grid
 tb50700d9 = Mostra come griglia
 
+# More
+t4f34d900 = Altro
+
 # Select
 t3e892b4d = Seleziona
 
@@ -2976,6 +2979,9 @@ t9beae641 = Estrai tutto
 
 # Preview
 tfdda4cf7 = Anteprima
+
+# Paste
+tb34a0288 = Incolla
 
 # Files
 te71d1b30 = File
@@ -3181,9 +3187,6 @@ tcd577cde = Nascondi la password
 
 # Show password
 t500e3555 = Mostra la password
-
-# Paste
-tb34a0288 = Incolla
 
 # Kept in memory only, never saved, and forgotten when the archive is closed.
 t6641f326 = Tenuta solo in memoria, mai salvata, e dimenticata alla chiusura dell'archivio.
