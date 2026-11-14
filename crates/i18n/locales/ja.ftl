@@ -2889,3 +2889,441 @@ te0a63e12 = ユーザー
 
 # Password or app token
 t1c18cb9b = パスワードまたはアプリトークン
+
+# This archive is not where it was any more.
+t4d0917ba = このアーカイブは、もう元の場所にありません。
+
+# Tap a file to preview it.
+td670fcf3 = ファイルをタップするとプレビューできます。
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = 大文字と小文字、アクセントは区別しません。bao cao で Báo cáo も見つかります。
+
+# Search its {n} file | Search all {n} files
+t76dbca4b =
+    { $n ->
+       *[other] { $n } 個のファイルを検索
+    }
+
+# Select
+t3e892b4d = 選択
+
+# Opening
+t015825b7 = 開いています
+
+# Extract {n} | Extract {n}
+tfda523f9 =
+    { $n ->
+       *[other] { $n } 個を展開
+    }
+
+# Extract all
+t9beae641 = すべて展開
+
+# Preview
+tfdda4cf7 = プレビュー
+
+# Files
+te71d1b30 = ファイル
+
+# A folder
+te84ceb50 = フォルダ
+
+# Photos
+tcde554d0 = 写真
+
+# Add more
+t5d2a8a05 = さらに追加
+
+# Format
+tffb0ff72 = 形式
+
+# Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
+t96cb3408 = どこでも開けます。パスワードを付けると AES-256 になり、Windows のエクスプローラーでは開けませんが、7-Zip と packwing では開けます。
+
+# Smaller. Opens with packwing, 7-Zip and most archivers.
+tae66e6b2 = より小さくなります。packwing、7-Zip、ほとんどのアーカイバで開けます。
+
+# Compression
+t961abb95 = 圧縮
+
+# Hide the password
+te44ecfcb = パスワードを隠す
+
+# Show the password
+t6d746fd8 = パスワードを表示
+
+# Hide the file names too
+t0ea5cc72 = ファイル名も隠す
+
+# No one sees what is inside without the password.
+td4f90f22 = パスワードがなければ、誰も中身を見られません。
+
+# 7z only: ZIP always shows its names.
+tac4ad1d6 = 7z のみ：ZIP ではファイル名が常に見えます。
+
+# Save to
+tf1c67ab1 = 保存先
+
+# Change
+ta1de2fdd = 変更
+
+# Getting {n} photo | Getting {n} photos
+tab55edae =
+    { $n ->
+       *[other] { $n } 枚の写真を読み込み中
+    }
+
+# A photo could not be read: {error}
+tb12cc03b = 読み込めない写真がありました：{ $error }
+
+# {n} photo | {n} photos
+t1a7850b2 =
+    { $n ->
+       *[other] { $n } 枚の写真
+    }
+
+# Nothing yet
+tbd00747c = まだ何もありません
+
+# {name} in {folder}
+t866c0601 = { $folder } 内の { $name }
+
+# The pictures and videos go to Photos. The other files stay in the archive.
+tad6172e7 = 写真とビデオは「写真」に保存されます。ほかのファイルはアーカイブに残ります。
+
+# In a new folder, {name}
+tf816656c = 新しいフォルダ「{ $name }」の中へ
+
+# Show in Files when done
+t5525892c = 完了したら「ファイル」で表示
+
+# Options
+t353e0d45 = オプション
+
+# Nothing is written outside this folder or through links, and an archive bomb stops at its size limit.
+tab679ca5 = このフォルダの外やリンクの先には何も書き込みません。アーカイブ爆弾はサイズの上限で止まります。
+
+# Extract now
+t97070e5a = 今すぐ展開
+
+# {files} · {size} once extracted
+t16e47887 = { $files } · 展開後 { $size }
+
+# {n} item chosen | {n} items chosen
+tea658088 =
+    { $n ->
+       *[other] { $n } 個の項目を選択中
+    }
+
+# Save to Photos
+t6383180a = 「写真」に保存
+
+# Extract {n} file | Extract {n} files
+tc5371694 =
+    { $n ->
+       *[other] { $n } 個のファイルを展開
+    }
+
+# Extract {n} item | Extract {n} items
+t3dfb389a =
+    { $n ->
+       *[other] { $n } 個の項目を展開
+    }
+
+# On My iPhone › packwing
+ted9ff11b = このiPhone内 › packwing
+
+# Saving to Photos
+t898fa67d = 「写真」に保存中
+
+# {n} file in {folder} | {n} files in {folder}
+t689fbe82 =
+    { $n ->
+       *[other] { $folder } 内の { $n } 個のファイル
+    }
+
+# packwing may not add to Photos. Settings › Privacy & Security › Photos lets it.
+t9ec0ea7f = packwing には「写真」への追加が許可されていません。設定 › プライバシーとセキュリティ › 写真 で許可できます。
+
+# There are no pictures or videos in it.
+tacc0f9ec = 写真やビデオは含まれていません。
+
+# {n} picture or video added to Photos | {n} pictures and videos added to Photos
+t7d8cbf49 =
+    { $n ->
+       *[other] { $n } 件の写真とビデオを「写真」に追加しました
+    }
+
+# Archives
+tc45c73a2 = アーカイブ
+
+# From Files, iCloud Drive or a USB drive
+tcc778cba = 「ファイル」、iCloud Drive、USB ドライブから
+
+# A ZIP or RAR in Mail or Messages? Tap Share, then packwing, to look inside without saving it.
+t0efd0e35 = メールやメッセージで届いた ZIP や RAR は？ 共有をタップして packwing を選べば、保存せずに中を見られます。
+
+# Locked
+t406a5eb3 = ロック中
+
+# Search
+tc646a2c9 = 検索
+
+# Archives opened before
+t87c5327e = 以前に開いたアーカイブ
+
+# Hide, and keep going
+t8a27e8a1 = 隠して続行
+
+# files and folders
+t7f784a54 = ファイルとフォルダ
+
+# of {size}
+t028b5a2f = { $size } 中
+
+# It didn’t finish
+t17ce9c89 = 完了しませんでした
+
+# You can leave packwing. iOS keeps it going and shows how far it is.
+t0bb23efc = packwing を離れても大丈夫です。iOS が処理を続け、進み具合を表示します。
+
+# Nothing was left behind.
+t1db928f6 = 途中のファイルは何も残っていません。
+
+# Share
+t4f856dd8 = 共有
+
+# Show in Files
+t9c7dbb8c = 「ファイル」で表示
+
+# about {time} left
+td87d0ee6 = 残り約 { $time }
+
+# Can’t open it
+t0923b4df = 開けません
+
+# OK
+t85e4b82f = OK
+
+# {name} is encrypted with a passphrase. Ask the person who sent it for it.
+ta6455c99 = { $name } はパスフレーズで暗号化されています。送ってくれた人にパスフレーズを尋ねてください。
+
+# {name} is locked. Ask the person who sent it for its password.
+te1845608 = { $name } はロックされています。送ってくれた人にパスワードを尋ねてください。
+
+# Hide password
+tcd577cde = パスワードを隠す
+
+# Show password
+t500e3555 = パスワードを表示
+
+# Paste
+tb34a0288 = ペースト
+
+# Kept in memory only, never saved, and forgotten when the archive is closed.
+t6641f326 = メモリ内にだけ保持し、保存はしません。アーカイブを閉じると消去します。
+
+# Unlock
+t9c799975 = ロック解除
+
+# As the system
+t29f671f7 = システムに従う
+
+# New archives
+t9341f018 = 新規アーカイブ
+
+# packwing can no longer reach {name}. Open it again to look inside.
+ta6e47f44 = packwing から { $name } にアクセスできなくなりました。中を見るには、もう一度開いてください。
+
+# packwing could not open {name}.
+t56e426f0 = packwing は { $name } を開けませんでした。
+
+# {n} file is ready | {n} files are ready
+t09d5ea2a =
+    { $n ->
+       *[other] { $n } 個のファイルの準備ができました
+    }
+
+# packwing could not extract {name}.
+t7e40b6ef = packwing は { $name } を展開できませんでした。
+
+# {name} is ready
+t17060a6b = { $name } の準備ができました
+
+# packwing could not make {name}.
+t25251132 = packwing は { $name } を作成できませんでした。
+
+# packwing could not read {name}.
+t7c55848c = packwing は { $name } を読み取れませんでした。
+
+# Extracting {name}
+t77dce80b = { $name } を展開中
+
+# Making {name}
+t5245af2d = { $name } を作成中
+
+# {done} of {all}
+tede81435 = { $done } / { $all }
+
+# Getting ready
+tfbae3374 = 準備中
+
+# Extracting and making archives
+t5ad35487 = 展開とアーカイブの作成
+
+# How far a job has got, while packwing is not on screen
+te78d6807 = packwing が画面に出ていないときの、作業の進み具合
+
+# Finished jobs
+t2339ecd9 = 終わった作業
+
+# When a job is through, or could not finish
+tfdbeaf1a = 作業が終わったとき、または完了できなかったとき
+
+# packwing could not write a file with no name.
+te0bf8e8f = packwing は名前のないファイルを書き込めませんでした。
+
+# packwing could not write {name}.
+teb1bce81 = packwing は { $name } を書き込めませんでした。
+
+# packwing could not write what it extracted.
+ted881a0f = packwing は展開したものを書き込めませんでした。
+
+# packwing could not make the folder {name}.
+t9f263b45 = packwing はフォルダ { $name } を作成できませんでした。
+
+# packwing can no longer reach that folder.
+t899e6af1 = packwing からそのフォルダにアクセスできなくなりました。
+
+# The gallery would not take {name}.
+td2cca604 = { $name } をギャラリーに追加できませんでした。
+
+# Back
+tc2954bc2 = 戻る
+
+# Show a list
+t78956399 = リスト表示
+
+# Show a grid
+tb50700d9 = グリッド表示
+
+# Search in this archive
+tfda7010a = このアーカイブ内を検索
+
+# packwing cannot show this file.
+t1ef504d9 = packwing ではこのファイルを表示できません。
+
+# AES-256. In 7z the names are hidden too.
+t9c81b89f = AES-256。7z ではファイル名も隠れます。
+
+# AES-256.
+tf18b3f5a = AES-256。
+
+# No files yet
+t129e61cf = まだファイルがありません
+
+# Copying them in…
+taf5cb443 = 取り込んでいます…
+
+# Where it goes
+t6e56ac09 = 保存先
+
+# No folder chosen yet
+t9c10d9de = フォルダがまだ選ばれていません
+
+# Make {kind}
+ted3ef83b = { $kind } を作成
+
+# Store, fastest
+ta65137d8 = 無圧縮（最速）
+
+# Normal
+t58de2772 = 標準
+
+# Smallest
+t39eb3f74 = 最小
+
+# From the Files app, a USB drive or Drive
+te849b010 = 「ファイル」アプリ、USB ドライブ、Google ドライブから
+
+# A ZIP or RAR in a chat or an email? Tap Share, then packwing, to look inside without saving it.
+t541e4ba0 = チャットやメールで届いた ZIP や RAR は？ 共有をタップして packwing を選べば、保存せずに中を見られます。
+
+# Opening {name}
+te629c104 = { $name } を開いています
+
+# Nothing opened yet.
+t5009c129 = まだ何も開いていません。
+
+# Yesterday
+t93ae68c7 = 昨日
+
+# {n} month ago | {n} months ago
+t5af2ebc0 =
+    { $n ->
+       *[other] { $n } か月前
+    }
+
+# Making an archive
+tff4bea1d = アーカイブを作成中
+
+# file | files
+t2defd942 =
+    { $n ->
+       *[other] ファイル
+    }
+
+# of {all}
+t601e2927 = { $all } 中
+
+# You can leave the app. A notification shows how far it got.
+t018c236f = アプリを離れても大丈夫です。進み具合は通知でわかります。
+
+# Where files go
+t7621af9b = 保存先
+
+# Ask every time
+t26ab736e = 毎回確認する
+
+# Replace a file already there
+t3c16bbc4 = 同じ名前のファイルを置き換える
+
+# While it works
+t28634679 = 処理中
+
+# Tell me when a job is through
+t51e39cf5 = 作業が終わったら知らせる
+
+# How it looks
+te7ee60d2 = 表示
+
+# Follow the system
+t37548210 = システムに従う
+
+# Licence
+t58c031d4 = ライセンス
+
+# The password is never saved
+t98c65e5a = パスワードは保存されません
+
+# Not now
+t2c3d6fce = 今はしない
+
+# The gallery
+t59937d9a = ギャラリー
+
+# Android asks for this folder once. packwing keeps no other access to your storage.
+t684d18e2 = Android がこのフォルダへのアクセスを確認するのは一度だけです。packwing がストレージのほかの場所にアクセスすることはありません。
+
+# The pictures and videos go to your gallery. The other files stay in the archive.
+tc93762ab = 写真と動画はギャラリーに保存されます。ほかのファイルはアーカイブに残ります。
+
+# Nothing is written through links, and an archive bomb stops at its size limit.
+t2d95067b = リンクの先には何も書き込みません。アーカイブ爆弾はサイズの上限で止まります。
+
+# Nothing is written outside that folder or through links, and an archive bomb stops at its size limit.
+tea731324 = そのフォルダの外やリンクの先には何も書き込みません。アーカイブ爆弾はサイズの上限で止まります。
+
+# Extract the pictures
+t5dc33540 = 写真と動画を展開

@@ -2898,3 +2898,441 @@ te0a63e12 = Pengguna
 
 # Password or app token
 t1c18cb9b = Kata sandi atau token aplikasi
+
+# This archive is not where it was any more.
+t4d0917ba = Arsip ini sudah tidak ada di tempatnya semula.
+
+# Tap a file to preview it.
+td670fcf3 = Ketuk berkas untuk melihat pratinjaunya.
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = Huruf besar/kecil dan aksen tidak berpengaruh: cafe menemukan Café.
+
+# Search its {n} file | Search all {n} files
+t76dbca4b =
+    { $n ->
+       *[other] Cari di { $n } berkas
+    }
+
+# Select
+t3e892b4d = Pilih
+
+# Opening
+t015825b7 = Membuka
+
+# Extract {n} | Extract {n}
+tfda523f9 =
+    { $n ->
+       *[other] Ekstrak { $n }
+    }
+
+# Extract all
+t9beae641 = Ekstrak semua
+
+# Preview
+tfdda4cf7 = Pratinjau
+
+# Files
+te71d1b30 = File
+
+# A folder
+te84ceb50 = Folder
+
+# Photos
+tcde554d0 = Foto
+
+# Add more
+t5d2a8a05 = Tambah lagi
+
+# Format
+tffb0ff72 = Format
+
+# Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
+t96cb3408 = Bisa dibuka di mana saja. Dengan kata sandi (AES-256), File Explorer bawaan Windows tidak dapat membukanya, tetapi 7-Zip dan packwing bisa.
+
+# Smaller. Opens with packwing, 7-Zip and most archivers.
+tae66e6b2 = Lebih kecil. Dapat dibuka dengan packwing, 7-Zip, dan sebagian besar aplikasi arsip.
+
+# Compression
+t961abb95 = Kompresi
+
+# Hide the password
+te44ecfcb = Sembunyikan kata sandi
+
+# Show the password
+t6d746fd8 = Tampilkan kata sandi
+
+# Hide the file names too
+t0ea5cc72 = Sembunyikan juga nama berkas
+
+# No one sees what is inside without the password.
+td4f90f22 = Tanpa kata sandi, tidak ada yang bisa melihat isinya.
+
+# 7z only: ZIP always shows its names.
+tac4ad1d6 = Hanya 7z: ZIP selalu menampilkan nama berkasnya.
+
+# Save to
+tf1c67ab1 = Simpan ke
+
+# Change
+ta1de2fdd = Ubah
+
+# Getting {n} photo | Getting {n} photos
+tab55edae =
+    { $n ->
+       *[other] Mengambil { $n } foto
+    }
+
+# A photo could not be read: {error}
+tb12cc03b = Sebuah foto tidak dapat dibaca: { $error }
+
+# {n} photo | {n} photos
+t1a7850b2 =
+    { $n ->
+       *[other] { $n } foto
+    }
+
+# Nothing yet
+tbd00747c = Belum ada apa-apa
+
+# {name} in {folder}
+t866c0601 = { $name } di { $folder }
+
+# The pictures and videos go to Photos. The other files stay in the archive.
+tad6172e7 = Gambar dan video masuk ke Foto. Berkas lainnya tetap di dalam arsip.
+
+# In a new folder, {name}
+tf816656c = Di folder baru, { $name }
+
+# Show in Files when done
+t5525892c = Tampilkan di File setelah selesai
+
+# Options
+t353e0d45 = Opsi
+
+# Nothing is written outside this folder or through links, and an archive bomb stops at its size limit.
+tab679ca5 = Tidak ada yang ditulis di luar folder ini atau melalui tautan, dan bom arsip berhenti di batas ukurannya.
+
+# Extract now
+t97070e5a = Ekstrak sekarang
+
+# {files} · {size} once extracted
+t16e47887 = { $files } · { $size } setelah diekstrak
+
+# {n} item chosen | {n} items chosen
+tea658088 =
+    { $n ->
+       *[other] { $n } item dipilih
+    }
+
+# Save to Photos
+t6383180a = Simpan ke Foto
+
+# Extract {n} file | Extract {n} files
+tc5371694 =
+    { $n ->
+       *[other] Ekstrak { $n } berkas
+    }
+
+# Extract {n} item | Extract {n} items
+t3dfb389a =
+    { $n ->
+       *[other] Ekstrak { $n } item
+    }
+
+# On My iPhone › packwing
+ted9ff11b = Di iPhone Saya › packwing
+
+# Saving to Photos
+t898fa67d = Menyimpan ke Foto
+
+# {n} file in {folder} | {n} files in {folder}
+t689fbe82 =
+    { $n ->
+       *[other] { $n } berkas di { $folder }
+    }
+
+# packwing may not add to Photos. Settings › Privacy & Security › Photos lets it.
+t9ec0ea7f = packwing tidak diizinkan menambahkan ke Foto. Izinkan di Pengaturan › Privasi & Keamanan › Foto.
+
+# There are no pictures or videos in it.
+tacc0f9ec = Tidak ada gambar atau video di dalamnya.
+
+# {n} picture or video added to Photos | {n} pictures and videos added to Photos
+t7d8cbf49 =
+    { $n ->
+       *[other] { $n } gambar dan video ditambahkan ke Foto
+    }
+
+# Archives
+tc45c73a2 = Arsip
+
+# From Files, iCloud Drive or a USB drive
+tcc778cba = Dari File, iCloud Drive, atau drive USB
+
+# A ZIP or RAR in Mail or Messages? Tap Share, then packwing, to look inside without saving it.
+t0efd0e35 = Ada ZIP atau RAR di Mail atau Pesan? Ketuk Bagikan, lalu packwing, untuk melihat isinya tanpa menyimpannya.
+
+# Locked
+t406a5eb3 = Terkunci
+
+# Search
+tc646a2c9 = Cari
+
+# Archives opened before
+t87c5327e = Arsip yang pernah dibuka
+
+# Hide, and keep going
+t8a27e8a1 = Sembunyikan, dan lanjutkan
+
+# files and folders
+t7f784a54 = berkas dan folder
+
+# of {size}
+t028b5a2f = dari { $size }
+
+# It didn’t finish
+t17ce9c89 = Tidak selesai
+
+# You can leave packwing. iOS keeps it going and shows how far it is.
+t0bb23efc = Anda bisa meninggalkan packwing. iOS tetap menjalankannya dan menampilkan sejauh mana prosesnya.
+
+# Nothing was left behind.
+t1db928f6 = Tidak ada yang tertinggal.
+
+# Share
+t4f856dd8 = Bagikan
+
+# Show in Files
+t9c7dbb8c = Tampilkan di File
+
+# about {time} left
+td87d0ee6 = sekitar { $time } lagi
+
+# Can’t open it
+t0923b4df = Tidak dapat dibuka
+
+# OK
+t85e4b82f = OK
+
+# {name} is encrypted with a passphrase. Ask the person who sent it for it.
+ta6455c99 = { $name } dienkripsi dengan frasa sandi. Mintalah frasa sandinya kepada pengirim.
+
+# {name} is locked. Ask the person who sent it for its password.
+te1845608 = { $name } terkunci. Mintalah kata sandinya kepada pengirim.
+
+# Hide password
+tcd577cde = Sembunyikan kata sandi
+
+# Show password
+t500e3555 = Tampilkan kata sandi
+
+# Paste
+tb34a0288 = Tempel
+
+# Kept in memory only, never saved, and forgotten when the archive is closed.
+t6641f326 = Hanya ada di memori, tidak pernah disimpan, dan dilupakan saat arsip ditutup.
+
+# Unlock
+t9c799975 = Buka kunci
+
+# As the system
+t29f671f7 = Sama dengan sistem
+
+# New archives
+t9341f018 = Arsip baru
+
+# packwing can no longer reach {name}. Open it again to look inside.
+ta6e47f44 = packwing tidak bisa lagi mengakses { $name }. Buka lagi untuk melihat isinya.
+
+# packwing could not open {name}.
+t56e426f0 = packwing tidak dapat membuka { $name }.
+
+# {n} file is ready | {n} files are ready
+t09d5ea2a =
+    { $n ->
+       *[other] { $n } berkas siap
+    }
+
+# packwing could not extract {name}.
+t7e40b6ef = packwing tidak dapat mengekstrak { $name }.
+
+# {name} is ready
+t17060a6b = { $name } sudah siap
+
+# packwing could not make {name}.
+t25251132 = packwing tidak dapat membuat { $name }.
+
+# packwing could not read {name}.
+t7c55848c = packwing tidak dapat membaca { $name }.
+
+# Extracting {name}
+t77dce80b = Mengekstrak { $name }
+
+# Making {name}
+t5245af2d = Membuat { $name }
+
+# {done} of {all}
+tede81435 = { $done } dari { $all }
+
+# Getting ready
+tfbae3374 = Bersiap
+
+# Extracting and making archives
+t5ad35487 = Mengekstrak dan membuat arsip
+
+# How far a job has got, while packwing is not on screen
+te78d6807 = Sejauh mana tugas berjalan, saat packwing tidak di layar
+
+# Finished jobs
+t2339ecd9 = Tugas yang selesai
+
+# When a job is through, or could not finish
+tfdbeaf1a = Saat tugas selesai, atau tidak dapat diselesaikan
+
+# packwing could not write a file with no name.
+te0bf8e8f = packwing tidak dapat menulis berkas tanpa nama.
+
+# packwing could not write {name}.
+teb1bce81 = packwing tidak dapat menulis { $name }.
+
+# packwing could not write what it extracted.
+ted881a0f = packwing tidak dapat menulis hasil ekstraknya.
+
+# packwing could not make the folder {name}.
+t9f263b45 = packwing tidak dapat membuat folder { $name }.
+
+# packwing can no longer reach that folder.
+t899e6af1 = packwing tidak bisa lagi mengakses folder itu.
+
+# The gallery would not take {name}.
+td2cca604 = Galeri tidak mau menerima { $name }.
+
+# Back
+tc2954bc2 = Kembali
+
+# Show a list
+t78956399 = Tampilkan daftar
+
+# Show a grid
+tb50700d9 = Tampilkan kisi
+
+# Search in this archive
+tfda7010a = Cari di arsip ini
+
+# packwing cannot show this file.
+t1ef504d9 = packwing tidak dapat menampilkan berkas ini.
+
+# AES-256. In 7z the names are hidden too.
+t9c81b89f = AES-256. Di 7z, nama berkas juga disembunyikan.
+
+# AES-256.
+tf18b3f5a = AES-256.
+
+# No files yet
+t129e61cf = Belum ada berkas
+
+# Copying them in…
+taf5cb443 = Menyalin berkas…
+
+# Where it goes
+t6e56ac09 = Tujuan
+
+# No folder chosen yet
+t9c10d9de = Belum ada folder yang dipilih
+
+# Make {kind}
+ted3ef83b = Buat { $kind }
+
+# Store, fastest
+ta65137d8 = Simpan, tercepat
+
+# Normal
+t58de2772 = Normal
+
+# Smallest
+t39eb3f74 = Terkecil
+
+# From the Files app, a USB drive or Drive
+te849b010 = Dari aplikasi Files, drive USB, atau Drive
+
+# A ZIP or RAR in a chat or an email? Tap Share, then packwing, to look inside without saving it.
+t541e4ba0 = Ada ZIP atau RAR di chat atau email? Ketuk Bagikan, lalu packwing, untuk melihat isinya tanpa menyimpannya.
+
+# Opening {name}
+te629c104 = Membuka { $name }
+
+# Nothing opened yet.
+t5009c129 = Belum ada yang dibuka.
+
+# Yesterday
+t93ae68c7 = Kemarin
+
+# {n} month ago | {n} months ago
+t5af2ebc0 =
+    { $n ->
+       *[other] { $n } bulan lalu
+    }
+
+# Making an archive
+tff4bea1d = Membuat arsip
+
+# file | files
+t2defd942 =
+    { $n ->
+       *[other] berkas
+    }
+
+# of {all}
+t601e2927 = dari { $all }
+
+# You can leave the app. A notification shows how far it got.
+t018c236f = Anda bisa meninggalkan aplikasi. Notifikasi akan menunjukkan sejauh mana prosesnya.
+
+# Where files go
+t7621af9b = Tujuan berkas
+
+# Ask every time
+t26ab736e = Selalu tanya
+
+# Replace a file already there
+t3c16bbc4 = Ganti berkas yang sudah ada
+
+# While it works
+t28634679 = Saat berjalan
+
+# Tell me when a job is through
+t51e39cf5 = Beri tahu saat tugas selesai
+
+# How it looks
+te7ee60d2 = Tampilan
+
+# Follow the system
+t37548210 = Ikuti sistem
+
+# Licence
+t58c031d4 = Lisensi
+
+# The password is never saved
+t98c65e5a = Kata sandi tidak pernah disimpan
+
+# Not now
+t2c3d6fce = Nanti saja
+
+# The gallery
+t59937d9a = Galeri
+
+# Android asks for this folder once. packwing keeps no other access to your storage.
+t684d18e2 = Android hanya sekali meminta izin untuk folder ini. packwing tidak menyimpan akses lain ke penyimpanan Anda.
+
+# The pictures and videos go to your gallery. The other files stay in the archive.
+tc93762ab = Gambar dan video masuk ke galeri. Berkas lainnya tetap di dalam arsip.
+
+# Nothing is written through links, and an archive bomb stops at its size limit.
+t2d95067b = Tidak ada yang ditulis melalui tautan, dan bom arsip berhenti di batas ukurannya.
+
+# Nothing is written outside that folder or through links, and an archive bomb stops at its size limit.
+tea731324 = Tidak ada yang ditulis di luar folder itu atau melalui tautan, dan bom arsip berhenti di batas ukurannya.
+
+# Extract the pictures
+t5dc33540 = Ekstrak gambar

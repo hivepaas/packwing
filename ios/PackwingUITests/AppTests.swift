@@ -17,6 +17,20 @@ final class AppTests: XCTestCase {
         return app
     }
 
+    /// The app, showing New archive of the samples `names` as it starts.
+    private func launch(making names: [String]) -> XCUIApplication {
+        let samples = names.map { name in
+            let sample = Bundle(for: Self.self).url(forResource: name, withExtension: nil)
+            XCTAssertNotNil(sample, "no sample \(name)")
+            return sample!.path
+        }
+        let app = XCUIApplication()
+        app.launchArguments = ["-new", samples.joined(separator: "|"), "-AppleLanguages", "(en)", "-language", "",
+                               "-newFormat", "zip", "-newCompression", "medium"]
+        app.launch()
+        return app
+    }
+
     /// Keeps what the screen shows in the test's results, to look at.
     private func keep(_ app: XCUIApplication, _ name: String) {
         let shot = XCTAttachment(screenshot: app.screenshot())
@@ -96,5 +110,69 @@ final class AppTests: XCTestCase {
 
         XCTAssert(app.staticTexts["Done"].waitForExistence(timeout: 30))
         XCTAssert(text(app, starting: "1 picture or video added to Photos").exists)
+    }
+
+    func testFilesChosenAreCompressedIntoAZipOfTheNameGiven() {
+        let app = launch(making: ["report.zip", "locked.7z"])
+        XCTAssert(app.staticTexts["2 files"].waitForExistence(timeout: 15))
+        let name = app.textFields["new-name"]
+        name.tap()
+        name.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 40) + "Bundle")
+        keep(app, "create-sheet")
+        app.buttons["Create"].firstMatch.tap()
+
+        XCTAssert(app.staticTexts["Done"].waitForExistence(timeout: 30))
+        XCTAssert(text(app, starting: "Bundle").exists)
+        XCTAssert(app.buttons["Share"].exists)
+        keep(app, "created")
+    }
+
+    func testANewArchiveIsLockedWithItsNamesHidden() {
+        let app = launch(making: ["report.zip"])
+        let name = app.textFields["new-name"]
+        XCTAssert(name.waitForExistence(timeout: 15))
+        // Named after the one file in it.
+        XCTAssertEqual(name.value as? String, "report")
+
+        app.buttons["7z"].tap()
+        app.switches["Protect with a password"].switches.firstMatch.tap()
+        // Before the keyboard covers it.
+        let hide = app.switches.matching(NSPredicate(format: "label BEGINSWITH %@", "Hide the file names too")).firstMatch
+        XCTAssert(hide.waitForExistence(timeout: 5))
+        hide.switches.firstMatch.tap()
+        XCTAssertEqual(hide.value as? String, "1")
+        let password = app.secureTextFields["new-password"]
+        password.tap()
+        password.typeText("sample-password")
+        // Shown, it is the one typed.
+        app.buttons["Show the password"].tap()
+        XCTAssertEqual(app.textFields["new-password"].value as? String, "sample-password")
+        keep(app, "create-locked")
+        app.buttons["Create"].firstMatch.tap()
+
+        XCTAssert(app.staticTexts["Done"].waitForExistence(timeout: 30))
+        XCTAssert(text(app, starting: "report").exists)
+    }
+
+    func testPhotosChosenGoIntoANewArchive() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-AppleLanguages", "(en)", "-language", "", "-newFormat", "zip"]
+        app.launch()
+        let add = app.buttons["New archive"]
+        XCTAssert(add.waitForExistence(timeout: 15))
+        add.tap()
+        app.buttons["Photos"].tap()
+
+        // The picker is iOS's own: the Simulator's sample photos.
+        let photo = app.images.matching(identifier: "PXGGridLayout-Info").firstMatch
+        XCTAssert(photo.waitForExistence(timeout: 40))
+        photo.tap()
+        app.buttons["Done"].tap()
+
+        XCTAssert(app.staticTexts["1 photo"].waitForExistence(timeout: 30))
+        keep(app, "create-photo")
+        app.buttons["Create"].firstMatch.tap()
+        XCTAssert(app.staticTexts["Done"].waitForExistence(timeout: 30))
+        XCTAssert(app.buttons["Share"].exists)
     }
 }

@@ -54,7 +54,8 @@ struct JobScreen: View {
         }
         .background(Tonal.page)
         .onChange(of: job.state) { _, now in
-            if case .done = now, showInFiles, let folder = job.folder {
+            // Extracted files are shown as asked; a new archive is shared, or not.
+            if case .done = now, showInFiles, job.made == nil, let folder = job.folder {
                 model.showInFiles(folder)
             }
         }
@@ -87,6 +88,17 @@ struct JobScreen: View {
         }
     }
 
+    private var done: some View {
+        Button {
+            model.showingJob = false
+        } label: {
+            Text(tr("Done"))
+                .font(.nunito(17, .semibold, relativeTo: .headline))
+                .frame(maxWidth: .infinity, minHeight: 52)
+        }
+        .buttonStyle(.glass)
+    }
+
     @ViewBuilder private var footer: some View {
         switch job.state {
         case .running:
@@ -98,22 +110,40 @@ struct JobScreen: View {
             .buttonStyle(.glass)
         default:
             VStack(spacing: 10) {
-                if case .done = job.state, let folder = job.folder {
-                    Button { model.showInFiles(folder) } label: {
-                        Text(tr("Show in Files"))
+                if case .done = job.state, let made = job.made {
+                    ShareLink(item: made) {
+                        Label(tr("Share"), systemImage: "square.and.arrow.up")
                             .font(.nunito(17, .bold, relativeTo: .headline))
                             .frame(maxWidth: .infinity, minHeight: 52)
                     }
                     .buttonStyle(.glassProminent)
                 }
-                Button {
-                    model.showingJob = false
-                } label: {
-                    Text(tr("Done"))
-                        .font(.nunito(17, .semibold, relativeTo: .headline))
-                        .frame(maxWidth: .infinity, minHeight: 52)
+                if case .done = job.state, let folder = job.folder {
+                    if job.made == nil {
+                        Button { model.showInFiles(folder) } label: {
+                            Text(tr("Show in Files"))
+                                .font(.nunito(17, .bold, relativeTo: .headline))
+                                .frame(maxWidth: .infinity, minHeight: 52)
+                        }
+                        .buttonStyle(.glassProminent)
+                        done
+                    } else {
+                        // Under Share, side by side: the note above stays in sight.
+                        HStack(spacing: 10) {
+                            Button { model.showInFiles(folder) } label: {
+                                Text(tr("Show in Files"))
+                                    .font(.nunito(17, .semibold, relativeTo: .headline))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
+                                    .frame(maxWidth: .infinity, minHeight: 52)
+                            }
+                            .buttonStyle(.glass)
+                            done
+                        }
+                    }
+                } else {
+                    done
                 }
-                .buttonStyle(.glass)
             }
         }
     }
@@ -138,7 +168,7 @@ private struct Ring: View {
                     .monospacedDigit()
                 if job.state == .running, let left = job.timeLeft {
                     Text(tr("about {time} left",
-                            ["time": Duration.seconds(left).formatted(.units(allowed: [.hours, .minutes, .seconds], width: .narrow, maximumUnitCount: 1))]))
+                            ["time": Duration.seconds(left).formatted(.units(allowed: [.hours, .minutes, .seconds], width: .narrow, maximumUnitCount: 1).locale(appLocale))]))
                         .font(.nunito(14, relativeTo: .subheadline))
                         .foregroundStyle(Tonal.muted)
                 }

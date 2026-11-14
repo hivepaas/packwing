@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Keeps packwing's translations in step with the code.
 
-The English is in the code (`tr!("…")`, `tr_n!(n, "…", "…")`); each message's id
-is the FNV-1a hash of its English, as crates/i18n computes it.
+The English is in the code (`tr!("…")`, `tr_n!(n, "…", "…")`, and the phone
+apps' `tr("…")`, `trN(n, "…", "…")` in Swift and Kotlin, which reach the same
+catalogs through crates/mobile); each message's id is the FNV-1a hash of its
+English, as crates/i18n computes it.
 
     scripts/i18n.py update   writes locales/en.ftl from the code, and brings
                              each translation up to date: kept where its
@@ -33,10 +35,18 @@ SOURCES = sorted(
     for p in (ROOT / "crates").glob("*/src/**/*.rs")
     if p.parts[-3] != "i18n" and p.name not in ("shots.rs", "demo.rs")
 )
+# The phone apps, after the desktop: their messages are mostly their own.
+APPS = sorted((ROOT / "ios").glob("Packwing/**/*.swift")) + sorted(
+    (ROOT / "android").glob("app/src/main/**/*.kt")
+)
 
 STRING = r'"((?:[^"\\]|\\.)*)"'
 TR = re.compile(r"\btr!\(\s*" + STRING, re.S)
 TR_N = re.compile(r"\btr_n!\(\s*[^;]*?,\s*" + STRING + r"\s*,\s*" + STRING, re.S)
+# Swift's and Kotlin's: a function, not a macro. A count's first argument
+# holds no string, which is what tells its two strings from another call's.
+APP_TR = re.compile(r"\btr\(\s*" + STRING, re.S)
+APP_TR_N = re.compile(r'\btrN\(\s*[^";]*?,\s*' + STRING + r"\s*,\s*" + STRING, re.S)
 ENTRY = re.compile(r"^(t[0-9a-f]{8})\s*=")
 
 
@@ -55,6 +65,11 @@ def unescape(s):
             i += 2
             while i < len(s) and s[i] in " \t\n":
                 i += 1
+            continue
+        if n == "u" and s[i + 2 : i + 3] != "{":
+            # Kotlin's \uXXXX.
+            out.append(chr(int(s[i + 2 : i + 6], 16)))
+            i += 6
             continue
         if n == "u":
             end = s.index("}", i)
@@ -76,16 +91,17 @@ def id_of(english):
 def messages():
     """The code's messages in order of first use: id -> (english, plural)."""
     found = {}
-    for path in SOURCES:
+    for path in SOURCES + APPS:
+        tr, tr_n = (TR, TR_N) if path.suffix == ".rs" else (APP_TR, APP_TR_N)
         # Comments (docs that show tr! at work) are not code.
         text = "\n".join(
             "" if l.lstrip().startswith("//") else l
             for l in path.read_text(encoding="utf-8").splitlines()
         )
-        hits = [(m.start(), unescape(m.group(1)), None) for m in TR.finditer(text)]
+        hits = [(m.start(), unescape(m.group(1)), None) for m in tr.finditer(text)]
         hits += [
             (m.start(), unescape(m.group(1)), unescape(m.group(2)))
-            for m in TR_N.finditer(text)
+            for m in tr_n.finditer(text)
         ]
         for _, one, other in sorted(hits, key=lambda h: h[0]):
             english = one if other is None else one + "\n" + other

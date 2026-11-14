@@ -73,7 +73,8 @@ struct ArchiveView: View {
                 .disabled(selecting && picked.isEmpty)
             }
         }
-        .sheet(item: Binding(get: { extracting.map(Picked.init) }, set: { extracting = $0?.paths })) { what in
+        .sheet(item: Binding(get: { extracting.map(Picked.init) }, set: { extracting = $0?.paths }),
+               onDismiss: model.sheetGone) { what in
             ExtractSheet(archive: place.archive, picked: what.paths)
         }
         .quickLookPreview($model.previewing)
@@ -165,7 +166,7 @@ struct EntryLabel: View {
             parts.append(sizeText(entry.size))
         }
         if let modified = entry.modified {
-            parts.append(Date(timeIntervalSince1970: TimeInterval(modified)).formatted(date: .abbreviated, time: .omitted))
+            parts.append(Date(timeIntervalSince1970: TimeInterval(modified)).formatted(Date.FormatStyle(date: .abbreviated, time: .omitted).locale(appLocale)))
         }
         return parts.joined(separator: " · ")
     }

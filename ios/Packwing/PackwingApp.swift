@@ -25,6 +25,11 @@ struct PackwingApp: App {
                     if let path = UserDefaults.standard.string(forKey: "open") {
                         model.open(URL(filePath: path))
                     }
+                    // `-new <path>|<path>…`: New archive, of those.
+                    if let paths = UserDefaults.standard.string(forKey: "new") {
+                        model.drafting = NewArchiveDraft(
+                            paths.split(separator: "|").map { NewItem(url: URL(filePath: String($0)), scoped: false) })
+                    }
                 }
                 #endif
         }
@@ -43,12 +48,16 @@ struct RootView: View {
             Tab(tr("Settings"), systemImage: "slider.horizontal.3", value: AppTab.settings) {
                 SettingsView()
             }
-            Tab(value: AppTab.search, role: .search) {
+            // Named here: iOS's own name for it is in the system's language.
+            Tab(tr("Search"), systemImage: "magnifyingglass", value: AppTab.search, role: .search) {
                 SearchView()
             }
         }
         .sheet(item: $model.asking) { ask in
             PasswordSheet(ask: ask)
+        }
+        .sheet(item: $model.drafting, onDismiss: model.sheetGone) { draft in
+            CreateSheet(draft: draft)
         }
         .alert(
             tr("Can’t open it"),

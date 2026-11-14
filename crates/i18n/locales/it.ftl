@@ -2929,3 +2929,453 @@ te0a63e12 = Utente
 
 # Password or app token
 t1c18cb9b = Password o token dell'app
+
+# This archive is not where it was any more.
+t4d0917ba = Questo archivio non è più dove si trovava.
+
+# Tap a file to preview it.
+td670fcf3 = Tocca un file per vederne l'anteprima.
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = Maiuscole e accenti non contano: citta trova Città.
+
+# Search its {n} file | Search all {n} files
+t76dbca4b =
+    { $n ->
+        [one] Cerca nel suo { $n } file
+       *[other] Cerca in tutti i suoi { $n } file
+    }
+
+# Select
+t3e892b4d = Seleziona
+
+# Opening
+t015825b7 = Apertura
+
+# Extract {n} | Extract {n}
+tfda523f9 =
+    { $n ->
+        [one] Estrai { $n }
+       *[other] Estrai { $n }
+    }
+
+# Extract all
+t9beae641 = Estrai tutto
+
+# Preview
+tfdda4cf7 = Anteprima
+
+# Files
+te71d1b30 = File
+
+# A folder
+te84ceb50 = Una cartella
+
+# Photos
+tcde554d0 = Foto
+
+# Add more
+t5d2a8a05 = Aggiungi altro
+
+# Format
+tffb0ff72 = Formato
+
+# Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
+t96cb3408 = Si apre ovunque. Con una password, AES-256: Esplora file di Windows non riesce ad aprirlo, 7-Zip e packwing sì.
+
+# Smaller. Opens with packwing, 7-Zip and most archivers.
+tae66e6b2 = Più piccolo. Si apre con packwing, 7-Zip e la maggior parte delle app per archivi.
+
+# Compression
+t961abb95 = Compressione
+
+# Hide the password
+te44ecfcb = Nascondi la password
+
+# Show the password
+t6d746fd8 = Mostra la password
+
+# Hide the file names too
+t0ea5cc72 = Nascondi anche i nomi dei file
+
+# No one sees what is inside without the password.
+td4f90f22 = Senza la password nessuno vede cosa contiene.
+
+# 7z only: ZIP always shows its names.
+tac4ad1d6 = Solo 7z: lo ZIP mostra sempre i suoi nomi.
+
+# Save to
+tf1c67ab1 = Salva in
+
+# Change
+ta1de2fdd = Cambia
+
+# Getting {n} photo | Getting {n} photos
+tab55edae =
+    { $n ->
+        [one] Recupero di { $n } foto
+       *[other] Recupero di { $n } foto
+    }
+
+# A photo could not be read: {error}
+tb12cc03b = Impossibile leggere una foto: { $error }
+
+# {n} photo | {n} photos
+t1a7850b2 =
+    { $n ->
+        [one] { $n } foto
+       *[other] { $n } foto
+    }
+
+# Nothing yet
+tbd00747c = Ancora niente
+
+# {name} in {folder}
+t866c0601 = { $name } in { $folder }
+
+# The pictures and videos go to Photos. The other files stay in the archive.
+tad6172e7 = Immagini e video vanno in Foto. Gli altri file restano nell'archivio.
+
+# In a new folder, {name}
+tf816656c = In una nuova cartella, { $name }
+
+# Show in Files when done
+t5525892c = Mostra nell'app File al termine
+
+# Options
+t353e0d45 = Opzioni
+
+# Nothing is written outside this folder or through links, and an archive bomb stops at its size limit.
+tab679ca5 = Nulla viene scritto fuori da questa cartella o attraverso i collegamenti, e una bomba di archivi si ferma al suo limite di dimensione.
+
+# Extract now
+t97070e5a = Estrai ora
+
+# {files} · {size} once extracted
+t16e47887 = { $files } · { $size } una volta estratti
+
+# {n} item chosen | {n} items chosen
+tea658088 =
+    { $n ->
+        [one] { $n } elemento scelto
+       *[other] { $n } elementi scelti
+    }
+
+# Save to Photos
+t6383180a = Salva in Foto
+
+# Extract {n} file | Extract {n} files
+tc5371694 =
+    { $n ->
+        [one] Estrai { $n } file
+       *[other] Estrai { $n } file
+    }
+
+# Extract {n} item | Extract {n} items
+t3dfb389a =
+    { $n ->
+        [one] Estrai { $n } elemento
+       *[other] Estrai { $n } elementi
+    }
+
+# On My iPhone › packwing
+ted9ff11b = Su iPhone › packwing
+
+# Saving to Photos
+t898fa67d = Salvataggio in Foto
+
+# {n} file in {folder} | {n} files in {folder}
+t689fbe82 =
+    { $n ->
+        [one] { $n } file in { $folder }
+       *[other] { $n } file in { $folder }
+    }
+
+# packwing may not add to Photos. Settings › Privacy & Security › Photos lets it.
+t9ec0ea7f = packwing non ha il permesso di aggiungere a Foto. Puoi consentirlo in Impostazioni › Privacy e sicurezza › Foto.
+
+# There are no pictures or videos in it.
+tacc0f9ec = Non contiene immagini né video.
+
+# {n} picture or video added to Photos | {n} pictures and videos added to Photos
+t7d8cbf49 =
+    { $n ->
+        [one] { $n } immagine o video aggiunto a Foto
+       *[other] { $n } immagini e video aggiunti a Foto
+    }
+
+# Archives
+tc45c73a2 = Archivi
+
+# From Files, iCloud Drive or a USB drive
+tcc778cba = Da File, iCloud Drive o un'unità USB
+
+# A ZIP or RAR in Mail or Messages? Tap Share, then packwing, to look inside without saving it.
+t0efd0e35 = Uno ZIP o un RAR in Mail o Messaggi? Tocca Condividi, poi packwing, per guardarci dentro senza salvarlo.
+
+# Locked
+t406a5eb3 = Con password
+
+# Search
+tc646a2c9 = Cerca
+
+# Archives opened before
+t87c5327e = Archivi aperti in precedenza
+
+# Hide, and keep going
+t8a27e8a1 = Nascondi e continua
+
+# files and folders
+t7f784a54 = file e cartelle
+
+# of {size}
+t028b5a2f = di { $size }
+
+# It didn’t finish
+t17ce9c89 = Non è andato a termine
+
+# You can leave packwing. iOS keeps it going and shows how far it is.
+t0bb23efc = Puoi uscire da packwing. iOS lo porta avanti e mostra a che punto è.
+
+# Nothing was left behind.
+t1db928f6 = Non è rimasto nulla.
+
+# Share
+t4f856dd8 = Condividi
+
+# Show in Files
+t9c7dbb8c = Mostra nell'app File
+
+# about {time} left
+td87d0ee6 = ancora circa { $time }
+
+# Can’t open it
+t0923b4df = Impossibile aprirlo
+
+# OK
+t85e4b82f = OK
+
+# {name} is encrypted with a passphrase. Ask the person who sent it for it.
+ta6455c99 = { $name } è cifrato con una passphrase. Chiedila a chi te l'ha inviato.
+
+# {name} is locked. Ask the person who sent it for its password.
+te1845608 = { $name } è protetto da password. Chiedila a chi te l'ha inviato.
+
+# Hide password
+tcd577cde = Nascondi la password
+
+# Show password
+t500e3555 = Mostra la password
+
+# Paste
+tb34a0288 = Incolla
+
+# Kept in memory only, never saved, and forgotten when the archive is closed.
+t6641f326 = Tenuta solo in memoria, mai salvata, e dimenticata alla chiusura dell'archivio.
+
+# Unlock
+t9c799975 = Sblocca
+
+# As the system
+t29f671f7 = Come il sistema
+
+# New archives
+t9341f018 = Nuovi archivi
+
+# packwing can no longer reach {name}. Open it again to look inside.
+ta6e47f44 = packwing non riesce più a raggiungere { $name }. Aprilo di nuovo per guardarci dentro.
+
+# packwing could not open {name}.
+t56e426f0 = packwing non è riuscito ad aprire { $name }.
+
+# {n} file is ready | {n} files are ready
+t09d5ea2a =
+    { $n ->
+        [one] { $n } file è pronto
+       *[other] { $n } file sono pronti
+    }
+
+# packwing could not extract {name}.
+t7e40b6ef = packwing non è riuscito a estrarre { $name }.
+
+# {name} is ready
+t17060a6b = { $name } è pronto
+
+# packwing could not make {name}.
+t25251132 = packwing non è riuscito a creare { $name }.
+
+# packwing could not read {name}.
+t7c55848c = packwing non è riuscito a leggere { $name }.
+
+# Extracting {name}
+t77dce80b = Estrazione di { $name }
+
+# Making {name}
+t5245af2d = Creazione di { $name }
+
+# {done} of {all}
+tede81435 = { $done } di { $all }
+
+# Getting ready
+tfbae3374 = Preparazione
+
+# Extracting and making archives
+t5ad35487 = Estrazione e creazione di archivi
+
+# How far a job has got, while packwing is not on screen
+te78d6807 = A che punto è un'attività, mentre packwing non è sullo schermo
+
+# Finished jobs
+t2339ecd9 = Attività terminate
+
+# When a job is through, or could not finish
+tfdbeaf1a = Quando un'attività è finita, o non è stato possibile completarla
+
+# packwing could not write a file with no name.
+te0bf8e8f = packwing non è riuscito a scrivere un file senza nome.
+
+# packwing could not write {name}.
+teb1bce81 = packwing non è riuscito a scrivere { $name }.
+
+# packwing could not write what it extracted.
+ted881a0f = packwing non è riuscito a scrivere ciò che ha estratto.
+
+# packwing could not make the folder {name}.
+t9f263b45 = packwing non è riuscito a creare la cartella { $name }.
+
+# packwing can no longer reach that folder.
+t899e6af1 = packwing non riesce più a raggiungere quella cartella.
+
+# The gallery would not take {name}.
+td2cca604 = La galleria non ha accettato { $name }.
+
+# Back
+tc2954bc2 = Indietro
+
+# Show a list
+t78956399 = Mostra come elenco
+
+# Show a grid
+tb50700d9 = Mostra come griglia
+
+# Search in this archive
+tfda7010a = Cerca in questo archivio
+
+# packwing cannot show this file.
+t1ef504d9 = packwing non può mostrare questo file.
+
+# AES-256. In 7z the names are hidden too.
+t9c81b89f = AES-256. In 7z anche i nomi sono nascosti.
+
+# AES-256.
+tf18b3f5a = AES-256.
+
+# No files yet
+t129e61cf = Ancora nessun file
+
+# Copying them in…
+taf5cb443 = Copia in corso…
+
+# Where it goes
+t6e56ac09 = Destinazione
+
+# No folder chosen yet
+t9c10d9de = Nessuna cartella scelta
+
+# Make {kind}
+ted3ef83b = Crea { $kind }
+
+# Store, fastest
+ta65137d8 = Archivia, più veloce
+
+# Normal
+t58de2772 = Normale
+
+# Smallest
+t39eb3f74 = Più piccolo
+
+# From the Files app, a USB drive or Drive
+te849b010 = Dall'app File, un'unità USB o Drive
+
+# A ZIP or RAR in a chat or an email? Tap Share, then packwing, to look inside without saving it.
+t541e4ba0 = Uno ZIP o un RAR in una chat o in un'email? Tocca Condividi, poi packwing, per guardarci dentro senza salvarlo.
+
+# Opening {name}
+te629c104 = Apertura di { $name }
+
+# Nothing opened yet.
+t5009c129 = Ancora nulla di aperto.
+
+# Yesterday
+t93ae68c7 = Ieri
+
+# {n} month ago | {n} months ago
+t5af2ebc0 =
+    { $n ->
+        [one] { $n } mese fa
+       *[other] { $n } mesi fa
+    }
+
+# Making an archive
+tff4bea1d = Creazione di un archivio
+
+# file | files
+t2defd942 =
+    { $n ->
+        [one] file
+       *[other] file
+    }
+
+# of {all}
+t601e2927 = di { $all }
+
+# You can leave the app. A notification shows how far it got.
+t018c236f = Puoi uscire dall'app. Una notifica mostra a che punto è.
+
+# Where files go
+t7621af9b = Dove vanno i file
+
+# Ask every time
+t26ab736e = Chiedi ogni volta
+
+# Replace a file already there
+t3c16bbc4 = Sostituisci un file già presente
+
+# While it works
+t28634679 = Durante il lavoro
+
+# Tell me when a job is through
+t51e39cf5 = Avvisami quando un'attività è finita
+
+# How it looks
+te7ee60d2 = Aspetto
+
+# Follow the system
+t37548210 = Segui il sistema
+
+# Licence
+t58c031d4 = Licenza
+
+# The password is never saved
+t98c65e5a = La password non viene mai salvata
+
+# Not now
+t2c3d6fce = Non ora
+
+# The gallery
+t59937d9a = La galleria
+
+# Android asks for this folder once. packwing keeps no other access to your storage.
+t684d18e2 = Android chiede questa cartella una sola volta. packwing non mantiene nessun altro accesso alla tua memoria.
+
+# The pictures and videos go to your gallery. The other files stay in the archive.
+tc93762ab = Immagini e video vanno nella tua galleria. Gli altri file restano nell'archivio.
+
+# Nothing is written through links, and an archive bomb stops at its size limit.
+t2d95067b = Nulla viene scritto attraverso i collegamenti, e una bomba di archivi si ferma al suo limite di dimensione.
+
+# Nothing is written outside that folder or through links, and an archive bomb stops at its size limit.
+tea731324 = Nulla viene scritto fuori da quella cartella o attraverso i collegamenti, e una bomba di archivi si ferma al suo limite di dimensione.
+
+# Extract the pictures
+t5dc33540 = Estrai le immagini

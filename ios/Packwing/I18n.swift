@@ -4,6 +4,10 @@ import Foundation
 // the core (`crates/mobile/src/i18n.rs`). The English is said here, with
 // `{name}` for each value, so both apps share one translation of a message.
 
+/// The language in use, for what the system formats: dates, sizes, lists.
+/// Not the system's own, which can be another one than packwing speaks.
+var appLocale: Locale { Locale(identifier: Packwing.language()) }
+
 /// `english` in the language in use, its `{name}`s filled from `args`.
 func tr(_ english: String, _ args: [String: String] = [:]) -> String {
     tr(english: english, args: args)

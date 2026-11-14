@@ -2929,3 +2929,453 @@ te0a63e12 = Kullanıcı
 
 # Password or app token
 t1c18cb9b = Parola veya uygulama belirteci
+
+# This archive is not where it was any more.
+t4d0917ba = Bu arşiv artık eskiden olduğu yerde değil.
+
+# Tap a file to preview it.
+td670fcf3 = Önizlemek için bir dosyaya dokunun.
+
+# Case and accents don’t matter: bao cao finds Báo cáo.
+t2e705b26 = Büyük/küçük harf ve aksanlar fark etmez: ozet, Özet'i bulur.
+
+# Search its {n} file | Search all {n} files
+t76dbca4b =
+    { $n ->
+        [one] { $n } dosyada ara
+       *[other] { $n } dosyanın tümünde ara
+    }
+
+# Select
+t3e892b4d = Seç
+
+# Opening
+t015825b7 = Açılıyor
+
+# Extract {n} | Extract {n}
+tfda523f9 =
+    { $n ->
+        [one] { $n } öğeyi çıkar
+       *[other] { $n } öğeyi çıkar
+    }
+
+# Extract all
+t9beae641 = Tümünü çıkar
+
+# Preview
+tfdda4cf7 = Önizle
+
+# Files
+te71d1b30 = Dosyalar
+
+# A folder
+te84ceb50 = Bir klasör
+
+# Photos
+tcde554d0 = Fotoğraflar
+
+# Add more
+t5d2a8a05 = Daha fazla ekle
+
+# Format
+tffb0ff72 = Biçim
+
+# Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
+t96cb3408 = Her yerde açılır. Parolayla (AES-256) Windows'un kendi Dosya Gezgini açamaz; 7-Zip ve packwing açabilir.
+
+# Smaller. Opens with packwing, 7-Zip and most archivers.
+tae66e6b2 = Daha küçük. packwing, 7-Zip ve çoğu arşivleyiciyle açılır.
+
+# Compression
+t961abb95 = Sıkıştırma
+
+# Hide the password
+te44ecfcb = Parolayı gizle
+
+# Show the password
+t6d746fd8 = Parolayı göster
+
+# Hide the file names too
+t0ea5cc72 = Dosya adlarını da gizle
+
+# No one sees what is inside without the password.
+td4f90f22 = Parola olmadan kimse içinde ne olduğunu göremez.
+
+# 7z only: ZIP always shows its names.
+tac4ad1d6 = Yalnızca 7z: ZIP adları her zaman gösterir.
+
+# Save to
+tf1c67ab1 = Kaydetme yeri
+
+# Change
+ta1de2fdd = Değiştir
+
+# Getting {n} photo | Getting {n} photos
+tab55edae =
+    { $n ->
+        [one] { $n } fotoğraf alınıyor
+       *[other] { $n } fotoğraf alınıyor
+    }
+
+# A photo could not be read: {error}
+tb12cc03b = Bir fotoğraf okunamadı: { $error }
+
+# {n} photo | {n} photos
+t1a7850b2 =
+    { $n ->
+        [one] { $n } fotoğraf
+       *[other] { $n } fotoğraf
+    }
+
+# Nothing yet
+tbd00747c = Henüz bir şey yok
+
+# {name} in {folder}
+t866c0601 = { $name }, { $folder } içinde
+
+# The pictures and videos go to Photos. The other files stay in the archive.
+tad6172e7 = Resimler ve videolar Fotoğraflar'a gider. Diğer dosyalar arşivde kalır.
+
+# In a new folder, {name}
+tf816656c = Yeni bir klasörde: { $name }
+
+# Show in Files when done
+t5525892c = Bitince Dosyalar'da göster
+
+# Options
+t353e0d45 = Seçenekler
+
+# Nothing is written outside this folder or through links, and an archive bomb stops at its size limit.
+tab679ca5 = Bu klasörün dışına ya da bağlantılar üzerinden hiçbir şey yazılmaz ve bir arşiv bombası boyut sınırında durur.
+
+# Extract now
+t97070e5a = Şimdi çıkar
+
+# {files} · {size} once extracted
+t16e47887 = { $files } · çıkarılınca { $size }
+
+# {n} item chosen | {n} items chosen
+tea658088 =
+    { $n ->
+        [one] { $n } öğe seçildi
+       *[other] { $n } öğe seçildi
+    }
+
+# Save to Photos
+t6383180a = Fotoğraflar'a kaydet
+
+# Extract {n} file | Extract {n} files
+tc5371694 =
+    { $n ->
+        [one] { $n } dosyayı çıkar
+       *[other] { $n } dosyayı çıkar
+    }
+
+# Extract {n} item | Extract {n} items
+t3dfb389a =
+    { $n ->
+        [one] { $n } öğeyi çıkar
+       *[other] { $n } öğeyi çıkar
+    }
+
+# On My iPhone › packwing
+ted9ff11b = iPhone'umda › packwing
+
+# Saving to Photos
+t898fa67d = Fotoğraflar'a kaydediliyor
+
+# {n} file in {folder} | {n} files in {folder}
+t689fbe82 =
+    { $n ->
+        [one] { $folder } içinde { $n } dosya
+       *[other] { $folder } içinde { $n } dosya
+    }
+
+# packwing may not add to Photos. Settings › Privacy & Security › Photos lets it.
+t9ec0ea7f = packwing'in Fotoğraflar'a ekleme izni yok. Ayarlar › Gizlilik ve Güvenlik › Fotoğraflar'dan izin verebilirsiniz.
+
+# There are no pictures or videos in it.
+tacc0f9ec = İçinde resim ya da video yok.
+
+# {n} picture or video added to Photos | {n} pictures and videos added to Photos
+t7d8cbf49 =
+    { $n ->
+        [one] { $n } resim veya video Fotoğraflar'a eklendi
+       *[other] { $n } resim ve video Fotoğraflar'a eklendi
+    }
+
+# Archives
+tc45c73a2 = Arşivler
+
+# From Files, iCloud Drive or a USB drive
+tcc778cba = Dosyalar'dan, iCloud Drive'dan ya da bir USB sürücüden
+
+# A ZIP or RAR in Mail or Messages? Tap Share, then packwing, to look inside without saving it.
+t0efd0e35 = Mail'de ya da Mesajlar'da bir ZIP veya RAR mı var? Kaydetmeden içine bakmak için Paylaş'a, sonra packwing'e dokunun.
+
+# Locked
+t406a5eb3 = Kilitli
+
+# Search
+tc646a2c9 = Ara
+
+# Archives opened before
+t87c5327e = Daha önce açılan arşivler
+
+# Hide, and keep going
+t8a27e8a1 = Gizle, devam etsin
+
+# files and folders
+t7f784a54 = dosya ve klasör
+
+# of {size}
+t028b5a2f = toplam { $size }
+
+# It didn’t finish
+t17ce9c89 = Tamamlanamadı
+
+# You can leave packwing. iOS keeps it going and shows how far it is.
+t0bb23efc = packwing'den çıkabilirsiniz. iOS işi sürdürür ve ne kadar ilerlediğini gösterir.
+
+# Nothing was left behind.
+t1db928f6 = Geride hiçbir şey kalmadı.
+
+# Share
+t4f856dd8 = Paylaş
+
+# Show in Files
+t9c7dbb8c = Dosyalar'da göster
+
+# about {time} left
+td87d0ee6 = yaklaşık { $time } kaldı
+
+# Can’t open it
+t0923b4df = Açılamıyor
+
+# OK
+t85e4b82f = Tamam
+
+# {name} is encrypted with a passphrase. Ask the person who sent it for it.
+ta6455c99 = { $name } bir parola ifadesiyle şifrelenmiş. Parola ifadesini gönderen kişiden isteyin.
+
+# {name} is locked. Ask the person who sent it for its password.
+te1845608 = { $name } kilitli. Parolasını gönderen kişiden isteyin.
+
+# Hide password
+tcd577cde = Parolayı gizle
+
+# Show password
+t500e3555 = Parolayı göster
+
+# Paste
+tb34a0288 = Yapıştır
+
+# Kept in memory only, never saved, and forgotten when the archive is closed.
+t6641f326 = Yalnızca bellekte tutulur, hiç kaydedilmez ve arşiv kapanınca unutulur.
+
+# Unlock
+t9c799975 = Kilidi aç
+
+# As the system
+t29f671f7 = Sistemle aynı
+
+# New archives
+t9341f018 = Yeni arşivler
+
+# packwing can no longer reach {name}. Open it again to look inside.
+ta6e47f44 = packwing artık { $name } dosyasına erişemiyor. İçine bakmak için yeniden açın.
+
+# packwing could not open {name}.
+t56e426f0 = packwing { $name } dosyasını açamadı.
+
+# {n} file is ready | {n} files are ready
+t09d5ea2a =
+    { $n ->
+        [one] { $n } dosya hazır
+       *[other] { $n } dosya hazır
+    }
+
+# packwing could not extract {name}.
+t7e40b6ef = packwing { $name } dosyasını çıkaramadı.
+
+# {name} is ready
+t17060a6b = { $name } hazır
+
+# packwing could not make {name}.
+t25251132 = packwing { $name } dosyasını oluşturamadı.
+
+# packwing could not read {name}.
+t7c55848c = packwing { $name } dosyasını okuyamadı.
+
+# Extracting {name}
+t77dce80b = { $name } çıkarılıyor
+
+# Making {name}
+t5245af2d = { $name } oluşturuluyor
+
+# {done} of {all}
+tede81435 = { $done } / { $all }
+
+# Getting ready
+tfbae3374 = Hazırlanıyor
+
+# Extracting and making archives
+t5ad35487 = Çıkarma ve arşiv oluşturma
+
+# How far a job has got, while packwing is not on screen
+te78d6807 = packwing ekranda değilken bir işin ne kadar ilerlediği
+
+# Finished jobs
+t2339ecd9 = Biten işler
+
+# When a job is through, or could not finish
+tfdbeaf1a = Bir iş bittiğinde ya da tamamlanamadığında
+
+# packwing could not write a file with no name.
+te0bf8e8f = packwing adı olmayan bir dosyayı yazamadı.
+
+# packwing could not write {name}.
+teb1bce81 = packwing { $name } dosyasını yazamadı.
+
+# packwing could not write what it extracted.
+ted881a0f = packwing çıkardıklarını yazamadı.
+
+# packwing could not make the folder {name}.
+t9f263b45 = packwing { $name } klasörünü oluşturamadı.
+
+# packwing can no longer reach that folder.
+t899e6af1 = packwing artık o klasöre erişemiyor.
+
+# The gallery would not take {name}.
+td2cca604 = Galeri { $name } dosyasını kabul etmedi.
+
+# Back
+tc2954bc2 = Geri
+
+# Show a list
+t78956399 = Liste olarak göster
+
+# Show a grid
+tb50700d9 = Izgara olarak göster
+
+# Search in this archive
+tfda7010a = Bu arşivde ara
+
+# packwing cannot show this file.
+t1ef504d9 = packwing bu dosyayı gösteremiyor.
+
+# AES-256. In 7z the names are hidden too.
+t9c81b89f = AES-256. 7z'de adlar da gizlenir.
+
+# AES-256.
+tf18b3f5a = AES-256.
+
+# No files yet
+t129e61cf = Henüz dosya yok
+
+# Copying them in…
+taf5cb443 = Kopyalanıyor…
+
+# Where it goes
+t6e56ac09 = Nereye kaydedilecek
+
+# No folder chosen yet
+t9c10d9de = Henüz klasör seçilmedi
+
+# Make {kind}
+ted3ef83b = { $kind } oluştur
+
+# Store, fastest
+ta65137d8 = Sakla, en hızlı
+
+# Normal
+t58de2772 = Normal
+
+# Smallest
+t39eb3f74 = En küçük
+
+# From the Files app, a USB drive or Drive
+te849b010 = Files uygulamasından, bir USB sürücüden ya da Drive'dan
+
+# A ZIP or RAR in a chat or an email? Tap Share, then packwing, to look inside without saving it.
+t541e4ba0 = Bir sohbette ya da e-postada ZIP veya RAR mı var? Kaydetmeden içine bakmak için Paylaş'a, sonra packwing'e dokunun.
+
+# Opening {name}
+te629c104 = { $name } açılıyor
+
+# Nothing opened yet.
+t5009c129 = Henüz bir şey açılmadı.
+
+# Yesterday
+t93ae68c7 = Dün
+
+# {n} month ago | {n} months ago
+t5af2ebc0 =
+    { $n ->
+        [one] { $n } ay önce
+       *[other] { $n } ay önce
+    }
+
+# Making an archive
+tff4bea1d = Arşiv oluşturuluyor
+
+# file | files
+t2defd942 =
+    { $n ->
+        [one] dosya
+       *[other] dosya
+    }
+
+# of {all}
+t601e2927 = toplam { $all }
+
+# You can leave the app. A notification shows how far it got.
+t018c236f = Uygulamadan çıkabilirsiniz. Bir bildirim ne kadar ilerlediğini gösterir.
+
+# Where files go
+t7621af9b = Dosyaların gideceği yer
+
+# Ask every time
+t26ab736e = Her seferinde sor
+
+# Replace a file already there
+t3c16bbc4 = Var olan dosyanın üzerine yaz
+
+# While it works
+t28634679 = Çalışırken
+
+# Tell me when a job is through
+t51e39cf5 = Bir iş bitince bana haber ver
+
+# How it looks
+te7ee60d2 = Görünüm
+
+# Follow the system
+t37548210 = Sistemle aynı
+
+# Licence
+t58c031d4 = Lisans
+
+# The password is never saved
+t98c65e5a = Parola asla kaydedilmez
+
+# Not now
+t2c3d6fce = Şimdi değil
+
+# The gallery
+t59937d9a = Galeri
+
+# Android asks for this folder once. packwing keeps no other access to your storage.
+t684d18e2 = Android bu klasör için yalnızca bir kez izin ister. packwing depolama alanınıza başka hiçbir erişim tutmaz.
+
+# The pictures and videos go to your gallery. The other files stay in the archive.
+tc93762ab = Resimler ve videolar galeriye gider. Diğer dosyalar arşivde kalır.
+
+# Nothing is written through links, and an archive bomb stops at its size limit.
+t2d95067b = Bağlantılar üzerinden hiçbir şey yazılmaz ve bir arşiv bombası boyut sınırında durur.
+
+# Nothing is written outside that folder or through links, and an archive bomb stops at its size limit.
+tea731324 = O klasörün dışına ya da bağlantılar üzerinden hiçbir şey yazılmaz ve bir arşiv bombası boyut sınırında durur.
+
+# Extract the pictures
+t5dc33540 = Resimleri çıkar

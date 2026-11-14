@@ -1060,3 +1060,185 @@ tb2401428 = WebDAV folder
 t700560f3 = Address
 te0a63e12 = User
 t1c18cb9b = Password or app token
+t4d0917ba = This archive is not where it was any more.
+td670fcf3 = Tap a file to preview it.
+t2e705b26 = Case and accents don’t matter: bao cao finds Báo cáo.
+t76dbca4b =
+    { $n ->
+        [one] Search its { $n } file
+       *[other] Search all { $n } files
+    }
+t3e892b4d = Select
+t015825b7 = Opening
+tfda523f9 =
+    { $n ->
+        [one] Extract { $n }
+       *[other] Extract { $n }
+    }
+t9beae641 = Extract all
+tfdda4cf7 = Preview
+te71d1b30 = Files
+te84ceb50 = A folder
+tcde554d0 = Photos
+t5d2a8a05 = Add more
+tffb0ff72 = Format
+t96cb3408 = Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
+tae66e6b2 = Smaller. Opens with packwing, 7-Zip and most archivers.
+t961abb95 = Compression
+te44ecfcb = Hide the password
+t6d746fd8 = Show the password
+t0ea5cc72 = Hide the file names too
+td4f90f22 = No one sees what is inside without the password.
+tac4ad1d6 = 7z only: ZIP always shows its names.
+tf1c67ab1 = Save to
+ta1de2fdd = Change
+tab55edae =
+    { $n ->
+        [one] Getting { $n } photo
+       *[other] Getting { $n } photos
+    }
+tb12cc03b = A photo could not be read: { $error }
+t1a7850b2 =
+    { $n ->
+        [one] { $n } photo
+       *[other] { $n } photos
+    }
+tbd00747c = Nothing yet
+t866c0601 = { $name } in { $folder }
+tad6172e7 = The pictures and videos go to Photos. The other files stay in the archive.
+tf816656c = In a new folder, { $name }
+t5525892c = Show in Files when done
+t353e0d45 = Options
+tab679ca5 = Nothing is written outside this folder or through links, and an archive bomb stops at its size limit.
+t97070e5a = Extract now
+t16e47887 = { $files } · { $size } once extracted
+tea658088 =
+    { $n ->
+        [one] { $n } item chosen
+       *[other] { $n } items chosen
+    }
+t6383180a = Save to Photos
+tc5371694 =
+    { $n ->
+        [one] Extract { $n } file
+       *[other] Extract { $n } files
+    }
+t3dfb389a =
+    { $n ->
+        [one] Extract { $n } item
+       *[other] Extract { $n } items
+    }
+ted9ff11b = On My iPhone › packwing
+t898fa67d = Saving to Photos
+t689fbe82 =
+    { $n ->
+        [one] { $n } file in { $folder }
+       *[other] { $n } files in { $folder }
+    }
+t9ec0ea7f = packwing may not add to Photos. Settings › Privacy & Security › Photos lets it.
+tacc0f9ec = There are no pictures or videos in it.
+t7d8cbf49 =
+    { $n ->
+        [one] { $n } picture or video added to Photos
+       *[other] { $n } pictures and videos added to Photos
+    }
+tc45c73a2 = Archives
+tcc778cba = From Files, iCloud Drive or a USB drive
+t0efd0e35 = A ZIP or RAR in Mail or Messages? Tap Share, then packwing, to look inside without saving it.
+t406a5eb3 = Locked
+tc646a2c9 = Search
+t87c5327e = Archives opened before
+t8a27e8a1 = Hide, and keep going
+t7f784a54 = files and folders
+t028b5a2f = of { $size }
+t17ce9c89 = It didn’t finish
+t0bb23efc = You can leave packwing. iOS keeps it going and shows how far it is.
+t1db928f6 = Nothing was left behind.
+t4f856dd8 = Share
+t9c7dbb8c = Show in Files
+td87d0ee6 = about { $time } left
+t0923b4df = Can’t open it
+t85e4b82f = OK
+ta6455c99 = { $name } is encrypted with a passphrase. Ask the person who sent it for it.
+te1845608 = { $name } is locked. Ask the person who sent it for its password.
+tcd577cde = Hide password
+t500e3555 = Show password
+tb34a0288 = Paste
+t6641f326 = Kept in memory only, never saved, and forgotten when the archive is closed.
+t9c799975 = Unlock
+t29f671f7 = As the system
+t9341f018 = New archives
+ta6e47f44 = packwing can no longer reach { $name }. Open it again to look inside.
+t56e426f0 = packwing could not open { $name }.
+t09d5ea2a =
+    { $n ->
+        [one] { $n } file is ready
+       *[other] { $n } files are ready
+    }
+t7e40b6ef = packwing could not extract { $name }.
+t17060a6b = { $name } is ready
+t25251132 = packwing could not make { $name }.
+t7c55848c = packwing could not read { $name }.
+t77dce80b = Extracting { $name }
+t5245af2d = Making { $name }
+tede81435 = { $done } of { $all }
+tfbae3374 = Getting ready
+t5ad35487 = Extracting and making archives
+te78d6807 = How far a job has got, while packwing is not on screen
+t2339ecd9 = Finished jobs
+tfdbeaf1a = When a job is through, or could not finish
+te0bf8e8f = packwing could not write a file with no name.
+teb1bce81 = packwing could not write { $name }.
+ted881a0f = packwing could not write what it extracted.
+t9f263b45 = packwing could not make the folder { $name }.
+t899e6af1 = packwing can no longer reach that folder.
+td2cca604 = The gallery would not take { $name }.
+tc2954bc2 = Back
+t78956399 = Show a list
+tb50700d9 = Show a grid
+tfda7010a = Search in this archive
+t1ef504d9 = packwing cannot show this file.
+t9c81b89f = AES-256. In 7z the names are hidden too.
+tf18b3f5a = AES-256.
+t129e61cf = No files yet
+taf5cb443 = Copying them in…
+t6e56ac09 = Where it goes
+t9c10d9de = No folder chosen yet
+ted3ef83b = Make { $kind }
+ta65137d8 = Store, fastest
+t58de2772 = Normal
+t39eb3f74 = Smallest
+te849b010 = From the Files app, a USB drive or Drive
+t541e4ba0 = A ZIP or RAR in a chat or an email? Tap Share, then packwing, to look inside without saving it.
+te629c104 = Opening { $name }
+t5009c129 = Nothing opened yet.
+t93ae68c7 = Yesterday
+t5af2ebc0 =
+    { $n ->
+        [one] { $n } month ago
+       *[other] { $n } months ago
+    }
+tff4bea1d = Making an archive
+t2defd942 =
+    { $n ->
+        [one] file
+       *[other] files
+    }
+t601e2927 = of { $all }
+t018c236f = You can leave the app. A notification shows how far it got.
+t7621af9b = Where files go
+t26ab736e = Ask every time
+t3c16bbc4 = Replace a file already there
+t28634679 = While it works
+t51e39cf5 = Tell me when a job is through
+te7ee60d2 = How it looks
+t37548210 = Follow the system
+t58c031d4 = Licence
+t98c65e5a = The password is never saved
+t2c3d6fce = Not now
+t59937d9a = The gallery
+t684d18e2 = Android asks for this folder once. packwing keeps no other access to your storage.
+tc93762ab = The pictures and videos go to your gallery. The other files stay in the archive.
+t2d95067b = Nothing is written through links, and an archive bomb stops at its size limit.
+tea731324 = Nothing is written outside that folder or through links, and an archive bomb stops at its size limit.
+t5dc33540 = Extract the pictures

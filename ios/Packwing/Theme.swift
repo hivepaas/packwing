@@ -157,7 +157,7 @@ func useNunitoInBars() {
 
 /// A size as Files says it: `12 MB`.
 func sizeText(_ bytes: UInt64) -> String {
-    Int64(clamping: bytes).formatted(.byteCount(style: .file))
+    Int64(clamping: bytes).formatted(.byteCount(style: .file).locale(appLocale))
 }
 
 /// A file's tag: its extension on its tint.
