@@ -5316,6 +5316,7 @@ dependencies = [
 name = "packwing"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
  "context-menu",
  "dirs",
  "futures",
@@ -5332,6 +5333,7 @@ dependencies = [
  "packwing-license",
  "packwing-policy",
  "packwing-remote",
+ "packwing-sandbox",
  "packwing-update",
  "regex",
  "robius-authentication",
@@ -5440,6 +5442,19 @@ dependencies = [
  "packwing-i18n",
  "shellwing-ssh",
  "tokio",
+]
+
+[[package]]
+name = "packwing-sandbox"
+version = "0.1.0"
+dependencies = [
+ "block2 0.6.2",
+ "futures-channel",
+ "libc",
+ "objc2 0.6.5",
+ "objc2-app-kit 0.3.2",
+ "objc2-foundation 0.3.2",
+ "tempfile",
 ]
 
 [[package]]

@@ -60,7 +60,7 @@ pub struct BrowsePage {
 impl BrowsePage {
     pub fn new(recent: Entity<RecentPage>, cx: &mut Context<Self>) -> Self {
         let kept = prefs::prefs(cx).browse_folder;
-        let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("/"));
+        let home = crate::access::home().unwrap_or_else(|| PathBuf::from("/"));
         // Where it was left, if that is still there.
         let start = kept.filter(|f| f.is_dir()).unwrap_or_else(|| home.clone());
         let top = top_of(&start);
@@ -163,13 +163,13 @@ impl BrowsePage {
     /// The folders a button leads to: those this system has.
     fn shortcuts() -> Vec<(&'static str, &'static str, String, PathBuf)> {
         let mut found = Vec::new();
-        if let Some(path) = dirs::home_dir() {
+        if let Some(path) = crate::access::home() {
             found.push(("go-home", "home", tr!("Home"), path));
         }
-        if let Some(path) = dirs::desktop_dir().filter(|p| p.is_dir()) {
+        if let Some(path) = crate::access::desktop().filter(|p| p.is_dir()) {
             found.push(("go-desktop", "desktop", tr!("Desktop"), path));
         }
-        if let Some(path) = dirs::download_dir().filter(|p| p.is_dir()) {
+        if let Some(path) = crate::access::downloads().filter(|p| p.is_dir()) {
             found.push(("go-downloads", "download", tr!("Downloads"), path));
         }
         found

@@ -1,6 +1,15 @@
 # packwing in traditional Chinese, in Taiwan's words. Each message is found by its English, the
 # comment above it; scripts/i18n.py keeps this file in step with the code.
 
+# packwing needs your permission to read this folder. Choose Allow, or a folder that holds it.
+tbc74efc5 = packwing 需要你的允許才能讀取此檔案夾。請選擇「允許」，或包含它的檔案夾。
+
+# packwing needs your permission to write in this folder. Choose Allow, or a folder that holds it.
+tab0752f7 = packwing 需要你的允許才能寫入此檔案夾。請選擇「允許」，或包含它的檔案夾。
+
+# Allow
+t546d19d2 = 允許
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = 外觀：{ $name }。按一下切換為{ $name2 }。
 
@@ -1173,6 +1182,12 @@ tebda8468 = 已選取 { $n } 項
 
 # Try again
 t213e90fa = 再試一次
+
+# packwing needs your permission to show this folder.
+t837b77c0 = packwing 需要你的允許才能顯示此檔案夾。
+
+# Allow access…
+t98c9598c = 允許取用…
 
 # Nothing here matches that.
 t0f9a8a58 = 沒有符合的項目。
@@ -2439,6 +2454,9 @@ tbd048b4e = 此檔案以金鑰加密。
 
 # This key file needs its passphrase.
 t81f4c775 = 此金鑰檔案需要密碼片語。
+
+# packwing was not given {folder}, so it cannot work there.
+t000cc083 = packwing 未獲准取用 { $folder }，因此無法在那裡作業。
 
 # {paths} archives
 t27f3b860 = { $paths } 個封存檔

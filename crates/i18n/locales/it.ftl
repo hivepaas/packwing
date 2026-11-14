@@ -1,6 +1,15 @@
 # packwing in Italian. Each message is found by its English, the
 # comment above it; scripts/i18n.py keeps this file in step with the code.
 
+# packwing needs your permission to read this folder. Choose Allow, or a folder that holds it.
+tbc74efc5 = packwing ha bisogno del tuo permesso per leggere questa cartella. Scegli Consenti, o una cartella che la contiene.
+
+# packwing needs your permission to write in this folder. Choose Allow, or a folder that holds it.
+tab0752f7 = packwing ha bisogno del tuo permesso per scrivere in questa cartella. Scegli Consenti, o una cartella che la contiene.
+
+# Allow
+t546d19d2 = Consenti
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Aspetto: { $name }. Fai clic per passare a { $name2 }.
 
@@ -1190,6 +1199,12 @@ tebda8468 = { $n } selezionati
 
 # Try again
 t213e90fa = Riprova
+
+# packwing needs your permission to show this folder.
+t837b77c0 = packwing ha bisogno del tuo permesso per mostrare questa cartella.
+
+# Allow access…
+t98c9598c = Consenti accesso…
 
 # Nothing here matches that.
 t0f9a8a58 = Nulla qui corrisponde.
@@ -2469,6 +2484,9 @@ tbd048b4e = Questo file è cifrato per una chiave.
 
 # This key file needs its passphrase.
 t81f4c775 = Questo file di chiave richiede la sua passphrase.
+
+# packwing was not given {folder}, so it cannot work there.
+t000cc083 = packwing non ha ricevuto l’accesso a { $folder }, quindi non può lavorarci.
 
 # {paths} archives
 t27f3b860 = { $paths } archivi

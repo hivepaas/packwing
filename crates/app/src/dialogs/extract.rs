@@ -188,6 +188,7 @@ impl ExtractDialog {
                 && let Some(path) = paths.into_iter().next()
             {
                 let _ = this.update(cx, |this, cx| {
+                    crate::access::remember(cx, std::slice::from_ref(&path));
                     this.dest = Dest::Folder(Some(path));
                     cx.notify();
                 });

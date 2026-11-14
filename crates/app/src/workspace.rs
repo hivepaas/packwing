@@ -1152,7 +1152,21 @@ impl Workspace {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
-        self.read_archive(path.into(), Keys::default(), then_extract, window, cx);
+        // In the sandbox, its folder first when it holds the other parts, or when the
+        // archive is out of reach. Whatever the answer, it is read: what could not be
+        // says so.
+        let needs = crate::access::to_read(&path);
+        if needs.is_empty() {
+            return self.read_archive(path.into(), Keys::default(), then_extract, window, cx);
+        }
+        let asked = crate::access::ensure(needs, cx);
+        cx.spawn_in(window, async move |this, cx| {
+            asked.await;
+            let _ = this.update_in(cx, |this, window, cx| {
+                this.read_archive(path.into(), Keys::default(), then_extract, window, cx)
+            });
+        })
+        .detach();
     }
 
     /// Stops the reading going on, if one is.
@@ -1223,6 +1237,7 @@ impl Workspace {
                         // A copy is gone once it is left.
                         if let Some(path) = source.path().filter(|_| !inside) {
                             prefs::change(cx, |p| p.opened(path));
+                            crate::access::remember(cx, &[path.to_path_buf()]);
                         }
                         let rows = prefs::prefs(cx).recent.iter().map(Row::of).collect();
                         this.recent.update(cx, |r, cx| r.show(rows, cx));
@@ -1716,7 +1731,43 @@ impl Workspace {
         view
     }
 
-    pub fn open_progress(
+    /// Starts `job`, or says why it cannot start. In the sandbox, each folder it writes
+    /// in, or reads beside its archive, that packwing cannot yet is asked for first; one
+    /// not given says the job did not start, and why.
+    pub fn open_progress(&mut self, job: Job, window: &mut Window, cx: &mut Context<Self>) {
+        let needs = crate::access::of_job(&job);
+        if needs.is_empty() {
+            self.start_progress(job, window, cx);
+            return;
+        }
+        let folders: Vec<PathBuf> = needs.iter().map(|(p, _)| p.clone()).collect();
+        let asked = crate::access::ensure(needs, cx);
+        cx.spawn_in(window, async move |this, cx| {
+            let given = asked.await;
+            let _ = this.update_in(cx, |this, window, cx| {
+                if given {
+                    this.start_progress(job, window, cx);
+                    return;
+                }
+                let refused = crate::access::of_job(&job)
+                    .into_iter()
+                    .map(|(p, _)| p)
+                    .next()
+                    .or_else(|| folders.into_iter().next())
+                    .unwrap_or_default();
+                let why = tr!(
+                    "packwing was not given {folder}, so it cannot work there.",
+                    folder = refused.display()
+                );
+                let view = cx.new(|cx| ProgressDialog::refused(job, why, cx));
+                this.open_job_dialog(view, window, cx);
+            });
+        })
+        .detach();
+    }
+
+    /// Starts `job` now: what [`Self::open_progress`] does once packwing can.
+    pub fn start_progress(
         &mut self,
         job: Job,
         window: &mut Window,
@@ -1733,18 +1784,28 @@ impl Workspace {
             }
             None => cx.new(|cx| ProgressDialog::new(job, cx)),
         };
-        let events = cx.subscribe_in(&view, window, Self::job_event);
-        self.dialog = Some(Open {
-            view: view.clone().into(),
-            dismissable: false,
-            events: Some(events),
-        });
-        cx.notify();
+        self.open_job_dialog(view.clone(), window, cx);
         #[cfg(all(test, feature = "test-hooks"))]
         if self.behind_at_once && view.read(cx).can_go_behind() {
             view.update(cx, |_, cx| cx.emit(DialogEvent::Behind));
         }
         view
+    }
+
+    /// Shows a job's dialog, and hears what it says.
+    fn open_job_dialog(
+        &mut self,
+        view: Entity<ProgressDialog>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let events = cx.subscribe_in(&view, window, Self::job_event);
+        self.dialog = Some(Open {
+            view: view.into(),
+            dismissable: false,
+            events: Some(events),
+        });
+        cx.notify();
     }
 
     /// Sends each job that starts to the background at once.

@@ -48,6 +48,9 @@ packwing-license.workspace = true
 serde_json = "1"
 # What an organization has fixed.
 packwing-policy.workspace = true
+# The Mac App Store's sandbox: folders asked for, and kept as bookmarks (src/access.rs).
+packwing-sandbox.workspace = true
+base64 = "0.22"
 # Storages across the network: S3, WebDAV and SFTP.
 packwing-remote.workspace = true
 # Telling that a newer packwing is out, and installing it.

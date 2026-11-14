@@ -599,7 +599,7 @@ const SCREENS: [(&str, SetUp); 108] = [
             6,
             131_000_000,
         );
-        ws.open_progress(job, window, cx).update(cx, |p, cx| {
+        ws.start_progress(job, window, cx).update(cx, |p, cx| {
             p.set_failed(
                 "entry 3 (site/../evil.sh): the name climbs out of the folder".into(),
                 cx,

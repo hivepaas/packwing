@@ -1,6 +1,15 @@
 # packwing in Vietnamese. Each message is found by its English, the
 # comment above it; scripts/i18n.py keeps this file in step with the code.
 
+# packwing needs your permission to read this folder. Choose Allow, or a folder that holds it.
+tbc74efc5 = packwing cần bạn cho phép đọc thư mục này. Chọn Cho phép, hoặc một thư mục chứa nó.
+
+# packwing needs your permission to write in this folder. Choose Allow, or a folder that holds it.
+tab0752f7 = packwing cần bạn cho phép ghi vào thư mục này. Chọn Cho phép, hoặc một thư mục chứa nó.
+
+# Allow
+t546d19d2 = Cho phép
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Giao diện: { $name }. Bấm để chuyển sang { $name2 }.
 
@@ -1173,6 +1182,12 @@ tebda8468 = Đã chọn { $n }
 
 # Try again
 t213e90fa = Thử lại
+
+# packwing needs your permission to show this folder.
+t837b77c0 = packwing cần bạn cho phép để hiện thư mục này.
+
+# Allow access…
+t98c9598c = Cho phép truy cập…
 
 # Nothing here matches that.
 t0f9a8a58 = Không có gì khớp.
@@ -2430,6 +2445,9 @@ tbd048b4e = Tệp này được mã hoá cho một khoá.
 
 # This key file needs its passphrase.
 t81f4c775 = Tệp khoá này cần cụm mật khẩu.
+
+# packwing was not given {folder}, so it cannot work there.
+t000cc083 = packwing không được cấp quyền vào { $folder }, nên không thể làm việc ở đó.
 
 # {paths} archives
 t27f3b860 = { $paths } tệp nén

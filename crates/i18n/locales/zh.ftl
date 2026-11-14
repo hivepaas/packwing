@@ -1,6 +1,15 @@
 # packwing in simplified Chinese. Each message is found by its English, the
 # comment above it; scripts/i18n.py keeps this file in step with the code.
 
+# packwing needs your permission to read this folder. Choose Allow, or a folder that holds it.
+tbc74efc5 = packwing 需要你的允许才能读取此文件夹。请选择“允许”，或包含它的文件夹。
+
+# packwing needs your permission to write in this folder. Choose Allow, or a folder that holds it.
+tab0752f7 = packwing 需要你的允许才能写入此文件夹。请选择“允许”，或包含它的文件夹。
+
+# Allow
+t546d19d2 = 允许
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = 外观：{ $name }。点击切换为{ $name2 }。
 
@@ -1173,6 +1182,12 @@ tebda8468 = 已选择 { $n } 项
 
 # Try again
 t213e90fa = 再试一次
+
+# packwing needs your permission to show this folder.
+t837b77c0 = packwing 需要你的允许才能显示此文件夹。
+
+# Allow access…
+t98c9598c = 允许访问…
 
 # Nothing here matches that.
 t0f9a8a58 = 没有符合的内容。
@@ -2430,6 +2445,9 @@ tbd048b4e = 此文件已加密到某个密钥。
 
 # This key file needs its passphrase.
 t81f4c775 = 此密钥文件需要密码短语。
+
+# packwing was not given {folder}, so it cannot work there.
+t000cc083 = packwing 未获准访问 { $folder }，因此无法在那里工作。
 
 # {paths} archives
 t27f3b860 = { $paths } 个压缩包

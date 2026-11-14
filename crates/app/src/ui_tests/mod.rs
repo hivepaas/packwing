@@ -31,6 +31,9 @@ mod inside;
 mod jobs;
 mod keys;
 mod policy;
+// The Mac App Store's sandbox, played anywhere: the folder locked as Unix locks it.
+#[cfg(unix)]
+mod sandbox;
 mod settings;
 mod storages;
 #[cfg(feature = "app-store")]

@@ -641,9 +641,9 @@ impl AuditPage {
     /// Asks where to save those shown as CSV, and saves them there.
     fn save_csv(&mut self, cx: &mut Context<Self>) {
         let text = csv(self.shown.iter().map(|i| &self.lines[*i]));
-        let folder = dirs::download_dir()
+        let folder = crate::access::downloads()
             .filter(|d| d.is_dir())
-            .or_else(dirs::home_dir)
+            .or_else(crate::access::home)
             .unwrap_or_else(|| PathBuf::from("."));
         let secs = SystemTime::now()
             .duration_since(UNIX_EPOCH)

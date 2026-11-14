@@ -1,6 +1,9 @@
 # packwing's English, from the code (scripts/i18n.py update writes it:
 # do not edit). The source for translations.
 
+tbc74efc5 = packwing needs your permission to read this folder. Choose Allow, or a folder that holds it.
+tab0752f7 = packwing needs your permission to write in this folder. Choose Allow, or a folder that holds it.
+t546d19d2 = Allow
 t17634ee0 = Appearance: { $name }. Click for { $name2 }.
 tdc8b782b = Stop and say so
 t1e17fc0c = Replace it
@@ -443,6 +446,8 @@ t29a52578 = { $n } loaded, more in this folder
 t037d01ae = Sorted among those loaded
 tebda8468 = { $n } selected
 t213e90fa = Try again
+t837b77c0 = packwing needs your permission to show this folder.
+t98c9598c = Allow access…
 t0f9a8a58 = Nothing here matches that.
 t0b82c83a = Add a storage to browse it.
 t6a090cc3 = No folders or archives here.
@@ -904,6 +909,7 @@ t23ab4fa0 = This file is encrypted with a passphrase.
 td46b69a1 = This archive needs its password.
 tbd048b4e = This file is encrypted to a key.
 t81f4c775 = This key file needs its passphrase.
+t000cc083 = packwing was not given { $folder }, so it cannot work there.
 t27f3b860 = { $paths } archives
 t75e7db7c = { $folder }, a folder for each
 t8b242db1 = New

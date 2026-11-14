@@ -651,7 +651,7 @@ impl Prefs {
     }
 }
 
-fn write_replacing(file: &Path, text: &str) -> io::Result<()> {
+pub(crate) fn write_replacing(file: &Path, text: &str) -> io::Result<()> {
     if let Some(folder) = file.parent() {
         fs::create_dir_all(folder)?;
     }

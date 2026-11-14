@@ -1,6 +1,15 @@
 # packwing in Spanish. Each message is found by its English, the
 # comment above it; scripts/i18n.py keeps this file in step with the code.
 
+# packwing needs your permission to read this folder. Choose Allow, or a folder that holds it.
+tbc74efc5 = packwing necesita tu permiso para leer esta carpeta. Elige Permitir, o una carpeta que la contenga.
+
+# packwing needs your permission to write in this folder. Choose Allow, or a folder that holds it.
+tab0752f7 = packwing necesita tu permiso para escribir en esta carpeta. Elige Permitir, o una carpeta que la contenga.
+
+# Allow
+t546d19d2 = Permitir
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Apariencia: { $name }. Haz clic para cambiar a { $name2 }.
 
@@ -1190,6 +1199,12 @@ tebda8468 = { $n } seleccionados
 
 # Try again
 t213e90fa = Volver a intentar
+
+# packwing needs your permission to show this folder.
+t837b77c0 = packwing necesita tu permiso para mostrar esta carpeta.
+
+# Allow access…
+t98c9598c = Permitir acceso…
 
 # Nothing here matches that.
 t0f9a8a58 = Nada coincide con eso.
@@ -2469,6 +2484,9 @@ tbd048b4e = Este archivo está cifrado para una clave.
 
 # This key file needs its passphrase.
 t81f4c775 = Este archivo de clave necesita su frase de contraseña.
+
+# packwing was not given {folder}, so it cannot work there.
+t000cc083 = packwing no recibió acceso a { $folder }, así que no puede trabajar allí.
 
 # {paths} archives
 t27f3b860 = { $paths } archivos comprimidos
