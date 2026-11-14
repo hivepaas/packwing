@@ -468,11 +468,23 @@ impl Storage for LocalFolder {
             path.push(name.clone());
             paths.push(self.at(&path)?);
         }
-        trash::delete_all(paths).map_err(io::Error::other)
+        #[cfg(not(any(target_os = "ios", target_os = "android")))]
+        return trash::delete_all(paths).map_err(io::Error::other);
+        #[cfg(any(target_os = "ios", target_os = "android"))]
+        {
+            for path in paths {
+                if fs::symlink_metadata(&path)?.is_dir() {
+                    fs::remove_dir_all(&path)?;
+                } else {
+                    fs::remove_file(&path)?;
+                }
+            }
+            Ok(())
+        }
     }
 
     fn has_trash(&self) -> bool {
-        true
+        cfg!(not(any(target_os = "ios", target_os = "android")))
     }
 
     fn local_path(&self, path: &[String]) -> Option<PathBuf> {

@@ -20,8 +20,6 @@ getrandom = "0.4"
 # Every format, RAR among them: see GPL-ADDITIONAL-PERMISSION.md. Files
 # signed with SSH and hybrid keys too.
 hivepack.workspace = true
-# Moving files to the system's Trash, when a storage on this computer deletes them.
-trash = "5"
 # The size of a picture, before it is decoded to show it.
 imagesize = "0.14"
 # Finding `bao cao` in `Báo cáo`, whichever way its accents are written.
@@ -32,6 +30,11 @@ sha1 = { version = "0.11", default-features = false }
 sha2 = { version = "0.11", default-features = false }
 md-5 = { version = "0.11", default-features = false }
 blake3 = "1.8"
+
+# Moving files to the system's Trash, when a storage on this computer deletes
+# them. Phones have none that an app moves files to: there they are deleted.
+[target.'cfg(not(any(target_os = "ios", target_os = "android")))'.dependencies]
+trash = "5"
 
 # Quarantine on what is copied here from elsewhere, on macOS; a file's extended
 # attributes and ACLs in a tar archive kept for a backup, on Unix.
