@@ -49,8 +49,10 @@ mod shots;
 mod ui_tests;
 
 use std::borrow::Cow;
+use std::path::PathBuf;
 use std::sync::Arc;
 
+use futures::StreamExt as _;
 use gpui::{
     App, AppContext as _, Focusable as _, TitlebarOptions, WindowDecorations, WindowOptions, px,
     size,
@@ -266,74 +268,100 @@ pub fn run(extensions: Extensions) {
             },
         }
     }
-    gpui_platform::application()
-        .with_assets(Assets)
-        .run(move |cx: &mut App| {
-            set_identity(cx);
-            load_fonts(cx);
-            cx.set_global(extensions);
-            let kept = prefs::Prefs::load();
-            packwing_i18n::set_language(kept.language.as_deref());
-            packwing_core::use_threads(kept.threads);
-            let window_bounds = placement::initial(kept.window, cx);
-            cx.set_global(kept);
-            cx.set_global(licensing::Licensed::load());
-            licensing::start_refreshing(cx);
-            audit_log::apply(cx, audit_log::By::Startup);
-            cx.set_global(text_size::SystemSize(text_size::read_system()));
-            packwing_core::clean_opened_files();
-            // What an extraction left behind when packwing ended without
-            // removing it: off the window's thread, as a folder it was in may
-            // be slow to reach.
-            if let Some(folder) = prefs::folder() {
-                packwing_core::keep_journal_in(folder);
-                std::thread::spawn(packwing_core::clean_left_extractions);
-            }
-            // GNOME's Wayland compositor draws no window frame, so Linux gets
-            // client-side decorations. macOS and Windows keep the system's
-            // frame but hide its title bar, and the app draws its own.
-            let client_side = cfg!(any(target_os = "linux", target_os = "freebsd"));
-            let options = WindowOptions {
-                window_bounds: Some(window_bounds),
-                window_min_size: Some(size(px(placement::MIN_SIZE.0), px(placement::MIN_SIZE.1))),
-                window_decorations: client_side.then_some(WindowDecorations::Client),
-                titlebar: (!client_side).then(|| TitlebarOptions {
-                    title: Some("packwing".into()),
-                    appears_transparent: true,
-                    traffic_light_position: Some(chrome::TRAFFIC_LIGHTS),
-                }),
-                app_id: Some("packwing".into()),
-                ..Default::default()
-            };
-            let menu = cx.new(RightClickMenu::installed);
-            open_with::keep_current(cx);
-            let opened = cx.open_window(options, |window, cx| {
-                let ws = cx.new(|cx| {
-                    let mut ws = workspace::Workspace::new(first_run, menu, window, cx);
-                    ws.track_bounds(window, cx);
-                    ws.start_updates(cx);
-                    if let Some(r) = request {
-                        ws.start(r, window, cx);
-                    }
-                    ws
-                });
-                window.focus(&ws.read(cx).focus_handle(cx), cx);
+    // What macOS asks packwing to open: an archive opened in Finder, chosen in
+    // its Open With or dropped on the Dock's icon. It comes as an event, not on
+    // the command line, and may come before the window is there; each is
+    // opened as Open with packwing's item opens it.
+    let (asked, mut to_open) = futures_channel::mpsc::unbounded::<Vec<PathBuf>>();
+    let app = gpui_platform::application().with_assets(Assets);
+    app.on_open_urls(move |urls| {
+        let paths: Vec<PathBuf> = urls
+            .iter()
+            .filter_map(|u| open_with::path_of_url(u))
+            .collect();
+        if !paths.is_empty() {
+            let _ = asked.unbounded_send(paths);
+        }
+    });
+    app.run(move |cx: &mut App| {
+        set_identity(cx);
+        load_fonts(cx);
+        cx.set_global(extensions);
+        let kept = prefs::Prefs::load();
+        packwing_i18n::set_language(kept.language.as_deref());
+        packwing_core::use_threads(kept.threads);
+        let window_bounds = placement::initial(kept.window, cx);
+        cx.set_global(kept);
+        cx.set_global(licensing::Licensed::load());
+        licensing::start_refreshing(cx);
+        audit_log::apply(cx, audit_log::By::Startup);
+        cx.set_global(text_size::SystemSize(text_size::read_system()));
+        packwing_core::clean_opened_files();
+        // What an extraction left behind when packwing ended without
+        // removing it: off the window's thread, as a folder it was in may
+        // be slow to reach.
+        if let Some(folder) = prefs::folder() {
+            packwing_core::keep_journal_in(folder);
+            std::thread::spawn(packwing_core::clean_left_extractions);
+        }
+        // GNOME's Wayland compositor draws no window frame, so Linux gets
+        // client-side decorations. macOS and Windows keep the system's
+        // frame but hide its title bar, and the app draws its own.
+        let client_side = cfg!(any(target_os = "linux", target_os = "freebsd"));
+        let options = WindowOptions {
+            window_bounds: Some(window_bounds),
+            window_min_size: Some(size(px(placement::MIN_SIZE.0), px(placement::MIN_SIZE.1))),
+            window_decorations: client_side.then_some(WindowDecorations::Client),
+            titlebar: (!client_side).then(|| TitlebarOptions {
+                title: Some("packwing".into()),
+                appears_transparent: true,
+                traffic_light_position: Some(chrome::TRAFFIC_LIGHTS),
+            }),
+            app_id: Some("packwing".into()),
+            ..Default::default()
+        };
+        let menu = cx.new(RightClickMenu::installed);
+        open_with::keep_current(cx);
+        let opened = cx.open_window(options, |window, cx| {
+            let ws = cx.new(|cx| {
+                let mut ws = workspace::Workspace::new(first_run, menu, window, cx);
+                ws.track_bounds(window, cx);
+                ws.start_updates(cx);
+                if let Some(r) = request {
+                    ws.start(r, window, cx);
+                }
                 ws
             });
-            if opened.is_err() {
-                eprintln!("packwing: cannot open a window");
-                cx.quit();
-                return;
-            }
-            cx.activate(true);
-            // One window: closing it quits, on macOS too.
-            cx.on_window_closed(|cx, _| {
-                if cx.windows().is_empty() {
-                    cx.quit();
-                }
-            })
-            .detach();
+            window.focus(&ws.read(cx).focus_handle(cx), cx);
+            ws
         });
+        let Ok(window) = opened else {
+            eprintln!("packwing: cannot open a window");
+            cx.quit();
+            return;
+        };
+        cx.spawn(async move |cx| {
+            while let Some(paths) = to_open.next().await {
+                let request = Request {
+                    action: Action::Open,
+                    paths,
+                };
+                let _ = window.update(cx, |ws, window, cx| {
+                    ws.start(request, window, cx);
+                    cx.activate(true);
+                });
+            }
+        })
+        .detach();
+        cx.activate(true);
+        // One window: closing it quits, on macOS too.
+        cx.on_window_closed(|cx, _| {
+            if cx.windows().is_empty() {
+                cx.quit();
+            }
+        })
+        .detach();
+    });
 }
 
 #[cfg(test)]

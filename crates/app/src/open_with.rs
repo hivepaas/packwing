@@ -7,10 +7,10 @@
 //! been updated. It is offered, not chosen: the user makes it the app that
 //! opens archives at a double click, in Open With or in Settings. On Linux
 //! the .deb's launcher does it (packaging/linux/packwing.desktop); on macOS
-//! the app's bundle will, in its Info.plist, and the files will come as an
-//! event, not on the command line.
+//! the app's bundle does, in its Info.plist (packaging/macos/Info.plist), and
+//! the files come as an event, not on the command line ([`path_of_url`]).
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use context_menu::open_with::Handler;
 use gpui::{App, AppContext as _};
@@ -53,9 +53,93 @@ pub fn keep_current(cx: &App) {
     .detach();
 }
 
+/// The file a URL that macOS asks packwing to open names: `file:///Users/a/My%20b.zip`,
+/// percent-decoded, as LaunchServices sends what is chosen in Finder or dropped on the
+/// Dock's icon. None for any other URL, or one whose escapes are not a path's.
+pub fn path_of_url(url: &str) -> Option<PathBuf> {
+    let rest = url.strip_prefix("file://")?;
+    // A file URL's host is empty, or this computer's.
+    let path = rest.strip_prefix("localhost").unwrap_or(rest);
+    if !path.starts_with('/') {
+        return None;
+    }
+    let mut bytes = Vec::with_capacity(path.len());
+    let mut it = path.bytes();
+    while let Some(b) = it.next() {
+        if b == b'%' {
+            let hex = [it.next()?, it.next()?];
+            let hex = std::str::from_utf8(&hex).ok()?;
+            bytes.push(u8::from_str_radix(hex, 16).ok()?);
+        } else {
+            bytes.push(b);
+        }
+    }
+    // A name is any bytes on Unix; elsewhere, text.
+    #[cfg(unix)]
+    let path = <std::ffi::OsString as std::os::unix::ffi::OsStringExt>::from_vec(bytes);
+    #[cfg(not(unix))]
+    let path = String::from_utf8(bytes).ok()?;
+    Some(PathBuf::from(path))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_file_url_is_the_path_it_names() {
+        let path = |u| path_of_url(u).map(|p| p.display().to_string());
+        assert_eq!(
+            path("file:///Users/a/My%20b.zip").as_deref(),
+            Some("/Users/a/My b.zip")
+        );
+        assert_eq!(
+            path("file://localhost/tmp/x.7z").as_deref(),
+            Some("/tmp/x.7z")
+        );
+        // Vietnamese, in NFD as macOS names it, escaped byte by byte.
+        assert_eq!(
+            path("file:///tmp/Ti%E1%BA%BFng%20Vi%E1%BB%87t.rar").as_deref(),
+            Some("/tmp/Tiếng Việt.rar")
+        );
+        assert_eq!(
+            path("file:///tmp/100%25.tar").as_deref(),
+            Some("/tmp/100%.tar")
+        );
+        // What is not a file on this computer, or not escaped right.
+        assert_eq!(path("https://example.com/a.zip"), None);
+        assert_eq!(path("file://server/share/a.zip"), None);
+        assert_eq!(path("file:///tmp/a%2"), None);
+        assert_eq!(path("file:///tmp/a%zz.zip"), None);
+    }
+
+    /// Finder offers packwing in Open With for what Info.plist declares, by the last
+    /// part of a name: an archive cut in parts as `.001`.
+    #[test]
+    fn the_macos_bundle_opens_what_the_items_are_for() {
+        let info = include_str!("../../../packaging/macos/Info.plist");
+        let declared = info
+            .split("<key>CFBundleTypeExtensions</key>")
+            .nth(1)
+            .and_then(|rest| rest.split("</array>").next())
+            .expect("packaging/macos/Info.plist declares CFBundleTypeExtensions");
+        let declared: Vec<&str> = declared
+            .split("<string>")
+            .skip(1)
+            .filter_map(|s| s.split("</string>").next())
+            .collect();
+        let mut wanted: Vec<&str> = Vec::new();
+        for e in ARCHIVES {
+            let last = e.rsplit('.').next().unwrap_or(e);
+            if !wanted.contains(&last) {
+                wanted.push(last);
+            }
+        }
+        assert_eq!(
+            declared, wanted,
+            "packaging/macos/Info.plist's CFBundleTypeExtensions are not ARCHIVES' last parts, in order"
+        );
+    }
 
     #[test]
     fn open_with_opens_what_the_items_are_for() {

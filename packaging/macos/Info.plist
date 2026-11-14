@@ -5,6 +5,58 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
+	<!-- packwing in Finder's Open With for the archives the right-click
+	     menu's items are for (crates/app/src/right_click.rs's ARCHIVES, by the
+	     last part of a name, as a test holds it): offered, not made what opens
+	     them, unless nothing else does. They come to packwing as an event. -->
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Archive</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>zip</string>
+				<string>jar</string>
+				<string>war</string>
+				<string>ear</string>
+				<string>apk</string>
+				<string>xpi</string>
+				<string>epub</string>
+				<string>cbz</string>
+				<string>rar</string>
+				<string>cbr</string>
+				<string>7z</string>
+				<string>cb7</string>
+				<string>tar</string>
+				<string>cbt</string>
+				<string>gz</string>
+				<string>tgz</string>
+				<string>bz2</string>
+				<string>tbz2</string>
+				<string>tbz</string>
+				<string>xz</string>
+				<string>txz</string>
+				<string>zst</string>
+				<string>tzst</string>
+				<string>lz4</string>
+				<string>tlz4</string>
+				<string>lz</string>
+				<string>lzma</string>
+				<string>tlz</string>
+				<string>iso</string>
+				<string>cpio</string>
+				<string>xar</string>
+				<string>sqfs</string>
+				<string>squashfs</string>
+				<string>001</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleDisplayName</key>
 	<string>Packwing</string>
 	<key>CFBundleExecutable</key>

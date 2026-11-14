@@ -55,6 +55,8 @@ packwing-i18n.workspace = true
 context-menu = "0.2.1"
 # What a job on a thread of its own hands back to the window.
 futures-channel = "0.3"
+# Waiting for the next of what macOS asks to open (src/lib.rs).
+futures = { version = "0.3", default-features = false, features = ["std"] }
 # The date a license ends.
 time = { version = "0.3", default-features = false, features = ["std"] }
 unicode-segmentation = "1"

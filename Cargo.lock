@@ -5318,6 +5318,7 @@ version = "0.1.0"
 dependencies = [
  "context-menu",
  "dirs",
+ "futures",
  "futures-channel",
  "gpui-pre",
  "gpui-pre-platform",
