@@ -3151,6 +3151,18 @@ t29f671f7 = Theo hệ thống
 # New archives
 t9341f018 = Tệp nén mới
 
+# Choose its signature…
+tf1c29e90 = Chọn chữ ký của nó…
+
+# A signature says who signed a file only by a key you trust: Settings › Keys you trust. One by any other key proves nothing, whatever it matches.
+te63f7819 = Chữ ký chỉ cho biết ai đã ký tệp khi được ký bằng khoá bạn tin cậy: Cài đặt › Các khoá bạn tin cậy. Chữ ký của khoá khác không chứng minh gì, dù khớp đến đâu.
+
+# Trust this key
+tecf6b414 = Tin cậy khoá này
+
+# There is no signature beside it.
+te7a28cb7 = Không có chữ ký nào bên cạnh.
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing không còn truy cập được { $name }. Hãy mở lại để xem bên trong.
 

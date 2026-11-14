@@ -187,3 +187,12 @@ struct KindTile: View {
         .accessibilityHidden(true)
     }
 }
+
+/// `code` (a checksum, a fingerprint), to break between its groups of eight
+/// only: broken anywhere, iOS shows a hyphen that is not in it.
+func breakable(_ code: String) -> String {
+    stride(from: 0, to: code.count, by: 8).map { at in
+        let start = code.index(code.startIndex, offsetBy: at)
+        return String(code[start..<(code.index(start, offsetBy: 8, limitedBy: code.endIndex) ?? code.endIndex)])
+    }.joined(separator: "\u{200B}")
+}

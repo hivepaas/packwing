@@ -1,6 +1,6 @@
 //! What the iOS and Android apps call: an archive opened and what it holds,
 //! folder by folder; a file of it read, to preview it; its files extracted;
-//! new ZIP and 7z archives made; and an archive's own checksums. The work is packwing-core's, as on the
+//! new ZIP and 7z archives made; and an archive's own checksums and signature. The work is packwing-core's, as on the
 //! desktop.
 //!
 //! Every call that reads or writes a file blocks until it is done, so the app
@@ -18,6 +18,7 @@ uniffi::setup_scaffolding!();
 
 mod checksum;
 mod i18n;
+mod signature;
 
 /// Android's document picker hands out no paths: see [`Document`].
 #[cfg(target_os = "android")]
@@ -39,6 +40,7 @@ pub use checksum::{
     Checksum, ChecksumKind, ChecksumKindRow, Compared, checksum_kinds, compare_checksum,
 };
 pub use i18n::LanguageRow;
+pub use signature::{KeyRead, SignatureState, read_key};
 
 /// Why a call did not do what it was asked, as the app says it: `reason` is
 /// in the user's language already. It is not called `message`, which Kotlin's

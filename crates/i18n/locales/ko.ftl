@@ -3151,6 +3151,18 @@ t29f671f7 = 시스템 설정 따르기
 # New archives
 t9341f018 = 새 압축 파일
 
+# Choose its signature…
+tf1c29e90 = 서명 선택…
+
+# A signature says who signed a file only by a key you trust: Settings › Keys you trust. One by any other key proves nothing, whatever it matches.
+te63f7819 = 서명은 신뢰하는 키로 된 것만 누가 파일에 서명했는지 알려 줍니다: 설정 › 신뢰하는 키. 다른 키의 서명은 일치하더라도 아무것도 증명하지 않습니다.
+
+# Trust this key
+tecf6b414 = 이 키 신뢰
+
+# There is no signature beside it.
+te7a28cb7 = 옆에 서명이 없습니다.
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing이 더 이상 { $name }에 접근할 수 없습니다. 안을 보려면 다시 여세요.
 

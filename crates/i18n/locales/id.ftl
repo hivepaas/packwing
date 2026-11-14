@@ -3160,6 +3160,18 @@ t29f671f7 = Sama dengan sistem
 # New archives
 t9341f018 = Arsip baru
 
+# Choose its signature…
+tf1c29e90 = Pilih tanda tangannya…
+
+# A signature says who signed a file only by a key you trust: Settings › Keys you trust. One by any other key proves nothing, whatever it matches.
+te63f7819 = Tanda tangan menyatakan siapa yang menandatangani berkas hanya oleh kunci yang Anda percaya: Pengaturan › Kunci yang Anda percaya. Tanda tangan oleh kunci lain tidak membuktikan apa-apa, meski cocok.
+
+# Trust this key
+tecf6b414 = Percayai kunci ini
+
+# There is no signature beside it.
+te7a28cb7 = Tidak ada tanda tangan di sebelahnya.
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing tidak bisa lagi mengakses { $name }. Buka lagi untuk melihat isinya.
 

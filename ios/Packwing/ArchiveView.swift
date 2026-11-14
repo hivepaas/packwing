@@ -15,6 +15,7 @@ struct ArchiveView: View {
     /// The grid or the list, as chosen here; else the grid for pictures.
     @State private var grid: Bool?
     @State private var checksums = false
+    @State private var signature = false
 
     private var info: ArchiveInfo { place.archive.info }
 
@@ -51,6 +52,7 @@ struct ArchiveView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button(tr("Checksums"), systemImage: "number") { checksums = true }
+                    Button(tr("Signature"), systemImage: "signature") { signature = true }
                 } label: {
                     Image(systemName: "ellipsis")
                 }
@@ -85,6 +87,9 @@ struct ArchiveView: View {
         }
         .sheet(isPresented: $checksums) {
             ChecksumSheet(archive: place.archive)
+        }
+        .sheet(isPresented: $signature) {
+            SignatureSheet(archive: place.archive)
         }
         .quickLookPreview($model.previewing)
         .overlay(alignment: .bottom) {

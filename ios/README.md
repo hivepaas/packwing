@@ -20,7 +20,7 @@ Then Run in Xcode, on a Simulator (Apple silicon) or an iPhone; signing uses
 the team in `ios/project.yml`. `make ios-sim` builds for the Simulator from
 the command line, and `make ios-test` runs the UI tests
 (`PackwingUITests`: the samples in `PackwingUITests/Samples` opened,
-extracted, unlocked, previewed, saved to Photos, shown as a grid of pictures, put in new archives, received as Mail gives one and its checksum compared) on the iPhone 17
+extracted, unlocked, previewed, saved to Photos, shown as a grid of pictures, put in new archives, received as Mail gives one, its checksum compared and its signature checked) on the iPhone 17
 Simulator; `make ios-test IOS_DEVICE="iPad Pro 13-inch (M5)"` runs them on an
 iPad's. After changing `crates/mobile`, run `make ios` again
 (`scripts/build_ios.sh --debug` builds its library quicker).
@@ -60,11 +60,12 @@ xcrun simctl launch booted com.hivepaas.packwing -open "<that folder>/Documents/
 | `Packwing/ArchiveView.swift` | A folder of an archive, and a search through all of it |
 | `Packwing/Gallery.swift` | A folder as a grid: its pictures as themselves (read from the archive, made small as they decode), the rest by kind; the grid first where it is pictures mostly |
 | `Packwing/ChecksumSheet.swift` | An archive's own checksums (SHA-256 and SHA-1 first, as the desktop's; any of five), and one pasted compared with them |
+| `Packwing/SignatureSheet.swift` | An archive's signature (`name.sig` beside it, or one chosen in Files) checked by the keys trusted; Settings' Keys you trust |
 | `Packwing/PasswordSheet.swift` | An archive's password, or an age file's passphrase |
 | `Packwing/ExtractSheet.swift`, `Extracting.swift` | Extract: to a new folder in Files (packwing's own, or one chosen), or the pictures and videos to Photos; a file previewed in Quick Look |
 | `Packwing/RunningJob.swift`, `JobScreen.swift` | A long job: how far it is, going on once packwing is left (BGContinuedProcessingTask), how it ended |
 | `Packwing/CreateSheet.swift`, `Creating.swift` | New archive: files, folders and photos chosen, ZIP or 7z, a password (AES-256, and 7z's names hidden too), made in a folder of Files and shared |
-| `Packwing/SettingsView.swift` | The language, how new archives are made, the version |
+| `Packwing/SettingsView.swift` | The language, how new archives are made, the keys trusted, the version |
 | `Packwing/Theme.swift` | The desktop's colors, light and dark; Nunito; a file's tag |
 
 ## iPhone and iPad

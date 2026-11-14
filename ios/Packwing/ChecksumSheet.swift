@@ -169,6 +169,7 @@ struct ChecksumSheet: View {
                     .buttonStyle(.borderless)
                 }
             }
+            // Copy copies it whole.
             Text(sum.map(breakable) ?? tr("Reading…"))
                 .font(.system(.footnote, design: .monospaced))
                 .foregroundStyle(sum == nil ? Tonal.muted : Tonal.text)
@@ -176,15 +177,6 @@ struct ChecksumSheet: View {
                 .accessibilityIdentifier("checksum-\(row.key)")
         }
         .padding(.vertical, 4)
-    }
-
-    /// `sum`, to break between its groups of eight digits only: broken
-    /// anywhere, a hyphen would show that is not in it. Copy copies it whole.
-    private func breakable(_ sum: String) -> String {
-        stride(from: 0, to: sum.count, by: 8).map { at in
-            let start = sum.index(sum.startIndex, offsetBy: at)
-            return String(sum[start..<(sum.index(start, offsetBy: 8, limitedBy: sum.endIndex) ?? sum.endIndex)])
-        }.joined(separator: "\u{200B}")
     }
 
     @ViewBuilder

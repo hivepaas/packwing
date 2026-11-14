@@ -3200,6 +3200,18 @@ t29f671f7 = Sistemle aynı
 # New archives
 t9341f018 = Yeni arşivler
 
+# Choose its signature…
+tf1c29e90 = İmzasını seç…
+
+# A signature says who signed a file only by a key you trust: Settings › Keys you trust. One by any other key proves nothing, whatever it matches.
+te63f7819 = Bir imza, dosyayı kimin imzaladığını yalnızca güvendiğiniz bir anahtarla söyler: Ayarlar › Güvendiğiniz anahtarlar. Başka bir anahtarla atılan imza, eşleşse bile hiçbir şeyi kanıtlamaz.
+
+# Trust this key
+tecf6b414 = Bu anahtara güven
+
+# There is no signature beside it.
+te7a28cb7 = Yanında imza yok.
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing artık { $name } dosyasına erişemiyor. İçine bakmak için yeniden açın.
 

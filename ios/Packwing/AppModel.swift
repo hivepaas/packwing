@@ -84,6 +84,8 @@ final class AppModel {
     var reading: String?
     /// Counts the folders chosen to save in, so that what shows it is drawn again.
     var foldersChanged = 0
+    /// The public keys whose signatures say who signed a file.
+    var trustedKeys = AppModel.loadKeys()
 
     @ObservationIgnored private var openJob: Job?
     @ObservationIgnored var readJob: Job?

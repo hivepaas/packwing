@@ -30,6 +30,7 @@ struct SettingsView: View {
                     }
                 }
                 .listRowBackground(Tonal.surface)
+                TrustedKeysSection()
                 Section(tr("About")) {
                     LabeledContent("packwing", value: version)
                 }

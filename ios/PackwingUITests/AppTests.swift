@@ -12,7 +12,8 @@ final class AppTests: XCTestCase {
         let sample = Bundle(for: Self.self).url(forResource: name, withExtension: nil)
         XCTAssertNotNil(sample, "no sample \(name)")
         let app = XCUIApplication()
-        app.launchArguments = ["-open", sample!.path, "-AppleLanguages", "(en)", "-language", ""]
+        app.launchArguments = ["-open", sample!.path, "-AppleLanguages", "(en)", "-language", "",
+                               "-trustedKeys", ""]
         app.launch()
         return app
     }
@@ -273,5 +274,40 @@ final class AppTests: XCTestCase {
         XCTAssert(app.staticTexts["It matches the file’s MD5 checksum."].waitForExistence(timeout: 15))
         XCTAssert(app.staticTexts["checksum-md5"].exists)
         keep(app, "checksum-md5")
+    }
+
+    func testAnArchiveSSignatureSaysWhoSignedItOnceItsKeyIsTrusted() {
+        // Samples/report.zip.sig: report.zip signed with `ssh-keygen -Y sign -n file`.
+        let fingerprint = "SHA256:4mHGiWUeHRWTUW56vDGyBZfe9CwbQ32QEVMD86pJVto"
+        let app = launch(opening: "report.zip")
+        XCTAssert(app.buttons["Extract all"].waitForExistence(timeout: 15))
+        app.buttons["More"].tap()
+        app.buttons["Signature"].tap()
+
+        // Found beside it; by a key not trusted yet, which proves nothing.
+        let stranger = app.staticTexts["Signed by a key you do not trust: \(fingerprint)"]
+        XCTAssert(stranger.waitForExistence(timeout: 15))
+        keep(app, "signature-stranger")
+        app.buttons["Trust this key"].tap()
+        let name = app.alerts.textFields.firstMatch
+        XCTAssert(name.waitForExistence(timeout: 5))
+        name.typeText("Tester")
+        app.alerts.buttons["Trust this key"].tap()
+
+        // Checked again, against all of it.
+        XCTAssert(app.staticTexts["Signed by Tester"].waitForExistence(timeout: 15))
+        keep(app, "signature-good")
+        app.buttons["Close"].firstMatch.tap()
+
+        // Kept in Settings.
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        // A tab bar's on an iPhone, buttons at the top on an iPad: by its label.
+        let settings = app.buttons.matching(NSPredicate(format: "label == 'Settings'")).firstMatch
+        XCTAssert(settings.waitForExistence(timeout: 5))
+        settings.tap()
+        let kept = app.staticTexts["Tester"]
+        XCTAssert(kept.waitForExistence(timeout: 5))
+        XCTAssert(app.staticTexts[fingerprint].exists)
+        keep(app, "keys-trusted")
     }
 }

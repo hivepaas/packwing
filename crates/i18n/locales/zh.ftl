@@ -3151,6 +3151,18 @@ t29f671f7 = 跟随系统
 # New archives
 t9341f018 = 新建压缩包
 
+# Choose its signature…
+tf1c29e90 = 选择它的签名…
+
+# A signature says who signed a file only by a key you trust: Settings › Keys you trust. One by any other key proves nothing, whatever it matches.
+te63f7819 = 只有你信任的密钥的签名，才表明文件由谁签署：设置 › 你信任的密钥。其他密钥的签名即使匹配也不能证明任何事。
+
+# Trust this key
+tecf6b414 = 信任此密钥
+
+# There is no signature beside it.
+te7a28cb7 = 旁边没有签名。
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing 已无法访问 { $name }。请重新打开它以查看内容。
 
