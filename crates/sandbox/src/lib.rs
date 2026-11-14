@@ -14,6 +14,21 @@ use futures_channel::oneshot;
 
 #[cfg(target_os = "macos")]
 mod macos;
+#[cfg(target_os = "macos")]
+mod services;
+
+/// Offers packwing's Services, the right-click menu Finder has for a sandboxed app: in
+/// it under Services (or Quick Actions), as Info.plist's NSServices names them
+/// (`packaging/macos/app-store-services.json`). `each` is called, on the main thread,
+/// with the service's message (`extractHere`, `extractToFolder`, `extract`,
+/// `compressZip`, `compress`) and the files and folders chosen, which the sandbox lets
+/// packwing read. Call it once the app runs; elsewhere it does nothing.
+pub fn serve(each: impl Fn(&str, Vec<PathBuf>) + 'static) {
+    #[cfg(target_os = "macos")]
+    services::serve(Box::new(each));
+    #[cfg(not(target_os = "macos"))]
+    let _ = each;
+}
 
 /// packwing runs in the App Sandbox.
 pub fn active() -> bool {

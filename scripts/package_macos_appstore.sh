@@ -156,6 +156,10 @@ plutil -replace CFBundleVersion -string "$BUILD_NUMBER" "$APP/Contents/Info.plis
 # so App Store Connect asks for no documents. Offered in France, it would need
 # France's declaration, and this to say YES with its compliance code.
 plutil -replace ITSAppUsesNonExemptEncryption -bool NO "$APP/Contents/Info.plist"
+# The right-click menu the sandbox allows: Services, in Finder's menu under Services
+# or Quick Actions, which packwing serves (crates/sandbox/src/services.rs). An empty
+# NSRequiredContext has them on without the user turning them on in System Settings.
+plutil -insert NSServices -json "$(tr -d '\n' <packaging/macos/app-store-services.json)" "$APP/Contents/Info.plist"
 plutil -lint "$APP/Contents/Info.plist" packaging/macos/PrivacyInfo.xcprivacy
 
 ## The entitlements: the sandbox's, and, for the store, the app's id and team,

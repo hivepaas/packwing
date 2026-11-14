@@ -1,6 +1,6 @@
 [package]
 name = "packwing-sandbox"
-description = "The App Sandbox the Mac App Store's packwing runs in: asking for a folder, and keeping it"
+description = "The App Sandbox the Mac App Store's packwing runs in: asking for a folder, and keeping it; and its Services, Finder's right-click menu there"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -16,8 +16,8 @@ futures-channel = "0.3"
 block2 = "0.6"
 libc = "0.2"
 objc2 = "0.6"
-objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSArray", "NSData", "NSError", "NSString", "NSURL"] }
-objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "block2", "NSApplication", "NSOpenPanel", "NSPanel", "NSResponder", "NSSavePanel", "NSWindow"] }
+objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSArray", "NSData", "NSEnumerator", "NSError", "NSString", "NSURL"] }
+objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "block2", "NSApplication", "NSOpenPanel", "NSPanel", "NSPasteboard", "NSPasteboardItem", "NSResponder", "NSSavePanel", "NSWindow"] }
 
 [dev-dependencies]
 tempfile = "3"
