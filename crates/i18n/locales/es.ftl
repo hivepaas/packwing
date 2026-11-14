@@ -2011,6 +2011,9 @@ tf996dc19 = La App Store no encontró nada comprado con esta cuenta de Apple.
 # The App Store could not do it: {why}
 t07f7f00e = La App Store no pudo hacerlo: { $why }
 
+# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
+t4294db10 = La App Store no vende Pro en tu país o región. Pro comprado con esta cuenta de Apple en otro se puede seguir restaurando.
+
 # App Store
 t56b8f375 = App Store
 

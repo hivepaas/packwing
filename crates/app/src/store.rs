@@ -16,6 +16,9 @@ pub struct Store {
     /// Pro's price in the user's country; none until the App Store answers, or if it has
     /// no Pro.
     pub price: Option<String>,
+    /// Whether the App Store sells Pro in the user's country (its storefront): none until
+    /// it answers. Pro is not sold everywhere the app is.
+    pub sold: Option<bool>,
     /// A purchase or a restore is under way.
     pub busy: bool,
     /// What the last purchase or restore came to, when the user needs to know.
@@ -79,7 +82,10 @@ pub fn start(cx: &mut App) {
             change_async(cx, |s| s.holds = holds);
         }
         if let Ok(price) = api::price().await {
-            change_async(cx, |s| s.price = price);
+            change_async(cx, |s| {
+                s.sold = Some(price.is_some());
+                s.price = price;
+            });
         }
         use futures::StreamExt as _;
         while let Some(holds) = changed_rx.next().await {
@@ -206,13 +212,14 @@ pub mod fake {
         fake.as_mut().map(f)
     }
 
-    /// From now on the App Store sells Pro at `price`; the user holds it if `holds`.
-    pub fn start(price: &str, holds: bool) {
+    /// From now on the App Store sells Pro at `price`, or, with none, has no Pro in the
+    /// user's country; the user holds it if `holds`.
+    pub fn start(price: Option<&str>, holds: bool) {
         *FAKE
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner) = Some(Fake {
             holds,
-            price: Some(price.to_owned()),
+            price: price.map(str::to_owned),
             ..Fake::default()
         });
     }

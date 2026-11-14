@@ -2059,6 +2059,9 @@ tf996dc19 = App Store не нашёл покупок с этим Apple ID.
 # The App Store could not do it: {why}
 t07f7f00e = App Store не смог это сделать: { $why }
 
+# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
+t4294db10 = App Store не продаёт Pro в вашей стране или регионе. Pro, купленный с этим Apple ID в другой стране, по-прежнему можно восстановить.
+
 # App Store
 t56b8f375 = App Store
 

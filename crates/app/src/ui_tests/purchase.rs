@@ -9,7 +9,7 @@ use crate::store::fake;
 
 /// Settings › License, with the App Store selling Pro: `holds` if it is the user's.
 fn license_page(ui: &mut Ui, holds: bool) {
-    fake::start("$19.99", holds);
+    fake::start(Some("$19.99"), holds);
     ui.start();
     ui.settings(5);
 }
@@ -65,6 +65,25 @@ scenario!(
         fake::transaction(false);
         ui.wait_until("Free", |ui| ui.plan() == Plan::Free);
         ui.wait_for("store-buy");
+    }
+);
+
+scenario!(
+    /// Where the App Store does not sell Pro, the License page offers no Buy, says why,
+    /// sends no one to another shop, and still restores what was bought elsewhere.
+    where_pro_is_not_sold_there_is_no_buy_but_restore,
+    |ui| {
+        fake::start(None, false);
+        ui.start();
+        ui.settings(5);
+        ui.wait_for("store-not-sold");
+        assert!(!ui.shows("store-buy"));
+        assert!(!ui.shows("license-buy"), "a way out to the website");
+        fake::answer_restore(Ok(true));
+        ui.click("store-restore");
+        ui.wait_until("Pro", |ui| ui.plan() == Plan::Pro);
+        ui.wait_for("store-held");
+        assert!(!ui.shows("store-not-sold"));
     }
 );
 

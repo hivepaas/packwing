@@ -735,6 +735,7 @@ t8ade61c5 = Restore Purchases
 td36209de = Waiting for approval: packwing turns Pro once it is given.
 tf996dc19 = The App Store found nothing bought with this Apple Account.
 t07f7f00e = The App Store could not do it: { $why }
+t4294db10 = The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
 t56b8f375 = App Store
 ta6e8e46d = Pro, bought once in the App Store: yours on every Mac with your Apple Account.
 t1eab5e32 = Plan

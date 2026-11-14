@@ -1987,6 +1987,9 @@ tf996dc19 = App Store에서 이 Apple 계정으로 구입한 항목을 찾지 �
 # The App Store could not do it: {why}
 t07f7f00e = App Store에서 처리하지 못했습니다: { $why }
 
+# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
+t4294db10 = 사용자의 국가 또는 지역의 App Store에서는 Pro를 판매하지 않습니다. 이 Apple 계정으로 다른 국가 또는 지역에서 구입한 Pro는 복원할 수 있습니다.
+
 # App Store
 t56b8f375 = App Store
 

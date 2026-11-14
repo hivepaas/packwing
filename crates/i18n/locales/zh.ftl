@@ -1987,6 +1987,9 @@ tf996dc19 = App Store 未找到用此 Apple 账户购买的项目。
 # The App Store could not do it: {why}
 t07f7f00e = App Store 无法完成：{ $why }
 
+# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
+t4294db10 = 你所在国家或地区的 App Store 不销售 Pro。使用此 Apple 账户在其他国家或地区购买的 Pro 仍可恢复。
+
 # App Store
 t56b8f375 = App Store
 
