@@ -22,7 +22,7 @@ use crate::colors::colors;
 use crate::text_size::ui;
 
 /// How wide the bar is, as a pointer sees it.
-const WIDTH: f32 = 12.;
+pub const WIDTH: f32 = 12.;
 /// The thumb, at rest and under the pointer or held.
 const THIN: f32 = 6.;
 const WIDE: f32 = 8.;
@@ -72,6 +72,39 @@ pub fn edge_bar(id: impl Into<ElementId>, handle: &impl Scrolls) -> Scrollbar {
         .top_0()
         .bottom(ui(CORNER - PAD))
         .right(ui(-PAD))
+}
+
+/// A bar for a list that fills a well `pad` in from its edges, its corners
+/// `corner` round: along the well's edge, short of its corners above and
+/// below. Its parent is the list's, made `relative()`.
+pub fn well_bar(
+    id: impl Into<ElementId>,
+    handle: &impl Scrolls,
+    pad: f32,
+    corner: f32,
+) -> Scrollbar {
+    let short = ui((corner - pad).max(0.));
+    scrollbar(id, handle)
+        .absolute()
+        .top(short)
+        .bottom(short)
+        .right(ui(-pad))
+}
+
+/// The thumb, drawn `top` down and `height` long, along a bar whose right
+/// edge is `right`; wide, under the pointer or held. For what scrolls
+/// itself and draws its own bar, as a text field does.
+pub fn paint_thumb(window: &mut Window, right: Pixels, top: Pixels, height: Pixels, wide: bool) {
+    let c = colors();
+    let w = px(if wide { WIDE } else { THIN });
+    window.paint_quad(quad(
+        Bounds::new(point(right - px(INSET) - w, top), size(w, height)),
+        w / 2.,
+        rgb(if wide { c.faint } else { c.outline }),
+        px(0.),
+        transparent_black(),
+        Default::default(),
+    ));
 }
 
 /// A bar for a rounded card that scrolls itself: along its edge, short of
@@ -232,23 +265,16 @@ impl Element for Scrollbar {
         let Some(thumb) = prepainted.thumb else {
             return;
         };
-        let c = colors();
         let hitbox = prepainted.hitbox.clone();
         let held = prepainted.held.0.clone();
         let wide = held.get().is_some() || hitbox.is_hovered(window);
-        let w = px(if wide { WIDE } else { THIN });
-        let at = Bounds::new(
-            point(bounds.right() - px(INSET) - w, bounds.top() + thumb.top),
-            size(w, thumb.height),
+        paint_thumb(
+            window,
+            bounds.right(),
+            bounds.top() + thumb.top,
+            thumb.height,
+            wide,
         );
-        window.paint_quad(quad(
-            at,
-            w / 2.,
-            rgb(if wide { c.faint } else { c.outline }),
-            px(0.),
-            transparent_black(),
-            Default::default(),
-        ));
         window.set_cursor_style(CursorStyle::Arrow, &hitbox);
 
         let handle = self.handle.clone();

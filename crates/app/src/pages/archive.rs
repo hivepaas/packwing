@@ -297,7 +297,8 @@ impl ArchivePage {
             chosen: None,
             selected: BTreeSet::new(),
             preview: Preview::Nothing,
-            preview_text: cx.new(|cx| TextInput::new("", cx).read_only()),
+            // Its bar along the edge of the well, past the text's padding.
+            preview_text: cx.new(|cx| TextInput::new("", cx).read_only().bar_at_edge(ui(12.))),
             previewing: None,
             found: Vec::new(),
             signature: None,

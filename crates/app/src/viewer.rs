@@ -24,6 +24,7 @@ use crate::colors::colors;
 use crate::input::{Changed, Paint, TextInput};
 use crate::model::{Kind, count, reads_as_text, size, tag_of, text_preview};
 use crate::pages::archive::{MOST_PREVIEWED, picture_format};
+use crate::scrollbar::well_bar;
 use crate::text_size::ui;
 use crate::widgets::{Fill, Size, button, icon, icon_button, kind_tile, mono_font, tip};
 
@@ -356,7 +357,13 @@ impl Viewer {
             at,
             opened: at,
             shown: Shown::Reading,
-            text: cx.new(|cx| TextInput::new("", cx).read_only().code(unpainted)),
+            // Its bar along the edge of the stage, past the text's padding.
+            text: cx.new(|cx| {
+                TextInput::new("", cx)
+                    .read_only()
+                    .code(unpainted)
+                    .bar_at_edge(ui(12.))
+            }),
             actual: false,
             at_size: ScrollHandle::new(),
             side: UniformListScrollHandle::new(),
@@ -784,16 +791,25 @@ impl Viewer {
             .rounded(ui(20.))
             .bg(rgb(c.well))
             .child(
-                uniform_list(
-                    "view-files-rows",
-                    self.files.len(),
-                    cx.processor(|this, range: Range<usize>, _, cx| {
-                        range.map(|i| this.side_row(i, cx)).collect::<Vec<_>>()
-                    }),
-                )
-                .track_scroll(&self.side)
-                .flex_1()
-                .min_h_0(),
+                div()
+                    .relative()
+                    .flex_1()
+                    .min_h_0()
+                    .flex()
+                    .flex_col()
+                    .child(
+                        uniform_list(
+                            "view-files-rows",
+                            self.files.len(),
+                            cx.processor(|this, range: Range<usize>, _, cx| {
+                                range.map(|i| this.side_row(i, cx)).collect::<Vec<_>>()
+                            }),
+                        )
+                        .track_scroll(&self.side)
+                        .flex_1()
+                        .min_h_0(),
+                    )
+                    .child(well_bar("view-files-bar", &self.side, 6., 20.)),
             )
     }
 

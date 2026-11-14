@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 110] = [
+const SCREENS: [(&str, SetUp); 112] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -232,6 +232,14 @@ const SCREENS: [(&str, SetUp); 110] = [
         let text = "# The company site\n\nTo run it:\n\n    ./deploy.sh --production\n\nSomething went wrong? See docs/.\n";
         ws.preview_in_archive(None, text, cx);
     }),
+    ("preview-text-long", |ws, _, cx| {
+        ws.show_archive(read(), cx);
+        ws.select_in_archive(&[1], cx);
+        let text: String = (1..=60)
+            .map(|n| format!("line {n}: ./deploy.sh --production --step {n}\n"))
+            .collect();
+        ws.preview_in_archive(None, &text, cx);
+    }),
     ("archive-entry-menu", |ws, _, cx| {
         ws.show_archive(read_named("site-backup-2026-10.zip"), cx);
         ws.select_in_archive(&[1], cx);
@@ -304,6 +312,8 @@ const SCREENS: [(&str, SetUp); 110] = [
     ("viewer-text", |ws, window, cx| {
         view_in_browse(ws, "notes.md", window, cx)
     }),
+    // More text, and more files beside it, than there is room for: their bars.
+    ("viewer-long", |ws, _, cx| view_long_in_browse(ws, cx)),
     ("viewer-list", |ws, window, cx| {
         view_in_browse(ws, "packwing.png", window, cx);
         crate::viewer::show_sidebar(true);
@@ -815,7 +825,38 @@ fn view_in_browse(ws: &mut Workspace, name: &str, _: &mut Window, cx: &mut Conte
          To put one back:\n\n    ./deploy.sh --restore site-2026-10.zip\n",
     )
     .expect("cannot write");
-    ws.browse_page().update(cx, |b, cx| b.go_to(&dir, cx));
+    browse_and_view(ws, &dir, name, cx);
+}
+
+/// Browse at a folder of 40 notes, the first of them long, it in the viewer
+/// beside the list of them: more of each than there is room for.
+fn view_long_in_browse(ws: &mut Workspace, cx: &mut Context<Workspace>) {
+    crate::viewer::show_sidebar(true);
+    let dir = out_dir().join("viewer-long-sample");
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).expect("cannot make a folder");
+    let long: String = (1..=120)
+        .map(|n| format!("- {n:03}: site-2026-{:02}.zip checked, 42 MB\n", n % 12 + 1))
+        .collect();
+    std::fs::write(
+        dir.join("changelog.md"),
+        format!("# Every backup\n\n{long}"),
+    )
+    .expect("cannot write");
+    for n in 1..40 {
+        std::fs::write(dir.join(format!("notes-{n:02}.md")), "# Notes\n").expect("cannot write");
+    }
+    browse_and_view(ws, &dir, "changelog.md", cx);
+}
+
+/// Browse at `dir`, its file `name` in the viewer.
+fn browse_and_view(
+    ws: &mut Workspace,
+    dir: &std::path::Path,
+    name: &str,
+    cx: &mut Context<Workspace>,
+) {
+    ws.browse_page().update(cx, |b, cx| b.go_to(dir, cx));
     ws.show_page(Page::Browse, cx);
     let explorer = ws.browse_page().read(cx).explorer().clone();
     explorer.update(cx, |e, cx| {
