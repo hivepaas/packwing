@@ -3043,6 +3043,9 @@ t3dfb389a =
        *[other] Giải nén { $n } mục
     }
 
+# On My iPad › packwing
+ta308a480 = Trên iPad › packwing
+
 # On My iPhone › packwing
 ted9ff11b = Trên iPhone › packwing
 

@@ -3090,6 +3090,9 @@ t3dfb389a =
        *[other] { $n } öğeyi çıkar
     }
 
+# On My iPad › packwing
+ta308a480 = iPad'imde › packwing
+
 # On My iPhone › packwing
 ted9ff11b = iPhone'umda › packwing
 

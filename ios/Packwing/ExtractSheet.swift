@@ -117,6 +117,8 @@ struct ExtractSheet: View {
             }
         }
         .presentationDetents([.large])
+        // On an iPad, a page: all of it shows, the keyboard up or not.
+        .presentationSizing(.page)
     }
 
     private var summary: String {

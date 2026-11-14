@@ -3090,6 +3090,9 @@ t3dfb389a =
        *[other] Extrair { $n } itens
     }
 
+# On My iPad › packwing
+ta308a480 = No Meu iPad › packwing
+
 # On My iPhone › packwing
 ted9ff11b = No Meu iPhone › packwing
 

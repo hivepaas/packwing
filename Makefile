@@ -57,9 +57,12 @@ ios-sim: ## Build the iOS app for the Simulator (after make ios)
 	cd ios && xcodebuild -project Packwing.xcodeproj -scheme Packwing \
 		-destination 'generic/platform=iOS Simulator' -derivedDataPath ../target/ios build
 
-ios-test: ## Run the iOS app's UI tests on the iPhone 17 Simulator (after make ios)
+# The Simulator the UI tests run on: make ios-test IOS_DEVICE="iPad Pro 13-inch (M5)"
+IOS_DEVICE ?= iPhone 17
+
+ios-test: ## Run the iOS app's UI tests on a Simulator, the iPhone 17's unless IOS_DEVICE says (after make ios)
 	cd ios && xcodebuild test -project Packwing.xcodeproj -scheme Packwing \
-		-destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath ../target/ios
+		-destination 'platform=iOS Simulator,name=$(IOS_DEVICE)' -derivedDataPath ../target/ios
 
 android: ## The Android app: its Rust library, its Kotlin and a debug APK
 	rustup target add aarch64-linux-android x86_64-linux-android

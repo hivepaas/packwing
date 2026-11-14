@@ -21,7 +21,8 @@ the team in `ios/project.yml`. `make ios-sim` builds for the Simulator from
 the command line, and `make ios-test` runs the UI tests
 (`PackwingUITests`: the samples in `PackwingUITests/Samples` opened,
 extracted, unlocked, previewed, saved to Photos, shown as a grid of pictures, put in new archives and received as Mail gives one) on the iPhone 17
-Simulator. After changing `crates/mobile`, run `make ios` again
+Simulator; `make ios-test IOS_DEVICE="iPad Pro 13-inch (M5)"` runs them on an
+iPad's. After changing `crates/mobile`, run `make ios` again
 (`scripts/build_ios.sh --debug` builds its library quicker).
 
 What is generated, and not committed: `ios/Generated/` (the XCFramework and
@@ -64,6 +65,13 @@ xcrun simctl launch booted com.hivepaas.packwing -open "<that folder>/Documents/
 | `Packwing/CreateSheet.swift`, `Creating.swift` | New archive: files, folders and photos chosen, ZIP or 7z, a password (AES-256, and 7z's names hidden too), made in a folder of Files and shared |
 | `Packwing/SettingsView.swift` | The language, how new archives are made, the version |
 | `Packwing/Theme.swift` | The desktop's colors, light and dark; Nunito; a file's tag |
+
+## iPhone and iPad
+
+One app for both. On an iPad the screens are the iPhone's, given room: the
+grid of pictures has as many columns as fit (three at least), the sheets are
+pages, and a job's screen keeps to a readable width. Files calls packwing's
+folder On My iPad there, and so does packwing.
 
 ## From another app
 

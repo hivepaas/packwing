@@ -3090,6 +3090,9 @@ t3dfb389a =
        *[other] { $n } Elemente entpacken
     }
 
+# On My iPad › packwing
+ta308a480 = Auf meinem iPad › packwing
+
 # On My iPhone › packwing
 ted9ff11b = Auf meinem iPhone › packwing
 
