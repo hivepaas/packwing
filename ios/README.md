@@ -20,7 +20,7 @@ Then Run in Xcode, on a Simulator (Apple silicon) or an iPhone; signing uses
 the team in `ios/project.yml`. `make ios-sim` builds for the Simulator from
 the command line, and `make ios-test` runs the UI tests
 (`PackwingUITests`: the samples in `PackwingUITests/Samples` opened,
-extracted, unlocked, previewed, saved to Photos, shown as a grid of pictures and put in new archives) on the iPhone 17
+extracted, unlocked, previewed, saved to Photos, shown as a grid of pictures, put in new archives and received as Mail gives one) on the iPhone 17
 Simulator. After changing `crates/mobile`, run `make ios` again
 (`scripts/build_ios.sh --debug` builds its library quicker).
 
@@ -40,7 +40,9 @@ sips -s format png /tmp/icon.jpg --out ios/Packwing/Assets.xcassets/AppIcon.appi
 ## Trying it
 
 `-open <path>` as a launch argument (debug builds) opens that archive at once;
-`-new <path>|<path>…` shows New archive, of those files and folders.
+`-new <path>|<path>…` shows New archive, of those files and folders;
+`-receive <path>` gives packwing that archive as Mail does, a copy in its
+`Documents/Inbox`.
 Files put in the app's `Documents` show in Files as On My iPhone › packwing:
 
 ```sh
@@ -63,4 +65,14 @@ xcrun simctl launch booted com.hivepaas.packwing -open "<that folder>/Documents/
 | `Packwing/SettingsView.swift` | The language, how new archives are made, the version |
 | `Packwing/Theme.swift` | The desktop's colors, light and dark; Nunito; a file's tag |
 
-Not yet: the Share sheet's own extension.
+## From another app
+
+packwing is in the Share sheet's row of apps for every archive type it
+declares (`CFBundleDocumentTypes` in `project.yml`); there is no extension of
+its own. Shared from Files, an archive is read where it is. Mail and Messages
+give a copy instead, in an Inbox of packwing's own (`Documents/Inbox`, which
+Files would show as a folder of packwing's, or `tmp/<its id>-Inbox`):
+`AppModel.receive` moves it out, into `Application Support/Received`, so it is
+seen without being saved where the person keeps files. Recent opens it again;
+it goes when it is removed from Recent, falls off it, or has not been opened
+for 30 days.

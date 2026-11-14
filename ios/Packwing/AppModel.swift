@@ -103,6 +103,7 @@ final class AppModel {
               language: UserDefaults.standard.string(forKey: "language"))
         language = Packwing.language()
         recent = Self.loadRecent()
+        sweepReceived()
     }
 
     /// The app's own folder for what it keeps: Application Support.
@@ -115,6 +116,7 @@ final class AppModel {
     // MARK: Opening
 
     func open(_ url: URL) {
+        let url = Self.receive(url)
         Task { await open(url, secrets: Secrets(password: nil, passphrase: nil)) }
     }
 
@@ -176,8 +178,7 @@ final class AppModel {
     }
 
     func open(_ item: RecentArchive) {
-        var stale = false
-        guard let url = try? URL(resolvingBookmarkData: item.bookmark, bookmarkDataIsStale: &stale) else {
+        guard let url = Self.resolve(item) else {
             failure = tr("This archive is not where it was any more.")
             return
         }
@@ -217,6 +218,106 @@ final class AppModel {
     func forget(_ item: RecentArchive) {
         recent.removeAll { $0.id == item.id }
         saveRecent()
+        // A copy another app gave goes with it.
+        if let url = Self.resolve(item), let folder = Self.receivedFolder(of: url) {
+            try? FileManager.default.removeItem(at: folder)
+        }
+    }
+
+    private static func resolve(_ item: RecentArchive) -> URL? {
+        var stale = false
+        return try? URL(resolvingBookmarkData: item.bookmark, bookmarkDataIsStale: &stale)
+    }
+
+    // MARK: Received
+
+    // An archive shared from Files is read where it is; one from Mail or
+    // Messages comes as a copy, in an Inbox of packwing's own: Documents/Inbox,
+    // which Files shows as a folder of packwing's, or tmp/<its id>-Inbox, which
+    // iOS empties when it likes. Moved out of either into a folder of its own,
+    // it is seen without being saved anywhere the person keeps files, and
+    // Recent opens it again. It is kept while Recent lists it, at most
+    // `receivedFor` from when it was last opened.
+
+    /// Where the copies other apps gave are kept, out of Files.
+    static let received: URL = support.appending(path: "Received", directoryHint: .isDirectory)
+    /// How long a copy another app gave is kept, from when it was last opened.
+    static let receivedFor: TimeInterval = 30 * 24 * 60 * 60
+
+    /// `url`, or for a copy another app gave in packwing's Inbox, where it is
+    /// kept now.
+    static func receive(_ url: URL) -> URL {
+        let file = url.resolvingSymlinksInPath()
+        let home = URL.homeDirectory.resolvingSymlinksInPath().pathComponents
+        let parts = file.pathComponents
+        guard parts.starts(with: home), parts.count > home.count + 1,
+              let inbox = parts[home.count...].dropLast().firstIndex(where: { $0 == "Inbox" || $0.hasSuffix("-Inbox") })
+        else { return url }
+        let files = FileManager.default
+        let kept: URL
+        if let same = keptAlready(file) {
+            // The same attachment shared again: the copy kept the first time.
+            try? files.removeItem(at: file)
+            kept = same
+        } else {
+            let folder = received.appending(path: UUID().uuidString, directoryHint: .isDirectory)
+            kept = folder.appending(path: file.lastPathComponent)
+            do {
+                try files.createDirectory(at: folder, withIntermediateDirectories: true)
+                do {
+                    try files.moveItem(at: file, to: kept)
+                } catch {
+                    try files.copyItem(at: file, to: kept)
+                    try? files.removeItem(at: file)
+                }
+            } catch {
+                try? files.removeItem(at: folder)
+                return url
+            }
+        }
+        // The Inbox goes once it is empty, and with it its folder in Files.
+        let inboxFolder = URL(filePath: NSString.path(withComponents: Array(parts[...inbox])), directoryHint: .isDirectory)
+        if (try? FileManager.default.contentsOfDirectory(atPath: inboxFolder.path(percentEncoded: false)))?.isEmpty == true {
+            try? FileManager.default.removeItem(at: inboxFolder)
+        }
+        return kept
+    }
+
+    /// A copy kept before of the same name and the same bytes as `file`.
+    private static func keptAlready(_ file: URL) -> URL? {
+        let files = FileManager.default
+        let folders = (try? files.contentsOfDirectory(at: received, includingPropertiesForKeys: nil)) ?? []
+        return folders.lazy
+            .map { $0.appending(path: file.lastPathComponent) }
+            .first { files.contentsEqual(atPath: $0.path(percentEncoded: false), andPath: file.path(percentEncoded: false)) }
+    }
+
+    /// The folder of the copy `url` is, if it is one another app gave.
+    private static func receivedFolder(of url: URL) -> URL? {
+        let base = received.resolvingSymlinksInPath().pathComponents
+        let parts = url.resolvingSymlinksInPath().pathComponents
+        guard parts.starts(with: base), parts.count > base.count + 1 else { return nil }
+        return URL(filePath: NSString.path(withComponents: Array(parts[...base.count])), directoryHint: .isDirectory)
+    }
+
+    /// Lets go of the copies Recent no longer lists, or not opened for long.
+    private func sweepReceived() {
+        let old = Date.now.addingTimeInterval(-Self.receivedFor)
+        var kept = Set<String>()
+        let before = recent.count
+        recent.removeAll { item in
+            guard let url = Self.resolve(item), let folder = Self.receivedFolder(of: url) else { return false }
+            if item.opened < old || !FileManager.default.fileExists(atPath: url.path(percentEncoded: false)) {
+                return true
+            }
+            kept.insert(folder.lastPathComponent)
+            return false
+        }
+        if recent.count != before { saveRecent() }
+        let folders = (try? FileManager.default.contentsOfDirectory(at: Self.received, includingPropertiesForKeys: nil)) ?? []
+        for folder in folders where !kept.contains(folder.lastPathComponent) {
+            try? FileManager.default.removeItem(at: folder)
+        }
     }
 
     // MARK: Settings
