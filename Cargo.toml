@@ -43,6 +43,7 @@ packwing-i18n = { path = "crates/i18n" }
 packwing-license = { path = "crates/license" }
 packwing-policy = { path = "crates/policy" }
 packwing-sandbox = { path = "crates/sandbox" }
+packwing-store = { path = "crates/store" }
 packwing-update = { path = "crates/update" }
 
 [workspace.lints.rust]

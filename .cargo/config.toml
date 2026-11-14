@@ -5,3 +5,9 @@ rustflags = ["-C", "target-feature=+crt-static"]
 
 [target.aarch64-pc-windows-msvc]
 rustflags = ["-C", "target-feature=+crt-static"]
+
+# The oldest macOS packwing runs on (packaging/macos/Info.plist's
+# LSMinimumSystemVersion), for every build, as the release's: below 12, the Swift
+# of the App Store's build (crates/store) would look for its runtime by @rpath.
+[env]
+MACOSX_DEPLOYMENT_TARGET = "13.0"

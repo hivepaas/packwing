@@ -72,6 +72,8 @@ test: ## Run every test, without the ones that draw the window
 	$(CARGO) test -p packwing-cli
 	@# The Mac App Store's build (the app's `app-store`): what it leaves out.
 	$(CARGO) test -p packwing-update -p packwing-remote --features app-store --lib
+	@# StoreKit, built from Swift and asked, on macOS; elsewhere it says there is none.
+	$(CARGO) test -p packwing-store --features storekit
 	$(CARGO) test $(APP),ui-tests,app-store ui_tests::store::
 
 test-window: ## Run every test, drawing every screen to target/shots with no display (Linux)

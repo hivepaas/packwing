@@ -46,6 +46,9 @@ accepted = ["GPL-3.0-or-later"]
 [packwing-license]
 accepted = ["GPL-3.0-or-later"]
 
+[packwing-mobile]
+accepted = ["GPL-3.0-or-later"]
+
 [packwing-policy]
 accepted = ["GPL-3.0-or-later"]
 
@@ -53,6 +56,9 @@ accepted = ["GPL-3.0-or-later"]
 accepted = ["GPL-3.0-or-later"]
 
 [packwing-sandbox]
+accepted = ["GPL-3.0-or-later"]
+
+[packwing-store]
 accepted = ["GPL-3.0-or-later"]
 
 [packwing-update]

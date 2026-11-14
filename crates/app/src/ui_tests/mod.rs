@@ -31,6 +31,7 @@ mod inside;
 mod jobs;
 mod keys;
 mod policy;
+mod purchase;
 // The Mac App Store's sandbox, played anywhere: the folder locked as Unix locks it.
 #[cfg(unix)]
 mod sandbox;
@@ -179,6 +180,7 @@ impl Ui {
             packwing_i18n::set_language(kept.language.as_deref().or(Some("en")));
             cx.set_global(kept);
             cx.set_global(crate::licensing::Licensed::load());
+            crate::store::start(cx);
             crate::audit_log::apply(cx, crate::audit_log::By::Startup);
         });
         let window = self.cx.add_window(|window, cx| {

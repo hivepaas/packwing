@@ -1966,6 +1966,33 @@ tc3e75ecf = すべての機能と、無制限の数のストレージ。
 # Every feature, and any number of storages, for your organization.
 t69b29f66 = すべての機能と、組織向けの無制限の数のストレージ。
 
+# Bought
+t5c52217e = 購入済み
+
+# Buy Pro · {price}
+t93567162 = Pro を購入 · { $price }
+
+# Buy Pro
+t1bdcbb74 = Pro を購入
+
+# Restore Purchases
+t8ade61c5 = 購入を復元
+
+# Waiting for approval: packwing turns Pro once it is given.
+td36209de = 承認を待っています。承認されると packwing は Pro になります。
+
+# The App Store found nothing bought with this Apple Account.
+tf996dc19 = この Apple アカウントで購入されたものは App Store に見つかりませんでした。
+
+# The App Store could not do it: {why}
+t07f7f00e = App Store で実行できませんでした: { $why }
+
+# App Store
+t56b8f375 = App Store
+
+# Pro, bought once in the App Store: yours on every Mac with your Apple Account.
+ta6e8e46d = App Store で一度購入した Pro は、同じ Apple アカウントのすべての Mac で使えます。
+
 # Plan
 t1eab5e32 = プラン
 

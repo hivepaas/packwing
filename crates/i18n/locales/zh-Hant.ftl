@@ -1966,6 +1966,33 @@ tc3e75ecf = 所有功能，儲存位置數量不限。
 # Every feature, and any number of storages, for your organization.
 t69b29f66 = 所有功能，儲存位置數量不限，供你的組織使用。
 
+# Bought
+t5c52217e = 已購買
+
+# Buy Pro · {price}
+t93567162 = 購買 Pro · { $price }
+
+# Buy Pro
+t1bdcbb74 = 購買 Pro
+
+# Restore Purchases
+t8ade61c5 = 回復購買項目
+
+# Waiting for approval: packwing turns Pro once it is given.
+td36209de = 正在等待核准：核准後 packwing 即成為 Pro。
+
+# The App Store found nothing bought with this Apple Account.
+tf996dc19 = App Store 找不到以此 Apple 帳號購買的項目。
+
+# The App Store could not do it: {why}
+t07f7f00e = App Store 無法完成：{ $why }
+
+# App Store
+t56b8f375 = App Store
+
+# Pro, bought once in the App Store: yours on every Mac with your Apple Account.
+ta6e8e46d = 在 App Store 購買一次的 Pro：在使用你 Apple 帳號的每部 Mac 上都可使用。
+
 # Plan
 t1eab5e32 = 方案
 

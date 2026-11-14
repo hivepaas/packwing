@@ -1966,6 +1966,33 @@ tc3e75ecf = Semua fitur, dan penyimpanan dalam jumlah berapa pun.
 # Every feature, and any number of storages, for your organization.
 t69b29f66 = Semua fitur, dan penyimpanan dalam jumlah berapa pun, untuk organisasi Anda.
 
+# Bought
+t5c52217e = Dibeli
+
+# Buy Pro · {price}
+t93567162 = Beli Pro · { $price }
+
+# Buy Pro
+t1bdcbb74 = Beli Pro
+
+# Restore Purchases
+t8ade61c5 = Pulihkan Pembelian
+
+# Waiting for approval: packwing turns Pro once it is given.
+td36209de = Menunggu persetujuan: packwing menjadi Pro setelah disetujui.
+
+# The App Store found nothing bought with this Apple Account.
+tf996dc19 = App Store tidak menemukan pembelian dengan Akun Apple ini.
+
+# The App Store could not do it: {why}
+t07f7f00e = App Store tidak dapat melakukannya: { $why }
+
+# App Store
+t56b8f375 = App Store
+
+# Pro, bought once in the App Store: yours on every Mac with your Apple Account.
+ta6e8e46d = Pro, dibeli sekali di App Store: milik Anda di setiap Mac dengan Akun Apple Anda.
+
 # Plan
 t1eab5e32 = Paket
 
