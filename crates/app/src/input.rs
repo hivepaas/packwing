@@ -15,9 +15,9 @@ use std::ops::Range;
 use gpui::{
     App, Bounds, ClipboardItem, Context, CursorStyle, ElementId, ElementInputHandler, Entity,
     EntityInputHandler, FocusHandle, Focusable, GlobalElementId, KeyDownEvent, LayoutId,
-    MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent, PaintQuad, Pixels, Point, Render,
-    ShapedLine, SharedString, Style, TextRun, UTF16Selection, UnderlineStyle, Window, anchored,
-    deferred, div, fill, point, prelude::*, px, relative, rgb, rgba, size,
+    MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent, PaintQuad, Pixels, Point, Rems,
+    Render, ShapedLine, SharedString, Style, TextRun, UTF16Selection, UnderlineStyle, Window,
+    anchored, deferred, div, fill, point, prelude::*, px, relative, rems, rgb, rgba, size,
 };
 use packwing_i18n::tr;
 use unicode_segmentation::UnicodeSegmentation;
@@ -60,6 +60,9 @@ pub struct TextInput {
     code: Option<Painter>,
     /// Text to read, not to change: [`TextInput::read_only`].
     read_only: bool,
+    /// How far the edge of what holds it is past its own right edge, for
+    /// its scroll bar to go along: [`TextInput::bar_at_edge`].
+    bar_outset: Rems,
     /// Where its right-click menu is open, for text to read.
     menu_at: Option<Point<Pixels>>,
     history: History,
@@ -118,8 +121,7 @@ struct Lines {
     thumb_drag: Option<(Pixels, Pixels)>,
 }
 
-/// The scroll bar: its width, and the least its thumb is.
-const BAR_W: f32 = 6.;
+/// The least the scroll bar's thumb is.
 const THUMB_MIN: f32 = 24.;
 
 impl Lines {
@@ -211,14 +213,16 @@ fn follow_drag(input: &Entity<TextInput>, window: &mut Window, cx: &App) {
     });
 }
 
-/// The scroll bar's thumb dragged (a press on the bar's strip starts it),
+/// The scroll bar's thumb dragged (a press on the bar's `strip` starts it),
 /// anywhere in the window while the button is held.
-fn drag_thumb(input: &Entity<TextInput>, bounds: Bounds<Pixels>, window: &mut Window) {
-    // A strip wider than the thumb, easy to hit.
-    let strip = Bounds::new(
-        point(bounds.right() - px(BAR_W + 6.), bounds.top()),
-        size(px(BAR_W + 6.), bounds.size.height),
-    );
+fn drag_thumb(input: &Entity<TextInput>, strip: Bounds<Pixels>, window: &mut Window) {
+    // On its way under the pointer and out again, the thumb is drawn again.
+    let was = strip.contains(&window.mouse_position());
+    window.on_mouse_event(move |e: &MouseMoveEvent, phase, window, _| {
+        if phase == gpui::DispatchPhase::Capture && strip.contains(&e.position) != was {
+            window.refresh();
+        }
+    });
     let down = input.clone();
     window.on_mouse_event(move |e: &MouseDownEvent, phase, _, cx| {
         if phase == gpui::DispatchPhase::Capture
@@ -304,6 +308,7 @@ impl TextInput {
             lines: None,
             code: None,
             read_only: false,
+            bar_outset: rems(0.),
             menu_at: None,
             history: History::default(),
             found: Vec::new(),
@@ -346,6 +351,13 @@ impl TextInput {
             self = self.multiline(1, usize::MAX);
         }
         self.read_only = true;
+        self
+    }
+
+    /// Its scroll bar along the edge of what holds it, `outset` past its
+    /// own: the padding around it.
+    pub fn bar_at_edge(mut self, outset: Rems) -> Self {
+        self.bar_outset = outset;
         self
     }
 
@@ -1575,10 +1587,13 @@ impl Element for AreaElement {
                 .collect();
             let digits = number(count.max(10), colors().faint).width;
             let gutter = digits + px(22.);
+            // Room for the scroll bar, what of it the padding beside does not give.
+            let bar = (px(crate::scrollbar::WIDTH) - input.bar_outset.to_pixels(window.rem_size()))
+                .max(px(0.));
             Bounds::new(
                 point(bounds.left() + gutter, bounds.top()),
                 size(
-                    (bounds.size.width - gutter - px(BAR_W + 6.)).max(px(20.)),
+                    (bounds.size.width - gutter - bar).max(px(20.)),
                     bounds.size.height,
                 ),
             )
@@ -1728,28 +1743,19 @@ impl Element for AreaElement {
             lines.thumb()
         });
         let bounds = field;
-        // The scroll bar, when the text is longer than the field.
+        // The scroll bar, when the text is longer than the field: along the
+        // edge of what holds it, as the lists' bars are.
         if let Some((top, h)) = thumb {
-            let dragging = self
-                .input
-                .read(cx)
-                .lines
-                .as_ref()
-                .is_some_and(|l| l.thumb_drag.is_some());
-            let bar = Bounds::new(
-                point(bounds.right() - px(BAR_W) - px(1.), bounds.top() + top),
-                size(px(BAR_W), h),
+            let input = self.input.read(cx);
+            let dragging = input.lines.as_ref().is_some_and(|l| l.thumb_drag.is_some());
+            let right = bounds.right() + input.bar_outset.to_pixels(window.rem_size());
+            let strip = Bounds::new(
+                point(right - px(crate::scrollbar::WIDTH), bounds.top()),
+                size(px(crate::scrollbar::WIDTH), bounds.size.height),
             );
-            let color = if dragging {
-                colors().soft
-            } else {
-                colors().muted
-            };
-            window.paint_quad(
-                fill(bar, rgba(crate::colors::with_alpha(color, 0x99)))
-                    .corner_radii(px(BAR_W / 2.)),
-            );
-            drag_thumb(&self.input, bounds, window);
+            let wide = dragging || strip.contains(&window.mouse_position());
+            crate::scrollbar::paint_thumb(window, right, bounds.top() + top, h, wide);
+            drag_thumb(&self.input, strip, window);
         }
     }
 }

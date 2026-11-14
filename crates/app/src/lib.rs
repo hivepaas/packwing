@@ -37,6 +37,7 @@ mod pages;
 mod placement;
 mod prefs;
 mod right_click;
+mod scrollbar;
 mod signatures;
 mod store;
 mod text_size;

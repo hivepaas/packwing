@@ -32,6 +32,7 @@ use crate::input::{Changed, TextInput};
 use crate::list_keys;
 use crate::model::{Archive, Entry, Kind, count, reads_as_text, size};
 use crate::prefs;
+use crate::scrollbar::edge_bar;
 use crate::signatures::{self, Looking, Standing};
 use crate::text_size::ui;
 use crate::viewer::{Reading as From, Shown as Looked, look};
@@ -296,7 +297,8 @@ impl ArchivePage {
             chosen: None,
             selected: BTreeSet::new(),
             preview: Preview::Nothing,
-            preview_text: cx.new(|cx| TextInput::new("", cx).read_only()),
+            // Its bar along the edge of the well, past the text's padding.
+            preview_text: cx.new(|cx| TextInput::new("", cx).read_only().bar_at_edge(ui(12.))),
             previewing: None,
             found: Vec::new(),
             signature: None,
@@ -656,6 +658,12 @@ impl ArchivePage {
     pub fn open_more_for_shot(&mut self, at: Point<Pixels>, cx: &mut Context<Self>) {
         self.more_at = Some(at);
         cx.notify();
+    }
+
+    /// How the list of entries is scrolled, and where it is, for tests.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn scroll_for_test(&self) -> gpui::ScrollHandle {
+        self.scroll.0.borrow().base_handle.clone()
     }
 
     #[cfg(all(test, feature = "test-hooks"))]
@@ -1661,7 +1669,16 @@ impl ArchivePage {
                     .gap(ui(8.))
                     .child(div().flex_1().min_w_0().child(crumb)),
             )
-            .child(rows)
+            .child(
+                div()
+                    .relative()
+                    .flex()
+                    .flex_col()
+                    .flex_shrink(1.)
+                    .min_h_0()
+                    .child(rows)
+                    .when(!empty, |d| d.child(edge_bar("entries-bar", &self.scroll))),
+            )
             .when(empty, |d| {
                 d.child(
                     div()
