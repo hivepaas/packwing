@@ -23,10 +23,12 @@ import java.util.UUID
  *
  * An archive is read with no copy. The core asks for the ranges it wants
  * (`Document`, which crates/mobile exports for Android alone), and `pread`
- * answers them from the descriptor the system opened. Writing still costs a
- * copy, because a document tree cannot be written to by path: the core
- * extracts into the app's own folder, and what it wrote is then copied where
- * the user pointed. See android/README.md › How Android's storage shapes it.
+ * answers them from the descriptor the system opened. Extracting costs no
+ * copy either, and none of it is here: the core hands over each entry as it
+ * reads it, and `Trees.kt` makes it where the user asked. What still costs a
+ * copy is making an archive, because the core reads what goes in by path,
+ * and reading from a provider whose descriptor cannot be read at an offset.
+ * See android/README.md › How Android's storage shapes it.
  */
 object Documents {
 
