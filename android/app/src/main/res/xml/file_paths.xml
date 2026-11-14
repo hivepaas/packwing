@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What the FileProvider may hand to another app: only the files packwing
+     wrote to its own cache to preview them or send them on. -->
+<paths>
+    <cache-path name="previews" path="previews/" />
+</paths>

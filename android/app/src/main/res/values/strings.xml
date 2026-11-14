@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The app's name and what the system shows in its own menus. Every other
+     string comes from the desktop's catalogs, through the Rust library
+     (I18n.kt), so one translation serves every platform. -->
+<resources>
+    <string name="app_name" translatable="false">packwing</string>
+    <string name="open_with_packwing">Open in packwing</string>
+</resources>

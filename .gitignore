@@ -11,3 +11,12 @@
 /ios/Generated
 /ios/Packwing.xcodeproj
 /ios/Packwing/Info.plist
+
+# The Android app's generated parts: the Rust library it loads and the Kotlin
+# that calls it, both written by scripts/build_android.sh (make android).
+/android/app/src/main/jniLibs
+/android/.gradle
+/android/.kotlin
+/android/build
+/android/app/build
+/android/local.properties

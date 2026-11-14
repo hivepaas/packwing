@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What shows before Compose draws: the light palette's page color
+     (crates/app/src/colors.rs). values-night has the dark one. -->
+<resources>
+    <color name="page">#FFF3F7F4</color>
+</resources>
