@@ -58,6 +58,13 @@ fun AppRoot(model: AppModel) {
         }
     }
 
+    model.note?.let { said ->
+        LaunchedEffect(said) {
+            snackbar.showSnackbar(said, duration = SnackbarDuration.Short)
+            model.note = null
+        }
+    }
+
     BackHandler(enabled = model.stack.size > 1 || model.sheet != null) { model.back() }
 
     Scaffold(

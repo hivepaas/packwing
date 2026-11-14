@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
@@ -105,6 +106,7 @@ class ExtractService : LifecycleService() {
 
     companion object {
         private const val ONGOING = 1
+        private const val DONE = 2
         private const val STOP = "com.hivepaas.packwing.STOP"
 
         fun start(context: Context) {
@@ -113,6 +115,31 @@ class ExtractService : LifecycleService() {
 
         fun stop(context: Context) {
             context.stopService(Intent(context, ExtractService::class.java))
+        }
+
+        /**
+         * Says a job is through, for the user who went elsewhere while it
+         * ran: what Settings' "Tell me when a job is through" asks for. The
+         * notification goes nowhere if it was turned down, which is no
+         * matter — the app says the same thing on screen.
+         */
+        fun tell(context: Context, title: String, said: String) {
+            val open = PendingIntent.getActivity(
+                context,
+                0,
+                Intent(context, MainActivity::class.java),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+            val note = NotificationCompat.Builder(context, PackwingApp.DONE_CHANNEL)
+                .setContentTitle(title)
+                .setContentText(said)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentIntent(open)
+                .setAutoCancel(true)
+                .build()
+            runCatching {
+                NotificationManagerCompat.from(context).notify(DONE, note)
+            }
         }
     }
 }

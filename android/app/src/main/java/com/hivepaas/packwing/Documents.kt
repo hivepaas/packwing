@@ -1,12 +1,10 @@
 package com.hivepaas.packwing
 
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.provider.DocumentsContract
-import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.system.ErrnoException
 import android.system.Os
@@ -197,44 +195,6 @@ object Documents {
     }
 
     /**
-     * Puts the pictures and videos under `from` in the gallery, through
-     * MediaStore, under Pictures/packwing/`album`. Says how many landed.
-     */
-    fun saveToGallery(context: Context, from: File, album: String): Int {
-        var saved = 0
-        for (file in from.walkTopDown().filter { it.isFile }) {
-            val mime = mimeOf(file.name)
-            val video = mime.startsWith("video/")
-            if (!video && !mime.startsWith("image/")) continue
-            val folder = if (video) "Movies/packwing/$album" else "Pictures/packwing/$album"
-            val into = if (video) MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-            else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-            val values = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, file.name)
-                put(MediaStore.MediaColumns.MIME_TYPE, mime)
-                put(MediaStore.MediaColumns.RELATIVE_PATH, folder)
-                put(MediaStore.MediaColumns.IS_PENDING, 1)
-            }
-            val uri = runCatching { context.contentResolver.insert(into, values) }.getOrNull() ?: continue
-            runCatching {
-                context.contentResolver.openOutputStream(uri)?.use { to ->
-                    file.inputStream().use { source -> source.copyTo(to, DEFAULT_BUFFER_SIZE) }
-                }
-                context.contentResolver.update(
-                    uri,
-                    ContentValues().apply { put(MediaStore.MediaColumns.IS_PENDING, 0) },
-                    null, null,
-                )
-                saved++
-            }.onFailure {
-                Log.w("packwing", "the gallery would not take ${file.name}", it)
-                runCatching { context.contentResolver.delete(uri, null, null) }
-            }
-        }
-        return saved
-    }
-
-    /**
      * Copies what the picker gave into the app's own folder, under their own
      * names, and says where they landed: making an archive reads paths, and a
      * `content://` file has none. Call this off the main thread.
@@ -261,7 +221,7 @@ object Documents {
      * `ghi chú.md`, made as `text/plain`, was written as `ghi chú.md.txt`.
      * A kind it does not know adds nothing.
      */
-    private fun saveMime(name: String): String =
+    fun saveMime(name: String): String =
         MimeTypeMap.getSingleton()
             .getMimeTypeFromExtension(name.substringAfterLast('.', "").lowercase())
             ?: "application/octet-stream"

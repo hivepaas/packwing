@@ -22,9 +22,9 @@ use std::io::{self, Read};
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use packwing_core::{Item, Lister, Source, Storage, Stored};
+use packwing_core::{Destination, ExtractOptions, Item, Lister, Source, Storage, Stored};
 
-use crate::{Archive, Job, MobileError, Secrets};
+use crate::{Archive, ExtractHow, Extracted, Job, MobileError, Secrets};
 
 /// A file the system opened for the app: Kotlin reads it through the
 /// descriptor the picker gave, with `pread`, which asks no rights of its own.
@@ -146,5 +146,93 @@ impl Archive {
             secrets,
             job,
         )
+    }
+}
+
+/// Where extracting writes, in place of a folder: Android's document tree,
+/// which is reached through the system and has no path to write to.
+///
+/// The entries come in the order a folder's extraction writes them. A folder
+/// on the way to a file comes only if the archive holds an entry for it, so
+/// the app makes the ones between itself. Called from the thread the work is
+/// on, one entry at a time.
+#[uniffi::export(with_foreign)]
+pub trait Tree: Send + Sync {
+    /// A folder, and the ones above it that are not there yet.
+    fn directory(&self, path: Vec<String>) -> Result<(), MobileError>;
+
+    /// A file, whose data follows; `size` is what the archive says it is,
+    /// where it says before the data.
+    fn start_file(&self, path: Vec<String>, size: Option<u64>) -> Result<(), MobileError>;
+
+    /// A piece of the file's data.
+    fn write(&self, data: Vec<u8>) -> Result<(), MobileError>;
+
+    /// The end of the file, all of its data given.
+    fn finish_file(&self) -> Result<(), MobileError>;
+
+    /// The end of a file whose data failed: what was given of it goes.
+    fn discard_file(&self);
+}
+
+/// A [`Tree`] as what packwing-core writes an extraction into.
+struct Writing(Arc<dyn Tree>);
+
+/// What the app said went wrong, as the core takes it: its words are kept, so
+/// that what the user is shown is the app's own and not a number.
+fn as_io(e: MobileError) -> io::Error {
+    io::Error::other(e.to_string())
+}
+
+impl Destination for Writing {
+    fn directory(&mut self, path: &[String]) -> io::Result<()> {
+        self.0.directory(path.to_vec()).map_err(as_io)
+    }
+
+    fn start_file(&mut self, path: &[String], size: Option<u64>) -> io::Result<()> {
+        self.0.start_file(path.to_vec(), size).map_err(as_io)
+    }
+
+    fn write(&mut self, data: &[u8]) -> io::Result<()> {
+        self.0.write(data.to_vec()).map_err(as_io)
+    }
+
+    fn finish_file(&mut self) -> io::Result<()> {
+        self.0.finish_file().map_err(as_io)
+    }
+
+    fn discard_file(&mut self) {
+        self.0.discard_file();
+    }
+}
+
+#[uniffi::export]
+impl Archive {
+    /// Extracts it into `tree`, writing each file where it is made rather
+    /// than into a folder and across: all of it, or only `picked` (paths in
+    /// it), which keep the folders they are in.
+    pub fn extract_into(
+        &self,
+        tree: Arc<dyn Tree>,
+        picked: Vec<Vec<String>>,
+        how: ExtractHow,
+        job: Arc<Job>,
+    ) -> Result<Extracted, MobileError> {
+        let options = ExtractOptions {
+            overwrite: how.overwrite,
+            // No quarantine to keep on a phone.
+            keep_mark: false,
+            ..ExtractOptions::default()
+        };
+        let mut writing = Writing(tree);
+        let summary = packwing_core::extract_to(
+            self.source.clone(),
+            &mut writing,
+            &picked,
+            &self.secrets.keys(),
+            &options,
+            &job.control(),
+        )?;
+        Ok(Extracted::from(summary))
     }
 }

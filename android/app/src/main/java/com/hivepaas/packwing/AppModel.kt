@@ -31,6 +31,7 @@ import uniffi.packwing_mobile.Secrets
 import uniffi.packwing_mobile.createArchive
 import java.io.Closeable
 import java.io.File
+import java.io.FileNotFoundException
 
 /** An archive open: the core's, and what keeps its file reachable. */
 class Opened(val uri: Uri, private val held: Documents.Opening, val archive: Archive) : Closeable {
@@ -130,6 +131,9 @@ class AppModel(private val context: Context) {
         private set
 
     var failure by mutableStateOf<String?>(null)
+
+    /** What went well, said in passing: a job that is through. */
+    var note by mutableStateOf<String?>(null)
     var sheet by mutableStateOf<Sheet?>(null)
     var running by mutableStateOf<Running?>(null)
         private set
@@ -233,6 +237,16 @@ class AppModel(private val context: Context) {
                 sheet = Sheet.Password(uri, name, asking?.passphrase ?: false, e.said)
             }
             is MobileException -> failure = e.said
+            // One that was opened before and cannot be now: the system has
+            // taken its grant back, or its file is gone. Tapping it again
+            // would only fail again, so it does not stay in the list.
+            is SecurityException, is FileNotFoundException -> {
+                forget(uri)
+                failure = tr(
+                    "packwing can no longer reach {name}. Open it again to look inside.",
+                    "name" to name,
+                )
+            }
             else -> failure = tr("packwing could not open {name}.", "name" to name)
         }
     }
@@ -304,8 +318,8 @@ class AppModel(private val context: Context) {
 
     /**
      * Extracts `picked` (all of it when empty) into `destination`. The core
-     * writes into the app's own folder, and what it wrote is copied where the
-     * user asked for it: a document tree cannot be written to by path.
+     * hands each entry over as it reads it and it is made where the user
+     * asked for it there and then, so nothing is written twice.
      */
     fun extract(picked: List<List<String>>, destination: Destination) {
         val archive = opened ?: return
@@ -319,21 +333,23 @@ class AppModel(private val context: Context) {
         ExtractService.start(context)
         scope.launch {
             val result = withContext(Dispatchers.IO) {
-                val staging = Documents.staging(context, name)
                 runCatching {
-                    archive.archive.extract(
-                        staging.path,
-                        picked,
-                        ExtractHow(settings.overwrite),
-                        held,
-                    )
-                    when (destination) {
+                    val into: Made = when (destination) {
                         is Destination.Folder ->
-                            Documents.exportToTree(context, staging, destination.uri, name)
-                        Destination.Gallery ->
-                            Documents.saveToGallery(context, staging, name)
+                            DocumentTree.under(context, destination.uri, name, settings.overwrite)
+                        Destination.Gallery -> GalleryTree(context, name)
                     }
-                }.also { staging.deleteRecursively() }
+                    val done = try {
+                        archive.archive
+                            .extractInto(into, picked, ExtractHow(settings.overwrite), held)
+                    } catch (e: Throwable) {
+                        // Stopped, or it would not write: nothing is left behind.
+                        into.undo()
+                        throw e
+                    }
+                    // What the gallery took, not what the archive held.
+                    if (into is GalleryTree) into.saved.toLong() else done.files.toLong()
+                }
             }
             result.onSuccess { files ->
                 job.done = trN(
@@ -382,9 +398,15 @@ class AppModel(private val context: Context) {
 
     private fun finished(job: Running) {
         ExtractService.stop(context)
+        val said = job.done
         if (running === job && screen is Screen.Running && job.failed == null) {
-            // The progress screen stays only while there is progress to show.
+            // The progress screen stays only while there is progress to show,
+            // so what it would have said is said in passing instead.
+            note = said
             back()
+        }
+        if (said != null && settings.tellWhenDone) {
+            ExtractService.tell(context, job.name, said)
         }
     }
 

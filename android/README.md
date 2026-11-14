@@ -41,8 +41,9 @@ with AES-256. The work is all `packwing-core`'s, as on the desktop.
 
 ## How Android's storage shapes it
 
-Android hands out `content://` URIs; the core works on paths. Each way in and
-out is bridged in `Documents.kt`:
+Android hands out `content://` URIs, and nothing in its storage has a path
+the app can use. The core does not need one: it reads where it is told to and
+writes what it reads to whatever takes it (`Documents.kt`, `Trees.kt`).
 
 - **Reading costs no copy.** packwing-core already reads an archive it cannot
   reach by path by asking for the ranges it wants, as it does for one kept on
@@ -58,17 +59,22 @@ out is bridged in `Documents.kt`:
   opening it is a fresh open of the file underneath, checked against the app's
   own rights rather than against the grant that handed over the descriptor, so
   for a file from the document picker or MediaStore it is refused.
-- **Writing costs a second pass.** A document tree cannot be written to by
-  path, so the core extracts into the app's own folder and what it wrote is
-  then copied into the folder the user pointed at, or to the gallery through
-  MediaStore. Every extracted byte is therefore written twice. packwing-core
-  already knows how to write an archive's entries somewhere that is not a
-  folder (`WriteTo::Taker`, which making an archive from another uses); until
-  something public is built on it, large archives pay for the second pass.
+- **Writing costs no second pass either.** A document tree cannot be written
+  to by path, so the core does not write to one: `packwing_core::Destination`
+  takes each entry as it is read, and `crates/mobile`'s `Tree` passes it to
+  the app, which makes it in the folder the user pointed at or puts it in the
+  gallery through MediaStore (`Trees.kt`). Nothing is staged and nothing is
+  copied. A job that fails or is stopped takes back what it made, as one into
+  a folder does.
 - **A file keeps the name it came with.** A document provider adds an
   extension of its own when the name it is given disagrees with the kind, so
   what is extracted is made as the kind that provider's own table gives for
   the name's extension, and as nothing it knows when there is none.
+- **Replacing is the app's own check.** What hivepack checks of a folder —
+  nothing written outside it, nor over what is there — has no meaning for a
+  destination that takes entries, so Settings' "Replace a file already there"
+  is honoured in `DocumentTree` itself. It was not honoured at all while the
+  app copied what it extracted across.
 - **No storage permission is asked for.** The document picker and MediaStore
   are the only ways in and out, which is also why the folder a user picks is
   kept with `takePersistableUriPermission` instead of being found again by
@@ -80,7 +86,10 @@ out is bridged in `Documents.kt`:
 ## What is not here yet
 
 - Picking only some files to extract. The core takes a list of paths
-  (`Archive.extract`'s `picked`), and the screen has no way to choose them yet.
+  (`Archive.extractInto`'s `picked`), and the screen has no way to choose
+  them yet.
+- Pictures in the grid. An archive that is mostly pictures opens on a grid,
+  but each is a tile saying its kind, not a thumbnail of it.
 - Pausing a job. The core can stop one, not hold it; the progress screen
   offers Cancel alone. The design's Pause button has nothing behind it.
 - The comic reader, storages (S3, WebDAV, SFTP), signatures, checksums,
