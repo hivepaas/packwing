@@ -150,6 +150,12 @@ cp "$WORK/THIRD-PARTY-LICENSES.txt" "$APP/Contents/Resources/THIRD-PARTY-LICENSE
 sed "s/@VERSION@/$VERSION/g" packaging/macos/Info.plist >"$APP/Contents/Info.plist"
 # The store tells uploads of one version apart by their build number.
 plutil -replace CFBundleVersion -string "$BUILD_NUMBER" "$APP/Contents/Info.plist"
+# Export compliance, answered here rather than for each upload: packwing
+# implements standard algorithms (AES for archives, TLS through rustls,
+# Ed25519 and ML-DSA for signing), and the store does not offer it in France,
+# so App Store Connect asks for no documents. Offered in France, it would need
+# France's declaration, and this to say YES with its compliance code.
+plutil -replace ITSAppUsesNonExemptEncryption -bool NO "$APP/Contents/Info.plist"
 plutil -lint "$APP/Contents/Info.plist" packaging/macos/PrivacyInfo.xcprivacy
 
 ## The entitlements: the sandbox's, and, for the store, the app's id and team,
