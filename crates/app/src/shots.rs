@@ -21,7 +21,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 108] = [
+const SCREENS: [(&str, SetUp); 110] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -167,6 +167,10 @@ const SCREENS: [(&str, SetUp); 108] = [
     ("archive", |_, _, _| {}),
     ("archive-opened", |ws, window, cx| {
         ws.open_archive(sample_tar(), false, window, cx)
+    }),
+    // More rows than there is room for: its bar, along the panel's edge.
+    ("archive-long", |ws, window, cx| {
+        ws.open_archive(long_tar(), false, window, cx)
     }),
     // Being read: what was found so far, and how far in it is.
     ("archive-reading", |ws, _, cx| {
@@ -331,6 +335,9 @@ const SCREENS: [(&str, SetUp); 108] = [
         ws.open_recent_menu_for_shot(gpui::point(px(700.), px(300.)), 1, cx);
     }),
     ("recent-empty", |ws, _, cx| ws.show_recent_tab(cx)),
+    ("recent-long", |ws, _, cx| {
+        ws.show_recent_samples_times(6, cx)
+    }),
     ("audit-log", |ws, _, cx| ws.show_audit_samples(None, cx)),
     ("audit-log-detail", |ws, _, cx| {
         ws.show_audit_samples(Some(2), cx)
@@ -737,12 +744,31 @@ fn storage_with(ws: &mut Workspace, name: &str, cx: &mut Context<Workspace>) {
 /// A tar archive written for the screenshot to open through hivepack, as
 /// `--open` does.
 fn sample_tar() -> PathBuf {
+    write_tar(
+        "holiday-2026.tar",
+        &[
+            ("photos/", &b""[..]),
+            ("photos/beach.jpg", &[7u8; 3000][..]),
+            ("notes.txt", b"Read through hivepack.\n"),
+        ],
+    )
+}
+
+/// A tar archive of more files than its list has room for, all at its top.
+fn long_tar() -> PathBuf {
+    let names: Vec<String> = (1..=80).map(|n| format!("scan-{n:03}.pdf")).collect();
+    let entries: Vec<(&str, &[u8])> = names
+        .iter()
+        .map(|n| (n.as_str(), &b"%PDF-1.7\n"[..]))
+        .collect();
+    write_tar("scans-2026.tar", &entries)
+}
+
+/// A tar archive of `entries`, names and contents, a name ending in `/` a
+/// folder's, to `target/shots/<name>`.
+fn write_tar(name: &str, entries: &[(&str, &[u8])]) -> PathBuf {
     let mut tar = Vec::new();
-    for (name, data) in [
-        ("photos/", &b""[..]),
-        ("photos/beach.jpg", &[7u8; 3000][..]),
-        ("notes.txt", b"Read through hivepack.\n"),
-    ] {
+    for &(name, data) in entries {
         let mut b = vec![0u8; 512];
         b[..name.len()].copy_from_slice(name.as_bytes());
         let dir = name.ends_with('/');
@@ -759,7 +785,7 @@ fn sample_tar() -> PathBuf {
         tar.resize(tar.len().div_ceil(512) * 512, 0);
     }
     tar.extend([0u8; 1024]);
-    let path = out_dir().join("holiday-2026.tar");
+    let path = out_dir().join(name);
     std::fs::write(&path, tar).expect("cannot write the sample tar");
     path
 }
@@ -2556,6 +2582,114 @@ fn a_click_takes_a_row_out_and_the_eye_closes_the_list() {
     assert_eq!(
         dialog.read_with(&cx, |d, _| d.selection_paths()),
         paths[1..]
+    );
+}
+
+/// The bar along a long list's panel: its thumb dragged down moves the list
+/// down, as far as the pointer goes; a press below the thumb brings the list
+/// there; the press is the bar's, and chooses no row.
+#[test]
+fn a_long_list_moves_with_its_bar() {
+    use gpui::{
+        Modifiers, MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent, PlatformInput, point,
+    };
+    let text = Arc::new(gpui_wgpu::CosmicTextSystem::new(crate::FONT));
+    let mut cx = HeadlessAppContext::with_platform(text, Arc::new(crate::Assets), || {
+        gpui_platform::current_headless_renderer()
+    });
+    cx.update(crate::load_fonts);
+    let window = cx
+        .open_window(size(px(1280.), px(800.)), |window, cx| {
+            let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
+            cx.new(|cx| Workspace::new(false, menu, window, cx))
+        })
+        .expect("cannot open a window");
+    let page = window
+        .update(&mut cx, |ws, window, cx| {
+            ws.open_archive(long_tar(), false, window, cx);
+            ws.archive_page()
+        })
+        .expect("cannot set the screen up");
+    cx.run_until_parked();
+    cx.capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    let scroll = page.read_with(&cx, |p, _| p.scroll_for_test());
+    let list = scroll.bounds();
+    assert!(
+        scroll.max_offset().y > px(0.),
+        "the list is longer than its panel"
+    );
+    assert_eq!(scroll.offset().y, px(0.), "where it starts");
+    // The thumb, at the top of the bar, just outside the rows' right edge.
+    let x = list.right() + px(4.);
+    let send = |cx: &mut HeadlessAppContext, event: PlatformInput| {
+        cx.update_window(window.into(), |_, window, cx| {
+            window.dispatch_event(event, cx);
+        })
+        .expect("cannot send the event");
+        cx.run_until_parked();
+        cx.capture_screenshot(window.into())
+            .expect("cannot draw the window");
+    };
+    let at = |y: f32| point(x, list.top() + px(y));
+    let moved = |position, pressed_button| {
+        PlatformInput::MouseMove(MouseMoveEvent {
+            position,
+            pressed_button,
+            modifiers: Modifiers::default(),
+        })
+    };
+    send(&mut cx, moved(at(10.), None));
+    send(
+        &mut cx,
+        PlatformInput::MouseDown(MouseDownEvent {
+            button: MouseButton::Left,
+            position: at(10.),
+            modifiers: Modifiers::default(),
+            click_count: 1,
+            first_mouse: false,
+        }),
+    );
+    send(&mut cx, moved(at(110.), Some(MouseButton::Left)));
+    let dragged = -scroll.offset().y;
+    assert!(dragged > px(0.), "dragged down, the list went down");
+    send(&mut cx, moved(at(210.), Some(MouseButton::Left)));
+    let further = -scroll.offset().y;
+    assert!(
+        further > dragged,
+        "and further, as the pointer went further"
+    );
+    send(
+        &mut cx,
+        PlatformInput::MouseUp(MouseUpEvent {
+            button: MouseButton::Left,
+            position: at(210.),
+            modifiers: Modifiers::default(),
+            click_count: 1,
+        }),
+    );
+    // Let go, the pointer moves the list no more.
+    send(&mut cx, moved(at(20.), None));
+    assert_eq!(-scroll.offset().y, further, "let go, it stays");
+    // A press near the bottom of the bar, below the thumb: all the way down.
+    let bottom = list.size.height - px(30.);
+    send(
+        &mut cx,
+        PlatformInput::MouseDown(MouseDownEvent {
+            button: MouseButton::Left,
+            position: point(x, list.top() + bottom),
+            modifiers: Modifiers::default(),
+            click_count: 1,
+            first_mouse: false,
+        }),
+    );
+    assert!(
+        -scroll.offset().y > further,
+        "a press below the thumb went down"
+    );
+    assert!(
+        page.read_with(&cx, |p, _| p.picked().is_empty()),
+        "and chose no row"
     );
 }
 

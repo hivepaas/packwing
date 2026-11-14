@@ -7,8 +7,8 @@ use std::time::{Duration, Instant};
 
 use gpui::{
     App, Context, Div, Entity, EventEmitter, Focusable as _, FontWeight, KeyDownEvent, MouseButton,
-    PathPromptOptions, Pixels, Point, Render, Subscription, Task, Window, anchored, deferred, div,
-    prelude::*, px, rgb,
+    PathPromptOptions, Pixels, Point, Render, ScrollHandle, Subscription, Task, Window, anchored,
+    deferred, div, prelude::*, px, rgb,
 };
 use packwing_core::Values;
 use packwing_i18n::tr;
@@ -20,6 +20,7 @@ use crate::confirm::{How, confirmer};
 use crate::explorer::{Explorer, Place};
 use crate::input::TextInput;
 use crate::prefs::{self, KeptPlace, KeptStorage};
+use crate::scrollbar::edge_bar;
 use crate::text_size::ui;
 use crate::widgets::{Fill, Size, button, float_shadow, icon, tile};
 
@@ -100,6 +101,8 @@ pub struct StoragesPage {
     storages: Vec<KeptStorage>,
     chosen: Option<usize>,
     explorer: Entity<Explorer>,
+    /// The list of storages', down the side.
+    scroll: ScrollHandle,
     /// The menu of the storage at this index.
     menu: Option<(Point<Pixels>, usize)>,
     /// It was the user, for every storage that asks first, until they leave it
@@ -133,6 +136,7 @@ impl StoragesPage {
             chosen: None,
             storages,
             explorer,
+            scroll: ScrollHandle::new(),
             menu: None,
             confirmed: false,
             last_used: Instant::now(),
@@ -652,14 +656,24 @@ impl StoragesPage {
             .child(title(tr!("Storages"), 20.).px(ui(12.)).pb(ui(10.)))
             .child(
                 div()
-                    .id("storage-rows")
+                    .relative()
                     .flex_1()
                     .min_h_0()
-                    .overflow_y_scroll()
                     .flex()
                     .flex_col()
-                    .gap(ui(4.))
-                    .children(rows),
+                    .child(
+                        div()
+                            .id("storage-rows")
+                            .flex_1()
+                            .min_h_0()
+                            .overflow_y_scroll()
+                            .track_scroll(&self.scroll)
+                            .flex()
+                            .flex_col()
+                            .gap(ui(4.))
+                            .children(rows),
+                    )
+                    .child(edge_bar("storage-bar", &self.scroll)),
             )
             .child(
                 button("add-storage", tr!("Add storage"), Fill::Tonal, Size::Medium)
