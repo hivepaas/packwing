@@ -2200,6 +2200,45 @@ t9e6ecd3d = キーはこのコンピューター上で確認されます。何�
 # On
 t60e47df0 = オン
 
+# packwing’s items are in Finder’s right-click menu
+tfecc58a6 = packwing の項目は Finder の右クリックメニューにあります
+
+# macOS puts them there for an app from the App Store, at the bottom of the menu, under Quick Actions or Services. It shows them once packwing is installed, and you choose which ones stay in System Settings.
+t099504d0 = App Store のアプリでは、macOS がメニューの下部の「クイックアクション」または「サービス」に項目を置きます。packwing をインストールすると表示され、残す項目はシステム設定で選べます。
+
+# For archives
+t02c16077 = アーカイブ用
+
+# For files and folders
+t87b99903 = ファイルとフォルダ用
+
+# Open System Settings, then Keyboard: the button below takes you there.
+t1d2f867c = システム設定を開き、「キーボード」を選びます。下のボタンで開けます。
+
+# Click Keyboard Shortcuts…, then Services in the list at the left.
+t3aecdbe5 = 「キーボードショートカット…」をクリックし、左のリストで「サービス」を選びます。
+
+# Open Files and Folders. Tick the packwing items you want in the menu, and untick the others. You can give each one a keyboard shortcut there too.
+ta89a4502 = 「ファイルとフォルダ」を開きます。メニューに表示したい packwing の項目にチェックを入れ、ほかの項目のチェックを外します。それぞれにキーボードショートカットを割り当てることもできます。
+
+# Items in the menu
+t67537dc4 = メニューの項目
+
+# As the menu names them, in English for now.
+t7e08d78d = メニューでの名前です。今のところ英語のみです。
+
+# Turn items on or off
+t80c46351 = 項目のオン/オフ
+
+# An app from the App Store may not change the menu itself: macOS keeps the choice.
+t98ee6c44 = App Store のアプリはメニューを自分で変更できません。選択は macOS が保持します。
+
+# Open Keyboard settings
+tdf41b143 = キーボード設定を開く
+
+# Items not in the menu yet? macOS finds them when packwing first opens: quit packwing and open it again, or log out and back in.
+tfeaf86e5 = メニューにまだ項目がない場合は、packwing を初めて開いたときに macOS が見つけます。packwing を終了してもう一度開くか、ログアウトしてログインし直してください。
+
 # They show when you right-click files, folders and archives.
 te216d656 = ファイル、フォルダ、アーカイブを右クリックしたときに表示されます。
 
@@ -2220,9 +2259,6 @@ t5d0d23cc = 右クリックメニューに packwing を表示
 
 # Extract and compress from any folder
 t94a46acb = どのフォルダからでも展開・圧縮
-
-# Items in the menu
-t67537dc4 = メニューの項目
 
 # Put them in a submenu
 te3449a65 = サブメニューにまとめる

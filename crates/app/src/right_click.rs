@@ -53,8 +53,54 @@ pub const ARCHIVES: [&str; 44] = [
     "tar.xz.001", "tar.bz2.001", "tar.lz4.001", "iso.001",
 ];
 
+/// A macOS service of the Mac App Store's build: its message in Info.plist's
+/// NSServices (`packaging/macos/app-store-services.json`), what it does, and its
+/// name as Finder's menu shows it, which is NSMenuItem's, in English.
+pub struct Service {
+    pub message: &'static str,
+    pub action: Action,
+    pub title: &'static str,
+    /// For archives alone; or else for any file or folder.
+    pub archives: bool,
+}
+
+/// The services, in the menu's order.
+pub const SERVICES: [Service; 5] = [
+    Service {
+        message: "extractHere",
+        action: Action::ExtractHere,
+        title: "Extract Here with packwing",
+        archives: true,
+    },
+    Service {
+        message: "extractToFolder",
+        action: Action::ExtractToFolder,
+        title: "Extract to New Folder with packwing",
+        archives: true,
+    },
+    Service {
+        message: "extract",
+        action: Action::Extract,
+        title: "Extract with packwing…",
+        archives: true,
+    },
+    Service {
+        message: "compressZip",
+        action: Action::CompressZip,
+        title: "Compress to ZIP with packwing",
+        archives: false,
+    },
+    Service {
+        message: "compress",
+        action: Action::Compress,
+        title: "Compress with packwing…",
+        archives: false,
+    },
+];
+
 /// Built for the Mac App Store: the system's right-click menu is not packwing's
-/// to change, and Settings has no section for it.
+/// to change. Its items are macOS services ([`SERVICES`]), which the user turns
+/// on and off in System Settings, and Settings says so.
 pub const STORE_BUILD: bool = cfg!(feature = "app-store");
 
 /// One of packwing's items.
@@ -127,14 +173,10 @@ impl Action {
     /// Info.plist's NSServices (`packaging/macos/app-store-services.json`): the right-click
     /// menu there, but Open, which is Finder's Open With.
     pub fn of_service(message: &str) -> Option<Action> {
-        Some(match message {
-            "extractHere" => Action::ExtractHere,
-            "extractToFolder" => Action::ExtractToFolder,
-            "extract" => Action::Extract,
-            "compressZip" => Action::CompressZip,
-            "compress" => Action::Compress,
-            _ => return None,
-        })
+        SERVICES
+            .iter()
+            .find(|s| s.message == message)
+            .map(|s| s.action)
     }
 
     /// Its item in the menu, running `program`, in packwing's submenu or not.
@@ -474,6 +516,42 @@ fn definition() -> Result<PathBuf, context_menu::Error> {
 mod tests {
     use super::*;
     use context_menu::{Chosen, Files};
+
+    #[test]
+    fn the_services_are_those_info_plist_names() {
+        let json: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../packaging/macos/app-store-services.json"
+        ))
+        .expect("the services are JSON");
+        let listed: Vec<(String, String, String)> = json
+            .as_array()
+            .expect("a list")
+            .iter()
+            .map(|s| {
+                let text = |v: &serde_json::Value| v.as_str().expect("text").to_owned();
+                (
+                    text(&s["NSMessage"]),
+                    text(&s["NSMenuItem"]["default"]),
+                    text(&s["NSSendFileTypes"][0]),
+                )
+            })
+            .collect();
+        let ours: Vec<(String, String, String)> = SERVICES
+            .iter()
+            .map(|s| {
+                let types = if s.archives {
+                    "public.archive"
+                } else {
+                    "public.item"
+                };
+                (s.message.to_owned(), s.title.to_owned(), types.to_owned())
+            })
+            .collect();
+        assert_eq!(listed, ours);
+        for s in &SERVICES {
+            assert_eq!(Action::of_service(s.message), Some(s.action));
+        }
+    }
 
     fn program() -> PathBuf {
         std::env::current_exe().expect("the test has a program")

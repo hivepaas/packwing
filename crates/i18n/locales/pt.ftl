@@ -2230,6 +2230,45 @@ t9e6ecd3d = A chave é verificada neste computador. Nada é enviado a lugar nenh
 # On
 t60e47df0 = Ativado
 
+# packwing’s items are in Finder’s right-click menu
+tfecc58a6 = Os itens do packwing estão no menu de clique com o botão direito do Finder
+
+# macOS puts them there for an app from the App Store, at the bottom of the menu, under Quick Actions or Services. It shows them once packwing is installed, and you choose which ones stay in System Settings.
+t099504d0 = O macOS os coloca lá para um app da App Store, no fim do menu, em Ações Rápidas ou Serviços. Ele os mostra assim que o packwing é instalado, e você escolhe quais ficam nos Ajustes do Sistema.
+
+# For archives
+t02c16077 = Para arquivos compactados
+
+# For files and folders
+t87b99903 = Para arquivos e pastas
+
+# Open System Settings, then Keyboard: the button below takes you there.
+t1d2f867c = Abra os Ajustes do Sistema e depois Teclado: o botão abaixo leva você até lá.
+
+# Click Keyboard Shortcuts…, then Services in the list at the left.
+t3aecdbe5 = Clique em Atalhos de Teclado… e depois em Serviços, na lista à esquerda.
+
+# Open Files and Folders. Tick the packwing items you want in the menu, and untick the others. You can give each one a keyboard shortcut there too.
+ta89a4502 = Abra Arquivos e Pastas. Marque os itens do packwing que você quer no menu e desmarque os outros. Ali você também pode dar um atalho de teclado a cada um.
+
+# Items in the menu
+t67537dc4 = Itens no menu
+
+# As the menu names them, in English for now.
+t7e08d78d = Como o menu os chama, em inglês por enquanto.
+
+# Turn items on or off
+t80c46351 = Ativar ou desativar itens
+
+# An app from the App Store may not change the menu itself: macOS keeps the choice.
+t98ee6c44 = Um app da App Store não pode mudar o menu sozinho: o macOS guarda a escolha.
+
+# Open Keyboard settings
+tdf41b143 = Abrir os ajustes de Teclado
+
+# Items not in the menu yet? macOS finds them when packwing first opens: quit packwing and open it again, or log out and back in.
+tfeaf86e5 = Os itens ainda não estão no menu? O macOS os encontra quando o packwing é aberto pela primeira vez: encerre o packwing e abra-o de novo, ou encerre a sessão e entre novamente.
+
 # They show when you right-click files, folders and archives.
 te216d656 = Aparecem ao clicar com o botão direito em arquivos, pastas e arquivos compactados.
 
@@ -2250,9 +2289,6 @@ t5d0d23cc = Mostrar o packwing no menu de clique com o botão direito
 
 # Extract and compress from any folder
 t94a46acb = Extrair e compactar em qualquer pasta
-
-# Items in the menu
-t67537dc4 = Itens no menu
 
 # Put them in a submenu
 te3449a65 = Colocar em um submenu

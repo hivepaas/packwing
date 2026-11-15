@@ -2230,6 +2230,45 @@ t9e6ecd3d = Una chiave viene verificata su questo computer. Non viene inviato nu
 # On
 t60e47df0 = Attivo
 
+# packwing’s items are in Finder’s right-click menu
+tfecc58a6 = Le voci di packwing sono nel menu del clic destro del Finder
+
+# macOS puts them there for an app from the App Store, at the bottom of the menu, under Quick Actions or Services. It shows them once packwing is installed, and you choose which ones stay in System Settings.
+t099504d0 = macOS le mette lì per un’app dell’App Store, in fondo al menu, sotto Azioni rapide o Servizi. Le mostra appena packwing è installato, e scegli tu in Impostazioni di Sistema quali restano.
+
+# For archives
+t02c16077 = Per gli archivi
+
+# For files and folders
+t87b99903 = Per file e cartelle
+
+# Open System Settings, then Keyboard: the button below takes you there.
+t1d2f867c = Apri Impostazioni di Sistema, poi Tastiera: il pulsante qui sotto ti porta lì.
+
+# Click Keyboard Shortcuts…, then Services in the list at the left.
+t3aecdbe5 = Fai clic su Abbreviazioni da tastiera…, poi su Servizi nell’elenco a sinistra.
+
+# Open Files and Folders. Tick the packwing items you want in the menu, and untick the others. You can give each one a keyboard shortcut there too.
+ta89a4502 = Apri File e cartelle. Seleziona le voci di packwing che vuoi nel menu e deseleziona le altre. Lì puoi anche assegnare a ciascuna un’abbreviazione da tastiera.
+
+# Items in the menu
+t67537dc4 = Voci nel menu
+
+# As the menu names them, in English for now.
+t7e08d78d = Come le chiama il menu, per ora in inglese.
+
+# Turn items on or off
+t80c46351 = Attiva o disattiva le voci
+
+# An app from the App Store may not change the menu itself: macOS keeps the choice.
+t98ee6c44 = Un’app dell’App Store non può cambiare il menu da sola: è macOS a tenere la scelta.
+
+# Open Keyboard settings
+tdf41b143 = Apri le impostazioni Tastiera
+
+# Items not in the menu yet? macOS finds them when packwing first opens: quit packwing and open it again, or log out and back in.
+tfeaf86e5 = Le voci non sono ancora nel menu? macOS le trova quando packwing si apre la prima volta: esci da packwing e riaprilo, oppure esci dall’account e rientra.
+
 # They show when you right-click files, folders and archives.
 te216d656 = Compaiono quando fai clic destro su file, cartelle e archivi.
 
@@ -2250,9 +2289,6 @@ t5d0d23cc = Mostra packwing nel menu del clic destro
 
 # Extract and compress from any folder
 t94a46acb = Estrai e comprimi da qualsiasi cartella
-
-# Items in the menu
-t67537dc4 = Voci nel menu
 
 # Put them in a submenu
 te3449a65 = Mettile in un sottomenu

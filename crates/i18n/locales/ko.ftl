@@ -2200,6 +2200,45 @@ t9e6ecd3d = 키는 이 컴퓨터에서 확인합니다. 어디로도 전송되�
 # On
 t60e47df0 = 켜짐
 
+# packwing’s items are in Finder’s right-click menu
+tfecc58a6 = packwing 항목은 Finder의 마우스 오른쪽 버튼 메뉴에 있습니다
+
+# macOS puts them there for an app from the App Store, at the bottom of the menu, under Quick Actions or Services. It shows them once packwing is installed, and you choose which ones stay in System Settings.
+t099504d0 = App Store 앱의 경우 macOS가 메뉴 아래쪽의 빠른 동작 또는 서비스에 항목을 넣습니다. packwing을 설치하면 표시되며, 남길 항목은 시스템 설정에서 고를 수 있습니다.
+
+# For archives
+t02c16077 = 압축 파일용
+
+# For files and folders
+t87b99903 = 파일 및 폴더용
+
+# Open System Settings, then Keyboard: the button below takes you there.
+t1d2f867c = 시스템 설정을 열고 키보드로 이동하세요. 아래 버튼을 누르면 바로 열립니다.
+
+# Click Keyboard Shortcuts…, then Services in the list at the left.
+t3aecdbe5 = 키보드 단축키…를 클릭한 다음 왼쪽 목록에서 서비스를 선택하세요.
+
+# Open Files and Folders. Tick the packwing items you want in the menu, and untick the others. You can give each one a keyboard shortcut there too.
+ta89a4502 = 파일 및 폴더를 여세요. 메뉴에 두고 싶은 packwing 항목은 체크하고 나머지는 체크를 해제하세요. 각 항목에 키보드 단축키를 지정할 수도 있습니다.
+
+# Items in the menu
+t67537dc4 = 메뉴 항목
+
+# As the menu names them, in English for now.
+t7e08d78d = 메뉴에 표시되는 이름이며, 지금은 영어로만 나옵니다.
+
+# Turn items on or off
+t80c46351 = 항목 켜기 또는 끄기
+
+# An app from the App Store may not change the menu itself: macOS keeps the choice.
+t98ee6c44 = App Store 앱은 메뉴를 직접 바꿀 수 없으며, 선택은 macOS가 보관합니다.
+
+# Open Keyboard settings
+tdf41b143 = 키보드 설정 열기
+
+# Items not in the menu yet? macOS finds them when packwing first opens: quit packwing and open it again, or log out and back in.
+tfeaf86e5 = 메뉴에 아직 항목이 없나요? macOS는 packwing이 처음 열릴 때 항목을 찾습니다. packwing을 종료한 뒤 다시 열거나, 로그아웃 후 다시 로그인하세요.
+
 # They show when you right-click files, folders and archives.
 te216d656 = 파일, 폴더, 압축 파일을 마우스 오른쪽 버튼으로 클릭하면 표시됩니다.
 
@@ -2220,9 +2259,6 @@ t5d0d23cc = 마우스 오른쪽 버튼 메뉴에 packwing 표시
 
 # Extract and compress from any folder
 t94a46acb = 어느 폴더에서나 압축을 풀고 압축할 수 있습니다
-
-# Items in the menu
-t67537dc4 = 메뉴 항목
 
 # Put them in a submenu
 te3449a65 = 하위 메뉴에 넣기
