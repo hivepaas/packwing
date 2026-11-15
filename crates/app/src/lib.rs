@@ -39,6 +39,7 @@ mod prefs;
 mod right_click;
 mod scrollbar;
 mod signatures;
+mod ssh;
 mod store;
 mod text_size;
 mod updates;
@@ -353,6 +354,8 @@ pub fn run(extensions: Extensions) {
                 ws
             });
             window.focus(&ws.read(cx).focus_handle(cx), cx);
+            // A storage's connection over SSH asks its questions in the window.
+            packwing_remote::ask_with(Some(ws.read(cx).asker()));
             ws
         });
         let Ok(window) = opened else {

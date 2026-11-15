@@ -61,6 +61,9 @@ t52b1d223 = 新しいファイルはアーカイブのパスワードで暗号�
 # Cancel
 t35afca3b = キャンセル
 
+# That passphrase does not open the key.
+tab4e22aa = そのパスフレーズでは鍵を開けません。
+
 # Name
 t0fe07306 = 名前
 
@@ -70,11 +73,41 @@ t06357afd = フォルダ
 # Its secrets could not be read: {why}
 t2af0c8ab = シークレットを読み取れませんでした：{ $why }
 
+# Choose
+t73c66160 = 選択
+
+# Passphrase
+t191a2dc5 = パスフレーズ
+
 # That folder is not on this computer.
 ta4073fff = そのフォルダはこのコンピューターにありません。
 
 # Its secrets could not be kept: {why}
 ta213827f = シークレットを保存できませんでした：{ $why }
+
+# Any key
+t11edbeae = 任意の鍵
+
+# The key this storage signed in with is not kept any more.
+tb0a2d351 = このストレージがサインインに使っていた鍵は、もう保管されていません。
+
+# Add a key file…
+t7b869a62 = 鍵ファイルを追加…
+
+# The passphrase of {name}
+tec172c12 = { $name } のパスフレーズ
+
+# Open
+t538b10e9 = 開く
+
+# Key
+tcd1ac90c = 鍵
+
+# Any key: every key packwing keeps. A key file added is kept in the system’s keychain.
+t2a6be4df = 任意の鍵：packwing が保管しているすべての鍵。追加した鍵ファイルはシステムのキーチェーンに保管されます。
+
+# Any key: the SSH agent’s and the key files in ~/.ssh, then every key packwing keeps. A key file added is kept in the system’s keychain.
+t33890668 = 任意の鍵：SSH エージェントの鍵と ~/.ssh の鍵ファイル、次に packwing が保管しているすべての鍵。追加した鍵ファイルはシステムのキーチェーンに保管されます。
 
 # Local folder
 te075bcbc = ローカルフォルダ
@@ -595,17 +628,11 @@ t00c5d168 = 今後は確認しない
 # Run it
 t72430853 = 実行する
 
-# Open
-t538b10e9 = 開く
-
 # Open from a storage
 t45a8991d = ストレージから開く
 
 # Choose a storage, and an archive in it
 t3c900950 = ストレージと、その中のアーカイブを選択してください
-
-# Choose
-t73c66160 = 選択
 
 # This is not a key file packwing can use: {why}.
 tcf6986a7 = packwing で使えるキーファイルではありません：{ $why }。
@@ -621,9 +648,6 @@ t4051f4d7 = キーファイルのパスフレーズ
 
 # Enter the passphrase
 tbd0672da = パスフレーズを入力
-
-# Passphrase
-t191a2dc5 = パスフレーズ
 
 # This file is encrypted with age. packwing keeps the passphrase only while the archive is open, and never writes it down.
 t663ac047 = このファイルは age で暗号化されています。packwing はパスフレーズをアーカイブを開いている間だけ保持し、書き留めることはありません。
@@ -1000,9 +1024,6 @@ t9306dafe = キーをここに保存
 # No key chosen
 te58c13f5 = キーが選択されていません
 
-# Key
-tcd1ac90c = 鍵
-
 # New key…
 t9e1134da = 新しいキー…
 
@@ -1035,6 +1056,45 @@ tab12cc19 = 隣に { $first } から始まる { $count } 個のパートを作�
 
 # Split
 t16a15383 = 分割
+
+# Answer
+tf94ea0ff = 回答
+
+# Keep it in the system’s keychain
+t20ffa126 = システムのキーチェーンに保管する
+
+# Trust this server?
+tcf52044f = このサーバーを信頼しますか？
+
+# packwing has not connected to this server before. Trust it only if this is its key: whoever runs the server can tell you its fingerprint.
+t8784f08b = packwing はこのサーバーにまだ接続したことがありません。これがそのサーバーの鍵である場合にのみ信頼してください。フィンガープリントはサーバーの管理者に確認できます。
+
+# {algorithm} key fingerprint
+t91ca5fc5 = { $algorithm } 鍵のフィンガープリント
+
+# Trust and connect
+t2a9cdcbe = 信頼して接続
+
+# Don’t connect
+t6bbfdb87 = 接続しない
+
+# Sign in to the server
+t7c58866e = サーバーにサインイン
+
+# The server did not take that password.
+td6912c66 = サーバーはそのパスワードを受け付けませんでした。
+
+# Sign in
+t744be623 = サインイン
+
+# Enter the key’s passphrase
+t90f12179 = 鍵のパスフレーズを入力
+
+# The server asks
+ta642b6e3 = サーバーからの質問
+
+# Send
+tf28e14cf = 送信
 
 # Move {what}
 tc168ca56 = { $what } を移動
@@ -2878,11 +2938,17 @@ te1c3d3a2 = シークレットアクセスキー
 # SFTP
 t62703ae8 = SFTP
 
+# Host
+t302af18f = ホスト
+
 # Host or ssh_config name
 t7b943498 = ホスト名または ssh_config の名前
 
 # Empty for the home folder
 t67b5f42b = 空欄の場合はホームフォルダ
+
+# Empty to sign in with a key
+t3dbf7df5 = 空欄にすると鍵でサインインします
 
 # Empty to use the SSH agent and keys
 tf10e6293 = 空欄の場合は SSH エージェントとキーを使用

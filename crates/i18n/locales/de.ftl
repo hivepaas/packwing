@@ -63,6 +63,9 @@ t52b1d223 = Die neuen Dateien werden mit dem Passwort des Archivs verschlüsselt
 # Cancel
 t35afca3b = Abbrechen
 
+# That passphrase does not open the key.
+tab4e22aa = Diese Passphrase öffnet den Schlüssel nicht.
+
 # Name
 t0fe07306 = Name
 
@@ -72,11 +75,41 @@ t06357afd = Ordner
 # Its secrets could not be read: {why}
 t2af0c8ab = Die Zugangsdaten konnten nicht gelesen werden: { $why }
 
+# Choose
+t73c66160 = Auswählen
+
+# Passphrase
+t191a2dc5 = Passphrase
+
 # That folder is not on this computer.
 ta4073fff = Dieser Ordner ist nicht auf diesem Computer.
 
 # Its secrets could not be kept: {why}
 ta213827f = Die Zugangsdaten konnten nicht gespeichert werden: { $why }
+
+# Any key
+t11edbeae = Beliebiger Schlüssel
+
+# The key this storage signed in with is not kept any more.
+tb0a2d351 = Der Schlüssel, mit dem sich dieser Speicher angemeldet hat, wird nicht mehr aufbewahrt.
+
+# Add a key file…
+t7b869a62 = Schlüsseldatei hinzufügen…
+
+# The passphrase of {name}
+tec172c12 = Die Passphrase von { $name }
+
+# Open
+t538b10e9 = Öffnen
+
+# Key
+tcd1ac90c = Schlüssel
+
+# Any key: every key packwing keeps. A key file added is kept in the system’s keychain.
+t2a6be4df = Beliebiger Schlüssel: jeder Schlüssel, den packwing aufbewahrt. Eine hinzugefügte Schlüsseldatei wird im Schlüsselbund des Systems aufbewahrt.
+
+# Any key: the SSH agent’s and the key files in ~/.ssh, then every key packwing keeps. A key file added is kept in the system’s keychain.
+t33890668 = Beliebiger Schlüssel: die des SSH-Agenten und die Schlüsseldateien in ~/.ssh, dann jeder Schlüssel, den packwing aufbewahrt. Eine hinzugefügte Schlüsseldatei wird im Schlüsselbund des Systems aufbewahrt.
 
 # Local folder
 te075bcbc = Lokaler Ordner
@@ -601,17 +634,11 @@ t00c5d168 = Nicht mehr fragen
 # Run it
 t72430853 = Ausführen
 
-# Open
-t538b10e9 = Öffnen
-
 # Open from a storage
 t45a8991d = Aus einem Speicherort öffnen
 
 # Choose a storage, and an archive in it
 t3c900950 = Wähle einen Speicherort und darin ein Archiv
-
-# Choose
-t73c66160 = Auswählen
 
 # This is not a key file packwing can use: {why}.
 tcf6986a7 = Das ist keine Schlüsseldatei, die packwing verwenden kann: { $why }.
@@ -627,9 +654,6 @@ t4051f4d7 = Die Passphrase der Schlüsseldatei
 
 # Enter the passphrase
 tbd0672da = Passphrase eingeben
-
-# Passphrase
-t191a2dc5 = Passphrase
 
 # This file is encrypted with age. packwing keeps the passphrase only while the archive is open, and never writes it down.
 t663ac047 = Diese Datei ist mit age verschlüsselt. packwing behält die Passphrase nur, solange das Archiv geöffnet ist, und schreibt sie nie auf.
@@ -1016,9 +1040,6 @@ t9306dafe = Schlüssel hier behalten
 # No key chosen
 te58c13f5 = Kein Schlüssel ausgewählt
 
-# Key
-tcd1ac90c = Schlüssel
-
 # New key…
 t9e1134da = Neuer Schlüssel…
 
@@ -1051,6 +1072,45 @@ tab12cc19 = { $count } Teile daneben, ab { $first }. Zusammenfügen setzt sie wi
 
 # Split
 t16a15383 = Teilen
+
+# Answer
+tf94ea0ff = Antwort
+
+# Keep it in the system’s keychain
+t20ffa126 = Im Schlüsselbund des Systems aufbewahren
+
+# Trust this server?
+tcf52044f = Diesem Server vertrauen?
+
+# packwing has not connected to this server before. Trust it only if this is its key: whoever runs the server can tell you its fingerprint.
+t8784f08b = packwing war noch nie mit diesem Server verbunden. Vertraue ihm nur, wenn dies sein Schlüssel ist: Wer den Server betreibt, kann dir seinen Fingerabdruck nennen.
+
+# {algorithm} key fingerprint
+t91ca5fc5 = { $algorithm }-Schlüssel-Fingerabdruck
+
+# Trust and connect
+t2a9cdcbe = Vertrauen und verbinden
+
+# Don’t connect
+t6bbfdb87 = Nicht verbinden
+
+# Sign in to the server
+t7c58866e = Beim Server anmelden
+
+# The server did not take that password.
+td6912c66 = Der Server hat dieses Passwort nicht angenommen.
+
+# Sign in
+t744be623 = Anmelden
+
+# Enter the key’s passphrase
+t90f12179 = Passphrase des Schlüssels eingeben
+
+# The server asks
+ta642b6e3 = Der Server fragt
+
+# Send
+tf28e14cf = Senden
 
 # Move {what}
 tc168ca56 = { $what } verschieben
@@ -2918,11 +2978,17 @@ te1c3d3a2 = Geheimer Zugriffsschlüssel
 # SFTP
 t62703ae8 = SFTP
 
+# Host
+t302af18f = Host
+
 # Host or ssh_config name
 t7b943498 = Host oder ssh_config-Name
 
 # Empty for the home folder
 t67b5f42b = Leer für den Home-Ordner
+
+# Empty to sign in with a key
+t3dbf7df5 = Leer lassen, um sich mit einem Schlüssel anzumelden
 
 # Empty to use the SSH agent and keys
 tf10e6293 = Leer, um den SSH-Agent und Schlüssel zu verwenden

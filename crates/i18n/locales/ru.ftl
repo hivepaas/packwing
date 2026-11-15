@@ -67,6 +67,9 @@ t52b1d223 = Новые файлы шифруются паролем архива
 # Cancel
 t35afca3b = Отмена
 
+# That passphrase does not open the key.
+tab4e22aa = Эта парольная фраза не открывает ключ.
+
 # Name
 t0fe07306 = Имя
 
@@ -76,11 +79,41 @@ t06357afd = Папка
 # Its secrets could not be read: {why}
 t2af0c8ab = Не удалось прочитать его секреты: { $why }
 
+# Choose
+t73c66160 = Выбрать
+
+# Passphrase
+t191a2dc5 = Парольная фраза
+
 # That folder is not on this computer.
 ta4073fff = Этой папки нет на этом компьютере.
 
 # Its secrets could not be kept: {why}
 ta213827f = Не удалось сохранить его секреты: { $why }
+
+# Any key
+t11edbeae = Любой ключ
+
+# The key this storage signed in with is not kept any more.
+tb0a2d351 = Ключ, которым входило это хранилище, больше не хранится.
+
+# Add a key file…
+t7b869a62 = Добавить файл ключа…
+
+# The passphrase of {name}
+tec172c12 = Парольная фраза { $name }
+
+# Open
+t538b10e9 = Открыть
+
+# Key
+tcd1ac90c = Ключ
+
+# Any key: every key packwing keeps. A key file added is kept in the system’s keychain.
+t2a6be4df = Любой ключ: все ключи, которые хранит packwing. Добавленный файл ключа хранится в связке ключей системы.
+
+# Any key: the SSH agent’s and the key files in ~/.ssh, then every key packwing keeps. A key file added is kept in the system’s keychain.
+t33890668 = Любой ключ: ключи SSH-агента и файлы ключей в ~/.ssh, затем все ключи, которые хранит packwing. Добавленный файл ключа хранится в связке ключей системы.
 
 # Local folder
 te075bcbc = Локальная папка
@@ -613,17 +646,11 @@ t00c5d168 = Больше не спрашивать
 # Run it
 t72430853 = Запустить
 
-# Open
-t538b10e9 = Открыть
-
 # Open from a storage
 t45a8991d = Открыть из хранилища
 
 # Choose a storage, and an archive in it
 t3c900950 = Выберите хранилище и архив в нём
-
-# Choose
-t73c66160 = Выбрать
 
 # This is not a key file packwing can use: {why}.
 tcf6986a7 = Этот файл ключа packwing использовать не может: { $why }.
@@ -639,9 +666,6 @@ t4051f4d7 = Парольная фраза файла ключа
 
 # Enter the passphrase
 tbd0672da = Введите парольную фразу
-
-# Passphrase
-t191a2dc5 = Парольная фраза
 
 # This file is encrypted with age. packwing keeps the passphrase only while the archive is open, and never writes it down.
 t663ac047 = Этот файл зашифрован с помощью age. packwing хранит парольную фразу, только пока архив открыт, и нигде её не записывает.
@@ -1048,9 +1072,6 @@ t9306dafe = Хранить ключ здесь
 # No key chosen
 te58c13f5 = Ключ не выбран
 
-# Key
-tcd1ac90c = Ключ
-
 # New key…
 t9e1134da = Новый ключ…
 
@@ -1083,6 +1104,45 @@ tab12cc19 = Частей рядом: { $count }, начиная с { $first }. �
 
 # Split
 t16a15383 = Разрезать
+
+# Answer
+tf94ea0ff = Ответ
+
+# Keep it in the system’s keychain
+t20ffa126 = Хранить в связке ключей системы
+
+# Trust this server?
+tcf52044f = Доверять этому серверу?
+
+# packwing has not connected to this server before. Trust it only if this is its key: whoever runs the server can tell you its fingerprint.
+t8784f08b = packwing ещё не подключался к этому серверу. Доверяйте ему, только если это его ключ: отпечаток может сообщить тот, кто управляет сервером.
+
+# {algorithm} key fingerprint
+t91ca5fc5 = Отпечаток ключа { $algorithm }
+
+# Trust and connect
+t2a9cdcbe = Доверять и подключиться
+
+# Don’t connect
+t6bbfdb87 = Не подключаться
+
+# Sign in to the server
+t7c58866e = Вход на сервер
+
+# The server did not take that password.
+td6912c66 = Сервер не принял этот пароль.
+
+# Sign in
+t744be623 = Войти
+
+# Enter the key’s passphrase
+t90f12179 = Введите парольную фразу ключа
+
+# The server asks
+ta642b6e3 = Сервер спрашивает
+
+# Send
+tf28e14cf = Отправить
 
 # Move {what}
 tc168ca56 = Переместить { $what }
@@ -2980,11 +3040,17 @@ te1c3d3a2 = Секретный ключ доступа
 # SFTP
 t62703ae8 = SFTP
 
+# Host
+t302af18f = Хост
+
 # Host or ssh_config name
 t7b943498 = Хост или имя из ssh_config
 
 # Empty for the home folder
 t67b5f42b = Пусто — домашняя папка
+
+# Empty to sign in with a key
+t3dbf7df5 = Оставьте пустым, чтобы войти по ключу
 
 # Empty to use the SSH agent and keys
 tf10e6293 = Пусто — использовать SSH-агент и ключи

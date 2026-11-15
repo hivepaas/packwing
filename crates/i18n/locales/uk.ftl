@@ -67,6 +67,9 @@ t52b1d223 = Нові файли шифруються паролем архіву
 # Cancel
 t35afca3b = Скасувати
 
+# That passphrase does not open the key.
+tab4e22aa = Ця парольна фраза не відкриває ключ.
+
 # Name
 t0fe07306 = Назва
 
@@ -76,11 +79,41 @@ t06357afd = Папка
 # Its secrets could not be read: {why}
 t2af0c8ab = Не вдалося прочитати його секрети: { $why }
 
+# Choose
+t73c66160 = Вибрати
+
+# Passphrase
+t191a2dc5 = Парольна фраза
+
 # That folder is not on this computer.
 ta4073fff = Цієї папки немає на цьому комп’ютері.
 
 # Its secrets could not be kept: {why}
 ta213827f = Не вдалося зберегти його секрети: { $why }
+
+# Any key
+t11edbeae = Будь-який ключ
+
+# The key this storage signed in with is not kept any more.
+tb0a2d351 = Ключ, яким входило це сховище, більше не зберігається.
+
+# Add a key file…
+t7b869a62 = Додати файл ключа…
+
+# The passphrase of {name}
+tec172c12 = Парольна фраза { $name }
+
+# Open
+t538b10e9 = Відкрити
+
+# Key
+tcd1ac90c = Ключ
+
+# Any key: every key packwing keeps. A key file added is kept in the system’s keychain.
+t2a6be4df = Будь-який ключ: усі ключі, які зберігає packwing. Доданий файл ключа зберігається у в’язці ключів системи.
+
+# Any key: the SSH agent’s and the key files in ~/.ssh, then every key packwing keeps. A key file added is kept in the system’s keychain.
+t33890668 = Будь-який ключ: ключі SSH-агента й файли ключів у ~/.ssh, далі всі ключі, які зберігає packwing. Доданий файл ключа зберігається у в’язці ключів системи.
 
 # Local folder
 te075bcbc = Локальна папка
@@ -613,17 +646,11 @@ t00c5d168 = Більше не питати
 # Run it
 t72430853 = Запустити
 
-# Open
-t538b10e9 = Відкрити
-
 # Open from a storage
 t45a8991d = Відкрити зі сховища
 
 # Choose a storage, and an archive in it
 t3c900950 = Виберіть сховище й архів у ньому
-
-# Choose
-t73c66160 = Вибрати
 
 # This is not a key file packwing can use: {why}.
 tcf6986a7 = Це не файл ключа, який може використати packwing: { $why }.
@@ -639,9 +666,6 @@ t4051f4d7 = Парольна фраза файлу ключа
 
 # Enter the passphrase
 tbd0672da = Введіть парольну фразу
-
-# Passphrase
-t191a2dc5 = Парольна фраза
 
 # This file is encrypted with age. packwing keeps the passphrase only while the archive is open, and never writes it down.
 t663ac047 = Цей файл зашифровано за допомогою age. packwing зберігає парольну фразу лише доки архів відкритий і ніколи її не записує.
@@ -1048,9 +1072,6 @@ t9306dafe = Зберегти ключ тут
 # No key chosen
 te58c13f5 = Ключ не вибрано
 
-# Key
-tcd1ac90c = Ключ
-
 # New key…
 t9e1134da = Новий ключ…
 
@@ -1083,6 +1104,45 @@ tab12cc19 = Частин поруч: { $count }, починаючи з { $first 
 
 # Split
 t16a15383 = Розрізати
+
+# Answer
+tf94ea0ff = Відповідь
+
+# Keep it in the system’s keychain
+t20ffa126 = Зберігати у в’язці ключів системи
+
+# Trust this server?
+tcf52044f = Довіряти цьому серверу?
+
+# packwing has not connected to this server before. Trust it only if this is its key: whoever runs the server can tell you its fingerprint.
+t8784f08b = packwing ще не підключався до цього сервера. Довіряйте йому, лише якщо це його ключ: відбиток може повідомити той, хто керує сервером.
+
+# {algorithm} key fingerprint
+t91ca5fc5 = Відбиток ключа { $algorithm }
+
+# Trust and connect
+t2a9cdcbe = Довіряти й підключитися
+
+# Don’t connect
+t6bbfdb87 = Не підключатися
+
+# Sign in to the server
+t7c58866e = Вхід на сервер
+
+# The server did not take that password.
+td6912c66 = Сервер не прийняв цей пароль.
+
+# Sign in
+t744be623 = Увійти
+
+# Enter the key’s passphrase
+t90f12179 = Введіть парольну фразу ключа
+
+# The server asks
+ta642b6e3 = Сервер питає
+
+# Send
+tf28e14cf = Надіслати
 
 # Move {what}
 tc168ca56 = Перемістити { $what }
@@ -2980,11 +3040,17 @@ te1c3d3a2 = Секретний ключ доступу
 # SFTP
 t62703ae8 = SFTP
 
+# Host
+t302af18f = Хост
+
 # Host or ssh_config name
 t7b943498 = Хост або назва з ssh_config
 
 # Empty for the home folder
 t67b5f42b = Порожньо для домашньої папки
+
+# Empty to sign in with a key
+t3dbf7df5 = Залиште порожнім, щоб увійти за ключем
 
 # Empty to use the SSH agent and keys
 tf10e6293 = Порожньо, щоб використати агент SSH і ключі

@@ -36,6 +36,7 @@ mod purchase;
 #[cfg(unix)]
 mod sandbox;
 mod settings;
+mod ssh;
 mod storages;
 #[cfg(feature = "app-store")]
 mod store;

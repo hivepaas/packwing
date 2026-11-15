@@ -63,6 +63,9 @@ t52b1d223 = Os novos arquivos são criptografados com a senha do arquivo compact
 # Cancel
 t35afca3b = Cancelar
 
+# That passphrase does not open the key.
+tab4e22aa = Essa frase secreta não abre a chave.
+
 # Name
 t0fe07306 = Nome
 
@@ -72,11 +75,41 @@ t06357afd = Pasta
 # Its secrets could not be read: {why}
 t2af0c8ab = Não foi possível ler seus segredos: { $why }
 
+# Choose
+t73c66160 = Escolher
+
+# Passphrase
+t191a2dc5 = Frase secreta
+
 # That folder is not on this computer.
 ta4073fff = Essa pasta não está neste computador.
 
 # Its secrets could not be kept: {why}
 ta213827f = Não foi possível guardar seus segredos: { $why }
+
+# Any key
+t11edbeae = Qualquer chave
+
+# The key this storage signed in with is not kept any more.
+tb0a2d351 = A chave com que este armazenamento entrava não está mais guardada.
+
+# Add a key file…
+t7b869a62 = Adicionar um arquivo de chave…
+
+# The passphrase of {name}
+tec172c12 = A frase secreta de { $name }
+
+# Open
+t538b10e9 = Abrir
+
+# Key
+tcd1ac90c = Chave
+
+# Any key: every key packwing keeps. A key file added is kept in the system’s keychain.
+t2a6be4df = Qualquer chave: todas as que o packwing guarda. Um arquivo de chave adicionado fica guardado nas chaves do sistema.
+
+# Any key: the SSH agent’s and the key files in ~/.ssh, then every key packwing keeps. A key file added is kept in the system’s keychain.
+t33890668 = Qualquer chave: as do agente SSH e os arquivos de chave em ~/.ssh, depois todas as que o packwing guarda. Um arquivo de chave adicionado fica guardado nas chaves do sistema.
 
 # Local folder
 te075bcbc = Pasta local
@@ -601,17 +634,11 @@ t00c5d168 = Não perguntar de novo
 # Run it
 t72430853 = Executar
 
-# Open
-t538b10e9 = Abrir
-
 # Open from a storage
 t45a8991d = Abrir de um armazenamento
 
 # Choose a storage, and an archive in it
 t3c900950 = Escolha um armazenamento e um arquivo compactado nele
-
-# Choose
-t73c66160 = Escolher
 
 # This is not a key file packwing can use: {why}.
 tcf6986a7 = Este não é um arquivo de chave que o packwing possa usar: { $why }.
@@ -627,9 +654,6 @@ t4051f4d7 = A frase secreta do arquivo de chave
 
 # Enter the passphrase
 tbd0672da = Digite a frase secreta
-
-# Passphrase
-t191a2dc5 = Frase secreta
 
 # This file is encrypted with age. packwing keeps the passphrase only while the archive is open, and never writes it down.
 t663ac047 = Este arquivo está criptografado com age. O packwing guarda a frase secreta só enquanto o arquivo compactado está aberto e nunca a grava.
@@ -1016,9 +1040,6 @@ t9306dafe = Guardar a chave aqui
 # No key chosen
 te58c13f5 = Nenhuma chave escolhida
 
-# Key
-tcd1ac90c = Chave
-
 # New key…
 t9e1134da = Nova chave…
 
@@ -1051,6 +1072,45 @@ tab12cc19 = { $count } partes ao lado, a partir de { $first }. Juntar as reúne,
 
 # Split
 t16a15383 = Dividir
+
+# Answer
+tf94ea0ff = Resposta
+
+# Keep it in the system’s keychain
+t20ffa126 = Guardar nas chaves do sistema
+
+# Trust this server?
+tcf52044f = Confiar neste servidor?
+
+# packwing has not connected to this server before. Trust it only if this is its key: whoever runs the server can tell you its fingerprint.
+t8784f08b = O packwing nunca se conectou a este servidor. Confie nele só se esta for a chave dele: quem administra o servidor pode informar a impressão digital.
+
+# {algorithm} key fingerprint
+t91ca5fc5 = Impressão digital da chave { $algorithm }
+
+# Trust and connect
+t2a9cdcbe = Confiar e conectar
+
+# Don’t connect
+t6bbfdb87 = Não conectar
+
+# Sign in to the server
+t7c58866e = Entrar no servidor
+
+# The server did not take that password.
+td6912c66 = O servidor não aceitou essa senha.
+
+# Sign in
+t744be623 = Entrar
+
+# Enter the key’s passphrase
+t90f12179 = Digite a frase secreta da chave
+
+# The server asks
+ta642b6e3 = O servidor pergunta
+
+# Send
+tf28e14cf = Enviar
 
 # Move {what}
 tc168ca56 = Mover { $what }
@@ -2918,11 +2978,17 @@ te1c3d3a2 = Chave de acesso secreta
 # SFTP
 t62703ae8 = SFTP
 
+# Host
+t302af18f = Host
+
 # Host or ssh_config name
 t7b943498 = Host ou nome do ssh_config
 
 # Empty for the home folder
 t67b5f42b = Vazio para a pasta pessoal
+
+# Empty to sign in with a key
+t3dbf7df5 = Vazio para entrar com uma chave
 
 # Empty to use the SSH agent and keys
 tf10e6293 = Vazio para usar o agente SSH e as chaves

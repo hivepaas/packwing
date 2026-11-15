@@ -63,6 +63,9 @@ t52b1d223 = I nuovi file vengono cifrati con la password dell'archivio.
 # Cancel
 t35afca3b = Annulla
 
+# That passphrase does not open the key.
+tab4e22aa = Questa passphrase non apre la chiave.
+
 # Name
 t0fe07306 = Nome
 
@@ -72,11 +75,41 @@ t06357afd = Cartella
 # Its secrets could not be read: {why}
 t2af0c8ab = Impossibile leggere i suoi segreti: { $why }
 
+# Choose
+t73c66160 = Scegli
+
+# Passphrase
+t191a2dc5 = Passphrase
+
 # That folder is not on this computer.
 ta4073fff = Quella cartella non si trova su questo computer.
 
 # Its secrets could not be kept: {why}
 ta213827f = Impossibile conservare i suoi segreti: { $why }
+
+# Any key
+t11edbeae = Qualsiasi chiave
+
+# The key this storage signed in with is not kept any more.
+tb0a2d351 = La chiave con cui questo archivio accedeva non è più conservata.
+
+# Add a key file…
+t7b869a62 = Aggiungi un file di chiave…
+
+# The passphrase of {name}
+tec172c12 = La passphrase di { $name }
+
+# Open
+t538b10e9 = Apri
+
+# Key
+tcd1ac90c = Chiave
+
+# Any key: every key packwing keeps. A key file added is kept in the system’s keychain.
+t2a6be4df = Qualsiasi chiave: tutte quelle che packwing conserva. Un file di chiave aggiunto viene conservato nel portachiavi del sistema.
+
+# Any key: the SSH agent’s and the key files in ~/.ssh, then every key packwing keeps. A key file added is kept in the system’s keychain.
+t33890668 = Qualsiasi chiave: quelle dell’agente SSH e i file di chiave in ~/.ssh, poi tutte quelle che packwing conserva. Un file di chiave aggiunto viene conservato nel portachiavi del sistema.
 
 # Local folder
 te075bcbc = Cartella locale
@@ -601,17 +634,11 @@ t00c5d168 = Non chiedere più
 # Run it
 t72430853 = Eseguilo
 
-# Open
-t538b10e9 = Apri
-
 # Open from a storage
 t45a8991d = Apri da uno spazio di archiviazione
 
 # Choose a storage, and an archive in it
 t3c900950 = Scegli uno spazio di archiviazione e un archivio al suo interno
-
-# Choose
-t73c66160 = Scegli
 
 # This is not a key file packwing can use: {why}.
 tcf6986a7 = Questo non è un file di chiave che packwing può usare: { $why }.
@@ -627,9 +654,6 @@ t4051f4d7 = La passphrase del file di chiave
 
 # Enter the passphrase
 tbd0672da = Inserisci la passphrase
-
-# Passphrase
-t191a2dc5 = Passphrase
 
 # This file is encrypted with age. packwing keeps the passphrase only while the archive is open, and never writes it down.
 t663ac047 = Questo file è cifrato con age. packwing conserva la passphrase solo finché l'archivio è aperto e non la scrive mai.
@@ -1016,9 +1040,6 @@ t9306dafe = Tieni la chiave qui
 # No key chosen
 te58c13f5 = Nessuna chiave scelta
 
-# Key
-tcd1ac90c = Chiave
-
 # New key…
 t9e1134da = Nuova chiave…
 
@@ -1051,6 +1072,45 @@ tab12cc19 = { $count } parti accanto, da { $first } in poi. Unisci le rimette in
 
 # Split
 t16a15383 = Dividi
+
+# Answer
+tf94ea0ff = Risposta
+
+# Keep it in the system’s keychain
+t20ffa126 = Conservala nel portachiavi del sistema
+
+# Trust this server?
+tcf52044f = Fidarsi di questo server?
+
+# packwing has not connected to this server before. Trust it only if this is its key: whoever runs the server can tell you its fingerprint.
+t8784f08b = packwing non si è mai collegato a questo server. Fidati solo se questa è la sua chiave: chi gestisce il server può dirti la sua impronta.
+
+# {algorithm} key fingerprint
+t91ca5fc5 = Impronta della chiave { $algorithm }
+
+# Trust and connect
+t2a9cdcbe = Fidati e collegati
+
+# Don’t connect
+t6bbfdb87 = Non collegarti
+
+# Sign in to the server
+t7c58866e = Accedi al server
+
+# The server did not take that password.
+td6912c66 = Il server non ha accettato quella password.
+
+# Sign in
+t744be623 = Accedi
+
+# Enter the key’s passphrase
+t90f12179 = Inserisci la passphrase della chiave
+
+# The server asks
+ta642b6e3 = Il server chiede
+
+# Send
+tf28e14cf = Invia
 
 # Move {what}
 tc168ca56 = Sposta { $what }
@@ -2918,11 +2978,17 @@ te1c3d3a2 = Chiave di accesso segreta
 # SFTP
 t62703ae8 = SFTP
 
+# Host
+t302af18f = Host
+
 # Host or ssh_config name
 t7b943498 = Host o nome in ssh_config
 
 # Empty for the home folder
 t67b5f42b = Vuoto per la cartella home
+
+# Empty to sign in with a key
+t3dbf7df5 = Vuoto per accedere con una chiave
 
 # Empty to use the SSH agent and keys
 tf10e6293 = Vuoto per usare l'agente SSH e le chiavi

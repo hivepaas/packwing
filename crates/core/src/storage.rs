@@ -168,6 +168,12 @@ pub trait StorageKind: Send + Sync {
     fn kept_secrets(&self, id: &str) -> io::Result<Values>;
 
     fn forget_secrets(&self, id: &str);
+
+    /// For a kind that signs in with SSH keys: the value that names the key
+    /// packwing keeps to sign in with, empty for any.
+    fn key_value(&self) -> Option<&'static str> {
+        None
+    }
 }
 
 /// Why `name` cannot be an item's name, if it cannot. A name is one step: it

@@ -63,6 +63,9 @@ t52b1d223 = Yeni dosyalar arşivin parolasıyla şifrelenir.
 # Cancel
 t35afca3b = İptal
 
+# That passphrase does not open the key.
+tab4e22aa = Bu parola anahtarı açmıyor.
+
 # Name
 t0fe07306 = Ad
 
@@ -72,11 +75,41 @@ t06357afd = Klasör
 # Its secrets could not be read: {why}
 t2af0c8ab = Gizli bilgileri okunamadı: { $why }
 
+# Choose
+t73c66160 = Seç
+
+# Passphrase
+t191a2dc5 = Parola ifadesi
+
 # That folder is not on this computer.
 ta4073fff = Bu klasör bu bilgisayarda yok.
 
 # Its secrets could not be kept: {why}
 ta213827f = Gizli bilgileri saklanamadı: { $why }
+
+# Any key
+t11edbeae = Herhangi bir anahtar
+
+# The key this storage signed in with is not kept any more.
+tb0a2d351 = Bu depolamanın oturum açtığı anahtar artık saklanmıyor.
+
+# Add a key file…
+t7b869a62 = Anahtar dosyası ekle…
+
+# The passphrase of {name}
+tec172c12 = { $name } parolası
+
+# Open
+t538b10e9 = Aç
+
+# Key
+tcd1ac90c = Anahtar
+
+# Any key: every key packwing keeps. A key file added is kept in the system’s keychain.
+t2a6be4df = Herhangi bir anahtar: packwing’in sakladığı her anahtar. Eklenen anahtar dosyası sistemin anahtar zincirinde saklanır.
+
+# Any key: the SSH agent’s and the key files in ~/.ssh, then every key packwing keeps. A key file added is kept in the system’s keychain.
+t33890668 = Herhangi bir anahtar: SSH aracısının anahtarları ve ~/.ssh içindeki anahtar dosyaları, ardından packwing’in sakladığı her anahtar. Eklenen anahtar dosyası sistemin anahtar zincirinde saklanır.
 
 # Local folder
 te075bcbc = Yerel klasör
@@ -601,17 +634,11 @@ t00c5d168 = Bir daha sorma
 # Run it
 t72430853 = Çalıştır
 
-# Open
-t538b10e9 = Aç
-
 # Open from a storage
 t45a8991d = Bir depolama alanından aç
 
 # Choose a storage, and an archive in it
 t3c900950 = Bir depolama alanı ve içinde bir arşiv seçin
-
-# Choose
-t73c66160 = Seç
 
 # This is not a key file packwing can use: {why}.
 tcf6986a7 = Bu, packwing'in kullanabileceği bir anahtar dosyası değil: { $why }.
@@ -627,9 +654,6 @@ t4051f4d7 = Anahtar dosyasının parola ifadesi
 
 # Enter the passphrase
 tbd0672da = Parola ifadesini girin
-
-# Passphrase
-t191a2dc5 = Parola ifadesi
 
 # This file is encrypted with age. packwing keeps the passphrase only while the archive is open, and never writes it down.
 t663ac047 = Bu dosya age ile şifrelenmiş. packwing parola ifadesini yalnızca arşiv açıkken tutar ve hiçbir yere yazmaz.
@@ -1016,9 +1040,6 @@ t9306dafe = Anahtarı burada tut
 # No key chosen
 te58c13f5 = Anahtar seçilmedi
 
-# Key
-tcd1ac90c = Anahtar
-
 # New key…
 t9e1134da = Yeni anahtar…
 
@@ -1051,6 +1072,45 @@ tab12cc19 = Yanında { $first } ile başlayan { $count } parça. Birleştir onla
 
 # Split
 t16a15383 = Böl
+
+# Answer
+tf94ea0ff = Yanıt
+
+# Keep it in the system’s keychain
+t20ffa126 = Sistemin anahtar zincirinde sakla
+
+# Trust this server?
+tcf52044f = Bu sunucuya güvenilsin mi?
+
+# packwing has not connected to this server before. Trust it only if this is its key: whoever runs the server can tell you its fingerprint.
+t8784f08b = packwing bu sunucuya daha önce bağlanmadı. Yalnızca bu onun anahtarıysa güvenin: sunucuyu yöneten kişi parmak izini size söyleyebilir.
+
+# {algorithm} key fingerprint
+t91ca5fc5 = { $algorithm } anahtar parmak izi
+
+# Trust and connect
+t2a9cdcbe = Güven ve bağlan
+
+# Don’t connect
+t6bbfdb87 = Bağlanma
+
+# Sign in to the server
+t7c58866e = Sunucuda oturum aç
+
+# The server did not take that password.
+td6912c66 = Sunucu bu parolayı kabul etmedi.
+
+# Sign in
+t744be623 = Oturum aç
+
+# Enter the key’s passphrase
+t90f12179 = Anahtarın parolasını girin
+
+# The server asks
+ta642b6e3 = Sunucu soruyor
+
+# Send
+tf28e14cf = Gönder
 
 # Move {what}
 tc168ca56 = Taşı: { $what }
@@ -2918,11 +2978,17 @@ te1c3d3a2 = Gizli erişim anahtarı
 # SFTP
 t62703ae8 = SFTP
 
+# Host
+t302af18f = Sunucu
+
 # Host or ssh_config name
 t7b943498 = Ana makine veya ssh_config adı
 
 # Empty for the home folder
 t67b5f42b = Ana klasör için boş bırakın
+
+# Empty to sign in with a key
+t3dbf7df5 = Anahtarla oturum açmak için boş bırakın
 
 # Empty to use the SSH agent and keys
 tf10e6293 = SSH aracısını ve anahtarlarını kullanmak için boş bırakın

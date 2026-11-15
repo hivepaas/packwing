@@ -61,6 +61,9 @@ t52b1d223 = Berkas baru dienkripsi dengan kata sandi arsip.
 # Cancel
 t35afca3b = Batal
 
+# That passphrase does not open the key.
+tab4e22aa = Frasa sandi itu tidak membuka kunci.
+
 # Name
 t0fe07306 = Nama
 
@@ -70,11 +73,41 @@ t06357afd = Folder
 # Its secrets could not be read: {why}
 t2af0c8ab = Rahasianya tidak dapat dibaca: { $why }
 
+# Choose
+t73c66160 = Pilih
+
+# Passphrase
+t191a2dc5 = Frasa sandi
+
 # That folder is not on this computer.
 ta4073fff = Folder itu tidak ada di komputer ini.
 
 # Its secrets could not be kept: {why}
 ta213827f = Rahasianya tidak dapat disimpan: { $why }
+
+# Any key
+t11edbeae = Kunci apa saja
+
+# The key this storage signed in with is not kept any more.
+tb0a2d351 = Kunci yang dipakai storage ini untuk masuk sudah tidak disimpan lagi.
+
+# Add a key file…
+t7b869a62 = Tambah file kunci…
+
+# The passphrase of {name}
+tec172c12 = Frasa sandi { $name }
+
+# Open
+t538b10e9 = Buka
+
+# Key
+tcd1ac90c = Kunci
+
+# Any key: every key packwing keeps. A key file added is kept in the system’s keychain.
+t2a6be4df = Kunci apa saja: setiap kunci yang disimpan packwing. File kunci yang ditambahkan disimpan di keychain sistem.
+
+# Any key: the SSH agent’s and the key files in ~/.ssh, then every key packwing keeps. A key file added is kept in the system’s keychain.
+t33890668 = Kunci apa saja: milik agen SSH dan file kunci di ~/.ssh, lalu setiap kunci yang disimpan packwing. File kunci yang ditambahkan disimpan di keychain sistem.
 
 # Local folder
 te075bcbc = Folder lokal
@@ -595,17 +628,11 @@ t00c5d168 = Jangan tanya lagi
 # Run it
 t72430853 = Jalankan
 
-# Open
-t538b10e9 = Buka
-
 # Open from a storage
 t45a8991d = Buka dari penyimpanan
 
 # Choose a storage, and an archive in it
 t3c900950 = Pilih penyimpanan, dan arsip di dalamnya
-
-# Choose
-t73c66160 = Pilih
 
 # This is not a key file packwing can use: {why}.
 tcf6986a7 = Ini bukan berkas kunci yang dapat dipakai packwing: { $why }.
@@ -621,9 +648,6 @@ t4051f4d7 = Frasa sandi berkas kunci
 
 # Enter the passphrase
 tbd0672da = Masukkan frasa sandi
-
-# Passphrase
-t191a2dc5 = Frasa sandi
 
 # This file is encrypted with age. packwing keeps the passphrase only while the archive is open, and never writes it down.
 t663ac047 = Berkas ini dienkripsi dengan age. packwing menyimpan frasa sandi hanya selama arsip terbuka, dan tidak pernah menuliskannya.
@@ -1000,9 +1024,6 @@ t9306dafe = Simpan kunci di sini
 # No key chosen
 te58c13f5 = Belum ada kunci dipilih
 
-# Key
-tcd1ac90c = Kunci
-
 # New key…
 t9e1134da = Kunci baru…
 
@@ -1035,6 +1056,45 @@ tab12cc19 = { $count } bagian di sebelahnya, mulai dari { $first }. Gabungkan me
 
 # Split
 t16a15383 = Potong
+
+# Answer
+tf94ea0ff = Jawaban
+
+# Keep it in the system’s keychain
+t20ffa126 = Simpan di keychain sistem
+
+# Trust this server?
+tcf52044f = Percayai server ini?
+
+# packwing has not connected to this server before. Trust it only if this is its key: whoever runs the server can tell you its fingerprint.
+t8784f08b = packwing belum pernah terhubung ke server ini. Percayai hanya jika ini memang kuncinya: pengelola server bisa memberi tahu sidik jarinya.
+
+# {algorithm} key fingerprint
+t91ca5fc5 = Sidik jari kunci { $algorithm }
+
+# Trust and connect
+t2a9cdcbe = Percayai dan hubungkan
+
+# Don’t connect
+t6bbfdb87 = Jangan hubungkan
+
+# Sign in to the server
+t7c58866e = Masuk ke server
+
+# The server did not take that password.
+td6912c66 = Server tidak menerima kata sandi itu.
+
+# Sign in
+t744be623 = Masuk
+
+# Enter the key’s passphrase
+t90f12179 = Masukkan frasa sandi kunci
+
+# The server asks
+ta642b6e3 = Server bertanya
+
+# Send
+tf28e14cf = Kirim
 
 # Move {what}
 tc168ca56 = Pindahkan { $what }
@@ -2887,11 +2947,17 @@ te1c3d3a2 = Kunci akses rahasia
 # SFTP
 t62703ae8 = SFTP
 
+# Host
+t302af18f = Host
+
 # Host or ssh_config name
 t7b943498 = Host atau nama ssh_config
 
 # Empty for the home folder
 t67b5f42b = Kosongkan untuk folder home
+
+# Empty to sign in with a key
+t3dbf7df5 = Kosongkan untuk masuk dengan kunci
 
 # Empty to use the SSH agent and keys
 tf10e6293 = Kosongkan untuk memakai agen SSH dan kunci

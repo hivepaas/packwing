@@ -61,6 +61,9 @@ t52b1d223 = 새 파일은 압축 파일의 비밀번호로 암호화됩니다.
 # Cancel
 t35afca3b = 취소
 
+# That passphrase does not open the key.
+tab4e22aa = 그 암호 문구로는 키를 열 수 없습니다.
+
 # Name
 t0fe07306 = 이름
 
@@ -70,11 +73,41 @@ t06357afd = 폴더
 # Its secrets could not be read: {why}
 t2af0c8ab = 보안 정보를 읽을 수 없습니다: { $why }
 
+# Choose
+t73c66160 = 선택
+
+# Passphrase
+t191a2dc5 = 암호 문구
+
 # That folder is not on this computer.
 ta4073fff = 이 컴퓨터에 없는 폴더입니다.
 
 # Its secrets could not be kept: {why}
 ta213827f = 보안 정보를 저장할 수 없습니다: { $why }
+
+# Any key
+t11edbeae = 아무 키
+
+# The key this storage signed in with is not kept any more.
+tb0a2d351 = 이 저장소가 로그인에 쓰던 키가 더 이상 보관되어 있지 않습니다.
+
+# Add a key file…
+t7b869a62 = 키 파일 추가…
+
+# The passphrase of {name}
+tec172c12 = { $name }의 암호 문구
+
+# Open
+t538b10e9 = 열기
+
+# Key
+tcd1ac90c = 키
+
+# Any key: every key packwing keeps. A key file added is kept in the system’s keychain.
+t2a6be4df = 아무 키: packwing이 보관하는 모든 키. 추가한 키 파일은 시스템 키체인에 보관됩니다.
+
+# Any key: the SSH agent’s and the key files in ~/.ssh, then every key packwing keeps. A key file added is kept in the system’s keychain.
+t33890668 = 아무 키: SSH 에이전트의 키와 ~/.ssh의 키 파일, 그다음 packwing이 보관하는 모든 키. 추가한 키 파일은 시스템 키체인에 보관됩니다.
 
 # Local folder
 te075bcbc = 로컬 폴더
@@ -595,17 +628,11 @@ t00c5d168 = 다시 묻지 않기
 # Run it
 t72430853 = 실행
 
-# Open
-t538b10e9 = 열기
-
 # Open from a storage
 t45a8991d = 스토리지에서 열기
 
 # Choose a storage, and an archive in it
 t3c900950 = 스토리지와 그 안의 압축 파일을 선택하세요
-
-# Choose
-t73c66160 = 선택
 
 # This is not a key file packwing can use: {why}.
 tcf6986a7 = packwing에서 사용할 수 있는 키 파일이 아닙니다: { $why }.
@@ -621,9 +648,6 @@ t4051f4d7 = 키 파일의 암호 문구
 
 # Enter the passphrase
 tbd0672da = 암호 문구 입력
-
-# Passphrase
-t191a2dc5 = 암호 문구
 
 # This file is encrypted with age. packwing keeps the passphrase only while the archive is open, and never writes it down.
 t663ac047 = 이 파일은 age로 암호화되어 있습니다. packwing은 압축 파일을 열어 둔 동안에만 암호 문구를 보관하며 어디에도 기록하지 않습니다.
@@ -1000,9 +1024,6 @@ t9306dafe = 키를 여기에 보관
 # No key chosen
 te58c13f5 = 선택한 키 없음
 
-# Key
-tcd1ac90c = 키
-
 # New key…
 t9e1134da = 새 키…
 
@@ -1035,6 +1056,45 @@ tab12cc19 = 옆에 { $first }부터 { $count }개 부분이 만들어집니다. 
 
 # Split
 t16a15383 = 나누기
+
+# Answer
+tf94ea0ff = 답
+
+# Keep it in the system’s keychain
+t20ffa126 = 시스템 키체인에 보관
+
+# Trust this server?
+tcf52044f = 이 서버를 신뢰할까요?
+
+# packwing has not connected to this server before. Trust it only if this is its key: whoever runs the server can tell you its fingerprint.
+t8784f08b = packwing은 이 서버에 연결한 적이 없습니다. 이것이 서버의 키가 맞을 때만 신뢰하세요. 서버 관리자가 지문을 알려 줄 수 있습니다.
+
+# {algorithm} key fingerprint
+t91ca5fc5 = { $algorithm } 키 지문
+
+# Trust and connect
+t2a9cdcbe = 신뢰하고 연결
+
+# Don’t connect
+t6bbfdb87 = 연결 안 함
+
+# Sign in to the server
+t7c58866e = 서버에 로그인
+
+# The server did not take that password.
+td6912c66 = 서버가 그 비밀번호를 받지 않았습니다.
+
+# Sign in
+t744be623 = 로그인
+
+# Enter the key’s passphrase
+t90f12179 = 키의 암호 문구 입력
+
+# The server asks
+ta642b6e3 = 서버의 질문
+
+# Send
+tf28e14cf = 보내기
 
 # Move {what}
 tc168ca56 = { $what } 이동
@@ -2878,11 +2938,17 @@ te1c3d3a2 = 시크릿 액세스 키
 # SFTP
 t62703ae8 = SFTP
 
+# Host
+t302af18f = 호스트
+
 # Host or ssh_config name
 t7b943498 = 호스트 또는 ssh_config 이름
 
 # Empty for the home folder
 t67b5f42b = 홈 폴더는 비워 두세요
+
+# Empty to sign in with a key
+t3dbf7df5 = 비워 두면 키로 로그인합니다
 
 # Empty to use the SSH agent and keys
 tf10e6293 = SSH 에이전트와 키를 사용하려면 비워 두세요
