@@ -200,6 +200,13 @@ extension ArchiveFormat {
     init(key: String) {
         self = Self.rows.first { $0.ext == "." + key }?.format ?? .zip
     }
+
+    /// The format of new archives kept as `key`: ZIP where it is none, or one
+    /// for one file only (which an earlier version kept).
+    static func forMany(key: String) -> ArchiveFormat {
+        let format = ArchiveFormat(key: key)
+        return format.oneFile ? .zip : format
+    }
 }
 
 extension CompressionLevel {

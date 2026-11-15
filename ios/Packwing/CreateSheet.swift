@@ -73,6 +73,9 @@ struct CreateSheet: View {
     let draft: NewArchiveDraft
     @AppStorage("newFormat") private var formatKey = ArchiveFormat.zip.key
     @AppStorage("newCompression") private var levelKey = CompressionLevel.medium.key
+    /// A format for one file (`.gz`), chosen for this one: not kept as the
+    /// format of new archives, which Settings offers only of those for many.
+    @State private var oneFileKey: String?
     @State private var name = ""
     /// Whether the name is the person's own, rather than the one suggested.
     @State private var named = false
@@ -126,7 +129,7 @@ struct CreateSheet: View {
 
                 Section {
                     // ZIP and 7z first, as most people want one; then the desktop's others.
-                    Picker(tr("Format"), selection: Binding { format.key } set: { formatKey = $0 }) {
+                    Picker(tr("Format"), selection: Binding { format.key } set: { choose($0) }) {
                         ForEach(ArchiveFormat.offered(oneFile: oneFile), id: \.key) { Text($0.label).tag($0.key) }
                     }
                     .accessibilityIdentifier("new-format")
@@ -284,8 +287,8 @@ struct CreateSheet: View {
         .onChange(of: draft.suggestedName) { _, now in
             if !named { name = now }
         }
-        .onChange(of: formatKey) { _, now in
-            if now == ArchiveFormat.zip.key { hideNames = false }
+        .onChange(of: chosenFormat) { _, now in
+            if now == .zip { hideNames = false }
         }
     }
 
@@ -304,10 +307,22 @@ struct CreateSheet: View {
         draft.items.count == 1 && !draft.items[0].folder
     }
 
-    /// The format chosen, if it is one for what is chosen; ZIP otherwise.
+    /// The format chosen: one for one file, if it is one file and one was
+    /// chosen; else that of new archives.
     private var chosenFormat: ArchiveFormat {
-        let chosen = ArchiveFormat(key: formatKey)
-        return chosen.oneFile && !oneFile ? .zip : chosen
+        if oneFile, let oneFileKey { return ArchiveFormat(key: oneFileKey) }
+        return ArchiveFormat.forMany(key: formatKey)
+    }
+
+    /// A format for one file is this archive's alone; another is kept for
+    /// those after it too.
+    private func choose(_ key: String) {
+        if ArchiveFormat(key: key).oneFile {
+            oneFileKey = key
+        } else {
+            oneFileKey = nil
+            formatKey = key
+        }
     }
 
     /// The level chosen; Store is ZIP's and 7z's, Lowest for the others.
