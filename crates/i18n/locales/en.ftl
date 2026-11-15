@@ -73,6 +73,7 @@ t658f3664 = Copy
 tedbc2ec9 = weak
 t80036d1c = Reading… { $size } of { $size2 }
 t1569c388 = Reading… { $size }
+t179475a4 = Click a file to see its checksums.
 tcadaddd8 = There are no files in it to read.
 tc7ad9be4 =
     { $n ->

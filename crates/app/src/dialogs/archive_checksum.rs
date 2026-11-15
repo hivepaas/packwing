@@ -11,9 +11,10 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
 use gpui::{
-    AnyElement, ClipboardItem, Context, Div, Entity, EventEmitter, FontWeight, PathPromptOptions,
-    Render, SharedString, Stateful, Subscription, Task, UniformListScrollHandle, Window, div,
-    prelude::*, relative, rgb, uniform_list,
+    AnyElement, App, ClipboardItem, Context, Div, Entity, EventEmitter, FocusHandle, FontWeight,
+    KeyDownEvent, PathPromptOptions, Render, ScrollHandle, ScrollStrategy, SharedString, Stateful,
+    Subscription, Task, UniformListScrollHandle, Window, div, prelude::*, relative, rgb,
+    uniform_list,
 };
 use packwing_core::{
     Algorithm, Cancel, Control, EntryChecksums, Error, LocalFolder, Progress, Storage,
@@ -22,9 +23,10 @@ use packwing_core::{
 
 use super::{ChecksumDialog, DialogEvent, footer, header};
 use crate::colors::colors;
+use crate::list_keys;
 use crate::model::{Archive, count, size};
 use crate::prefs;
-use crate::scrollbar::well_bar;
+use crate::scrollbar::{scrollbar, well_bar};
 use crate::text_size::ui;
 use crate::widgets::{
     Fill, Size, Tone, button, icon_button, legend, mono_font, note, option_card, tip, titled,
@@ -42,6 +44,9 @@ const ROW: f32 = 48.;
 
 /// The most rows shown at once: more scroll.
 const MOST_ROWS: usize = 6;
+
+/// The fewest rows shown, where the window is short.
+const FEWEST_ROWS: usize = 3;
 
 /// Around the rows, inside their well.
 const WELL_PAD: f32 = 6.;
@@ -87,8 +92,6 @@ impl Drop for Reading {
 /// Which Copy says it was.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Copied {
-    /// A file's first checksum, on its row.
-    Row(usize),
     /// One of the file shown.
     Shown(Algorithm),
     /// The list of all of them.
@@ -122,6 +125,10 @@ pub struct ArchiveChecksumDialog {
     /// The file whose checksums are all shown.
     shown: Option<usize>,
     scroll: UniformListScrollHandle,
+    /// What is under the header, when it is taller than the window.
+    body: ScrollHandle,
+    /// Up, Down and the others move the file shown.
+    focus: FocusHandle,
     copied: Option<Copied>,
     saving: bool,
     /// The files they were kept in, the last time.
@@ -133,12 +140,8 @@ impl EventEmitter<DialogEvent> for ArchiveChecksumDialog {}
 
 impl ArchiveChecksumDialog {
     /// For `archive`, read through, with `selection` selected in it.
-    pub fn new(archive: Archive, selection: Selected, inside: bool) -> Self {
-        let scope = if selection.paths.is_empty() {
-            Scope::File
-        } else {
-            Scope::Picked
-        };
+    pub fn new(archive: Archive, selection: Selected, inside: bool, cx: &mut App) -> Self {
+        let scope = first_scope(&selection);
         ArchiveChecksumDialog {
             archive,
             selection,
@@ -151,6 +154,8 @@ impl ArchiveChecksumDialog {
             problem: None,
             shown: None,
             scroll: UniformListScrollHandle::new(),
+            body: ScrollHandle::new(),
+            focus: cx.focus_handle(),
             copied: None,
             saving: false,
             saved: Vec::new(),
@@ -188,6 +193,12 @@ impl ArchiveChecksumDialog {
     pub fn show_for_test(&mut self, i: usize, cx: &mut Context<Self>) {
         self.shown = Some(i);
         cx.notify();
+    }
+
+    /// What scrolls under the header, for tests.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn body_for_test(&self) -> ScrollHandle {
+        self.body.clone()
     }
 
     /// Keeps the lists beside the archive now, as the screenshots draw them kept.
@@ -308,6 +319,20 @@ impl ArchiveChecksumDialog {
         cx.notify();
     }
 
+    /// Up and Down, Page Up and Page Down, Home and End move the file shown,
+    /// as they move the chosen row of a list (see [`list_keys`]).
+    fn on_key(&mut self, e: &KeyDownEvent, _: &mut Window, cx: &mut Context<Self>) {
+        let len = self.made.as_ref().map_or(0, |m| m.files.len());
+        let page = list_keys::rows_per_page(&self.scroll, len);
+        let Some(to) = list_keys::moved(e.keystroke.key.as_str(), self.shown, len, page) else {
+            return;
+        };
+        self.shown = Some(to);
+        self.scroll.scroll_to_item(to, ScrollStrategy::Nearest);
+        cx.stop_propagation();
+        cx.notify();
+    }
+
     fn copy(&mut self, which: Copied, text: String, cx: &mut Context<Self>) {
         cx.write_to_clipboard(ClipboardItem::new_string(text));
         self.copied = Some(which);
@@ -324,12 +349,25 @@ impl ArchiveChecksumDialog {
         .detach();
     }
 
-    /// The list of the first checksum of each, as `sha256sum` writes it.
+    /// The list of them all: as `sha256sum` writes it, of one algorithm; with
+    /// several, a line for each, tagged as BSD's tools and `pkw` write them.
     fn copy_all(&mut self, cx: &mut Context<Self>) {
-        let (Some(made), Some(first)) = (&self.made, self.algorithms.first()) else {
+        let Some(made) = &self.made else {
             return;
         };
-        let list = checksum_list(&made.files, *first);
+        let list = match self.algorithms.as_slice() {
+            [one] => checksum_list(&made.files, *one),
+            several => made
+                .files
+                .iter()
+                .flat_map(|f| {
+                    several.iter().filter_map(move |a| {
+                        f.sum(*a)
+                            .map(|sum| format!("{} ({}) = {sum}\n", tag(*a), f.name))
+                    })
+                })
+                .collect(),
+        };
         self.copy(Copied::All, list, cx);
     }
 
@@ -493,27 +531,21 @@ impl ArchiveChecksumDialog {
                     .child(
                         button("checksum-start", tr!("Read it"), Fill::Accent, Size::Medium)
                             .px(ui(28.))
-                            .on_click(cx.listener(|this, _, _, cx| this.start(cx))),
+                            .on_click(cx.listener(|this, _, window, cx| {
+                                this.start(cx);
+                                window.focus(&this.focus, cx);
+                            })),
                     ),
             )
     }
 
-    /// A file's row: its name, its size, its first checksum and Copy.
-    fn file_row(&self, i: usize, mono: SharedString, cx: &mut Context<Self>) -> AnyElement {
+    /// A file's row: its name and its size. A click shows its checksums.
+    fn file_row(&self, i: usize, cx: &mut Context<Self>) -> AnyElement {
         let c = colors();
-        let (Some(made), Some(first)) = (&self.made, self.algorithms.first().copied()) else {
+        let Some(file) = self.made.as_ref().and_then(|m| m.files.get(i)) else {
             return div().into_any_element();
         };
-        let Some(file) = made.files.get(i) else {
-            return div().into_any_element();
-        };
-        let sum = file.sum(first).unwrap_or_default().to_owned();
         let on = self.shown == Some(i);
-        let copy = if self.copied == Some(Copied::Row(i)) {
-            tr!("Copied")
-        } else {
-            tr!("Copy")
-        };
         div()
             .id(("checksum-file", i))
             .debug_selector(move || format!("checksum-file-{i}"))
@@ -522,13 +554,14 @@ impl ArchiveChecksumDialog {
             .flex()
             .items_center()
             .gap(ui(12.))
-            .pl(ui(14.))
+            .px(ui(14.))
             .rounded(ui(14.))
             .cursor_pointer()
             .when(on, |d| d.bg(rgb(c.tonal)).text_color(rgb(c.on_tonal)))
             .when(!on, |d| d.hover(|s| s.bg(rgb(c.well_hover))))
-            .on_click(cx.listener(move |this, _, _, cx| {
+            .on_click(cx.listener(move |this, _, window, cx| {
                 this.shown = if this.shown == Some(i) { None } else { Some(i) };
+                window.focus(&this.focus, cx);
                 cx.notify();
             }))
             .child(
@@ -546,23 +579,6 @@ impl ArchiveChecksumDialog {
                     .text_size(ui(13.))
                     .text_color(rgb(if on { c.on_tonal } else { c.muted }))
                     .child(size(file.size)),
-            )
-            .child(
-                div()
-                    .w(ui(150.))
-                    .flex_shrink_0()
-                    .truncate()
-                    .font_family(mono)
-                    .text_size(ui(13.))
-                    .child(sum.clone()),
-            )
-            .child(
-                button(("checksum-row-copy", i), copy, Fill::Text, Size::Medium).on_click(
-                    cx.listener(move |this, _, _, cx| {
-                        cx.stop_propagation();
-                        this.copy(Copied::Row(i), sum.clone(), cx);
-                    }),
-                ),
             )
             .into_any_element()
     }
@@ -694,10 +710,13 @@ impl ArchiveChecksumDialog {
         });
         let n = self.made.as_ref().map_or(0, |m| m.files.len());
         let list = (n > 0).then(|| {
-            let tall = n.min(MOST_ROWS) as f32 * ROW + 2. * WELL_PAD;
+            let rows = |most: usize| n.min(most) as f32 * ROW + 2. * WELL_PAD;
+            // Shorter, where the window is, but never less than a few rows:
+            // then what is under the header scrolls.
             div()
                 .relative()
-                .h(ui(tall))
+                .h(ui(rows(MOST_ROWS)))
+                .min_h(ui(rows(FEWEST_ROWS)))
                 .p(ui(WELL_PAD))
                 .rounded(ui(20.))
                 .bg(rgb(c.well))
@@ -707,10 +726,8 @@ impl ArchiveChecksumDialog {
                     uniform_list(
                         "checksum-files",
                         n,
-                        cx.processor(move |this, range: Range<usize>, _, cx| {
-                            range
-                                .map(|i| this.file_row(i, mono.clone(), cx))
-                                .collect::<Vec<_>>()
+                        cx.processor(|this, range: Range<usize>, _, cx| {
+                            range.map(|i| this.file_row(i, cx)).collect::<Vec<_>>()
                         }),
                     )
                     .track_scroll(&self.scroll)
@@ -719,8 +736,14 @@ impl ArchiveChecksumDialog {
                 )
                 .child(well_bar("checksum-files-bar", &self.scroll, WELL_PAD, 20.))
         });
-        let mono = self.mono.clone().unwrap_or_default();
         let shown = self.shown_file(mono, cx);
+        // Until one is clicked, what a click does.
+        let hint = (n > 1 && self.shown.is_none()).then(|| {
+            div()
+                .text_size(ui(13.))
+                .text_color(rgb(c.muted))
+                .child(tr!("Click a file to see its checksums."))
+        });
         let empty = self
             .made
             .as_ref()
@@ -789,25 +812,65 @@ impl ArchiveChecksumDialog {
         } else {
             tr!("Save in…")
         };
-        super::card()
-            .child(header(
-                "check",
-                tonal_tint(),
-                tr!("Checksums in {name}", name = a.name),
-                detail,
-                Some(close),
-            ))
+        // The header and the buttons stay; what is between scrolls, when the
+        // window is too short for it.
+        let body = div()
+            .id("checksum-body")
+            .track_scroll(&self.body)
+            .flex_shrink(1.)
+            .min_h_0()
+            .overflow_y_scroll()
+            .px(ui(20.))
+            .py(ui(10.))
+            .flex()
+            .flex_col()
+            .gap(ui(20.))
             .children(progress)
             .children(list)
+            .children(hint)
             .children(shown)
             .children(empty)
             .children(self.problem.clone().map(|why| note(Tone::Warn).child(why)))
             .children(damaged)
             .children(links)
             .children(weak)
-            .children(saved)
+            .children(saved);
+        super::card()
+            .track_focus(&self.focus)
+            .on_key_down(cx.listener(Self::on_key))
+            .p(ui(0.))
+            .gap(ui(0.))
+            .overflow_hidden()
+            .child(div().px(ui(20.)).pt(ui(22.)).pb(ui(10.)).child(header(
+                "check",
+                tonal_tint(),
+                tr!("Checksums in {name}", name = a.name),
+                detail,
+                Some(close),
+            )))
+            .child(
+                // As tall as what it holds, and shorter, scrolling, where the
+                // card meets the window's height.
+                div()
+                    .relative()
+                    .flex()
+                    .flex_col()
+                    .flex_shrink(1.)
+                    .min_h_0()
+                    .child(body)
+                    .child(
+                        scrollbar("checksum-body-bar", &self.body)
+                            .absolute()
+                            .top_0()
+                            .bottom_0()
+                            .right_0(),
+                    ),
+            )
             .child(
                 footer()
+                    .px(ui(20.))
+                    .pt(ui(10.))
+                    .pb(ui(22.))
                     .when(read, |d| {
                         d.child(
                             button("checksum-save", save, Fill::Tonal, Size::Medium)
@@ -827,6 +890,24 @@ impl ArchiveChecksumDialog {
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close))),
                     ),
             )
+    }
+}
+
+/// What is chosen to read first: what is selected, if anything is, or else the
+/// archive's own file, as Checksums… read before it asked.
+fn first_scope(selection: &Selected) -> Scope {
+    if selection.paths.is_empty() {
+        Scope::File
+    } else {
+        Scope::Picked
+    }
+}
+
+/// An algorithm's tag on BSD's lines: `SHA256`, `BLAKE3`.
+fn tag(algorithm: Algorithm) -> String {
+    match algorithm {
+        Algorithm::Blake3 => "BLAKE3".into(),
+        a => a.key().to_ascii_uppercase(),
     }
 }
 
@@ -868,17 +949,21 @@ mod tests {
     use super::*;
 
     #[test]
+    fn a_tag_is_as_bsd_s_tools_write_it() {
+        assert_eq!(tag(Algorithm::Sha256), "SHA256");
+        assert_eq!(tag(Algorithm::Blake3), "BLAKE3");
+        let line = format!("{} (a.txt) = {}", tag(Algorithm::Sha1), "a".repeat(40));
+        assert_eq!(packwing_core::checksum_list_in(&line).len(), 1);
+    }
+
+    #[test]
     fn what_is_selected_is_read_first_and_else_the_file() {
-        let archive = crate::demo::project();
-        let none = ArchiveChecksumDialog::new(archive.clone(), Selected::default(), false);
-        assert_eq!(none.scope, Scope::File);
+        assert_eq!(first_scope(&Selected::default()), Scope::File);
         let some = Selected {
             paths: vec![vec!["docs".into()]],
             files: 2,
             bytes: 10,
         };
-        let picked = ArchiveChecksumDialog::new(archive, some, false);
-        assert_eq!(picked.scope, Scope::Picked);
-        assert_eq!(picked.picked(), [vec!["docs".to_owned()]]);
+        assert_eq!(first_scope(&some), Scope::Picked);
     }
 }

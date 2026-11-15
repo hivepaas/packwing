@@ -201,6 +201,9 @@ t80036d1c = Lendo… { $size } de { $size2 }
 # Reading… {size}
 t1569c388 = Lendo… { $size }
 
+# Click a file to see its checksums.
+t179475a4 = Clique em um arquivo para ver seus checksums.
+
 # There are no files in it to read.
 tcadaddd8 = Não há arquivos para ler nele.
 

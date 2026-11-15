@@ -199,6 +199,9 @@ t80036d1c = 正在读取… { $size } / { $size2 }
 # Reading… {size}
 t1569c388 = 正在读取… { $size }
 
+# Click a file to see its checksums.
+t179475a4 = 点击文件即可查看其校验和。
+
 # There are no files in it to read.
 tcadaddd8 = 其中没有可读取的文件。
 

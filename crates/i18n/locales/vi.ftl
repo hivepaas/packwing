@@ -199,6 +199,9 @@ t80036d1c = Đang đọc… { $size } / { $size2 }
 # Reading… {size}
 t1569c388 = Đang đọc… { $size }
 
+# Click a file to see its checksums.
+t179475a4 = Bấm vào một tệp để xem checksum của tệp đó.
+
 # There are no files in it to read.
 tcadaddd8 = Không có tệp nào trong đó để đọc.
 

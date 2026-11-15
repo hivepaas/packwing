@@ -764,7 +764,7 @@ impl Workspace {
         let page = self.archive.read(cx);
         let archive = page.archive().filter(|a| a.source.is_some()).cloned()?;
         let (selected, inside) = (page.selected(), page.inside());
-        let view = cx.new(|_| ArchiveChecksumDialog::new(archive, selected, inside));
+        let view = cx.new(|cx| ArchiveChecksumDialog::new(archive, selected, inside, cx));
         self.show(view.clone(), true, window, cx);
         Some(view)
     }

@@ -201,6 +201,9 @@ t80036d1c = Lettura… { $size } di { $size2 }
 # Reading… {size}
 t1569c388 = Lettura… { $size }
 
+# Click a file to see its checksums.
+t179475a4 = Fai clic su un file per vederne i checksum.
+
 # There are no files in it to read.
 tcadaddd8 = Non contiene file da leggere.
 

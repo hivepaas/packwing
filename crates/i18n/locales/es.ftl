@@ -201,6 +201,9 @@ t80036d1c = Leyendo… { $size } de { $size2 }
 # Reading… {size}
 t1569c388 = Leyendo… { $size }
 
+# Click a file to see its checksums.
+t179475a4 = Haz clic en un archivo para ver sus sumas de comprobación.
+
 # There are no files in it to read.
 tcadaddd8 = No hay archivos que leer en él.
 

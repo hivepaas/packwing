@@ -2689,6 +2689,54 @@ fn a_click_takes_a_row_out_and_the_eye_closes_the_list() {
 /// The bar along a long list's panel: its thumb dragged down moves the list
 /// down, as far as the pointer goes; a press below the thumb brings the list
 /// there; the press is the bar's, and chooses no row.
+/// With every checksum shown, a file's under the list of them is more than a
+/// short window has room for: the list gives up rows, down to a few, then
+/// what is under the header scrolls, with its bar, and the buttons stay.
+#[test]
+fn a_tall_checksums_dialog_scrolls_under_its_header() {
+    let text = Arc::new(gpui_wgpu::CosmicTextSystem::new(crate::FONT));
+    let mut cx = HeadlessAppContext::with_platform(text, Arc::new(crate::Assets), || {
+        gpui_platform::current_headless_renderer()
+    });
+    cx.update(crate::load_fonts);
+    let window = cx
+        .open_window(size(px(1280.), px(600.)), |window, cx| {
+            let menu = cx.new(|_| RightClickMenu::offline(true, Choice::default(), Status::Idle));
+            cx.new(|cx| Workspace::new(false, menu, window, cx))
+        })
+        .expect("cannot open a window");
+    let dialog = window
+        .update(&mut cx, |ws, window, cx| {
+            crate::prefs::change(cx, |p| p.checksums = packwing_core::Algorithm::ALL.to_vec());
+            let dialog = open_for_checksums(ws, None, window, cx);
+            dialog.update(cx, |d, cx| {
+                d.read_for_test(ChecksumScope::All, cx);
+                d.show_for_test(0, cx);
+            });
+            dialog
+        })
+        .expect("cannot set the screen up");
+    cx.run_until_parked();
+    let image = cx
+        .capture_screenshot(window.into())
+        .expect("cannot draw the window");
+    image
+        .save(out_dir().join("archive-checksums-tall.png"))
+        .expect("cannot save the picture");
+    let body = dialog.read_with(&cx, |d, _| d.body_for_test());
+    assert!(
+        body.max_offset().y > px(0.),
+        "what is under the header is taller than the room for it"
+    );
+    assert!(
+        window
+            .update(&mut cx, |_, window, _| window.bounds().size.height)
+            .expect("the window")
+            >= body.bounds().bottom(),
+        "the body ends in the window, the buttons under it"
+    );
+}
+
 #[test]
 fn a_long_list_moves_with_its_bar() {
     use gpui::{

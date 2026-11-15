@@ -199,6 +199,9 @@ t80036d1c = 읽는 중… { $size } / { $size2 }
 # Reading… {size}
 t1569c388 = 읽는 중… { $size }
 
+# Click a file to see its checksums.
+t179475a4 = 파일을 클릭하면 체크섬이 표시됩니다.
+
 # There are no files in it to read.
 tcadaddd8 = 읽을 파일이 없습니다.
 

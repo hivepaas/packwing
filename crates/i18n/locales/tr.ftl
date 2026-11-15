@@ -201,6 +201,9 @@ t80036d1c = Okunuyor… { $size } / { $size2 }
 # Reading… {size}
 t1569c388 = Okunuyor… { $size }
 
+# Click a file to see its checksums.
+t179475a4 = Sağlama toplamlarını görmek için bir dosyaya tıklayın.
+
 # There are no files in it to read.
 tcadaddd8 = İçinde okunacak dosya yok.
 

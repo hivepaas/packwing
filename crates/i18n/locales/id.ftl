@@ -199,6 +199,9 @@ t80036d1c = Membaca… { $size } dari { $size2 }
 # Reading… {size}
 t1569c388 = Membaca… { $size }
 
+# Click a file to see its checksums.
+t179475a4 = Klik sebuah berkas untuk melihat checksum-nya.
+
 # There are no files in it to read.
 tcadaddd8 = Tidak ada berkas di dalamnya untuk dibaca.
 

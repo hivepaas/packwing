@@ -199,6 +199,9 @@ t80036d1c = 正在讀取… { $size } / { $size2 }
 # Reading… {size}
 t1569c388 = 正在讀取… { $size }
 
+# Click a file to see its checksums.
+t179475a4 = 按一下檔案即可查看其檢查碼。
+
 # There are no files in it to read.
 tcadaddd8 = 其中沒有可讀取的檔案。
 

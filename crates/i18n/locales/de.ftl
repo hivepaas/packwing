@@ -201,6 +201,9 @@ t80036d1c = Wird gelesen… { $size } von { $size2 }
 # Reading… {size}
 t1569c388 = Wird gelesen… { $size }
 
+# Click a file to see its checksums.
+t179475a4 = Klicke auf eine Datei, um ihre Prüfsummen zu sehen.
+
 # There are no files in it to read.
 tcadaddd8 = Darin sind keine Dateien zu lesen.
 

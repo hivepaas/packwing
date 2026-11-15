@@ -205,6 +205,9 @@ t80036d1c = Читання… { $size } з { $size2 }
 # Reading… {size}
 t1569c388 = Читання… { $size }
 
+# Click a file to see its checksums.
+t179475a4 = Натисніть на файл, щоб побачити його контрольні суми.
+
 # There are no files in it to read.
 tcadaddd8 = У ньому немає файлів для читання.
 

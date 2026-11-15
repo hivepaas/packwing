@@ -128,6 +128,13 @@ scenario!(
         ui.click("checksum-scope-all");
         ui.click("checksum-start");
         ui.wait_for("checksum-file-0");
+        // Down shows the first file's checksums, and Up and Down move on.
+        assert!(!ui.shows("checksum-shown: sha256"));
+        ui.keys("down");
+        assert!(ui.shows("checksum-shown: sha256"));
+        ui.keys("end");
+        ui.keys("up");
+        assert!(ui.shows("checksum-shown: sha256"));
         ui.click("checksum-save");
         ui.wait_for("checksum-saved");
         let list = std::fs::read_to_string(ui.work.join("sample.7z.contents.sha256"))
