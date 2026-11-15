@@ -5,8 +5,7 @@ import UIKit
 /// from: those chosen are made as it shows, all of the file read once for
 /// them, and one pasted says whether it matches. A checksum says a file is
 /// the one it was made of, not who made it.
-struct ChecksumSheet: View {
-    @Environment(\.dismiss) private var dismiss
+struct ArchiveFileChecksums: View {
     let archive: OpenedArchive
 
     /// The checksums shown, by their keys: the desktop's first two.
@@ -19,16 +18,10 @@ struct ChecksumSheet: View {
     @State private var job: Job?
     @State private var problem: String?
     @State private var pasted = ""
-    @State private var copied: ChecksumKind?
 
     private static let kinds = checksumKinds()
 
-    /// Those chosen; never none.
-    private var shown: [ChecksumKindRow] {
-        let keys = Set(shownKeys.split(separator: " ").map(String.init))
-        let chosen = Self.kinds.filter { keys.contains($0.key) }
-        return chosen.isEmpty ? [Self.kinds[0]] : chosen
-    }
+    private var shown: [ChecksumKindRow] { shownChecksums(shownKeys) }
 
     /// Those chosen, and any made besides, asked for by a checksum pasted.
     private var rows: [ChecksumKindRow] {
@@ -37,99 +30,79 @@ struct ChecksumSheet: View {
         }
     }
 
+    /// Its file's: on a storage, as the listing says it.
     private var size: UInt64 {
-        UInt64((try? archive.url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
+        archive.url.isFileURL
+            ? UInt64((try? archive.url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
+            : archive.info.packed
     }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    HStack(spacing: 14) {
-                        KindTile(name: archive.info.name, kind: .of(name: archive.info.name),
-                                 tint: Tint(ground: Tonal.surface, ink: Tonal.onTonal))
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(archive.info.name)
-                                .font(.nunito(16, .bold, relativeTo: .body))
-                                .lineLimit(1)
-                                .truncationMode(.middle)
-                            Text(sizeText(size))
-                                .font(.nunito(13, relativeTo: .footnote))
-                        }
-                    }
-                    .foregroundStyle(Tonal.onTonal)
-                    .listRowBackground(Tonal.tonal)
-                }
-
-                // First: in sight above the keyboard as one is pasted, and
-                // what it says too.
-                Section {
-                    HStack(alignment: .top, spacing: 8) {
-                        TextField(tr("Paste the checksum given with the file"), text: $pasted, axis: .vertical)
-                            .lineLimit(2...5)
-                            .font(.system(.footnote, design: .monospaced))
-                            .autocorrectionDisabled()
-                            .textInputAutocapitalization(.never)
-                            .accessibilityIdentifier("checksum-pasted")
-                        Button {
-                            if let text = UIPasteboard.general.string { pasted = text }
-                        } label: {
-                            Image(systemName: "doc.on.clipboard")
-                        }
-                        .buttonStyle(.borderless)
-                        .accessibilityLabel(tr("Paste"))
-                    }
-                    if let compared {
-                        said(compared)
-                    }
-                } header: {
-                    Text(tr("Compare with"))
-                }
-                .listRowBackground(Tonal.surface)
-
-                Section {
-                    ForEach(rows, id: \.key) { row in
-                        sumRow(row)
-                    }
-                } footer: {
-                    footer
-                }
-                .listRowBackground(Tonal.surface)
-
-                if let problem {
-                    Section {
-                        Label(problem, systemImage: "exclamationmark.triangle")
-                            .font(.nunito(14, relativeTo: .subheadline))
-                            .foregroundStyle(Tonal.warnText)
-                            .listRowBackground(Tonal.warnBg)
+        Form {
+            Section {
+                HStack(spacing: 14) {
+                    KindTile(name: archive.info.name, kind: .of(name: archive.info.name),
+                             tint: Tint(ground: Tonal.surface, ink: Tonal.onTonal))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(archive.info.name)
+                            .font(.nunito(16, .bold, relativeTo: .body))
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                        Text(sizeText(size))
+                            .font(.nunito(13, relativeTo: .footnote))
                     }
                 }
+                .foregroundStyle(Tonal.onTonal)
+                .listRowBackground(Tonal.tonal)
             }
-            .scrollContentBackground(.hidden)
-            .scrollDismissesKeyboard(.interactively)
-            .background(Tonal.page)
-            .navigationTitle(tr("Checksums"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(role: .close) { dismiss() }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        ForEach(Self.kinds, id: \.key) { row in
-                            Toggle(isOn: chosen(row)) {
-                                Text(row.weak ? tr("{name} (weak)", ["name": row.name]) : row.name)
-                            }
-                        }
+
+            // First: in sight above the keyboard as one is pasted, and
+            // what it says too.
+            Section {
+                HStack(alignment: .top, spacing: 8) {
+                    TextField(tr("Paste the checksum given with the file"), text: $pasted, axis: .vertical)
+                        .lineLimit(2...5)
+                        .font(.system(.footnote, design: .monospaced))
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                        .accessibilityIdentifier("checksum-pasted")
+                    Button {
+                        if let text = UIPasteboard.general.string { pasted = text }
                     } label: {
-                        Image(systemName: "slider.horizontal.3")
+                        Image(systemName: "doc.on.clipboard")
                     }
-                    .accessibilityLabel(tr("Choose the checksums shown"))
+                    .buttonStyle(.borderless)
+                    .accessibilityLabel(tr("Paste"))
+                }
+                if let compared {
+                    said(compared)
+                }
+            } header: {
+                Text(tr("Compare with"))
+            }
+            .listRowBackground(Tonal.surface)
+
+            Section {
+                ForEach(rows, id: \.key) { row in
+                    sumRow(row)
+                }
+            } footer: {
+                footer
+            }
+            .listRowBackground(Tonal.surface)
+
+            if let problem {
+                Section {
+                    Label(problem, systemImage: "exclamationmark.triangle")
+                        .font(.nunito(14, relativeTo: .subheadline))
+                        .foregroundStyle(Tonal.warnText)
+                        .listRowBackground(Tonal.warnBg)
                 }
             }
         }
-        .presentationDetents([.large])
-        .presentationSizing(.page)
+        .scrollContentBackground(.hidden)
+        .scrollDismissesKeyboard(.interactively)
+        .background(Tonal.page)
         .task { make(shown.map(\.kind)) }
         .onChange(of: shownKeys) { make(shown.map(\.kind)) }
         .onDisappear { job?.cancel() }
@@ -137,46 +110,8 @@ struct ChecksumSheet: View {
 
     // MARK: The checksums
 
-    /// A checksum's row: its name, its digits, and Copy.
     private func sumRow(_ row: ChecksumKindRow) -> some View {
-        let sum = made.first { $0.kind == row.kind }?.sum
-        return VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 8) {
-                Text(row.name)
-                    .font(.nunito(15, .bold, relativeTo: .subheadline))
-                if row.weak {
-                    Text(tr("weak"))
-                        .font(.nunito(12, .semibold, relativeTo: .caption))
-                        .foregroundStyle(Tonal.warnText)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(Tonal.warnBg, in: .capsule)
-                }
-                Spacer(minLength: 8)
-                if let sum {
-                    Button {
-                        UIPasteboard.general.string = sum
-                        copied = row.kind
-                        Task {
-                            try? await Task.sleep(for: .seconds(2))
-                            if copied == row.kind { copied = nil }
-                        }
-                    } label: {
-                        Label(copied == row.kind ? tr("Copied") : tr("Copy"),
-                              systemImage: copied == row.kind ? "checkmark" : "doc.on.doc")
-                            .font(.nunito(14, .semibold, relativeTo: .subheadline))
-                    }
-                    .buttonStyle(.borderless)
-                }
-            }
-            // Copy copies it whole.
-            Text(sum.map(breakable) ?? tr("Reading…"))
-                .font(.system(.footnote, design: .monospaced))
-                .foregroundStyle(sum == nil ? Tonal.muted : Tonal.text)
-                .accessibilityLabel(sum ?? tr("Reading…"))
-                .accessibilityIdentifier("checksum-\(row.key)")
-        }
-        .padding(.vertical, 4)
+        SumRow(row: row, sum: made.first { $0.kind == row.kind }?.sum)
     }
 
     @ViewBuilder
@@ -197,22 +132,6 @@ struct ChecksumSheet: View {
         .font(.nunito(13, relativeTo: .footnote))
     }
 
-    /// Whether `row` is shown, as the menu sets it: the last one stays.
-    private func chosen(_ row: ChecksumKindRow) -> Binding<Bool> {
-        Binding {
-            shown.contains { $0.kind == row.kind }
-        } set: { on in
-            var keys = shown.map(\.key)
-            if on {
-                keys.append(row.key)
-            } else if keys.count > 1 {
-                keys.removeAll { $0 == row.key }
-            }
-            // In the order they are shown.
-            shownKeys = Self.kinds.map(\.key).filter(keys.contains).joined(separator: " ")
-        }
-    }
-
     /// Makes those of `kinds` not made yet, unless some are being made: the
     /// rest are made after them.
     private func make(_ kinds: [ChecksumKind]) {
@@ -222,7 +141,7 @@ struct ChecksumSheet: View {
         problem = nil
         making = wanted
         read = 0
-        let job = Job(listener: ReadListener { read = $0 })
+        let job = Job(listener: ReadListener { read, _ in self.read = read })
         self.job = job
         let archive = archive.archive
         Task {
@@ -302,20 +221,117 @@ struct ChecksumSheet: View {
 
     /// Their names, apart by slashes: names, not words to translate.
     private func names(_ kinds: [ChecksumKind]) -> String {
-        kinds.compactMap { kind in Self.kinds.first { $0.kind == kind }?.name }.joined(separator: " / ")
+        checksumNames(kinds)
     }
 }
 
-/// Told by the core how much of the file is read, off the main thread.
-private final class ReadListener: JobListener, @unchecked Sendable {
-    let told: @MainActor (UInt64) -> Void
+/// Told by the core how much is read, and of how much, off the main thread.
+final class ReadListener: JobListener, @unchecked Sendable {
+    let told: @MainActor (UInt64, UInt64) -> Void
 
-    init(told: @escaping @MainActor (UInt64) -> Void) {
+    init(told: @escaping @MainActor (UInt64, UInt64) -> Void) {
         self.told = told
     }
 
     func progress(progress: JobProgress) {
         let bytes = progress.bytes
-        Task { @MainActor in told(bytes) }
+        let total = progress.totalBytes
+        Task { @MainActor in told(bytes, total) }
+    }
+}
+
+// MARK: Shared by both
+
+/// The checksums shown, by the keys `keys` keeps (Settings, the menu); never none.
+func shownChecksums(_ keys: String) -> [ChecksumKindRow] {
+    let all = checksumKinds()
+    let kept = Set(keys.split(separator: " ").map(String.init))
+    let chosen = all.filter { kept.contains($0.key) }
+    return chosen.isEmpty ? [all[0]] : chosen
+}
+
+/// Their names, apart by slashes: names, not words to translate.
+func checksumNames(_ kinds: [ChecksumKind]) -> String {
+    let all = checksumKinds()
+    return kinds.compactMap { kind in all.first { $0.kind == kind }?.name }.joined(separator: " / ")
+}
+
+/// The menu of the checksums shown: each on or off, the last one staying.
+struct ChecksumsShownMenu: View {
+    @AppStorage("checksums") private var shownKeys = "sha256 sha1"
+    private let kinds = checksumKinds()
+
+    var body: some View {
+        Menu {
+            ForEach(kinds, id: \.key) { row in
+                Toggle(isOn: chosen(row)) {
+                    Text(row.weak ? tr("{name} (weak)", ["name": row.name]) : row.name)
+                }
+            }
+        } label: {
+            Image(systemName: "slider.horizontal.3")
+        }
+        .accessibilityLabel(tr("Choose the checksums shown"))
+    }
+
+    private func chosen(_ row: ChecksumKindRow) -> Binding<Bool> {
+        Binding {
+            shownChecksums(shownKeys).contains { $0.kind == row.kind }
+        } set: { on in
+            var keys = shownChecksums(shownKeys).map(\.key)
+            if on {
+                keys.append(row.key)
+            } else if keys.count > 1 {
+                keys.removeAll { $0 == row.key }
+            }
+            // In the order they are shown.
+            shownKeys = kinds.map(\.key).filter(keys.contains).joined(separator: " ")
+        }
+    }
+}
+
+/// A checksum's row: its name, its digits, and Copy.
+struct SumRow: View {
+    let row: ChecksumKindRow
+    let sum: String?
+    @State private var copied = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Text(row.name)
+                    .font(.nunito(15, .bold, relativeTo: .subheadline))
+                if row.weak {
+                    Text(tr("weak"))
+                        .font(.nunito(12, .semibold, relativeTo: .caption))
+                        .foregroundStyle(Tonal.warnText)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(Tonal.warnBg, in: .capsule)
+                }
+                Spacer(minLength: 8)
+                if let sum {
+                    Button {
+                        UIPasteboard.general.string = sum
+                        copied = true
+                        Task {
+                            try? await Task.sleep(for: .seconds(2))
+                            copied = false
+                        }
+                    } label: {
+                        Label(copied ? tr("Copied") : tr("Copy"), systemImage: copied ? "checkmark" : "doc.on.doc")
+                            .font(.nunito(14, .semibold, relativeTo: .subheadline))
+                    }
+                    .buttonStyle(.borderless)
+                }
+            }
+            // Copy copies it whole.
+            Text(sum.map(breakable) ?? tr("Reading…"))
+                .font(.system(.footnote, design: .monospaced))
+                .foregroundStyle(sum == nil ? Tonal.muted : Tonal.text)
+                .accessibilityLabel(sum ?? tr("Reading…"))
+                .accessibilityIdentifier("checksum-\(row.key)")
+        }
+        .padding(.vertical, 4)
     }
 }

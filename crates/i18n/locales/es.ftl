@@ -3338,6 +3338,15 @@ t7d8cbf49 =
        *[other] { $n } imágenes y videos añadidos a Fotos
     }
 
+# Tap a file to see its checksums.
+t778c19e3 = Toca un archivo para ver sus sumas de comprobación.
+
+# Matches
+ta7d4102e = Coincide
+
+# Differs
+t6451057a = No coincide
+
 # Archives
 tc45c73a2 = Comprimidos
 

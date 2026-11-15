@@ -3430,6 +3430,15 @@ t7d8cbf49 =
        *[other] Добавлено в «Фото»: { $n }
     }
 
+# Tap a file to see its checksums.
+t778c19e3 = Коснитесь файла, чтобы увидеть его контрольные суммы.
+
+# Matches
+ta7d4102e = Совпадает
+
+# Differs
+t6451057a = Не совпадает
+
 # Archives
 tc45c73a2 = Архивы
 

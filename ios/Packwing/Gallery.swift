@@ -113,6 +113,7 @@ struct GalleryGrid: View {
     let selecting: Bool
     @Binding var picked: Set<[String]>
     let extract: ([String]) -> Void
+    var checksums: (([String]) -> Void)?
     /// Where the archive can be changed.
     var rename: (([String]) -> Void)?
     var delete: (([String]) -> Void)?
@@ -198,6 +199,9 @@ struct GalleryGrid: View {
                 Button(tr("Preview"), systemImage: "eye") { model.preview(opened, path) }
             }
             Button(tr("Extract"), systemImage: "square.and.arrow.down") { extract(path) }
+            if let checksums {
+                Button(tr("Checksums"), systemImage: "number") { checksums(path) }
+            }
             if let rename {
                 Button(tr("Rename"), systemImage: "pencil") { rename(path) }
             }

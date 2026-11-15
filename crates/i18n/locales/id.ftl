@@ -3292,6 +3292,15 @@ t7d8cbf49 =
        *[other] { $n } gambar dan video ditambahkan ke Foto
     }
 
+# Tap a file to see its checksums.
+t778c19e3 = Ketuk sebuah berkas untuk melihat checksum-nya.
+
+# Matches
+ta7d4102e = Cocok
+
+# Differs
+t6451057a = Berbeda
+
 # Archives
 tc45c73a2 = Arsip
 

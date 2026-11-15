@@ -261,6 +261,11 @@ final class AppTests: XCTestCase {
         XCTAssert(app.buttons["Extract all"].waitForExistence(timeout: 15))
         app.buttons["More"].tap()
         app.buttons["Checksums"].tap()
+        // Asked what to read: its own file.
+        let itself = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'The archive itself'")).firstMatch
+        XCTAssert(itself.waitForExistence(timeout: 5))
+        itself.tap()
+        app.buttons["checksum-read"].tap()
 
         let made = app.staticTexts["checksum-sha256"]
         XCTAssert(made.waitForExistence(timeout: 10))
@@ -496,5 +501,54 @@ final class AppTests: XCTestCase {
         tapWhenReady(row)
         XCTAssert(app.staticTexts["logs"].waitForExistence(timeout: 20))
         keep(app, "sftp-folder")
+    }
+
+    func testTheFilesInAnArchiveHaveTheirChecksumsListedAndKeptBesideIt() {
+        // Ghi chú.txt's, as `unzip -p … | shasum -a 256` says it.
+        let notes = "a96b0aa7a284474b68cdea5ab0da0fb0251c340809610dd147c6329a634d09a7"
+        // Given as Mail gives one: packwing may write beside it.
+        let sample = Bundle(for: Self.self).url(forResource: "report.zip", withExtension: nil)!
+        let app = XCUIApplication()
+        app.launchArguments = ["-receive", sample.path, "-AppleLanguages", "(en)", "-language", "",
+                               "-checksums", "sha256 sha1"]
+        app.launch()
+        let folder = app.staticTexts["Báo cáo quý 3"]
+        XCTAssert(folder.waitForExistence(timeout: 15))
+
+        // All of its files, in one read.
+        app.buttons["More"].tap()
+        app.buttons["Checksums"].tap()
+        let all = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'All 3 files'")).firstMatch
+        XCTAssert(all.waitForExistence(timeout: 5))
+        all.tap()
+        app.buttons["checksum-read"].tap()
+        let files = app.buttons.matching(identifier: "checksum-file")
+        XCTAssert(files.firstMatch.waitForExistence(timeout: 15))
+        XCTAssertEqual(files.count, 3)
+        keep(app, "checksums-files")
+        // One checksum alone, pasted: the file it is of.
+        let pasted = app.textFields["checksums-pasted"]
+        pasted.tap()
+        pasted.typeText(notes)
+        XCTAssert(app.staticTexts["It matches the SHA-256 checksum of Báo cáo quý 3/Ghi chú.txt."].waitForExistence(timeout: 5))
+        keep(app, "checksums-compared")
+        // The keyboard away: Save shows again.
+        app.buttons["checksums-pasted-done"].tap()
+        tapWhenReady(app.buttons["checksum-save"])
+        XCTAssert(app.descendants(matching: .any)["checksum-saved"].waitForExistence(timeout: 5))
+        XCTAssert(app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'report.zip.contents.sha256'")).firstMatch.exists)
+        keep(app, "checksums-saved")
+        app.buttons["Close"].firstMatch.tap()
+
+        // One file, from its menu: its checksums at once.
+        tapWhenReady(folder)
+        let file = app.staticTexts["Ghi chú.txt"]
+        XCTAssert(file.waitForExistence(timeout: 10))
+        file.press(forDuration: 1.2)
+        app.buttons["Checksums"].tap()
+        let sum = app.staticTexts["checksum-sha256"]
+        XCTAssert(sum.waitForExistence(timeout: 15))
+        XCTAssertEqual(sum.label, notes)
+        keep(app, "checksums-one")
     }
 }

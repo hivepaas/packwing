@@ -59,7 +59,7 @@ xcrun simctl launch booted com.hivepaas.packwing -open "<that folder>/Documents/
 | `Packwing/HomeView.swift` | The Archives tab: open from Files, Recent; the Search tab |
 | `Packwing/ArchiveView.swift` | A folder of an archive, and a search through all of it |
 | `Packwing/Gallery.swift` | A folder as a grid: its pictures as themselves (read from the archive, made small as they decode), the rest by kind; the grid first where it is pictures mostly |
-| `Packwing/ChecksumSheet.swift` | An archive's own checksums (SHA-256 and SHA-1 first, as the desktop's; any of five), and one pasted compared with them |
+| `Packwing/ChecksumSheet.swift`, `FileChecksums.swift` | Checksums of the files picked in an archive, of all of them (in one read of it, listed as sha256sum writes them, copied or kept beside it), or of its own file, and one pasted compared with those (SHA-256 and SHA-1 first, as the desktop's; any of five) |
 | `Packwing/Storages.swift` | Storages across the network (S3, SFTP, WebDAV): added (their secrets in the keychain), browsed, their archives opened where they are; packwing Free keeps one |
 | `Packwing/SshQuestions.swift` | What SFTP asks as it connects (a server not known yet, a password, a passphrase, a code), in a window over any other; the SSH keys kept, chosen, added and removed |
 | `Packwing/Editing.swift` | A ZIP or 7z archive changed: files added (from Files or Photos), deleted, renamed; where packwing may not write beside it, a copy changed and written over it |
