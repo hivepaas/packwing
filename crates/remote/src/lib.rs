@@ -6,6 +6,7 @@ mod keys;
 mod s3;
 mod secrets;
 mod sftp;
+mod signing;
 mod trust;
 mod webdav;
 
@@ -18,6 +19,9 @@ pub use keys::{KeptKey, KeyRefused, import_key, kept_keys, remove_key};
 pub use s3::{S3Kind, S3Settings, s3};
 pub use secrets::get as secret;
 pub use sftp::{SftpKind, SftpSettings, SftpStorage, sftp};
+pub use signing::{
+    KeptSigningKey, keep_signing_key, kept_signing_keys, remove_signing_key, signing_key,
+};
 pub use trust::{
     CodeQuestion, HostKeyChanged, HostKeyQuestion, PassphraseQuestion, PasswordQuestion, Questions,
     Typed, ask_with, keep_in, known_hosts_file,

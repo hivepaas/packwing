@@ -811,4 +811,52 @@ final class AppTests: XCTestCase {
         XCTAssert(text(app, starting: "report.tar.zst.age").exists)
         keep(app, "age-key-made")
     }
+
+    /// Signing takes Pro: packwing Free says so, and where to get it.
+    func testSigningTakesPro() {
+        let sample = Bundle(for: Self.self).url(forResource: "report.zip", withExtension: nil)!
+        let app = XCUIApplication()
+        app.launchArguments = ["-open", sample.path, "-AppleLanguages", "(en)", "-language", "",
+                               "-store", "fake", "-fakePro", "NO"]
+        app.launch()
+        XCTAssert(app.buttons["Extract all"].waitForExistence(timeout: 15))
+        app.buttons["More"].tap()
+        tapWhenReady(app.buttons["Sign…"], timeout: 5)
+        XCTAssert(app.descendants(matching: .any)["sign-pro"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["sign-confirm"].exists)
+        keep(app, "sign-free")
+    }
+
+    /// With Pro, a key made here signs an archive where packwing may write
+    /// beside it; the key is trusted, so its signature says who signed it.
+    func testAnArchiveIsSignedWithAKeyMadeHere() {
+        let sample = Bundle(for: Self.self).url(forResource: "report.zip", withExtension: nil)!
+        let app = XCUIApplication()
+        // Received as Mail gives it: in packwing's own folder, written beside.
+        app.launchArguments = ["-receive", sample.path, "-AppleLanguages", "(en)", "-language", "",
+                               "-store", "fake", "-fakePro", "YES", "-trustedKeys", ""]
+        app.launch()
+        XCTAssert(app.buttons["Extract all"].waitForExistence(timeout: 15))
+        app.buttons["More"].tap()
+        tapWhenReady(app.buttons["Sign…"], timeout: 5)
+
+        let name = "Phone key \(UUID().uuidString.prefix(4))"
+        tapWhenReady(app.buttons["sign-new-key"], timeout: 5)
+        let field = app.textFields["new-name"]
+        XCTAssert(field.waitForExistence(timeout: 5))
+        field.typeText(name)
+        app.buttons["name-confirm"].tap()
+        let sign = app.buttons["sign-confirm"]
+        XCTAssert(sign.waitForExistence(timeout: 5))
+        tapWhenReady(sign, timeout: 5)
+        XCTAssert(app.descendants(matching: .any)["sign-done"].waitForExistence(timeout: 15))
+        keep(app, "signed")
+        app.buttons["Close"].firstMatch.tap()
+
+        // Checked: by a key trusted, as its own.
+        tapWhenReady(app.buttons["More"], timeout: 5)
+        app.buttons["Signature"].tap()
+        XCTAssert(app.staticTexts["Signed by \(name)"].waitForExistence(timeout: 15))
+        keep(app, "signed-checked")
+    }
 }

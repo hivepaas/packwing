@@ -2954,11 +2954,11 @@ t066227f9 = { $named }: i suoi dati sono danneggiati.
 # The archive is damaged: UnRAR would exit with {number}.
 t7923a417 = L'archivio è danneggiato: UnRAR uscirebbe con { $number }.
 
-# There is no public key here.
-t9fd24078 = Qui non c'è nessuna chiave pubblica.
-
 # Could not make the key: {e}
 t73610ecc = Impossibile creare la chiave: { $e }
+
+# There is no public key here.
+t9fd24078 = Qui non c'è nessuna chiave pubblica.
 
 # There is no file to sign.
 tc95e3a9c = Non c'è nessun file da firmare.
@@ -3455,6 +3455,33 @@ tecf6b414 = Fidati di questa chiave
 # There is no signature beside it.
 te7a28cb7 = Accanto non c’è nessuna firma.
 
+# Share the public key
+tc2050e4b = Condividi la chiave pubblica
+
+# Save a copy…
+t9883ffd4 = Salva una copia…
+
+# Signing keys
+t71948528 = Chiavi di firma
+
+# Kept in this device’s keychain. Anyone can check what a key signs with its public half.
+ta5d31990 = Conservate nel portachiavi di questo dispositivo. Chiunque può verificare ciò che una chiave firma con la sua metà pubblica.
+
+# Remove “{name}”?
+td4411888 = Rimuovere «{ $name }»?
+
+# This key was made here, and this device keeps the only copy of it unless one was saved. What it signed can still be checked, but nothing more can be signed with it.
+t76dac4df = Questa chiave è stata creata qui e questo dispositivo ne conserva l’unica copia, a meno che non ne sia stata salvata una. Ciò che ha firmato si può ancora verificare, ma non si potrà più firmare nulla con essa.
+
+# The copy is encrypted with this passphrase. packwing on a computer signs with it too.
+te46cafe7 = La copia è cifrata con questa passphrase. Anche packwing su un computer firma con essa.
+
+# Signing takes packwing Pro: Settings › License. Checking a signature is free.
+t81a4aeba = Firmare richiede packwing Pro: Impostazioni › Licenza. Verificare una firma è gratuito.
+
+# Signed: {name}
+tc44e5896 = Firmato: { $name }
+
 # Private key
 t2f5fdbc3 = Chiave privata
 
@@ -3467,8 +3494,8 @@ t1ef504d9 = packwing non può mostrare questo file.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free permette uno spazio di archiviazione in rete. Pro toglie questo limite.
 
-# Every feature, and one storage across a network.
-t0ccb5824 = Ogni funzione e uno spazio di archiviazione in rete.
+# Every feature but signing files, and one storage across a network.
+t627004c1 = Ogni funzione tranne la firma dei file, e uno spazio di archiviazione in rete.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing non riesce più a raggiungere { $name }. Aprilo di nuovo per guardarci dentro.

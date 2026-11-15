@@ -3028,11 +3028,11 @@ t066227f9 = { $named }: данные повреждены.
 # The archive is damaged: UnRAR would exit with {number}.
 t7923a417 = Архив повреждён: UnRAR завершился бы с кодом { $number }.
 
-# There is no public key here.
-t9fd24078 = Здесь нет открытого ключа.
-
 # Could not make the key: {e}
 t73610ecc = Не удалось создать ключ: { $e }
+
+# There is no public key here.
+t9fd24078 = Здесь нет открытого ключа.
 
 # There is no file to sign.
 tc95e3a9c = Нет файла для подписи.
@@ -3547,6 +3547,33 @@ tecf6b414 = Доверять этому ключу
 # There is no signature beside it.
 te7a28cb7 = Рядом нет подписи.
 
+# Share the public key
+tc2050e4b = Поделиться открытым ключом
+
+# Save a copy…
+t9883ffd4 = Сохранить копию…
+
+# Signing keys
+t71948528 = Ключи подписи
+
+# Kept in this device’s keychain. Anyone can check what a key signs with its public half.
+ta5d31990 = Хранятся в связке ключей этого устройства. Любой может проверить подписанное ключом с помощью его открытой части.
+
+# Remove “{name}”?
+td4411888 = Удалить «{ $name }»?
+
+# This key was made here, and this device keeps the only copy of it unless one was saved. What it signed can still be checked, but nothing more can be signed with it.
+t76dac4df = Этот ключ создан здесь, и единственная его копия — на этом устройстве, если копию не сохраняли. Подписанное им по-прежнему можно проверить, но подписать им больше ничего нельзя.
+
+# The copy is encrypted with this passphrase. packwing on a computer signs with it too.
+te46cafe7 = Копия шифруется этой парольной фразой. packwing на компьютере тоже подписывает ею.
+
+# Signing takes packwing Pro: Settings › License. Checking a signature is free.
+t81a4aeba = Для подписи нужен packwing Pro: Настройки › Лицензия. Проверка подписи бесплатна.
+
+# Signed: {name}
+tc44e5896 = Подписано: { $name }
+
 # Private key
 t2f5fdbc3 = Закрытый ключ
 
@@ -3559,8 +3586,8 @@ t1ef504d9 = packwing не может показать этот файл.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = В packwing Free можно подключить одно хранилище по сети. Pro снимает это ограничение.
 
-# Every feature, and one storage across a network.
-t0ccb5824 = Все функции и одно хранилище по сети.
+# Every feature but signing files, and one storage across a network.
+t627004c1 = Все функции, кроме подписи файлов, и одно хранилище в сети.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing больше не может получить доступ к { $name }. Откройте его снова, чтобы заглянуть внутрь.

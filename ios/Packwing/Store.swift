@@ -220,7 +220,7 @@ struct LicenseSection: View {
                     .accessibilityIdentifier("store-plan")
                 Text(store.holds
                      ? tr("Every feature, and any number of storages.")
-                     : tr("Every feature, and one storage across a network."))
+                     : tr("Every feature but signing files, and one storage across a network."))
                     .font(.nunito(14, relativeTo: .subheadline))
                     .foregroundStyle(Tonal.muted)
             }

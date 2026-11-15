@@ -2917,11 +2917,11 @@ t066227f9 = { $named }: datanya rusak.
 # The archive is damaged: UnRAR would exit with {number}.
 t7923a417 = Arsip rusak: UnRAR akan keluar dengan { $number }.
 
-# There is no public key here.
-t9fd24078 = Tidak ada kunci publik di sini.
-
 # Could not make the key: {e}
 t73610ecc = Tidak dapat membuat kunci: { $e }
+
+# There is no public key here.
+t9fd24078 = Tidak ada kunci publik di sini.
 
 # There is no file to sign.
 tc95e3a9c = Tidak ada berkas untuk ditandatangani.
@@ -3409,6 +3409,33 @@ tecf6b414 = Percayai kunci ini
 # There is no signature beside it.
 te7a28cb7 = Tidak ada tanda tangan di sebelahnya.
 
+# Share the public key
+tc2050e4b = Bagikan kunci publik
+
+# Save a copy…
+t9883ffd4 = Simpan salinan…
+
+# Signing keys
+t71948528 = Kunci tanda tangan
+
+# Kept in this device’s keychain. Anyone can check what a key signs with its public half.
+ta5d31990 = Disimpan di rantai kunci perangkat ini. Siapa pun dapat memeriksa apa yang ditandatangani kunci dengan separuh publiknya.
+
+# Remove “{name}”?
+td4411888 = Hapus “{ $name }”?
+
+# This key was made here, and this device keeps the only copy of it unless one was saved. What it signed can still be checked, but nothing more can be signed with it.
+t76dac4df = Kunci ini dibuat di sini, dan perangkat ini menyimpan satu-satunya salinannya kecuali salinan pernah disimpan. Yang telah ditandatanganinya tetap dapat diperiksa, tetapi tidak ada lagi yang dapat ditandatangani dengannya.
+
+# The copy is encrypted with this passphrase. packwing on a computer signs with it too.
+te46cafe7 = Salinan dienkripsi dengan frasa sandi ini. packwing di komputer juga dapat menandatangani dengannya.
+
+# Signing takes packwing Pro: Settings › License. Checking a signature is free.
+t81a4aeba = Menandatangani memerlukan packwing Pro: Pengaturan › Lisensi. Memeriksa tanda tangan gratis.
+
+# Signed: {name}
+tc44e5896 = Ditandatangani: { $name }
+
 # Private key
 t2f5fdbc3 = Kunci privat
 
@@ -3421,8 +3448,8 @@ t1ef504d9 = packwing tidak dapat menampilkan berkas ini.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free menyimpan satu penyimpanan lewat jaringan. Pro menghilangkan batas ini.
 
-# Every feature, and one storage across a network.
-t0ccb5824 = Semua fitur, dan satu penyimpanan lewat jaringan.
+# Every feature but signing files, and one storage across a network.
+t627004c1 = Semua fitur kecuali menandatangani file, dan satu penyimpanan di jaringan.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing tidak bisa lagi mengakses { $name }. Buka lagi untuk melihat isinya.

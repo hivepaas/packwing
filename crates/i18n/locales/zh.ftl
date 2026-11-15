@@ -2908,11 +2908,11 @@ t066227f9 = { $named }：其数据已损坏。
 # The archive is damaged: UnRAR would exit with {number}.
 t7923a417 = 压缩包已损坏：UnRAR 将以 { $number } 退出。
 
-# There is no public key here.
-t9fd24078 = 这里没有公钥。
-
 # Could not make the key: {e}
 t73610ecc = 无法生成密钥：{ $e }
+
+# There is no public key here.
+t9fd24078 = 这里没有公钥。
 
 # There is no file to sign.
 tc95e3a9c = 没有可签名的文件。
@@ -3400,6 +3400,33 @@ tecf6b414 = 信任此密钥
 # There is no signature beside it.
 te7a28cb7 = 旁边没有签名。
 
+# Share the public key
+tc2050e4b = 共享公钥
+
+# Save a copy…
+t9883ffd4 = 保存副本…
+
+# Signing keys
+t71948528 = 签名密钥
+
+# Kept in this device’s keychain. Anyone can check what a key signs with its public half.
+ta5d31990 = 保存在此设备的钥匙串中。任何人都能用密钥的公钥部分，检查它签名的内容。
+
+# Remove “{name}”?
+td4411888 = 要移除“{ $name }”吗？
+
+# This key was made here, and this device keeps the only copy of it unless one was saved. What it signed can still be checked, but nothing more can be signed with it.
+t76dac4df = 此密钥是在这里创建的，除非已保存副本，否则只有此设备保有它。它签名过的内容仍可检查，但无法再用它签名任何内容。
+
+# The copy is encrypted with this passphrase. packwing on a computer signs with it too.
+te46cafe7 = 副本会用此密码短语加密。电脑上的 packwing 也能用它签名。
+
+# Signing takes packwing Pro: Settings › License. Checking a signature is free.
+t81a4aeba = 签名需要 packwing Pro：设置 › 许可证。检查签名是免费的。
+
+# Signed: {name}
+tc44e5896 = 已签名：{ $name }
+
 # Private key
 t2f5fdbc3 = 私钥
 
@@ -3412,8 +3439,8 @@ t1ef504d9 = packwing 无法显示此文件。
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing 免费版只能使用一个网络存储。Pro 可取消此限制。
 
-# Every feature, and one storage across a network.
-t0ccb5824 = 所有功能，以及一个网络存储。
+# Every feature but signing files, and one storage across a network.
+t627004c1 = 除签名文件外的所有功能，以及一个网络存储。
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing 已无法访问 { $name }。请重新打开它以查看内容。

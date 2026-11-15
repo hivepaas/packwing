@@ -2954,11 +2954,11 @@ t066227f9 = { $named }: verisi bozuk.
 # The archive is damaged: UnRAR would exit with {number}.
 t7923a417 = Arşiv bozuk: UnRAR { $number } koduyla çıkardı.
 
-# There is no public key here.
-t9fd24078 = Burada genel anahtar yok.
-
 # Could not make the key: {e}
 t73610ecc = Anahtar oluşturulamadı: { $e }
+
+# There is no public key here.
+t9fd24078 = Burada genel anahtar yok.
 
 # There is no file to sign.
 tc95e3a9c = İmzalanacak dosya yok.
@@ -3455,6 +3455,33 @@ tecf6b414 = Bu anahtara güven
 # There is no signature beside it.
 te7a28cb7 = Yanında imza yok.
 
+# Share the public key
+tc2050e4b = Ortak anahtarı paylaş
+
+# Save a copy…
+t9883ffd4 = Bir kopyasını kaydet…
+
+# Signing keys
+t71948528 = İmzalama anahtarları
+
+# Kept in this device’s keychain. Anyone can check what a key signs with its public half.
+ta5d31990 = Bu aygıtın anahtar zincirinde saklanır. Bir anahtarın imzaladığını herkes ortak yarısıyla denetleyebilir.
+
+# Remove “{name}”?
+td4411888 = “{ $name }” kaldırılsın mı?
+
+# This key was made here, and this device keeps the only copy of it unless one was saved. What it signed can still be checked, but nothing more can be signed with it.
+t76dac4df = Bu anahtar burada oluşturuldu ve bir kopyası kaydedilmediyse tek kopyası bu aygıtta. İmzaladıkları yine denetlenebilir, ama onunla artık hiçbir şey imzalanamaz.
+
+# The copy is encrypted with this passphrase. packwing on a computer signs with it too.
+te46cafe7 = Kopya bu parola ifadesiyle şifrelenir. Bilgisayardaki packwing de onunla imzalar.
+
+# Signing takes packwing Pro: Settings › License. Checking a signature is free.
+t81a4aeba = İmzalamak için packwing Pro gerekir: Ayarlar › Lisans. İmza denetlemek ücretsizdir.
+
+# Signed: {name}
+tc44e5896 = İmzalandı: { $name }
+
 # Private key
 t2f5fdbc3 = Özel anahtar
 
@@ -3467,8 +3494,8 @@ t1ef504d9 = packwing bu dosyayı gösteremiyor.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Ücretsiz, ağ üzerinde tek bir depolama alanı tutar. Pro bu sınırı kaldırır.
 
-# Every feature, and one storage across a network.
-t0ccb5824 = Her özellik ve ağ üzerinde tek bir depolama alanı.
+# Every feature but signing files, and one storage across a network.
+t627004c1 = Dosya imzalama dışında her özellik ve ağda bir depolama alanı.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing artık { $name } dosyasına erişemiyor. İçine bakmak için yeniden açın.

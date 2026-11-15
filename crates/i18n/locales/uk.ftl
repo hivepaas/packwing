@@ -3028,11 +3028,11 @@ t066227f9 = { $named }: його дані пошкоджено.
 # The archive is damaged: UnRAR would exit with {number}.
 t7923a417 = Архів пошкоджено: UnRAR завершився б з кодом { $number }.
 
-# There is no public key here.
-t9fd24078 = Тут немає відкритого ключа.
-
 # Could not make the key: {e}
 t73610ecc = Не вдалося створити ключ: { $e }
+
+# There is no public key here.
+t9fd24078 = Тут немає відкритого ключа.
 
 # There is no file to sign.
 tc95e3a9c = Немає файлу для підписання.
@@ -3547,6 +3547,33 @@ tecf6b414 = Довіряти цьому ключу
 # There is no signature beside it.
 te7a28cb7 = Поруч немає підпису.
 
+# Share the public key
+tc2050e4b = Поширити відкритий ключ
+
+# Save a copy…
+t9883ffd4 = Зберегти копію…
+
+# Signing keys
+t71948528 = Ключі підпису
+
+# Kept in this device’s keychain. Anyone can check what a key signs with its public half.
+ta5d31990 = Зберігаються у в’язці ключів цього пристрою. Будь-хто може перевірити підписане ключем за його відкритою частиною.
+
+# Remove “{name}”?
+td4411888 = Видалити «{ $name }»?
+
+# This key was made here, and this device keeps the only copy of it unless one was saved. What it signed can still be checked, but nothing more can be signed with it.
+t76dac4df = Цей ключ створено тут, і єдина його копія — на цьому пристрої, якщо копію не зберігали. Підписане ним і далі можна перевірити, але підписати ним більше нічого не вийде.
+
+# The copy is encrypted with this passphrase. packwing on a computer signs with it too.
+te46cafe7 = Копію зашифровано цією парольною фразою. packwing на комп’ютері теж підписує нею.
+
+# Signing takes packwing Pro: Settings › License. Checking a signature is free.
+t81a4aeba = Для підпису потрібен packwing Pro: Налаштування › Ліцензія. Перевірка підпису безкоштовна.
+
+# Signed: {name}
+tc44e5896 = Підписано: { $name }
+
 # Private key
 t2f5fdbc3 = Приватний ключ
 
@@ -3559,8 +3586,8 @@ t1ef504d9 = packwing не може показати цей файл.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free дозволяє одне сховище в мережі. Pro знімає це обмеження.
 
-# Every feature, and one storage across a network.
-t0ccb5824 = Усі можливості й одне сховище в мережі.
+# Every feature but signing files, and one storage across a network.
+t627004c1 = Усі можливості, крім підпису файлів, і одне сховище в мережі.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing більше не має доступу до { $name }. Відкрийте його знову, щоб зазирнути всередину.

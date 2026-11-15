@@ -298,9 +298,9 @@ struct SshKeyPicker: View {
         }
         .listRowBackground(Tonal.surface)
         .sheet(isPresented: $importing) {
-            ImportKeySheet { kept in
+            ImportKeySheet { id in
                 keys = (try? sshKeys()) ?? keys
-                selection = kept.id
+                selection = id
             }
         }
     }
@@ -310,7 +310,14 @@ struct SshKeyPicker: View {
 /// if it has one.
 struct ImportKeySheet: View {
     @Environment(\.dismiss) private var dismiss
-    let kept: (SshKey) -> Void
+    /// Keeps the key typed or read, as named, with its passphrase if one was
+    /// given, and says its id: an SSH key by default, a signing key for
+    /// Settings' Signing keys.
+    var keep: (_ name: String, _ text: String, _ passphrase: String?) throws -> String = { name, text, passphrase in
+        try importSshKey(name: name, text: text, passphrase: passphrase).id
+    }
+    /// Told the id of the key kept.
+    let kept: (String) -> Void
     @State private var name = ""
     @State private var text = ""
     @State private var passphrase = ""
@@ -384,9 +391,7 @@ struct ImportKeySheet: View {
     private func add() {
         let named = name.trimmingCharacters(in: .whitespacesAndNewlines)
         do {
-            let key = try importSshKey(name: named.isEmpty ? tr("Key") : named, text: text,
-                                       passphrase: passphrase.isEmpty ? nil : passphrase)
-            kept(key)
+            kept(try keep(named.isEmpty ? tr("Key") : named, text, passphrase.isEmpty ? nil : passphrase))
             dismiss()
         } catch MobileError.Locked(let why, _, _) {
             asksPassphrase = true
