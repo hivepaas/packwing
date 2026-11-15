@@ -2908,11 +2908,11 @@ t066227f9 = { $named }: dữ liệu bị hỏng.
 # The archive is damaged: UnRAR would exit with {number}.
 t7923a417 = Tệp nén bị hỏng: UnRAR sẽ thoát với mã { $number }.
 
-# There is no public key here.
-t9fd24078 = Ở đây không có khoá công khai.
-
 # Could not make the key: {e}
 t73610ecc = Không tạo được khoá: { $e }
+
+# There is no public key here.
+t9fd24078 = Ở đây không có khoá công khai.
 
 # There is no file to sign.
 tc95e3a9c = Không có tệp để ký.
@@ -3400,6 +3400,33 @@ tecf6b414 = Tin cậy khoá này
 # There is no signature beside it.
 te7a28cb7 = Không có chữ ký nào bên cạnh.
 
+# Share the public key
+tc2050e4b = Chia sẻ khoá công khai
+
+# Save a copy…
+t9883ffd4 = Lưu một bản sao…
+
+# Signing keys
+t71948528 = Khoá ký
+
+# Kept in this device’s keychain. Anyone can check what a key signs with its public half.
+ta5d31990 = Giữ trong chuỗi khoá của thiết bị này. Ai cũng kiểm tra được những gì một khoá đã ký bằng nửa công khai của nó.
+
+# Remove “{name}”?
+td4411888 = Gỡ “{ $name }”?
+
+# This key was made here, and this device keeps the only copy of it unless one was saved. What it signed can still be checked, but nothing more can be signed with it.
+t76dac4df = Khoá này được tạo ở đây, và thiết bị này giữ bản duy nhất của nó, trừ khi đã lưu một bản sao. Những gì nó đã ký vẫn kiểm tra được, nhưng không thể ký thêm gì bằng nó nữa.
+
+# The copy is encrypted with this passphrase. packwing on a computer signs with it too.
+te46cafe7 = Bản sao được mã hoá bằng cụm mật khẩu này. packwing trên máy tính cũng ký được bằng nó.
+
+# Signing takes packwing Pro: Settings › License. Checking a signature is free.
+t81a4aeba = Ký file cần packwing Pro: Cài đặt › Giấy phép. Kiểm tra chữ ký thì miễn phí.
+
+# Signed: {name}
+tc44e5896 = Đã ký: { $name }
+
 # Private key
 t2f5fdbc3 = Khoá riêng tư
 
@@ -3412,8 +3439,8 @@ t1ef504d9 = packwing không hiển thị được tệp này.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free chỉ giữ một nơi lưu trữ qua mạng. Pro bỏ giới hạn này.
 
-# Every feature, and one storage across a network.
-t0ccb5824 = Đủ mọi tính năng, và một nơi lưu trữ qua mạng.
+# Every feature but signing files, and one storage across a network.
+t627004c1 = Đủ mọi tính năng trừ ký file, và một nơi lưu trữ qua mạng.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing không còn truy cập được { $name }. Hãy mở lại để xem bên trong.

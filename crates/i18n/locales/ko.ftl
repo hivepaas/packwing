@@ -2908,11 +2908,11 @@ t066227f9 = { $named }: 데이터가 손상되었습니다.
 # The archive is damaged: UnRAR would exit with {number}.
 t7923a417 = 압축 파일이 손상되었습니다. UnRAR가 종료 코드 { $number }(으)로 끝났을 것입니다.
 
-# There is no public key here.
-t9fd24078 = 여기에는 공개 키가 없습니다.
-
 # Could not make the key: {e}
 t73610ecc = 키를 만들 수 없습니다: { $e }
+
+# There is no public key here.
+t9fd24078 = 여기에는 공개 키가 없습니다.
 
 # There is no file to sign.
 tc95e3a9c = 서명할 파일이 없습니다.
@@ -3400,6 +3400,33 @@ tecf6b414 = 이 키 신뢰
 # There is no signature beside it.
 te7a28cb7 = 옆에 서명이 없습니다.
 
+# Share the public key
+tc2050e4b = 공개 키 공유
+
+# Save a copy…
+t9883ffd4 = 사본 저장…
+
+# Signing keys
+t71948528 = 서명 키
+
+# Kept in this device’s keychain. Anyone can check what a key signs with its public half.
+ta5d31990 = 이 기기의 키체인에 보관됩니다. 키가 서명한 것은 누구나 그 공개 키로 확인할 수 있습니다.
+
+# Remove “{name}”?
+td4411888 = “{ $name }”을(를) 제거할까요?
+
+# This key was made here, and this device keeps the only copy of it unless one was saved. What it signed can still be checked, but nothing more can be signed with it.
+t76dac4df = 이 키는 여기서 만들어졌으며, 사본을 저장하지 않았다면 이 기기에만 있습니다. 이미 서명한 것은 계속 확인할 수 있지만, 이 키로 더 이상 서명할 수 없습니다.
+
+# The copy is encrypted with this passphrase. packwing on a computer signs with it too.
+te46cafe7 = 사본은 이 암호 문구로 암호화됩니다. 컴퓨터의 packwing에서도 이 키로 서명할 수 있습니다.
+
+# Signing takes packwing Pro: Settings › License. Checking a signature is free.
+t81a4aeba = 서명하려면 packwing Pro가 필요합니다: 설정 › 라이선스. 서명 확인은 무료입니다.
+
+# Signed: {name}
+tc44e5896 = 서명됨: { $name }
+
 # Private key
 t2f5fdbc3 = 개인 키
 
@@ -3412,8 +3439,8 @@ t1ef504d9 = packwing에서 이 파일을 표시할 수 없습니다.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free는 네트워크 너머의 스토리지를 하나만 사용할 수 있습니다. Pro로 이 제한을 풀 수 있습니다.
 
-# Every feature, and one storage across a network.
-t0ccb5824 = 모든 기능과 네트워크 너머의 스토리지 하나를 사용할 수 있습니다.
+# Every feature but signing files, and one storage across a network.
+t627004c1 = 파일 서명을 제외한 모든 기능과 네트워크 스토리지 1개.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing이 더 이상 { $name }에 접근할 수 없습니다. 안을 보려면 다시 여세요.

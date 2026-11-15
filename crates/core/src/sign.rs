@@ -72,6 +72,23 @@ impl SigningKey {
     pub fn public(&self) -> &PublicKey {
         self.0.public()
     }
+
+    /// The key as a file [`read_signing_key`] reads: with a passphrase, encrypted
+    /// as [`make_signing_key`] writes it. Only a hybrid key has one to write; an
+    /// SSH key's file is ssh-keygen's.
+    pub fn to_file(&self, passphrase: Option<&[u8]>) -> Result<Vec<u8>, Error> {
+        self.0
+            .to_file(passphrase, &random())
+            .map_err(|e| Error::Failed(tr!("Could not make the key: {e}", e = e.to_string())))
+    }
+}
+
+/// A new hybrid key of Ed25519 and ML-DSA-65, kept in memory only: for an app that
+/// keeps it in the system's keychain rather than in a file.
+pub fn new_signing_key() -> Result<SigningKey, Error> {
+    PrivateKey::generate_hybrid(&random())
+        .map(|key| SigningKey(Arc::new(key)))
+        .map_err(|e| Error::Failed(tr!("Could not make the key: {e}", e = e.to_string())))
 }
 
 impl PartialEq for SigningKey {
@@ -227,6 +244,27 @@ pub fn sign_file(
     result
 }
 
+/// Reads the file at `path` of `storage` through and gives its signature, armored
+/// as `name.sig` holds it, written nowhere: for where the file's folder cannot be
+/// written to, and the signature is saved elsewhere.
+pub fn signature_of(
+    storage: &dyn Storage,
+    path: &[String],
+    key: &SigningKey,
+    control: &Control,
+) -> Result<String, Error> {
+    let job = audit::begin(
+        "sign",
+        audit::fields([
+            ("file", json!(audit::place(storage, path))),
+            ("fingerprint", json!(key.public().fingerprint())),
+        ]),
+    )?;
+    let result = armored(storage, path, key, control);
+    audit::end(job, &result, |_| serde_json::Map::new());
+    result
+}
+
 fn sign_on(
     storage: &dyn Storage,
     path: &[String],
@@ -234,7 +272,34 @@ fn sign_on(
     control: &Control,
 ) -> Result<(), Error> {
     let failed = |e: String| Error::Failed(e);
-    let (Some((name, folder)), Some(to)) = (path.split_last(), signature_path(path)) else {
+    let (Some(name), Some(to)) = (path.last(), signature_path(path)) else {
+        return Err(failed(tr!("There is no file to sign.")));
+    };
+    let armored = armored(storage, path, key, control)?;
+    let like = Item {
+        name: signature_name(name),
+        dir: false,
+        link: false,
+        hidden: false,
+        size: armored.len() as u64,
+        modified: None,
+        mode: Some(0o644),
+    };
+    storage
+        .put(&to, &mut armored.as_bytes(), &like, true)
+        .map_err(|e| failed(e.to_string()))?;
+    Ok(())
+}
+
+/// The signature of the file at `path` of `storage`, armored.
+fn armored(
+    storage: &dyn Storage,
+    path: &[String],
+    key: &SigningKey,
+    control: &Control,
+) -> Result<String, Error> {
+    let failed = |e: String| Error::Failed(e);
+    let Some((name, folder)) = path.split_last() else {
         return Err(failed(tr!("There is no file to sign.")));
     };
     let item = storage
@@ -256,20 +321,7 @@ fn sign_on(
         Err(_) if control.check().is_err() => return Err(Error::Cancelled),
         Err(e) => return Err(failed(e.to_string())),
     };
-    let armored = signature.to_armored();
-    let like = Item {
-        name: signature_name(name),
-        dir: false,
-        link: false,
-        hidden: false,
-        size: armored.len() as u64,
-        modified: None,
-        mode: Some(0o644),
-    };
-    storage
-        .put(&to, &mut armored.as_bytes(), &like, true)
-        .map_err(|e| failed(e.to_string()))?;
-    Ok(())
+    Ok(signature.to_armored())
 }
 
 /// What is known of a file's signature.
@@ -485,6 +537,41 @@ mod tests {
 
     fn new_key(s: &Scratch) -> SigningKey {
         make_signing_key(&s.0, b"a passphrase").expect("a key").0
+    }
+
+    #[test]
+    fn a_key_made_in_memory_signs_and_its_file_opens_it_again() {
+        let s = Scratch::new("memory");
+        let key = new_signing_key().expect("a key");
+        // Its file, as a keychain keeps it, and encrypted, as a copy is saved.
+        let plain = key.to_file(None).expect("file");
+        assert_eq!(
+            read_signing_key(&plain, None).expect("opened").public(),
+            key.public()
+        );
+        let locked = key.to_file(Some(b"a passphrase")).expect("file");
+        assert_eq!(
+            read_signing_key(&locked, None).expect_err("needs its passphrase"),
+            KeyRefused::NeedsPassphrase
+        );
+        assert_eq!(
+            read_signing_key(&locked, Some(b"a passphrase"))
+                .expect("opened")
+                .public(),
+            key.public()
+        );
+
+        // Signed with nothing written: put beside it here, it checks.
+        let armored = signature_of(&s.storage(), &file(), &key, &none()).expect("signed");
+        assert!(!has_signature(&s.0.join("a.zip")));
+        fs::write(s.0.join("a.zip.sig"), &armored).expect("write");
+        let trusted = [key.public().clone()];
+        assert_eq!(
+            check_signature(&s.storage(), &file(), &trusted, &none()).expect("check"),
+            Signed::Good {
+                fingerprint: key.public().fingerprint()
+            }
+        );
     }
 
     #[test]

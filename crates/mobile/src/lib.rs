@@ -23,6 +23,7 @@ mod checksum;
 mod edit;
 mod i18n;
 mod signature;
+mod signing;
 mod ssh;
 mod storage;
 
@@ -51,6 +52,10 @@ pub use checksum::{
 pub use edit::OnExisting;
 pub use i18n::LanguageRow;
 pub use signature::{KeyRead, SignatureState, read_key};
+pub use signing::{
+    SigningKeyRow, export_signing_key, import_signing_key, make_signing_key, may_sign,
+    remove_signing_key, signing_keys,
+};
 pub use ssh::{
     SshKey, SshQuestions, TypedSecret, ask_ssh_with, import_ssh_key, remove_ssh_key, ssh_keys,
 };

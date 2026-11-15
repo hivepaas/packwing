@@ -2908,11 +2908,11 @@ t066227f9 = { $named }：データが壊れています。
 # The archive is damaged: UnRAR would exit with {number}.
 t7923a417 = アーカイブが壊れています：UnRAR は { $number } で終了します。
 
-# There is no public key here.
-t9fd24078 = ここに公開鍵がありません。
-
 # Could not make the key: {e}
 t73610ecc = キーを作成できませんでした：{ $e }
+
+# There is no public key here.
+t9fd24078 = ここに公開鍵がありません。
 
 # There is no file to sign.
 tc95e3a9c = 署名するファイルがありません。
@@ -3400,6 +3400,33 @@ tecf6b414 = このキーを信頼
 # There is no signature beside it.
 te7a28cb7 = 隣に署名がありません。
 
+# Share the public key
+tc2050e4b = 公開鍵を共有
+
+# Save a copy…
+t9883ffd4 = コピーを保存…
+
+# Signing keys
+t71948528 = 署名用キー
+
+# Kept in this device’s keychain. Anyone can check what a key signs with its public half.
+ta5d31990 = このデバイスのキーチェーンに保管されます。キーが署名したものは、その公開鍵で誰でも確認できます。
+
+# Remove “{name}”?
+td4411888 = 「{ $name }」を削除しますか？
+
+# This key was made here, and this device keeps the only copy of it unless one was saved. What it signed can still be checked, but nothing more can be signed with it.
+t76dac4df = このキーはここで作成され、コピーを保存していなければ、このデバイスにしかありません。署名済みのものは引き続き確認できますが、このキーで署名することはできなくなります。
+
+# The copy is encrypted with this passphrase. packwing on a computer signs with it too.
+te46cafe7 = コピーはこのパスフレーズで暗号化されます。コンピュータの packwing でもこのキーで署名できます。
+
+# Signing takes packwing Pro: Settings › License. Checking a signature is free.
+t81a4aeba = 署名には packwing Pro が必要です：設定 › ライセンス。署名の確認は無料です。
+
+# Signed: {name}
+tc44e5896 = 署名しました：{ $name }
+
 # Private key
 t2f5fdbc3 = 秘密鍵
 
@@ -3412,8 +3439,8 @@ t1ef504d9 = packwing ではこのファイルを表示できません。
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free では、ネットワーク越しのストレージは 1 つまで使えます。Pro で制限が解除されます。
 
-# Every feature, and one storage across a network.
-t0ccb5824 = すべての機能と、ネットワーク越しのストレージ 1 つ。
+# Every feature but signing files, and one storage across a network.
+t627004c1 = ファイルへの署名を除くすべての機能と、ネットワーク上のストレージ 1 つ。
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing から { $name } にアクセスできなくなりました。中を見るには、もう一度開いてください。

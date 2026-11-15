@@ -16,6 +16,7 @@ struct ArchiveView: View {
     @State private var grid: Bool?
     @State private var checksums: ChecksumAsk?
     @State private var signature = false
+    @State private var signing = false
     @State private var deleting: [[String]]?
     @State private var renaming: [String]?
     @State private var adding: NewSource?
@@ -74,6 +75,7 @@ struct ArchiveView: View {
                         checksums = ChecksumAsk(picked: selecting ? Array(picked) : [], atOnce: false)
                     }
                     Button(tr("Signature"), systemImage: "signature") { signature = true }
+                    Button(tr("Sign…"), systemImage: "pencil.and.scribble") { signing = true }
                 } label: {
                     Image(systemName: "ellipsis")
                 }
@@ -124,6 +126,9 @@ struct ArchiveView: View {
         }
         .sheet(isPresented: $signature) {
             SignatureSheet(archive: place.archive)
+        }
+        .sheet(isPresented: $signing) {
+            SignSheet(archive: place.archive)
         }
         .quickLookPreview($model.previewing)
         .modifier(ArchiveChanges(opened: place.archive, folder: place.folder, names: Set(entries.map(\.name)),
