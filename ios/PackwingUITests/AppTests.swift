@@ -310,4 +310,51 @@ final class AppTests: XCTestCase {
         XCTAssert(app.staticTexts[fingerprint].exists)
         keep(app, "keys-trusted")
     }
+
+    func testFilesInAnArchiveAreRenamedDeletedAndAdded() {
+        // Given as Mail gives one: packwing keeps it in a folder of its own,
+        // where the archive is changed where it is.
+        let sample = Bundle(for: Self.self).url(forResource: "report.zip", withExtension: nil)!
+        let app = XCUIApplication()
+        app.launchArguments = ["-receive", sample.path, "-AppleLanguages", "(en)", "-language", "",
+                               "-trustedKeys", ""]
+        app.launch()
+        let folder = app.staticTexts["Báo cáo quý 3"]
+        XCTAssert(folder.waitForExistence(timeout: 15))
+        folder.tap()
+
+        // Renamed.
+        let notes = app.staticTexts["Ghi chú.txt"]
+        XCTAssert(notes.waitForExistence(timeout: 10))
+        notes.press(forDuration: 1.2)
+        app.buttons["Rename"].tap()
+        let name = app.alerts.textFields.firstMatch
+        XCTAssert(name.waitForExistence(timeout: 5))
+        name.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 20) + "Notes.txt")
+        app.alerts.buttons["Rename"].tap()
+        XCTAssert(app.staticTexts["Notes.txt"].waitForExistence(timeout: 15))
+        XCTAssertFalse(notes.exists)
+
+        // Deleted, once it is said that it is for good.
+        let sales = app.staticTexts["Doanh thu.csv"]
+        sales.press(forDuration: 1.2)
+        app.buttons["Delete…"].tap()
+        XCTAssert(app.staticTexts["Delete Doanh thu.csv?"].waitForExistence(timeout: 5))
+        keep(app, "delete-asked")
+        app.buttons.matching(NSPredicate(format: "label == 'Delete'")).firstMatch.tap()
+        let gone = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: sales)
+        XCTAssertEqual(XCTWaiter.wait(for: [gone], timeout: 15), .completed)
+
+        // Added, from Photos.
+        app.buttons["Add files"].tap()
+        app.buttons["Photos"].tap()
+        let photo = app.images.matching(identifier: "PXGGridLayout-Info").firstMatch
+        XCTAssert(photo.waitForExistence(timeout: 40))
+        photo.tap()
+        app.buttons["Done"].tap()
+        let added = app.staticTexts.matching(NSPredicate(format: "label MATCHES[c] '.*\\\\.(jpe?g|heic|png)'")).firstMatch
+        XCTAssert(added.waitForExistence(timeout: 30))
+        XCTAssert(app.staticTexts["Notes.txt"].exists)
+        keep(app, "changed")
+    }
 }

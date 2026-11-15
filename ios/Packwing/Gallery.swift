@@ -39,7 +39,8 @@ actor Thumbnails {
 
     /// The file at `path` of `opened`, at most `edge` pixels across.
     func picture(of opened: OpenedArchive, at path: [String], edge: Int) async -> UIImage? {
-        let key = "\(ObjectIdentifier(opened).hashValue)/\(path.joined(separator: "/"))" as NSString
+        // Of this archive as it is: one changed may hold another file there.
+        let key = "\(ObjectIdentifier(opened).hashValue).\(opened.version)/\(path.joined(separator: "/"))" as NSString
         if let image = made.object(forKey: key) { return image }
         if failed.contains(key as String) { return nil }
 
@@ -112,6 +113,9 @@ struct GalleryGrid: View {
     let selecting: Bool
     @Binding var picked: Set<[String]>
     let extract: ([String]) -> Void
+    /// Where the archive can be changed.
+    var rename: (([String]) -> Void)?
+    var delete: (([String]) -> Void)?
 
     /// How many tiles a row has: three on an iPhone held upright, more as
     /// there is room for them (an iPad, an iPhone turned).
@@ -194,6 +198,12 @@ struct GalleryGrid: View {
                 Button(tr("Preview"), systemImage: "eye") { model.preview(opened, path) }
             }
             Button(tr("Extract"), systemImage: "square.and.arrow.down") { extract(path) }
+            if let rename {
+                Button(tr("Rename"), systemImage: "pencil") { rename(path) }
+            }
+            if let delete {
+                Button(tr("Delete…"), systemImage: "trash", role: .destructive) { delete(path) }
+            }
         }
     }
 }

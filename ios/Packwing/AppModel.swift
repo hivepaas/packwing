@@ -11,8 +11,11 @@ enum AppTab: Hashable {
 /// kept, as reading a file of it or extracting reads the file again.
 final class OpenedArchive: Hashable, @unchecked Sendable {
     let url: URL
-    let archive: Archive
-    let info: ArchiveInfo
+    /// What it holds, read again once it is changed.
+    private(set) var archive: Archive
+    private(set) var info: ArchiveInfo
+    /// How many times it was changed, so that what was read of it before is not taken for it.
+    private(set) var version = 0
     private let scoped: Bool
 
     init(url: URL, archive: Archive, scoped: Bool) {
@@ -24,6 +27,13 @@ final class OpenedArchive: Hashable, @unchecked Sendable {
 
     deinit {
         if scoped { url.stopAccessingSecurityScopedResource() }
+    }
+
+    /// It, as `archive` reads it now it is changed.
+    func changed(to archive: Archive) {
+        self.archive = archive
+        info = archive.info()
+        version += 1
     }
 
     static func == (a: OpenedArchive, b: OpenedArchive) -> Bool { a === b }
@@ -84,6 +94,11 @@ final class AppModel {
     var reading: String?
     /// Counts the folders chosen to save in, so that what shows it is drawn again.
     var foldersChanged = 0
+    /// Counts the changes made to archives, so that what shows one is drawn again.
+    var archivesChanged = 0
+    /// What is being done to the archive shown, and its name, while it is.
+    var changing: (title: String, name: String)?
+    @ObservationIgnored var changeJob: Job?
     /// The public keys whose signatures say who signed a file.
     var trustedKeys = AppModel.loadKeys()
 
@@ -202,7 +217,7 @@ final class AppModel {
     }
 
     /// Puts `url` first in Recent.
-    private func remember(_ url: URL, _ info: ArchiveInfo, locked: Bool) {
+    func remember(_ url: URL, _ info: ArchiveInfo, locked: Bool) {
         guard let bookmark = try? url.bookmarkData() else { return }
         var stale = false
         recent.removeAll { item in

@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex};
 
 use packwing_mobile::{
     Archive, ArchiveFormat, Checksum, ChecksumKind, Compared, CompressionLevel, Job, JobListener,
-    JobProgress, MobileError, NewArchiveHow, Secrets, SignatureState, checksum_kinds,
+    JobProgress, MobileError, NewArchiveHow, OnExisting, Secrets, SignatureState, checksum_kinds,
     compare_checksum, create_archive, read_key, stem,
 };
 
@@ -376,4 +376,87 @@ fn an_archive_s_signature_says_who_signed_it_only_by_a_key_trusted() {
         read_key("not a key".to_owned()),
         Err(MobileError::Failed { .. })
     ));
+}
+
+#[test]
+fn an_archive_is_changed_where_it_is_or_through_a_copy() {
+    let dir = tempfile::tempdir().expect("dir");
+    for (format, password) in [
+        (ArchiveFormat::Zip, None),
+        (ArchiveFormat::SevenZip, Some("sample-password")),
+    ] {
+        let path = make(dir.path(), format, password, false);
+        let secrets = password.map(with).unwrap_or_default();
+        let archive = Archive::open(path.clone(), secrets, Job::quiet()).expect("opened");
+        assert!(archive.can_change());
+        let folder = vec!["Báo cáo".to_owned()];
+        let names = |a: &Archive| -> Vec<String> {
+            a.children(folder.clone())
+                .into_iter()
+                .map(|e| e.name)
+                .collect()
+        };
+
+        // Renamed where it is.
+        archive
+            .rename(
+                path.clone(),
+                vec!["Báo cáo".to_owned(), "ghi chú.txt".to_owned()],
+                "notes.txt".to_owned(),
+                Job::quiet(),
+            )
+            .expect("renamed");
+        let again = archive.reopen(Job::quiet()).expect("read again");
+        assert_eq!(names(&again), ["notes.txt", "tổng hợp.txt"]);
+
+        // Added to a copy, which is then the archive: as a phone that may not
+        // write beside the file does.
+        let copy = dir.path().join("copy");
+        fs::copy(&path, &copy).expect("copied");
+        let new = dir.path().join("mới.txt");
+        fs::write(&new, "thêm").expect("file");
+        let added = |on: OnExisting| {
+            again.add(
+                copy.display().to_string(),
+                vec![new.display().to_string()],
+                folder.clone(),
+                on,
+                Job::quiet(),
+            )
+        };
+        added(OnExisting::Stop).expect("added");
+        // A name there already stops it, unless it is to be replaced.
+        assert!(added(OnExisting::Stop).is_err());
+        added(OnExisting::Replace).expect("replaced");
+        fs::copy(&copy, &path).expect("written back");
+        let again = again.reopen(Job::quiet()).expect("read again");
+        assert_eq!(names(&again), ["mới.txt", "notes.txt", "tổng hợp.txt"]);
+        // Encrypted as the rest are: its password reads it.
+        let preview = again
+            .preview(
+                vec!["Báo cáo".to_owned(), "mới.txt".to_owned()],
+                1024,
+                Job::quiet(),
+            )
+            .expect("read");
+        assert_eq!(preview, "thêm".as_bytes());
+
+        again
+            .delete(
+                path.clone(),
+                vec![vec!["Báo cáo".to_owned(), "notes.txt".to_owned()]],
+                Job::quiet(),
+            )
+            .expect("deleted");
+        let again = again.reopen(Job::quiet()).expect("read again");
+        assert_eq!(names(&again), ["mới.txt", "tổng hợp.txt"]);
+        // Not all of it.
+        assert!(
+            again
+                .delete(path.clone(), vec![vec!["Báo cáo".to_owned()]], Job::quiet())
+                .is_err()
+        );
+        fs::remove_file(&path).expect("removed");
+        fs::remove_file(&copy).expect("removed");
+    }
 }
