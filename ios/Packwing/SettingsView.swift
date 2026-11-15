@@ -22,9 +22,11 @@ struct SettingsView: View {
                 }
                 .listRowBackground(Tonal.surface)
                 Section(tr("New archives")) {
-                    Picker(tr("Format"), selection: $formatKey) {
+                    // What an earlier version kept, a format for one file, shows as ZIP.
+                    Picker(tr("Format"), selection: Binding { ArchiveFormat.forMany(key: formatKey).key } set: { formatKey = $0 }) {
                         ForEach(ArchiveFormat.all, id: \.key) { Text($0.label).tag($0.key) }
                     }
+                    .accessibilityIdentifier("settings-format")
                     Picker(tr("Compression"), selection: $levelKey) {
                         ForEach(CompressionLevel.all, id: \.key) { Text($0.label).tag($0.key) }
                     }

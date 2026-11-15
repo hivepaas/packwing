@@ -607,6 +607,19 @@ final class AppTests: XCTestCase {
         XCTAssertEqual(app.buttons["store-buy-yearly"].label, "$8.99 a year")
     }
 
+    /// A format for one file, kept by an earlier version as that of new
+    /// archives: Settings shows ZIP.
+    func testSettingsShowZipForAOneFileFormatKept() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-AppleLanguages", "(en)", "-language", "", "-newFormat", "gz"]
+        app.launch()
+        tapWhenReady(app.buttons.matching(NSPredicate(format: "label == 'Settings'")).firstMatch)
+        let format = app.buttons["settings-format"]
+        XCTAssert(format.waitForExistence(timeout: 10))
+        keep(app, "settings-format")
+        XCTAssert("\(format.label) \(format.value ?? "")".contains("ZIP"), "\(format.label) \(format.value ?? "")")
+    }
+
     /// Against the WebDAV server of `make webdav-start`: skipped without one.
     func testAStorageIsWrittenToFromThePhone() throws {
         let server = "http://127.0.0.1:18335"
@@ -731,5 +744,14 @@ final class AppTests: XCTestCase {
         XCTAssert(app.staticTexts["Done"].waitForExistence(timeout: 30))
         XCTAssert(text(app, starting: "report.gz").exists)
         keep(app, "created-gz")
+        app.terminate()
+
+        // .gz was this archive's alone: not kept as the format of new archives.
+        app.launchArguments = ["-AppleLanguages", "(en)", "-language", ""]
+        app.launch()
+        tapWhenReady(app.buttons.matching(NSPredicate(format: "label == 'Settings'")).firstMatch)
+        let kept = app.buttons["settings-format"]
+        XCTAssert(kept.waitForExistence(timeout: 10))
+        XCTAssertFalse("\(kept.label) \(kept.value ?? "")".contains("gz"), "\(kept.label) \(kept.value ?? "")")
     }
 }
