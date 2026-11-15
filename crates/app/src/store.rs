@@ -82,6 +82,10 @@ impl Store {
     }
 }
 
+/// How many times the prices are asked for, at most, and how long apart.
+const PRICE_ATTEMPTS: usize = 5;
+const PRICE_AGAIN: std::time::Duration = std::time::Duration::from_secs(3);
+
 /// Asks the App Store whether the user holds Pro and what each plan costs, and hears
 /// from it from now on: bought on another Mac, renewed, approved, ended, refunded.
 pub fn start(cx: &mut App) {
@@ -92,19 +96,35 @@ pub fn start(cx: &mut App) {
     watch(move |holds| {
         let _ = changed_tx.unbounded_send(holds);
     });
+    // The prices: the App Store may leave one out at first (the sandbox does, a moment
+    // after launch), so what is missing is asked again a few times; a country where
+    // Pro is not sold has neither, every time.
+    cx.spawn(async move |cx| {
+        for attempt in 0..PRICE_ATTEMPTS {
+            if attempt > 0 {
+                cx.background_executor().timer(PRICE_AGAIN).await;
+            }
+            let (Ok(monthly), Ok(yearly)) = (
+                api::price(Plan::Monthly).await,
+                api::price(Plan::Yearly).await,
+            ) else {
+                continue;
+            };
+            let whole = monthly.is_some() && yearly.is_some();
+            change_async(cx, |s| {
+                s.sold = Some(monthly.is_some() || yearly.is_some());
+                s.monthly = monthly.or(s.monthly.take());
+                s.yearly = yearly.or(s.yearly.take());
+            });
+            if whole {
+                break;
+            }
+        }
+    })
+    .detach();
     cx.spawn(async move |cx| {
         if let Ok(holds) = api::holds().await {
             change_async(cx, |s| s.holds = holds);
-        }
-        if let (Ok(monthly), Ok(yearly)) = (
-            api::price(Plan::Monthly).await,
-            api::price(Plan::Yearly).await,
-        ) {
-            change_async(cx, |s| {
-                s.sold = Some(monthly.is_some() || yearly.is_some());
-                s.monthly = monthly;
-                s.yearly = yearly;
-            });
         }
         use futures::StreamExt as _;
         while let Some(holds) = changed_rx.next().await {
@@ -220,6 +240,8 @@ pub mod fake {
         prices: Option<(String, String)>,
         /// The plan the last purchase was of.
         bought: Option<Plan>,
+        /// How many more times the monthly price is left out, as the sandbox may.
+        monthly_late: usize,
         buy: Option<Result<Bought, String>>,
         restore: Option<Result<bool, String>>,
         watching: Option<Arc<dyn Fn(bool) + Send + Sync>>,
@@ -244,6 +266,11 @@ pub mod fake {
             prices: prices.map(|(m, y)| (m.to_owned(), y.to_owned())),
             ..Fake::default()
         });
+    }
+
+    /// The monthly price is left out of the next `times` answers.
+    pub fn monthly_late(times: usize) {
+        with(|f| f.monthly_late = times);
     }
 
     /// The plan the last purchase was of.
@@ -287,6 +314,10 @@ pub mod fake {
 
     pub fn price(plan: Plan) -> Result<Option<String>, String> {
         Ok(with(|f| {
+            if plan == Plan::Monthly && f.monthly_late > 0 {
+                f.monthly_late -= 1;
+                return None;
+            }
             f.prices.clone().map(|(m, y)| match plan {
                 Plan::Monthly => m,
                 Plan::Yearly => y,

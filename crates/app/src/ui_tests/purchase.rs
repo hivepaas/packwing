@@ -42,6 +42,29 @@ scenario!(
 );
 
 scenario!(
+    /// A price the App Store leaves out at first is asked for again, so both plans
+    /// show theirs.
+    a_price_left_out_at_first_is_asked_again,
+    |ui| {
+        fake::start(Some(("$0.99", "$8.99")), false);
+        fake::monthly_late(1);
+        ui.start();
+        ui.settings(5);
+        ui.wait_until("the yearly price", |ui| {
+            ui.ws(|_, _, cx| crate::store::read(cx)).yearly.is_some()
+        });
+        assert!(ui.ws(|_, _, cx| crate::store::read(cx)).monthly.is_none());
+        ui.cx
+            .executor()
+            .advance_clock(std::time::Duration::from_secs(4));
+        ui.wait_until("both prices", |ui| {
+            let s = ui.ws(|_, _, cx| crate::store::read(cx));
+            s.monthly.is_some() && s.yearly.is_some()
+        });
+    }
+);
+
+scenario!(
     /// A month's subscription is the monthly plan.
     subscribing_for_a_month_buys_the_monthly_plan,
     |ui| {
