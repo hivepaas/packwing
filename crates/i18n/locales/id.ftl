@@ -3421,26 +3421,8 @@ t1ef504d9 = packwing tidak dapat menampilkan berkas ini.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free menyimpan satu penyimpanan lewat jaringan. Pro menghilangkan batas ini.
 
-# Buy Pro · {price}
-t93567162 = Beli Pro · { $price }
-
-# Buy Pro
-t1bdcbb74 = Beli Pro
-
 # Every feature, and one storage across a network.
 t0ccb5824 = Semua fitur, dan satu penyimpanan lewat jaringan.
-
-# Bought
-t5c52217e = Dibeli
-
-# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
-t4294db10 = App Store tidak menjual Pro di negara atau wilayah Anda. Pro yang dibeli dengan Akun Apple ini di negara lain tetap dapat dipulihkan.
-
-# Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
-t8bc438f1 = Pro, dibeli sekali di App Store: milik Anda di setiap iPhone, iPad, dan Mac dengan Akun Apple Anda.
-
-# The App Store found nothing bought with this Apple Account.
-tf996dc19 = App Store tidak menemukan pembelian dengan Akun Apple ini.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing tidak bisa lagi mengakses { $name }. Buka lagi untuk melihat isinya.

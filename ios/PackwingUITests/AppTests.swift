@@ -322,7 +322,12 @@ final class AppTests: XCTestCase {
         let settings = app.buttons.matching(NSPredicate(format: "label == 'Settings'")).firstMatch
         XCTAssert(settings.waitForExistence(timeout: 5))
         settings.tap()
+        // Under License, which may fill the screen: a list's rows below it are
+        // not made until they are scrolled to.
         let kept = app.staticTexts["Tester"]
+        for _ in 0..<4 where !kept.waitForExistence(timeout: 2) {
+            app.swipeUp()
+        }
         XCTAssert(kept.waitForExistence(timeout: 5))
         XCTAssert(app.staticTexts[fingerprint].exists)
         keep(app, "keys-trusted")
@@ -554,19 +559,24 @@ final class AppTests: XCTestCase {
         keep(app, "checksums-one")
     }
 
-    /// Pro bought, as `-store fake` plays the App Store: held after a restart too.
-    func testProIsBoughtInSettingsAndHeldAfterARestart() {
+    /// Pro by subscription, as `-store fake` plays the App Store: a year's,
+    /// held after a restart too, and Free again once it ends.
+    func testProIsSubscribedToInSettingsAndHeldAfterARestart() {
         let app = XCUIApplication()
-        app.launchArguments = ["-AppleLanguages", "(en)", "-language", "", "-store", "fake", "-fakePro", "NO"]
+        app.launchArguments = ["-AppleLanguages", "(en)", "-language", "", "-store", "fake", "-fakePro", "NO",
+                               "-fakeNoMonthly", "NO"]
         app.launch()
         tapWhenReady(app.buttons.matching(NSPredicate(format: "label == 'Settings'")).firstMatch)
         let plan = app.staticTexts["store-plan"]
         XCTAssert(plan.waitForExistence(timeout: 10))
         XCTAssertEqual(plan.label, "packwing Free")
-        let buy = app.buttons["store-buy"]
-        XCTAssertEqual(buy.label, "Buy Pro · $9.99")
+        let yearly = app.buttons["store-buy-yearly"]
+        XCTAssertEqual(yearly.label, "$8.99 a year")
+        XCTAssertEqual(app.buttons["store-buy-monthly"].label, "$0.99 a month")
+        XCTAssert(app.descendants(matching: .any)["store-terms"].exists)
+        XCTAssert(app.descendants(matching: .any)["store-privacy"].exists)
         keep(app, "store-free")
-        buy.tap()
+        yearly.tap()
         XCTAssert(app.descendants(matching: .any)["store-held"].waitForExistence(timeout: 5))
         XCTAssertEqual(plan.label, "packwing Pro")
         app.terminate()
@@ -577,6 +587,24 @@ final class AppTests: XCTestCase {
         tapWhenReady(app.buttons.matching(NSPredicate(format: "label == 'Settings'")).firstMatch)
         XCTAssert(app.descendants(matching: .any)["store-held"].waitForExistence(timeout: 10))
         keep(app, "store-pro")
+
+        // Ended: Free, and the plans again.
+        app.buttons["store-manage"].tap()
+        XCTAssert(app.buttons["store-buy-yearly"].waitForExistence(timeout: 5))
+        XCTAssertEqual(plan.label, "packwing Free")
+    }
+
+    /// A price the App Store left out: the plan's name on its button.
+    func testAPlanWithNoPriceShowsItsName() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-AppleLanguages", "(en)", "-language", "", "-store", "fake", "-fakePro", "NO",
+                               "-fakeNoMonthly", "YES"]
+        app.launch()
+        tapWhenReady(app.buttons.matching(NSPredicate(format: "label == 'Settings'")).firstMatch)
+        let monthly = app.buttons["store-buy-monthly"]
+        XCTAssert(monthly.waitForExistence(timeout: 10))
+        XCTAssertEqual(monthly.label, "Monthly")
+        XCTAssertEqual(app.buttons["store-buy-yearly"].label, "$8.99 a year")
     }
 
     /// Against the WebDAV server of `make webdav-start`: skipped without one.

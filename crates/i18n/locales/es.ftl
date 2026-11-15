@@ -3467,26 +3467,8 @@ t1ef504d9 = packwing no puede mostrar este archivo.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free admite un almacenamiento en red. Pro lo amplía.
 
-# Buy Pro · {price}
-t93567162 = Comprar Pro · { $price }
-
-# Buy Pro
-t1bdcbb74 = Comprar Pro
-
 # Every feature, and one storage across a network.
 t0ccb5824 = Todas las funciones y un almacenamiento en red.
-
-# Bought
-t5c52217e = Comprado
-
-# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
-t4294db10 = La App Store no vende Pro en tu país o región. Pro comprado con esta cuenta de Apple en otro se puede seguir restaurando.
-
-# Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
-t8bc438f1 = Pro, comprado una vez en la App Store: tuyo en cada iPhone, iPad y Mac con tu cuenta de Apple.
-
-# The App Store found nothing bought with this Apple Account.
-tf996dc19 = La App Store no encontró nada comprado con esta cuenta de Apple.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing ya no puede acceder a { $name }. Ábrelo de nuevo para ver lo que contiene.

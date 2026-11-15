@@ -49,6 +49,7 @@ struct PackwingApp: App {
 
 struct RootView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.scenePhase) private var phase
 
     var body: some View {
         @Bindable var model = model
@@ -63,6 +64,10 @@ struct RootView: View {
             Tab(tr("Search"), systemImage: "magnifyingglass", value: AppTab.search, role: .search) {
                 SearchView()
             }
+        }
+        // A subscription may have ended, or been renewed, while packwing was away.
+        .onChange(of: phase) { _, now in
+            if now == .active { Task { await model.store.refresh() } }
         }
         .sheet(item: $model.asking) { ask in
             PasswordSheet(ask: ask)

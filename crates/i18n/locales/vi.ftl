@@ -3412,26 +3412,8 @@ t1ef504d9 = packwing không hiển thị được tệp này.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free chỉ giữ một nơi lưu trữ qua mạng. Pro bỏ giới hạn này.
 
-# Buy Pro · {price}
-t93567162 = Mua Pro · { $price }
-
-# Buy Pro
-t1bdcbb74 = Mua Pro
-
 # Every feature, and one storage across a network.
 t0ccb5824 = Đủ mọi tính năng, và một nơi lưu trữ qua mạng.
-
-# Bought
-t5c52217e = Đã mua
-
-# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
-t4294db10 = App Store không bán Pro ở quốc gia hoặc khu vực của bạn. Pro đã mua bằng Tài khoản Apple này ở nơi khác vẫn khôi phục được.
-
-# Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
-t8bc438f1 = Pro, mua một lần trên App Store: của bạn trên mọi iPhone, iPad và Mac dùng Tài khoản Apple của bạn.
-
-# The App Store found nothing bought with this Apple Account.
-tf996dc19 = App Store không tìm thấy gì đã mua bằng Tài khoản Apple này.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing không còn truy cập được { $name }. Hãy mở lại để xem bên trong.

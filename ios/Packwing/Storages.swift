@@ -158,8 +158,10 @@ struct StoragesSection: View {
                 // On the button, apart from the sheet: on an iPhone, an alert
                 // beside a sheet that was shown no longer showed.
                 .alert(tr("Add storage"), isPresented: $limited) {
+                    // The plans are in Settings, with what the App Store asks
+                    // to be said beside them.
                     if model.store.sold != false {
-                        Button(model.store.buyLabel) { model.store.buy() }
+                        Button(tr("Settings")) { model.tab = .settings }
                     }
                     Button(tr("OK"), role: .cancel) {}
                 } message: {

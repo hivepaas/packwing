@@ -3412,26 +3412,8 @@ t1ef504d9 = packwing에서 이 파일을 표시할 수 없습니다.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free는 네트워크 너머의 스토리지를 하나만 사용할 수 있습니다. Pro로 이 제한을 풀 수 있습니다.
 
-# Buy Pro · {price}
-t93567162 = Pro 구입 · { $price }
-
-# Buy Pro
-t1bdcbb74 = Pro 구입
-
 # Every feature, and one storage across a network.
 t0ccb5824 = 모든 기능과 네트워크 너머의 스토리지 하나를 사용할 수 있습니다.
-
-# Bought
-t5c52217e = 구입함
-
-# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
-t4294db10 = 사용자의 국가 또는 지역의 App Store에서는 Pro를 판매하지 않습니다. 이 Apple 계정으로 다른 국가 또는 지역에서 구입한 Pro는 복원할 수 있습니다.
-
-# Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
-t8bc438f1 = App Store에서 한 번 구입한 Pro는 같은 Apple 계정의 모든 iPhone, iPad, Mac에서 사용할 수 있습니다.
-
-# The App Store found nothing bought with this Apple Account.
-tf996dc19 = App Store에서 이 Apple 계정으로 구입한 항목을 찾지 못했습니다.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing이 더 이상 { $name }에 접근할 수 없습니다. 안을 보려면 다시 여세요.
