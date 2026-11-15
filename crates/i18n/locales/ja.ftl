@@ -151,6 +151,9 @@ ta24f28a2 = ライセンスキーを入力
 # Save
 t4d2d5d68 = 保存
 
+# Paste the checksums given with the files, or one of them
+t3a05149e = ファイルと一緒に提供されたチェックサム（またはその 1 つ）を貼り付け
+
 # The file could not be read: {why}
 t5daa8455 = ファイルを読み取れませんでした: { $why }
 
@@ -192,6 +195,69 @@ t658f3664 = コピー
 
 # weak
 tedbc2ec9 = 弱い
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = ファイルの { $name } チェックサムと一致しません。このチェックサムの元のファイルではないか、途中でファイルが変化しました。
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = packwing が作成するチェックサムではありません（{ $digits } 桁）。
+
+# The list does not name it.
+tc591042a = リストにはこのファイルがありません。
+
+# There is no checksum in this.
+t231f838a = チェックサムが含まれていません。
+
+# It matches the {name} checksum of {file}.
+t91f99ccb = { $file } の { $name } チェックサムと一致します。
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+       *[other] { $count } 個のファイルと一致します: { $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = このチェックサムを持つファイルはありません。
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = まだ作成していない { $name } チェックサムかもしれません。
+
+# Make it
+tcbefe458 = 作成
+
+# Every file matches the list.
+ta40a82de = すべてのファイルがリストと一致します。
+
+# {count} file matches | {count} files match
+t551e3494 =
+    { $n ->
+       *[other] { $count } 個のファイルが一致
+    }
+
+# {count} file differs | {count} files differ
+t94a87b3f =
+    { $n ->
+       *[other] { $count } 個のファイルが不一致
+    }
+
+# {count} file is not in the list | {count} files are not in the list
+t8c19e4ca =
+    { $n ->
+       *[other] { $count } 個のファイルがリストにありません
+    }
+
+# {count} line names a file it does not hold: {names} | {count} lines name files it does not hold: {names}
+tcc7922ad =
+    { $n ->
+       *[other] { $count } 行が含まれていないファイルを指しています: { $names }
+    }
+
+# Show only those that do not match
+t24246609 = 一致しないものだけを表示
+
+# Compare with
+tbddcfc14 = 比較対象
 
 # Reading… {size} of {size2}
 t80036d1c = 読み取り中… { $size } / { $size2 }
@@ -235,6 +301,9 @@ t846ddfa1 = 保存先…
 # Checksums in {name}
 t71a5c5d3 = { $name } 内のチェックサム
 
+# Compare…
+tec85be80 = 比較…
+
 # Done
 t8dd31791 = 完了
 
@@ -247,38 +316,17 @@ t8333758c = ファイルと一緒に提供されたチェックサムを貼り�
 # Reading…
 t6aad8485 = 読み取り中…
 
-# There is no checksum in this.
-t231f838a = チェックサムが含まれていません。
-
-# This is not a checksum packwing makes: it has {digits} digits.
-t65dd697c = packwing が作成するチェックサムではありません（{ $digits } 桁）。
-
 # It matches the file’s {name} checksum.
 t4f0350e4 = ファイルの { $name } チェックサムと一致します。
 
 # It is compared once the file is read.
 tcb5c1745 = ファイルの読み取りが終わると比較します。
 
-# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
-t55d6aeb7 = ファイルの { $name } チェックサムと一致しません。このチェックサムの元のファイルではないか、途中でファイルが変化しました。
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = まだ作成していない { $name } チェックサムかもしれません。
-
-# Make it
-tcbefe458 = 作成
-
-# Compare with
-tbddcfc14 = 比較対象
-
 # Checksums of {name}
 te88f3ed9 = { $name } のチェックサム
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = { $files } として隣に保存しました。sha256sum -c などで packwing なしで確認できます。
-
-# Compare…
-tec85be80 = 比較…
 
 # Nothing chosen yet
 tcf390b0a = まだ何も選択されていません

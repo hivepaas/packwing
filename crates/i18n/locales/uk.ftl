@@ -157,6 +157,9 @@ ta24f28a2 = Ввести ліцензійний ключ
 # Save
 t4d2d5d68 = Зберегти
 
+# Paste the checksums given with the files, or one of them
+t3a05149e = Вставте контрольні суми, надані разом із файлами, або одну з них
+
 # The file could not be read: {why}
 t5daa8455 = Не вдалося прочитати файл: { $why }
 
@@ -198,6 +201,84 @@ t658f3664 = Копіювати
 
 # weak
 tedbc2ec9 = слабка
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = Не збігається з контрольною сумою { $name } файлу: це не той файл, з якого її обчислено, або файл змінився дорогою.
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = Це не контрольна сума, яку обчислює packwing: у ній { $digits } цифр.
+
+# The list does not name it.
+tc591042a = У списку його немає.
+
+# There is no checksum in this.
+t231f838a = Тут немає контрольної суми.
+
+# It matches the {name} checksum of {file}.
+t91f99ccb = Збігається з контрольною сумою { $name } файлу { $file }.
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+        [one] Збігається з { $count } файлом: { $names }
+        [few] Збігається з { $count } файлами: { $names }
+        [many] Збігається з { $count } файлами: { $names }
+       *[other] Збігається з { $count } файлу: { $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = Жоден файл у ньому не має такої контрольної суми.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Можливо, це контрольна сума { $name }, яку ще не обчислено.
+
+# Make it
+tcbefe458 = Обчислити
+
+# Every file matches the list.
+ta40a82de = Усі файли збігаються зі списком.
+
+# {count} file matches | {count} files match
+t551e3494 =
+    { $n ->
+        [one] { $count } файл збігається
+        [few] { $count } файли збігаються
+        [many] { $count } файлів збігаються
+       *[other] { $count } файлу збігаються
+    }
+
+# {count} file differs | {count} files differ
+t94a87b3f =
+    { $n ->
+        [one] { $count } файл відрізняється
+        [few] { $count } файли відрізняються
+        [many] { $count } файлів відрізняються
+       *[other] { $count } файлу відрізняються
+    }
+
+# {count} file is not in the list | {count} files are not in the list
+t8c19e4ca =
+    { $n ->
+        [one] { $count } файлу немає в списку
+        [few] { $count } файлів немає в списку
+        [many] { $count } файлів немає в списку
+       *[other] { $count } файлу немає в списку
+    }
+
+# {count} line names a file it does not hold: {names} | {count} lines name files it does not hold: {names}
+tcc7922ad =
+    { $n ->
+        [one] { $count } рядок називає файл, якого в ньому немає: { $names }
+        [few] { $count } рядки називають файли, яких у ньому немає: { $names }
+        [many] { $count } рядків називають файли, яких у ньому немає: { $names }
+       *[other] { $count } рядка називають файли, яких у ньому немає: { $names }
+    }
+
+# Show only those that do not match
+t24246609 = Показувати лише ті, що не збігаються
+
+# Compare with
+tbddcfc14 = Порівняти з
 
 # Reading… {size} of {size2}
 t80036d1c = Читання… { $size } з { $size2 }
@@ -244,6 +325,9 @@ t846ddfa1 = Зберегти в…
 # Checksums in {name}
 t71a5c5d3 = Контрольні суми в { $name }
 
+# Compare…
+tec85be80 = Порівняти…
+
 # Done
 t8dd31791 = Готово
 
@@ -256,38 +340,17 @@ t8333758c = Вставте контрольну суму, надану разо�
 # Reading…
 t6aad8485 = Читання…
 
-# There is no checksum in this.
-t231f838a = Тут немає контрольної суми.
-
-# This is not a checksum packwing makes: it has {digits} digits.
-t65dd697c = Це не контрольна сума, яку обчислює packwing: у ній { $digits } цифр.
-
 # It matches the file’s {name} checksum.
 t4f0350e4 = Збігається з контрольною сумою { $name } файлу.
 
 # It is compared once the file is read.
 tcb5c1745 = Порівняння — коли файл буде прочитано.
 
-# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
-t55d6aeb7 = Не збігається з контрольною сумою { $name } файлу: це не той файл, з якого її обчислено, або файл змінився дорогою.
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = Можливо, це контрольна сума { $name }, яку ще не обчислено.
-
-# Make it
-tcbefe458 = Обчислити
-
-# Compare with
-tbddcfc14 = Порівняти з
-
 # Checksums of {name}
 te88f3ed9 = Контрольні суми { $name }
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = Збережено поруч як { $files }; sha256sum -c та подібні перевірять без packwing.
-
-# Compare…
-tec85be80 = Порівняти…
 
 # Nothing chosen yet
 tcf390b0a = Ще нічого не вибрано

@@ -151,6 +151,9 @@ ta24f28a2 = 라이선스 키 입력
 # Save
 t4d2d5d68 = 저장
 
+# Paste the checksums given with the files, or one of them
+t3a05149e = 파일과 함께 제공된 체크섬이나 그중 하나를 붙여 넣으세요
+
 # The file could not be read: {why}
 t5daa8455 = 파일을 읽을 수 없습니다: { $why }
 
@@ -192,6 +195,69 @@ t658f3664 = 복사
 
 # weak
 tedbc2ec9 = 약함
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = 파일의 { $name } 체크섬과 일치하지 않습니다: 이 체크섬을 만든 파일이 아니거나, 오는 도중에 파일이 바뀌었습니다.
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = packwing이 만드는 체크섬이 아닙니다: { $digits }자리입니다.
+
+# The list does not name it.
+tc591042a = 목록에 이 파일이 없습니다.
+
+# There is no checksum in this.
+t231f838a = 여기에는 체크섬이 없습니다.
+
+# It matches the {name} checksum of {file}.
+t91f99ccb = { $file }의 { $name } 체크섬과 일치합니다.
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+       *[other] 파일 { $count }개와 일치합니다: { $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = 이 체크섬을 가진 파일이 없습니다.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = 아직 만들지 않은 { $name } 체크섬일 수 있습니다.
+
+# Make it
+tcbefe458 = 만들기
+
+# Every file matches the list.
+ta40a82de = 모든 파일이 목록과 일치합니다.
+
+# {count} file matches | {count} files match
+t551e3494 =
+    { $n ->
+       *[other] 파일 { $count }개 일치
+    }
+
+# {count} file differs | {count} files differ
+t94a87b3f =
+    { $n ->
+       *[other] 파일 { $count }개 불일치
+    }
+
+# {count} file is not in the list | {count} files are not in the list
+t8c19e4ca =
+    { $n ->
+       *[other] 파일 { $count }개가 목록에 없음
+    }
+
+# {count} line names a file it does not hold: {names} | {count} lines name files it does not hold: {names}
+tcc7922ad =
+    { $n ->
+       *[other] { $count }줄이 들어 있지 않은 파일을 가리킵니다: { $names }
+    }
+
+# Show only those that do not match
+t24246609 = 일치하지 않는 것만 보기
+
+# Compare with
+tbddcfc14 = 비교 대상
 
 # Reading… {size} of {size2}
 t80036d1c = 읽는 중… { $size } / { $size2 }
@@ -235,6 +301,9 @@ t846ddfa1 = 저장 위치…
 # Checksums in {name}
 t71a5c5d3 = { $name } 안의 체크섬
 
+# Compare…
+tec85be80 = 비교…
+
 # Done
 t8dd31791 = 완료
 
@@ -247,38 +316,17 @@ t8333758c = 파일과 함께 제공된 체크섬을 붙여 넣으세요
 # Reading…
 t6aad8485 = 읽는 중…
 
-# There is no checksum in this.
-t231f838a = 여기에는 체크섬이 없습니다.
-
-# This is not a checksum packwing makes: it has {digits} digits.
-t65dd697c = packwing이 만드는 체크섬이 아닙니다: { $digits }자리입니다.
-
 # It matches the file’s {name} checksum.
 t4f0350e4 = 파일의 { $name } 체크섬과 일치합니다.
 
 # It is compared once the file is read.
 tcb5c1745 = 파일을 다 읽으면 비교합니다.
 
-# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
-t55d6aeb7 = 파일의 { $name } 체크섬과 일치하지 않습니다: 이 체크섬을 만든 파일이 아니거나, 오는 도중에 파일이 바뀌었습니다.
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = 아직 만들지 않은 { $name } 체크섬일 수 있습니다.
-
-# Make it
-tcbefe458 = 만들기
-
-# Compare with
-tbddcfc14 = 비교 대상
-
 # Checksums of {name}
 te88f3ed9 = { $name }의 체크섬
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = 옆에 { $files }(으)로 저장했습니다. sha256sum -c 등으로 packwing 없이 확인할 수 있습니다.
-
-# Compare…
-tec85be80 = 비교…
 
 # Nothing chosen yet
 tcf390b0a = 아직 선택하지 않음

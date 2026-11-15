@@ -153,6 +153,9 @@ ta24f28a2 = Lisans anahtarı girin
 # Save
 t4d2d5d68 = Kaydet
 
+# Paste the checksums given with the files, or one of them
+t3a05149e = Dosyalarla birlikte verilen sağlama toplamlarını ya da birini yapıştırın
+
 # The file could not be read: {why}
 t5daa8455 = Dosya okunamadı: { $why }
 
@@ -194,6 +197,74 @@ t658f3664 = Kopyala
 
 # weak
 tedbc2ec9 = zayıf
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = Dosyanın { $name } sağlama toplamıyla eşleşmiyor: bu, toplamın hesaplandığı dosya değil ya da dosya yolda değişti.
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = Bu, packwing'in hesapladığı bir sağlama toplamı değil: { $digits } haneli.
+
+# The list does not name it.
+tc591042a = Liste onu içermiyor.
+
+# There is no checksum in this.
+t231f838a = Bunda sağlama toplamı yok.
+
+# It matches the {name} checksum of {file}.
+t91f99ccb = { $file } dosyasının { $name } sağlama toplamıyla eşleşiyor.
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+        [one] { $count } dosyayla eşleşiyor: { $names }
+       *[other] { $count } dosyayla eşleşiyor: { $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = İçindeki hiçbir dosyanın bu sağlama toplamı yok.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Henüz hesaplanmamış bir { $name } sağlama toplamı olabilir.
+
+# Make it
+tcbefe458 = Hesapla
+
+# Every file matches the list.
+ta40a82de = Her dosya listeyle eşleşiyor.
+
+# {count} file matches | {count} files match
+t551e3494 =
+    { $n ->
+        [one] { $count } dosya eşleşiyor
+       *[other] { $count } dosya eşleşiyor
+    }
+
+# {count} file differs | {count} files differ
+t94a87b3f =
+    { $n ->
+        [one] { $count } dosya farklı
+       *[other] { $count } dosya farklı
+    }
+
+# {count} file is not in the list | {count} files are not in the list
+t8c19e4ca =
+    { $n ->
+        [one] { $count } dosya listede yok
+       *[other] { $count } dosya listede yok
+    }
+
+# {count} line names a file it does not hold: {names} | {count} lines name files it does not hold: {names}
+tcc7922ad =
+    { $n ->
+        [one] { $count } satır içinde olmayan bir dosyayı adlandırıyor: { $names }
+       *[other] { $count } satır içinde olmayan dosyaları adlandırıyor: { $names }
+    }
+
+# Show only those that do not match
+t24246609 = Yalnızca eşleşmeyenleri göster
+
+# Compare with
+tbddcfc14 = Şununla karşılaştır
 
 # Reading… {size} of {size2}
 t80036d1c = Okunuyor… { $size } / { $size2 }
@@ -238,6 +309,9 @@ t846ddfa1 = Kaydedilecek yer…
 # Checksums in {name}
 t71a5c5d3 = { $name } içindeki sağlama toplamları
 
+# Compare…
+tec85be80 = Karşılaştır…
+
 # Done
 t8dd31791 = Bitti
 
@@ -250,38 +324,17 @@ t8333758c = Dosyayla birlikte verilen sağlama toplamını yapıştırın
 # Reading…
 t6aad8485 = Okunuyor…
 
-# There is no checksum in this.
-t231f838a = Bunda sağlama toplamı yok.
-
-# This is not a checksum packwing makes: it has {digits} digits.
-t65dd697c = Bu, packwing'in hesapladığı bir sağlama toplamı değil: { $digits } haneli.
-
 # It matches the file’s {name} checksum.
 t4f0350e4 = Dosyanın { $name } sağlama toplamıyla eşleşiyor.
 
 # It is compared once the file is read.
 tcb5c1745 = Dosya okununca karşılaştırılır.
 
-# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
-t55d6aeb7 = Dosyanın { $name } sağlama toplamıyla eşleşmiyor: bu, toplamın hesaplandığı dosya değil ya da dosya yolda değişti.
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = Henüz hesaplanmamış bir { $name } sağlama toplamı olabilir.
-
-# Make it
-tcbefe458 = Hesapla
-
-# Compare with
-tbddcfc14 = Şununla karşılaştır
-
 # Checksums of {name}
 te88f3ed9 = { $name } sağlama toplamları
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = Yanına { $files } olarak kaydedildi; sha256sum -c ve benzerleri packwing olmadan denetler.
-
-# Compare…
-tec85be80 = Karşılaştır…
 
 # Nothing chosen yet
 tcf390b0a = Henüz bir şey seçilmedi

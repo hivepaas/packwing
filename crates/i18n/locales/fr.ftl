@@ -153,6 +153,9 @@ ta24f28a2 = Saisir une clé de licence
 # Save
 t4d2d5d68 = Enregistrer
 
+# Paste the checksums given with the files, or one of them
+t3a05149e = Collez les sommes de contrôle fournies avec les fichiers, ou l'une d'elles
+
 # The file could not be read: {why}
 t5daa8455 = Le fichier n'a pas pu être lu : { $why }
 
@@ -194,6 +197,74 @@ t658f3664 = Copier
 
 # weak
 tedbc2ec9 = faible
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = Elle ne correspond pas à la somme { $name } du fichier : ce n'est pas le fichier dont elle a été calculée, ou le fichier a changé en route.
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = Ce n'est pas une somme de contrôle que packwing calcule : elle a { $digits } chiffres.
+
+# The list does not name it.
+tc591042a = La liste ne le nomme pas.
+
+# There is no checksum in this.
+t231f838a = Il n'y a pas de somme de contrôle là-dedans.
+
+# It matches the {name} checksum of {file}.
+t91f99ccb = Elle correspond à la somme { $name } de { $file }.
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+        [one] Elle correspond à { $count } fichier : { $names }
+       *[other] Elle correspond à { $count } fichiers : { $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = Aucun fichier dedans n'a cette somme.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = C'est peut-être une somme { $name }, pas encore calculée.
+
+# Make it
+tcbefe458 = La calculer
+
+# Every file matches the list.
+ta40a82de = Chaque fichier correspond à la liste.
+
+# {count} file matches | {count} files match
+t551e3494 =
+    { $n ->
+        [one] { $count } fichier correspond
+       *[other] { $count } fichiers correspondent
+    }
+
+# {count} file differs | {count} files differ
+t94a87b3f =
+    { $n ->
+        [one] { $count } fichier diffère
+       *[other] { $count } fichiers diffèrent
+    }
+
+# {count} file is not in the list | {count} files are not in the list
+t8c19e4ca =
+    { $n ->
+        [one] { $count } fichier n'est pas dans la liste
+       *[other] { $count } fichiers ne sont pas dans la liste
+    }
+
+# {count} line names a file it does not hold: {names} | {count} lines name files it does not hold: {names}
+tcc7922ad =
+    { $n ->
+        [one] { $count } ligne nomme un fichier qu'elle ne contient pas : { $names }
+       *[other] { $count } lignes nomment des fichiers qu'elle ne contient pas : { $names }
+    }
+
+# Show only those that do not match
+t24246609 = N'afficher que ceux qui ne correspondent pas
+
+# Compare with
+tbddcfc14 = Comparer avec
 
 # Reading… {size} of {size2}
 t80036d1c = Lecture… { $size } sur { $size2 }
@@ -238,6 +309,9 @@ t846ddfa1 = Enregistrer dans…
 # Checksums in {name}
 t71a5c5d3 = Sommes de contrôle dans { $name }
 
+# Compare…
+tec85be80 = Comparer…
+
 # Done
 t8dd31791 = Terminé
 
@@ -250,38 +324,17 @@ t8333758c = Collez la somme de contrôle fournie avec le fichier
 # Reading…
 t6aad8485 = Lecture…
 
-# There is no checksum in this.
-t231f838a = Il n'y a pas de somme de contrôle là-dedans.
-
-# This is not a checksum packwing makes: it has {digits} digits.
-t65dd697c = Ce n'est pas une somme de contrôle que packwing calcule : elle a { $digits } chiffres.
-
 # It matches the file’s {name} checksum.
 t4f0350e4 = Elle correspond à la somme { $name } du fichier.
 
 # It is compared once the file is read.
 tcb5c1745 = La comparaison se fait une fois le fichier lu.
 
-# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
-t55d6aeb7 = Elle ne correspond pas à la somme { $name } du fichier : ce n'est pas le fichier dont elle a été calculée, ou le fichier a changé en route.
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = C'est peut-être une somme { $name }, pas encore calculée.
-
-# Make it
-tcbefe458 = La calculer
-
-# Compare with
-tbddcfc14 = Comparer avec
-
 # Checksums of {name}
 te88f3ed9 = Sommes de contrôle de { $name }
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = Enregistrées à côté sous { $files }, où sha256sum -c et ses semblables les vérifient sans packwing.
-
-# Compare…
-tec85be80 = Comparer…
 
 # Nothing chosen yet
 tcf390b0a = Rien de choisi pour l'instant

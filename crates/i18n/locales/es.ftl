@@ -153,6 +153,9 @@ ta24f28a2 = Introducir una clave de licencia
 # Save
 t4d2d5d68 = Guardar
 
+# Paste the checksums given with the files, or one of them
+t3a05149e = Pega las sumas de comprobación que acompañan a los archivos, o una de ellas
+
 # The file could not be read: {why}
 t5daa8455 = No se pudo leer el archivo: { $why }
 
@@ -194,6 +197,74 @@ t658f3664 = Copiar
 
 # weak
 tedbc2ec9 = débil
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = No coincide con la suma { $name } del archivo: no es el archivo del que se calculó, o el archivo cambió por el camino.
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = No es una suma de comprobación que packwing calcule: tiene { $digits } dígitos.
+
+# The list does not name it.
+tc591042a = La lista no lo nombra.
+
+# There is no checksum in this.
+t231f838a = Aquí no hay ninguna suma de comprobación.
+
+# It matches the {name} checksum of {file}.
+t91f99ccb = Coincide con la suma { $name } de { $file }.
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+        [one] Coincide con { $count } archivo: { $names }
+       *[other] Coincide con { $count } archivos: { $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = Ningún archivo de dentro tiene esta suma.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Puede ser una suma { $name }, que aún no se ha calculado.
+
+# Make it
+tcbefe458 = Calcularla
+
+# Every file matches the list.
+ta40a82de = Todos los archivos coinciden con la lista.
+
+# {count} file matches | {count} files match
+t551e3494 =
+    { $n ->
+        [one] { $count } archivo coincide
+       *[other] { $count } archivos coinciden
+    }
+
+# {count} file differs | {count} files differ
+t94a87b3f =
+    { $n ->
+        [one] { $count } archivo difiere
+       *[other] { $count } archivos difieren
+    }
+
+# {count} file is not in the list | {count} files are not in the list
+t8c19e4ca =
+    { $n ->
+        [one] { $count } archivo no está en la lista
+       *[other] { $count } archivos no están en la lista
+    }
+
+# {count} line names a file it does not hold: {names} | {count} lines name files it does not hold: {names}
+tcc7922ad =
+    { $n ->
+        [one] { $count } línea nombra un archivo que no contiene: { $names }
+       *[other] { $count } líneas nombran archivos que no contiene: { $names }
+    }
+
+# Show only those that do not match
+t24246609 = Mostrar solo los que no coinciden
+
+# Compare with
+tbddcfc14 = Comparar con
 
 # Reading… {size} of {size2}
 t80036d1c = Leyendo… { $size } de { $size2 }
@@ -238,6 +309,9 @@ t846ddfa1 = Guardar en…
 # Checksums in {name}
 t71a5c5d3 = Sumas de comprobación en { $name }
 
+# Compare…
+tec85be80 = Comparar…
+
 # Done
 t8dd31791 = Listo
 
@@ -250,38 +324,17 @@ t8333758c = Pega la suma de comprobación que acompaña al archivo
 # Reading…
 t6aad8485 = Leyendo…
 
-# There is no checksum in this.
-t231f838a = Aquí no hay ninguna suma de comprobación.
-
-# This is not a checksum packwing makes: it has {digits} digits.
-t65dd697c = No es una suma de comprobación que packwing calcule: tiene { $digits } dígitos.
-
 # It matches the file’s {name} checksum.
 t4f0350e4 = Coincide con la suma { $name } del archivo.
 
 # It is compared once the file is read.
 tcb5c1745 = Se compara cuando termine de leerse el archivo.
 
-# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
-t55d6aeb7 = No coincide con la suma { $name } del archivo: no es el archivo del que se calculó, o el archivo cambió por el camino.
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = Puede ser una suma { $name }, que aún no se ha calculado.
-
-# Make it
-tcbefe458 = Calcularla
-
-# Compare with
-tbddcfc14 = Comparar con
-
 # Checksums of {name}
 te88f3ed9 = Sumas de comprobación de { $name }
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = Guardadas junto a él como { $files }, donde sha256sum -c y similares las comprueban sin packwing.
-
-# Compare…
-tec85be80 = Comparar…
 
 # Nothing chosen yet
 tcf390b0a = Aún no hay nada elegido

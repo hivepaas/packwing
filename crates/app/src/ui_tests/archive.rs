@@ -140,6 +140,26 @@ scenario!(
         let list = std::fs::read_to_string(ui.work.join("sample.7z.contents.sha256"))
             .expect("the list beside it");
         assert_eq!(list.lines().count() as u64, files, "{list}");
+        // The list kept, pasted, matches; changed, it does not.
+        ui.click("checksum-compare");
+        ui.type_in("Paste the checksums given with the files, or one of them", &list);
+        assert!(ui.shows("checksum-all-match"));
+        let (first, rest) = list.split_once("  ").expect("a line");
+        let changed = format!("{}  {rest}", "0".repeat(first.len()));
+        ui.replace_in("Paste the checksums given with the files, or one of them", &changed);
+        assert!(ui.shows("checksum-differs"));
+        assert!(ui.shows("checksum-mark-0-differs"));
+        // One checksum alone is looked for in every file.
+        let second = list.lines().nth(1).expect("two files");
+        let (second, _) = second.split_once("  ").expect("a line");
+        ui.replace_in("Paste the checksums given with the files, or one of them", second);
+        assert!(ui.shows("checksum-one-matches"));
+        assert!(ui.shows("checksum-mark-1-matches"));
+        ui.replace_in(
+            "Paste the checksums given with the files, or one of them",
+            &"0".repeat(64),
+        );
+        assert!(ui.shows("checksum-none-match"));
     }
 );
 

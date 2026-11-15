@@ -151,6 +151,9 @@ ta24f28a2 = 输入许可证密钥
 # Save
 t4d2d5d68 = 保存
 
+# Paste the checksums given with the files, or one of them
+t3a05149e = 粘贴随文件提供的校验和，或其中一个
+
 # The file could not be read: {why}
 t5daa8455 = 无法读取文件：{ $why }
 
@@ -192,6 +195,69 @@ t658f3664 = 复制
 
 # weak
 tedbc2ec9 = 弱
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = 与文件的 { $name } 校验和不一致：这不是生成该校验和的文件，或者文件在传输途中发生了变化。
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = 这不是 packwing 生成的校验和：它有 { $digits } 位。
+
+# The list does not name it.
+tc591042a = 列表中没有它。
+
+# There is no checksum in this.
+t231f838a = 这里面没有校验和。
+
+# It matches the {name} checksum of {file}.
+t91f99ccb = 与 { $file } 的 { $name } 校验和一致。
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+       *[other] 与 { $count } 个文件一致：{ $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = 其中没有文件具有此校验和。
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = 这可能是尚未生成的 { $name } 校验和。
+
+# Make it
+tcbefe458 = 生成
+
+# Every file matches the list.
+ta40a82de = 所有文件都与列表一致。
+
+# {count} file matches | {count} files match
+t551e3494 =
+    { $n ->
+       *[other] { $count } 个文件一致
+    }
+
+# {count} file differs | {count} files differ
+t94a87b3f =
+    { $n ->
+       *[other] { $count } 个文件不一致
+    }
+
+# {count} file is not in the list | {count} files are not in the list
+t8c19e4ca =
+    { $n ->
+       *[other] { $count } 个文件不在列表中
+    }
+
+# {count} line names a file it does not hold: {names} | {count} lines name files it does not hold: {names}
+tcc7922ad =
+    { $n ->
+       *[other] { $count } 行指向其中没有的文件：{ $names }
+    }
+
+# Show only those that do not match
+t24246609 = 只显示不一致的
+
+# Compare with
+tbddcfc14 = 比较对象
 
 # Reading… {size} of {size2}
 t80036d1c = 正在读取… { $size } / { $size2 }
@@ -235,6 +301,9 @@ t846ddfa1 = 保存到…
 # Checksums in {name}
 t71a5c5d3 = { $name } 中的校验和
 
+# Compare…
+tec85be80 = 比较…
+
 # Done
 t8dd31791 = 完成
 
@@ -247,38 +316,17 @@ t8333758c = 粘贴随文件提供的校验和
 # Reading…
 t6aad8485 = 正在读取…
 
-# There is no checksum in this.
-t231f838a = 这里面没有校验和。
-
-# This is not a checksum packwing makes: it has {digits} digits.
-t65dd697c = 这不是 packwing 生成的校验和：它有 { $digits } 位。
-
 # It matches the file’s {name} checksum.
 t4f0350e4 = 与文件的 { $name } 校验和一致。
 
 # It is compared once the file is read.
 tcb5c1745 = 文件读取完成后进行比较。
 
-# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
-t55d6aeb7 = 与文件的 { $name } 校验和不一致：这不是生成该校验和的文件，或者文件在传输途中发生了变化。
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = 这可能是尚未生成的 { $name } 校验和。
-
-# Make it
-tcbefe458 = 生成
-
-# Compare with
-tbddcfc14 = 比较对象
-
 # Checksums of {name}
 te88f3ed9 = { $name } 的校验和
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = 已保存在旁边，文件名为 { $files }；sha256sum -c 等工具无需 packwing 即可校验。
-
-# Compare…
-tec85be80 = 比较…
 
 # Nothing chosen yet
 tcf390b0a = 尚未选择
