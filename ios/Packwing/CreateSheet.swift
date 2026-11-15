@@ -82,6 +82,9 @@ struct CreateSheet: View {
     @State private var hideNames = false
     @State private var adding: NewSource?
     @State private var choosingFolder = false
+    /// A storage's folder to make it in, in place of one of Files.
+    @State private var toStorage: StorageSpot?
+    @State private var pickingStorage = false
 
     var body: some View {
         // Read, so that a folder chosen draws it again.
@@ -186,11 +189,24 @@ struct CreateSheet: View {
                         Image(systemName: "folder")
                             .foregroundStyle(Tonal.accent)
                             .font(.system(size: 20))
-                        Text(model.shown(folder))
+                        Text(toStorage.map { $0.handle.storage.showPath(path: $0.folder) } ?? model.shown(folder))
                             .font(.nunito(15, .semibold, relativeTo: .subheadline))
+                            .lineLimit(2)
+                            .truncationMode(.middle)
                         Spacer(minLength: 8)
-                        Button(tr("Change")) { choosingFolder = true }
+                        if model.storages.isEmpty {
+                            Button(tr("Change")) { choosingFolder = true }
+                                .buttonStyle(.bordered)
+                        } else {
+                            // A folder of Files, or one of a storage.
+                            Menu(tr("Change")) {
+                                Button(tr("Files"), systemImage: "folder") { choosingFolder = true }
+                                Button(tr("Storages"), systemImage: "externaldrive.connected.to.line.below") {
+                                    pickingStorage = true
+                                }
+                            }
                             .buttonStyle(.bordered)
+                        }
                     }
                 }
                 .listRowBackground(Tonal.surface)
@@ -240,7 +256,13 @@ struct CreateSheet: View {
             }
             .choosingNewItems($adding, chosen: { draft.add($0) }, photos: { draft.add($0) })
             .fileImporter(isPresented: $choosingFolder, allowedContentTypes: [.folder]) { result in
-                if case .success(let url) = result { model.createIn(url) }
+                if case .success(let url) = result {
+                    model.createIn(url)
+                    toStorage = nil
+                }
+            }
+            .sheet(isPresented: $pickingStorage) {
+                StorageFolderPicker(title: tr("Save to"), confirm: tr("Save here")) { toStorage = $0 }
             }
         }
         .presentationDetents([.large])
@@ -278,7 +300,13 @@ struct CreateSheet: View {
             password: locked ? password : nil,
             hideNames: locked && hideNames && format == .sevenZip)
         let name = fileName
-        model.afterSheet = { [model, draft] in model.create(draft, named: name, how: how, in: folder) }
+        if let toStorage {
+            model.afterSheet = { [model, draft] in
+                model.create(draft, named: name + format.ext, how: how, on: toStorage.handle, in: toStorage.folder)
+            }
+        } else {
+            model.afterSheet = { [model, draft] in model.create(draft, named: name, how: how, in: folder) }
+        }
         dismiss()
     }
 }

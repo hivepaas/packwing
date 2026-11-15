@@ -181,7 +181,11 @@ struct ArchiveChanges: ViewModifier {
             // A sheet, not an alert: an alert's text field and buttons lost
             // their first tap now and then, shown from a context menu.
             .sheet(item: Binding { renaming.map(RenamePath.init) } set: { renaming = $0?.path }) { what in
-                RenameSheet(path: what.path, signed: signedBeside(opened)) { name in
+                NameSheet(title: tr("Rename {what}", ["what": what.path.last ?? ""]), current: what.path.last,
+                          note: signedBeside(opened)
+                              ? tr("This archive is signed. After this change it will no longer match its signature, until it is signed again.")
+                              : nil,
+                          confirm: tr("Rename")) { name in
                     model.rename(what.path, to: name, in: opened)
                 }
             }
@@ -226,47 +230,52 @@ private struct RenamePath: Identifiable {
     var id: [String] { path }
 }
 
-/// A new name for a file or folder of an archive.
-private struct RenameSheet: View {
+/// A name to give: a file's or folder's new one, a new folder's.
+struct NameSheet: View {
     @Environment(\.dismiss) private var dismiss
-    let path: [String]
-    /// Whether the archive has a signature beside it, which the change leaves behind.
-    let signed: Bool
-    let rename: (String) -> Void
+    let title: String
+    /// The name it has, if it has one: then the same one is no change.
+    let current: String?
+    /// Under the field, if there is something to say.
+    let note: String?
+    let confirm: String
+    let named: (String) -> Void
     @State private var name: String
     @FocusState private var typing: Bool
 
-    init(path: [String], signed: Bool, rename: @escaping (String) -> Void) {
-        self.path = path
-        self.signed = signed
-        self.rename = rename
-        _name = State(initialValue: path.last ?? "")
+    init(title: String, current: String?, note: String? = nil, confirm: String, named: @escaping (String) -> Void) {
+        self.title = title
+        self.current = current
+        self.note = note
+        self.confirm = confirm
+        self.named = named
+        _name = State(initialValue: current ?? "")
     }
 
     private var newName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
+    private var ready: Bool { !newName.isEmpty && newName != current && !newName.contains("/") }
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
                     // A file's name: as typed, not corrected.
-                    TextField(tr("New name"), text: $name)
+                    TextField(tr("Name"), text: $name)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
+                        .textContentType(.oneTimeCode)
                         .focused($typing)
                         .submitLabel(.done)
                         .onSubmit(done)
                         .accessibilityIdentifier("new-name")
                 } footer: {
-                    if signed {
-                        Text(tr("This archive is signed. After this change it will no longer match its signature, until it is signed again."))
-                    }
+                    if let note { Text(note) }
                 }
                 .listRowBackground(Tonal.surface)
             }
             .scrollContentBackground(.hidden)
             .background(Tonal.page)
-            .navigationTitle(tr("Rename {what}", ["what": path.last ?? ""]))
+            .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -274,8 +283,9 @@ private struct RenameSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(role: .confirm, action: done)
-                        .disabled(newName.isEmpty || newName == path.last)
-                        .accessibilityLabel(tr("Rename"))
+                        .disabled(!ready)
+                        .accessibilityLabel(confirm)
+                        .accessibilityIdentifier("name-confirm")
                 }
             }
             .onAppear { typing = true }
@@ -284,9 +294,8 @@ private struct RenameSheet: View {
     }
 
     private func done() {
-        guard !newName.isEmpty, newName != path.last else { return }
-        rename(newName)
+        guard ready else { return }
+        named(newName)
         dismiss()
     }
 }
-

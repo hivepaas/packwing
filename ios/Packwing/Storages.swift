@@ -225,6 +225,12 @@ struct StorageFolderView: View {
     let spot: StorageSpot
     @State private var items: [StoredItem]?
     @State private var problem: String?
+    @State private var renaming: String?
+    @State private var deleting: [String]?
+    @State private var naming = false
+    @State private var adding: NewSource?
+    @State private var sending: (names: [String], moving: Bool)?
+    @State private var downloading: [String]?
     @AppStorage("storageHidden") private var showingHidden = false
 
     private var shown: [StoredItem] {
@@ -265,7 +271,15 @@ struct StorageFolderView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
+                // Up from the phone: Files, a folder, Photos.
+                AddMenu(source: $adding) {
+                    Image(systemName: "plus")
+                }
+                .accessibilityLabel(tr("Add files"))
+            }
+            ToolbarItem(placement: .topBarTrailing) {
                 Menu {
+                    Button(tr("New folder"), systemImage: "folder.badge.plus") { naming = true }
                     Toggle(tr("Show hidden files"), isOn: $showingHidden)
                 } label: {
                     Image(systemName: "ellipsis")
@@ -273,15 +287,22 @@ struct StorageFolderView: View {
                 .accessibilityLabel(tr("More"))
             }
         }
+        .modifier(StorageChanges(spot: spot, renaming: $renaming, deleting: $deleting, naming: $naming,
+                                 adding: $adding, sending: $sending, downloading: $downloading))
         .quickLookPreview($model.previewing)
         .overlay(alignment: .bottom) {
             if let name = model.reading {
                 BusyBanner(title: tr("Opening"), name: name) {}
                     .padding(.bottom, 24)
+            } else if let changing = model.changing {
+                BusyBanner(title: changing.title, name: changing.name) { model.stopChanging() }
+                    .padding(.bottom, 24)
             }
         }
         .refreshable { await load() }
         .task { if items == nil { await load() } }
+        // Read again once something here, or anywhere, changed.
+        .onChange(of: model.storagesChanged) { Task { await load() } }
     }
 
     private func row(_ item: StoredItem) -> some View {
@@ -313,6 +334,11 @@ struct StorageFolderView: View {
                 Button(tr("Open"), systemImage: "archivebox") { model.open(item, in: spot.folder, of: spot.handle) }
                 Button(tr("Preview"), systemImage: "eye") { model.preview(item, in: spot.folder, of: spot.handle) }
             }
+            Button(tr("Download"), systemImage: "square.and.arrow.down") { downloading = [item.name] }
+            Button(tr("Copy to…"), systemImage: "doc.on.doc") { sending = ([item.name], false) }
+            Button(tr("Move to…"), systemImage: "folder") { sending = ([item.name], true) }
+            Button(tr("Rename"), systemImage: "pencil") { renaming = item.name }
+            Button(tr("Delete…"), systemImage: "trash", role: .destructive) { deleting = [item.name] }
         }
     }
 

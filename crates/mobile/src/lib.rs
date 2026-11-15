@@ -53,8 +53,9 @@ pub use ssh::{
     SshKey, SshQuestions, TypedSecret, ask_ssh_with, import_ssh_key, remove_ssh_key, ssh_keys,
 };
 pub use storage::{
-    RemoteStorage, StorageField, StorageKindRow, StoredItem, describe_storage,
+    RemoteStorage, StorageField, StorageKindRow, StoredItem, Transferred, describe_storage,
     forget_storage_secrets, keep_storage_secrets, kept_storage_secrets, storage_kinds,
+    transfer_items,
 };
 
 /// Why a call did not do what it was asked, as the app says it: `reason` is
@@ -532,20 +533,27 @@ pub fn create_archive(
 ) -> Result<String, MobileError> {
     let paths: Vec<PathBuf> = paths.into_iter().map(PathBuf::from).collect();
     let wanted = packwing_core::free_archive_path(Path::new(&wanted), false);
-    let new = NewArchive {
-        kind: how.format.kind(),
-        level: how.compression.level(),
-        password: how.password.map(String::into_bytes),
-        hide_names: how.hide_names && how.format == ArchiveFormat::SevenZip,
-        stored_extensions: COMPRESSED_EXTENSIONS
-            .iter()
-            .map(|e| e.to_string())
-            .collect(),
-        skip_mac_files: true,
-        ..NewArchive::default()
-    };
-    let made = packwing_core::create(&paths, &wanted, &new, &job.control())?;
+    let made = packwing_core::create(&paths, &wanted, &how.new_archive(), &job.control())?;
     Ok(made.display().to_string())
+}
+
+impl NewArchiveHow {
+    /// What the core makes of it.
+    pub(crate) fn new_archive(&self) -> NewArchive {
+        let how = self.clone();
+        NewArchive {
+            kind: how.format.kind(),
+            level: how.compression.level(),
+            password: how.password.map(String::into_bytes),
+            hide_names: how.hide_names && how.format == ArchiveFormat::SevenZip,
+            stored_extensions: COMPRESSED_EXTENSIONS
+                .iter()
+                .map(|e| e.to_string())
+                .collect(),
+            skip_mac_files: true,
+            ..NewArchive::default()
+        }
+    }
 }
 
 /// Whether a picture's `bytes` are of a size that is safe to decode and show:

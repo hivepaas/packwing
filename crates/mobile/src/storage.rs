@@ -11,9 +11,11 @@ use std::collections::{BTreeMap, HashMap};
 use std::io;
 use std::sync::Arc;
 
-use packwing_core::{Source, Storage, StorageKind, Stored, Values};
+use std::path::PathBuf;
 
-use crate::{Archive, Job, MobileError, Secrets};
+use packwing_core::{LocalFolder, Source, Storage, StorageKind, Stored, Transfer, Values};
+
+use crate::{Archive, Job, MobileError, NewArchiveHow, OnExisting, Secrets};
 
 /// Something a storage of a kind asks for when it is added.
 #[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
@@ -141,6 +143,17 @@ pub fn forget_storage_secrets(kind: String, id: String) {
     }
 }
 
+/// How a copy or a move went.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, uniffi::Record)]
+pub struct Transferred {
+    pub files: u64,
+    pub bytes: u64,
+    /// Left where they were, as their names were taken.
+    pub skipped: u64,
+    /// Links left where they were: one may lead anywhere.
+    pub links_left: u64,
+}
+
 /// A storage, to browse. It touches neither the network nor the keychain until
 /// first used.
 #[derive(uniffi::Object)]
@@ -162,6 +175,57 @@ impl RemoteStorage {
         let typed = typed.map(self::values);
         let storage = self::kind(&kind)?.open(&id, &self::values(values), typed.as_ref());
         Ok(Arc::new(RemoteStorage { storage }))
+    }
+
+    /// A folder of this phone, as a storage: to copy to and from one across
+    /// the network (a folder of Files, packwing's own).
+    #[uniffi::constructor]
+    pub fn local(path: String) -> Arc<RemoteStorage> {
+        Arc::new(RemoteStorage {
+            storage: Arc::new(LocalFolder::new(PathBuf::from(path))),
+        })
+    }
+
+    /// Makes the folder `name` in `folder`; a name taken is an error.
+    pub fn make_folder(&self, folder: Vec<String>, name: String) -> Result<(), MobileError> {
+        self.storage.make_folder(&folder, &name).map_err(failed)
+    }
+
+    /// Renames `from` in `folder` to `to`; a name taken is an error.
+    pub fn rename(&self, folder: Vec<String>, from: String, to: String) -> Result<(), MobileError> {
+        self.storage.rename(&folder, &from, &to).map_err(failed)
+    }
+
+    /// Deletes `names` of `folder`, for good: a storage across the network has
+    /// no Trash.
+    pub fn delete(&self, folder: Vec<String>, names: Vec<String>) -> Result<(), MobileError> {
+        self.storage.delete(&folder, &names).map_err(failed)
+    }
+
+    /// Makes an archive of `paths` (files and folders of this phone) in
+    /// `folder`, named `name` or the first name after it that is free: written
+    /// there, or made here first and sent. Says the name it has.
+    pub fn create_archive(
+        &self,
+        paths: Vec<String>,
+        folder: Vec<String>,
+        name: String,
+        how: NewArchiveHow,
+        job: Arc<Job>,
+    ) -> Result<String, MobileError> {
+        let paths: Vec<PathBuf> = paths.into_iter().map(PathBuf::from).collect();
+        let made = packwing_core::create_on(
+            &paths,
+            self.storage.as_ref(),
+            &folder,
+            &name,
+            &how.new_archive(),
+            &job.control(),
+            &|| {},
+        )?;
+        Ok(made
+            .and_then(|p| p.file_name().map(|n| n.to_string_lossy().into_owned()))
+            .unwrap_or(name))
     }
 
     /// What is in `folder` (its path; empty for the top), folders first, by
@@ -211,4 +275,41 @@ impl RemoteStorage {
         let source = Source::Stored(Stored::new(self.storage.clone(), path, size));
         Archive::of(source, secrets, job)
     }
+}
+
+/// Copies, or moves, `names` of `from_folder` of `from` into `to_folder` of
+/// `to`, each with what is under it: between storages, or with a folder of
+/// this phone ([`RemoteStorage::local`]). A name taken goes as `on_existing`
+/// says.
+#[uniffi::export]
+#[allow(clippy::too_many_arguments)]
+pub fn transfer_items(
+    from: Arc<RemoteStorage>,
+    from_folder: Vec<String>,
+    names: Vec<String>,
+    to: Arc<RemoteStorage>,
+    to_folder: Vec<String>,
+    moving: bool,
+    on_existing: OnExisting,
+    job: Arc<Job>,
+) -> Result<Transferred, MobileError> {
+    let done = packwing_core::transfer(
+        &Transfer {
+            from: from.storage.clone(),
+            from_folder,
+            names,
+            to: to.storage.clone(),
+            to_folder,
+            moving,
+            on_existing: on_existing.into(),
+            keep_mark: false,
+        },
+        &job.control(),
+    )?;
+    Ok(Transferred {
+        files: done.files,
+        bytes: done.bytes,
+        skipped: done.skipped,
+        links_left: done.links_left,
+    })
 }

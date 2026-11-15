@@ -10,7 +10,7 @@ use packwing_mobile::{
     JobListener, JobProgress, MobileError, NewArchiveHow, OnExisting, PastedCompared,
     RemoteStorage, Secrets, SignatureState, SshQuestions, TypedSecret, ask_ssh_with,
     checksum_kinds, checksum_list, checksum_list_name, compare_checksum, compare_pasted,
-    create_archive, describe_storage, read_key, start, stem, storage_kinds,
+    create_archive, describe_storage, read_key, start, stem, storage_kinds, transfer_items,
 };
 
 /// A folder of files to make archives of: `Báo cáo/tổng hợp.txt` and
@@ -723,4 +723,98 @@ fn the_files_in_an_archive_have_their_checksums_in_one_read_of_it() {
         assert_eq!(compare("  "), None);
         fs::remove_file(&path).expect("removed");
     }
+}
+
+/// Against a WebDAV server, skipped without `WEBDAV_TEST_ENDPOINT`: a storage's
+/// files made, renamed, copied both ways, made an archive of, and deleted.
+#[test]
+fn a_storage_is_written_to_from_the_phone() {
+    let Ok(address) = std::env::var("WEBDAV_TEST_ENDPOINT") else {
+        return;
+    };
+    let dir = tempfile::tempdir().expect("dir");
+    let folder = format!("writes-{}", std::process::id());
+    let values: std::collections::HashMap<String, String> = [
+        ("address".to_owned(), address),
+        (
+            "user".to_owned(),
+            std::env::var("WEBDAV_TEST_USER").unwrap_or_default(),
+        ),
+    ]
+    .into_iter()
+    .collect();
+    let typed = [(
+        "password".to_owned(),
+        std::env::var("WEBDAV_TEST_PASSWORD").unwrap_or_default(),
+    )]
+    .into_iter()
+    .collect();
+    let there = RemoteStorage::open("webdav".to_owned(), "w".to_owned(), values, Some(typed))
+        .expect("opened");
+    let names = |at: Vec<String>| -> Vec<String> {
+        there
+            .list(at, Job::quiet())
+            .expect("listed")
+            .into_iter()
+            .map(|i| i.name)
+            .collect()
+    };
+    there.make_folder(vec![], folder.clone()).expect("made");
+    let at = vec![folder.clone()];
+
+    // Up from the phone.
+    let here = RemoteStorage::local(files(dir.path()));
+    let sent = transfer_items(
+        here.clone(),
+        vec![],
+        vec!["ghi chú.txt".to_owned()],
+        there.clone(),
+        at.clone(),
+        false,
+        OnExisting::Stop,
+        Job::quiet(),
+    )
+    .expect("sent");
+    assert_eq!(sent.files, 1);
+    there
+        .rename(at.clone(), "ghi chú.txt".to_owned(), "notes.txt".to_owned())
+        .expect("renamed");
+
+    // An archive made there.
+    let made = there
+        .create_archive(
+            vec![dir.path().join("Báo cáo").display().to_string()],
+            at.clone(),
+            "Báo cáo.zip".to_owned(),
+            NewArchiveHow {
+                format: ArchiveFormat::Zip,
+                compression: CompressionLevel::Low,
+                password: None,
+                hide_names: false,
+            },
+            Job::quiet(),
+        )
+        .expect("made");
+    assert_eq!(made, "Báo cáo.zip");
+    assert_eq!(names(at.clone()), ["Báo cáo.zip", "notes.txt"]);
+
+    // Down to the phone.
+    let down = dir.path().join("down");
+    fs::create_dir_all(&down).expect("down");
+    transfer_items(
+        there.clone(),
+        at.clone(),
+        vec!["notes.txt".to_owned()],
+        RemoteStorage::local(down.display().to_string()),
+        vec![],
+        true,
+        OnExisting::Stop,
+        Job::quiet(),
+    )
+    .expect("moved");
+    assert_eq!(fs::read(down.join("notes.txt")).expect("read"), b"hello");
+    assert_eq!(names(at.clone()), ["Báo cáo.zip"]);
+
+    there.delete(vec![], vec![folder.clone()]).expect("deleted");
+    assert!(!names(vec![]).contains(&folder));
 }
