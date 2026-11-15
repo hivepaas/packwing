@@ -42,7 +42,9 @@ use packwing_core::{
 };
 
 pub use checksum::{
-    Checksum, ChecksumKind, ChecksumKindRow, Compared, checksum_kinds, compare_checksum,
+    Checksum, ChecksumKind, ChecksumKindRow, Compared, EntryChecksum, EntryChecksums, FileVerdict,
+    FoundBySum, PastedCompared, checksum_kinds, checksum_list, checksum_list_name,
+    compare_checksum, compare_pasted,
 };
 pub use edit::OnExisting;
 pub use i18n::LanguageRow;

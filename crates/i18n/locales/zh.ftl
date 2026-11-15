@@ -3283,6 +3283,15 @@ t7d8cbf49 =
        *[other] 已将 { $n } 张照片和视频添加到“照片”
     }
 
+# Tap a file to see its checksums.
+t778c19e3 = 轻点文件即可查看其校验和。
+
+# Matches
+ta7d4102e = 匹配
+
+# Differs
+t6451057a = 不匹配
+
 # Archives
 tc45c73a2 = 压缩包
 

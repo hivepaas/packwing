@@ -3283,6 +3283,15 @@ t7d8cbf49 =
        *[other] { $n } 件の写真とビデオを「写真」に追加しました
     }
 
+# Tap a file to see its checksums.
+t778c19e3 = ファイルをタップするとチェックサムが表示されます。
+
+# Matches
+ta7d4102e = 一致
+
+# Differs
+t6451057a = 不一致
+
 # Archives
 tc45c73a2 = アーカイブ
 

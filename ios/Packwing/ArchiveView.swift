@@ -14,7 +14,7 @@ struct ArchiveView: View {
     @State private var extracting: Picked?
     /// The grid or the list, as chosen here; else the grid for pictures.
     @State private var grid: Bool?
-    @State private var checksums = false
+    @State private var checksums: ChecksumAsk?
     @State private var signature = false
     @State private var deleting: [[String]]?
     @State private var renaming: [String]?
@@ -36,6 +36,7 @@ struct ArchiveView: View {
                 GalleryGrid(opened: place.archive, folder: place.folder, entries: entries,
                             selecting: selecting, picked: $picked,
                             extract: { extracting = Picked(paths: [$0]) },
+                            checksums: { checksums = ChecksumAsk(picked: [$0], atOnce: true) },
                             rename: canChange ? { renaming = $0 } : nil,
                             delete: canChange ? { deleting = [$0] } : nil)
             } else {
@@ -69,7 +70,9 @@ struct ArchiveView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    Button(tr("Checksums"), systemImage: "number") { checksums = true }
+                    Button(tr("Checksums"), systemImage: "number") {
+                        checksums = ChecksumAsk(picked: selecting ? Array(picked) : [], atOnce: false)
+                    }
                     Button(tr("Signature"), systemImage: "signature") { signature = true }
                 } label: {
                     Image(systemName: "ellipsis")
@@ -114,8 +117,10 @@ struct ArchiveView: View {
         .sheet(item: $extracting, onDismiss: model.sheetGone) { what in
             ExtractSheet(archive: place.archive, picked: what.paths, toPhotos: what.toPhotos)
         }
-        .sheet(isPresented: $checksums) {
-            ChecksumSheet(archive: place.archive)
+        .sheet(item: $checksums) { ask in
+            let (files, bytes) = held(ask.picked)
+            ChecksumSheet(archive: place.archive, picked: ask.picked, pickedFiles: files, pickedBytes: bytes,
+                          atOnce: ask.atOnce)
         }
         .sheet(isPresented: $signature) {
             SignatureSheet(archive: place.archive)
@@ -177,6 +182,24 @@ struct ArchiveView: View {
         .environment(\.editMode, .constant(selecting ? .active : .inactive))
     }
 
+    /// The files `paths` hold, and their bytes if all are files (a folder's are not counted).
+    private func held(_ paths: [[String]]) -> (UInt64, UInt64?) {
+        var files: UInt64 = 0
+        var bytes: UInt64? = 0
+        let rows = entries.map { (place.folder + [$0.name], $0) } + found.map { ($0.path, $0.entry) }
+        for path in paths {
+            guard let entry = rows.first(where: { $0.0 == path })?.1 else { continue }
+            if entry.folder {
+                files += entry.files
+                bytes = nil
+            } else {
+                files += 1
+                bytes = bytes.map { $0 + entry.size }
+            }
+        }
+        return (files, bytes)
+    }
+
     private var extractLabel: String {
         if selecting { return trN(picked.count, "Extract {n}", "Extract {n}") }
         return forPhotos ? tr("Save all to Photos") : tr("Extract all")
@@ -210,12 +233,20 @@ struct ArchiveView: View {
                 Button(tr("Preview"), systemImage: "eye") { model.preview(place.archive, path) }
             }
             Button(tr("Extract"), systemImage: "square.and.arrow.down") { extracting = Picked(paths: [path]) }
+            Button(tr("Checksums"), systemImage: "number") { checksums = ChecksumAsk(picked: [path], atOnce: true) }
             if canChange {
                 Button(tr("Rename"), systemImage: "pencil") { renaming = path }
                 Button(tr("Delete…"), systemImage: "trash", role: .destructive) { deleting = [path] }
             }
         }
     }
+}
+
+/// What Checksums reads: paths picked (none: it asks), or one of them at once.
+private struct ChecksumAsk: Identifiable {
+    let picked: [[String]]
+    let atOnce: Bool
+    let id = UUID()
 }
 
 /// What the Extract sheet is for: paths, none for all; and where to, first.

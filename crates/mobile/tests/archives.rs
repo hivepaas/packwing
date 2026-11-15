@@ -6,10 +6,11 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 use packwing_mobile::{
-    Archive, ArchiveFormat, Checksum, ChecksumKind, Compared, CompressionLevel, Job, JobListener,
-    JobProgress, MobileError, NewArchiveHow, OnExisting, RemoteStorage, Secrets, SignatureState,
-    SshQuestions, TypedSecret, ask_ssh_with, checksum_kinds, compare_checksum, create_archive,
-    describe_storage, read_key, start, stem, storage_kinds,
+    Archive, ArchiveFormat, Checksum, ChecksumKind, Compared, CompressionLevel, FileVerdict, Job,
+    JobListener, JobProgress, MobileError, NewArchiveHow, OnExisting, PastedCompared,
+    RemoteStorage, Secrets, SignatureState, SshQuestions, TypedSecret, ask_ssh_with,
+    checksum_kinds, checksum_list, checksum_list_name, compare_checksum, compare_pasted,
+    create_archive, describe_storage, read_key, start, stem, storage_kinds,
 };
 
 /// A folder of files to make archives of: `Báo cáo/tổng hợp.txt` and
@@ -632,4 +633,94 @@ fn sftp_asks_of_a_server_it_does_not_know_once() {
     assert_eq!(person.asked.lock().expect("asked").len(), 1);
     assert!(dir.path().join("ssh").join("known_hosts").exists());
     ask_ssh_with(None);
+}
+
+#[test]
+fn the_files_in_an_archive_have_their_checksums_in_one_read_of_it() {
+    let dir = tempfile::tempdir().expect("dir");
+    for format in [ArchiveFormat::Zip, ArchiveFormat::SevenZip] {
+        let path = make(dir.path(), format, None, false);
+        let archive =
+            Archive::open(path.clone(), Secrets::default(), Job::quiet()).expect("opened");
+        let sha256 = |bytes: &[u8]| {
+            let control = packwing_core::Control::default();
+            packwing_core::checksums_of(bytes, &[packwing_core::Algorithm::Sha256], &control)
+                .expect("made")[0]
+                .1
+                .clone()
+        };
+
+        let all = archive
+            .entry_checksums(vec![], vec![ChecksumKind::Sha256], Job::quiet())
+            .expect("made");
+        let names: Vec<&str> = all.files.iter().map(|f| f.name.as_str()).collect();
+        assert_eq!(names, ["Báo cáo/ghi chú.txt", "Báo cáo/tổng hợp.txt"]);
+        assert_eq!(all.files[0].sums[0].sum, sha256(b"hello"));
+        assert_eq!(all.files[0].size, 5);
+        assert!(all.damaged.is_empty());
+
+        // One picked: named as it is extracted, alone.
+        let one = archive
+            .entry_checksums(
+                vec![vec!["Báo cáo".to_owned(), "ghi chú.txt".to_owned()]],
+                vec![ChecksumKind::Sha256, ChecksumKind::Md5],
+                Job::quiet(),
+            )
+            .expect("made");
+        assert_eq!(one.files.len(), 1);
+        assert_eq!(one.files[0].name, "ghi chú.txt");
+        assert_eq!(one.files[0].sums.len(), 2);
+        assert_eq!(
+            checksum_list(one.files.clone(), ChecksumKind::Sha256),
+            format!("{}  ghi chú.txt\n", sha256(b"hello"))
+        );
+        assert_eq!(
+            checksum_list_name("a.zip".to_owned(), ChecksumKind::Sha256),
+            "a.zip.contents.sha256"
+        );
+
+        // Compared with a list pasted: as made, then one line changed.
+        let list = checksum_list(all.files.clone(), ChecksumKind::Sha256);
+        let compare = |pasted: &str| {
+            compare_pasted(
+                pasted.to_owned(),
+                all.files.clone(),
+                vec![ChecksumKind::Sha256],
+            )
+        };
+        let Some(PastedCompared::Listed {
+            verdicts,
+            not_found,
+        }) = compare(&list)
+        else {
+            panic!("a list")
+        };
+        assert!(
+            verdicts
+                .iter()
+                .all(|v| matches!(v, FileVerdict::Matches { .. }))
+        );
+        assert!(not_found.is_empty());
+        let changed = list.replacen(&all.files[0].sums[0].sum, &"0".repeat(64), 1)
+            + &format!("{}  gone.txt\n", "1".repeat(64));
+        let Some(PastedCompared::Listed {
+            verdicts,
+            not_found,
+        }) = compare(&changed)
+        else {
+            panic!("a list")
+        };
+        assert!(matches!(verdicts[0], FileVerdict::Differs { .. }));
+        assert!(matches!(verdicts[1], FileVerdict::Matches { .. }));
+        assert_eq!(not_found, ["gone.txt"]);
+        // One checksum alone: the file it is of.
+        let Some(PastedCompared::One { found, .. }) = compare(&all.files[1].sums[0].sum) else {
+            panic!("one")
+        };
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].index, 1);
+        assert_eq!(compare("hello"), Some(PastedCompared::NotOne));
+        assert_eq!(compare("  "), None);
+        fs::remove_file(&path).expect("removed");
+    }
 }

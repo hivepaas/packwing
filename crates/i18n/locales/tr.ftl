@@ -3338,6 +3338,15 @@ t7d8cbf49 =
        *[other] { $n } resim ve video Fotoğraflar'a eklendi
     }
 
+# Tap a file to see its checksums.
+t778c19e3 = Sağlama toplamlarını görmek için bir dosyaya dokunun.
+
+# Matches
+ta7d4102e = Eşleşiyor
+
+# Differs
+t6451057a = Farklı
+
 # Archives
 tc45c73a2 = Arşivler
 

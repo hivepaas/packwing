@@ -1236,6 +1236,9 @@ t7d8cbf49 =
         [one] { $n } picture or video added to Photos
        *[other] { $n } pictures and videos added to Photos
     }
+t778c19e3 = Tap a file to see its checksums.
+ta7d4102e = Matches
+t6451057a = Differs
 tc45c73a2 = Archives
 tcc778cba = From Files, iCloud Drive or a USB drive
 t0efd0e35 = A ZIP or RAR in Mail or Messages? Tap Share, then packwing, to look inside without saving it.

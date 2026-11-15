@@ -3292,6 +3292,15 @@ t7d8cbf49 =
        *[other] 已將 { $n } 張照片和影片加入「照片」
     }
 
+# Tap a file to see its checksums.
+t778c19e3 = 點一下檔案即可查看其檢查碼。
+
+# Matches
+ta7d4102e = 相符
+
+# Differs
+t6451057a = 不符
+
 # Archives
 tc45c73a2 = 封存檔
 

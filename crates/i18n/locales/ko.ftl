@@ -3283,6 +3283,15 @@ t7d8cbf49 =
        *[other] 사진 및 동영상 { $n }개를 사진 앱에 추가했습니다
     }
 
+# Tap a file to see its checksums.
+t778c19e3 = 파일을 탭하면 체크섬이 표시됩니다.
+
+# Matches
+ta7d4102e = 일치
+
+# Differs
+t6451057a = 불일치
+
 # Archives
 tc45c73a2 = 압축 파일
 
