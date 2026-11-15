@@ -1,6 +1,7 @@
 //! What the iOS and Android apps call: an archive opened and what it holds,
 //! folder by folder; a file of it read, to preview it; its files extracted;
-//! new ZIP and 7z archives made; and an archive's own checksums and signature. The work is packwing-core's, as on the
+//! new ZIP and 7z archives made, and changed; and an archive's own checksums
+//! and signature. The work is packwing-core's, as on the
 //! desktop.
 //!
 //! Every call that reads or writes a file blocks until it is done, so the app
@@ -17,6 +18,7 @@
 uniffi::setup_scaffolding!();
 
 mod checksum;
+mod edit;
 mod i18n;
 mod signature;
 
@@ -39,6 +41,7 @@ use packwing_core::{
 pub use checksum::{
     Checksum, ChecksumKind, ChecksumKindRow, Compared, checksum_kinds, compare_checksum,
 };
+pub use edit::OnExisting;
 pub use i18n::LanguageRow;
 pub use signature::{KeyRead, SignatureState, read_key};
 

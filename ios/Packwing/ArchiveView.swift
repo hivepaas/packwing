@@ -16,8 +16,15 @@ struct ArchiveView: View {
     @State private var grid: Bool?
     @State private var checksums = false
     @State private var signature = false
+    @State private var deleting: [[String]]?
+    @State private var renaming: [String]?
+    @State private var adding: NewSource?
 
     private var info: ArchiveInfo { place.archive.info }
+
+    /// Whether files can be added to it, deleted and renamed: a ZIP or 7z
+    /// archive of one file.
+    private var canChange: Bool { place.archive.archive.canChange() }
 
     /// Whether this folder shows as a grid: not while searching.
     private var showingGrid: Bool { query.isEmpty && (grid ?? mostlyPictures(entries)) }
@@ -27,7 +34,10 @@ struct ArchiveView: View {
         Group {
             if showingGrid {
                 GalleryGrid(opened: place.archive, folder: place.folder, entries: entries,
-                            selecting: selecting, picked: $picked) { extracting = Picked(paths: [$0]) }
+                            selecting: selecting, picked: $picked,
+                            extract: { extracting = Picked(paths: [$0]) },
+                            rename: canChange ? { renaming = $0 } : nil,
+                            delete: canChange ? { deleting = [$0] } : nil)
             } else {
                 list
             }
@@ -49,6 +59,14 @@ struct ArchiveView: View {
                     .accessibilityLabel(showingGrid ? tr("Show a list") : tr("Show a grid"))
                 }
             }
+            if canChange {
+                ToolbarItem(placement: .topBarTrailing) {
+                    AddMenu(source: $adding) {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityLabel(tr("Add files"))
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button(tr("Checksums"), systemImage: "number") { checksums = true }
@@ -62,6 +80,17 @@ struct ArchiveView: View {
                 Button(selecting ? tr("Done") : tr("Select")) {
                     selecting.toggle()
                     picked = []
+                }
+            }
+            if selecting && canChange {
+                ToolbarItem(placement: .bottomBar) {
+                    Button(role: .destructive) {
+                        deleting = Array(picked)
+                    } label: {
+                        Image(systemName: "trash")
+                    }
+                    .disabled(picked.isEmpty)
+                    .accessibilityLabel(tr("Delete"))
                 }
             }
             ToolbarSpacer(.flexible, placement: .bottomBar)
@@ -92,13 +121,24 @@ struct ArchiveView: View {
             SignatureSheet(archive: place.archive)
         }
         .quickLookPreview($model.previewing)
+        .modifier(ArchiveChanges(opened: place.archive, folder: place.folder, names: Set(entries.map(\.name)),
+                                 deleting: $deleting, renaming: $renaming, adding: $adding))
         .overlay(alignment: .bottom) {
             if let name = model.reading {
                 BusyBanner(title: tr("Opening"), name: name) { model.stopReading() }
                     .padding(.bottom, 80)
+            } else if let changing = model.changing {
+                BusyBanner(title: changing.title, name: changing.name) { model.stopChanging() }
+                    .padding(.bottom, 80)
             }
         }
-        .task { entries = place.archive.archive.children(folder: place.folder) }
+        // Read again once the archive is changed.
+        .task(id: model.archivesChanged) {
+            entries = place.archive.archive.children(folder: place.folder)
+            if !query.isEmpty { found = place.archive.archive.search(query: query) }
+            selecting = false
+            picked = []
+        }
         .onChange(of: query) { _, now in
             found = now.isEmpty ? [] : place.archive.archive.search(query: now)
         }
@@ -170,6 +210,10 @@ struct ArchiveView: View {
                 Button(tr("Preview"), systemImage: "eye") { model.preview(place.archive, path) }
             }
             Button(tr("Extract"), systemImage: "square.and.arrow.down") { extracting = Picked(paths: [path]) }
+            if canChange {
+                Button(tr("Rename"), systemImage: "pencil") { renaming = path }
+                Button(tr("Delete…"), systemImage: "trash", role: .destructive) { deleting = [path] }
+            }
         }
     }
 }

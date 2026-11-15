@@ -1111,6 +1111,8 @@ t1a7850b2 =
     }
 tbd00747c = Nothing yet
 t866c0601 = { $name } in { $folder }
+t6a5b2473 = Deleting…
+t87125000 = Renaming…
 tad6172e7 = The pictures and videos go to Photos. The other files stay in the archive.
 tf816656c = In a new folder, { $name }
 t5525892c = Show in Files when done
