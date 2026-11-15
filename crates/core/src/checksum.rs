@@ -92,7 +92,8 @@ pub fn algorithms_of(digits: usize) -> Vec<Algorithm> {
         .collect()
 }
 
-enum Hasher {
+/// What makes one checksum, a piece at a time.
+pub(crate) enum Hasher {
     Sha256(Sha256),
     Sha512(Sha512),
     Sha1(Sha1),
@@ -101,7 +102,7 @@ enum Hasher {
 }
 
 impl Hasher {
-    fn new(algorithm: Algorithm) -> Hasher {
+    pub(crate) fn new(algorithm: Algorithm) -> Hasher {
         match algorithm {
             Algorithm::Sha256 => Hasher::Sha256(Sha256::new()),
             Algorithm::Sha512 => Hasher::Sha512(Sha512::new()),
@@ -111,7 +112,7 @@ impl Hasher {
         }
     }
 
-    fn update(&mut self, bytes: &[u8]) {
+    pub(crate) fn update(&mut self, bytes: &[u8]) {
         match self {
             Hasher::Sha256(h) => h.update(bytes),
             Hasher::Sha512(h) => h.update(bytes),
@@ -123,7 +124,7 @@ impl Hasher {
         }
     }
 
-    fn hex(self) -> String {
+    pub(crate) fn hex(self) -> String {
         match self {
             Hasher::Sha256(h) => hex(&h.finalize()),
             Hasher::Sha512(h) => hex(&h.finalize()),
@@ -241,26 +242,114 @@ pub fn save_checksum(
     algorithm: Algorithm,
     sum: &str,
 ) -> Result<String, Error> {
-    let Some((name, folder)) = path.split_last() else {
+    let Some(name) = path.last() else {
         return Err(Error::Failed(tr!("There is no file to save it beside.")));
     };
     let kept = checksum_file_name(name, algorithm);
-    let line = checksum_line(sum, name);
+    put_beside(storage, path, &kept, &checksum_line(sum, name))?;
+    Ok(kept)
+}
+
+/// `text` kept as the file `kept` beside the one at `path`, in place of one that is
+/// there.
+pub(crate) fn put_beside(
+    storage: &dyn Storage,
+    path: &[String],
+    kept: &str,
+    text: &str,
+) -> Result<(), Error> {
+    let Some((_, folder)) = path.split_last() else {
+        return Err(Error::Failed(tr!("There is no file to save it beside.")));
+    };
     let like = Item {
-        name: kept.clone(),
+        name: kept.to_owned(),
         dir: false,
         link: false,
         hidden: false,
-        size: line.len() as u64,
+        size: text.len() as u64,
         modified: None,
         mode: Some(0o644),
     };
     let mut to = folder.to_vec();
-    to.push(kept.clone());
+    to.push(kept.to_owned());
     storage
-        .put(&to, &mut line.as_bytes(), &like, true)
+        .put(&to, &mut text.as_bytes(), &like, true)
         .map_err(|e| Error::Failed(e.to_string()))?;
-    Ok(kept)
+    Ok(())
+}
+
+/// A line of a list of checksums: the checksum given, and the name of the file it
+/// is of.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Listed {
+    /// In lowercase hex.
+    pub sum: String,
+    /// As the list writes it, its escapes undone.
+    pub name: String,
+}
+
+/// The lines of a list of checksums, as `sha256sum` and the others write it
+/// (`<hex>  name`, `<hex> *name`, a line starting with a backslash where the name
+/// has escapes), or as BSD's tools and `sha256sum --tag` do
+/// (`SHA256 (name) = <hex>`). Empty lines, comments (`#`) and what is none of these
+/// are passed over.
+pub fn checksum_list_in(text: &str) -> Vec<Listed> {
+    text.lines().filter_map(listed_line).collect()
+}
+
+fn listed_line(line: &str) -> Option<Listed> {
+    // A name may end in spaces: only a line's end from Windows goes.
+    let line = line.strip_suffix('\r').unwrap_or(line);
+    if line.trim_start().starts_with('#') {
+        return None;
+    }
+    let (escaped, line) = match line.strip_prefix('\\') {
+        Some(rest) => (true, rest),
+        None => (false, line),
+    };
+    let is_hex = |s: &str| !s.is_empty() && s.bytes().all(|b| b.is_ascii_hexdigit());
+    let (sum, name) = if let Some((tag, rest)) = line.split_once(" (")
+        && !tag.is_empty()
+        && !tag.contains(' ')
+        && let Some((name, sum)) = rest.rsplit_once(") = ")
+        && is_hex(sum.trim())
+    {
+        (sum.trim(), name)
+    } else {
+        let (sum, name) = line.split_once(' ')?;
+        (sum, name.strip_prefix(['*', ' ']).unwrap_or(name))
+    };
+    if !is_hex(sum) || name.is_empty() {
+        return None;
+    }
+    let name = if escaped {
+        unescape(name)
+    } else {
+        name.to_owned()
+    };
+    Some(Listed {
+        sum: sum.to_ascii_lowercase(),
+        name,
+    })
+}
+
+/// A name as [`checksum_line`] escaped it, as it was.
+fn unescape(name: &str) -> String {
+    let mut out = String::with_capacity(name.len());
+    let mut chars = name.chars();
+    while let Some(c) = chars.next() {
+        if c != '\\' {
+            out.push(c);
+            continue;
+        }
+        match chars.next() {
+            Some('n') => out.push('\n'),
+            Some('r') => out.push('\r'),
+            Some(other) => out.push(other),
+            None => out.push('\\'),
+        }
+    }
+    out
 }
 
 /// The checksum in what was pasted, in lowercase hex, whatever its length: a
@@ -460,6 +549,40 @@ mod tests {
             }
         }
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn a_list_is_read_however_its_tools_write_it() {
+        let (a, b) = ("ab".repeat(32), "CD".repeat(32));
+        let text = format!(
+            "# made by hand\n\n{a}  docs/a b.txt\n{b} *c.bin\r\n\\{a}  x\\\\y\\nz\n\
+             SHA256 (in (brackets).txt) = {a}\nnot a line\n{a}\n"
+        );
+        let listed = checksum_list_in(&text);
+        let lower = b.to_ascii_lowercase();
+        let named: Vec<(&str, &str)> = listed
+            .iter()
+            .map(|l| (l.sum.as_str(), l.name.as_str()))
+            .collect();
+        assert_eq!(
+            named,
+            [
+                (a.as_str(), "docs/a b.txt"),
+                (lower.as_str(), "c.bin"),
+                (a.as_str(), "x\\y\nz"),
+                (a.as_str(), "in (brackets).txt"),
+            ]
+        );
+        // What it writes, it reads back.
+        let name = "odd\\name\nhere";
+        let line = checksum_line(&a, name);
+        assert_eq!(
+            checksum_list_in(&line),
+            [Listed {
+                sum: a.clone(),
+                name: name.to_owned()
+            }]
+        );
     }
 
     #[test]

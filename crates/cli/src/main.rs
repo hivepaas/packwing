@@ -302,17 +302,25 @@ enum Command {
     /// Make or check the checksums of files: sha256, sha512, sha1, md5, blake3.
     #[command(visible_alias = "sum")]
     Checksum {
-        /// Paths, or NAME:PATH on a storage added to the app.
+        /// Paths, or NAME:PATH on a storage added to the app. With --in, files or
+        /// folders in the archive: all of its files if none.
         files: Vec<String>,
         /// Which: sha256 by default; again, or `all`, for more.
         #[arg(short, long, value_name = "ALGORITHM")]
         algorithm: Vec<String>,
-        /// Check the files a sums file names (sha256sum's lines, or BSD's).
-        #[arg(short, long, value_name = "SUMS", conflicts_with = "files")]
+        /// Check the files a sums file names (sha256sum's lines, or BSD's). With
+        /// --in, the archive's files, without extracting them.
+        #[arg(short, long, value_name = "SUMS")]
         check: Option<PathBuf>,
-        /// Save each file's in a file beside it, as `name.sha256`.
-        #[arg(long)]
+        /// Save each file's in a file beside it, as `name.sha256`. With --in, the
+        /// list of them beside the archive, as `a.zip.contents.sha256`.
+        #[arg(long, conflicts_with = "check")]
         save: bool,
+        /// Of the files in this archive (a path, or NAME:PATH), read where it is
+        /// and named as `pkw extract` puts them, so that `sha256sum -c` checks
+        /// what it extracts.
+        #[arg(long = "in", value_name = "ARCHIVE")]
+        inside: Option<String>,
     },
 }
 

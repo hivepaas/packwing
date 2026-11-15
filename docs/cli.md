@@ -26,6 +26,7 @@ pkw add archive.zip new.txt --into docs  # and delete, rename: a ZIP or 7z archi
 pkw split backup.iso --size 4GB         # into parts beside it, as 7-Zip cuts one: backup.iso.001, .002…
 pkw join backup.iso.001                 # back into backup.iso, the parts checked first
 pkw checksum -a sha256 -a blake3 *.iso   # --save beside each, or --check SHA256SUMS
+pkw checksum --in a.zip docs            # what is in it, as extracted; --save, or --check SUMS
 pkw audit list --since 2026-11-01        # the audit log, when it is kept (--csv; verify, status)
 pkw convert photos.rar photos.tar.zst   # another format, as create makes it, an entry at a time with no folder in between (-p, -l, --split…)
 pkw convert site.zip site.7z --exclude node_modules/ --exclude '*.log'   # and --include: what goes in
