@@ -16,6 +16,7 @@ mod checksum;
 mod convert;
 mod create;
 mod destination;
+mod entry_checksum;
 mod filter;
 mod job;
 mod joined;
@@ -49,8 +50,8 @@ use hivepack::open::Opener;
 use crate::source::SourceReader;
 
 pub use checksum::{
-    Algorithm, algorithms_of, checksum_file_name, checksum_in, checksum_line, checksums,
-    checksums_of, save_checksum, source_checksums,
+    Algorithm, Listed, algorithms_of, checksum_file_name, checksum_in, checksum_line,
+    checksum_list_in, checksums, checksums_of, save_checksum, source_checksums,
 };
 pub use convert::{Converted, convert};
 pub use create::{
@@ -61,6 +62,10 @@ pub use create::{
     within_memory,
 };
 pub use destination::{Destination, extract_to};
+pub use entry_checksum::{
+    EntryChecksums, EntrySums, ListCompared, Verdict, checksum_list, checksum_list_file_name,
+    compare_list, entry_checksums, save_checksum_list,
+};
 pub use filter::Filter;
 pub use hivepack::extract::{
     Cancel, OnDamaged, OnLinksOutside, OnUnnamable, Owners, Progress, Summary,

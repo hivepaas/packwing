@@ -123,10 +123,11 @@ A job is two records with the same `job`: `phase: start`, with what it is of, an
 | `keygen` | `folder` | `key`, `fingerprint` |
 | `split`, `join` | `file` and `part_size`, or `part` | `parts`, or `made` |
 | `checksum` | `file` | `sums` |
+| `checksum_entries` | `source`, `algorithms`; `picked` where only some were | `files`, `links`, how many were `damaged`; with `entries`, `damaged_names`. `partial` where some were damaged |
 | `audit.started`, `audit.stopped`, `audit.changed` | `by` (`user`, `license`, `policy` or `startup`), `retention_days`, `max_bytes`, `folder`, `system_log` | |
 | `log.pruned` | `removed`, `last_removed` | |
 
-Paths are whole paths on the computer, or as a storage writes them. What the user chose to work on is always named, the first 1,000 of it and how many in all: the files and folders to put in an archive, copy or move (`path_names`, `names`), and in an archive those picked to extract, opened, shown, deleted or renamed (`picked_names`, `entry`, `from_name`, `to_name`).
+Paths are whole paths on the computer, or as a storage writes them. What the user chose to work on is always named, the first 1,000 of it and how many in all: the files and folders to put in an archive, copy or move (`path_names`, `names`), and in an archive those picked to extract, opened, shown, deleted or renamed, or whose checksums were made (`picked_names`, `entry`, `from_name`, `to_name`).
 
 What packwing comes on as it works is counted, not named, unless the organization sets `AuditLogDetail` to `entries`: then records name the files damaged, left out or renamed as they were extracted, and every file and link extracted into a folder (`extracted_names`), where it went in the destination, the first 1,000 and how many in all. A job that failed names what it wrote before it did.
 

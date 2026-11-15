@@ -236,6 +236,55 @@ fn checksums_are_written_as_sha256sum_does_and_checked() {
 }
 
 #[test]
+fn an_archive_s_files_have_theirs_named_as_they_are_extracted() {
+    let s = Scratch::new("entry-sums");
+    ok(&s.pkw(&["create", "-q", "a.zip", "src"]));
+    let numbers = "14c5e74c4b96ccef41cd94db73a9ec3348038ac094feca4fd897cecffa07cdae";
+    let all = ok(&s.pkw(&["checksum", "--in", "a.zip"]));
+    assert_eq!(all.lines().count(), 2, "{all}");
+    assert!(
+        all.contains(&format!("{numbers}  src/numbers.txt\n")),
+        "{all}"
+    );
+    // Picked, as `pkw extract a.zip src/docs` puts them: `docs/notes.txt`.
+    let picked = ok(&s.pkw(&["checksum", "--in", "a.zip", "src/docs"]));
+    assert!(picked.ends_with("  docs/notes.txt\n"), "{picked}");
+    assert_eq!(picked.lines().count(), 1, "{picked}");
+
+    // Kept beside it, the list checks what is extracted, and the archive itself.
+    ok(&s.pkw(&[
+        "checksum", "-q", "--save", "-a", "sha256", "-a", "b3", "--in", "a.zip",
+    ]));
+    assert!(s.path("a.zip.contents.b3").is_file());
+    let list = s.path("a.zip.contents.sha256");
+    assert_eq!(std::fs::read_to_string(&list).expect("the list"), all);
+    ok(&s.pkw(&["extract", "-q", "a.zip"]));
+    match Command::new("sha256sum")
+        .args(["-c", "../a.zip.contents.sha256"])
+        .current_dir(s.path("a"))
+        .output()
+    {
+        Ok(done) => assert!(done.status.success(), "sha256sum: {done:?}"),
+        Err(_) => eprintln!("no sha256sum: skipped"),
+    }
+    let checked = ok(&s.pkw(&["checksum", "--in", "a.zip", "-c", "a.zip.contents.sha256"]));
+    assert!(checked.contains("src/numbers.txt: OK"), "{checked}");
+
+    // A line changed, and one for a file the archive does not have.
+    let wrong = all.replace(numbers, &"0".repeat(64)) + &format!("{numbers}  src/gone.txt\n");
+    std::fs::write(s.path("WRONG"), wrong).expect("the list");
+    let failed = s.pkw(&["checksum", "--in", "a.zip", "-c", "WRONG"]);
+    assert_eq!(failed.status.code(), Some(1));
+    let said = stdout(&failed);
+    assert!(said.contains("src/numbers.txt: FAILED"), "{said}");
+    assert!(said.contains("src/gone.txt: not in the archive"), "{said}");
+    assert!(said.contains("src/docs/notes.txt: OK"), "{said}");
+    // Files to check are named with --in only.
+    let usage = s.pkw(&["checksum", "-c", "WRONG", "src/numbers.txt"]);
+    assert_eq!(usage.status.code(), Some(2));
+}
+
+#[test]
 fn json_is_what_a_script_reads() {
     let s = Scratch::new("json");
     ok(&s.pkw(&["create", "-q", "a.zip", "src"]));

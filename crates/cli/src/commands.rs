@@ -5,11 +5,12 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, PoisonError};
 
 use packwing_core::{
-    AddOptions, Algorithm, Blocks, COMPRESSED_EXTENSIONS, Entry, ExtractOptions, Filter, Frames,
-    Keep, Kind, Listing, LocalFolder, NewArchive, OnExisting, Owners, Source, Times, Transfer,
-    add_with, algorithms_of, came_from_internet, checksum_line, checksums, convert, create,
-    damages, delete, extract_selected, extract_with, has_signature, join_parts, left_out, list,
-    read_entry, rename, renamings, save_checksum, signature_name, size, split_file, stem, test,
+    AddOptions, Algorithm, Blocks, COMPRESSED_EXTENSIONS, Entry, EntryChecksums, ExtractOptions,
+    Filter, Frames, Keep, Kind, Listed, Listing, LocalFolder, NewArchive, OnExisting, Owners,
+    Source, Times, Transfer, Verdict, add_with, algorithms_of, came_from_internet, checksum_line,
+    checksum_list_in, checksums, compare_list, convert, create, damages, delete, entry_checksums,
+    extract_selected, extract_with, has_signature, join_parts, left_out, list, read_entry, rename,
+    renamings, save_checksum, save_checksum_list, signature_name, size, split_file, stem, test,
     transfer,
 };
 use serde_json::{Value, json};
@@ -121,9 +122,15 @@ pub fn run(command: Command, cx: &mut Context) -> Result<(), Exit> {
             algorithm,
             check,
             save,
-        } => match check {
-            Some(sums) => check_sums(&sums, cx),
-            None => checksum_cmd(&files, &algorithm, save, cx),
+            inside,
+        } => match (inside, check) {
+            (Some(archive), Some(sums)) => check_entry_sums(&archive, &files, &sums, cx),
+            (Some(archive), None) => entry_checksum_cmd(&archive, &files, &algorithm, save, cx),
+            (None, Some(sums)) if files.is_empty() => check_sums(&sums, cx),
+            (None, Some(_)) => Err(Exit::Usage(
+                "--check checks the files its list names: name files with --in ARCHIVE only".into(),
+            )),
+            (None, None) => checksum_cmd(&files, &algorithm, save, cx),
         },
     }
 }
@@ -995,6 +1002,13 @@ fn checksum_cmd(
             found.push((place.shown.clone(), algorithm, sum));
         }
     }
+    print_sums(&found, algorithms.len() > 1, cx);
+    Ok(())
+}
+
+/// Each file's checksums, as `sha256sum` writes them, or BSD's tools with
+/// `several` algorithms; or as JSON.
+fn print_sums(found: &[(String, Algorithm, String)], several: bool, cx: &Context) {
     if cx.json {
         let rows: Vec<Value> = found
             .iter()
@@ -1003,15 +1017,159 @@ fn checksum_cmd(
         print_json(&json!(rows));
     } else if !cx.quiet {
         let mut out = std::io::stdout().lock();
-        for (file, algorithm, sum) in &found {
+        for (file, algorithm, sum) in found {
             // sha256sum's line with one algorithm, BSD's tagged one with several.
-            let line = if algorithms.len() == 1 {
-                checksum_line(sum, file)
-            } else {
+            let line = if several {
                 format!("{} ({file}) = {sum}\n", tag(*algorithm))
+            } else {
+                checksum_line(sum, file)
             };
             let _ = out.write_all(line.as_bytes());
         }
+    }
+}
+
+/// The checksums of the files of `archive` picked by `files`, or all of them, read
+/// where it is, as the archive's password or key opens it.
+fn entry_sums(
+    archive: &str,
+    files: &[String],
+    algorithms: &[Algorithm],
+    cx: &mut Context,
+) -> Result<(Place, EntryChecksums), Exit> {
+    let place = Place::of(archive)?;
+    let source = place.source()?;
+    let name = place.name();
+    let picked = picked(files);
+    let (control, bar) = crate::progress::control(&format!("Reading {name}"), cx.progress);
+    let made = cx.secrets.unlocking(&name, |keys| {
+        entry_checksums(source.clone(), &picked, keys, algorithms, &control)
+    })?;
+    drop(bar);
+    Ok((place, made))
+}
+
+/// Says each damaged file, which has no checksum: an error, as [`Exit::Damaged`],
+/// if there is one.
+fn damaged_entries(made: &EntryChecksums) -> Result<(), Exit> {
+    for d in &made.damaged {
+        eprintln!("pkw: damaged: {}: {} (no checksum)", d.path, d.why);
+    }
+    match made.damaged.len() {
+        0 => Ok(()),
+        1 => Err(Exit::Damaged(
+            "1 file was damaged; the others' are made".into(),
+        )),
+        n => Err(Exit::Damaged(format!(
+            "{n} files were damaged; the others' are made"
+        ))),
+    }
+}
+
+fn entry_checksum_cmd(
+    archive: &str,
+    files: &[String],
+    typed: &[String],
+    save: bool,
+    cx: &mut Context,
+) -> Result<(), Exit> {
+    let algorithms = algorithms(typed)?;
+    let (place, made) = entry_sums(archive, files, &algorithms, cx)?;
+    if save {
+        for algorithm in &algorithms {
+            save_checksum_list(&*place.storage, &place.path, *algorithm, &made.files)?;
+        }
+    }
+    let found: Vec<(String, Algorithm, String)> = made
+        .files
+        .iter()
+        .flat_map(|f| f.sums.iter().map(|(a, s)| (f.name.clone(), *a, s.clone())))
+        .collect();
+    print_sums(&found, algorithms.len() > 1, cx);
+    damaged_entries(&made)
+}
+
+/// The files of `archive` checked against the list `sums`: those picked by
+/// `files`, or all of them, when the list names every file of it.
+fn check_entry_sums(
+    archive: &str,
+    files: &[String],
+    sums: &Path,
+    cx: &mut Context,
+) -> Result<(), Exit> {
+    let text = std::fs::read_to_string(sums)
+        .map_err(|e| Exit::Failed(format!("cannot read {}: {e}", sums.display())))?;
+    let listed = checksum_list_in(&text);
+    if listed.is_empty() {
+        return Err(Exit::Failed(format!(
+            "{} has no checksum lines",
+            sums.display()
+        )));
+    }
+    // Those the list's checksums may be, each made once.
+    let mut algorithms: Vec<Algorithm> = Vec::new();
+    for l in &listed {
+        for a in algorithms_of(l.sum.len()) {
+            if !algorithms.contains(&a) {
+                algorithms.push(a);
+            }
+        }
+    }
+    if algorithms.is_empty() {
+        return Err(Exit::Failed(format!(
+            "{} has no checksum pkw makes",
+            sums.display()
+        )));
+    }
+    let (_, made) = entry_sums(archive, files, &algorithms, cx)?;
+    let compared = compare_list(&made.files, &listed);
+    let mut results: Vec<(String, bool)> = made
+        .files
+        .iter()
+        .zip(&compared.verdicts)
+        .filter(|(_, v)| **v != Verdict::NotListed)
+        .map(|(f, v)| (f.name.clone(), matches!(v, Verdict::Matches(_))))
+        .collect();
+    let unlisted: Vec<&str> = made
+        .files
+        .iter()
+        .zip(&compared.verdicts)
+        .filter(|(_, v)| **v == Verdict::NotListed)
+        .map(|(f, _)| f.name.as_str())
+        .collect();
+    if cx.json {
+        let mut rows: Vec<Value> = results
+            .iter()
+            .map(|(n, ok)| json!({ "file": n, "ok": ok }))
+            .collect();
+        rows.extend(
+            compared
+                .not_found
+                .iter()
+                .map(|n| json!({ "file": n, "ok": false, "missing": true })),
+        );
+        print_json(&json!(rows));
+    } else {
+        for (name, ok) in &results {
+            if !cx.quiet || !ok {
+                println!("{name}: {}", if *ok { "OK" } else { "FAILED" });
+            }
+        }
+        for name in &compared.not_found {
+            println!("{name}: not in the archive");
+        }
+    }
+    for name in &unlisted {
+        eprintln!("pkw: not in the list: {name}");
+    }
+    results.extend(compared.not_found.iter().map(|n| (n.clone(), false)));
+    damaged_entries(&made)?;
+    let failed = results.iter().filter(|(_, ok)| !ok).count();
+    if failed > 0 {
+        return Err(Exit::Failed(match (failed, results.len()) {
+            (1, 1) => "it did not match".into(),
+            (failed, all) => format!("{failed} of {all} did not match"),
+        }));
     }
     Ok(())
 }
@@ -1024,23 +1182,6 @@ fn tag(algorithm: Algorithm) -> String {
     }
 }
 
-/// A line of a sums file: its checksum and the file's name, as `sha256sum`
-/// writes it (`sum  name`, `sum *name`) or BSD's tools (`SHA256 (name) = sum`).
-fn sum_line(line: &str) -> Option<(String, String)> {
-    let line = line.trim_end();
-    if let Some((tag, rest)) = line.split_once(" (")
-        && !tag.contains(' ')
-        && let Some((name, sum)) = rest.rsplit_once(") = ")
-    {
-        return Some((sum.trim().to_ascii_lowercase(), name.to_owned()));
-    }
-    let line = line.strip_prefix('\\').unwrap_or(line);
-    let (sum, name) = line.split_once(' ')?;
-    let name = name.strip_prefix(['*', ' ']).unwrap_or(name);
-    (!sum.is_empty() && sum.bytes().all(|b| b.is_ascii_hexdigit()) && !name.is_empty())
-        .then(|| (sum.to_ascii_lowercase(), name.to_owned()))
-}
-
 fn check_sums(sums: &Path, cx: &mut Context) -> Result<(), Exit> {
     let text = std::fs::read_to_string(sums)
         .map_err(|e| Exit::Failed(format!("cannot read {}: {e}", sums.display())))?;
@@ -1049,10 +1190,11 @@ fn check_sums(sums: &Path, cx: &mut Context) -> Result<(), Exit> {
         .filter(|p| !p.as_os_str().is_empty())
         .unwrap_or(Path::new("."));
     let mut results = Vec::new();
-    for line in text.lines().filter(|l| !l.trim().is_empty()) {
-        let Some((expected, name)) = sum_line(line) else {
-            continue;
-        };
+    for Listed {
+        sum: expected,
+        name,
+    } in checksum_list_in(&text)
+    {
         let candidates = algorithms_of(expected.len());
         let file = folder.join(&name);
         let (storage, path) = local(&file);
@@ -1284,24 +1426,5 @@ mod tests {
             assert!(asked(true, false, false).is_err());
             assert!(asked(false, false, true).is_err());
         }
-    }
-
-    #[test]
-    fn a_sums_file_s_lines_are_read_as_tools_write_them() {
-        let sum = "ab".repeat(32);
-        assert_eq!(
-            sum_line(&format!("{sum}  notes.txt")),
-            Some((sum.clone(), "notes.txt".into()))
-        );
-        assert_eq!(
-            sum_line(&format!("{sum} *with space.bin")),
-            Some((sum.clone(), "with space.bin".into()))
-        );
-        assert_eq!(
-            sum_line(&format!("SHA256 (a (b).zip) = {}", sum.to_uppercase())),
-            Some((sum.clone(), "a (b).zip".into()))
-        );
-        assert_eq!(sum_line("# a comment"), None);
-        assert_eq!(sum_line("not a sum"), None);
     }
 }
