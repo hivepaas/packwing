@@ -2110,35 +2110,56 @@ tc3e75ecf = Semua fitur, dan penyimpanan dalam jumlah berapa pun.
 # Every feature, and any number of storages, for your organization.
 t69b29f66 = Semua fitur, dan penyimpanan dalam jumlah berapa pun, untuk organisasi Anda.
 
-# Bought
-t5c52217e = Dibeli
+# {price} a month
+t9974421b = { $price } per bulan
 
-# Buy Pro · {price}
-t93567162 = Beli Pro · { $price }
+# Monthly
+t1640a356 = Bulanan
 
-# Buy Pro
-t1bdcbb74 = Beli Pro
+# {price} a year
+t105524fa = { $price } per tahun
+
+# Yearly
+t3e5922ab = Tahunan
+
+# Subscribed
+t6ef44945 = Berlangganan
+
+# Manage Subscription
+t11820d57 = Kelola Langganan
 
 # Restore Purchases
 t8ade61c5 = Pulihkan Pembelian
 
+# Payment is charged to your Apple Account. A subscription renews automatically for the same period and price unless you cancel it at least 24 hours before it ends; manage or cancel it in your App Store account settings.
+t4052cbcb = Pembayaran dibebankan ke Akun Apple Anda. Langganan diperpanjang otomatis untuk periode dan harga yang sama kecuali Anda membatalkannya paling lambat 24 jam sebelum berakhir; kelola atau batalkan di pengaturan akun App Store Anda.
+
+# Terms of Use
+tf7c86026 = Ketentuan Penggunaan
+
+# Privacy Policy
+t2526541f = Kebijakan Privasi
+
 # Waiting for approval: packwing turns Pro once it is given.
 td36209de = Menunggu persetujuan: packwing menjadi Pro setelah disetujui.
 
-# The App Store found nothing bought with this Apple Account.
-tf996dc19 = App Store tidak menemukan pembelian dengan Akun Apple ini.
+# The App Store found no subscription of this Apple Account.
+tbd02ac34 = App Store tidak menemukan langganan dari Akun Apple ini.
 
 # The App Store could not do it: {why}
 t07f7f00e = App Store tidak dapat melakukannya: { $why }
 
-# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
-t4294db10 = App Store tidak menjual Pro di negara atau wilayah Anda. Pro yang dibeli dengan Akun Apple ini di negara lain tetap dapat dipulihkan.
+# The App Store does not sell Pro in your country or region. A subscription of this Apple Account from another one can still be restored.
+tc4b527fc = App Store tidak menjual Pro di negara atau wilayah Anda. Langganan Akun Apple ini dari negara lain tetap bisa dipulihkan.
 
 # App Store
 t56b8f375 = App Store
 
-# Pro, bought once in the App Store: yours on every Mac with your Apple Account.
-ta6e8e46d = Pro, dibeli sekali di App Store: milik Anda di setiap Mac dengan Akun Apple Anda.
+# Pro by subscription, on every Mac, iPhone and iPad with your Apple Account.
+tf993909d = Pro dengan berlangganan, di setiap Mac, iPhone, dan iPad dengan Akun Apple Anda.
+
+# Pro by subscription, a month or a year: on every Mac, iPhone and iPad with your Apple Account.
+t4f86bca1 = Pro dengan berlangganan, bulanan atau tahunan: di setiap Mac, iPhone, dan iPad dengan Akun Apple Anda.
 
 # Plan
 t1eab5e32 = Paket
@@ -3400,11 +3421,26 @@ t1ef504d9 = packwing tidak dapat menampilkan berkas ini.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free menyimpan satu penyimpanan lewat jaringan. Pro menghilangkan batas ini.
 
+# Buy Pro · {price}
+t93567162 = Beli Pro · { $price }
+
+# Buy Pro
+t1bdcbb74 = Beli Pro
+
 # Every feature, and one storage across a network.
 t0ccb5824 = Semua fitur, dan satu penyimpanan lewat jaringan.
 
+# Bought
+t5c52217e = Dibeli
+
+# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
+t4294db10 = App Store tidak menjual Pro di negara atau wilayah Anda. Pro yang dibeli dengan Akun Apple ini di negara lain tetap dapat dipulihkan.
+
 # Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
 t8bc438f1 = Pro, dibeli sekali di App Store: milik Anda di setiap iPhone, iPad, dan Mac dengan Akun Apple Anda.
+
+# The App Store found nothing bought with this Apple Account.
+tf996dc19 = App Store tidak menemukan pembelian dengan Akun Apple ini.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing tidak bisa lagi mengakses { $name }. Buka lagi untuk melihat isinya.

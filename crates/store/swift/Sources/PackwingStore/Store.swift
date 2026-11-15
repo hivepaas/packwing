@@ -1,5 +1,6 @@
 // StoreKit 2, which only Swift can call, as C functions for crates/store (src/macos.rs).
-// Each takes the product's id, a context and a function it calls once with the context
+// Each takes the product's id (for holds, restore and watch, a set of them, separated by
+// commas: the user holds Pro while any is theirs), a context and a function it calls once with the context
 // and its answer, on a thread of its own; a text it passes lasts for that call alone.
 // Only a transaction the App Store signed (StoreKit's `.verified`) counts.
 
@@ -26,11 +27,17 @@ private func tell(_ done: Done, _ context: UnsafeMutableRawPointer?, _ status: S
     }
 }
 
-/// Whether the user holds `id`: bought, or restored, and not refunded.
-private func holds(_ id: String) async -> Bool {
+/// The ids in `ids`, separated by commas.
+private func idsOf(_ ids: String) -> Set<String> {
+    Set(ids.split(separator: ",").map(String.init))
+}
+
+/// Whether the user holds one of `ids`: a subscription current (renewed, or in its billing
+/// grace period, as `currentEntitlements` has it), and not refunded.
+private func holds(_ ids: Set<String>) async -> Bool {
     for await result in Transaction.currentEntitlements {
         if case .verified(let transaction) = result,
-           transaction.productID == id,
+           ids.contains(transaction.productID),
            transaction.revocationDate == nil
         {
             return true
@@ -43,12 +50,12 @@ private func product(_ id: String) async throws -> Product? {
     try await Product.products(for: [id]).first
 }
 
-/// Whether the user holds the product: `yes` or `no`.
+/// Whether the user holds one of the products: `yes` or `no`.
 @_cdecl("packwing_store_holds")
-public func packwingStoreHolds(_ id: UnsafePointer<CChar>, _ context: UnsafeMutableRawPointer?, _ done: Done) {
-    let id = String(cString: id)
+public func packwingStoreHolds(_ ids: UnsafePointer<CChar>, _ context: UnsafeMutableRawPointer?, _ done: Done) {
+    let ids = idsOf(String(cString: ids))
     Task.detached {
-        tell(done, context, await holds(id) ? .yes : .no)
+        tell(done, context, await holds(ids) ? .yes : .no)
     }
 }
 
@@ -102,32 +109,40 @@ public func packwingStoreBuy(_ id: UnsafePointer<CChar>, _ context: UnsafeMutabl
 }
 
 /// Asks the App Store for what the user bought, as Restore Purchases does (it may ask
-/// them to sign in): then whether they hold the product, `yes` or `no`, or `failed`.
+/// them to sign in): then whether they hold one of the products, `yes` or `no`, or
+/// `failed`.
 @_cdecl("packwing_store_restore")
-public func packwingStoreRestore(_ id: UnsafePointer<CChar>, _ context: UnsafeMutableRawPointer?, _ done: Done) {
-    let id = String(cString: id)
+public func packwingStoreRestore(_ ids: UnsafePointer<CChar>, _ context: UnsafeMutableRawPointer?, _ done: Done) {
+    let ids = idsOf(String(cString: ids))
     Task.detached {
         do {
             try await AppStore.sync()
-            tell(done, context, await holds(id) ? .yes : .no)
+            tell(done, context, await holds(ids) ? .yes : .no)
         } catch {
             tell(done, context, .failed, error.localizedDescription)
         }
     }
 }
 
-/// From now on, for as long as packwing runs, tells `done` whether the user holds the
-/// product each time a transaction comes: bought on another Mac, approved, refunded.
+/// From now on, for as long as packwing runs, tells `done` whether the user holds one of
+/// the products each time a transaction comes: bought on another Mac, renewed, approved,
+/// refunded; and once an hour, as a subscription that ends sends no transaction.
 /// `done` is called many times, with the same context.
 @_cdecl("packwing_store_watch")
-public func packwingStoreWatch(_ id: UnsafePointer<CChar>, _ context: UnsafeMutableRawPointer?, _ done: Done) {
-    let id = String(cString: id)
+public func packwingStoreWatch(_ ids: UnsafePointer<CChar>, _ context: UnsafeMutableRawPointer?, _ done: Done) {
+    let ids = idsOf(String(cString: ids))
+    Task.detached {
+        while true {
+            try? await Task.sleep(nanoseconds: 3_600_000_000_000)
+            tell(done, context, await holds(ids) ? .yes : .no)
+        }
+    }
     Task.detached {
         for await update in Transaction.updates {
             if case .verified(let transaction) = update {
                 await transaction.finish()
             }
-            tell(done, context, await holds(id) ? .yes : .no)
+            tell(done, context, await holds(ids) ? .yes : .no)
         }
     }
 }

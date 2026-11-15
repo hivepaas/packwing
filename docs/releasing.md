@@ -101,7 +101,9 @@ scripts/package_macos_appstore.sh
 
 and `UPLOAD=1` with the `APPLE_API_KEY_*` variables to send it. A version is
 then released from App Store Connect: its page, screenshots and review, with
-the in-app purchase sent for review with the first version.
+the subscriptions sent for review with the first version that sells them. The
+description ends with the links to the terms of use and the privacy policy, as
+subscriptions require.
 
 A tag sends the package, so on a tag the job fails while the repository does
 not have the store's secrets. The GitHub release does not wait for it: its

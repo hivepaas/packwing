@@ -2110,35 +2110,56 @@ tc3e75ecf = 所有功能，儲存位置數量不限。
 # Every feature, and any number of storages, for your organization.
 t69b29f66 = 所有功能，儲存位置數量不限，供你的組織使用。
 
-# Bought
-t5c52217e = 已購買
+# {price} a month
+t9974421b = 每月 { $price }
 
-# Buy Pro · {price}
-t93567162 = 購買 Pro · { $price }
+# Monthly
+t1640a356 = 按月
 
-# Buy Pro
-t1bdcbb74 = 購買 Pro
+# {price} a year
+t105524fa = 每年 { $price }
+
+# Yearly
+t3e5922ab = 按年
+
+# Subscribed
+t6ef44945 = 已訂閱
+
+# Manage Subscription
+t11820d57 = 管理訂閱
 
 # Restore Purchases
 t8ade61c5 = 回復購買項目
 
+# Payment is charged to your Apple Account. A subscription renews automatically for the same period and price unless you cancel it at least 24 hours before it ends; manage or cancel it in your App Store account settings.
+t4052cbcb = 費用將從你的 Apple 帳號扣款。除非在目前週期結束前至少 24 小時取消，訂閱會以相同週期與價格自動續訂；你可以在 App Store 帳號設定中管理或取消訂閱。
+
+# Terms of Use
+tf7c86026 = 使用條款
+
+# Privacy Policy
+t2526541f = 隱私權政策
+
 # Waiting for approval: packwing turns Pro once it is given.
 td36209de = 正在等待核准：核准後 packwing 即成為 Pro。
 
-# The App Store found nothing bought with this Apple Account.
-tf996dc19 = App Store 找不到以此 Apple 帳號購買的項目。
+# The App Store found no subscription of this Apple Account.
+tbd02ac34 = App Store 找不到此 Apple 帳號的訂閱。
 
 # The App Store could not do it: {why}
 t07f7f00e = App Store 無法完成：{ $why }
 
-# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
-t4294db10 = 你所在國家或地區的 App Store 不販售 Pro。以此 Apple 帳號在其他國家或地區購買的 Pro 仍可回復。
+# The App Store does not sell Pro in your country or region. A subscription of this Apple Account from another one can still be restored.
+tc4b527fc = App Store 未在你所在的國家或地區販售 Pro。此 Apple 帳號在其他地區的訂閱仍可回復。
 
 # App Store
 t56b8f375 = App Store
 
-# Pro, bought once in the App Store: yours on every Mac with your Apple Account.
-ta6e8e46d = 在 App Store 購買一次的 Pro：在使用你 Apple 帳號的每部 Mac 上都可使用。
+# Pro by subscription, on every Mac, iPhone and iPad with your Apple Account.
+tf993909d = 訂閱 Pro，可在使用你 Apple 帳號的所有 Mac、iPhone 和 iPad 上使用。
+
+# Pro by subscription, a month or a year: on every Mac, iPhone and iPad with your Apple Account.
+t4f86bca1 = 訂閱 Pro，按月或按年：可在使用你 Apple 帳號的所有 Mac、iPhone 和 iPad 上使用。
 
 # Plan
 t1eab5e32 = 方案
@@ -3400,11 +3421,26 @@ t1ef504d9 = packwing 無法顯示這個檔案。
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing 免費版只能使用一個網路儲存位置。Pro 可解除此限制。
 
+# Buy Pro · {price}
+t93567162 = 購買 Pro · { $price }
+
+# Buy Pro
+t1bdcbb74 = 購買 Pro
+
 # Every feature, and one storage across a network.
 t0ccb5824 = 所有功能，以及一個網路儲存位置。
 
+# Bought
+t5c52217e = 已購買
+
+# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
+t4294db10 = 你所在國家或地區的 App Store 不販售 Pro。以此 Apple 帳號在其他國家或地區購買的 Pro 仍可回復。
+
 # Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
 t8bc438f1 = 在 App Store 購買一次的 Pro：在使用你 Apple 帳號的每部 iPhone、iPad 和 Mac 上都可使用。
+
+# The App Store found nothing bought with this Apple Account.
+tf996dc19 = App Store 找不到以此 Apple 帳號購買的項目。
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing 已無法存取 { $name }。請重新開啟以查看內容。

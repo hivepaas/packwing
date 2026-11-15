@@ -1,5 +1,5 @@
 //! The Swift library's C functions (swift/Sources/PackwingStore/Store.swift): each takes
-//! the product's id, a context and a function it calls with the context and its answer,
+//! the product's id (for holds, restore and watch, ids separated by commas), a context and a function it calls with the context and its answer,
 //! once, on a thread of its own; `packwing_store_watch` calls it again and again.
 #![allow(unsafe_code)]
 

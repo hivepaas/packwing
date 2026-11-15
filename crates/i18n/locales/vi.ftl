@@ -2110,35 +2110,56 @@ tc3e75ecf = Đủ mọi tính năng, số nơi lưu trữ không giới hạn.
 # Every feature, and any number of storages, for your organization.
 t69b29f66 = Đủ mọi tính năng, số nơi lưu trữ không giới hạn, cho tổ chức của bạn.
 
-# Bought
-t5c52217e = Đã mua
+# {price} a month
+t9974421b = { $price } mỗi tháng
 
-# Buy Pro · {price}
-t93567162 = Mua Pro · { $price }
+# Monthly
+t1640a356 = Hằng tháng
 
-# Buy Pro
-t1bdcbb74 = Mua Pro
+# {price} a year
+t105524fa = { $price } mỗi năm
+
+# Yearly
+t3e5922ab = Hằng năm
+
+# Subscribed
+t6ef44945 = Đã đăng ký
+
+# Manage Subscription
+t11820d57 = Quản lý gói đăng ký
 
 # Restore Purchases
 t8ade61c5 = Khôi phục giao dịch mua
 
+# Payment is charged to your Apple Account. A subscription renews automatically for the same period and price unless you cancel it at least 24 hours before it ends; manage or cancel it in your App Store account settings.
+t4052cbcb = Khoản thanh toán được tính vào Tài khoản Apple của bạn. Gói đăng ký tự gia hạn với cùng kỳ hạn và giá, trừ khi bạn huỷ ít nhất 24 giờ trước khi hết kỳ; quản lý hoặc huỷ trong phần cài đặt tài khoản App Store.
+
+# Terms of Use
+tf7c86026 = Điều khoản sử dụng
+
+# Privacy Policy
+t2526541f = Chính sách quyền riêng tư
+
 # Waiting for approval: packwing turns Pro once it is given.
 td36209de = Đang chờ duyệt: packwing sẽ thành Pro ngay khi được duyệt.
 
-# The App Store found nothing bought with this Apple Account.
-tf996dc19 = App Store không tìm thấy gì đã mua bằng Tài khoản Apple này.
+# The App Store found no subscription of this Apple Account.
+tbd02ac34 = App Store không tìm thấy gói đăng ký nào của Tài khoản Apple này.
 
 # The App Store could not do it: {why}
 t07f7f00e = App Store không thể thực hiện: { $why }
 
-# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
-t4294db10 = App Store không bán Pro ở quốc gia hoặc khu vực của bạn. Pro đã mua bằng Tài khoản Apple này ở nơi khác vẫn khôi phục được.
+# The App Store does not sell Pro in your country or region. A subscription of this Apple Account from another one can still be restored.
+tc4b527fc = App Store không bán Pro ở quốc gia hoặc khu vực của bạn. Gói đăng ký của Tài khoản Apple này mua ở nơi khác vẫn khôi phục được.
 
 # App Store
 t56b8f375 = App Store
 
-# Pro, bought once in the App Store: yours on every Mac with your Apple Account.
-ta6e8e46d = Pro, mua một lần trên App Store: của bạn trên mọi máy Mac dùng Tài khoản Apple của bạn.
+# Pro by subscription, on every Mac, iPhone and iPad with your Apple Account.
+tf993909d = Pro theo gói đăng ký, trên mọi Mac, iPhone và iPad dùng Tài khoản Apple của bạn.
+
+# Pro by subscription, a month or a year: on every Mac, iPhone and iPad with your Apple Account.
+t4f86bca1 = Pro theo gói đăng ký, theo tháng hoặc theo năm: trên mọi Mac, iPhone và iPad dùng Tài khoản Apple của bạn.
 
 # Plan
 t1eab5e32 = Gói
@@ -3391,11 +3412,26 @@ t1ef504d9 = packwing không hiển thị được tệp này.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free chỉ giữ một nơi lưu trữ qua mạng. Pro bỏ giới hạn này.
 
+# Buy Pro · {price}
+t93567162 = Mua Pro · { $price }
+
+# Buy Pro
+t1bdcbb74 = Mua Pro
+
 # Every feature, and one storage across a network.
 t0ccb5824 = Đủ mọi tính năng, và một nơi lưu trữ qua mạng.
 
+# Bought
+t5c52217e = Đã mua
+
+# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
+t4294db10 = App Store không bán Pro ở quốc gia hoặc khu vực của bạn. Pro đã mua bằng Tài khoản Apple này ở nơi khác vẫn khôi phục được.
+
 # Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
 t8bc438f1 = Pro, mua một lần trên App Store: của bạn trên mọi iPhone, iPad và Mac dùng Tài khoản Apple của bạn.
+
+# The App Store found nothing bought with this Apple Account.
+tf996dc19 = App Store không tìm thấy gì đã mua bằng Tài khoản Apple này.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing không còn truy cập được { $name }. Hãy mở lại để xem bên trong.

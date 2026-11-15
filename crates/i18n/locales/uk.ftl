@@ -2200,35 +2200,56 @@ tc3e75ecf = Усі можливості й будь-яка кількість с
 # Every feature, and any number of storages, for your organization.
 t69b29f66 = Усі можливості й будь-яка кількість сховищ для вашої організації.
 
-# Bought
-t5c52217e = Придбано
+# {price} a month
+t9974421b = { $price } на місяць
 
-# Buy Pro · {price}
-t93567162 = Придбати Pro · { $price }
+# Monthly
+t1640a356 = Щомісяця
 
-# Buy Pro
-t1bdcbb74 = Придбати Pro
+# {price} a year
+t105524fa = { $price } на рік
+
+# Yearly
+t3e5922ab = Щороку
+
+# Subscribed
+t6ef44945 = Підписку оформлено
+
+# Manage Subscription
+t11820d57 = Керувати підпискою
 
 # Restore Purchases
 t8ade61c5 = Відновити покупки
 
+# Payment is charged to your Apple Account. A subscription renews automatically for the same period and price unless you cancel it at least 24 hours before it ends; manage or cancel it in your App Store account settings.
+t4052cbcb = Оплата стягується з вашого облікового запису Apple. Підписка поновлюється автоматично на той самий строк і за тією ж ціною, якщо не скасувати її щонайменше за 24 години до завершення; керувати нею чи скасувати можна в параметрах облікового запису App Store.
+
+# Terms of Use
+tf7c86026 = Умови використання
+
+# Privacy Policy
+t2526541f = Політика конфіденційності
+
 # Waiting for approval: packwing turns Pro once it is given.
 td36209de = Очікування схвалення: packwing стане Pro, щойно його нададуть.
 
-# The App Store found nothing bought with this Apple Account.
-tf996dc19 = App Store не знайшов покупок із цим обліковим записом Apple.
+# The App Store found no subscription of this Apple Account.
+tbd02ac34 = App Store не знайшов підписок цього облікового запису Apple.
 
 # The App Store could not do it: {why}
 t07f7f00e = App Store не зміг це зробити: { $why }
 
-# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
-t4294db10 = App Store не продає Pro у вашій країні чи регіоні. Pro, придбаний з цим обліковим записом Apple в іншій країні, усе одно можна відновити.
+# The App Store does not sell Pro in your country or region. A subscription of this Apple Account from another one can still be restored.
+tc4b527fc = App Store не продає Pro у вашій країні чи регіоні. Підписку цього облікового запису Apple з іншої країни все одно можна відновити.
 
 # App Store
 t56b8f375 = App Store
 
-# Pro, bought once in the App Store: yours on every Mac with your Apple Account.
-ta6e8e46d = Pro, придбаний один раз в App Store: ваш на кожному Mac з вашим обліковим записом Apple.
+# Pro by subscription, on every Mac, iPhone and iPad with your Apple Account.
+tf993909d = Pro за підпискою, на кожному Mac, iPhone та iPad з вашим обліковим записом Apple.
+
+# Pro by subscription, a month or a year: on every Mac, iPhone and iPad with your Apple Account.
+t4f86bca1 = Pro за підпискою, на місяць або на рік: на кожному Mac, iPhone та iPad з вашим обліковим записом Apple.
 
 # Plan
 t1eab5e32 = Тариф
@@ -3538,11 +3559,26 @@ t1ef504d9 = packwing не може показати цей файл.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free дозволяє одне сховище в мережі. Pro знімає це обмеження.
 
+# Buy Pro · {price}
+t93567162 = Придбати Pro · { $price }
+
+# Buy Pro
+t1bdcbb74 = Придбати Pro
+
 # Every feature, and one storage across a network.
 t0ccb5824 = Усі можливості й одне сховище в мережі.
 
+# Bought
+t5c52217e = Придбано
+
+# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
+t4294db10 = App Store не продає Pro у вашій країні чи регіоні. Pro, придбаний з цим обліковим записом Apple в іншій країні, усе одно можна відновити.
+
 # Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
 t8bc438f1 = Pro, придбаний один раз в App Store: ваш на кожному iPhone, iPad і Mac з вашим обліковим записом Apple.
+
+# The App Store found nothing bought with this Apple Account.
+tf996dc19 = App Store не знайшов покупок із цим обліковим записом Apple.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing більше не має доступу до { $name }. Відкрийте його знову, щоб зазирнути всередину.
