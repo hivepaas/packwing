@@ -3334,6 +3334,12 @@ tecf6b414 = Tin cậy khoá này
 # There is no signature beside it.
 te7a28cb7 = Không có chữ ký nào bên cạnh.
 
+# packwing cannot show this file.
+t1ef504d9 = packwing không hiển thị được tệp này.
+
+# packwing Free keeps one storage across a network. Pro lifts this.
+tf72ae001 = packwing Free chỉ giữ một nơi lưu trữ qua mạng. Pro bỏ giới hạn này.
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing không còn truy cập được { $name }. Hãy mở lại để xem bên trong.
 
@@ -3405,9 +3411,6 @@ tc2954bc2 = Quay lại
 
 # Search in this archive
 tfda7010a = Tìm trong tệp nén này
-
-# packwing cannot show this file.
-t1ef504d9 = packwing không hiển thị được tệp này.
 
 # AES-256. In 7z the names are hidden too.
 t9c81b89f = AES-256. Với 7z, tên tệp cũng được ẩn.

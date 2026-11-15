@@ -55,14 +55,15 @@ impl fmt::Display for KeyRefused {
 
 impl std::error::Error for KeyRefused {}
 
-fn entry(account: &str) -> io::Result<keyring::Entry> {
-    keyring::Entry::new(SERVICE, account).map_err(io::Error::other)
+fn entry(account: &str) -> io::Result<crate::secrets::Entry> {
+    // As secrets.rs has it: on iOS, the system keychain's store and entries.
+    crate::secrets::keychain(SERVICE, account)
 }
 
 fn get(account: &str) -> io::Result<Option<String>> {
     match entry(account)?.get_password() {
         Ok(secret) => Ok(Some(secret)),
-        Err(keyring::Error::NoEntry) => Ok(None),
+        Err(keyring_core::Error::NoEntry) => Ok(None),
         Err(e) => Err(io::Error::other(e)),
     }
 }
@@ -158,7 +159,7 @@ pub fn remove_key(id: &str) -> io::Result<()> {
     list.retain(|k| k.id != id);
     write_list(&list)?;
     match entry(id)?.delete_credential() {
-        Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
+        Ok(()) | Err(keyring_core::Error::NoEntry) => Ok(()),
         Err(e) => Err(io::Error::other(e)),
     }
 }

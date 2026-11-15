@@ -3389,6 +3389,12 @@ tecf6b414 = Confiar en esta clave
 # There is no signature beside it.
 te7a28cb7 = No hay ninguna firma junto a él.
 
+# packwing cannot show this file.
+t1ef504d9 = packwing no puede mostrar este archivo.
+
+# packwing Free keeps one storage across a network. Pro lifts this.
+tf72ae001 = packwing Free admite un almacenamiento en red. Pro lo amplía.
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing ya no puede acceder a { $name }. Ábrelo de nuevo para ver lo que contiene.
 
@@ -3461,9 +3467,6 @@ tc2954bc2 = Atrás
 
 # Search in this archive
 tfda7010a = Buscar en este archivo comprimido
-
-# packwing cannot show this file.
-t1ef504d9 = packwing no puede mostrar este archivo.
 
 # AES-256. In 7z the names are hidden too.
 t9c81b89f = AES-256. En 7z también se ocultan los nombres.

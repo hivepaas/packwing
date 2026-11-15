@@ -3334,6 +3334,12 @@ tecf6b414 = 信任此密钥
 # There is no signature beside it.
 te7a28cb7 = 旁边没有签名。
 
+# packwing cannot show this file.
+t1ef504d9 = packwing 无法显示此文件。
+
+# packwing Free keeps one storage across a network. Pro lifts this.
+tf72ae001 = packwing 免费版只能使用一个网络存储。Pro 可取消此限制。
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing 已无法访问 { $name }。请重新打开它以查看内容。
 
@@ -3405,9 +3411,6 @@ tc2954bc2 = 返回
 
 # Search in this archive
 tfda7010a = 在此压缩包中搜索
-
-# packwing cannot show this file.
-t1ef504d9 = packwing 无法显示此文件。
 
 # AES-256. In 7z the names are hidden too.
 t9c81b89f = AES-256。7z 还会隐藏文件名。

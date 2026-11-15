@@ -13,6 +13,8 @@ struct HomeView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     OpenCard { importing = true }
+                    // Above Recent, which may be long.
+                    StoragesSection()
                     if model.recent.isEmpty {
                         ShareTip()
                     } else {
@@ -42,6 +44,9 @@ struct HomeView: View {
                 })
             .navigationDestination(for: Place.self) { place in
                 ArchiveView(place: place)
+            }
+            .navigationDestination(for: StorageSpot.self) { spot in
+                StorageFolderView(spot: spot)
             }
         }
         // Any file: packwing tells an archive by what is in it, not its name.

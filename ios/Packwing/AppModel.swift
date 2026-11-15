@@ -59,10 +59,25 @@ struct RecentArchive: Codable, Identifiable, Hashable {
     var locked: Bool
 }
 
+/// Where an archive is opened from: a file (of Files, or packwing's own), or
+/// a file of a storage across the network, read where it is.
+enum OpenSpot {
+    case file(URL)
+    /// Its storage, its path there, and its size.
+    case stored(StorageHandle, [String], UInt64)
+
+    var name: String {
+        switch self {
+        case .file(let url): url.lastPathComponent
+        case .stored(_, let path, _): path.last ?? ""
+        }
+    }
+}
+
 /// What the password sheet asks for.
 struct PasswordAsk: Identifiable {
     let id = UUID()
-    let url: URL
+    let spot: OpenSpot
     let name: String
     /// An age file's passphrase, rather than an archive's password.
     let passphrase: Bool
@@ -74,7 +89,9 @@ struct PasswordAsk: Identifiable {
 @Observable
 final class AppModel {
     var tab: AppTab = .archives
-    var path: [Place] = []
+    /// What the Archives tab shows over its first screen: storages' folders, an
+    /// archive's.
+    var path = NavigationPath()
     var recent: [RecentArchive] = []
     var asking: PasswordAsk?
     /// The name of the archive being opened, while it is.
@@ -101,6 +118,10 @@ final class AppModel {
     @ObservationIgnored var changeJob: Job?
     /// The public keys whose signatures say who signed a file.
     var trustedKeys = AppModel.loadKeys()
+    /// The storages across the network added, in the order they were.
+    var storages = AppModel.loadStorages()
+    /// Each storage open, by its id: its connection is kept for what follows.
+    @ObservationIgnored var handles: [String: StorageHandle] = [:]
 
     @ObservationIgnored private var openJob: Job?
     @ObservationIgnored var readJob: Job?
@@ -134,20 +155,35 @@ final class AppModel {
 
     func open(_ url: URL) {
         let url = Self.receive(url)
-        Task { await open(url, secrets: Secrets(password: nil, passphrase: nil)) }
+        Task { await open(.file(url), secrets: Secrets(password: nil, passphrase: nil)) }
     }
 
-    /// Opens `url` with `secrets`: shows it, or asks for what it needs.
-    func open(_ url: URL, secrets: Secrets) async {
+    /// Opens the archive at `spot` with `secrets`: shows it, or asks for what it needs.
+    func open(_ spot: OpenSpot, secrets: Secrets) async {
         openJob?.cancel()
         let job = Job.quiet()
         openJob = job
-        let scoped = url.startAccessingSecurityScopedResource()
-        let name = url.lastPathComponent
-        let file = url.path(percentEncoded: false)
+        let url: URL
+        let scoped: Bool
+        switch spot {
+        case .file(let file):
+            url = file
+            scoped = file.startAccessingSecurityScopedResource()
+        case .stored(let handle, let path, _):
+            url = handle.url(of: path)
+            scoped = false
+        }
+        let name = spot.name
         opening = name
         let result = await Task.detached(priority: .userInitiated) {
-            Result { try Archive.open(path: file, secrets: secrets, job: job) }
+            Result { () throws -> Archive in
+                switch spot {
+                case .file(let file):
+                    try Archive.open(path: file.path(percentEncoded: false), secrets: secrets, job: job)
+                case .stored(let handle, let path, let size):
+                    try handle.storage.openArchive(path: path, size: size, secrets: secrets, job: job)
+                }
+            }
         }.value
         if openJob === job {
             opening = nil
@@ -157,16 +193,21 @@ final class AppModel {
         case .success(let archive):
             asking = nil
             let opened = OpenedArchive(url: url, archive: archive, scoped: scoped)
-            remember(url, opened.info, locked: secrets.password != nil || secrets.passphrase != nil)
             tab = .archives
-            path = [Place(archive: opened, folder: [])]
+            if case .stored = spot {
+                // Over the storage's folder it is in, to go back to.
+                path.append(Place(archive: opened, folder: []))
+            } else {
+                remember(url, opened.info, locked: secrets.password != nil || secrets.passphrase != nil)
+                path = NavigationPath([Place(archive: opened, folder: [])])
+            }
         case .failure(let error):
             if scoped { url.stopAccessingSecurityScopedResource() }
             switch error as? MobileError {
             case .Locked(_, let passphrase):
-                asking = PasswordAsk(url: url, name: name, passphrase: passphrase, problem: nil)
+                asking = PasswordAsk(spot: spot, name: name, passphrase: passphrase, problem: nil)
             case .WrongPassword(let message):
-                asking = PasswordAsk(url: url, name: name, passphrase: asking?.passphrase ?? false, problem: message)
+                asking = PasswordAsk(spot: spot, name: name, passphrase: asking?.passphrase ?? false, problem: message)
             case .Cancelled:
                 break
             case .NotAnArchive(let message), .Failed(let message):
@@ -191,7 +232,7 @@ final class AppModel {
         let secrets = ask.passphrase
             ? Secrets(password: nil, passphrase: secret)
             : Secrets(password: secret, passphrase: nil)
-        Task { await open(ask.url, secrets: secrets) }
+        Task { await open(ask.spot, secrets: secrets) }
     }
 
     func open(_ item: RecentArchive) {

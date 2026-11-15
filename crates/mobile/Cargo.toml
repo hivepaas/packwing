@@ -25,6 +25,7 @@ bindgen = ["uniffi/cli"]
 [dependencies]
 packwing-core.workspace = true
 packwing-i18n.workspace = true
+packwing-remote.workspace = true
 thiserror = "2"
 uniffi = "0.32"
 
