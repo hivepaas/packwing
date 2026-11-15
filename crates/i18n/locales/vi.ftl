@@ -2200,6 +2200,45 @@ t9e6ecd3d = Khoá được kiểm tra ngay trên máy tính này. Không có gì
 # On
 t60e47df0 = Bật
 
+# packwing’s items are in Finder’s right-click menu
+tfecc58a6 = Các mục của packwing nằm trong menu chuột phải của Finder
+
+# macOS puts them there for an app from the App Store, at the bottom of the menu, under Quick Actions or Services. It shows them once packwing is installed, and you choose which ones stay in System Settings.
+t099504d0 = macOS đặt chúng ở đó cho ứng dụng từ App Store, ở cuối menu, trong Tác vụ nhanh hoặc Dịch vụ. macOS hiện chúng khi packwing được cài, và bạn chọn giữ lại mục nào trong Cài đặt hệ thống.
+
+# For archives
+t02c16077 = Cho tệp nén
+
+# For files and folders
+t87b99903 = Cho tệp và thư mục
+
+# Open System Settings, then Keyboard: the button below takes you there.
+t1d2f867c = Mở Cài đặt hệ thống, rồi Bàn phím: nút bên dưới đưa bạn tới đó.
+
+# Click Keyboard Shortcuts…, then Services in the list at the left.
+t3aecdbe5 = Bấm Phím tắt bàn phím…, rồi Dịch vụ trong danh sách bên trái.
+
+# Open Files and Folders. Tick the packwing items you want in the menu, and untick the others. You can give each one a keyboard shortcut there too.
+ta89a4502 = Mở Tệp và thư mục. Đánh dấu các mục packwing bạn muốn có trong menu và bỏ dấu các mục còn lại. Ở đó bạn cũng có thể gán phím tắt cho từng mục.
+
+# Items in the menu
+t67537dc4 = Các mục trong menu
+
+# As the menu names them, in English for now.
+t7e08d78d = Tên như trong menu, hiện chỉ có tiếng Anh.
+
+# Turn items on or off
+t80c46351 = Bật hoặc tắt từng mục
+
+# An app from the App Store may not change the menu itself: macOS keeps the choice.
+t98ee6c44 = Ứng dụng từ App Store không tự đổi menu được: macOS giữ lựa chọn này.
+
+# Open Keyboard settings
+tdf41b143 = Mở cài đặt Bàn phím
+
+# Items not in the menu yet? macOS finds them when packwing first opens: quit packwing and open it again, or log out and back in.
+tfeaf86e5 = Chưa thấy các mục trong menu? macOS tìm chúng khi packwing mở lần đầu: hãy thoát packwing rồi mở lại, hoặc đăng xuất rồi đăng nhập lại.
+
 # They show when you right-click files, folders and archives.
 te216d656 = Chúng hiện khi bạn bấm chuột phải vào tệp, thư mục và tệp nén.
 
@@ -2220,9 +2259,6 @@ t5d0d23cc = Hiện packwing trong menu chuột phải
 
 # Extract and compress from any folder
 t94a46acb = Giải nén và nén từ mọi thư mục
-
-# Items in the menu
-t67537dc4 = Các mục trong menu
 
 # Put them in a submenu
 te3449a65 = Đặt trong menu con

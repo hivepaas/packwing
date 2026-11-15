@@ -2230,6 +2230,45 @@ t9e6ecd3d = Anahtar bu bilgisayarda denetlenir. Hiçbir yere bir şey gönderilm
 # On
 t60e47df0 = Açık
 
+# packwing’s items are in Finder’s right-click menu
+tfecc58a6 = packwing öğeleri Finder’ın sağ tık menüsünde
+
+# macOS puts them there for an app from the App Store, at the bottom of the menu, under Quick Actions or Services. It shows them once packwing is installed, and you choose which ones stay in System Settings.
+t099504d0 = macOS, App Store’dan gelen bir uygulama için onları menünün altına, Hızlı Eylemler ya da Servisler altına koyar. packwing yüklenince gösterir; hangilerinin kalacağını Sistem Ayarları’nda siz seçersiniz.
+
+# For archives
+t02c16077 = Arşivler için
+
+# For files and folders
+t87b99903 = Dosyalar ve klasörler için
+
+# Open System Settings, then Keyboard: the button below takes you there.
+t1d2f867c = Sistem Ayarları’nı, ardından Klavye’yi açın: aşağıdaki düğme sizi oraya götürür.
+
+# Click Keyboard Shortcuts…, then Services in the list at the left.
+t3aecdbe5 = Klavye Kestirmeleri…’ni, ardından soldaki listede Servisler’i tıklayın.
+
+# Open Files and Folders. Tick the packwing items you want in the menu, and untick the others. You can give each one a keyboard shortcut there too.
+ta89a4502 = Dosyalar ve Klasörler’i açın. Menüde istediğiniz packwing öğelerini işaretleyin, diğerlerinin işaretini kaldırın. Orada her birine bir klavye kestirmesi de verebilirsiniz.
+
+# Items in the menu
+t67537dc4 = Menüdeki öğeler
+
+# As the menu names them, in English for now.
+t7e08d78d = Menünün adlandırdığı gibi, şimdilik İngilizce.
+
+# Turn items on or off
+t80c46351 = Öğeleri açın veya kapatın
+
+# An app from the App Store may not change the menu itself: macOS keeps the choice.
+t98ee6c44 = App Store’dan bir uygulama menüyü kendisi değiştiremez: seçimi macOS tutar.
+
+# Open Keyboard settings
+tdf41b143 = Klavye ayarlarını aç
+
+# Items not in the menu yet? macOS finds them when packwing first opens: quit packwing and open it again, or log out and back in.
+tfeaf86e5 = Öğeler henüz menüde değil mi? macOS onları packwing ilk açıldığında bulur: packwing’den çıkıp yeniden açın ya da oturumu kapatıp yeniden açın.
+
 # They show when you right-click files, folders and archives.
 te216d656 = Dosyalara, klasörlere ve arşivlere sağ tıkladığınızda görünürler.
 
@@ -2250,9 +2289,6 @@ t5d0d23cc = packwing'i sağ tık menüsünde göster
 
 # Extract and compress from any folder
 t94a46acb = Herhangi bir klasörden çıkarın ve sıkıştırın
-
-# Items in the menu
-t67537dc4 = Menüdeki öğeler
 
 # Put them in a submenu
 te3449a65 = Alt menüye koy

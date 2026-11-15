@@ -1,15 +1,22 @@
 //! Right-click menu: whether packwing is in the system's menu, which of its
 //! items, and whether they sit in a submenu of their own; and what came of
-//! the last change.
+//! the last change. In the Mac App Store's build, its items are macOS
+//! services, which macOS puts in the menu and the user turns on and off in
+//! System Settings: the section says where, and how.
 
-use gpui::{Context, Div, Entity, FontWeight, Render, Window, div, prelude::*, rgb};
+use gpui::{
+    AnyElement, Context, Div, Entity, FontWeight, Render, Window, div, prelude::*, relative, rgb,
+};
 use packwing_i18n::tr;
 
 use super::{explain, group, heading, label, section, setting};
-use crate::colors::colors;
-use crate::right_click::{Action, RightClickMenu, Status};
+use crate::colors::{Tint, colors};
+use crate::right_click::{Action, RightClickMenu, SERVICES, STORE_BUILD, Status};
 use crate::text_size::ui;
-use crate::widgets::{Tone, check_row, icon, note, switch};
+use crate::widgets::{Fill, Size, Tone, button, check_row, icon, note, switch, tile};
+
+/// System Settings' Keyboard, where its Keyboard Shortcuts hold the services.
+const KEYBOARD_SETTINGS: &str = "x-apple.systempreferences:com.apple.Keyboard-Settings.extension";
 
 /// A setting the system holds on, where a switch would be.
 fn held_on() -> Div {
@@ -41,8 +48,149 @@ impl RightClick {
     }
 }
 
+/// One of the steps to turn the services on and off: its number, then what to do.
+fn step(n: usize, text: String) -> Div {
+    let c = colors();
+    div()
+        .flex()
+        .items_start()
+        .gap(ui(12.))
+        .child(
+            div()
+                .flex()
+                .items_center()
+                .justify_center()
+                .size(ui(24.))
+                .flex_shrink_0()
+                .rounded_full()
+                .bg(rgb(c.tonal))
+                .text_color(rgb(c.on_tonal))
+                .text_size(ui(13.))
+                .font_weight(FontWeight::BOLD)
+                .child(n.to_string()),
+        )
+        .child(
+            div()
+                .flex_1()
+                .min_w_0()
+                .pt(ui(2.))
+                .text_size(ui(14.))
+                .line_height(relative(1.45))
+                .child(text),
+        )
+}
+
+/// The Mac App Store's build: where macOS puts packwing's items, which they are, and
+/// how to turn them on and off, which packwing may not do itself.
+fn services() -> AnyElement {
+    let c = colors();
+    let about = div()
+        .debug_selector(|| "services-note".to_owned())
+        .flex()
+        .items_center()
+        .gap(ui(14.))
+        .px(ui(18.))
+        .py(ui(16.))
+        .rounded(ui(22.))
+        .bg(rgb(c.tonal))
+        .text_color(rgb(c.on_tonal))
+        .child(
+            tile(
+                44.,
+                15.,
+                Tint {
+                    ground: c.surface,
+                    ink: c.on_tonal,
+                },
+            )
+            .flex()
+            .items_center()
+            .justify_center()
+            .child(icon("sliders", 22., c.on_tonal)),
+        )
+        .child(
+            div()
+                .flex_1()
+                .min_w_0()
+                .text_size(ui(14.))
+                .line_height(relative(1.5))
+                .child(
+                    div()
+                        .text_size(ui(15.))
+                        .font_weight(FontWeight::BOLD)
+                        .child(tr!("packwing’s items are in Finder’s right-click menu")),
+                )
+                .child(tr!(
+                    "macOS puts them there for an app from the App Store, at the bottom of the menu, under Quick Actions or Services. It shows them once packwing is installed, and you choose which ones stay in System Settings."
+                )),
+        );
+    let items = SERVICES.iter().enumerate().map(|(i, s)| {
+        div()
+            .debug_selector(move || format!("service-{i}"))
+            .flex()
+            .items_center()
+            .gap(ui(12.))
+            .py(ui(4.))
+            .child(icon(
+                if s.archives { "extract" } else { "archive" },
+                18.,
+                c.muted,
+            ))
+            .child(div().flex_1().min_w_0().text_size(ui(15.)).child(s.title))
+            .child(explain(if s.archives {
+                tr!("For archives")
+            } else {
+                tr!("For files and folders")
+            }))
+    });
+    let steps = [
+        tr!("Open System Settings, then Keyboard: the button below takes you there."),
+        tr!("Click Keyboard Shortcuts…, then Services in the list at the left."),
+        tr!(
+            "Open Files and Folders. Tick the packwing items you want in the menu, and untick the others. You can give each one a keyboard shortcut there too."
+        ),
+    ];
+    section()
+        .child(about)
+        .child(
+            group()
+                .child(heading(
+                    tr!("Items in the menu"),
+                    tr!("As the menu names them, in English for now."),
+                ))
+                .children(items),
+        )
+        .child(
+            group()
+                .child(heading(
+                    tr!("Turn items on or off"),
+                    tr!("An app from the App Store may not change the menu itself: macOS keeps the choice."),
+                ))
+                .children(steps.into_iter().enumerate().map(|(i, t)| step(i + 1, t)))
+                .child(
+                    // In a row, so the button is as wide as its name.
+                    div().pt(ui(4.)).flex().child(
+                        button(
+                            "services-settings",
+                            tr!("Open Keyboard settings"),
+                            Fill::Tonal,
+                            Size::Medium,
+                        )
+                        .on_click(|_, _, cx| cx.open_url(KEYBOARD_SETTINGS)),
+                    ),
+                ),
+        )
+        .child(explain(tr!(
+            "Items not in the menu yet? macOS finds them when packwing first opens: quit packwing and open it again, or log out and back in."
+        )))
+        .into_any_element()
+}
+
 impl Render for RightClick {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        if STORE_BUILD {
+            return services();
+        }
         let m = self.menu.read(cx);
         let (shown, choice, status) = (m.shown(), m.choice().clone(), m.status().clone());
         let one_entry = m.one_entry();
@@ -113,5 +261,6 @@ impl Render for RightClick {
                 )
             })
             .children(came)
+            .into_any_element()
     }
 }

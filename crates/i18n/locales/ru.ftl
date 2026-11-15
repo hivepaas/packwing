@@ -2290,6 +2290,45 @@ t9e6ecd3d = Ключ проверяется на этом компьютере. 
 # On
 t60e47df0 = Вкл.
 
+# packwing’s items are in Finder’s right-click menu
+tfecc58a6 = Пункты packwing находятся в контекстном меню Finder
+
+# macOS puts them there for an app from the App Store, at the bottom of the menu, under Quick Actions or Services. It shows them once packwing is installed, and you choose which ones stay in System Settings.
+t099504d0 = Для приложения из App Store macOS помещает их в конец меню, в «Быстрые действия» или «Службы». Они появляются после установки packwing, а какие оставить, вы выбираете в Системных настройках.
+
+# For archives
+t02c16077 = Для архивов
+
+# For files and folders
+t87b99903 = Для файлов и папок
+
+# Open System Settings, then Keyboard: the button below takes you there.
+t1d2f867c = Откройте Системные настройки, затем «Клавиатура»: кнопка ниже открывает этот раздел.
+
+# Click Keyboard Shortcuts…, then Services in the list at the left.
+t3aecdbe5 = Нажмите «Сочетания клавиш…», затем «Службы» в списке слева.
+
+# Open Files and Folders. Tick the packwing items you want in the menu, and untick the others. You can give each one a keyboard shortcut there too.
+ta89a4502 = Откройте «Файлы и папки». Отметьте пункты packwing, которые нужны в меню, и снимите отметку с остальных. Там же можно назначить каждому сочетание клавиш.
+
+# Items in the menu
+t67537dc4 = Пункты меню
+
+# As the menu names them, in English for now.
+t7e08d78d = Так, как их называет меню, пока только по-английски.
+
+# Turn items on or off
+t80c46351 = Включение и выключение пунктов
+
+# An app from the App Store may not change the menu itself: macOS keeps the choice.
+t98ee6c44 = Приложение из App Store не может само менять меню: выбор хранит macOS.
+
+# Open Keyboard settings
+tdf41b143 = Открыть настройки клавиатуры
+
+# Items not in the menu yet? macOS finds them when packwing first opens: quit packwing and open it again, or log out and back in.
+tfeaf86e5 = Пунктов ещё нет в меню? macOS находит их при первом открытии packwing: закройте packwing и откройте снова или выйдите из системы и войдите заново.
+
 # They show when you right-click files, folders and archives.
 te216d656 = Они появляются при щелчке правой кнопкой по файлам, папкам и архивам.
 
@@ -2310,9 +2349,6 @@ t5d0d23cc = Показывать packwing в контекстном меню
 
 # Extract and compress from any folder
 t94a46acb = Извлекать и сжимать из любой папки
-
-# Items in the menu
-t67537dc4 = Пункты меню
 
 # Put them in a submenu
 te3449a65 = Поместить их в подменю

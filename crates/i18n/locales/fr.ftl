@@ -2230,6 +2230,45 @@ t9e6ecd3d = Une clé est vérifiée sur cet ordinateur. Rien n'est envoyé nulle
 # On
 t60e47df0 = Activé
 
+# packwing’s items are in Finder’s right-click menu
+tfecc58a6 = Les éléments de packwing sont dans le menu contextuel du Finder
+
+# macOS puts them there for an app from the App Store, at the bottom of the menu, under Quick Actions or Services. It shows them once packwing is installed, and you choose which ones stay in System Settings.
+t099504d0 = macOS les y place pour une app de l’App Store, en bas du menu, sous Actions rapides ou Services. Il les affiche dès que packwing est installé, et vous choisissez ceux qui restent dans Réglages Système.
+
+# For archives
+t02c16077 = Pour les archives
+
+# For files and folders
+t87b99903 = Pour les fichiers et dossiers
+
+# Open System Settings, then Keyboard: the button below takes you there.
+t1d2f867c = Ouvrez Réglages Système, puis Clavier : le bouton ci-dessous vous y mène.
+
+# Click Keyboard Shortcuts…, then Services in the list at the left.
+t3aecdbe5 = Cliquez sur Raccourcis clavier…, puis sur Services dans la liste à gauche.
+
+# Open Files and Folders. Tick the packwing items you want in the menu, and untick the others. You can give each one a keyboard shortcut there too.
+ta89a4502 = Ouvrez Fichiers et dossiers. Cochez les éléments de packwing que vous voulez dans le menu et décochez les autres. Vous pouvez aussi y donner un raccourci clavier à chacun.
+
+# Items in the menu
+t67537dc4 = Éléments du menu
+
+# As the menu names them, in English for now.
+t7e08d78d = Tels que le menu les nomme, en anglais pour l’instant.
+
+# Turn items on or off
+t80c46351 = Activer ou désactiver des éléments
+
+# An app from the App Store may not change the menu itself: macOS keeps the choice.
+t98ee6c44 = Une app de l’App Store ne peut pas modifier le menu elle-même : macOS garde le choix.
+
+# Open Keyboard settings
+tdf41b143 = Ouvrir les réglages Clavier
+
+# Items not in the menu yet? macOS finds them when packwing first opens: quit packwing and open it again, or log out and back in.
+tfeaf86e5 = Les éléments ne sont pas encore dans le menu ? macOS les trouve à la première ouverture de packwing : quittez packwing et rouvrez-le, ou fermez votre session puis rouvrez-la.
+
 # They show when you right-click files, folders and archives.
 te216d656 = Ils apparaissent quand vous faites un clic droit sur des fichiers, des dossiers et des archives.
 
@@ -2250,9 +2289,6 @@ t5d0d23cc = Afficher packwing dans le menu contextuel
 
 # Extract and compress from any folder
 t94a46acb = Extraire et compresser depuis n'importe quel dossier
-
-# Items in the menu
-t67537dc4 = Éléments du menu
 
 # Put them in a submenu
 te3449a65 = Les mettre dans un sous-menu

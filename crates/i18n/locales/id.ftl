@@ -2200,6 +2200,45 @@ t9e6ecd3d = Kunci diperiksa di komputer ini. Tidak ada yang dikirim ke mana pun,
 # On
 t60e47df0 = Aktif
 
+# packwing’s items are in Finder’s right-click menu
+tfecc58a6 = Item packwing ada di menu klik kanan Finder
+
+# macOS puts them there for an app from the App Store, at the bottom of the menu, under Quick Actions or Services. It shows them once packwing is installed, and you choose which ones stay in System Settings.
+t099504d0 = macOS menaruhnya di sana untuk app dari App Store, di bagian bawah menu, di Tindakan Cepat atau Layanan. macOS menampilkannya setelah packwing terpasang, dan Anda memilih mana yang tetap ada di Pengaturan Sistem.
+
+# For archives
+t02c16077 = Untuk arsip
+
+# For files and folders
+t87b99903 = Untuk berkas dan folder
+
+# Open System Settings, then Keyboard: the button below takes you there.
+t1d2f867c = Buka Pengaturan Sistem, lalu Papan Ketik: tombol di bawah membawa Anda ke sana.
+
+# Click Keyboard Shortcuts…, then Services in the list at the left.
+t3aecdbe5 = Klik Pintasan Papan Ketik…, lalu Layanan di daftar sebelah kiri.
+
+# Open Files and Folders. Tick the packwing items you want in the menu, and untick the others. You can give each one a keyboard shortcut there too.
+ta89a4502 = Buka Berkas dan Folder. Centang item packwing yang Anda inginkan di menu, dan hapus centang yang lain. Di sana Anda juga bisa memberi pintasan papan ketik untuk masing-masing.
+
+# Items in the menu
+t67537dc4 = Item di menu
+
+# As the menu names them, in English for now.
+t7e08d78d = Sesuai nama di menu, untuk saat ini dalam bahasa Inggris.
+
+# Turn items on or off
+t80c46351 = Nyalakan atau matikan item
+
+# An app from the App Store may not change the menu itself: macOS keeps the choice.
+t98ee6c44 = App dari App Store tidak boleh mengubah menu sendiri: macOS yang menyimpan pilihannya.
+
+# Open Keyboard settings
+tdf41b143 = Buka pengaturan Papan Ketik
+
+# Items not in the menu yet? macOS finds them when packwing first opens: quit packwing and open it again, or log out and back in.
+tfeaf86e5 = Item belum ada di menu? macOS menemukannya saat packwing pertama kali dibuka: keluar dari packwing lalu buka lagi, atau keluar dari akun lalu masuk kembali.
+
 # They show when you right-click files, folders and archives.
 te216d656 = Muncul saat Anda mengeklik kanan berkas, folder, dan arsip.
 
@@ -2220,9 +2259,6 @@ t5d0d23cc = Tampilkan packwing di menu klik kanan
 
 # Extract and compress from any folder
 t94a46acb = Ekstrak dan kompres dari folder mana pun
-
-# Items in the menu
-t67537dc4 = Item di menu
 
 # Put them in a submenu
 te3449a65 = Taruh dalam submenu

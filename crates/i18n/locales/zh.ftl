@@ -2200,6 +2200,45 @@ t9e6ecd3d = 密钥在此电脑上验证。不会向任何地方发送任何内�
 # On
 t60e47df0 = 开
 
+# packwing’s items are in Finder’s right-click menu
+tfecc58a6 = packwing 的项目在 Finder 的右键菜单里
+
+# macOS puts them there for an app from the App Store, at the bottom of the menu, under Quick Actions or Services. It shows them once packwing is installed, and you choose which ones stay in System Settings.
+t099504d0 = 对于来自 App Store 的应用，macOS 把这些项目放在菜单底部的“快速操作”或“服务”中。安装 packwing 后它们就会出现，保留哪些由你在系统设置中选择。
+
+# For archives
+t02c16077 = 用于压缩包
+
+# For files and folders
+t87b99903 = 用于文件和文件夹
+
+# Open System Settings, then Keyboard: the button below takes you there.
+t1d2f867c = 打开系统设置，然后选择“键盘”：下面的按钮可直接打开。
+
+# Click Keyboard Shortcuts…, then Services in the list at the left.
+t3aecdbe5 = 点按“键盘快捷键…”，然后在左侧列表中选择“服务”。
+
+# Open Files and Folders. Tick the packwing items you want in the menu, and untick the others. You can give each one a keyboard shortcut there too.
+ta89a4502 = 打开“文件和文件夹”。勾选你想在菜单中保留的 packwing 项目，取消勾选其他项目。你也可以在那里为每个项目设置键盘快捷键。
+
+# Items in the menu
+t67537dc4 = 菜单中的项目
+
+# As the menu names them, in English for now.
+t7e08d78d = 菜单中显示的名称，目前仅为英文。
+
+# Turn items on or off
+t80c46351 = 打开或关闭项目
+
+# An app from the App Store may not change the menu itself: macOS keeps the choice.
+t98ee6c44 = 来自 App Store 的应用不能自行更改菜单：选择由 macOS 保存。
+
+# Open Keyboard settings
+tdf41b143 = 打开键盘设置
+
+# Items not in the menu yet? macOS finds them when packwing first opens: quit packwing and open it again, or log out and back in.
+tfeaf86e5 = 菜单中还没有这些项目？macOS 会在 packwing 首次打开时找到它们：退出 packwing 后重新打开，或注销后重新登录。
+
 # They show when you right-click files, folders and archives.
 te216d656 = 当你右键单击文件、文件夹和压缩包时显示。
 
@@ -2220,9 +2259,6 @@ t5d0d23cc = 在右键菜单中显示 packwing
 
 # Extract and compress from any folder
 t94a46acb = 在任意文件夹中解压和压缩
-
-# Items in the menu
-t67537dc4 = 菜单中的项目
 
 # Put them in a submenu
 te3449a65 = 放入子菜单
