@@ -2,6 +2,7 @@
 //! as they show, those it only implies by its paths too.
 
 use std::collections::BTreeMap;
+use std::fs::File;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -17,6 +18,7 @@ use unicode_normalization::UnicodeNormalization;
 use unicode_normalization::char::is_combining_mark;
 
 use crate::rar;
+use crate::sfx;
 use crate::source::Source;
 use crate::spool::spool;
 use crate::unsupported::named;
@@ -123,6 +125,12 @@ pub struct Listing {
     /// The layers around it, the outermost first.
     pub layers: Vec<Layer>,
     pub container: Container,
+    /// Where the archive begins in its file: past the program of a
+    /// self-extracting archive, and 0 for every other, which begins at its
+    /// file's own beginning. Nothing is added to or deleted from an archive
+    /// after a program ([`can_add`](crate::can_add)): what holds it would have
+    /// to be written again, and it is a program.
+    pub at: u64,
     /// How it is encrypted, if it is: `age`, `AES-256`, `ZipCrypto`.
     pub encryption: Option<String>,
     pub entries: Vec<Entry>,
@@ -350,10 +358,36 @@ fn listed(source: Source, keys: &Keys, listen: Listen<'_>) -> Result<Listing, Er
     let mut gather = Gather::new(listen);
     let mut opened = opener.open()?;
     let layers = opened.layers().to_vec();
-    let container = opened.container();
+    // A self-extracting archive arrives as a program's bytes, which are not an
+    // archive's: what it carries after it is looked for before giving up on
+    // it, and `at` is where that begins (0 for RAR, which hivepack finds
+    // after the program itself).
+    let sfx::Carried { container, at } = sfx::of(source, opened.container(), &layers)?;
     let mut encryption = layers.contains(&Layer::Age).then(|| "age".to_owned());
     let entries = match container {
         Container::Tar => tar_entries(&mut opened, &mut gather)?,
+        // An archive after a program: read from where it begins, and never
+        // as one volume of a split archive, which it cannot be.
+        Container::Zip if at > 0 => {
+            drop(opened);
+            let (entries, zip_encryption) = match source {
+                Source::File(path) => {
+                    zip_entries(sfx::At::new(File::open(path)?, at, whole), &mut gather)?
+                }
+                Source::Stored(stored) => {
+                    zip_entries(sfx::At::new(stored.stored_reader(), at, whole), &mut gather)?
+                }
+            };
+            encryption = encryption.or(zip_encryption);
+            entries
+        }
+        Container::SevenZip if at > 0 => {
+            drop(opened);
+            let open = || source.reader().map(|r| sfx::At::new(r, at, whole));
+            let (entries, seven_zip_encryption) = seven_zip_entries(seven_zip(open, keys)?);
+            encryption = encryption.or(seven_zip_encryption);
+            entries
+        }
         Container::Zip => {
             let (entries, zip_encryption) = if layers.is_empty() {
                 drop(opened);
@@ -468,6 +502,7 @@ fn listed(source: Source, keys: &Keys, listen: Listen<'_>) -> Result<Listing, Er
         files,
         layers,
         container,
+        at,
         encryption,
         entries,
     })

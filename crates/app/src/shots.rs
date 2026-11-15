@@ -991,6 +991,7 @@ fn read_named(name: &str) -> Shown {
         } else {
             packwing_core::Container::Tar
         },
+        at: 0,
         encryption: None,
         entries: vec![
             entry("site", true, 0),

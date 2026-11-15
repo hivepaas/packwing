@@ -3,7 +3,7 @@
 
 use packwing_i18n::tr;
 use serde_json::{Map, Value, json};
-use std::fs::OpenOptions;
+use std::fs::{File, OpenOptions};
 use std::io::{self, Read, Seek, Write};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -25,6 +25,7 @@ use hivepack::zip::{Archive, Flags, OpenFlags, ReadAt, Volumes};
 
 use crate::audit;
 use crate::rar;
+use crate::sfx;
 use crate::source::Source;
 use crate::spool::spool;
 use crate::unsupported::named;
@@ -848,10 +849,10 @@ fn extract_naming(
     });
     let mut opened = opener.open()?;
     let layers = opened.layers().to_vec();
-    audit::note(
-        "format",
-        json!(format!("{:?}", opened.container()).to_lowercase()),
-    );
+    // What a program carries after it, for a self-extracting archive, which
+    // hivepack tells as a program's bytes and nothing more.
+    let sfx::Carried { container, at } = sfx::of(source, opened.container(), &layers)?;
+    audit::note("format", json!(format!("{container:?}").to_lowercase()));
     audit::note(
         "layers",
         json!(
@@ -864,7 +865,7 @@ fn extract_naming(
     // RAR 3 and earlier have nothing but data that fails its hash to tell a
     // wrong password by: with one given, that stops the job, as a wrong
     // password, rather than be kept.
-    let guessing = opened.container() == Container::Rar && keys.password.is_some();
+    let guessing = container == Container::Rar && keys.password.is_some();
     if let Some(asked) = control.on_damaged.clone().filter(|_| !guessing) {
         options.on_damaged = Some(Arc::new(move |e: &hivepack::extract::Error| {
             asked(&Damage::of(e, None))
@@ -875,7 +876,7 @@ fn extract_naming(
             asked(&errors.iter().map(BadName::of).collect::<Vec<_>>())
         }));
     }
-    match opened.container() {
+    match container {
         Container::Tar => match into {
             WriteTo::Folder(destination) => into_folder_once(
                 ReadOnce::Tar,
@@ -892,6 +893,29 @@ fn extract_naming(
                 &options,
             )?),
         },
+        // An archive after a program: read from where it begins, and never as
+        // one volume of a split archive, which it cannot be.
+        Container::Zip if at > 0 => {
+            drop(opened);
+            let whole = source.size()?;
+            match source {
+                Source::File(path) => {
+                    let archive = zip_archive(sfx::At::new(File::open(path)?, at, whole))?;
+                    Ok(into!(extract_zip, extract_zip_to, &archive)?)
+                }
+                Source::Stored(stored) => {
+                    let archive = zip_archive(sfx::At::new(stored.stored_reader(), at, whole))?;
+                    Ok(into!(extract_zip, extract_zip_to, &archive)?)
+                }
+            }
+        }
+        Container::SevenZip if at > 0 => {
+            drop(opened);
+            let whole = source.size()?;
+            let open = || source.reader().map(|r| sfx::At::new(r, at, whole));
+            let mut seven = seven_zip(open, keys)?;
+            Ok(into!(extract_7z, extract_7z_to, &mut seven.archive)?)
+        }
         Container::Zip if layers.is_empty() => {
             drop(opened);
             match source {
@@ -1218,9 +1242,10 @@ fn test_source(source: &Source, keys: &Keys, control: &Control) -> Result<Summar
     let mut opener = opener(source, keys);
     let mut opened = opener.open()?;
     let layers = opened.layers().to_vec();
+    let sfx::Carried { container, at } = sfx::of(source, opened.container(), &layers)?;
     let mut done = Progress::default();
     let mut summary = Summary::default();
-    match opened.container() {
+    match container {
         Container::Tar => {
             let mut tr = Reader::new(&mut opened);
             while let Some(h) = tr.next()? {
@@ -1244,6 +1269,32 @@ fn test_source(source: &Source, keys: &Keys, control: &Control) -> Result<Summar
                 on_gone: None,
             };
             copy(&mut tr.into_inner(), &mut io::sink(), &quiet, &mut done)?;
+        }
+        // An archive after a program, read from where it begins.
+        Container::Zip if at > 0 => {
+            drop(opened);
+            let whole = source.size()?;
+            match source {
+                Source::File(path) => test_zip(
+                    zip_archive(sfx::At::new(File::open(path)?, at, whole))?,
+                    keys,
+                    control,
+                    &mut summary,
+                )?,
+                Source::Stored(stored) => test_zip(
+                    zip_archive(sfx::At::new(stored.stored_reader(), at, whole))?,
+                    keys,
+                    control,
+                    &mut summary,
+                )?,
+            }
+        }
+        Container::SevenZip if at > 0 => {
+            drop(opened);
+            let whole = source.size()?;
+            let open = || source.reader().map(|r| sfx::At::new(r, at, whole));
+            let seven = seven_zip(open, keys)?;
+            test_7z(seven.archive, control, &mut summary)?;
         }
         Container::Zip if layers.is_empty() => {
             drop(opened);
