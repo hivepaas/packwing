@@ -2200,35 +2200,56 @@ tc3e75ecf = Все функции и любое число хранилищ.
 # Every feature, and any number of storages, for your organization.
 t69b29f66 = Все функции и любое число хранилищ для вашей организации.
 
-# Bought
-t5c52217e = Куплено
+# {price} a month
+t9974421b = { $price } в месяц
 
-# Buy Pro · {price}
-t93567162 = Купить Pro · { $price }
+# Monthly
+t1640a356 = Ежемесячно
 
-# Buy Pro
-t1bdcbb74 = Купить Pro
+# {price} a year
+t105524fa = { $price } в год
+
+# Yearly
+t3e5922ab = Ежегодно
+
+# Subscribed
+t6ef44945 = Подписка оформлена
+
+# Manage Subscription
+t11820d57 = Управлять подпиской
 
 # Restore Purchases
 t8ade61c5 = Восстановить покупки
 
+# Payment is charged to your Apple Account. A subscription renews automatically for the same period and price unless you cancel it at least 24 hours before it ends; manage or cancel it in your App Store account settings.
+t4052cbcb = Оплата списывается с вашего Аккаунта Apple. Подписка продлевается автоматически на тот же срок и по той же цене, если не отменить её не позднее чем за 24 часа до окончания; управлять ею или отменить можно в настройках аккаунта App Store.
+
+# Terms of Use
+tf7c86026 = Условия использования
+
+# Privacy Policy
+t2526541f = Политика конфиденциальности
+
 # Waiting for approval: packwing turns Pro once it is given.
 td36209de = Ожидание одобрения: packwing станет Pro, как только его дадут.
 
-# The App Store found nothing bought with this Apple Account.
-tf996dc19 = App Store не нашёл покупок с этим Apple ID.
+# The App Store found no subscription of this Apple Account.
+tbd02ac34 = App Store не нашёл подписок этого Аккаунта Apple.
 
 # The App Store could not do it: {why}
 t07f7f00e = App Store не смог это сделать: { $why }
 
-# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
-t4294db10 = App Store не продаёт Pro в вашей стране или регионе. Pro, купленный с этим Apple ID в другой стране, по-прежнему можно восстановить.
+# The App Store does not sell Pro in your country or region. A subscription of this Apple Account from another one can still be restored.
+tc4b527fc = App Store не продаёт Pro в вашей стране или регионе. Подписку этого Аккаунта Apple, оформленную в другой стране, всё равно можно восстановить.
 
 # App Store
 t56b8f375 = App Store
 
-# Pro, bought once in the App Store: yours on every Mac with your Apple Account.
-ta6e8e46d = Pro, купленный один раз в App Store: ваш на каждом Mac с вашим Apple ID.
+# Pro by subscription, on every Mac, iPhone and iPad with your Apple Account.
+tf993909d = Pro по подписке, на каждом Mac, iPhone и iPad с вашим Аккаунтом Apple.
+
+# Pro by subscription, a month or a year: on every Mac, iPhone and iPad with your Apple Account.
+t4f86bca1 = Pro по подписке, на месяц или на год: на каждом Mac, iPhone и iPad с вашим Аккаунтом Apple.
 
 # Plan
 t1eab5e32 = Тариф
@@ -3538,11 +3559,26 @@ t1ef504d9 = packwing не может показать этот файл.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = В packwing Free можно подключить одно хранилище по сети. Pro снимает это ограничение.
 
+# Buy Pro · {price}
+t93567162 = Купить Pro · { $price }
+
+# Buy Pro
+t1bdcbb74 = Купить Pro
+
 # Every feature, and one storage across a network.
 t0ccb5824 = Все функции и одно хранилище по сети.
 
+# Bought
+t5c52217e = Куплено
+
+# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
+t4294db10 = App Store не продаёт Pro в вашей стране или регионе. Pro, купленный с этим Apple ID в другой стране, по-прежнему можно восстановить.
+
 # Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
 t8bc438f1 = Pro, купленный один раз в App Store: ваш на каждом iPhone, iPad и Mac с вашим Apple ID.
+
+# The App Store found nothing bought with this Apple Account.
+tf996dc19 = App Store не нашёл покупок с этим Apple ID.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing больше не может получить доступ к { $name }. Откройте его снова, чтобы заглянуть внутрь.

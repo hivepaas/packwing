@@ -2110,35 +2110,56 @@ tc3e75ecf = すべての機能と、無制限の数のストレージ。
 # Every feature, and any number of storages, for your organization.
 t69b29f66 = すべての機能と、組織向けの無制限の数のストレージ。
 
-# Bought
-t5c52217e = 購入済み
+# {price} a month
+t9974421b = 月額 { $price }
 
-# Buy Pro · {price}
-t93567162 = Pro を購入 · { $price }
+# Monthly
+t1640a356 = 月額
 
-# Buy Pro
-t1bdcbb74 = Pro を購入
+# {price} a year
+t105524fa = 年額 { $price }
+
+# Yearly
+t3e5922ab = 年額
+
+# Subscribed
+t6ef44945 = 登録済み
+
+# Manage Subscription
+t11820d57 = サブスクリプションを管理
 
 # Restore Purchases
 t8ade61c5 = 購入を復元
 
+# Payment is charged to your Apple Account. A subscription renews automatically for the same period and price unless you cancel it at least 24 hours before it ends; manage or cancel it in your App Store account settings.
+t4052cbcb = お支払いは Apple アカウントに請求されます。期間終了の24時間以上前に解約しない限り、サブスクリプションは同じ期間と価格で自動更新されます。管理や解約は App Store のアカウント設定で行えます。
+
+# Terms of Use
+tf7c86026 = 利用規約
+
+# Privacy Policy
+t2526541f = プライバシーポリシー
+
 # Waiting for approval: packwing turns Pro once it is given.
 td36209de = 承認を待っています。承認されると packwing は Pro になります。
 
-# The App Store found nothing bought with this Apple Account.
-tf996dc19 = この Apple アカウントで購入されたものは App Store に見つかりませんでした。
+# The App Store found no subscription of this Apple Account.
+tbd02ac34 = この Apple アカウントのサブスクリプションは App Store で見つかりませんでした。
 
 # The App Store could not do it: {why}
 t07f7f00e = App Store で実行できませんでした: { $why }
 
-# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
-t4294db10 = お住まいの国または地域の App Store では Pro を販売していません。この Apple アカウントで別の国または地域で購入した Pro は復元できます。
+# The App Store does not sell Pro in your country or region. A subscription of this Apple Account from another one can still be restored.
+tc4b527fc = お住まいの国または地域では、App Store で Pro は販売されていません。ほかの国や地域で登録したこの Apple アカウントのサブスクリプションは復元できます。
 
 # App Store
 t56b8f375 = App Store
 
-# Pro, bought once in the App Store: yours on every Mac with your Apple Account.
-ta6e8e46d = App Store で一度購入した Pro は、同じ Apple アカウントのすべての Mac で使えます。
+# Pro by subscription, on every Mac, iPhone and iPad with your Apple Account.
+tf993909d = サブスクリプションの Pro。同じ Apple アカウントのすべての Mac、iPhone、iPad で使えます。
+
+# Pro by subscription, a month or a year: on every Mac, iPhone and iPad with your Apple Account.
+t4f86bca1 = サブスクリプションの Pro（月額または年額）。同じ Apple アカウントのすべての Mac、iPhone、iPad で使えます。
 
 # Plan
 t1eab5e32 = プラン
@@ -3391,11 +3412,26 @@ t1ef504d9 = packwing ではこのファイルを表示できません。
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free では、ネットワーク越しのストレージは 1 つまで使えます。Pro で制限が解除されます。
 
+# Buy Pro · {price}
+t93567162 = Pro を購入 · { $price }
+
+# Buy Pro
+t1bdcbb74 = Pro を購入
+
 # Every feature, and one storage across a network.
 t0ccb5824 = すべての機能と、ネットワーク越しのストレージ 1 つ。
 
+# Bought
+t5c52217e = 購入済み
+
+# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
+t4294db10 = お住まいの国または地域の App Store では Pro を販売していません。この Apple アカウントで別の国または地域で購入した Pro は復元できます。
+
 # Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
 t8bc438f1 = App Store で一度購入した Pro は、同じ Apple アカウントのすべての iPhone、iPad、Mac で使えます。
+
+# The App Store found nothing bought with this Apple Account.
+tf996dc19 = この Apple アカウントで購入されたものは App Store に見つかりませんでした。
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing から { $name } にアクセスできなくなりました。中を見るには、もう一度開いてください。

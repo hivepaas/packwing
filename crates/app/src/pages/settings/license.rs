@@ -13,7 +13,7 @@ pub const BUY: &str = "https://packwing.app/pricing";
 use crate::colors::colors;
 use crate::input::TextInput;
 use crate::licensing::{self, Licensed};
-use crate::store::Said;
+use crate::store::{Plan as StorePlan, Said};
 use crate::text_size::ui;
 use crate::widgets::{Fill, Size, Tone, button, note};
 
@@ -62,51 +62,122 @@ fn read(cx: &App) -> Licensed {
     cx.try_global::<Licensed>().cloned().unwrap_or_default()
 }
 
-/// The Mac App Store's build: Pro bought there, or Buy and Restore Purchases, and what
-/// the last of them came to.
+/// The App Store's standard license agreement, which packwing's subscriptions are sold
+/// under, and packwing's privacy policy: the App Store asks for both where they are sold.
+const TERMS: &str = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
+const PRIVACY: &str = "https://packwing.app/privacy";
+
+/// A plan's button: its price for its period, or its name until the App Store answers.
+fn plan_button(plan: StorePlan, store: &crate::store::Store) -> gpui::Stateful<Div> {
+    let (id, label, fill) = match (plan, store.price(plan)) {
+        (StorePlan::Monthly, Some(p)) => (
+            "store-buy-monthly",
+            tr!("{price} a month", price = p.clone()),
+            Fill::Outline,
+        ),
+        (StorePlan::Monthly, None) => ("store-buy-monthly", tr!("Monthly"), Fill::Outline),
+        (StorePlan::Yearly, Some(p)) => (
+            "store-buy-yearly",
+            tr!("{price} a year", price = p.clone()),
+            Fill::Accent,
+        ),
+        (StorePlan::Yearly, None) => ("store-buy-yearly", tr!("Yearly"), Fill::Accent),
+    };
+    button(id, label, fill, Size::Medium)
+        .when(store.busy, |d| d.opacity(0.5))
+        .on_click(move |_, _, cx| crate::store::buy(plan, cx))
+}
+
+/// The Mac App Store's build: Pro by subscription there, a month or a year, with Restore
+/// Purchases and what the App Store asks to be said where it is sold; or, subscribed,
+/// where to manage it; and what the last purchase or restore came to.
 fn app_store(cx: &App) -> Div {
+    let c = colors();
     let store = crate::store::read(cx);
+    // Where the App Store has no Pro (the user's country is not among the
+    // subscriptions'), there is nothing to buy; what was bought elsewhere can still be
+    // restored. Until it answers, or when it fails to, the buttons ask it again.
+    let sold = store.sold != Some(false);
     let control = if store.holds {
         div()
-            .debug_selector(|| "store-held".to_owned())
-            .text_size(ui(15.))
-            .child(tr!("Bought"))
-    } else {
-        // Where the App Store has no Pro (the user's country is not among the
-        // purchase's), there is nothing to buy; what was bought elsewhere can still be
-        // restored. Until it answers, or when it fails to, Buy asks it again.
-        let sold = store.sold != Some(false);
-        let buy = match &store.price {
-            Some(price) => tr!("Buy Pro · {price}", price = price.clone()),
-            None => tr!("Buy Pro"),
-        };
-        div()
             .flex()
-            .gap(ui(10.))
-            .when(sold, |d| {
-                d.child(
-                    button("store-buy", buy, Fill::Accent, Size::Medium)
-                        .when(store.busy, |d| d.opacity(0.5))
-                        .on_click(|_, _, cx| crate::store::buy(cx)),
-                )
-            })
+            .items_center()
+            .gap(ui(12.))
+            .child(
+                div()
+                    .debug_selector(|| "store-held".to_owned())
+                    .text_size(ui(15.))
+                    .child(tr!("Subscribed")),
+            )
             .child(
                 button(
-                    "store-restore",
-                    tr!("Restore Purchases"),
+                    "store-manage",
+                    tr!("Manage Subscription"),
                     Fill::Outline,
                     Size::Medium,
                 )
-                .when(store.busy, |d| d.opacity(0.5))
-                .on_click(|_, _, cx| crate::store::restore(cx)),
+                .on_click(|_, _, cx| cx.open_url(crate::store::MANAGE)),
             )
+    } else {
+        div().child(
+            button(
+                "store-restore",
+                tr!("Restore Purchases"),
+                Fill::Outline,
+                Size::Medium,
+            )
+            .when(store.busy, |d| d.opacity(0.5))
+            .on_click(|_, _, cx| crate::store::restore(cx)),
+        )
     };
+    let plans = (!store.holds && sold).then(|| {
+        div()
+            .flex()
+            .flex_col()
+            .gap(ui(10.))
+            .px(ui(18.))
+            .py(ui(16.))
+            .rounded(ui(18.))
+            .bg(rgb(c.well))
+            .child(
+                div().flex().flex_wrap().gap(ui(10.)).children(
+                    StorePlan::ALL
+                        .into_iter()
+                        .rev()
+                        .map(|p| plan_button(p, &store)),
+                ),
+            )
+            .child(div().text_size(ui(13.)).text_color(rgb(c.muted)).child(tr!(
+                "Payment is charged to your Apple Account. A subscription renews \
+                         automatically for the same period and price unless you cancel it at \
+                         least 24 hours before it ends; manage or cancel it in your App Store \
+                         account settings."
+            )))
+            .child(
+                div()
+                    .flex()
+                    .gap(ui(6.))
+                    .child(
+                        button("store-terms", tr!("Terms of Use"), Fill::Text, Size::Medium)
+                            .on_click(|_, _, cx| cx.open_url(TERMS)),
+                    )
+                    .child(
+                        button(
+                            "store-privacy",
+                            tr!("Privacy Policy"),
+                            Fill::Text,
+                            Size::Medium,
+                        )
+                        .on_click(|_, _, cx| cx.open_url(PRIVACY)),
+                    ),
+            )
+    });
     let said = store.said.map(|said| match said {
         Said::Pending => note(Tone::Good).child(tr!(
             "Waiting for approval: packwing turns Pro once it is given."
         )),
         Said::NothingToRestore => note(Tone::Warn).child(tr!(
-            "The App Store found nothing bought with this Apple Account."
+            "The App Store found no subscription of this Apple Account."
         )),
         Said::Failed(why) => {
             note(Tone::Warn).child(tr!("The App Store could not do it: {why}", why = why))
@@ -116,8 +187,8 @@ fn app_store(cx: &App) -> Div {
         note(Tone::Warn)
             .debug_selector(|| "store-not-sold".to_owned())
             .child(tr!(
-                "The App Store does not sell Pro in your country or region. Pro bought with \
-                 this Apple Account in another one can still be restored."
+                "The App Store does not sell Pro in your country or region. A subscription \
+                 of this Apple Account from another one can still be restored."
             ))
     });
     div()
@@ -126,9 +197,14 @@ fn app_store(cx: &App) -> Div {
         .gap(ui(10.))
         .child(setting(
             tr!("App Store"),
-            tr!("Pro, bought once in the App Store: yours on every Mac with your Apple Account."),
+            if store.holds {
+                tr!("Pro by subscription, on every Mac, iPhone and iPad with your Apple Account.")
+            } else {
+                tr!("Pro by subscription, a month or a year: on every Mac, iPhone and iPad with your Apple Account.")
+            },
             control,
         ))
+        .children(plans)
         .children(not_sold)
         .children(said.map(|n| n.debug_selector(|| "store-said".to_owned())))
 }

@@ -2140,35 +2140,56 @@ tc3e75ecf = Her özellik ve sınırsız sayıda depolama alanı.
 # Every feature, and any number of storages, for your organization.
 t69b29f66 = Her özellik ve kuruluşunuz için sınırsız sayıda depolama alanı.
 
-# Bought
-t5c52217e = Satın alındı
+# {price} a month
+t9974421b = Aylık { $price }
 
-# Buy Pro · {price}
-t93567162 = Pro'yu Satın Al · { $price }
+# Monthly
+t1640a356 = Aylık
 
-# Buy Pro
-t1bdcbb74 = Pro'yu Satın Al
+# {price} a year
+t105524fa = Yıllık { $price }
+
+# Yearly
+t3e5922ab = Yıllık
+
+# Subscribed
+t6ef44945 = Abone olundu
+
+# Manage Subscription
+t11820d57 = Aboneliği Yönet
 
 # Restore Purchases
 t8ade61c5 = Satın Alınanları Geri Yükle
 
+# Payment is charged to your Apple Account. A subscription renews automatically for the same period and price unless you cancel it at least 24 hours before it ends; manage or cancel it in your App Store account settings.
+t4052cbcb = Ödeme Apple Hesabınızdan alınır. Abonelik, bitiminden en az 24 saat önce iptal etmediğiniz sürece aynı süre ve fiyatla otomatik olarak yenilenir; App Store hesap ayarlarınızdan yönetebilir veya iptal edebilirsiniz.
+
+# Terms of Use
+tf7c86026 = Kullanım Koşulları
+
+# Privacy Policy
+t2526541f = Gizlilik Politikası
+
 # Waiting for approval: packwing turns Pro once it is given.
 td36209de = Onay bekleniyor: onay verilince packwing Pro olur.
 
-# The App Store found nothing bought with this Apple Account.
-tf996dc19 = App Store bu Apple Hesabı ile satın alınmış bir şey bulamadı.
+# The App Store found no subscription of this Apple Account.
+tbd02ac34 = App Store bu Apple Hesabına ait bir abonelik bulamadı.
 
 # The App Store could not do it: {why}
 t07f7f00e = App Store bunu yapamadı: { $why }
 
-# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
-t4294db10 = App Store, ülkenizde veya bölgenizde Pro satmıyor. Bu Apple Hesabıyla başka bir ülkede satın alınan Pro yine de geri yüklenebilir.
+# The App Store does not sell Pro in your country or region. A subscription of this Apple Account from another one can still be restored.
+tc4b527fc = App Store, ülkenizde veya bölgenizde Pro satmıyor. Bu Apple Hesabının başka bir ülkedeki aboneliği yine de geri yüklenebilir.
 
 # App Store
 t56b8f375 = App Store
 
-# Pro, bought once in the App Store: yours on every Mac with your Apple Account.
-ta6e8e46d = App Store'dan bir kez satın alınan Pro: Apple Hesabınızla her Mac'te sizin.
+# Pro by subscription, on every Mac, iPhone and iPad with your Apple Account.
+tf993909d = Abonelikle Pro, Apple Hesabınızla kullandığınız her Mac, iPhone ve iPad’de.
+
+# Pro by subscription, a month or a year: on every Mac, iPhone and iPad with your Apple Account.
+t4f86bca1 = Abonelikle Pro, aylık veya yıllık: Apple Hesabınızla kullandığınız her Mac, iPhone ve iPad’de.
 
 # Plan
 t1eab5e32 = Plan
@@ -3446,11 +3467,26 @@ t1ef504d9 = packwing bu dosyayı gösteremiyor.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Ücretsiz, ağ üzerinde tek bir depolama alanı tutar. Pro bu sınırı kaldırır.
 
+# Buy Pro · {price}
+t93567162 = Pro'yu Satın Al · { $price }
+
+# Buy Pro
+t1bdcbb74 = Pro'yu Satın Al
+
 # Every feature, and one storage across a network.
 t0ccb5824 = Her özellik ve ağ üzerinde tek bir depolama alanı.
 
+# Bought
+t5c52217e = Satın alındı
+
+# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
+t4294db10 = App Store, ülkenizde veya bölgenizde Pro satmıyor. Bu Apple Hesabıyla başka bir ülkede satın alınan Pro yine de geri yüklenebilir.
+
 # Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
 t8bc438f1 = App Store'dan bir kez satın alınan Pro: Apple Hesabınızla her iPhone, iPad ve Mac'te sizin.
+
+# The App Store found nothing bought with this Apple Account.
+tf996dc19 = App Store bu Apple Hesabı ile satın alınmış bir şey bulamadı.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing artık { $name } dosyasına erişemiyor. İçine bakmak için yeniden açın.

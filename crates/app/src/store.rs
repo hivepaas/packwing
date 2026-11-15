@@ -1,21 +1,26 @@
-//! Pro bought in the Mac App Store, in its build (the `app-store` feature), through
-//! packwing-store: whether the user holds it, its price, buying it and Restore
-//! Purchases. Bought there, it is Pro for good, as a key bought outright is for the
-//! versions of its year; a key bought elsewhere still counts (licensing.rs), as the
-//! App Store's rules let an app take what was bought for it on other systems.
+//! Pro by subscription in the Mac App Store, in its build (the `app-store` feature),
+//! through packwing-store: whether the user holds it, each plan's price, subscribing and
+//! Restore Purchases. It is Pro while the subscription is current, and Free once it ends;
+//! a key bought elsewhere still counts (licensing.rs), as the App Store's rules let an
+//! app take what was bought for it on other systems.
 //!
 //! In any other build the store is not there: [`there`] is false, and nothing is asked.
 
 use gpui::{App, AsyncApp, Global};
+pub use packwing_store::Plan;
+
+/// Where the user manages or cancels their subscriptions: the App Store's account page.
+pub const MANAGE: &str = "https://apps.apple.com/account/subscriptions";
 
 /// What the App Store said.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Store {
-    /// The user holds Pro, bought or restored here.
+    /// The user holds Pro: a subscription of theirs is current.
     pub holds: bool,
-    /// Pro's price in the user's country; none until the App Store answers, or if it has
-    /// no Pro.
-    pub price: Option<String>,
+    /// The monthly and yearly plans' prices in the user's country; none until the App
+    /// Store answers, or if it has no such plan there.
+    pub monthly: Option<String>,
+    pub yearly: Option<String>,
     /// Whether the App Store sells Pro in the user's country (its storefront): none until
     /// it answers. Pro is not sold everywhere the app is.
     pub sold: Option<bool>,
@@ -67,8 +72,22 @@ fn change_async(cx: &mut AsyncApp, f: impl FnOnce(&mut Store)) {
     cx.update(|cx| change(cx, f));
 }
 
-/// Asks the App Store whether the user holds Pro and what it costs, and hears from it
-/// from now on: bought on another Mac, approved, refunded.
+impl Store {
+    /// `plan`'s price, as the App Store said it.
+    pub fn price(&self, plan: Plan) -> Option<&String> {
+        match plan {
+            Plan::Monthly => self.monthly.as_ref(),
+            Plan::Yearly => self.yearly.as_ref(),
+        }
+    }
+}
+
+/// How many times the prices are asked for, at most, and how long apart.
+const PRICE_ATTEMPTS: usize = 5;
+const PRICE_AGAIN: std::time::Duration = std::time::Duration::from_secs(3);
+
+/// Asks the App Store whether the user holds Pro and what each plan costs, and hears
+/// from it from now on: bought on another Mac, renewed, approved, ended, refunded.
 pub fn start(cx: &mut App) {
     if !there() {
         return;
@@ -77,15 +96,35 @@ pub fn start(cx: &mut App) {
     watch(move |holds| {
         let _ = changed_tx.unbounded_send(holds);
     });
+    // The prices: the App Store may leave one out at first (the sandbox does, a moment
+    // after launch), so what is missing is asked again a few times; a country where
+    // Pro is not sold has neither, every time.
+    cx.spawn(async move |cx| {
+        for attempt in 0..PRICE_ATTEMPTS {
+            if attempt > 0 {
+                cx.background_executor().timer(PRICE_AGAIN).await;
+            }
+            let (Ok(monthly), Ok(yearly)) = (
+                api::price(Plan::Monthly).await,
+                api::price(Plan::Yearly).await,
+            ) else {
+                continue;
+            };
+            let whole = monthly.is_some() && yearly.is_some();
+            change_async(cx, |s| {
+                s.sold = Some(monthly.is_some() || yearly.is_some());
+                s.monthly = monthly.or(s.monthly.take());
+                s.yearly = yearly.or(s.yearly.take());
+            });
+            if whole {
+                break;
+            }
+        }
+    })
+    .detach();
     cx.spawn(async move |cx| {
         if let Ok(holds) = api::holds().await {
             change_async(cx, |s| s.holds = holds);
-        }
-        if let Ok(price) = api::price().await {
-            change_async(cx, |s| {
-                s.sold = Some(price.is_some());
-                s.price = price;
-            });
         }
         use futures::StreamExt as _;
         while let Some(holds) = changed_rx.next().await {
@@ -100,8 +139,8 @@ pub fn start(cx: &mut App) {
     .detach();
 }
 
-/// Buys Pro, as the App Store asks the user.
-pub fn buy(cx: &mut App) {
+/// Subscribes to `plan`, as the App Store asks the user.
+pub fn buy(plan: Plan, cx: &mut App) {
     if read(cx).busy {
         return;
     }
@@ -110,7 +149,7 @@ pub fn buy(cx: &mut App) {
         s.said = None;
     });
     cx.spawn(async move |cx| {
-        let bought = api::buy().await;
+        let bought = api::buy(plan).await;
         change_async(cx, |s| {
             s.busy = false;
             match bought {
@@ -157,16 +196,16 @@ fn watch(changed: impl Fn(bool) + Send + Sync + 'static) {
 
 /// The App Store, or the test's.
 mod api {
-    use packwing_store::Bought;
+    use packwing_store::{Bought, Plan};
 
     // Without the app-store feature, packwing-store has no StoreKit, and says so.
     macro_rules! call {
-        ($name:ident) => {{
+        ($name:ident $(, $arg:expr)?) => {{
             #[cfg(all(test, feature = "test-hooks"))]
             if super::fake::on() {
-                return super::fake::$name();
+                return super::fake::$name($($arg)?);
             }
-            packwing_store::$name().await
+            packwing_store::$name($($arg)?).await
         }};
     }
 
@@ -174,12 +213,12 @@ mod api {
         call!(holds)
     }
 
-    pub async fn price() -> Result<Option<String>, String> {
-        call!(price)
+    pub async fn price(plan: Plan) -> Result<Option<String>, String> {
+        call!(price, plan)
     }
 
-    pub async fn buy() -> Result<Bought, String> {
-        call!(buy)
+    pub async fn buy(plan: Plan) -> Result<Bought, String> {
+        call!(buy, plan)
     }
 
     pub async fn restore() -> Result<bool, String> {
@@ -192,12 +231,17 @@ mod api {
 pub mod fake {
     use std::sync::{Arc, Mutex};
 
-    use packwing_store::Bought;
+    use packwing_store::{Bought, Plan};
 
     #[derive(Default)]
     struct Fake {
         holds: bool,
-        price: Option<String>,
+        /// The monthly and yearly prices.
+        prices: Option<(String, String)>,
+        /// The plan the last purchase was of.
+        bought: Option<Plan>,
+        /// How many more times the monthly price is left out, as the sandbox may.
+        monthly_late: usize,
         buy: Option<Result<Bought, String>>,
         restore: Option<Result<bool, String>>,
         watching: Option<Arc<dyn Fn(bool) + Send + Sync>>,
@@ -212,16 +256,26 @@ pub mod fake {
         fake.as_mut().map(f)
     }
 
-    /// From now on the App Store sells Pro at `price`, or, with none, has no Pro in the
-    /// user's country; the user holds it if `holds`.
-    pub fn start(price: Option<&str>, holds: bool) {
+    /// From now on the App Store sells Pro at `prices`, a month's and a year's, or, with
+    /// none, has no Pro in the user's country; the user holds it if `holds`.
+    pub fn start(prices: Option<(&str, &str)>, holds: bool) {
         *FAKE
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner) = Some(Fake {
             holds,
-            price: price.map(str::to_owned),
+            prices: prices.map(|(m, y)| (m.to_owned(), y.to_owned())),
             ..Fake::default()
         });
+    }
+
+    /// The monthly price is left out of the next `times` answers.
+    pub fn monthly_late(times: usize) {
+        with(|f| f.monthly_late = times);
+    }
+
+    /// The plan the last purchase was of.
+    pub fn bought() -> Option<Plan> {
+        with(|f| f.bought).flatten()
     }
 
     pub fn on() -> bool {
@@ -258,11 +312,22 @@ pub mod fake {
         Ok(with(|f| f.holds).unwrap_or(false))
     }
 
-    pub fn price() -> Result<Option<String>, String> {
-        Ok(with(|f| f.price.clone()).flatten())
+    pub fn price(plan: Plan) -> Result<Option<String>, String> {
+        Ok(with(|f| {
+            if plan == Plan::Monthly && f.monthly_late > 0 {
+                f.monthly_late -= 1;
+                return None;
+            }
+            f.prices.clone().map(|(m, y)| match plan {
+                Plan::Monthly => m,
+                Plan::Yearly => y,
+            })
+        })
+        .flatten())
     }
 
-    pub fn buy() -> Result<Bought, String> {
+    pub fn buy(plan: Plan) -> Result<Bought, String> {
+        with(|f| f.bought = Some(plan));
         let answer = with(|f| f.buy.take())
             .flatten()
             .unwrap_or(Ok(Bought::Cancelled));

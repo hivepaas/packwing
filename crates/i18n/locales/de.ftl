@@ -2140,35 +2140,56 @@ tc3e75ecf = Alle Funktionen und beliebig viele Speicherorte.
 # Every feature, and any number of storages, for your organization.
 t69b29f66 = Alle Funktionen und beliebig viele Speicherorte, für deine Organisation.
 
-# Bought
-t5c52217e = Gekauft
+# {price} a month
+t9974421b = { $price } pro Monat
 
-# Buy Pro · {price}
-t93567162 = Pro kaufen · { $price }
+# Monthly
+t1640a356 = Monatlich
 
-# Buy Pro
-t1bdcbb74 = Pro kaufen
+# {price} a year
+t105524fa = { $price } pro Jahr
+
+# Yearly
+t3e5922ab = Jährlich
+
+# Subscribed
+t6ef44945 = Abonniert
+
+# Manage Subscription
+t11820d57 = Abo verwalten
 
 # Restore Purchases
 t8ade61c5 = Käufe wiederherstellen
 
+# Payment is charged to your Apple Account. A subscription renews automatically for the same period and price unless you cancel it at least 24 hours before it ends; manage or cancel it in your App Store account settings.
+t4052cbcb = Die Zahlung wird deinem Apple Account belastet. Ein Abo verlängert sich automatisch für denselben Zeitraum und Preis, sofern du es nicht mindestens 24 Stunden vor Ablauf kündigst; verwalte oder kündige es in deinen App Store-Accounteinstellungen.
+
+# Terms of Use
+tf7c86026 = Nutzungsbedingungen
+
+# Privacy Policy
+t2526541f = Datenschutzrichtlinie
+
 # Waiting for approval: packwing turns Pro once it is given.
 td36209de = Warte auf Bestätigung: packwing wird Pro, sobald sie erteilt ist.
 
-# The App Store found nothing bought with this Apple Account.
-tf996dc19 = Der App Store hat mit diesem Apple Account nichts Gekauftes gefunden.
+# The App Store found no subscription of this Apple Account.
+tbd02ac34 = Der App Store hat kein Abo dieses Apple Accounts gefunden.
 
 # The App Store could not do it: {why}
 t07f7f00e = Der App Store konnte es nicht tun: { $why }
 
-# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
-t4294db10 = Der App Store verkauft Pro in deinem Land oder deiner Region nicht. Mit diesem Apple Account in einem anderen gekauftes Pro lässt sich weiterhin wiederherstellen.
+# The App Store does not sell Pro in your country or region. A subscription of this Apple Account from another one can still be restored.
+tc4b527fc = Der App Store verkauft Pro in deinem Land oder deiner Region nicht. Ein Abo dieses Apple Accounts aus einem anderen kann trotzdem wiederhergestellt werden.
 
 # App Store
 t56b8f375 = App Store
 
-# Pro, bought once in the App Store: yours on every Mac with your Apple Account.
-ta6e8e46d = Pro, einmal im App Store gekauft: deins auf jedem Mac mit deinem Apple Account.
+# Pro by subscription, on every Mac, iPhone and iPad with your Apple Account.
+tf993909d = Pro im Abo, auf jedem Mac, iPhone und iPad mit deinem Apple Account.
+
+# Pro by subscription, a month or a year: on every Mac, iPhone and iPad with your Apple Account.
+t4f86bca1 = Pro im Abo, monatlich oder jährlich: auf jedem Mac, iPhone und iPad mit deinem Apple Account.
 
 # Plan
 t1eab5e32 = Tarif
@@ -3446,11 +3467,26 @@ t1ef504d9 = packwing kann diese Datei nicht anzeigen.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free erlaubt einen Speicherort im Netzwerk. Mit Pro entfällt das.
 
+# Buy Pro · {price}
+t93567162 = Pro kaufen · { $price }
+
+# Buy Pro
+t1bdcbb74 = Pro kaufen
+
 # Every feature, and one storage across a network.
 t0ccb5824 = Alle Funktionen und ein Speicherort im Netzwerk.
 
+# Bought
+t5c52217e = Gekauft
+
+# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
+t4294db10 = Der App Store verkauft Pro in deinem Land oder deiner Region nicht. Mit diesem Apple Account in einem anderen gekauftes Pro lässt sich weiterhin wiederherstellen.
+
 # Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
 t8bc438f1 = Pro, einmal im App Store gekauft: deins auf jedem iPhone, iPad und Mac mit deinem Apple Account.
+
+# The App Store found nothing bought with this Apple Account.
+tf996dc19 = Der App Store hat mit diesem Apple Account nichts Gekauftes gefunden.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing kann { $name } nicht mehr erreichen. Öffne es erneut, um hineinzusehen.

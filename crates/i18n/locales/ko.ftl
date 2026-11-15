@@ -2110,35 +2110,56 @@ tc3e75ecf = 모든 기능과 무제한 스토리지를 사용할 수 있습니�
 # Every feature, and any number of storages, for your organization.
 t69b29f66 = 조직을 위한 모든 기능과 무제한 스토리지를 사용할 수 있습니다.
 
-# Bought
-t5c52217e = 구입함
+# {price} a month
+t9974421b = 월 { $price }
 
-# Buy Pro · {price}
-t93567162 = Pro 구입 · { $price }
+# Monthly
+t1640a356 = 월간
 
-# Buy Pro
-t1bdcbb74 = Pro 구입
+# {price} a year
+t105524fa = 연 { $price }
+
+# Yearly
+t3e5922ab = 연간
+
+# Subscribed
+t6ef44945 = 구독 중
+
+# Manage Subscription
+t11820d57 = 구독 관리
 
 # Restore Purchases
 t8ade61c5 = 구입 항목 복원
 
+# Payment is charged to your Apple Account. A subscription renews automatically for the same period and price unless you cancel it at least 24 hours before it ends; manage or cancel it in your App Store account settings.
+t4052cbcb = 결제 금액은 Apple 계정으로 청구됩니다. 구독은 종료 최소 24시간 전에 취소하지 않으면 같은 기간과 가격으로 자동 갱신됩니다. App Store 계정 설정에서 관리하거나 취소할 수 있습니다.
+
+# Terms of Use
+tf7c86026 = 이용 약관
+
+# Privacy Policy
+t2526541f = 개인정보 처리방침
+
 # Waiting for approval: packwing turns Pro once it is given.
 td36209de = 승인을 기다리는 중: 승인되면 packwing이 Pro가 됩니다.
 
-# The App Store found nothing bought with this Apple Account.
-tf996dc19 = App Store에서 이 Apple 계정으로 구입한 항목을 찾지 못했습니다.
+# The App Store found no subscription of this Apple Account.
+tbd02ac34 = App Store에서 이 Apple 계정의 구독을 찾지 못했습니다.
 
 # The App Store could not do it: {why}
 t07f7f00e = App Store에서 처리하지 못했습니다: { $why }
 
-# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
-t4294db10 = 사용자의 국가 또는 지역의 App Store에서는 Pro를 판매하지 않습니다. 이 Apple 계정으로 다른 국가 또는 지역에서 구입한 Pro는 복원할 수 있습니다.
+# The App Store does not sell Pro in your country or region. A subscription of this Apple Account from another one can still be restored.
+tc4b527fc = App Store는 사용자의 국가 또는 지역에서 Pro를 판매하지 않습니다. 다른 국가에서 이 Apple 계정으로 구독한 것은 복원할 수 있습니다.
 
 # App Store
 t56b8f375 = App Store
 
-# Pro, bought once in the App Store: yours on every Mac with your Apple Account.
-ta6e8e46d = App Store에서 한 번 구입한 Pro는 같은 Apple 계정의 모든 Mac에서 사용할 수 있습니다.
+# Pro by subscription, on every Mac, iPhone and iPad with your Apple Account.
+tf993909d = 구독형 Pro, Apple 계정을 사용하는 모든 Mac, iPhone, iPad에서.
+
+# Pro by subscription, a month or a year: on every Mac, iPhone and iPad with your Apple Account.
+t4f86bca1 = 구독형 Pro, 월간 또는 연간: Apple 계정을 사용하는 모든 Mac, iPhone, iPad에서.
 
 # Plan
 t1eab5e32 = 플랜
@@ -3391,11 +3412,26 @@ t1ef504d9 = packwing에서 이 파일을 표시할 수 없습니다.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free는 네트워크 너머의 스토리지를 하나만 사용할 수 있습니다. Pro로 이 제한을 풀 수 있습니다.
 
+# Buy Pro · {price}
+t93567162 = Pro 구입 · { $price }
+
+# Buy Pro
+t1bdcbb74 = Pro 구입
+
 # Every feature, and one storage across a network.
 t0ccb5824 = 모든 기능과 네트워크 너머의 스토리지 하나를 사용할 수 있습니다.
 
+# Bought
+t5c52217e = 구입함
+
+# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
+t4294db10 = 사용자의 국가 또는 지역의 App Store에서는 Pro를 판매하지 않습니다. 이 Apple 계정으로 다른 국가 또는 지역에서 구입한 Pro는 복원할 수 있습니다.
+
 # Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
 t8bc438f1 = App Store에서 한 번 구입한 Pro는 같은 Apple 계정의 모든 iPhone, iPad, Mac에서 사용할 수 있습니다.
+
+# The App Store found nothing bought with this Apple Account.
+tf996dc19 = App Store에서 이 Apple 계정으로 구입한 항목을 찾지 못했습니다.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing이 더 이상 { $name }에 접근할 수 없습니다. 안을 보려면 다시 여세요.
