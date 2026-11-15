@@ -164,9 +164,6 @@ struct ArchiveChanges: ViewModifier {
     @Binding var deleting: [[String]]?
     @Binding var renaming: [String]?
     @Binding var adding: NewSource?
-    @State private var newName = ""
-    /// What the Rename alert renames, once it shows.
-    @State private var renamingShown: [String]?
     /// Items whose names are in the folder already, until it is said what of them.
     @State private var clashing: [NewItem]?
 
@@ -181,32 +178,11 @@ struct ArchiveChanges: ViewModifier {
                         + tr("This archive is signed. After this change it will no longer match its signature, until it is signed again.")
                      : tr("It goes from the archive for good, folders with all they hold. This can’t be undone."))
             }
-            .alert(tr("Rename {what}", ["what": renamingShown?.last ?? ""]),
-                   isPresented: Binding { renamingShown != nil } set: { if !$0 { renamingShown = nil; renaming = nil } },
-                   presenting: renamingShown) { path in
-                // A file's name: as typed, not corrected (a correction
-                // offered also took the first tap on Rename).
-                TextField(tr("New name"), text: $newName)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-                Button(tr("Cancel"), role: .cancel) {}
-                Button(tr("Rename")) {
-                    let name = newName.trimmingCharacters(in: .whitespacesAndNewlines)
-                    if !name.isEmpty, name != path.last { model.rename(path, to: name, in: opened) }
-                }
-            } message: { _ in
-                if signedBeside(opened) {
-                    Text(tr("This archive is signed. After this change it will no longer match its signature, until it is signed again."))
-                }
-            }
-            .onChange(of: renaming) { _, now in
-                guard let now else { return }
-                newName = now.last ?? ""
-                // Once the context menu it is asked from is gone: shown as it
-                // goes, the alert lost the first tap on its buttons.
-                Task {
-                    try? await Task.sleep(for: .milliseconds(450))
-                    renamingShown = now
+            // A sheet, not an alert: an alert's text field and buttons lost
+            // their first tap now and then, shown from a context menu.
+            .sheet(item: Binding { renaming.map(RenamePath.init) } set: { renaming = $0?.path }) { what in
+                RenameSheet(path: what.path, signed: signedBeside(opened)) { name in
+                    model.rename(what.path, to: name, in: opened)
                 }
             }
             .choosingNewItems($adding) { items in
@@ -243,3 +219,74 @@ struct ArchiveChanges: ViewModifier {
         }
     }
 }
+
+/// What the Rename sheet renames.
+private struct RenamePath: Identifiable {
+    let path: [String]
+    var id: [String] { path }
+}
+
+/// A new name for a file or folder of an archive.
+private struct RenameSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let path: [String]
+    /// Whether the archive has a signature beside it, which the change leaves behind.
+    let signed: Bool
+    let rename: (String) -> Void
+    @State private var name: String
+    @FocusState private var typing: Bool
+
+    init(path: [String], signed: Bool, rename: @escaping (String) -> Void) {
+        self.path = path
+        self.signed = signed
+        self.rename = rename
+        _name = State(initialValue: path.last ?? "")
+    }
+
+    private var newName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    // A file's name: as typed, not corrected.
+                    TextField(tr("New name"), text: $name)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                        .focused($typing)
+                        .submitLabel(.done)
+                        .onSubmit(done)
+                        .accessibilityIdentifier("new-name")
+                } footer: {
+                    if signed {
+                        Text(tr("This archive is signed. After this change it will no longer match its signature, until it is signed again."))
+                    }
+                }
+                .listRowBackground(Tonal.surface)
+            }
+            .scrollContentBackground(.hidden)
+            .background(Tonal.page)
+            .navigationTitle(tr("Rename {what}", ["what": path.last ?? ""]))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(role: .close) { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(role: .confirm, action: done)
+                        .disabled(newName.isEmpty || newName == path.last)
+                        .accessibilityLabel(tr("Rename"))
+                }
+            }
+            .onAppear { typing = true }
+        }
+        .presentationDetents([.medium])
+    }
+
+    private func done() {
+        guard !newName.isEmpty, newName != path.last else { return }
+        rename(newName)
+        dismiss()
+    }
+}
+

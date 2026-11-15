@@ -18,10 +18,16 @@ packwing-i18n.workspace = true
 futures = "0.3"
 # The system's keychain, for a storage's secrets.
 keyring = "4"
+# Its entries, as keyring's own stand for no store on iOS (secrets.rs).
+keyring-core = "1"
 # SSH as shellwing speaks it: ssh_config, the agent, jump hosts.
 shellwing-ssh = { git = "https://github.com/hivepaas/shellwing", rev = "7032701a11e7038cb4f9248e69c934fc6ebfe58a" }
 opendal = { version = "0.59", features = ["services-s3", "services-webdav"] }
 tokio = { version = "1", features = ["rt-multi-thread", "time"] }
+
+# On iOS the keyring crate picks no store: the system keychain's (secrets.rs).
+[target.'cfg(target_os = "ios")'.dependencies]
+apple-native-keyring-store = { version = "1", features = ["protected"] }
 
 [lints]
 workspace = true

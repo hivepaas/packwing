@@ -3299,6 +3299,12 @@ tecf6b414 = Bu anahtara güven
 # There is no signature beside it.
 te7a28cb7 = Yanında imza yok.
 
+# packwing cannot show this file.
+t1ef504d9 = packwing bu dosyayı gösteremiyor.
+
+# packwing Free keeps one storage across a network. Pro lifts this.
+tf72ae001 = packwing Ücretsiz, ağ üzerinde tek bir depolama alanı tutar. Pro bu sınırı kaldırır.
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing artık { $name } dosyasına erişemiyor. İçine bakmak için yeniden açın.
 
@@ -3371,9 +3377,6 @@ tc2954bc2 = Geri
 
 # Search in this archive
 tfda7010a = Bu arşivde ara
-
-# packwing cannot show this file.
-t1ef504d9 = packwing bu dosyayı gösteremiyor.
 
 # AES-256. In 7z the names are hidden too.
 t9c81b89f = AES-256. 7z'de adlar da gizlenir.

@@ -69,6 +69,8 @@ targets:
         BGTaskSchedulerPermittedIdentifiers:
           - com.hivepaas.packwing.job.*
         NSPhotoLibraryAddUsageDescription: packwing adds the pictures and videos of an archive to Photos when you ask it to.
+        # A storage on this network (a NAS): iOS asks before packwing reaches one.
+        NSLocalNetworkUsageDescription: packwing reaches the storages you add that are on this network.
         CFBundleDocumentTypes:
           - CFBundleTypeName: Archive
             CFBundleTypeRole: Viewer

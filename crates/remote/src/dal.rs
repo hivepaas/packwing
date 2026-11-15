@@ -79,6 +79,9 @@ pub struct Dal {
 
 impl Dal {
     pub fn new(make: MakeOperator, prefix: &str, shown: String, most_held: Option<u64>) -> Dal {
+        // opendal installs its HTTP transport from a static constructor, which
+        // a static library (the iOS app's) does not run: here it is, once.
+        opendal::install_default();
         Dal {
             make,
             op: OnceLock::new(),

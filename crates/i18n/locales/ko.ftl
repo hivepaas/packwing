@@ -3250,6 +3250,12 @@ tecf6b414 = 이 키 신뢰
 # There is no signature beside it.
 te7a28cb7 = 옆에 서명이 없습니다.
 
+# packwing cannot show this file.
+t1ef504d9 = packwing에서 이 파일을 표시할 수 없습니다.
+
+# packwing Free keeps one storage across a network. Pro lifts this.
+tf72ae001 = packwing Free는 네트워크 너머의 스토리지를 하나만 사용할 수 있습니다. Pro로 이 제한을 풀 수 있습니다.
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing이 더 이상 { $name }에 접근할 수 없습니다. 안을 보려면 다시 여세요.
 
@@ -3321,9 +3327,6 @@ tc2954bc2 = 뒤로
 
 # Search in this archive
 tfda7010a = 이 압축 파일에서 검색
-
-# packwing cannot show this file.
-t1ef504d9 = packwing에서 이 파일을 표시할 수 없습니다.
 
 # AES-256. In 7z the names are hidden too.
 t9c81b89f = AES-256. 7z에서는 파일 이름도 숨겨집니다.

@@ -7,8 +7,9 @@ use std::sync::{Arc, Mutex};
 
 use packwing_mobile::{
     Archive, ArchiveFormat, Checksum, ChecksumKind, Compared, CompressionLevel, Job, JobListener,
-    JobProgress, MobileError, NewArchiveHow, OnExisting, Secrets, SignatureState, checksum_kinds,
-    compare_checksum, create_archive, read_key, stem,
+    JobProgress, MobileError, NewArchiveHow, OnExisting, RemoteStorage, Secrets, SignatureState,
+    checksum_kinds, compare_checksum, create_archive, describe_storage, read_key, stem,
+    storage_kinds,
 };
 
 /// A folder of files to make archives of: `Báo cáo/tổng hợp.txt` and
@@ -459,4 +460,102 @@ fn an_archive_is_changed_where_it_is_or_through_a_copy() {
         fs::remove_file(&path).expect("removed");
         fs::remove_file(&copy).expect("removed");
     }
+}
+
+#[test]
+fn a_phone_adds_storages_of_every_kind_but_sftp_yet() {
+    let ids: Vec<String> = storage_kinds().into_iter().map(|k| k.id).collect();
+    assert!(ids.contains(&"webdav".to_owned()) && ids.contains(&"s3".to_owned()));
+    assert!(!ids.contains(&"sftp".to_owned()));
+    let values = [(
+        "address".to_owned(),
+        "https://dav.example.com/files".to_owned(),
+    )]
+    .into_iter()
+    .collect();
+    assert!(describe_storage("webdav".to_owned(), values).contains("dav.example.com"));
+}
+
+/// Against a WebDAV server, skipped without `WEBDAV_TEST_ENDPOINT` (`make
+/// webdav-start`, with `WEBDAV_TEST_USER` and `WEBDAV_TEST_PASSWORD`).
+#[test]
+fn an_archive_on_a_storage_is_listed_and_read_where_it_is() {
+    let Ok(address) = std::env::var("WEBDAV_TEST_ENDPOINT") else {
+        return;
+    };
+    let dir = tempfile::tempdir().expect("dir");
+    let path = make(dir.path(), ArchiveFormat::Zip, None, false);
+    let folder = format!("mobile-{}", std::process::id());
+    let values: std::collections::HashMap<String, String> = [
+        ("address".to_owned(), format!("{address}/{folder}")),
+        (
+            "user".to_owned(),
+            std::env::var("WEBDAV_TEST_USER").unwrap_or_default(),
+        ),
+    ]
+    .into_iter()
+    .collect();
+    let typed = [(
+        "password".to_owned(),
+        std::env::var("WEBDAV_TEST_PASSWORD").unwrap_or_default(),
+    )]
+    .into_iter()
+    .collect();
+    // Put there by the desktop's way, then read by the phone's.
+    let top = packwing_remote::webdav(
+        packwing_remote::WebDavSettings {
+            address: address.clone(),
+            user: std::env::var("WEBDAV_TEST_USER").unwrap_or_default(),
+            password: std::env::var("WEBDAV_TEST_PASSWORD").unwrap_or_default(),
+        },
+        None,
+    );
+    use packwing_core::Storage as _;
+    let _ = top.make_folder(&[], &folder);
+    let like = packwing_core::Item {
+        name: "a.zip".to_owned(),
+        dir: false,
+        link: false,
+        hidden: false,
+        size: fs::metadata(&path).expect("size").len(),
+        modified: None,
+        mode: None,
+    };
+    top.put(
+        &[folder.clone(), "a.zip".to_owned()],
+        &mut fs::File::open(&path).expect("file"),
+        &like,
+        true,
+    )
+    .expect("put");
+
+    let storage = RemoteStorage::open("webdav".to_owned(), "test".to_owned(), values, Some(typed))
+        .expect("opened");
+    let items = storage.list(vec![], Job::quiet()).expect("listed");
+    let zip = items.iter().find(|i| i.name == "a.zip").expect("there");
+    let archive = storage
+        .open_archive(
+            vec!["a.zip".to_owned()],
+            zip.size,
+            Secrets::default(),
+            Job::quiet(),
+        )
+        .expect("opened");
+    assert!(!archive.can_change(), "changed on the phone alone");
+    let names: Vec<String> = archive
+        .children(vec!["Báo cáo".to_owned()])
+        .into_iter()
+        .map(|e| e.name)
+        .collect();
+    assert_eq!(names, ["ghi chú.txt", "tổng hợp.txt"]);
+    let read = archive
+        .preview(
+            vec!["Báo cáo".to_owned(), "ghi chú.txt".to_owned()],
+            100,
+            Job::quiet(),
+        )
+        .expect("read");
+    assert_eq!(read, b"hello");
+    let _ = top.delete(std::slice::from_ref(&folder), &["a.zip".to_owned()]);
+    let _ = top.remove(&[folder]);
 }
