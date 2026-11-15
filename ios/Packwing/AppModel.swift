@@ -120,6 +120,8 @@ final class AppModel {
     var trustedKeys = AppModel.loadKeys()
     /// The storages across the network added, in the order they were.
     var storages = AppModel.loadStorages()
+    /// packwing Pro, bought in the App Store, or to buy.
+    let store = Store()
     /// Each storage open, by its id: its connection is kept for what follows.
     @ObservationIgnored var handles: [String: StorageHandle] = [:]
 

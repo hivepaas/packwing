@@ -60,7 +60,7 @@ extension AppModel {
     }
 
     /// Whether another storage can be added.
-    var mayAddStorage: Bool { storages.count < Self.freeStorages }
+    var mayAddStorage: Bool { store.holds || storages.count < Self.freeStorages }
 
     /// Keeps `entry`, its `secrets` in the keychain.
     func add(_ entry: StorageEntry, secrets: [String: String]) throws {
@@ -158,6 +158,9 @@ struct StoragesSection: View {
                 // On the button, apart from the sheet: on an iPhone, an alert
                 // beside a sheet that was shown no longer showed.
                 .alert(tr("Add storage"), isPresented: $limited) {
+                    if model.store.sold != false {
+                        Button(model.store.buyLabel) { model.store.buy() }
+                    }
                     Button(tr("OK"), role: .cancel) {}
                 } message: {
                     Text(tr("packwing Free keeps one storage across a network. Pro lifts this."))

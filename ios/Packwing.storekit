@@ -1,0 +1,29 @@
+{
+  "identifier" : "6F7A3D1E",
+  "nonRenewingSubscriptions" : [ ],
+  "products" : [
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "6834749001",
+      "localizations" : [
+        {
+          "description" : "Unlocks every Pro feature of packwing, for good.",
+          "displayName" : "packwing Pro",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.hivepaas.packwing.pro",
+      "referenceName" : "packwing Pro",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false
+  },
+  "subscriptionGroups" : [ ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

@@ -3446,6 +3446,12 @@ t1ef504d9 = packwing bu dosyayı gösteremiyor.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Ücretsiz, ağ üzerinde tek bir depolama alanı tutar. Pro bu sınırı kaldırır.
 
+# Every feature, and one storage across a network.
+t0ccb5824 = Her özellik ve ağ üzerinde tek bir depolama alanı.
+
+# Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
+t8bc438f1 = App Store'dan bir kez satın alınan Pro: Apple Hesabınızla her iPhone, iPad ve Mac'te sizin.
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing artık { $name } dosyasına erişemiyor. İçine bakmak için yeniden açın.
 

@@ -43,7 +43,8 @@ sips -s format png /tmp/icon.jpg --out ios/Packwing/Assets.xcassets/AppIcon.appi
 `-open <path>` as a launch argument (debug builds) opens that archive at once;
 `-new <path>|<path>…` shows New archive, of those files and folders;
 `-receive <path>` gives packwing that archive as Mail does, a copy in its
-`Documents/Inbox`.
+`Documents/Inbox`; `-store fake` plays the App Store for Pro (the UI tests'),
+and run from Xcode, `Packwing.storekit` is the App Store packwing buys from.
 Files put in the app's `Documents` show in Files as On My iPhone › packwing:
 
 ```sh
@@ -68,7 +69,8 @@ xcrun simctl launch booted com.hivepaas.packwing -open "<that folder>/Documents/
 | `Packwing/ExtractSheet.swift`, `Extracting.swift` | Extract: to a new folder in Files (packwing's own, or one chosen), or the pictures and videos to Photos; a file previewed in Quick Look |
 | `Packwing/RunningJob.swift`, `JobScreen.swift` | A long job: how far it is, going on once packwing is left (BGContinuedProcessingTask), how it ended |
 | `Packwing/CreateSheet.swift`, `Creating.swift` | New archive: files, folders and photos chosen, ZIP or 7z, a password (AES-256, and 7z's names hidden too), made in a folder of Files and shared |
-| `Packwing/SettingsView.swift` | The language, how new archives are made, the keys trusted, the version |
+| `Packwing/Store.swift` | packwing Pro, bought once in the App Store (StoreKit 2, the Mac App Store's purchase too): Settings' License, Buy and Restore Purchases; it lifts the one storage of packwing Free |
+| `Packwing/SettingsView.swift` | The language, how new archives are made, the license, the keys trusted, the SSH keys, the version |
 | `Packwing/Theme.swift` | The desktop's colors, light and dark; Nunito; a file's tag |
 
 ## iPhone and iPad

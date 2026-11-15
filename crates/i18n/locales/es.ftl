@@ -3446,6 +3446,12 @@ t1ef504d9 = packwing no puede mostrar este archivo.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free admite un almacenamiento en red. Pro lo amplía.
 
+# Every feature, and one storage across a network.
+t0ccb5824 = Todas las funciones y un almacenamiento en red.
+
+# Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
+t8bc438f1 = Pro, comprado una vez en la App Store: tuyo en cada iPhone, iPad y Mac con tu cuenta de Apple.
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing ya no puede acceder a { $name }. Ábrelo de nuevo para ver lo que contiene.
 
