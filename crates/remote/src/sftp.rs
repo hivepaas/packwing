@@ -623,7 +623,12 @@ impl StorageKind for SftpKind {
         vec![
             Field {
                 key: "host",
-                label: tr!("Host or ssh_config name"),
+                // The Mac App Store's sandbox keeps ~/.ssh from it.
+                label: if cfg!(feature = "app-store") {
+                    tr!("Host")
+                } else {
+                    tr!("Host or ssh_config name")
+                },
                 hint: "deploy@build.example.com".to_owned(),
                 secret: false,
             },
@@ -636,7 +641,11 @@ impl StorageKind for SftpKind {
             Field {
                 key: "password",
                 label: tr!("Password"),
-                hint: tr!("Empty to use the SSH agent and keys"),
+                hint: if cfg!(feature = "app-store") {
+                    tr!("Empty to sign in with a key")
+                } else {
+                    tr!("Empty to use the SSH agent and keys")
+                },
                 secret: true,
             },
         ]
@@ -672,5 +681,9 @@ impl StorageKind for SftpKind {
 
     fn forget_secrets(&self, id: &str) {
         secrets::forget(id, &["password"]);
+    }
+
+    fn key_value(&self) -> Option<&'static str> {
+        Some("key")
     }
 }

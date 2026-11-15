@@ -6,11 +6,12 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use gpui::{
-    App, Context, Entity, EventEmitter, Focusable as _, FontWeight, Render, Task, Window, div,
-    prelude::*, rgb,
+    App, Context, Entity, EventEmitter, Focusable as _, FontWeight, PathPromptOptions, Render,
+    Task, Window, div, prelude::*, rgb,
 };
 use packwing_core::{Field, StorageKind, Values};
 use packwing_i18n::tr;
+use packwing_remote::{KeptKey, KeyRefused};
 
 use super::{DialogEvent, footer, header};
 use crate::Extensions;
@@ -21,7 +22,10 @@ use crate::input::TextInput;
 use crate::pages::storages::StoragesPage;
 use crate::prefs::{ASKS_FIRST, KeptPlace};
 use crate::text_size::ui;
-use crate::widgets::{Fill, Size, Tone, button, check_row, icon_button, note, tile, tonal_tint};
+use crate::widgets::{
+    Fill, Size, Tone, button, check_row, icon_button, icon_text_button, legend, note, tile,
+    tonal_tint,
+};
 
 /// How a test of the settings went.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -50,7 +54,37 @@ pub struct AddStorageDialog {
     tested: Tested,
     /// Why it could not be added.
     problem: Option<String>,
+    /// For a kind that signs in with SSH keys: the keys packwing keeps, and the
+    /// one chosen, none for any.
+    keys: Vec<KeptKey>,
+    key: Option<String>,
+    /// A key file that needs its passphrase to be kept: its name, what it holds,
+    /// and the passphrase's field.
+    locked_key: Option<(String, String, Entity<TextInput>)>,
+    /// Why a key file was not kept.
+    key_problem: Option<String>,
     _testing: Option<Task<()>>,
+}
+
+/// A key file chosen, kept or not.
+enum KeyRead {
+    Kept(KeptKey),
+    Locked(String, String),
+    Failed(String),
+}
+
+/// Keeps the key in `text`, from the file `name`, opened with `passphrase`.
+fn keep_key(name: String, text: String, passphrase: Option<String>) -> KeyRead {
+    match packwing_remote::import_key(&name, &text, passphrase.as_deref()) {
+        Ok(kept) => KeyRead::Kept(kept),
+        Err(e) => match e.get_ref().and_then(|e| e.downcast_ref::<KeyRefused>()) {
+            Some(KeyRefused::Passphrase) if passphrase.is_none() => KeyRead::Locked(name, text),
+            Some(KeyRefused::Passphrase) => {
+                KeyRead::Failed(tr!("That passphrase does not open the key."))
+            }
+            _ => KeyRead::Failed(e.to_string()),
+        },
+    }
 }
 
 impl EventEmitter<DialogEvent> for AddStorageDialog {}
@@ -75,6 +109,10 @@ impl AddStorageDialog {
             secrets_unread: false,
             tested: Tested::Not,
             problem: None,
+            keys: Vec::new(),
+            key: None,
+            locked_key: None,
+            key_problem: None,
             _testing: None,
         };
         dialog.choose(Some(0), cx);
@@ -132,6 +170,9 @@ impl AddStorageDialog {
                         input.update(cx, |i, cx| i.set_text(text, 0..0, cx));
                     }
                 }
+                if let Some(key) = dialog.key_value().and_then(|k| values.get(k)) {
+                    dialog.key = Some(key.clone()).filter(|k| !k.is_empty());
+                }
             }
         }
         dialog
@@ -145,10 +186,96 @@ impl AddStorageDialog {
             && !crate::licensing::plan(cx).may_add_remote_storage(self.page.read(cx).remote_count())
     }
 
+    /// The value naming the key the kind chosen signs in with, if it signs in with SSH keys.
+    fn key_value(&self) -> Option<&'static str> {
+        self.chosen
+            .and_then(|k| self.kinds.get(k))
+            .and_then(|k| k.key_value())
+    }
+
+    /// Asks for a key file, and keeps the key it holds, to sign in with.
+    fn add_key(&mut self, cx: &mut Context<Self>) {
+        let picked = cx.prompt_for_paths(PathPromptOptions {
+            files: true,
+            directories: false,
+            multiple: false,
+            prompt: Some(tr!("Choose").into()),
+        });
+        cx.spawn(async move |this, cx| {
+            let Ok(Ok(Some(mut paths))) = picked.await else {
+                return;
+            };
+            let Some(path) = paths.pop() else { return };
+            let read = cx
+                .background_executor()
+                .spawn(async move {
+                    let bytes = match super::password::read_key_file(&path) {
+                        Ok(bytes) => bytes,
+                        Err(why) => return KeyRead::Failed(why),
+                    };
+                    let name = path
+                        .file_name()
+                        .map(|n| n.to_string_lossy().into_owned())
+                        .unwrap_or_default();
+                    keep_key(name, String::from_utf8_lossy(&bytes).into_owned(), None)
+                })
+                .await;
+            let _ = this.update(cx, |this, cx| this.key_read(read, cx));
+        })
+        .detach();
+    }
+
+    /// Keeps the key file waiting for its passphrase, with the one typed.
+    fn unlock_key(&mut self, cx: &mut Context<Self>) {
+        let Some((name, text, field)) = self.locked_key.clone() else {
+            return;
+        };
+        let passphrase = field.read(cx).text().to_owned();
+        if passphrase.is_empty() {
+            return;
+        }
+        let work = cx.background_spawn(async move { keep_key(name, text, Some(passphrase)) });
+        cx.spawn(async move |this, cx| {
+            let read = work.await;
+            let _ = this.update(cx, |this, cx| this.key_read(read, cx));
+        })
+        .detach();
+    }
+
+    fn key_read(&mut self, read: KeyRead, cx: &mut Context<Self>) {
+        self.key_problem = None;
+        match read {
+            KeyRead::Kept(kept) => {
+                self.locked_key = None;
+                self.key = Some(kept.id);
+                self.keys = packwing_remote::kept_keys().unwrap_or_default();
+            }
+            KeyRead::Locked(name, text) => {
+                let field = cx.new(|cx| TextInput::new(tr!("Passphrase"), cx).masked());
+                self.locked_key = Some((name, text, field));
+            }
+            KeyRead::Failed(why) => self.key_problem = Some(why),
+        }
+        cx.notify();
+    }
+
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn key_chosen(&self) -> Option<String> {
+        self.key.clone()
+    }
+
     fn choose(&mut self, kind: Option<usize>, cx: &mut Context<Self>) {
         self.chosen = kind.filter(|&k| k < self.kinds.len());
         self.tested = Tested::Not;
         self.problem = None;
+        self.key = None;
+        self.locked_key = None;
+        self.key_problem = None;
+        self.keys = if self.key_value().is_some() {
+            packwing_remote::kept_keys().unwrap_or_default()
+        } else {
+            Vec::new()
+        };
         self.fields = self
             .chosen
             .and_then(|k| self.kinds.get(k))
@@ -177,6 +304,9 @@ impl AddStorageDialog {
             } else {
                 values.insert(field.key.to_owned(), text);
             }
+        }
+        if let Some(key) = self.key_value() {
+            values.insert(key.to_owned(), self.key.clone().unwrap_or_default());
         }
         if self.asks_first {
             values.insert(ASKS_FIRST.to_owned(), "yes".to_owned());
@@ -299,6 +429,121 @@ impl AddStorageDialog {
     }
 }
 
+impl AddStorageDialog {
+    /// Which key signs in: any, or one packwing keeps; and a key file to keep.
+    fn key_row(&self, cx: &mut Context<Self>) -> gpui::Div {
+        let chosen = |on: bool| if on { Fill::Tonal } else { Fill::Outline };
+        let any = button(
+            "storage-key-any",
+            tr!("Any key"),
+            chosen(self.key.is_none()),
+            Size::Medium,
+        )
+        .on_click(cx.listener(|this, _, _, cx| {
+            this.key = None;
+            cx.notify();
+        }));
+        let kept = self.keys.iter().enumerate().map(|(i, k)| {
+            let id = k.id.clone();
+            button(
+                ("storage-key", i),
+                format!("{} · {}", k.name, k.kind),
+                chosen(self.key.as_deref() == Some(k.id.as_str())),
+                Size::Medium,
+            )
+            .on_click(cx.listener(move |this, _, _, cx| {
+                this.key = Some(id.clone());
+                cx.notify();
+            }))
+        });
+        // One kept, but not on this computer any more.
+        let missing = self
+            .key
+            .as_ref()
+            .filter(|k| !self.keys.iter().any(|kept| &kept.id == *k))
+            .map(|_| {
+                note(Tone::Warn).child(tr!(
+                    "The key this storage signed in with is not kept any more."
+                ))
+            });
+        let add = icon_text_button(
+            "storage-key-add",
+            "plus",
+            tr!("Add a key file…"),
+            Fill::Text,
+            Size::Medium,
+        )
+        .on_click(cx.listener(|this, _, _, cx| this.add_key(cx)));
+        let locked = self.locked_key.as_ref().map(|(name, _, field)| {
+            let c = colors();
+            div()
+                .flex()
+                .flex_col()
+                .gap(ui(6.))
+                .child(legend(tr!("The passphrase of {name}", name = name)))
+                .child(
+                    div()
+                        .flex()
+                        .gap(ui(10.))
+                        .child(
+                            div()
+                                .flex_1()
+                                .h(ui(40.))
+                                .flex()
+                                .items_center()
+                                .px(ui(16.))
+                                .rounded(ui(16.))
+                                .bg(rgb(c.field))
+                                .child(field.clone()),
+                        )
+                        .child(
+                            button("storage-key-unlock", tr!("Open"), Fill::Tonal, Size::Medium)
+                                .on_click(cx.listener(|this, _, _, cx| this.unlock_key(cx))),
+                        ),
+                )
+        });
+        let c = colors();
+        div()
+            .w_full()
+            .flex()
+            .flex_col()
+            .gap(ui(8.))
+            .child(
+                div()
+                    .text_size(ui(13.))
+                    .font_weight(FontWeight::SEMIBOLD)
+                    .text_color(rgb(c.muted))
+                    .child(tr!("Key")),
+            )
+            .child(
+                div()
+                    .flex()
+                    .flex_wrap()
+                    .gap(ui(8.))
+                    .child(any)
+                    .children(kept)
+                    .child(add),
+            )
+            .child(
+                div()
+                    .text_size(ui(12.))
+                    .text_color(rgb(c.muted))
+                    .child(if crate::right_click::STORE_BUILD {
+                        tr!(
+                            "Any key: every key packwing keeps. A key file added is kept in the system’s keychain."
+                        )
+                    } else {
+                        tr!(
+                            "Any key: the SSH agent’s and the key files in ~/.ssh, then every key packwing keeps. A key file added is kept in the system’s keychain."
+                        )
+                    }),
+            )
+            .children(missing)
+            .children(locked)
+            .children(self.key_problem.clone().map(|why| note(Tone::Warn).child(why)))
+    }
+}
+
 /// A field with its label over it.
 fn labelled(label: String, input: Entity<TextInput>) -> gpui::Div {
     let c = colors();
@@ -391,6 +636,7 @@ impl Render for AddStorageDialog {
                 .flex_grow(1.)
                 .child(labelled(field.label.clone(), input.clone()))
         });
+        let key_row = self.key_value().map(|_| self.key_row(cx));
         let tested = match &self.tested {
             Tested::Not => None,
             Tested::Running => Some(tr!("Trying it…")),
@@ -433,7 +679,8 @@ impl Render for AddStorageDialog {
                             .child(labelled(tr!("Name"), self.name.clone())),
                     )
                     .children(folder)
-                    .children(fields),
+                    .children(fields)
+                    .children(key_row),
             )
             })
             .when(remote && can_ask && !limited, |d| {

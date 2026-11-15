@@ -8,8 +8,8 @@ license.workspace = true
 publish.workspace = true
 
 [features]
-# The Mac App Store's build: no SFTP, which needs what the sandbox keeps from it
-# (~/.ssh's config, keys and known_hosts, the SSH agent's socket).
+# The Mac App Store's build, whose sandbox keeps ~/.ssh and the SSH agent from
+# it: SFTP's fields do not offer them.
 app-store = []
 
 [dependencies]

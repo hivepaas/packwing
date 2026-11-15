@@ -2,8 +2,12 @@
 //! the first run's welcome in their place, and a dialog over them all.
 
 use packwing_i18n::{tr, tr_n};
+use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use std::time::Duration;
+
+use futures::StreamExt as _;
 
 use gpui::{
     AnyView, App, Context, Entity, EventEmitter, ExternalPaths, FocusHandle, Focusable, FontWeight,
@@ -19,8 +23,8 @@ use crate::demo;
 use crate::dialogs::{
     AddDialog, AddStorageDialog, ChecksumDialog, CreateDialog, Creating, DeleteDialog, DialogEvent,
     EditDialog, ExtractDialog, Job, OpenFileDialog, OpenStoredDialog, PasswordDialog,
-    PasswordEvent, ProgressDialog, QuitDialog, RemoveStorageDialog, Saving, SignDialog,
-    SplitDialog, State, TransferDialog, Verb, asked_for,
+    PasswordEvent, ProgressDialog, QuestionEvent, QuitDialog, RemoveStorageDialog, Saving,
+    SignDialog, SplitDialog, SshQuestionDialog, State, TransferDialog, Verb, asked_for,
 };
 use crate::explorer::{Explorer, ExplorerEvent};
 use crate::history::History;
@@ -36,6 +40,7 @@ use crate::pages::storages::{AddStorageAsked, EditStorageAsked, RemoveStorageAsk
 use crate::placement::{self, WindowPlace};
 use crate::prefs::{self, KeptStorage, TrustedKey};
 use crate::right_click::{Action, Request, RightClickMenu};
+use crate::ssh::{Answer, Asked as SshAsked, Asker, Question};
 use crate::text_size::ui;
 use crate::updates::{Badge, Updates};
 use crate::viewer::{self, Reading, ViewFile, Viewer, ViewerEvent};
@@ -170,6 +175,11 @@ pub struct Workspace {
     /// were just added to.
     folder_after_reading: Option<Vec<String>>,
     dialog: Option<Open>,
+    /// Where connections over SSH send their questions: to this window.
+    asker: Arc<Asker>,
+    /// The question asked now, over any dialog, and those waiting their turn.
+    question: Option<(Question, Entity<SshQuestionDialog>, Subscription)>,
+    questions: VecDeque<Question>,
     appearance: Appearance,
     /// The window's place, waiting to be kept, and which change it is.
     unsaved_place: Option<WindowPlace>,
@@ -441,6 +451,19 @@ impl Workspace {
                 this.apply_appearance(window, cx);
             }),
         ];
+        let (asking, mut asked) = futures_channel::mpsc::unbounded::<Question>();
+        cx.spawn_in(window, async move |this, cx| {
+            while let Some(question) = asked.next().await {
+                let shown = this.update_in(cx, |this, window, cx| {
+                    this.questions.push_back(question);
+                    this.next_question(window, cx);
+                });
+                if shown.is_err() {
+                    break;
+                }
+            }
+        })
+        .detach();
         let mut ws = Workspace {
             focus: cx.focus_handle(),
             page: Page::Archive,
@@ -460,6 +483,9 @@ impl Workspace {
             unsaved_place: None,
             place_change: 0,
             dialog: None,
+            asker: Arc::new(Asker(asking)),
+            question: None,
+            questions: VecDeque::new(),
             appearance,
             system_dark: looks_dark(window),
             trusted_seen: kept.trusted_keys.clone(),
@@ -973,6 +999,52 @@ impl Workspace {
 
     fn close_dialog(&mut self, cx: &mut Context<Self>) {
         self.dialog = None;
+        cx.notify();
+    }
+
+    /// Where connections over SSH send their questions, for them to be asked in
+    /// this window.
+    pub fn asker(&self) -> Arc<Asker> {
+        self.asker.clone()
+    }
+
+    /// The question asked now, for tests.
+    #[cfg(all(test, feature = "test-hooks"))]
+    pub fn ssh_asked(&self, cx: &gpui::App) -> Option<SshAsked> {
+        self.question
+            .as_ref()
+            .map(|(_, view, _)| view.read(cx).asked().clone())
+    }
+
+    /// Asks the next question waiting, unless one is asked now.
+    fn next_question(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.question.is_some() {
+            return;
+        }
+        let Some(question) = self.questions.pop_front() else {
+            return;
+        };
+        let asked: SshAsked = question.asked.clone();
+        // With no field to type in, the window takes the keys, for Escape.
+        if matches!(asked, SshAsked::HostKey(_)) {
+            window.focus(&self.focus, cx);
+        }
+        let view = cx.new(|cx| SshQuestionDialog::new(asked, window, cx));
+        let events = cx.subscribe_in(&view, window, |this, _, e: &QuestionEvent, window, cx| {
+            this.answer_question(e.0.clone(), window, cx)
+        });
+        self.question = Some((question, view, events));
+        cx.activate(true);
+        cx.notify();
+    }
+
+    fn answer_question(&mut self, answer: Answer, window: &mut Window, cx: &mut Context<Self>) {
+        if let Some((question, _, _)) = self.question.take() {
+            question.answer(answer);
+        }
+        // The window takes the keys again, for Escape.
+        window.focus(&self.focus, cx);
+        self.next_question(window, cx);
         cx.notify();
     }
 
@@ -2359,7 +2431,7 @@ impl Workspace {
 
     /// Files were dropped on the window, with no dialog there to take them.
     pub fn dropped(&mut self, paths: Vec<PathBuf>, window: &mut Window, cx: &mut Context<Self>) {
-        if self.dialog.is_some() || self.welcome.is_some() {
+        if self.dialog.is_some() || self.question.is_some() || self.welcome.is_some() {
             return;
         }
         // A copy opened from another archive is only read.
@@ -2400,7 +2472,17 @@ impl Workspace {
         }
     }
 
-    fn on_key(&mut self, e: &KeyDownEvent, _: &mut Window, cx: &mut Context<Self>) {
+    fn on_key(&mut self, e: &KeyDownEvent, window: &mut Window, cx: &mut Context<Self>) {
+        // A question over SSH comes first: nothing under it is for the keys. What
+        // is typed in its field must go on to the field.
+        if let Some((question, _, _)) = &self.question {
+            if e.keystroke.key == "escape" {
+                let no = question.asked.no();
+                self.answer_question(no, window, cx);
+                cx.stop_propagation();
+            }
+            return;
+        }
         if e.keystroke.key == "escape" && self.dialog.as_ref().is_some_and(|d| d.dismissable) {
             self.close_dialog(cx);
             cx.stop_propagation();
@@ -2701,12 +2783,12 @@ impl Workspace {
     }
 
     /// The shade over the window, with the dialog on it.
-    fn overlay(&self, view: AnyView, window: &Window) -> impl IntoElement {
+    fn overlay(&self, id: &'static str, view: AnyView, window: &Window) -> impl IntoElement {
         // It covers the whole surface, the margin around the window too: the
         // shade stops at the window's edge and follows its corners.
         let (m, round) = (chrome::margins(window), chrome::corners(window));
         div()
-            .id("dialog")
+            .id(id)
             .absolute()
             .top_0()
             .left_0()
@@ -2807,6 +2889,10 @@ impl Render for Workspace {
             cx,
         );
         let dialog = self.dialog.as_ref().map(|d| d.view.clone());
+        let question = self
+            .question
+            .as_ref()
+            .map(|(_, view, _)| AnyView::from(view.clone()));
         div()
             .id("workspace")
             .relative()
@@ -2829,7 +2915,12 @@ impl Render for Workspace {
             .text_size(ui(15.))
             .text_color(rgb(c.text))
             .child(framed)
-            .when_some(dialog, |d, view| d.child(self.overlay(view, window)))
+            .when_some(dialog, |d, view| {
+                d.child(self.overlay("dialog", view, window))
+            })
+            .when_some(question, |d, view| {
+                d.child(self.overlay("ssh-question-shade", view, window))
+            })
     }
 }
 

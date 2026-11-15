@@ -61,6 +61,9 @@ t52b1d223 = 新文件将使用压缩包的密码加密。
 # Cancel
 t35afca3b = 取消
 
+# That passphrase does not open the key.
+tab4e22aa = 此密码短语无法打开密钥。
+
 # Name
 t0fe07306 = 名称
 
@@ -70,11 +73,41 @@ t06357afd = 文件夹
 # Its secrets could not be read: {why}
 t2af0c8ab = 无法读取其机密信息：{ $why }
 
+# Choose
+t73c66160 = 选择
+
+# Passphrase
+t191a2dc5 = 密码短语
+
 # That folder is not on this computer.
 ta4073fff = 此电脑上没有该文件夹。
 
 # Its secrets could not be kept: {why}
 ta213827f = 无法保存其机密信息：{ $why }
+
+# Any key
+t11edbeae = 任意密钥
+
+# The key this storage signed in with is not kept any more.
+tb0a2d351 = 此存储用来登录的密钥已不再保存。
+
+# Add a key file…
+t7b869a62 = 添加密钥文件…
+
+# The passphrase of {name}
+tec172c12 = { $name } 的密码短语
+
+# Open
+t538b10e9 = 打开
+
+# Key
+tcd1ac90c = 密钥
+
+# Any key: every key packwing keeps. A key file added is kept in the system’s keychain.
+t2a6be4df = 任意密钥：packwing 保存的所有密钥。添加的密钥文件会保存在系统钥匙串中。
+
+# Any key: the SSH agent’s and the key files in ~/.ssh, then every key packwing keeps. A key file added is kept in the system’s keychain.
+t33890668 = 任意密钥：SSH agent 的密钥和 ~/.ssh 中的密钥文件，然后是 packwing 保存的所有密钥。添加的密钥文件会保存在系统钥匙串中。
 
 # Local folder
 te075bcbc = 本地文件夹
@@ -595,17 +628,11 @@ t00c5d168 = 不再询问
 # Run it
 t72430853 = 运行
 
-# Open
-t538b10e9 = 打开
-
 # Open from a storage
 t45a8991d = 从存储打开
 
 # Choose a storage, and an archive in it
 t3c900950 = 请选择存储及其中的压缩包
-
-# Choose
-t73c66160 = 选择
 
 # This is not a key file packwing can use: {why}.
 tcf6986a7 = 这不是 packwing 可用的密钥文件：{ $why }。
@@ -621,9 +648,6 @@ t4051f4d7 = 密钥文件的密码短语
 
 # Enter the passphrase
 tbd0672da = 输入密码短语
-
-# Passphrase
-t191a2dc5 = 密码短语
 
 # This file is encrypted with age. packwing keeps the passphrase only while the archive is open, and never writes it down.
 t663ac047 = 此文件已用 age 加密。packwing 仅在压缩包打开期间保留密码短语，且从不将其写下来。
@@ -1000,9 +1024,6 @@ t9306dafe = 将密钥保存在此处
 # No key chosen
 te58c13f5 = 未选择密钥
 
-# Key
-tcd1ac90c = 密钥
-
 # New key…
 t9e1134da = 新建密钥…
 
@@ -1035,6 +1056,45 @@ tab12cc19 = 在旁边生成 { $count } 个分卷，从 { $first } 开始。“�
 
 # Split
 t16a15383 = 切分
+
+# Answer
+tf94ea0ff = 回答
+
+# Keep it in the system’s keychain
+t20ffa126 = 保存在系统钥匙串中
+
+# Trust this server?
+tcf52044f = 信任此服务器？
+
+# packwing has not connected to this server before. Trust it only if this is its key: whoever runs the server can tell you its fingerprint.
+t8784f08b = packwing 从未连接过此服务器。只有在这确实是它的密钥时才信任：服务器的管理员可以告诉你它的指纹。
+
+# {algorithm} key fingerprint
+t91ca5fc5 = { $algorithm } 密钥指纹
+
+# Trust and connect
+t2a9cdcbe = 信任并连接
+
+# Don’t connect
+t6bbfdb87 = 不连接
+
+# Sign in to the server
+t7c58866e = 登录服务器
+
+# The server did not take that password.
+td6912c66 = 服务器未接受该密码。
+
+# Sign in
+t744be623 = 登录
+
+# Enter the key’s passphrase
+t90f12179 = 输入密钥的密码短语
+
+# The server asks
+ta642b6e3 = 服务器询问
+
+# Send
+tf28e14cf = 发送
 
 # Move {what}
 tc168ca56 = 移动 { $what }
@@ -2878,11 +2938,17 @@ te1c3d3a2 = 秘密访问密钥
 # SFTP
 t62703ae8 = SFTP
 
+# Host
+t302af18f = 主机
+
 # Host or ssh_config name
 t7b943498 = 主机或 ssh_config 名称
 
 # Empty for the home folder
 t67b5f42b = 留空则使用主目录
+
+# Empty to sign in with a key
+t3dbf7df5 = 留空则用密钥登录
 
 # Empty to use the SSH agent and keys
 tf10e6293 = 留空则使用 SSH 代理和密钥

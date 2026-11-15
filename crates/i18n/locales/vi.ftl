@@ -61,6 +61,9 @@ t52b1d223 = Các tệp mới được mã hoá bằng mật khẩu của tệp n
 # Cancel
 t35afca3b = Huỷ
 
+# That passphrase does not open the key.
+tab4e22aa = Passphrase đó không mở được khoá.
+
 # Name
 t0fe07306 = Tên
 
@@ -70,11 +73,41 @@ t06357afd = Thư mục
 # Its secrets could not be read: {why}
 t2af0c8ab = Không đọc được các bí mật của nó: { $why }
 
+# Choose
+t73c66160 = Chọn
+
+# Passphrase
+t191a2dc5 = Cụm mật khẩu
+
 # That folder is not on this computer.
 ta4073fff = Thư mục đó không có trên máy tính này.
 
 # Its secrets could not be kept: {why}
 ta213827f = Không lưu giữ được các bí mật của nó: { $why }
+
+# Any key
+t11edbeae = Khoá bất kỳ
+
+# The key this storage signed in with is not kept any more.
+tb0a2d351 = Khoá mà storage này dùng để đăng nhập không còn được lưu nữa.
+
+# Add a key file…
+t7b869a62 = Thêm tệp khoá…
+
+# The passphrase of {name}
+tec172c12 = Passphrase của { $name }
+
+# Open
+t538b10e9 = Mở
+
+# Key
+tcd1ac90c = Khoá
+
+# Any key: every key packwing keeps. A key file added is kept in the system’s keychain.
+t2a6be4df = Khoá bất kỳ: mọi khoá packwing lưu. Tệp khoá thêm vào được lưu trong keychain của hệ thống.
+
+# Any key: the SSH agent’s and the key files in ~/.ssh, then every key packwing keeps. A key file added is kept in the system’s keychain.
+t33890668 = Khoá bất kỳ: khoá của SSH agent và các tệp khoá trong ~/.ssh, rồi đến mọi khoá packwing lưu. Tệp khoá thêm vào được lưu trong keychain của hệ thống.
 
 # Local folder
 te075bcbc = Thư mục trên máy
@@ -595,17 +628,11 @@ t00c5d168 = Không hỏi lại
 # Run it
 t72430853 = Chạy
 
-# Open
-t538b10e9 = Mở
-
 # Open from a storage
 t45a8991d = Mở từ nơi lưu trữ
 
 # Choose a storage, and an archive in it
 t3c900950 = Chọn một nơi lưu trữ và một tệp nén trong đó
-
-# Choose
-t73c66160 = Chọn
 
 # This is not a key file packwing can use: {why}.
 tcf6986a7 = Đây không phải tệp khoá mà packwing dùng được: { $why }.
@@ -621,9 +648,6 @@ t4051f4d7 = Cụm mật khẩu của tệp khoá
 
 # Enter the passphrase
 tbd0672da = Nhập cụm mật khẩu
-
-# Passphrase
-t191a2dc5 = Cụm mật khẩu
 
 # This file is encrypted with age. packwing keeps the passphrase only while the archive is open, and never writes it down.
 t663ac047 = Tệp này được mã hoá bằng age. packwing chỉ giữ cụm mật khẩu khi tệp nén còn mở, và không bao giờ ghi lại.
@@ -1000,9 +1024,6 @@ t9306dafe = Giữ khoá ở đây
 # No key chosen
 te58c13f5 = Chưa chọn khoá
 
-# Key
-tcd1ac90c = Khoá
-
 # New key…
 t9e1134da = Khoá mới…
 
@@ -1035,6 +1056,45 @@ tab12cc19 = { $count } phần cạnh file gốc, từ { $first } trở đi. Lệ
 
 # Split
 t16a15383 = Chia
+
+# Answer
+tf94ea0ff = Câu trả lời
+
+# Keep it in the system’s keychain
+t20ffa126 = Lưu trong keychain của hệ thống
+
+# Trust this server?
+tcf52044f = Tin máy chủ này?
+
+# packwing has not connected to this server before. Trust it only if this is its key: whoever runs the server can tell you its fingerprint.
+t8784f08b = packwing chưa từng kết nối tới máy chủ này. Chỉ tin nếu đây đúng là khoá của nó: người quản lý máy chủ có thể cho bạn biết fingerprint của nó.
+
+# {algorithm} key fingerprint
+t91ca5fc5 = Fingerprint của khoá { $algorithm }
+
+# Trust and connect
+t2a9cdcbe = Tin và kết nối
+
+# Don’t connect
+t6bbfdb87 = Không kết nối
+
+# Sign in to the server
+t7c58866e = Đăng nhập vào máy chủ
+
+# The server did not take that password.
+td6912c66 = Máy chủ không nhận mật khẩu đó.
+
+# Sign in
+t744be623 = Đăng nhập
+
+# Enter the key’s passphrase
+t90f12179 = Nhập passphrase của khoá
+
+# The server asks
+ta642b6e3 = Máy chủ hỏi
+
+# Send
+tf28e14cf = Gửi
 
 # Move {what}
 tc168ca56 = Di chuyển { $what }
@@ -2878,11 +2938,17 @@ te1c3d3a2 = Secret access key
 # SFTP
 t62703ae8 = SFTP
 
+# Host
+t302af18f = Máy chủ
+
 # Host or ssh_config name
 t7b943498 = Máy chủ hoặc tên trong ssh_config
 
 # Empty for the home folder
 t67b5f42b = Để trống để dùng thư mục nhà
+
+# Empty to sign in with a key
+t3dbf7df5 = Để trống để đăng nhập bằng khoá
 
 # Empty to use the SSH agent and keys
 tf10e6293 = Để trống để dùng SSH agent và các khoá

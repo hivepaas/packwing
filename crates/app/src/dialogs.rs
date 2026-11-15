@@ -20,6 +20,7 @@ mod quit;
 mod remove_storage;
 mod sign;
 mod split;
+mod ssh_question;
 mod transfer;
 
 pub use add::AddDialog;
@@ -38,6 +39,7 @@ pub use quit::QuitDialog;
 pub use remove_storage::RemoveStorageDialog;
 pub use sign::SignDialog;
 pub use split::SplitDialog;
+pub use ssh_question::{QuestionEvent, SshQuestionDialog};
 pub use transfer::TransferDialog;
 
 use std::path::PathBuf;
