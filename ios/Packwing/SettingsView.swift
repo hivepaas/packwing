@@ -30,6 +30,7 @@ struct SettingsView: View {
                     }
                 }
                 .listRowBackground(Tonal.surface)
+                LicenseSection()
                 TrustedKeysSection()
                 SshKeysSection()
                 Section(tr("About")) {

@@ -3391,6 +3391,12 @@ t1ef504d9 = packwing không hiển thị được tệp này.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free chỉ giữ một nơi lưu trữ qua mạng. Pro bỏ giới hạn này.
 
+# Every feature, and one storage across a network.
+t0ccb5824 = Đủ mọi tính năng, và một nơi lưu trữ qua mạng.
+
+# Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
+t8bc438f1 = Pro, mua một lần trên App Store: của bạn trên mọi iPhone, iPad và Mac dùng Tài khoản Apple của bạn.
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing không còn truy cập được { $name }. Hãy mở lại để xem bên trong.
 

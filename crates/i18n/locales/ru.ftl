@@ -3538,6 +3538,12 @@ t1ef504d9 = packwing не может показать этот файл.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = В packwing Free можно подключить одно хранилище по сети. Pro снимает это ограничение.
 
+# Every feature, and one storage across a network.
+t0ccb5824 = Все функции и одно хранилище по сети.
+
+# Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
+t8bc438f1 = Pro, купленный один раз в App Store: ваш на каждом iPhone, iPad и Mac с вашим Apple ID.
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing больше не может получить доступ к { $name }. Откройте его снова, чтобы заглянуть внутрь.
 

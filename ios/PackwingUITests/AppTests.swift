@@ -551,4 +551,29 @@ final class AppTests: XCTestCase {
         XCTAssertEqual(sum.label, notes)
         keep(app, "checksums-one")
     }
+
+    /// Pro bought, as `-store fake` plays the App Store: held after a restart too.
+    func testProIsBoughtInSettingsAndHeldAfterARestart() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-AppleLanguages", "(en)", "-language", "", "-store", "fake", "-fakePro", "NO"]
+        app.launch()
+        tapWhenReady(app.buttons.matching(NSPredicate(format: "label == 'Settings'")).firstMatch)
+        let plan = app.staticTexts["store-plan"]
+        XCTAssert(plan.waitForExistence(timeout: 10))
+        XCTAssertEqual(plan.label, "packwing Free")
+        let buy = app.buttons["store-buy"]
+        XCTAssertEqual(buy.label, "Buy Pro · $9.99")
+        keep(app, "store-free")
+        buy.tap()
+        XCTAssert(app.descendants(matching: .any)["store-held"].waitForExistence(timeout: 5))
+        XCTAssertEqual(plan.label, "packwing Pro")
+        app.terminate()
+
+        // Kept.
+        app.launchArguments = ["-AppleLanguages", "(en)", "-language", "", "-store", "fake"]
+        app.launch()
+        tapWhenReady(app.buttons.matching(NSPredicate(format: "label == 'Settings'")).firstMatch)
+        XCTAssert(app.descendants(matching: .any)["store-held"].waitForExistence(timeout: 10))
+        keep(app, "store-pro")
+    }
 }

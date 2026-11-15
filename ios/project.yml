@@ -32,6 +32,9 @@ targets:
     scheme:
       testTargets:
         - PackwingUITests
+      # Pro bought in Xcode's own App Store when packwing runs from it (the
+      # Simulator), not the real one: Packwing.storekit.
+      storeKitConfiguration: Packwing.storekit
     info:
       path: Packwing/Info.plist
       properties:

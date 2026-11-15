@@ -3400,6 +3400,12 @@ t1ef504d9 = packwing 無法顯示這個檔案。
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing 免費版只能使用一個網路儲存位置。Pro 可解除此限制。
 
+# Every feature, and one storage across a network.
+t0ccb5824 = 所有功能，以及一個網路儲存位置。
+
+# Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
+t8bc438f1 = 在 App Store 購買一次的 Pro：在使用你 Apple 帳號的每部 iPhone、iPad 和 Mac 上都可使用。
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing 已無法存取 { $name }。請重新開啟以查看內容。
 

@@ -3391,6 +3391,12 @@ t1ef504d9 = packwing에서 이 파일을 표시할 수 없습니다.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing Free는 네트워크 너머의 스토리지를 하나만 사용할 수 있습니다. Pro로 이 제한을 풀 수 있습니다.
 
+# Every feature, and one storage across a network.
+t0ccb5824 = 모든 기능과 네트워크 너머의 스토리지 하나를 사용할 수 있습니다.
+
+# Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
+t8bc438f1 = App Store에서 한 번 구입한 Pro는 같은 Apple 계정의 모든 iPhone, iPad, Mac에서 사용할 수 있습니다.
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing이 더 이상 { $name }에 접근할 수 없습니다. 안을 보려면 다시 여세요.
 
