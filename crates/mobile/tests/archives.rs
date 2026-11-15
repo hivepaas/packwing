@@ -8,8 +8,8 @@ use std::sync::{Arc, Mutex};
 use packwing_mobile::{
     Archive, ArchiveFormat, Checksum, ChecksumKind, Compared, CompressionLevel, Job, JobListener,
     JobProgress, MobileError, NewArchiveHow, OnExisting, RemoteStorage, Secrets, SignatureState,
-    checksum_kinds, compare_checksum, create_archive, describe_storage, read_key, stem,
-    storage_kinds,
+    SshQuestions, TypedSecret, ask_ssh_with, checksum_kinds, compare_checksum, create_archive,
+    describe_storage, read_key, start, stem, storage_kinds,
 };
 
 /// A folder of files to make archives of: `Báo cáo/tổng hợp.txt` and
@@ -463,10 +463,13 @@ fn an_archive_is_changed_where_it_is_or_through_a_copy() {
 }
 
 #[test]
-fn a_phone_adds_storages_of_every_kind_but_sftp_yet() {
-    let ids: Vec<String> = storage_kinds().into_iter().map(|k| k.id).collect();
-    assert!(ids.contains(&"webdav".to_owned()) && ids.contains(&"s3".to_owned()));
-    assert!(!ids.contains(&"sftp".to_owned()));
+fn a_phone_adds_storages_of_every_kind() {
+    let kinds = storage_kinds();
+    let ids: Vec<&str> = kinds.iter().map(|k| k.id.as_str()).collect();
+    assert_eq!(ids, ["s3", "sftp", "webdav"]);
+    // SFTP signs in with a key kept, chosen apart from its fields.
+    let sftp = kinds.iter().find(|k| k.id == "sftp").expect("sftp");
+    assert_eq!(sftp.key_value.as_deref(), Some("key"));
     let values = [(
         "address".to_owned(),
         "https://dav.example.com/files".to_owned(),
@@ -558,4 +561,75 @@ fn an_archive_on_a_storage_is_listed_and_read_where_it_is() {
     assert_eq!(read, b"hello");
     let _ = top.delete(std::slice::from_ref(&folder), &["a.zip".to_owned()]);
     let _ = top.remove(&[folder]);
+}
+
+/// Answers as a person would: trusts the server, signs in with `password`.
+struct Person {
+    password: String,
+    asked: Mutex<Vec<String>>,
+}
+
+impl SshQuestions for Person {
+    fn host_key(&self, host: String, port: u16, _: String, fingerprint: String) -> bool {
+        self.asked
+            .lock()
+            .expect("asked")
+            .push(format!("{host}:{port} {fingerprint}"));
+        true
+    }
+
+    fn password(&self, _: String, _: bool) -> Option<TypedSecret> {
+        Some(TypedSecret {
+            secret: self.password.clone(),
+            keep: false,
+        })
+    }
+
+    fn passphrase(&self, _: String, _: bool) -> Option<TypedSecret> {
+        None
+    }
+
+    fn code(&self, _: String, _: String, _: String, _: bool) -> Option<String> {
+        None
+    }
+}
+
+/// Against an SFTP server, skipped without `SFTP_TEST_HOST` (`tester@127.0.0.1:18322`
+/// of `make sftp-start`, with `SFTP_TEST_PASSWORD`) and with a known_hosts of the
+/// user's that knows it: a phone has none.
+#[test]
+fn sftp_asks_of_a_server_it_does_not_know_once() {
+    let (Ok(host), Ok(password)) = (
+        std::env::var("SFTP_TEST_HOST"),
+        std::env::var("SFTP_TEST_PASSWORD"),
+    ) else {
+        return;
+    };
+    let dir = tempfile::tempdir().expect("dir");
+    start(dir.path().display().to_string(), None);
+    let person = Arc::new(Person {
+        password,
+        asked: Mutex::new(Vec::new()),
+    });
+    ask_ssh_with(Some(person.clone()));
+    let values: std::collections::HashMap<String, String> =
+        [("host".to_owned(), host)].into_iter().collect();
+    let list = || {
+        // A typed password of none: the server asks, and the person answers.
+        RemoteStorage::open(
+            "sftp".to_owned(),
+            "test".to_owned(),
+            values.clone(),
+            Some(std::collections::HashMap::new()),
+        )
+        .expect("opened")
+        .list(vec![], Job::quiet())
+    };
+    list().expect("listed");
+    assert_eq!(person.asked.lock().expect("asked").len(), 1, "asked once");
+    // Trusted now, in packwing's own known_hosts: not asked again.
+    list().expect("listed again");
+    assert_eq!(person.asked.lock().expect("asked").len(), 1);
+    assert!(dir.path().join("ssh").join("known_hosts").exists());
+    ask_ssh_with(None);
 }

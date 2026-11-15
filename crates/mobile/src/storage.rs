@@ -4,9 +4,8 @@
 //! what it needs of it.
 //!
 //! The app keeps the storages' settings (their ids, kinds and values); the
-//! secrets go to the keychain under each storage's id. SFTP is left out on a
-//! phone until it can ask of a server it does not know yet: it has no
-//! known_hosts of the user's to go by.
+//! secrets go to the keychain under each storage's id. SFTP asks what it needs
+//! as it connects through the app ([`crate::ask_ssh_with`]).
 
 use std::collections::{BTreeMap, HashMap};
 use std::io;
@@ -36,6 +35,9 @@ pub struct StorageKindRow {
     pub tag: String,
     pub name: String,
     pub fields: Vec<StorageField>,
+    /// The setting naming a key kept to sign in with (SFTP's), chosen from
+    /// those kept; empty or missing for any of them.
+    pub key_value: Option<String>,
 }
 
 /// A file or folder in a folder of a storage.
@@ -53,9 +55,6 @@ pub struct StoredItem {
 
 fn kinds() -> Vec<Arc<dyn StorageKind>> {
     packwing_remote::kinds()
-        .into_iter()
-        .filter(|k| k.id() != packwing_remote::SftpKind.id())
-        .collect()
 }
 
 fn kind(id: &str) -> Result<Arc<dyn StorageKind>, MobileError> {
@@ -96,6 +95,7 @@ pub fn storage_kinds() -> Vec<StorageKindRow> {
                     secret: f.secret,
                 })
                 .collect(),
+            key_value: k.key_value().map(str::to_owned),
         })
         .collect()
 }

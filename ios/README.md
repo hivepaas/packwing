@@ -22,7 +22,7 @@ the command line, and `make ios-test` runs the UI tests
 (`PackwingUITests`: the samples in `PackwingUITests/Samples` opened,
 extracted, unlocked, previewed, saved to Photos, shown as a grid of pictures, put in new archives, received as Mail gives one, its checksum compared, its signature checked, its files renamed, deleted and added, and opened from a storage) on the iPhone 17
 Simulator; `make ios-test IOS_DEVICE="iPad Pro 13-inch (M5)"` runs them on an
-iPad's. The storage test needs `make webdav-start`, and is skipped without it. After changing `crates/mobile`, run `make ios` again
+iPad's. The storage tests need `make webdav-start` and the SFTP server of `make sftp-start`, and are skipped without them. After changing `crates/mobile`, run `make ios` again
 (`scripts/build_ios.sh --debug` builds its library quicker).
 
 What is generated, and not committed: `ios/Generated/` (the XCFramework and
@@ -60,7 +60,8 @@ xcrun simctl launch booted com.hivepaas.packwing -open "<that folder>/Documents/
 | `Packwing/ArchiveView.swift` | A folder of an archive, and a search through all of it |
 | `Packwing/Gallery.swift` | A folder as a grid: its pictures as themselves (read from the archive, made small as they decode), the rest by kind; the grid first where it is pictures mostly |
 | `Packwing/ChecksumSheet.swift` | An archive's own checksums (SHA-256 and SHA-1 first, as the desktop's; any of five), and one pasted compared with them |
-| `Packwing/Storages.swift` | Storages across the network (S3, WebDAV; SFTP to come): added (their secrets in the keychain), browsed, their archives opened where they are; packwing Free keeps one |
+| `Packwing/Storages.swift` | Storages across the network (S3, SFTP, WebDAV): added (their secrets in the keychain), browsed, their archives opened where they are; packwing Free keeps one |
+| `Packwing/SshQuestions.swift` | What SFTP asks as it connects (a server not known yet, a password, a passphrase, a code), in a window over any other; the SSH keys kept, chosen, added and removed |
 | `Packwing/Editing.swift` | A ZIP or 7z archive changed: files added (from Files or Photos), deleted, renamed; where packwing may not write beside it, a copy changed and written over it |
 | `Packwing/SignatureSheet.swift` | An archive's signature (`name.sig` beside it, or one chosen in Files) checked by the keys trusted; Settings' Keys you trust |
 | `Packwing/PasswordSheet.swift` | An archive's password, or an age file's passphrase |

@@ -3370,6 +3370,12 @@ tecf6b414 = 이 키 신뢰
 # There is no signature beside it.
 te7a28cb7 = 옆에 서명이 없습니다.
 
+# Private key
+t2f5fdbc3 = 개인 키
+
+# SSH keys
+t7e7cad2b = SSH 키
+
 # packwing cannot show this file.
 t1ef504d9 = packwing에서 이 파일을 표시할 수 없습니다.
 

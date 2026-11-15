@@ -3517,6 +3517,12 @@ tecf6b414 = Довіряти цьому ключу
 # There is no signature beside it.
 te7a28cb7 = Поруч немає підпису.
 
+# Private key
+t2f5fdbc3 = Приватний ключ
+
+# SSH keys
+t7e7cad2b = SSH-ключі
+
 # packwing cannot show this file.
 t1ef504d9 = packwing не може показати цей файл.
 

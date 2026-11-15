@@ -22,6 +22,7 @@ mod checksum;
 mod edit;
 mod i18n;
 mod signature;
+mod ssh;
 mod storage;
 
 /// Android's document picker hands out no paths: see [`Document`].
@@ -46,6 +47,9 @@ pub use checksum::{
 pub use edit::OnExisting;
 pub use i18n::LanguageRow;
 pub use signature::{KeyRead, SignatureState, read_key};
+pub use ssh::{
+    SshKey, SshQuestions, TypedSecret, ask_ssh_with, import_ssh_key, remove_ssh_key, ssh_keys,
+};
 pub use storage::{
     RemoteStorage, StorageField, StorageKindRow, StoredItem, describe_storage,
     forget_storage_secrets, keep_storage_secrets, kept_storage_secrets, storage_kinds,
@@ -107,7 +111,9 @@ impl From<Error> for MobileError {
 pub fn start(support_folder: String, language: Option<String>) {
     packwing_i18n::set_language(language.as_deref());
     packwing_core::clean_opened_files();
-    packwing_core::keep_journal_in(PathBuf::from(support_folder));
+    packwing_core::keep_journal_in(PathBuf::from(&support_folder));
+    // SFTP's own known_hosts and kept keys: a phone has no `~/.ssh` of the user's.
+    packwing_remote::keep_in(PathBuf::from(support_folder));
     std::thread::spawn(packwing_core::clean_left_extractions);
 }
 

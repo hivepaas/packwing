@@ -3379,6 +3379,12 @@ tecf6b414 = Percayai kunci ini
 # There is no signature beside it.
 te7a28cb7 = Tidak ada tanda tangan di sebelahnya.
 
+# Private key
+t2f5fdbc3 = Kunci privat
+
+# SSH keys
+t7e7cad2b = Kunci SSH
+
 # packwing cannot show this file.
 t1ef504d9 = packwing tidak dapat menampilkan berkas ini.
 

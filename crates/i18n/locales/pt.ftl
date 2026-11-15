@@ -3425,6 +3425,12 @@ tecf6b414 = Confiar nesta chave
 # There is no signature beside it.
 te7a28cb7 = Não há assinatura ao lado dele.
 
+# Private key
+t2f5fdbc3 = Chave privada
+
+# SSH keys
+t7e7cad2b = Chaves SSH
+
 # packwing cannot show this file.
 t1ef504d9 = O packwing não consegue mostrar este arquivo.
 

@@ -3370,6 +3370,12 @@ tecf6b414 = Tin cậy khoá này
 # There is no signature beside it.
 te7a28cb7 = Không có chữ ký nào bên cạnh.
 
+# Private key
+t2f5fdbc3 = Khoá riêng tư
+
+# SSH keys
+t7e7cad2b = Khoá SSH
+
 # packwing cannot show this file.
 t1ef504d9 = packwing không hiển thị được tệp này.
 
