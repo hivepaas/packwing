@@ -3559,26 +3559,8 @@ t1ef504d9 = packwing не может показать этот файл.
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = В packwing Free можно подключить одно хранилище по сети. Pro снимает это ограничение.
 
-# Buy Pro · {price}
-t93567162 = Купить Pro · { $price }
-
-# Buy Pro
-t1bdcbb74 = Купить Pro
-
 # Every feature, and one storage across a network.
 t0ccb5824 = Все функции и одно хранилище по сети.
-
-# Bought
-t5c52217e = Куплено
-
-# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
-t4294db10 = App Store не продаёт Pro в вашей стране или регионе. Pro, купленный с этим Apple ID в другой стране, по-прежнему можно восстановить.
-
-# Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
-t8bc438f1 = Pro, купленный один раз в App Store: ваш на каждом iPhone, iPad и Mac с вашим Apple ID.
-
-# The App Store found nothing bought with this Apple Account.
-tf996dc19 = App Store не нашёл покупок с этим Apple ID.
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing больше не может получить доступ к { $name }. Откройте его снова, чтобы заглянуть внутрь.

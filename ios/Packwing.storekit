@@ -1,27 +1,69 @@
 {
   "identifier" : "6F7A3D1E",
   "nonRenewingSubscriptions" : [ ],
-  "products" : [
+  "products" : [ ],
+  "settings" : {
+    "_failTransactionsEnabled" : false
+  },
+  "subscriptionGroups" : [
     {
-      "displayPrice" : "9.99",
-      "familyShareable" : false,
-      "internalID" : "6834749001",
+      "id" : "5B1E9C40",
       "localizations" : [
         {
-          "description" : "Unlocks every Pro feature of packwing, for good.",
+          "description" : "Every feature of packwing, and any number of storages.",
           "displayName" : "packwing Pro",
           "locale" : "en_US"
         }
       ],
-      "productID" : "com.hivepaas.packwing.pro",
-      "referenceName" : "packwing Pro",
-      "type" : "NonConsumable"
+      "name" : "packwing Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [ ],
+          "codeOffers" : [ ],
+          "displayPrice" : "8.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6834749003",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "packwing Pro for a year, renewed until cancelled.",
+              "displayName" : "packwing Pro, yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.hivepaas.packwing.pro.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "packwing Pro yearly",
+          "subscriptionGroupID" : "5B1E9C40",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [ ]
+        },
+        {
+          "adHocOffers" : [ ],
+          "codeOffers" : [ ],
+          "displayPrice" : "0.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6834749002",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "packwing Pro for a month, renewed until cancelled.",
+              "displayName" : "packwing Pro, monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.hivepaas.packwing.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "packwing Pro monthly",
+          "subscriptionGroupID" : "5B1E9C40",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [ ]
+        }
+      ]
     }
   ],
-  "settings" : {
-    "_failTransactionsEnabled" : false
-  },
-  "subscriptionGroups" : [ ],
   "version" : {
     "major" : 4,
     "minor" : 0

@@ -3412,26 +3412,8 @@ t1ef504d9 = packwing 无法显示此文件。
 # packwing Free keeps one storage across a network. Pro lifts this.
 tf72ae001 = packwing 免费版只能使用一个网络存储。Pro 可取消此限制。
 
-# Buy Pro · {price}
-t93567162 = 购买 Pro · { $price }
-
-# Buy Pro
-t1bdcbb74 = 购买 Pro
-
 # Every feature, and one storage across a network.
 t0ccb5824 = 所有功能，以及一个网络存储。
-
-# Bought
-t5c52217e = 已购买
-
-# The App Store does not sell Pro in your country or region. Pro bought with this Apple Account in another one can still be restored.
-t4294db10 = 你所在国家或地区的 App Store 不销售 Pro。使用此 Apple 账户在其他国家或地区购买的 Pro 仍可恢复。
-
-# Pro, bought once in the App Store: yours on every iPhone, iPad and Mac with your Apple Account.
-t8bc438f1 = 在 App Store 购买一次的 Pro：在使用你 Apple 账户的每台 iPhone、iPad 和 Mac 上都归你所有。
-
-# The App Store found nothing bought with this Apple Account.
-tf996dc19 = App Store 未找到用此 Apple 账户购买的项目。
 
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing 已无法访问 { $name }。请重新打开它以查看内容。
