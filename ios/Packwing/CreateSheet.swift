@@ -73,6 +73,8 @@ struct CreateSheet: View {
     let draft: NewArchiveDraft
     @AppStorage("newFormat") private var formatKey = ArchiveFormat.zip.key
     @AppStorage("newCompression") private var levelKey = CompressionLevel.medium.key
+    @AppStorage("storeCompressed") private var storeCompressed = true
+    @AppStorage("skipMacFiles") private var skipMacFiles = true
     /// A format for one file (`.gz`), chosen for this one: not kept as the
     /// format of new archives, which Settings offers only of those for many.
     @State private var oneFileKey: String?
@@ -449,7 +451,9 @@ struct CreateSheet: View {
             password: locked && !encryptsToKeys ? password : nil,
             hideNames: locked && hideNames && format == .sevenZip,
             partSize: partSize,
-            ageKeys: ageKeys)
+            ageKeys: ageKeys,
+            storeCompressed: storeCompressed,
+            skipMacFiles: skipMacFiles)
         let name = fileName
         if let toStorage {
             model.afterSheet = { [model, draft] in

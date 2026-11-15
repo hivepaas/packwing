@@ -6,12 +6,13 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use packwing_mobile::{
-    Archive, ArchiveFormat, Asks, Checksum, ChecksumKind, Compared, CompressionLevel, FileVerdict,
-    Job, JobListener, JobProgress, MobileError, NewArchiveHow, OnExisting, PastedCompared,
-    RemoteStorage, Secrets, SignatureState, SshQuestions, TypedSecret, age_key_is_post_quantum,
-    age_key_problem, age_keys_in, archive_formats, ask_ssh_with, check_key_file, checksum_kinds,
-    checksum_list, checksum_list_name, compare_checksum, compare_pasted, create_archive,
-    describe_storage, read_key, start, stem, storage_kinds, transfer_items,
+    Archive, ArchiveFormat, Asks, Checksum, ChecksumKind, Compared, CompressionLevel, ExtractHow,
+    FileVerdict, Job, JobListener, JobProgress, MobileError, NewArchiveHow, OnExisting,
+    PastedCompared, RemoteStorage, Secrets, SignatureState, SshQuestions, TypedSecret,
+    age_key_is_post_quantum, age_key_problem, age_keys_in, archive_formats, ask_ssh_with,
+    check_key_file, checksum_kinds, checksum_list, checksum_list_name, compare_checksum,
+    compare_pasted, create_archive, describe_storage, read_key, start, stem, storage_kinds,
+    transfer_items,
 };
 
 /// A folder of files to make archives of: `Báo cáo/tổng hợp.txt` and
@@ -39,6 +40,7 @@ fn make(dir: &Path, format: ArchiveFormat, password: Option<&str>, hide_names: b
             hide_names,
             part_size: None,
             age_keys: vec![],
+            ..NewArchiveHow::default()
         },
         Job::quiet(),
     )
@@ -796,6 +798,7 @@ fn a_storage_is_written_to_from_the_phone() {
                 hide_names: false,
                 part_size: None,
                 age_keys: vec![],
+                ..NewArchiveHow::default()
             },
             Job::quiet(),
         )
@@ -852,6 +855,7 @@ fn every_format_the_desktop_makes_is_made_and_opened_again() {
                     hide_names: false,
                     part_size: None,
                     age_keys: vec![],
+                    ..NewArchiveHow::default()
                 },
                 Job::quiet(),
             )
@@ -979,4 +983,62 @@ fn a_new_age_file_is_encrypted_to_public_keys() {
     )
     .expect("opened with the key");
     assert!(archive.info().files >= 1);
+}
+
+#[test]
+fn what_only_a_mac_uses_is_left_out_unless_asked_and_a_limit_stops_a_bomb() {
+    let dir = tempfile::tempdir().expect("dir");
+    let folder = files(dir.path());
+    fs::write(format!("{folder}/.DS_Store"), "mac").expect("file");
+    let names = |skip_mac_files: bool| {
+        let wanted = dir.path().join(format!("mac-{skip_mac_files}.zip"));
+        let made = create_archive(
+            vec![folder.clone()],
+            wanted.display().to_string(),
+            NewArchiveHow {
+                skip_mac_files,
+                ..NewArchiveHow::default()
+            },
+            Job::quiet(),
+        )
+        .expect("made");
+        let archive =
+            Archive::open(made.clone(), Secrets::default(), Job::quiet()).expect("opened");
+        let names: Vec<String> = archive
+            .children(vec!["Báo cáo".to_owned()])
+            .into_iter()
+            .map(|e| e.name)
+            .collect();
+        (made, names)
+    };
+    let (_, left_out) = names(true);
+    assert!(!left_out.contains(&".DS_Store".to_owned()), "{left_out:?}");
+    let (made, kept) = names(false);
+    assert!(kept.contains(&".DS_Store".to_owned()), "{kept:?}");
+
+    // 3 kB of files, against a limit of 1 kB: stopped; with none, extracted.
+    let archive = Archive::open(made, Secrets::default(), Job::quiet()).expect("opened");
+    let out = dir.path().join("out");
+    let stopped = archive.extract(
+        out.display().to_string(),
+        vec![],
+        ExtractHow {
+            limit: 1_000,
+            ..ExtractHow::default()
+        },
+        Job::quiet(),
+    );
+    assert!(stopped.is_err());
+    let out = dir.path().join("out-all");
+    archive
+        .extract(
+            out.display().to_string(),
+            vec![],
+            ExtractHow {
+                limit: 0,
+                ..ExtractHow::default()
+            },
+            Job::quiet(),
+        )
+        .expect("no limit");
 }

@@ -334,12 +334,25 @@ pub struct FoundRow {
 }
 
 /// How an archive is extracted.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, uniffi::Record)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, uniffi::Record)]
 pub struct ExtractHow {
     /// Replaces a file that is there; otherwise one stops the job, before
     /// anything is written.
     #[uniffi(default = false)]
     pub overwrite: bool,
+    /// The most it may write, in bytes: what stops an archive bomb. 0 for no
+    /// limit, but the ratio of written to compressed stays.
+    #[uniffi(default = 100000000000)]
+    pub limit: u64,
+}
+
+impl Default for ExtractHow {
+    fn default() -> ExtractHow {
+        ExtractHow {
+            overwrite: false,
+            limit: 100_000_000_000,
+        }
+    }
 }
 
 /// What was extracted.
@@ -466,6 +479,7 @@ impl Archive {
         let destination = PathBuf::from(destination);
         let options = ExtractOptions {
             overwrite: how.overwrite,
+            limit: (how.limit > 0).then_some(how.limit),
             // No quarantine to keep on a phone.
             keep_mark: false,
             ..ExtractOptions::default()
@@ -652,7 +666,7 @@ impl CompressionLevel {
 }
 
 /// How a new archive is made.
-#[derive(Clone, Debug, Default, PartialEq, Eq, uniffi::Record)]
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
 pub struct NewArchiveHow {
     pub format: ArchiveFormat,
     pub compression: CompressionLevel,
@@ -671,6 +685,28 @@ pub struct NewArchiveHow {
     /// keys), in place of a passphrase: formats other than ZIP and 7z.
     #[uniffi(default = [])]
     pub age_keys: Vec<String>,
+    /// What is compressed already (pictures, video, sound, archives) goes in
+    /// as it is, in ZIP and 7z.
+    #[uniffi(default = true)]
+    pub store_compressed: bool,
+    /// What only a Mac uses (`.DS_Store`, `__MACOSX`, resource forks) is left out.
+    #[uniffi(default = true)]
+    pub skip_mac_files: bool,
+}
+
+impl Default for NewArchiveHow {
+    fn default() -> NewArchiveHow {
+        NewArchiveHow {
+            format: ArchiveFormat::default(),
+            compression: CompressionLevel::default(),
+            password: None,
+            hide_names: false,
+            part_size: None,
+            age_keys: Vec::new(),
+            store_compressed: true,
+            skip_mac_files: true,
+        }
+    }
 }
 
 /// Makes an archive of `paths` (files and folders) at `wanted`, or beside it
@@ -709,11 +745,15 @@ impl NewArchiveHow {
             hide_names: how.hide_names && how.format == ArchiveFormat::SevenZip,
             part_size: how.part_size,
             age_keys: how.age_keys,
-            stored_extensions: COMPRESSED_EXTENSIONS
-                .iter()
-                .map(|e| e.to_string())
-                .collect(),
-            skip_mac_files: true,
+            stored_extensions: if how.store_compressed {
+                COMPRESSED_EXTENSIONS
+                    .iter()
+                    .map(|e| e.to_string())
+                    .collect()
+            } else {
+                Vec::new()
+            },
+            skip_mac_files: how.skip_mac_files,
             ..NewArchive::default()
         }
     }
