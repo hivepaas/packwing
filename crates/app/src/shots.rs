@@ -22,7 +22,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 115] = [
+const SCREENS: [(&str, SetUp); 117] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -102,6 +102,29 @@ const SCREENS: [(&str, SetUp); 115] = [
         dialog.update(cx, |d, cx| {
             d.read_for_test(ChecksumScope::Picked, cx);
             d.save_for_test(cx);
+        });
+    }),
+    // A list pasted, compared with them: all as it says, then one changed, one
+    // gone, and one it has that the archive does not.
+    ("archive-checksums-compared", |ws, window, cx| {
+        let dialog = open_for_checksums(ws, None, window, cx);
+        dialog.update(cx, |d, cx| {
+            d.read_for_test(ChecksumScope::All, cx);
+            let list = d.list_for_test();
+            d.compare_for_test(&list, false, cx);
+        });
+    }),
+    ("archive-checksums-compared-differs", |ws, window, cx| {
+        let dialog = open_for_checksums(ws, None, window, cx);
+        dialog.update(cx, |d, cx| {
+            d.read_for_test(ChecksumScope::All, cx);
+            let mut lines: Vec<String> = d.list_for_test().lines().map(str::to_owned).collect();
+            let (_, name) = lines[0].split_once("  ").expect("a line");
+            lines[0] = format!("{}  {name}", "0".repeat(64));
+            lines.remove(1);
+            lines.push(format!("{}  docs/receipts.pdf", "1".repeat(64)));
+            d.compare_for_test(&lines.join("\n"), false, cx);
+            d.show_for_test(0, cx);
         });
     }),
     ("storages-signed", |ws, _, cx| {

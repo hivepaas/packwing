@@ -151,6 +151,9 @@ ta24f28a2 = Nhập khoá giấy phép
 # Save
 t4d2d5d68 = Lưu
 
+# Paste the checksums given with the files
+ta41136a2 = Dán các checksum đi kèm các tệp
+
 # The file could not be read: {why}
 t5daa8455 = Không đọc được tệp: { $why }
 
@@ -192,6 +195,57 @@ t658f3664 = Sao chép
 
 # weak
 tedbc2ec9 = yếu
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = Không khớp với checksum { $name } của tệp: đây không phải tệp đã tạo ra checksum đó, hoặc tệp đã bị thay đổi trên đường đến.
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = Đây không phải checksum mà packwing tạo: nó có { $digits } chữ số.
+
+# The list does not name it.
+tc591042a = Danh sách không có tệp này.
+
+# There is no checksum in this.
+t231f838a = Trong này không có checksum nào.
+
+# Every file matches the list.
+ta40a82de = Mọi tệp đều khớp với danh sách.
+
+# {count} file matches | {count} files match
+t551e3494 =
+    { $n ->
+       *[other] { $count } tệp khớp
+    }
+
+# {count} file differs | {count} files differ
+t94a87b3f =
+    { $n ->
+       *[other] { $count } tệp không khớp
+    }
+
+# {count} file is not in the list | {count} files are not in the list
+t8c19e4ca =
+    { $n ->
+       *[other] { $count } tệp không có trong danh sách
+    }
+
+# {count} line names a file it does not hold: {names} | {count} lines name files it does not hold: {names}
+tcc7922ad =
+    { $n ->
+       *[other] { $count } dòng nêu tệp không có trong đó: { $names }
+    }
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Có thể đây là checksum { $name }, loại chưa được tạo.
+
+# Make it
+tcbefe458 = Tạo
+
+# Show only those that do not match
+t24246609 = Chỉ hiện những tệp không khớp
+
+# Compare with
+tbddcfc14 = So sánh với
 
 # Reading… {size} of {size2}
 t80036d1c = Đang đọc… { $size } / { $size2 }
@@ -235,6 +289,9 @@ t846ddfa1 = Lưu vào…
 # Checksums in {name}
 t71a5c5d3 = Checksum trong { $name }
 
+# Compare…
+tec85be80 = So sánh…
+
 # Done
 t8dd31791 = Xong
 
@@ -247,38 +304,17 @@ t8333758c = Dán checksum đi kèm tệp
 # Reading…
 t6aad8485 = Đang đọc…
 
-# There is no checksum in this.
-t231f838a = Trong này không có checksum nào.
-
-# This is not a checksum packwing makes: it has {digits} digits.
-t65dd697c = Đây không phải checksum mà packwing tạo: nó có { $digits } chữ số.
-
 # It matches the file’s {name} checksum.
 t4f0350e4 = Khớp với checksum { $name } của tệp.
 
 # It is compared once the file is read.
 tcb5c1745 = Sẽ so sánh khi đã đọc xong tệp.
 
-# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
-t55d6aeb7 = Không khớp với checksum { $name } của tệp: đây không phải tệp đã tạo ra checksum đó, hoặc tệp đã bị thay đổi trên đường đến.
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = Có thể đây là checksum { $name }, loại chưa được tạo.
-
-# Make it
-tcbefe458 = Tạo
-
-# Compare with
-tbddcfc14 = So sánh với
-
 # Checksums of {name}
 te88f3ed9 = Checksum của { $name }
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = Đã lưu cạnh tệp thành { $files }; sha256sum -c và các công cụ tương tự kiểm tra được mà không cần packwing.
-
-# Compare…
-tec85be80 = So sánh…
 
 # Nothing chosen yet
 tcf390b0a = Chưa chọn gì

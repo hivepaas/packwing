@@ -153,6 +153,9 @@ ta24f28a2 = Lizenzschlüssel eingeben
 # Save
 t4d2d5d68 = Speichern
 
+# Paste the checksums given with the files
+ta41136a2 = Füge die Prüfsummen ein, die mit den Dateien kamen
+
 # The file could not be read: {why}
 t5daa8455 = Die Datei konnte nicht gelesen werden: { $why }
 
@@ -194,6 +197,61 @@ t658f3664 = Kopieren
 
 # weak
 tedbc2ec9 = schwach
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = Sie passt nicht zur { $name }-Prüfsumme der Datei: Das ist nicht die Datei, aus der sie gebildet wurde, oder die Datei hat sich unterwegs verändert.
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = Das ist keine Prüfsumme, die packwing bildet: Sie hat { $digits } Stellen.
+
+# The list does not name it.
+tc591042a = Die Liste nennt sie nicht.
+
+# There is no checksum in this.
+t231f838a = Darin ist keine Prüfsumme.
+
+# Every file matches the list.
+ta40a82de = Jede Datei stimmt mit der Liste überein.
+
+# {count} file matches | {count} files match
+t551e3494 =
+    { $n ->
+        [one] { $count } Datei stimmt überein
+       *[other] { $count } Dateien stimmen überein
+    }
+
+# {count} file differs | {count} files differ
+t94a87b3f =
+    { $n ->
+        [one] { $count } Datei weicht ab
+       *[other] { $count } Dateien weichen ab
+    }
+
+# {count} file is not in the list | {count} files are not in the list
+t8c19e4ca =
+    { $n ->
+        [one] { $count } Datei steht nicht in der Liste
+       *[other] { $count } Dateien stehen nicht in der Liste
+    }
+
+# {count} line names a file it does not hold: {names} | {count} lines name files it does not hold: {names}
+tcc7922ad =
+    { $n ->
+        [one] { $count } Zeile nennt eine Datei, die es nicht enthält: { $names }
+       *[other] { $count } Zeilen nennen Dateien, die es nicht enthält: { $names }
+    }
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Es könnte eine { $name }-Prüfsumme sein, die noch nicht gebildet ist.
+
+# Make it
+tcbefe458 = Bilden
+
+# Show only those that do not match
+t24246609 = Nur die nicht übereinstimmenden zeigen
+
+# Compare with
+tbddcfc14 = Vergleichen mit
 
 # Reading… {size} of {size2}
 t80036d1c = Wird gelesen… { $size } von { $size2 }
@@ -238,6 +296,9 @@ t846ddfa1 = Speichern in…
 # Checksums in {name}
 t71a5c5d3 = Prüfsummen in { $name }
 
+# Compare…
+tec85be80 = Vergleichen…
+
 # Done
 t8dd31791 = Fertig
 
@@ -250,38 +311,17 @@ t8333758c = Füge die Prüfsumme ein, die mit der Datei kam
 # Reading…
 t6aad8485 = Wird gelesen…
 
-# There is no checksum in this.
-t231f838a = Darin ist keine Prüfsumme.
-
-# This is not a checksum packwing makes: it has {digits} digits.
-t65dd697c = Das ist keine Prüfsumme, die packwing bildet: Sie hat { $digits } Stellen.
-
 # It matches the file’s {name} checksum.
 t4f0350e4 = Sie passt zur { $name }-Prüfsumme der Datei.
 
 # It is compared once the file is read.
 tcb5c1745 = Verglichen wird, sobald die Datei gelesen ist.
 
-# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
-t55d6aeb7 = Sie passt nicht zur { $name }-Prüfsumme der Datei: Das ist nicht die Datei, aus der sie gebildet wurde, oder die Datei hat sich unterwegs verändert.
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = Es könnte eine { $name }-Prüfsumme sein, die noch nicht gebildet ist.
-
-# Make it
-tcbefe458 = Bilden
-
-# Compare with
-tbddcfc14 = Vergleichen mit
-
 # Checksums of {name}
 te88f3ed9 = Prüfsummen von { $name }
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = Daneben gespeichert als { $files }, wo sha256sum -c und Ähnliche sie ohne packwing prüfen.
-
-# Compare…
-tec85be80 = Vergleichen…
 
 # Nothing chosen yet
 tcf390b0a = Noch nichts ausgewählt

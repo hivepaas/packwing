@@ -151,6 +151,9 @@ ta24f28a2 = Masukkan kunci lisensi
 # Save
 t4d2d5d68 = Simpan
 
+# Paste the checksums given with the files
+ta41136a2 = Tempel checksum yang diberikan bersama berkas-berkasnya
+
 # The file could not be read: {why}
 t5daa8455 = Berkas tidak dapat dibaca: { $why }
 
@@ -192,6 +195,57 @@ t658f3664 = Salin
 
 # weak
 tedbc2ec9 = lemah
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = Tidak cocok dengan checksum { $name } berkas: ini bukan berkas asal checksum itu, atau berkas berubah di perjalanan.
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = Ini bukan checksum yang dibuat packwing: panjangnya { $digits } digit.
+
+# The list does not name it.
+tc591042a = Daftar tidak menyebutkannya.
+
+# There is no checksum in this.
+t231f838a = Tidak ada checksum di sini.
+
+# Every file matches the list.
+ta40a82de = Setiap berkas cocok dengan daftar.
+
+# {count} file matches | {count} files match
+t551e3494 =
+    { $n ->
+       *[other] { $count } berkas cocok
+    }
+
+# {count} file differs | {count} files differ
+t94a87b3f =
+    { $n ->
+       *[other] { $count } berkas berbeda
+    }
+
+# {count} file is not in the list | {count} files are not in the list
+t8c19e4ca =
+    { $n ->
+       *[other] { $count } berkas tidak ada di daftar
+    }
+
+# {count} line names a file it does not hold: {names} | {count} lines name files it does not hold: {names}
+tcc7922ad =
+    { $n ->
+       *[other] { $count } baris menyebut berkas yang tidak ada di dalamnya: { $names }
+    }
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Mungkin ini checksum { $name }, yang belum dibuat.
+
+# Make it
+tcbefe458 = Buat
+
+# Show only those that do not match
+t24246609 = Tampilkan hanya yang tidak cocok
+
+# Compare with
+tbddcfc14 = Bandingkan dengan
 
 # Reading… {size} of {size2}
 t80036d1c = Membaca… { $size } dari { $size2 }
@@ -235,6 +289,9 @@ t846ddfa1 = Simpan di…
 # Checksums in {name}
 t71a5c5d3 = Checksum dalam { $name }
 
+# Compare…
+tec85be80 = Bandingkan…
+
 # Done
 t8dd31791 = Selesai
 
@@ -247,38 +304,17 @@ t8333758c = Tempel checksum yang diberikan bersama berkas
 # Reading…
 t6aad8485 = Membaca…
 
-# There is no checksum in this.
-t231f838a = Tidak ada checksum di sini.
-
-# This is not a checksum packwing makes: it has {digits} digits.
-t65dd697c = Ini bukan checksum yang dibuat packwing: panjangnya { $digits } digit.
-
 # It matches the file’s {name} checksum.
 t4f0350e4 = Cocok dengan checksum { $name } berkas.
 
 # It is compared once the file is read.
 tcb5c1745 = Dibandingkan setelah berkas selesai dibaca.
 
-# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
-t55d6aeb7 = Tidak cocok dengan checksum { $name } berkas: ini bukan berkas asal checksum itu, atau berkas berubah di perjalanan.
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = Mungkin ini checksum { $name }, yang belum dibuat.
-
-# Make it
-tcbefe458 = Buat
-
-# Compare with
-tbddcfc14 = Bandingkan dengan
-
 # Checksums of {name}
 te88f3ed9 = Checksum { $name }
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = Disimpan di sampingnya sebagai { $files }, yang bisa diperiksa sha256sum -c dan sejenisnya tanpa packwing.
-
-# Compare…
-tec85be80 = Bandingkan…
 
 # Nothing chosen yet
 tcf390b0a = Belum ada yang dipilih

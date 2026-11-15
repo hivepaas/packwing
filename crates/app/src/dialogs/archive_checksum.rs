@@ -11,26 +11,28 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
 use gpui::{
-    AnyElement, App, ClipboardItem, Context, Div, Entity, EventEmitter, FocusHandle, FontWeight,
-    KeyDownEvent, PathPromptOptions, Render, ScrollHandle, ScrollStrategy, SharedString, Stateful,
-    Subscription, Task, UniformListScrollHandle, Window, div, prelude::*, relative, rgb,
-    uniform_list,
+    AnyElement, ClipboardItem, Context, Div, Entity, EventEmitter, FocusHandle, Focusable as _,
+    FontWeight, KeyDownEvent, PathPromptOptions, Render, ScrollHandle, ScrollStrategy,
+    SharedString, Stateful, Subscription, Task, UniformListScrollHandle, Window, div, prelude::*,
+    relative, rgb, uniform_list,
 };
 use packwing_core::{
-    Algorithm, Cancel, Control, EntryChecksums, Error, LocalFolder, Progress, Storage,
-    checksum_list, entry_checksums, save_checksum_list,
+    Algorithm, Cancel, Control, EntryChecksums, Error, ListCompared, Listed, LocalFolder, Progress,
+    Storage, Verdict, checksum_in, checksum_list, checksum_list_in, compare_list, entry_checksums,
+    save_checksum_list,
 };
 
 use super::{ChecksumDialog, DialogEvent, footer, header};
 use crate::colors::colors;
+use crate::input::{Changed, TextInput};
 use crate::list_keys;
 use crate::model::{Archive, count, size};
 use crate::prefs;
 use crate::scrollbar::{scrollbar, well_bar};
 use crate::text_size::ui;
 use crate::widgets::{
-    Fill, Size, Tone, button, icon_button, legend, mono_font, note, option_card, tip, titled,
-    tonal_tint,
+    Fill, Size, Tone, button, check_row, icon, icon_button, legend, mono_font, note, option_card,
+    tip, titled, tonal_tint,
 };
 
 /// How often the bytes read are shown again.
@@ -98,6 +100,50 @@ enum Copied {
     All,
 }
 
+/// What a list pasted says.
+enum Pasted {
+    /// Nothing in it is a checksum.
+    NotOne,
+    Compared(ListCompared),
+}
+
+/// What a file's row shows of what the list says of it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Mark {
+    Matches,
+    Differs,
+    /// The list's is of a length none made has: it may be one not made yet.
+    Maybe,
+    NotListed,
+}
+
+impl Mark {
+    fn of(verdict: &Verdict) -> Mark {
+        match verdict {
+            Verdict::Matches(_) => Mark::Matches,
+            // Of none made of its length: it may be one not made yet.
+            Verdict::Differs { made, .. } if made.is_empty() => Mark::Maybe,
+            Verdict::Differs { .. } | Verdict::Unknown(_) => Mark::Differs,
+            Verdict::NotListed => Mark::NotListed,
+        }
+    }
+
+    fn key(self) -> &'static str {
+        match self {
+            Mark::Matches => "matches",
+            Mark::Differs => "differs",
+            Mark::Maybe => "maybe",
+            Mark::NotListed => "not-listed",
+        }
+    }
+}
+
+/// Names, apart by slashes: they are not words to translate.
+fn names(algorithms: &[Algorithm]) -> String {
+    let named: Vec<_> = algorithms.iter().map(|a| a.name()).collect();
+    named.join(" / ")
+}
+
 enum Stage {
     Choosing,
     /// The archive's own file, as the Storages page shows one.
@@ -133,15 +179,34 @@ pub struct ArchiveChecksumDialog {
     saving: bool,
     /// The files they were kept in, the last time.
     saved: Vec<String>,
+    /// Made too, as a list pasted asked: not shown in Settings › Security.
+    more: Vec<Algorithm>,
+    /// The field for a list to compare is shown.
+    comparing: bool,
+    pasted: Entity<TextInput>,
+    /// What the list pasted says, once they are made.
+    compared: Option<Pasted>,
+    /// Only the files that are not as the list says are listed.
+    only_differing: bool,
     mono: Option<SharedString>,
+    _typing: Subscription,
 }
 
 impl EventEmitter<DialogEvent> for ArchiveChecksumDialog {}
 
 impl ArchiveChecksumDialog {
     /// For `archive`, read through, with `selection` selected in it.
-    pub fn new(archive: Archive, selection: Selected, inside: bool, cx: &mut App) -> Self {
+    pub fn new(
+        archive: Archive,
+        selection: Selected,
+        inside: bool,
+        cx: &mut Context<Self>,
+    ) -> Self {
         let scope = first_scope(&selection);
+        let pasted = cx.new(|cx| {
+            TextInput::said(|| tr!("Paste the checksums given with the files"), cx).multiline(2, 6)
+        });
+        let typing = cx.subscribe(&pasted, |this, _, _: &Changed, cx| this.compare(cx));
         ArchiveChecksumDialog {
             archive,
             selection,
@@ -159,7 +224,13 @@ impl ArchiveChecksumDialog {
             copied: None,
             saving: false,
             saved: Vec::new(),
+            more: Vec::new(),
+            comparing: false,
+            pasted,
+            compared: None,
+            only_differing: false,
             mono: None,
+            _typing: typing,
         }
     }
 
@@ -174,7 +245,7 @@ impl ArchiveChecksumDialog {
             }
             return;
         }
-        self.algorithms = shown_algorithms(cx);
+        self.algorithms = self.wanted(cx);
         self.stage = Stage::Files;
         let source = self.archive.source.clone().expect("a file of its own");
         let made = entry_checksums(
@@ -262,7 +333,7 @@ impl ArchiveChecksumDialog {
             return;
         };
         self.stage = Stage::Files;
-        self.algorithms = shown_algorithms(cx);
+        self.algorithms = self.wanted(cx);
         self.problem = None;
         let (read, total) = (Arc::new(AtomicU64::new(0)), Arc::new(AtomicU64::new(0)));
         let cancel = Cancel::new();
@@ -310,8 +381,11 @@ impl ArchiveChecksumDialog {
         match result {
             Ok(made) => {
                 // One file alone: all of its checksums are shown.
-                self.shown = (made.files.len() == 1).then_some(0);
+                if self.made.is_none() {
+                    self.shown = (made.files.len() == 1).then_some(0);
+                }
                 self.made = Some(made);
+                self.compare(cx);
             }
             Err(Error::Cancelled) => {}
             Err(e) => self.problem = Some(tr!("The file could not be read: {why}", why = e)),
@@ -321,16 +395,106 @@ impl ArchiveChecksumDialog {
 
     /// Up and Down, Page Up and Page Down, Home and End move the file shown,
     /// as they move the chosen row of a list (see [`list_keys`]).
-    fn on_key(&mut self, e: &KeyDownEvent, _: &mut Window, cx: &mut Context<Self>) {
-        let len = self.made.as_ref().map_or(0, |m| m.files.len());
-        let page = list_keys::rows_per_page(&self.scroll, len);
-        let Some(to) = list_keys::moved(e.keystroke.key.as_str(), self.shown, len, page) else {
+    fn on_key(&mut self, e: &KeyDownEvent, window: &mut Window, cx: &mut Context<Self>) {
+        // In the field, they move in what was pasted.
+        if self.pasted.focus_handle(cx).is_focused(window) {
+            return;
+        }
+        let listed = self.listed();
+        let from = self.shown.and_then(|s| listed.iter().position(|i| *i == s));
+        let page = list_keys::rows_per_page(&self.scroll, listed.len());
+        let key = e.keystroke.key.as_str();
+        let Some(to) = list_keys::moved(key, from, listed.len(), page) else {
             return;
         };
-        self.shown = Some(to);
+        self.shown = Some(listed[to]);
         self.scroll.scroll_to_item(to, ScrollStrategy::Nearest);
         cx.stop_propagation();
         cx.notify();
+    }
+
+    /// Those Settings › Security shows, and those a list pasted asked for.
+    fn wanted(&self, cx: &gpui::App) -> Vec<Algorithm> {
+        let mut wanted = shown_algorithms(cx);
+        wanted.extend(self.more.iter().copied());
+        Algorithm::ALL
+            .into_iter()
+            .filter(|a| wanted.contains(a))
+            .collect()
+    }
+
+    /// The files listed, by where they are in what was made: all of them, or
+    /// those the list pasted does not say are as it says.
+    fn listed(&self) -> Vec<usize> {
+        let n = self.made.as_ref().map_or(0, |m| m.files.len());
+        match (&self.compared, self.only_differing) {
+            (Some(Pasted::Compared(c)), true) => (0..n)
+                .filter(|i| !matches!(c.verdicts.get(*i), Some(Verdict::Matches(_))))
+                .collect(),
+            _ => (0..n).collect(),
+        }
+    }
+
+    /// What the list pasted says of the file at `i`.
+    fn verdict(&self, i: usize) -> Option<&Verdict> {
+        match &self.compared {
+            Some(Pasted::Compared(c)) => c.verdicts.get(i),
+            _ => None,
+        }
+    }
+
+    /// The list pasted, compared with them again.
+    fn compare(&mut self, cx: &mut Context<Self>) {
+        let text = self.pasted.read(cx).text().to_owned();
+        self.compared = match &self.made {
+            Some(made) if !text.trim().is_empty() => {
+                let mut listed = checksum_list_in(&text);
+                // A checksum alone, of the one file there is.
+                if listed.is_empty()
+                    && let [one] = made.files.as_slice()
+                    && let Some(sum) = checksum_in(&text, &one.name)
+                {
+                    listed.push(Listed {
+                        sum,
+                        name: one.name.clone(),
+                    });
+                }
+                Some(if listed.is_empty() {
+                    Pasted::NotOne
+                } else {
+                    Pasted::Compared(compare_list(&made.files, &listed))
+                })
+            }
+            _ => None,
+        };
+        cx.notify();
+    }
+
+    /// Reads them all again, with `more` made too, as the list pasted may
+    /// hold checksums of those.
+    fn make_more(&mut self, more: Vec<Algorithm>, cx: &mut Context<Self>) {
+        if self.reading.is_some() {
+            return;
+        }
+        self.more.extend(more);
+        self.start(cx);
+    }
+
+    /// Shows the field for a list, with `pasted` in it, as the screenshots draw it.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn compare_for_test(&mut self, pasted: &str, only_differing: bool, cx: &mut Context<Self>) {
+        self.comparing = true;
+        self.only_differing = only_differing;
+        self.pasted.update(cx, |f, cx| {
+            f.set_text(pasted, pasted.len()..pasted.len(), cx)
+        });
+        self.compare(cx);
+    }
+
+    /// The list of their first checksums, as Copy all copies one.
+    #[cfg(all(test, feature = "shots"))]
+    pub fn list_for_test(&self) -> String {
+        checksum_list(&self.made.as_ref().expect("read").files, self.algorithms[0])
     }
 
     fn copy(&mut self, which: Copied, text: String, cx: &mut Context<Self>) {
@@ -580,15 +744,23 @@ impl ArchiveChecksumDialog {
                     .text_color(rgb(if on { c.on_tonal } else { c.muted }))
                     .child(size(file.size)),
             )
+            .children(self.verdict(i).map(|v| mark_view(Mark::of(v), i)))
             .into_any_element()
     }
 
     /// The file shown: each of its checksums, with Copy.
     fn shown_file(&self, mono: SharedString, cx: &mut Context<Self>) -> Option<Div> {
         let c = colors();
-        let file = self.made.as_ref()?.files.get(self.shown?)?;
+        let at = self.shown?;
+        let file = self.made.as_ref()?.files.get(at)?;
+        let verdict = self.verdict(at).cloned();
+        let matched = match &verdict {
+            Some(Verdict::Matches(a)) => Some(*a),
+            _ => None,
+        };
         let rows = file.sums.iter().map(|(algorithm, sum)| {
             let (algorithm, sum) = (*algorithm, sum.clone());
+            let on = matched == Some(algorithm);
             let copy = if self.copied == Some(Copied::Shown(algorithm)) {
                 tr!("Copied")
             } else {
@@ -602,7 +774,7 @@ impl ArchiveChecksumDialog {
                 .px(ui(16.))
                 .py(ui(6.))
                 .rounded(ui(16.))
-                .bg(rgb(c.well))
+                .bg(rgb(if on { c.tonal } else { c.well }))
                 .child(
                     div()
                         .w(ui(84.))
@@ -611,8 +783,12 @@ impl ArchiveChecksumDialog {
                         .flex_col()
                         .child(
                             div()
+                                .flex()
+                                .items_center()
+                                .gap(ui(4.))
                                 .text_size(ui(14.))
                                 .font_weight(FontWeight::SEMIBOLD)
+                                .when(on, |d| d.child(icon("check", 16., c.accent)))
                                 .child(algorithm.name()),
                         )
                         .when(algorithm.is_weak(), |d| {
@@ -646,13 +822,226 @@ impl ArchiveChecksumDialog {
                     })),
                 )
         });
+        // What the list pasted says of it, but where it matches, as is shown.
+        let said = match verdict {
+            Some(Verdict::Differs { made, .. }) if !made.is_empty() => Some(
+                note(Tone::Bad)
+                    .child(tr!(
+                        "It does not match the file’s {name} checksum: this is not the \
+                         file it was made of, or the file changed on the way.",
+                        name = names(&made)
+                    ))
+                    .into_any_element(),
+            ),
+            Some(Verdict::Unknown(digits)) => Some(
+                note(Tone::Warn)
+                    .child(tr!(
+                        "This is not a checksum packwing makes: it has {digits} digits.",
+                        digits = digits
+                    ))
+                    .into_any_element(),
+            ),
+            Some(Verdict::NotListed) => Some(
+                div()
+                    .text_size(ui(13.))
+                    .text_color(rgb(c.muted))
+                    .child(tr!("The list does not name it."))
+                    .into_any_element(),
+            ),
+            _ => None,
+        };
         Some(
             div()
                 .flex()
                 .flex_col()
                 .gap(ui(6.))
                 .child(legend(file.name.clone()))
-                .children(rows),
+                .children(rows)
+                .children(said),
+        )
+    }
+
+    /// The field for a list of checksums to compare, and what it says.
+    fn compare_section(&self, mono: SharedString, cx: &mut Context<Self>) -> Option<Div> {
+        if !self.comparing {
+            return None;
+        }
+        let c = colors();
+        let mut said: Vec<AnyElement> = Vec::new();
+        match &self.compared {
+            None => {}
+            Some(Pasted::NotOne) => said.push(
+                note(Tone::Warn)
+                    .child(tr!("There is no checksum in this."))
+                    .into_any_element(),
+            ),
+            Some(Pasted::Compared(compared)) => {
+                let tally = |mark: Mark| {
+                    compared
+                        .verdicts
+                        .iter()
+                        .filter(|v| Mark::of(v) == mark)
+                        .count() as u64
+                };
+                let (matching, differing, unlisted) = (
+                    tally(Mark::Matches),
+                    tally(Mark::Differs),
+                    tally(Mark::NotListed),
+                );
+                if compared.all_match() {
+                    said.push(
+                        note(Tone::Good)
+                            .debug_selector(|| "checksum-all-match".to_owned())
+                            .flex()
+                            .items_center()
+                            .gap(ui(8.))
+                            .child(icon("check", 16., c.on_tonal))
+                            .child(tr!("Every file matches the list."))
+                            .into_any_element(),
+                    );
+                } else {
+                    let mut parts = vec![tr_n!(
+                        matching,
+                        "{count} file matches",
+                        "{count} files match",
+                        count = count(matching)
+                    )];
+                    if differing > 0 {
+                        parts.push(tr_n!(
+                            differing,
+                            "{count} file differs",
+                            "{count} files differ",
+                            count = count(differing)
+                        ));
+                    }
+                    if unlisted > 0 {
+                        parts.push(tr_n!(
+                            unlisted,
+                            "{count} file is not in the list",
+                            "{count} files are not in the list",
+                            count = count(unlisted)
+                        ));
+                    }
+                    let line = parts.join(" · ");
+                    said.push(if differing > 0 {
+                        note(Tone::Bad)
+                            .debug_selector(|| "checksum-differs".to_owned())
+                            .child(line)
+                            .into_any_element()
+                    } else {
+                        div()
+                            .debug_selector(|| "checksum-summary".to_owned())
+                            .text_size(ui(13.))
+                            .text_color(rgb(c.muted))
+                            .child(line)
+                            .into_any_element()
+                    });
+                }
+                if !compared.not_found.is_empty() {
+                    let n = compared.not_found.len() as u64;
+                    let first: Vec<&str> = compared
+                        .not_found
+                        .iter()
+                        .take(3)
+                        .map(String::as_str)
+                        .collect();
+                    said.push(
+                        note(Tone::Warn)
+                            .debug_selector(|| "checksum-not-found".to_owned())
+                            .child(tr_n!(
+                                n,
+                                "{count} line names a file it does not hold: {names}",
+                                "{count} lines name files it does not hold: {names}",
+                                count = count(n),
+                                names = first.join(", ")
+                            ))
+                            .into_any_element(),
+                    );
+                }
+                // Checksums of a length only those not made have, which it may be.
+                let not_made: Vec<Algorithm> = Algorithm::ALL
+                    .into_iter()
+                    .filter(|a| {
+                        compared.verdicts.iter().any(|v| {
+                            matches!(v, Verdict::Differs { made, not_made }
+                                if made.is_empty() && not_made.contains(a))
+                        })
+                    })
+                    .collect();
+                if !not_made.is_empty() && self.reading.is_none() {
+                    let asked = not_made.clone();
+                    said.push(
+                        div()
+                            .flex()
+                            .flex_wrap()
+                            .items_center()
+                            .gap(ui(8.))
+                            .child(
+                                div()
+                                    .flex_1()
+                                    .min_w(ui(200.))
+                                    .text_size(ui(13.))
+                                    .text_color(rgb(c.muted))
+                                    .child(tr!(
+                                        "It may be a {name} checksum, which is not made yet.",
+                                        name = names(&not_made)
+                                    )),
+                            )
+                            .child(
+                                button("checksum-make", tr!("Make it"), Fill::Tonal, Size::Medium)
+                                    .on_click(cx.listener(move |this, _, _, cx| {
+                                        this.make_more(asked.clone(), cx)
+                                    })),
+                            )
+                            .into_any_element(),
+                    );
+                }
+                if let Some(digits) = compared.verdicts.iter().find_map(|v| match v {
+                    Verdict::Unknown(d) => Some(*d),
+                    _ => None,
+                }) {
+                    said.push(
+                        note(Tone::Warn)
+                            .child(tr!(
+                                "This is not a checksum packwing makes: it has {digits} digits.",
+                                digits = digits
+                            ))
+                            .into_any_element(),
+                    );
+                }
+                if !compared.all_match() && matching > 0 {
+                    said.push(
+                        check_row(
+                            "checksum-only-differing",
+                            self.only_differing,
+                            tr!("Show only those that do not match"),
+                        )
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.only_differing = !this.only_differing;
+                            cx.notify();
+                        }))
+                        .into_any_element(),
+                    );
+                }
+            }
+        }
+        Some(
+            div()
+                .flex()
+                .flex_col()
+                .gap(ui(8.))
+                .child(legend(tr!("Compare with")))
+                .child(
+                    div()
+                        .px(ui(16.))
+                        .py(ui(10.))
+                        .rounded(ui(14.))
+                        .bg(rgb(c.field))
+                        .font_family(mono)
+                        .text_size(ui(13.))
+                        .child(self.pasted.clone()),
+                )
+                .children(said),
         )
     }
 
@@ -709,8 +1098,9 @@ impl ArchiveChecksumDialog {
                 )
         });
         let n = self.made.as_ref().map_or(0, |m| m.files.len());
-        let list = (n > 0).then(|| {
-            let rows = |most: usize| n.min(most) as f32 * ROW + 2. * WELL_PAD;
+        let in_list = self.listed().len();
+        let list = (in_list > 0).then(|| {
+            let rows = |most: usize| in_list.min(most) as f32 * ROW + 2. * WELL_PAD;
             // Shorter, where the window is, but never less than a few rows:
             // then what is under the header scrolls.
             div()
@@ -725,9 +1115,12 @@ impl ArchiveChecksumDialog {
                 .child(
                     uniform_list(
                         "checksum-files",
-                        n,
+                        in_list,
                         cx.processor(|this, range: Range<usize>, _, cx| {
-                            range.map(|i| this.file_row(i, cx)).collect::<Vec<_>>()
+                            let listed = this.listed();
+                            range
+                                .filter_map(|r| listed.get(r).map(|i| this.file_row(*i, cx)))
+                                .collect::<Vec<_>>()
                         }),
                     )
                     .track_scroll(&self.scroll)
@@ -736,6 +1129,7 @@ impl ArchiveChecksumDialog {
                 )
                 .child(well_bar("checksum-files-bar", &self.scroll, WELL_PAD, 20.))
         });
+        let comparing = self.compare_section(mono.clone(), cx);
         let shown = self.shown_file(mono, cx);
         // Until one is clicked, what a click does.
         let hint = (n > 1 && self.shown.is_none()).then(|| {
@@ -826,6 +1220,7 @@ impl ArchiveChecksumDialog {
             .flex_col()
             .gap(ui(20.))
             .children(progress)
+            .children(comparing)
             .children(list)
             .children(hint)
             .children(shown)
@@ -882,6 +1277,23 @@ impl ArchiveChecksumDialog {
                                 .on_click(cx.listener(|this, _, _, cx| this.copy_all(cx))),
                         )
                     })
+                    .when(read && !self.comparing, |d| {
+                        d.child(
+                            button(
+                                "checksum-compare",
+                                tr!("Compare…"),
+                                Fill::Tonal,
+                                Size::Medium,
+                            )
+                            .on_click(cx.listener(
+                                |this, _, window, cx| {
+                                    this.comparing = true;
+                                    window.focus(&this.pasted.focus_handle(cx), cx);
+                                    cx.notify();
+                                },
+                            )),
+                        )
+                    })
                     .child(settings_button(cx))
                     .child(div().flex_1())
                     .child(
@@ -890,6 +1302,25 @@ impl ArchiveChecksumDialog {
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close))),
                     ),
             )
+    }
+}
+
+/// What a row shows of what the list pasted says of its file.
+fn mark_view(mark: Mark, i: usize) -> Div {
+    let c = colors();
+    let at = div()
+        .debug_selector(move || format!("checksum-mark-{i}-{}", mark.key()))
+        .w(ui(20.))
+        .flex_shrink_0()
+        .flex()
+        .justify_center()
+        .text_size(ui(13.))
+        .text_color(rgb(c.muted));
+    match mark {
+        Mark::Matches => at.child(icon("check", 16., c.accent)),
+        Mark::Differs => at.child(icon("warning", 16., c.bad_text)),
+        Mark::Maybe => at.child("?"),
+        Mark::NotListed => at.child("—"),
     }
 }
 
@@ -947,6 +1378,21 @@ impl Render for ArchiveChecksumDialog {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_checksum_that_differs_from_one_made_differs() {
+        let differs = |made: Vec<Algorithm>, not_made: Vec<Algorithm>| {
+            Mark::of(&Verdict::Differs { made, not_made })
+        };
+        // SHA-256 made and not it: it differs, though BLAKE3 has its length too.
+        assert_eq!(
+            differs(vec![Algorithm::Sha256], vec![Algorithm::Blake3]),
+            Mark::Differs
+        );
+        assert_eq!(differs(vec![], vec![Algorithm::Sha1]), Mark::Maybe);
+        assert_eq!(Mark::of(&Verdict::Unknown(3)), Mark::Differs);
+        assert_eq!(Mark::of(&Verdict::NotListed), Mark::NotListed);
+    }
 
     #[test]
     fn a_tag_is_as_bsd_s_tools_write_it() {

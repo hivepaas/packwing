@@ -57,6 +57,7 @@ t89f1bf95 = packwing Free keeps one storage across a network. A Pro or Enterpris
 te0f3b6b7 = Test connection
 ta24f28a2 = Enter a license key
 t4d2d5d68 = Save
+ta41136a2 = Paste the checksums given with the files
 t5daa8455 = The file could not be read: { $why }
 tb45ae457 = They could not be saved: { $why }
 t9addc37e = { $picked } selected
@@ -71,6 +72,35 @@ t80fb8482 = Read it
 t8dc21305 = Copied
 t658f3664 = Copy
 tedbc2ec9 = weak
+t55d6aeb7 = It does not match the file’s { $name } checksum: this is not the file it was made of, or the file changed on the way.
+t65dd697c = This is not a checksum packwing makes: it has { $digits } digits.
+tc591042a = The list does not name it.
+t231f838a = There is no checksum in this.
+ta40a82de = Every file matches the list.
+t551e3494 =
+    { $n ->
+        [one] { $count } file matches
+       *[other] { $count } files match
+    }
+t94a87b3f =
+    { $n ->
+        [one] { $count } file differs
+       *[other] { $count } files differ
+    }
+t8c19e4ca =
+    { $n ->
+        [one] { $count } file is not in the list
+       *[other] { $count } files are not in the list
+    }
+tcc7922ad =
+    { $n ->
+        [one] { $count } line names a file it does not hold: { $names }
+       *[other] { $count } lines name files it does not hold: { $names }
+    }
+t3d713e04 = It may be a { $name } checksum, which is not made yet.
+tcbefe458 = Make it
+t24246609 = Show only those that do not match
+tbddcfc14 = Compare with
 t80036d1c = Reading… { $size } of { $size2 }
 t1569c388 = Reading… { $size }
 t179475a4 = Click a file to see its checksums.
@@ -88,21 +118,15 @@ tbd79b37d = Saving…
 t7f4d85e3 = Save beside it
 t846ddfa1 = Save in…
 t71a5c5d3 = Checksums in { $name }
+tec85be80 = Compare…
 t8dd31791 = Done
 teec532fe = Choose the checksums shown
 t8333758c = Paste the checksum given with the file
 t6aad8485 = Reading…
-t231f838a = There is no checksum in this.
-t65dd697c = This is not a checksum packwing makes: it has { $digits } digits.
 t4f0350e4 = It matches the file’s { $name } checksum.
 tcb5c1745 = It is compared once the file is read.
-t55d6aeb7 = It does not match the file’s { $name } checksum: this is not the file it was made of, or the file changed on the way.
-t3d713e04 = It may be a { $name } checksum, which is not made yet.
-tcbefe458 = Make it
-tbddcfc14 = Compare with
 te88f3ed9 = Checksums of { $name }
 t1d91952b = Saved beside it as { $files }, where sha256sum -c and the like check it without packwing.
-tec85be80 = Compare…
 tcf390b0a = Nothing chosen yet
 t8399ef70 = { $join } and { $more } more
 t5a420780 = Hide what goes in

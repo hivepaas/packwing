@@ -157,6 +157,9 @@ ta24f28a2 = Ввести лицензионный ключ
 # Save
 t4d2d5d68 = Сохранить
 
+# Paste the checksums given with the files
+ta41136a2 = Вставьте контрольные суммы, указанные для файлов
+
 # The file could not be read: {why}
 t5daa8455 = Не удалось прочитать файл: { $why }
 
@@ -198,6 +201,69 @@ t658f3664 = Копировать
 
 # weak
 tedbc2ec9 = слабая
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = Не совпадает с контрольной суммой { $name } файла: это не тот файл, по которому она посчитана, или файл изменился по пути.
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = Это не контрольная сумма, которую считает packwing: в ней { $digits } цифр.
+
+# The list does not name it.
+tc591042a = В списке его нет.
+
+# There is no checksum in this.
+t231f838a = Здесь нет контрольной суммы.
+
+# Every file matches the list.
+ta40a82de = Все файлы совпадают со списком.
+
+# {count} file matches | {count} files match
+t551e3494 =
+    { $n ->
+        [one] { $count } файл совпадает
+        [few] { $count } файла совпадают
+        [many] { $count } файлов совпадают
+       *[other] { $count } файла совпадают
+    }
+
+# {count} file differs | {count} files differ
+t94a87b3f =
+    { $n ->
+        [one] { $count } файл отличается
+        [few] { $count } файла отличаются
+        [many] { $count } файлов отличаются
+       *[other] { $count } файла отличаются
+    }
+
+# {count} file is not in the list | {count} files are not in the list
+t8c19e4ca =
+    { $n ->
+        [one] { $count } файла нет в списке
+        [few] { $count } файлов нет в списке
+        [many] { $count } файлов нет в списке
+       *[other] { $count } файла нет в списке
+    }
+
+# {count} line names a file it does not hold: {names} | {count} lines name files it does not hold: {names}
+tcc7922ad =
+    { $n ->
+        [one] { $count } строка называет файл, которого в нём нет: { $names }
+        [few] { $count } строки называют файлы, которых в нём нет: { $names }
+        [many] { $count } строк называют файлы, которых в нём нет: { $names }
+       *[other] { $count } строки называют файлы, которых в нём нет: { $names }
+    }
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Возможно, это контрольная сумма { $name }, которая ещё не посчитана.
+
+# Make it
+tcbefe458 = Посчитать
+
+# Show only those that do not match
+t24246609 = Показывать только несовпадающие
+
+# Compare with
+tbddcfc14 = Сравнить с
 
 # Reading… {size} of {size2}
 t80036d1c = Чтение… { $size } из { $size2 }
@@ -244,6 +310,9 @@ t846ddfa1 = Сохранить в…
 # Checksums in {name}
 t71a5c5d3 = Контрольные суммы в { $name }
 
+# Compare…
+tec85be80 = Сравнить…
+
 # Done
 t8dd31791 = Готово
 
@@ -256,38 +325,17 @@ t8333758c = Вставьте контрольную сумму, указанну
 # Reading…
 t6aad8485 = Чтение…
 
-# There is no checksum in this.
-t231f838a = Здесь нет контрольной суммы.
-
-# This is not a checksum packwing makes: it has {digits} digits.
-t65dd697c = Это не контрольная сумма, которую считает packwing: в ней { $digits } цифр.
-
 # It matches the file’s {name} checksum.
 t4f0350e4 = Совпадает с контрольной суммой { $name } файла.
 
 # It is compared once the file is read.
 tcb5c1745 = Сравнение — когда файл будет прочитан.
 
-# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
-t55d6aeb7 = Не совпадает с контрольной суммой { $name } файла: это не тот файл, по которому она посчитана, или файл изменился по пути.
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = Возможно, это контрольная сумма { $name }, которая ещё не посчитана.
-
-# Make it
-tcbefe458 = Посчитать
-
-# Compare with
-tbddcfc14 = Сравнить с
-
 # Checksums of {name}
 te88f3ed9 = Контрольные суммы { $name }
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = Сохранено рядом как { $files }; sha256sum -c и подобные проверят без packwing.
-
-# Compare…
-tec85be80 = Сравнить…
 
 # Nothing chosen yet
 tcf390b0a = Пока ничего не выбрано

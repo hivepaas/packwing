@@ -151,6 +151,9 @@ ta24f28a2 = 輸入授權金鑰
 # Save
 t4d2d5d68 = 儲存
 
+# Paste the checksums given with the files
+ta41136a2 = 貼上隨檔案提供的檢查碼
+
 # The file could not be read: {why}
 t5daa8455 = 無法讀取檔案：{ $why }
 
@@ -192,6 +195,57 @@ t658f3664 = 複製
 
 # weak
 tedbc2ec9 = 弱
+
+# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
+t55d6aeb7 = 與檔案的 { $name } 檢查碼不符：這不是產生該檢查碼的檔案，或是檔案在傳輸途中有所變動。
+
+# This is not a checksum packwing makes: it has {digits} digits.
+t65dd697c = 這不是 packwing 產生的檢查碼：它有 { $digits } 位數。
+
+# The list does not name it.
+tc591042a = 清單中沒有它。
+
+# There is no checksum in this.
+t231f838a = 這裡面沒有檢查碼。
+
+# Every file matches the list.
+ta40a82de = 所有檔案都與清單相符。
+
+# {count} file matches | {count} files match
+t551e3494 =
+    { $n ->
+       *[other] { $count } 個檔案相符
+    }
+
+# {count} file differs | {count} files differ
+t94a87b3f =
+    { $n ->
+       *[other] { $count } 個檔案不符
+    }
+
+# {count} file is not in the list | {count} files are not in the list
+t8c19e4ca =
+    { $n ->
+       *[other] { $count } 個檔案不在清單中
+    }
+
+# {count} line names a file it does not hold: {names} | {count} lines name files it does not hold: {names}
+tcc7922ad =
+    { $n ->
+       *[other] { $count } 行指向其中沒有的檔案：{ $names }
+    }
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = 這可能是尚未產生的 { $name } 檢查碼。
+
+# Make it
+tcbefe458 = 產生
+
+# Show only those that do not match
+t24246609 = 只顯示不相符的
+
+# Compare with
+tbddcfc14 = 比較對象
 
 # Reading… {size} of {size2}
 t80036d1c = 正在讀取… { $size } / { $size2 }
@@ -235,6 +289,9 @@ t846ddfa1 = 儲存到…
 # Checksums in {name}
 t71a5c5d3 = { $name } 中的檢查碼
 
+# Compare…
+tec85be80 = 比較…
+
 # Done
 t8dd31791 = 完成
 
@@ -247,38 +304,17 @@ t8333758c = 貼上隨檔案提供的檢查碼
 # Reading…
 t6aad8485 = 正在讀取…
 
-# There is no checksum in this.
-t231f838a = 這裡面沒有檢查碼。
-
-# This is not a checksum packwing makes: it has {digits} digits.
-t65dd697c = 這不是 packwing 產生的檢查碼：它有 { $digits } 位數。
-
 # It matches the file’s {name} checksum.
 t4f0350e4 = 與檔案的 { $name } 檢查碼相符。
 
 # It is compared once the file is read.
 tcb5c1745 = 檔案讀取完成後會進行比較。
 
-# It does not match the file’s {name} checksum: this is not the file it was made of, or the file changed on the way.
-t55d6aeb7 = 與檔案的 { $name } 檢查碼不符：這不是產生該檢查碼的檔案，或是檔案在傳輸途中有所變動。
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = 這可能是尚未產生的 { $name } 檢查碼。
-
-# Make it
-tcbefe458 = 產生
-
-# Compare with
-tbddcfc14 = 比較對象
-
 # Checksums of {name}
 te88f3ed9 = { $name } 的檢查碼
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = 已儲存在旁邊，檔名為 { $files }；sha256sum -c 等工具不需 packwing 即可驗證。
-
-# Compare…
-tec85be80 = 比較…
 
 # Nothing chosen yet
 tcf390b0a = 尚未選擇
