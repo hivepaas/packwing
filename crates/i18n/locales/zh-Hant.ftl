@@ -3295,6 +3295,12 @@ tecf6b414 = 信任此金鑰
 # There is no signature beside it.
 te7a28cb7 = 旁邊沒有簽章。
 
+# Private key
+t2f5fdbc3 = 私密金鑰
+
+# SSH keys
+t7e7cad2b = SSH 金鑰
+
 # packwing cannot show this file.
 t1ef504d9 = packwing 無法顯示這個檔案。
 

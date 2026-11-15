@@ -31,6 +31,7 @@ struct SettingsView: View {
                 }
                 .listRowBackground(Tonal.surface)
                 TrustedKeysSection()
+                SshKeysSection()
                 Section(tr("About")) {
                     LabeledContent("packwing", value: version)
                 }

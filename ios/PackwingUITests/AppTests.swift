@@ -1,3 +1,4 @@
+import Network
 import XCTest
 
 /// The app as a person uses it, on the Simulator: an archive opened from the
@@ -439,5 +440,61 @@ final class AppTests: XCTestCase {
         keep(app, "storage-archive")
 
         _ = send("DELETE", folder)
+    }
+
+    /// Whether something answers on `port` of this computer, within a second or two.
+    private func listening(_ port: UInt16) -> Bool {
+        let connection = NWConnection(host: "127.0.0.1", port: NWEndpoint.Port(rawValue: port)!, using: .tcp)
+        let ready = expectation(description: "port \(port)")
+        ready.assertForOverFulfill = false
+        var up = false
+        connection.stateUpdateHandler = { state in
+            switch state {
+            case .ready: up = true; ready.fulfill()
+            case .failed, .waiting: ready.fulfill()
+            default: break
+            }
+        }
+        connection.start(queue: .global())
+        wait(for: [ready], timeout: 3)
+        connection.cancel()
+        return up
+    }
+
+    /// Against the SFTP server of `make sftp-start` (its Docker container, on port
+    /// 18322): skipped without one.
+    func testAnSftpServerIsAskedAboutOnceTrustedAndBrowsed() throws {
+        guard listening(18322) else { throw XCTSkip("no SFTP server on port 18322") }
+        let app = XCUIApplication()
+        app.launchArguments = ["-AppleLanguages", "(en)", "-language", "", "-storages", "", "-forgetServers", "YES"]
+        app.launch()
+        tapWhenReady(app.buttons["storage-new"])
+        app.buttons["SFTP"].tap()
+        let host = app.textFields["storage-host"]
+        XCTAssert(host.waitForExistence(timeout: 5))
+        host.tap()
+        host.typeText("tester@127.0.0.1:18322")
+        let password = app.secureTextFields["storage-password"]
+        password.tap()
+        password.typeText("packwing")
+        app.buttons["storage-add"].tap()
+
+        // A server not known yet: asked about, with its fingerprint.
+        XCTAssert(app.staticTexts["Trust this server?"].waitForExistence(timeout: 20))
+        XCTAssert(app.staticTexts["127.0.0.1:18322"].exists)
+        let fingerprint = app.staticTexts["ssh-fingerprint"]
+        XCTAssert(fingerprint.exists)
+        XCTAssert(fingerprint.label.hasPrefix("SHA256:"))
+        // Whole: none of it cut off.
+        XCTAssertGreaterThan(fingerprint.frame.height, 30)
+        keep(app, "ssh-question")
+        app.buttons["Trust and connect"].tap()
+
+        // Added, and browsed: the tester's home.
+        let row = app.buttons["storage-row"]
+        XCTAssert(row.waitForExistence(timeout: 20))
+        tapWhenReady(row)
+        XCTAssert(app.staticTexts["logs"].waitForExistence(timeout: 20))
+        keep(app, "sftp-folder")
     }
 }

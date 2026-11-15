@@ -410,6 +410,9 @@ struct AddStorageSheet: View {
                         .listRowBackground(Tonal.surface)
                     }
                 }
+                if let keyValue = kind?.keyValue {
+                    SshKeyPicker(selection: binding(keyValue))
+                }
                 if let problem {
                     Section {
                         Label(problem, systemImage: "exclamationmark.triangle")
@@ -458,7 +461,8 @@ struct AddStorageSheet: View {
         guard let kind else { return }
         let secretKeys = Set(kind.fields.filter(\.secret).map(\.key))
         let settings = values.filter { key, value in
-            !secretKeys.contains(key) && kind.fields.contains { $0.key == key } && !value.isEmpty
+            !secretKeys.contains(key) && (kind.fields.contains { $0.key == key } || key == kind.keyValue)
+                && !value.isEmpty
         }.mapValues { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
         let secrets = values.filter { secretKeys.contains($0.key) }
         let entry = StorageEntry(id: UUID().uuidString, kind: kind.id, values: settings)

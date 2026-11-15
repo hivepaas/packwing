@@ -623,8 +623,12 @@ impl StorageKind for SftpKind {
         vec![
             Field {
                 key: "host",
-                // The Mac App Store's sandbox keeps ~/.ssh from it.
-                label: if cfg!(feature = "app-store") {
+                // The Mac App Store's sandbox keeps ~/.ssh from it, and a phone has none.
+                label: if cfg!(any(
+                    feature = "app-store",
+                    target_os = "ios",
+                    target_os = "android"
+                )) {
                     tr!("Host")
                 } else {
                     tr!("Host or ssh_config name")
@@ -641,7 +645,11 @@ impl StorageKind for SftpKind {
             Field {
                 key: "password",
                 label: tr!("Password"),
-                hint: if cfg!(feature = "app-store") {
+                hint: if cfg!(any(
+                    feature = "app-store",
+                    target_os = "ios",
+                    target_os = "android"
+                )) {
                     tr!("Empty to sign in with a key")
                 } else {
                     tr!("Empty to use the SSH agent and keys")

@@ -3418,6 +3418,12 @@ tecf6b414 = Доверять этому ключу
 # There is no signature beside it.
 te7a28cb7 = Рядом нет подписи.
 
+# Private key
+t2f5fdbc3 = Закрытый ключ
+
+# SSH keys
+t7e7cad2b = SSH-ключи
+
 # packwing cannot show this file.
 t1ef504d9 = packwing не может показать этот файл.
 

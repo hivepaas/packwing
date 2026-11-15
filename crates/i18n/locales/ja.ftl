@@ -3286,6 +3286,12 @@ tecf6b414 = このキーを信頼
 # There is no signature beside it.
 te7a28cb7 = 隣に署名がありません。
 
+# Private key
+t2f5fdbc3 = 秘密鍵
+
+# SSH keys
+t7e7cad2b = SSH キー
+
 # packwing cannot show this file.
 t1ef504d9 = packwing ではこのファイルを表示できません。
 

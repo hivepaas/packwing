@@ -140,6 +140,14 @@ final class AppModel {
         start(supportFolder: Self.support.path(percentEncoded: false),
               language: UserDefaults.standard.string(forKey: "language"))
         language = Packwing.language()
+        // SFTP's questions, asked in a window of their own.
+        askSshWith(questions: SshAsker())
+        #if DEBUG
+        // `-forgetServers YES`: no server trusted yet, as on a new phone.
+        if UserDefaults.standard.bool(forKey: "forgetServers") {
+            try? FileManager.default.removeItem(at: Self.support.appending(path: "ssh/known_hosts"))
+        }
+        #endif
         recent = Self.loadRecent()
         sweepReceived()
     }

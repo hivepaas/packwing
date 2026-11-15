@@ -3336,6 +3336,12 @@ tecf6b414 = Bu anahtara güven
 # There is no signature beside it.
 te7a28cb7 = Yanında imza yok.
 
+# Private key
+t2f5fdbc3 = Özel anahtar
+
+# SSH keys
+t7e7cad2b = SSH anahtarları
+
 # packwing cannot show this file.
 t1ef504d9 = packwing bu dosyayı gösteremiyor.
 
