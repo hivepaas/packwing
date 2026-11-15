@@ -169,12 +169,9 @@ mod tests {
     use super::*;
     use packwing_core::new_signing_key;
 
-    /// keyring's own store, the Mac's keychain, is set on its first entry: it is
-    /// set first, then the mock's in its place, so that nothing reaches the
-    /// keychain of the computer running the tests.
+    /// keyring-core's mock store: the tests' entries are keyring-core's
+    /// (secrets.rs), so nothing reaches the keychain of the computer running them.
     fn mock_keychain() {
-        #[cfg(not(target_os = "ios"))]
-        let _ = keyring::Entry::store_status();
         keyring_core::set_default_store(keyring_core::mock::Store::new().expect("mock"));
     }
 

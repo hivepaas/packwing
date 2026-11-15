@@ -8,9 +8,11 @@ const SERVICE: &str = "packwing storages";
 
 /// keyring's own `Entry` stands for a store it sets itself, which it has none of
 /// on iOS: there the system keychain's is set, and its entries are keyring-core's.
-#[cfg(not(target_os = "ios"))]
+/// The tests take keyring-core's too, with its mock store set: never the
+/// computer's keychain, and none is needed where there is none (CI's Linux).
+#[cfg(not(any(target_os = "ios", test)))]
 pub(crate) type Entry = keyring::Entry;
-#[cfg(target_os = "ios")]
+#[cfg(any(target_os = "ios", test))]
 pub(crate) type Entry = keyring_core::Entry;
 
 /// The entry `account` of `service`, in the system's keychain.
