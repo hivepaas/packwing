@@ -151,8 +151,8 @@ ta24f28a2 = Masukkan kunci lisensi
 # Save
 t4d2d5d68 = Simpan
 
-# Paste the checksums given with the files
-ta41136a2 = Tempel checksum yang diberikan bersama berkas-berkasnya
+# Paste the checksums given with the files, or one of them
+t3a05149e = Tempel checksum yang diberikan bersama berkas-berkasnya, atau salah satunya
 
 # The file could not be read: {why}
 t5daa8455 = Berkas tidak dapat dibaca: { $why }
@@ -208,6 +208,24 @@ tc591042a = Daftar tidak menyebutkannya.
 # There is no checksum in this.
 t231f838a = Tidak ada checksum di sini.
 
+# It matches the {name} checksum of {file}.
+t91f99ccb = Cocok dengan checksum { $name } dari { $file }.
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+       *[other] Cocok dengan { $count } berkas: { $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = Tidak ada berkas di dalamnya yang memiliki checksum ini.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Mungkin ini checksum { $name }, yang belum dibuat.
+
+# Make it
+tcbefe458 = Buat
+
 # Every file matches the list.
 ta40a82de = Setiap berkas cocok dengan daftar.
 
@@ -234,12 +252,6 @@ tcc7922ad =
     { $n ->
        *[other] { $count } baris menyebut berkas yang tidak ada di dalamnya: { $names }
     }
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = Mungkin ini checksum { $name }, yang belum dibuat.
-
-# Make it
-tcbefe458 = Buat
 
 # Show only those that do not match
 t24246609 = Tampilkan hanya yang tidak cocok

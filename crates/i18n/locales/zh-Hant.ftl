@@ -151,8 +151,8 @@ ta24f28a2 = 輸入授權金鑰
 # Save
 t4d2d5d68 = 儲存
 
-# Paste the checksums given with the files
-ta41136a2 = 貼上隨檔案提供的檢查碼
+# Paste the checksums given with the files, or one of them
+t3a05149e = 貼上隨檔案提供的檢查碼，或其中一個
 
 # The file could not be read: {why}
 t5daa8455 = 無法讀取檔案：{ $why }
@@ -208,6 +208,24 @@ tc591042a = 清單中沒有它。
 # There is no checksum in this.
 t231f838a = 這裡面沒有檢查碼。
 
+# It matches the {name} checksum of {file}.
+t91f99ccb = 與 { $file } 的 { $name } 檢查碼相符。
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+       *[other] 與 { $count } 個檔案相符：{ $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = 其中沒有檔案具有此檢查碼。
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = 這可能是尚未產生的 { $name } 檢查碼。
+
+# Make it
+tcbefe458 = 產生
+
 # Every file matches the list.
 ta40a82de = 所有檔案都與清單相符。
 
@@ -234,12 +252,6 @@ tcc7922ad =
     { $n ->
        *[other] { $count } 行指向其中沒有的檔案：{ $names }
     }
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = 這可能是尚未產生的 { $name } 檢查碼。
-
-# Make it
-tcbefe458 = 產生
 
 # Show only those that do not match
 t24246609 = 只顯示不相符的

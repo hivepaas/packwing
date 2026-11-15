@@ -153,8 +153,8 @@ ta24f28a2 = Saisir une clé de licence
 # Save
 t4d2d5d68 = Enregistrer
 
-# Paste the checksums given with the files
-ta41136a2 = Collez les sommes de contrôle fournies avec les fichiers
+# Paste the checksums given with the files, or one of them
+t3a05149e = Collez les sommes de contrôle fournies avec les fichiers, ou l'une d'elles
 
 # The file could not be read: {why}
 t5daa8455 = Le fichier n'a pas pu être lu : { $why }
@@ -210,6 +210,25 @@ tc591042a = La liste ne le nomme pas.
 # There is no checksum in this.
 t231f838a = Il n'y a pas de somme de contrôle là-dedans.
 
+# It matches the {name} checksum of {file}.
+t91f99ccb = Elle correspond à la somme { $name } de { $file }.
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+        [one] Elle correspond à { $count } fichier : { $names }
+       *[other] Elle correspond à { $count } fichiers : { $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = Aucun fichier dedans n'a cette somme.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = C'est peut-être une somme { $name }, pas encore calculée.
+
+# Make it
+tcbefe458 = La calculer
+
 # Every file matches the list.
 ta40a82de = Chaque fichier correspond à la liste.
 
@@ -240,12 +259,6 @@ tcc7922ad =
         [one] { $count } ligne nomme un fichier qu'elle ne contient pas : { $names }
        *[other] { $count } lignes nomment des fichiers qu'elle ne contient pas : { $names }
     }
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = C'est peut-être une somme { $name }, pas encore calculée.
-
-# Make it
-tcbefe458 = La calculer
 
 # Show only those that do not match
 t24246609 = N'afficher que ceux qui ne correspondent pas

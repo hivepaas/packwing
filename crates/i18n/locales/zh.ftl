@@ -151,8 +151,8 @@ ta24f28a2 = 输入许可证密钥
 # Save
 t4d2d5d68 = 保存
 
-# Paste the checksums given with the files
-ta41136a2 = 粘贴随文件提供的校验和
+# Paste the checksums given with the files, or one of them
+t3a05149e = 粘贴随文件提供的校验和，或其中一个
 
 # The file could not be read: {why}
 t5daa8455 = 无法读取文件：{ $why }
@@ -208,6 +208,24 @@ tc591042a = 列表中没有它。
 # There is no checksum in this.
 t231f838a = 这里面没有校验和。
 
+# It matches the {name} checksum of {file}.
+t91f99ccb = 与 { $file } 的 { $name } 校验和一致。
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+       *[other] 与 { $count } 个文件一致：{ $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = 其中没有文件具有此校验和。
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = 这可能是尚未生成的 { $name } 校验和。
+
+# Make it
+tcbefe458 = 生成
+
 # Every file matches the list.
 ta40a82de = 所有文件都与列表一致。
 
@@ -234,12 +252,6 @@ tcc7922ad =
     { $n ->
        *[other] { $count } 行指向其中没有的文件：{ $names }
     }
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = 这可能是尚未生成的 { $name } 校验和。
-
-# Make it
-tcbefe458 = 生成
 
 # Show only those that do not match
 t24246609 = 只显示不一致的

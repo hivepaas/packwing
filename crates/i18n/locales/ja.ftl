@@ -151,8 +151,8 @@ ta24f28a2 = ライセンスキーを入力
 # Save
 t4d2d5d68 = 保存
 
-# Paste the checksums given with the files
-ta41136a2 = ファイルと一緒に提供されたチェックサムを貼り付け
+# Paste the checksums given with the files, or one of them
+t3a05149e = ファイルと一緒に提供されたチェックサム（またはその 1 つ）を貼り付け
 
 # The file could not be read: {why}
 t5daa8455 = ファイルを読み取れませんでした: { $why }
@@ -208,6 +208,24 @@ tc591042a = リストにはこのファイルがありません。
 # There is no checksum in this.
 t231f838a = チェックサムが含まれていません。
 
+# It matches the {name} checksum of {file}.
+t91f99ccb = { $file } の { $name } チェックサムと一致します。
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+       *[other] { $count } 個のファイルと一致します: { $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = このチェックサムを持つファイルはありません。
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = まだ作成していない { $name } チェックサムかもしれません。
+
+# Make it
+tcbefe458 = 作成
+
 # Every file matches the list.
 ta40a82de = すべてのファイルがリストと一致します。
 
@@ -234,12 +252,6 @@ tcc7922ad =
     { $n ->
        *[other] { $count } 行が含まれていないファイルを指しています: { $names }
     }
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = まだ作成していない { $name } チェックサムかもしれません。
-
-# Make it
-tcbefe458 = 作成
 
 # Show only those that do not match
 t24246609 = 一致しないものだけを表示

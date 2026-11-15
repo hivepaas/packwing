@@ -153,8 +153,8 @@ ta24f28a2 = Lizenzschlüssel eingeben
 # Save
 t4d2d5d68 = Speichern
 
-# Paste the checksums given with the files
-ta41136a2 = Füge die Prüfsummen ein, die mit den Dateien kamen
+# Paste the checksums given with the files, or one of them
+t3a05149e = Füge die Prüfsummen ein, die mit den Dateien kamen, oder eine davon
 
 # The file could not be read: {why}
 t5daa8455 = Die Datei konnte nicht gelesen werden: { $why }
@@ -210,6 +210,25 @@ tc591042a = Die Liste nennt sie nicht.
 # There is no checksum in this.
 t231f838a = Darin ist keine Prüfsumme.
 
+# It matches the {name} checksum of {file}.
+t91f99ccb = Sie stimmt mit der { $name }-Prüfsumme von { $file } überein.
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+        [one] Sie stimmt mit { $count } Datei überein: { $names }
+       *[other] Sie stimmt mit { $count } Dateien überein: { $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = Keine Datei darin hat diese Prüfsumme.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Es könnte eine { $name }-Prüfsumme sein, die noch nicht gebildet ist.
+
+# Make it
+tcbefe458 = Bilden
+
 # Every file matches the list.
 ta40a82de = Jede Datei stimmt mit der Liste überein.
 
@@ -240,12 +259,6 @@ tcc7922ad =
         [one] { $count } Zeile nennt eine Datei, die es nicht enthält: { $names }
        *[other] { $count } Zeilen nennen Dateien, die es nicht enthält: { $names }
     }
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = Es könnte eine { $name }-Prüfsumme sein, die noch nicht gebildet ist.
-
-# Make it
-tcbefe458 = Bilden
 
 # Show only those that do not match
 t24246609 = Nur die nicht übereinstimmenden zeigen

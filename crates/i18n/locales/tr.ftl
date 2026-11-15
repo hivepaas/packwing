@@ -153,8 +153,8 @@ ta24f28a2 = Lisans anahtarı girin
 # Save
 t4d2d5d68 = Kaydet
 
-# Paste the checksums given with the files
-ta41136a2 = Dosyalarla birlikte verilen sağlama toplamlarını yapıştırın
+# Paste the checksums given with the files, or one of them
+t3a05149e = Dosyalarla birlikte verilen sağlama toplamlarını ya da birini yapıştırın
 
 # The file could not be read: {why}
 t5daa8455 = Dosya okunamadı: { $why }
@@ -210,6 +210,25 @@ tc591042a = Liste onu içermiyor.
 # There is no checksum in this.
 t231f838a = Bunda sağlama toplamı yok.
 
+# It matches the {name} checksum of {file}.
+t91f99ccb = { $file } dosyasının { $name } sağlama toplamıyla eşleşiyor.
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+        [one] { $count } dosyayla eşleşiyor: { $names }
+       *[other] { $count } dosyayla eşleşiyor: { $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = İçindeki hiçbir dosyanın bu sağlama toplamı yok.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Henüz hesaplanmamış bir { $name } sağlama toplamı olabilir.
+
+# Make it
+tcbefe458 = Hesapla
+
 # Every file matches the list.
 ta40a82de = Her dosya listeyle eşleşiyor.
 
@@ -240,12 +259,6 @@ tcc7922ad =
         [one] { $count } satır içinde olmayan bir dosyayı adlandırıyor: { $names }
        *[other] { $count } satır içinde olmayan dosyaları adlandırıyor: { $names }
     }
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = Henüz hesaplanmamış bir { $name } sağlama toplamı olabilir.
-
-# Make it
-tcbefe458 = Hesapla
 
 # Show only those that do not match
 t24246609 = Yalnızca eşleşmeyenleri göster

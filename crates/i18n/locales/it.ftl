@@ -153,8 +153,8 @@ ta24f28a2 = Inserisci una chiave di licenza
 # Save
 t4d2d5d68 = Salva
 
-# Paste the checksums given with the files
-ta41136a2 = Incolla i checksum forniti con i file
+# Paste the checksums given with the files, or one of them
+t3a05149e = Incolla i checksum forniti con i file, o uno di essi
 
 # The file could not be read: {why}
 t5daa8455 = Il file non può essere letto: { $why }
@@ -210,6 +210,25 @@ tc591042a = L'elenco non lo nomina.
 # There is no checksum in this.
 t231f838a = Qui non c'è nessun checksum.
 
+# It matches the {name} checksum of {file}.
+t91f99ccb = Corrisponde al checksum { $name } di { $file }.
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+        [one] Corrisponde a { $count } file: { $names }
+       *[other] Corrisponde a { $count } file: { $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = Nessun file al suo interno ha questo checksum.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Potrebbe essere un checksum { $name }, non ancora calcolato.
+
+# Make it
+tcbefe458 = Calcolalo
+
 # Every file matches the list.
 ta40a82de = Ogni file corrisponde all'elenco.
 
@@ -240,12 +259,6 @@ tcc7922ad =
         [one] { $count } riga nomina un file che non contiene: { $names }
        *[other] { $count } righe nominano file che non contiene: { $names }
     }
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = Potrebbe essere un checksum { $name }, non ancora calcolato.
-
-# Make it
-tcbefe458 = Calcolalo
 
 # Show only those that do not match
 t24246609 = Mostra solo quelli che non corrispondono

@@ -151,8 +151,8 @@ ta24f28a2 = 라이선스 키 입력
 # Save
 t4d2d5d68 = 저장
 
-# Paste the checksums given with the files
-ta41136a2 = 파일과 함께 제공된 체크섬을 붙여 넣으세요
+# Paste the checksums given with the files, or one of them
+t3a05149e = 파일과 함께 제공된 체크섬이나 그중 하나를 붙여 넣으세요
 
 # The file could not be read: {why}
 t5daa8455 = 파일을 읽을 수 없습니다: { $why }
@@ -208,6 +208,24 @@ tc591042a = 목록에 이 파일이 없습니다.
 # There is no checksum in this.
 t231f838a = 여기에는 체크섬이 없습니다.
 
+# It matches the {name} checksum of {file}.
+t91f99ccb = { $file }의 { $name } 체크섬과 일치합니다.
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+       *[other] 파일 { $count }개와 일치합니다: { $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = 이 체크섬을 가진 파일이 없습니다.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = 아직 만들지 않은 { $name } 체크섬일 수 있습니다.
+
+# Make it
+tcbefe458 = 만들기
+
 # Every file matches the list.
 ta40a82de = 모든 파일이 목록과 일치합니다.
 
@@ -234,12 +252,6 @@ tcc7922ad =
     { $n ->
        *[other] { $count }줄이 들어 있지 않은 파일을 가리킵니다: { $names }
     }
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = 아직 만들지 않은 { $name } 체크섬일 수 있습니다.
-
-# Make it
-tcbefe458 = 만들기
 
 # Show only those that do not match
 t24246609 = 일치하지 않는 것만 보기

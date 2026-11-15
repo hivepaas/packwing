@@ -157,8 +157,8 @@ ta24f28a2 = Ввести ліцензійний ключ
 # Save
 t4d2d5d68 = Зберегти
 
-# Paste the checksums given with the files
-ta41136a2 = Вставте контрольні суми, надані разом із файлами
+# Paste the checksums given with the files, or one of them
+t3a05149e = Вставте контрольні суми, надані разом із файлами, або одну з них
 
 # The file could not be read: {why}
 t5daa8455 = Не вдалося прочитати файл: { $why }
@@ -214,6 +214,27 @@ tc591042a = У списку його немає.
 # There is no checksum in this.
 t231f838a = Тут немає контрольної суми.
 
+# It matches the {name} checksum of {file}.
+t91f99ccb = Збігається з контрольною сумою { $name } файлу { $file }.
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+        [one] Збігається з { $count } файлом: { $names }
+        [few] Збігається з { $count } файлами: { $names }
+        [many] Збігається з { $count } файлами: { $names }
+       *[other] Збігається з { $count } файлу: { $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = Жоден файл у ньому не має такої контрольної суми.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Можливо, це контрольна сума { $name }, яку ще не обчислено.
+
+# Make it
+tcbefe458 = Обчислити
+
 # Every file matches the list.
 ta40a82de = Усі файли збігаються зі списком.
 
@@ -252,12 +273,6 @@ tcc7922ad =
         [many] { $count } рядків називають файли, яких у ньому немає: { $names }
        *[other] { $count } рядка називають файли, яких у ньому немає: { $names }
     }
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = Можливо, це контрольна сума { $name }, яку ще не обчислено.
-
-# Make it
-tcbefe458 = Обчислити
 
 # Show only those that do not match
 t24246609 = Показувати лише ті, що не збігаються

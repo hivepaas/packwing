@@ -151,8 +151,8 @@ ta24f28a2 = Nhập khoá giấy phép
 # Save
 t4d2d5d68 = Lưu
 
-# Paste the checksums given with the files
-ta41136a2 = Dán các checksum đi kèm các tệp
+# Paste the checksums given with the files, or one of them
+t3a05149e = Dán các checksum đi kèm các tệp, hoặc một trong số đó
 
 # The file could not be read: {why}
 t5daa8455 = Không đọc được tệp: { $why }
@@ -208,6 +208,24 @@ tc591042a = Danh sách không có tệp này.
 # There is no checksum in this.
 t231f838a = Trong này không có checksum nào.
 
+# It matches the {name} checksum of {file}.
+t91f99ccb = Khớp với checksum { $name } của { $file }.
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+       *[other] Khớp với { $count } tệp: { $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = Không tệp nào trong đó có checksum này.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Có thể đây là checksum { $name }, loại chưa được tạo.
+
+# Make it
+tcbefe458 = Tạo
+
 # Every file matches the list.
 ta40a82de = Mọi tệp đều khớp với danh sách.
 
@@ -234,12 +252,6 @@ tcc7922ad =
     { $n ->
        *[other] { $count } dòng nêu tệp không có trong đó: { $names }
     }
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = Có thể đây là checksum { $name }, loại chưa được tạo.
-
-# Make it
-tcbefe458 = Tạo
 
 # Show only those that do not match
 t24246609 = Chỉ hiện những tệp không khớp

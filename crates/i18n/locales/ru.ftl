@@ -157,8 +157,8 @@ ta24f28a2 = Ввести лицензионный ключ
 # Save
 t4d2d5d68 = Сохранить
 
-# Paste the checksums given with the files
-ta41136a2 = Вставьте контрольные суммы, указанные для файлов
+# Paste the checksums given with the files, or one of them
+t3a05149e = Вставьте контрольные суммы, указанные для файлов, или одну из них
 
 # The file could not be read: {why}
 t5daa8455 = Не удалось прочитать файл: { $why }
@@ -214,6 +214,27 @@ tc591042a = В списке его нет.
 # There is no checksum in this.
 t231f838a = Здесь нет контрольной суммы.
 
+# It matches the {name} checksum of {file}.
+t91f99ccb = Совпадает с контрольной суммой { $name } файла { $file }.
+
+# It matches {count} file: {names} | It matches {count} files: {names}
+tc9d637be =
+    { $n ->
+        [one] Совпадает с { $count } файлом: { $names }
+        [few] Совпадает с { $count } файлами: { $names }
+        [many] Совпадает с { $count } файлами: { $names }
+       *[other] Совпадает с { $count } файла: { $names }
+    }
+
+# No file in it has this checksum.
+t2becf833 = Ни у одного файла в нём нет такой контрольной суммы.
+
+# It may be a {name} checksum, which is not made yet.
+t3d713e04 = Возможно, это контрольная сумма { $name }, которая ещё не посчитана.
+
+# Make it
+tcbefe458 = Посчитать
+
 # Every file matches the list.
 ta40a82de = Все файлы совпадают со списком.
 
@@ -252,12 +273,6 @@ tcc7922ad =
         [many] { $count } строк называют файлы, которых в нём нет: { $names }
        *[other] { $count } строки называют файлы, которых в нём нет: { $names }
     }
-
-# It may be a {name} checksum, which is not made yet.
-t3d713e04 = Возможно, это контрольная сумма { $name }, которая ещё не посчитана.
-
-# Make it
-tcbefe458 = Посчитать
 
 # Show only those that do not match
 t24246609 = Показывать только несовпадающие

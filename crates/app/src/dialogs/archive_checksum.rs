@@ -18,8 +18,8 @@ use gpui::{
 };
 use packwing_core::{
     Algorithm, Cancel, Control, EntryChecksums, Error, ListCompared, Listed, LocalFolder, Progress,
-    Storage, Verdict, checksum_in, checksum_list, checksum_list_in, compare_list, entry_checksums,
-    save_checksum_list,
+    Storage, Verdict, algorithms_of, checksum_in, checksum_list, checksum_list_in, compare_list,
+    entry_checksums, save_checksum_list,
 };
 
 use super::{ChecksumDialog, DialogEvent, footer, header};
@@ -105,6 +105,14 @@ enum Pasted {
     /// Nothing in it is a checksum.
     NotOne,
     Compared(ListCompared),
+    /// One checksum alone, naming no file: `digits` long, and the files it is
+    /// of, by where they are in what was made, with the algorithm. It may be
+    /// one of `not_made`, which were not made.
+    One {
+        digits: usize,
+        found: Vec<(usize, Algorithm)>,
+        not_made: Vec<Algorithm>,
+    },
 }
 
 /// What a file's row shows of what the list says of it.
@@ -204,7 +212,11 @@ impl ArchiveChecksumDialog {
     ) -> Self {
         let scope = first_scope(&selection);
         let pasted = cx.new(|cx| {
-            TextInput::said(|| tr!("Paste the checksums given with the files"), cx).multiline(2, 6)
+            TextInput::said(
+                || tr!("Paste the checksums given with the files, or one of them"),
+                cx,
+            )
+            .multiline(2, 6)
         });
         let typing = cx.subscribe(&pasted, |this, _, _: &Changed, cx| this.compare(cx));
         ArchiveChecksumDialog {
@@ -436,9 +448,14 @@ impl ArchiveChecksumDialog {
     }
 
     /// What the list pasted says of the file at `i`.
-    fn verdict(&self, i: usize) -> Option<&Verdict> {
+    fn verdict(&self, i: usize) -> Option<Verdict> {
         match &self.compared {
-            Some(Pasted::Compared(c)) => c.verdicts.get(i),
+            Some(Pasted::Compared(c)) => c.verdicts.get(i).cloned(),
+            // One alone: those it is of match; it says nothing of the others.
+            Some(Pasted::One { found, .. }) => found
+                .iter()
+                .find(|(f, _)| *f == i)
+                .map(|(_, a)| Verdict::Matches(*a)),
             _ => None,
         }
     }
@@ -459,14 +476,47 @@ impl ArchiveChecksumDialog {
                         name: one.name.clone(),
                     });
                 }
-                Some(if listed.is_empty() {
-                    Pasted::NotOne
-                } else {
+                Some(if !listed.is_empty() {
                     Pasted::Compared(compare_list(&made.files, &listed))
+                } else if let Some(sum) = checksum_in(&text, "") {
+                    // One checksum alone, of whichever file has it.
+                    let may_be = algorithms_of(sum.len());
+                    let found: Vec<(usize, Algorithm)> = made
+                        .files
+                        .iter()
+                        .enumerate()
+                        .filter_map(|(i, f)| {
+                            may_be
+                                .iter()
+                                .find(|a| f.sum(**a) == Some(sum.as_str()))
+                                .map(|a| (i, *a))
+                        })
+                        .collect();
+                    let not_made = may_be
+                        .into_iter()
+                        .filter(|a| !self.algorithms.contains(a))
+                        .collect();
+                    Pasted::One {
+                        digits: sum.len(),
+                        found,
+                        not_made,
+                    }
+                } else {
+                    Pasted::NotOne
                 })
             }
             _ => None,
         };
+        // The file it is of, shown.
+        if let Some(Pasted::One { found, .. }) = &self.compared
+            && let Some((i, _)) = found.first()
+        {
+            let i = *i;
+            self.shown = Some(i);
+            if let Some(at) = self.listed().iter().position(|f| *f == i) {
+                self.scroll.scroll_to_item(at, ScrollStrategy::Nearest);
+            }
+        }
         cx.notify();
     }
 
@@ -744,7 +794,7 @@ impl ArchiveChecksumDialog {
                     .text_color(rgb(if on { c.on_tonal } else { c.muted }))
                     .child(size(file.size)),
             )
-            .children(self.verdict(i).map(|v| mark_view(Mark::of(v), i)))
+            .children(self.verdict(i).map(|v| mark_view(Mark::of(&v), i)))
             .into_any_element()
     }
 
@@ -753,7 +803,7 @@ impl ArchiveChecksumDialog {
         let c = colors();
         let at = self.shown?;
         let file = self.made.as_ref()?.files.get(at)?;
-        let verdict = self.verdict(at).cloned();
+        let verdict = self.verdict(at);
         let matched = match &verdict {
             Some(Verdict::Matches(a)) => Some(*a),
             _ => None,
@@ -875,6 +925,96 @@ impl ArchiveChecksumDialog {
                     .child(tr!("There is no checksum in this."))
                     .into_any_element(),
             ),
+            Some(Pasted::One {
+                digits,
+                found,
+                not_made,
+            }) => {
+                let files = self.made.as_ref().map_or(&[][..], |m| &m.files[..]);
+                let made_any = algorithms_of(*digits)
+                    .iter()
+                    .any(|a| self.algorithms.contains(a));
+                if algorithms_of(*digits).is_empty() {
+                    said.push(
+                        note(Tone::Warn)
+                            .child(tr!(
+                                "This is not a checksum packwing makes: it has {digits} digits.",
+                                digits = digits
+                            ))
+                            .into_any_element(),
+                    );
+                } else if let [(i, algorithm)] = found.as_slice() {
+                    let name = files.get(*i).map(|f| f.name.clone()).unwrap_or_default();
+                    said.push(
+                        note(Tone::Good)
+                            .debug_selector(|| "checksum-one-matches".to_owned())
+                            .flex()
+                            .items_center()
+                            .gap(ui(8.))
+                            .child(icon("check", 16., c.on_tonal))
+                            .child(tr!(
+                                "It matches the {name} checksum of {file}.",
+                                name = algorithm.name(),
+                                file = name
+                            ))
+                            .into_any_element(),
+                    );
+                } else if !found.is_empty() {
+                    let n = found.len() as u64;
+                    let first: Vec<&str> = found
+                        .iter()
+                        .take(3)
+                        .filter_map(|(i, _)| files.get(*i).map(|f| f.name.as_str()))
+                        .collect();
+                    said.push(
+                        note(Tone::Good)
+                            .debug_selector(|| "checksum-one-matches".to_owned())
+                            .child(tr_n!(
+                                n,
+                                "It matches {count} file: {names}",
+                                "It matches {count} files: {names}",
+                                count = count(n),
+                                names = first.join(", ")
+                            ))
+                            .into_any_element(),
+                    );
+                } else if made_any {
+                    said.push(
+                        note(Tone::Bad)
+                            .debug_selector(|| "checksum-none-match".to_owned())
+                            .child(tr!("No file in it has this checksum."))
+                            .into_any_element(),
+                    );
+                }
+                if found.is_empty() && !not_made.is_empty() && self.reading.is_none() {
+                    let asked = not_made.clone();
+                    said.push(
+                        div()
+                            .flex()
+                            .flex_wrap()
+                            .items_center()
+                            .gap(ui(8.))
+                            .child(
+                                div()
+                                    .flex_1()
+                                    .min_w(ui(200.))
+                                    .text_size(ui(13.))
+                                    .text_color(rgb(c.muted))
+                                    .child(tr!(
+                                        "It may be a {name} checksum, which is not made yet.",
+                                        name = names(not_made)
+                                    )),
+                            )
+                            .child(
+                                button("checksum-make", tr!("Make it"), Fill::Tonal, Size::Medium)
+                                    .on_click(cx.listener(move |this, _, _, cx| {
+                                        this.make_more(asked.clone(), cx)
+                                    })),
+                            )
+                            .into_any_element(),
+                    );
+                }
+            }
             Some(Pasted::Compared(compared)) => {
                 let tally = |mark: Mark| {
                     compared
