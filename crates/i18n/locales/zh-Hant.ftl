@@ -2851,6 +2851,12 @@ t6485842e = 此儲存位置目前只接受 { $size } 以內的檔案，因為每
 # This storage cannot rename a folder at once, as everything under it would be copied. Use Move to….
 ta87a5d75 = 此儲存位置無法直接重新命名資料夾，因為其下所有內容都得複製。請使用「移動到…」。
 
+# The key has a passphrase: type it to open the key.
+t253e18ea = 此金鑰有密語：請輸入密語以開啟金鑰。
+
+# That is not a private key. Paste the whole of the key file, from its BEGIN OPENSSH PRIVATE KEY line to its END line.
+t86217583 = 這不是私密金鑰。請貼上完整的金鑰檔，從 BEGIN OPENSSH PRIVATE KEY 那一行到 END 那一行。
+
 # S3 bucket
 tc5e013b3 = S3 儲存貯體
 
@@ -2889,6 +2895,15 @@ t67b5f42b = 留空則使用家目錄
 
 # Empty to use the SSH agent and keys
 tf10e6293 = 留空則使用 SSH 代理程式和金鑰
+
+# The key of {host} is not the one it had. Someone may be posing as it, or the server was set up again. Its key now is {fingerprint}; the one known is in {file}.
+tf9715f8d = { $host } 的金鑰已不是原本的金鑰。可能有人冒充此伺服器，或伺服器已重新安裝。它現在的金鑰是 { $fingerprint }；已知的金鑰記錄在 { $file }。
+
+# {host} was not trusted.
+tb6982896 = 未信任 { $host }。
+
+# {host} is not known yet, and there is no one to ask whether to trust it.
+ta342611e = { $host } 尚未知，且沒有人可以詢問是否要信任它。
 
 # WebDAV folder
 tb2401428 = WebDAV 資料夾

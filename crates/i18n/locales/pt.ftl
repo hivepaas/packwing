@@ -2882,6 +2882,12 @@ t6485842e = Por ora, este armazenamento aceita arquivos de no máximo { $size },
 # This storage cannot rename a folder at once, as everything under it would be copied. Use Move to….
 ta87a5d75 = Este armazenamento não consegue renomear uma pasta de uma vez, pois tudo dentro dela seria copiado. Use Mover para….
 
+# The key has a passphrase: type it to open the key.
+t253e18ea = A chave tem uma frase secreta: digite-a para abrir a chave.
+
+# That is not a private key. Paste the whole of the key file, from its BEGIN OPENSSH PRIVATE KEY line to its END line.
+t86217583 = Isso não é uma chave privada. Cole o arquivo da chave inteiro, da linha BEGIN OPENSSH PRIVATE KEY até a linha END.
+
 # S3 bucket
 tc5e013b3 = Bucket S3
 
@@ -2920,6 +2926,15 @@ t67b5f42b = Vazio para a pasta pessoal
 
 # Empty to use the SSH agent and keys
 tf10e6293 = Vazio para usar o agente SSH e as chaves
+
+# The key of {host} is not the one it had. Someone may be posing as it, or the server was set up again. Its key now is {fingerprint}; the one known is in {file}.
+tf9715f8d = A chave de { $host } não é a que ele tinha. Alguém pode estar se passando por ele, ou o servidor foi reinstalado. A chave dele agora é { $fingerprint }; a conhecida está em { $file }.
+
+# {host} was not trusted.
+tb6982896 = { $host } não foi considerado confiável.
+
+# {host} is not known yet, and there is no one to ask whether to trust it.
+ta342611e = { $host } ainda não é conhecido, e não há ninguém a quem perguntar se deve confiar nele.
 
 # WebDAV folder
 tb2401428 = Pasta WebDAV

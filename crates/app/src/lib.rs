@@ -320,6 +320,7 @@ pub fn run(extensions: Extensions) {
         // removing it: off the window's thread, as a folder it was in may
         // be slow to reach.
         if let Some(folder) = prefs::folder() {
+            packwing_remote::keep_in(folder.clone());
             packwing_core::keep_journal_in(folder);
             std::thread::spawn(packwing_core::clean_left_extractions);
         }

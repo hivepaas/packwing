@@ -2851,6 +2851,12 @@ t6485842e = Penyimpanan ini untuk saat ini menerima berkas paling besar { $size 
 # This storage cannot rename a folder at once, as everything under it would be copied. Use Move to….
 ta87a5d75 = Penyimpanan ini tidak dapat langsung mengganti nama folder, karena semua isinya akan disalin. Gunakan Pindahkan ke….
 
+# The key has a passphrase: type it to open the key.
+t253e18ea = Kunci ini punya frasa sandi: ketik frasa sandinya untuk membuka kunci.
+
+# That is not a private key. Paste the whole of the key file, from its BEGIN OPENSSH PRIVATE KEY line to its END line.
+t86217583 = Itu bukan kunci privat. Tempel seluruh isi file kunci, dari baris BEGIN OPENSSH PRIVATE KEY sampai baris END-nya.
+
 # S3 bucket
 tc5e013b3 = Bucket S3
 
@@ -2889,6 +2895,15 @@ t67b5f42b = Kosongkan untuk folder home
 
 # Empty to use the SSH agent and keys
 tf10e6293 = Kosongkan untuk memakai agen SSH dan kunci
+
+# The key of {host} is not the one it had. Someone may be posing as it, or the server was set up again. Its key now is {fingerprint}; the one known is in {file}.
+tf9715f8d = Kunci { $host } bukan lagi kunci yang dulu. Mungkin ada yang menyamar sebagai server ini, atau server dipasang ulang. Kuncinya sekarang { $fingerprint }; kunci yang dikenal ada di { $file }.
+
+# {host} was not trusted.
+tb6982896 = { $host } tidak dipercaya.
+
+# {host} is not known yet, and there is no one to ask whether to trust it.
+ta342611e = { $host } belum dikenal, dan tidak ada yang bisa ditanya apakah server ini boleh dipercaya.
 
 # WebDAV folder
 tb2401428 = Folder WebDAV

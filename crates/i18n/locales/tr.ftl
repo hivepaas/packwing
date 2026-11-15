@@ -2882,6 +2882,12 @@ t6485842e = Bu depolama alanı şimdilik en çok { $size } boyutundaki dosyalar�
 # This storage cannot rename a folder at once, as everything under it would be copied. Use Move to….
 ta87a5d75 = Bu depolama alanı bir klasörü tek seferde yeniden adlandıramaz, çünkü altındaki her şey kopyalanırdı. Şuraya taşı… kullanın.
 
+# The key has a passphrase: type it to open the key.
+t253e18ea = Anahtarın bir parolası var: anahtarı açmak için parolayı yazın.
+
+# That is not a private key. Paste the whole of the key file, from its BEGIN OPENSSH PRIVATE KEY line to its END line.
+t86217583 = Bu bir özel anahtar değil. Anahtar dosyasının tamamını, BEGIN OPENSSH PRIVATE KEY satırından END satırına kadar yapıştırın.
+
 # S3 bucket
 tc5e013b3 = S3 kovası
 
@@ -2920,6 +2926,15 @@ t67b5f42b = Ana klasör için boş bırakın
 
 # Empty to use the SSH agent and keys
 tf10e6293 = SSH aracısını ve anahtarlarını kullanmak için boş bırakın
+
+# The key of {host} is not the one it had. Someone may be posing as it, or the server was set up again. Its key now is {fingerprint}; the one known is in {file}.
+tf9715f8d = { $host } anahtarı eskisiyle aynı değil. Biri bu sunucunun kılığına girmiş olabilir ya da sunucu yeniden kurulmuş olabilir. Anahtarı artık { $fingerprint }; bilinen anahtar { $file } içinde.
+
+# {host} was not trusted.
+tb6982896 = { $host } güvenilir bulunmadı.
+
+# {host} is not known yet, and there is no one to ask whether to trust it.
+ta342611e = { $host } henüz bilinmiyor ve ona güvenilip güvenilmeyeceğini soracak kimse yok.
 
 # WebDAV folder
 tb2401428 = WebDAV klasörü

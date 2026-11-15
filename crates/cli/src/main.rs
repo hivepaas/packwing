@@ -525,6 +525,8 @@ fn main() -> ExitCode {
     stop::listen();
     // What an extraction left behind when packwing ended without removing it.
     if let Some(folder) = settings::folder() {
+        #[cfg(feature = "remote")]
+        packwing_remote::keep_in(folder.clone());
         packwing_core::keep_journal_in(folder);
         packwing_core::clean_left_extractions();
     }

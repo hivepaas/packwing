@@ -20,7 +20,10 @@ use packwing_core::{
     Cancel, Control, Item, Keys, Kind, LocalFolder, NewArchive, OnExisting, Source, Storage,
     Stored, Transfer, create, create_on, extract_selected, list, read_entry, transfer,
 };
-use packwing_remote::{S3Settings, SftpSettings, WebDavSettings, s3, sftp, webdav};
+use packwing_remote::{
+    CodeQuestion, HostKeyQuestion, PassphraseQuestion, PasswordQuestion, Questions, S3Settings,
+    SftpSettings, Typed, WebDavSettings, s3, sftp, webdav,
+};
 
 /// A folder for one test on each server there is.
 fn storages(test: &str) -> Vec<(&'static str, Box<dyn Storage>)> {
@@ -62,6 +65,7 @@ fn storages(test: &str) -> Vec<(&'static str, Box<dyn Storage>)> {
             host: host.clone(),
             start,
             password: std::env::var("SFTP_TEST_PASSWORD").unwrap_or_default(),
+            key: None,
             key_file: std::env::var_os("SFTP_TEST_KEY").map(Into::into),
             known_hosts: std::env::var_os("SFTP_TEST_KNOWN_HOSTS").map(Into::into),
         };
@@ -346,6 +350,7 @@ fn an_unknown_host_is_refused_and_says_so() {
             host,
             start: String::new(),
             password: String::new(),
+            key: None,
             key_file: Some(key.into()),
             known_hosts: Some(hosts.clone()),
         },
@@ -355,6 +360,149 @@ fn an_unknown_host_is_refused_and_says_so() {
     let _ = std::fs::remove_file(hosts);
     println!("said: {e}");
     assert!(!e.to_string().is_empty());
+}
+
+/// Says yes to every host it is asked about, and counts them.
+#[derive(Default)]
+struct Trusting(std::sync::atomic::AtomicUsize);
+
+impl Questions for Trusting {
+    fn host_key(&self, _: HostKeyQuestion) -> bool {
+        self.0.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        true
+    }
+
+    fn passphrase(&self, _: PassphraseQuestion) -> Option<Typed> {
+        None
+    }
+
+    fn password(&self, _: PasswordQuestion) -> Option<Typed> {
+        None
+    }
+
+    fn code(&self, _: CodeQuestion) -> Option<String> {
+        None
+    }
+}
+
+impl Trusting {
+    fn asked(&self) -> usize {
+        self.0.load(std::sync::atomic::Ordering::SeqCst)
+    }
+}
+
+/// The test server reached with `known_hosts` alone, by its key file.
+fn sftp_with(known_hosts: &std::path::Path) -> Option<packwing_remote::SftpStorage> {
+    let (Ok(host), Some(key)) = (
+        std::env::var("SFTP_TEST_HOST"),
+        std::env::var_os("SFTP_TEST_KEY"),
+    ) else {
+        return None;
+    };
+    Some(sftp(
+        SftpSettings {
+            host,
+            start: String::new(),
+            password: String::new(),
+            key: None,
+            key_file: Some(key.into()),
+            known_hosts: Some(known_hosts.to_owned()),
+        },
+        None,
+    ))
+}
+
+#[test]
+fn an_unknown_host_is_asked_about_once_and_known_after() {
+    let hosts = std::env::temp_dir().join(format!("packwing-ask-hosts-{}", std::process::id()));
+    std::fs::write(&hosts, "").expect("write");
+    let Some(s) = sftp_with(&hosts) else {
+        return;
+    };
+    let questions = Arc::new(Trusting::default());
+    s.asking(questions.clone()).list(&[]).expect("trusted");
+    assert_eq!(questions.asked(), 1);
+    let again = sftp_with(&hosts).expect("there").asking(questions.clone());
+    again.list(&[]).expect("known");
+    assert_eq!(questions.asked(), 1, "asked again");
+    let _ = std::fs::remove_file(hosts);
+}
+
+#[test]
+fn a_host_whose_key_changed_is_refused_and_not_asked_about() {
+    use packwing_remote::HostKeyChanged;
+    use shellwing_ssh::keys::{KeyKind, generate};
+    let Ok(host) = std::env::var("SFTP_TEST_HOST") else {
+        return;
+    };
+    let (_, port) = host.rsplit_once(':').expect("a port");
+    // Another key for each kind the server may show.
+    let lines: String = [KeyKind::Ed25519, KeyKind::EcdsaP256, KeyKind::Rsa4096]
+        .into_iter()
+        .map(|kind| {
+            let key = generate(kind, "").expect("a key");
+            let public = key.public_key().to_openssh().expect("openssh");
+            format!("[127.0.0.1]:{port} {public}\n")
+        })
+        .collect();
+    let hosts = std::env::temp_dir().join(format!("packwing-changed-{}", std::process::id()));
+    std::fs::write(&hosts, lines).expect("write");
+    let Some(s) = sftp_with(&hosts) else {
+        return;
+    };
+    let questions = Arc::new(Trusting::default());
+    let e = s
+        .asking(questions.clone())
+        .list(&[])
+        .map(|_| ())
+        .expect_err("changed");
+    let _ = std::fs::remove_file(hosts);
+    println!("said: {e}");
+    assert!(
+        e.get_ref()
+            .is_some_and(|e| e.downcast_ref::<HostKeyChanged>().is_some()),
+        "{e:?}"
+    );
+    assert_eq!(questions.asked(), 0);
+}
+
+/// Writes to this user's keychain, and takes it out again, so it is run by hand:
+/// `cargo test -p packwing-remote a_key_packwing_keeps -- --ignored`.
+#[test]
+#[ignore]
+fn a_key_packwing_keeps_signs_in() {
+    let (Ok(host), Ok(key), Ok(hosts)) = (
+        std::env::var("SFTP_TEST_HOST"),
+        std::env::var("SFTP_TEST_KEY"),
+        std::env::var("SFTP_TEST_KNOWN_HOSTS"),
+    ) else {
+        return;
+    };
+    let folder = std::env::temp_dir().join(format!("packwing-keys-{}", std::process::id()));
+    packwing_remote::keep_in(folder.clone());
+    let text = std::fs::read_to_string(key).expect("the key");
+    let kept = packwing_remote::import_key("test", &text, None).expect("kept");
+    assert!(
+        packwing_remote::kept_keys()
+            .expect("listed")
+            .iter()
+            .any(|k| k.id == kept.id)
+    );
+    let s = sftp(
+        SftpSettings {
+            host,
+            start: String::new(),
+            password: String::new(),
+            key: Some(kept.id.clone()),
+            key_file: None,
+            known_hosts: Some(hosts.into()),
+        },
+        None,
+    );
+    let listed = s.list(&[]).map(|_| ());
+    packwing_remote::remove_key(&kept.id).expect("removed");
+    let _ = std::fs::remove_dir_all(folder);
+    listed.expect("signed in with the key kept");
 }
 
 #[test]
@@ -371,6 +519,7 @@ fn a_link_is_told_from_what_it_points_at() {
             host: host.clone(),
             start: String::new(),
             password: String::new(),
+            key: None,
             key_file: Some(key.clone().into()),
             known_hosts: Some(hosts.clone().into()),
         },

@@ -1,6 +1,6 @@
 //! A folder on a server over SFTP, through shellwing's SSH: `ssh_config`, the agent
-//! and key files, jump hosts. It is checked strictly against known_hosts, as there
-//! is nowhere to ask yet: a host not in it is refused.
+//! and key files, the keys packwing keeps, jump hosts. A host is trusted as
+//! `crate::trust` says: known, or the user says so.
 //!
 //! Everything blocks, as `Storage` asks. A connection is made when first needed,
 //! and again after one is lost.
@@ -17,12 +17,13 @@ use packwing_i18n::tr;
 use shellwing_ssh::sftp::{Entry, Kind, join};
 use shellwing_ssh::{
     Auth, FilesConnection, HostKeyPolicy, Learned, Options, RemoteFile, Secrets, Sftp, config,
-    connect_files,
+    connect_files, keys::StoredKey,
 };
 use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
 
 use crate::dal::runtime;
-use crate::secrets;
+use crate::trust::{self, Asking, Questions};
+use crate::{keys, secrets};
 
 /// What a server is reached with.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -33,25 +34,58 @@ pub struct SftpSettings {
     pub start: String,
     /// Empty to go by the agent and key files alone.
     pub password: String,
+    /// The id of the key packwing keeps to sign in with, alone (see
+    /// `crate::keys`); `None` for any key.
+    pub key: Option<String>,
     /// Key files to offer, in place of `ssh_config`'s (tests).
     pub key_file: Option<PathBuf>,
-    /// In place of `~/.ssh/known_hosts` (tests).
+    /// The one known_hosts, in place of the user's and packwing's (tests).
     pub known_hosts: Option<PathBuf>,
 }
 
-/// The password, for any target: a storage has one server.
-struct Password(String);
+/// What signing in may use: the storage's password (a storage has one server),
+/// the passphrases and keys kept, and what the user typed and asked to keep.
+struct Kept {
+    password: String,
+    /// The storage the password is kept for, unless it was typed.
+    id: Option<String>,
+    asking: Arc<Asking>,
+}
 
-impl Secrets for Password {
+impl Secrets for Kept {
     fn password(&self, _: &str) -> Option<String> {
-        Some(self.0.clone()).filter(|p| !p.is_empty())
+        Some(self.password.clone()).filter(|p| !p.is_empty())
     }
 
-    fn passphrase(&self, _: &str) -> Option<String> {
-        None
+    fn passphrase(&self, fingerprint: &str) -> Option<String> {
+        keys::passphrase(fingerprint)
     }
 
-    fn learned(&self, _: Learned) {}
+    fn learned(&self, secret: Learned) {
+        match secret {
+            Learned::Password { password, .. } => {
+                if let Some(id) = &self.id
+                    && self.asking.keeps_password()
+                {
+                    let kept = [("password".to_owned(), password)].into_iter().collect();
+                    let _ = secrets::keep(id, &kept);
+                }
+            }
+            Learned::Passphrase {
+                fingerprint,
+                key_path,
+                passphrase,
+            } => {
+                if self.asking.keeps_passphrase(&key_path) {
+                    keys::keep_passphrase(&fingerprint, &passphrase);
+                }
+            }
+        }
+    }
+
+    fn keys(&self) -> Vec<StoredKey> {
+        keys::stored()
+    }
 }
 
 /// A connection, and the folder things are under.
@@ -65,6 +99,8 @@ pub struct SftpStorage {
     settings: SftpSettings,
     /// Where the password is kept, unless it was typed.
     id: Option<String>,
+    /// Where its questions go, in place of `trust::ask_with`'s.
+    questions: Option<Arc<dyn Questions>>,
     open: Mutex<Option<Arc<Open>>>,
 }
 
@@ -84,11 +120,19 @@ pub fn sftp(settings: SftpSettings, id: Option<String>) -> SftpStorage {
     SftpStorage {
         settings,
         id,
+        questions: None,
         open: Mutex::new(None),
     }
 }
 
 impl SftpStorage {
+    /// The storage, its questions going to `questions`.
+    #[must_use]
+    pub fn asking(mut self, questions: Arc<dyn Questions>) -> Self {
+        self.questions = Some(questions);
+        self
+    }
+
     /// The connection, made if there is none.
     fn connected(&self) -> io::Result<Arc<Open>> {
         let mut open = self.open.lock().unwrap_or_else(|e| e.into_inner());
@@ -107,6 +151,13 @@ impl SftpStorage {
             target.identity_files = vec![key.clone()];
             target.identities_only = true;
         }
+        if let Some(key) = &s.key {
+            target.vault_key = Some(key.clone());
+            target.identities_only = true;
+        }
+        let questions = self.questions.clone().or_else(trust::questions);
+        let (known_hosts, prompter, asking) =
+            trust::asking(&target, s.known_hosts.clone(), questions);
         let options = Options {
             target,
             auth: Auth {
@@ -114,10 +165,14 @@ impl SftpStorage {
                 password: Some(password.clone()).filter(|p| !p.is_empty()),
                 agent_socket: None,
             },
-            policy: HostKeyPolicy::Strict,
-            known_hosts: s.known_hosts.clone(),
-            prompter: None,
-            secrets: Some(Arc::new(Password(password))),
+            policy: HostKeyPolicy::Ask,
+            known_hosts,
+            prompter: Some(prompter),
+            secrets: Some(Arc::new(Kept {
+                password,
+                id: self.id.clone(),
+                asking: asking.clone(),
+            })),
             forwarded: None,
             keepalive: None,
             size: None,
@@ -136,7 +191,7 @@ impl SftpStorage {
             };
             Ok::<_, shellwing_ssh::Error>(Open { connection, top })
         });
-        let made = Arc::new(made.map_err(said)?);
+        let made = Arc::new(made.map_err(|e| asking.failed(e))?);
         *open = Some(made.clone());
         Ok(made)
     }
@@ -600,6 +655,7 @@ impl StorageKind for SftpKind {
                 .and_then(|t| t.get("password"))
                 .cloned()
                 .unwrap_or_default(),
+            key: values.get("key").filter(|k| !k.is_empty()).cloned(),
             key_file: None,
             known_hosts: None,
         };

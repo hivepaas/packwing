@@ -2944,6 +2944,12 @@ t6485842e = Это хранилище пока принимает файлы н�
 # This storage cannot rename a folder at once, as everything under it would be copied. Use Move to….
 ta87a5d75 = Это хранилище не умеет сразу переименовывать папку, так как пришлось бы копировать всё внутри. Используйте «Переместить в…».
 
+# The key has a passphrase: type it to open the key.
+t253e18ea = У ключа есть парольная фраза: введите её, чтобы открыть ключ.
+
+# That is not a private key. Paste the whole of the key file, from its BEGIN OPENSSH PRIVATE KEY line to its END line.
+t86217583 = Это не закрытый ключ. Вставьте файл ключа целиком, от строки BEGIN OPENSSH PRIVATE KEY до строки END.
+
 # S3 bucket
 tc5e013b3 = Бакет S3
 
@@ -2982,6 +2988,15 @@ t67b5f42b = Пусто — домашняя папка
 
 # Empty to use the SSH agent and keys
 tf10e6293 = Пусто — использовать SSH-агент и ключи
+
+# The key of {host} is not the one it had. Someone may be posing as it, or the server was set up again. Its key now is {fingerprint}; the one known is in {file}.
+tf9715f8d = Ключ { $host } не тот, что был раньше. Возможно, кто-то выдаёт себя за этот сервер, или сервер переустановили. Его ключ теперь { $fingerprint }; известный ключ записан в { $file }.
+
+# {host} was not trusted.
+tb6982896 = { $host } не получил доверия.
+
+# {host} is not known yet, and there is no one to ask whether to trust it.
+ta342611e = { $host } ещё неизвестен, и некого спросить, доверять ли ему.
 
 # WebDAV folder
 tb2401428 = Папка WebDAV
