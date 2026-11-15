@@ -3419,11 +3419,11 @@ t0923b4df = Açılamıyor
 # OK
 t85e4b82f = Tamam
 
-# {name} is encrypted with a passphrase. Ask the person who sent it for it.
-ta6455c99 = { $name } bir parola ifadesiyle şifrelenmiş. Parola ifadesini gönderen kişiden isteyin.
-
 # {name} is locked. Ask the person who sent it for its password.
 te1845608 = { $name } kilitli. Parolasını gönderen kişiden isteyin.
+
+# {name} is encrypted with a passphrase. Ask the person who sent it for it.
+ta6455c99 = { $name } bir parola ifadesiyle şifrelenmiş. Parola ifadesini gönderen kişiden isteyin.
 
 # Hide password
 tcd577cde = Parolayı gizle

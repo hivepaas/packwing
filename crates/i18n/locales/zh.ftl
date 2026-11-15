@@ -3364,11 +3364,11 @@ t0923b4df = 无法打开
 # OK
 t85e4b82f = 好
 
-# {name} is encrypted with a passphrase. Ask the person who sent it for it.
-ta6455c99 = { $name } 已用密码短语加密。请向发送者索取密码短语。
-
 # {name} is locked. Ask the person who sent it for its password.
 te1845608 = { $name } 受密码保护。请向发送者索取密码。
+
+# {name} is encrypted with a passphrase. Ask the person who sent it for it.
+ta6455c99 = { $name } 已用密码短语加密。请向发送者索取密码短语。
 
 # Hide password
 tcd577cde = 隐藏密码

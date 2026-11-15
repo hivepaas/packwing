@@ -3419,11 +3419,11 @@ t0923b4df = Impossibile aprirlo
 # OK
 t85e4b82f = OK
 
-# {name} is encrypted with a passphrase. Ask the person who sent it for it.
-ta6455c99 = { $name } è cifrato con una passphrase. Chiedila a chi te l'ha inviato.
-
 # {name} is locked. Ask the person who sent it for its password.
 te1845608 = { $name } è protetto da password. Chiedila a chi te l'ha inviato.
+
+# {name} is encrypted with a passphrase. Ask the person who sent it for it.
+ta6455c99 = { $name } è cifrato con una passphrase. Chiedila a chi te l'ha inviato.
 
 # Hide password
 tcd577cde = Nascondi la password

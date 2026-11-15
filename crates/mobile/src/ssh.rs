@@ -131,6 +131,7 @@ pub fn import_ssh_key(
                 Some(KeyRefused::Passphrase) => MobileError::Locked {
                     reason,
                     passphrase: true,
+                    asks: crate::Asks::KeyPassphrase,
                 },
                 _ => MobileError::Failed { reason },
             }

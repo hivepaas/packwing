@@ -3373,11 +3373,11 @@ t0923b4df = Tidak dapat dibuka
 # OK
 t85e4b82f = OK
 
-# {name} is encrypted with a passphrase. Ask the person who sent it for it.
-ta6455c99 = { $name } dienkripsi dengan frasa sandi. Mintalah frasa sandinya kepada pengirim.
-
 # {name} is locked. Ask the person who sent it for its password.
 te1845608 = { $name } terkunci. Mintalah kata sandinya kepada pengirim.
+
+# {name} is encrypted with a passphrase. Ask the person who sent it for it.
+ta6455c99 = { $name } dienkripsi dengan frasa sandi. Mintalah frasa sandinya kepada pengirim.
 
 # Hide password
 tcd577cde = Sembunyikan kata sandi

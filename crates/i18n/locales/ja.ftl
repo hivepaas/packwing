@@ -3364,11 +3364,11 @@ t0923b4df = 開けません
 # OK
 t85e4b82f = OK
 
-# {name} is encrypted with a passphrase. Ask the person who sent it for it.
-ta6455c99 = { $name } はパスフレーズで暗号化されています。送ってくれた人にパスフレーズを尋ねてください。
-
 # {name} is locked. Ask the person who sent it for its password.
 te1845608 = { $name } はロックされています。送ってくれた人にパスワードを尋ねてください。
+
+# {name} is encrypted with a passphrase. Ask the person who sent it for it.
+ta6455c99 = { $name } はパスフレーズで暗号化されています。送ってくれた人にパスフレーズを尋ねてください。
 
 # Hide password
 tcd577cde = パスワードを隠す

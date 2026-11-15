@@ -18,6 +18,7 @@
 
 uniffi::setup_scaffolding!();
 
+mod age;
 mod checksum;
 mod edit;
 mod i18n;
@@ -41,6 +42,7 @@ use packwing_core::{
     Listen, Listing, NewArchive, Progress, Source, Summary,
 };
 
+pub use age::{AgeKeysFile, age_key_is_post_quantum, age_key_problem, age_keys_in, check_key_file};
 pub use checksum::{
     Checksum, ChecksumKind, ChecksumKindRow, Compared, EntryChecksum, EntryChecksums, FileVerdict,
     FoundBySum, PastedCompared, checksum_kinds, checksum_list, checksum_list_name,
@@ -66,10 +68,17 @@ pub enum MobileError {
     /// Not an archive packwing opens, or a kind it does not read yet.
     #[error("{reason}")]
     NotAnArchive { reason: String },
-    /// Encrypted, and nothing given opens it: it needs a password (ZIP, 7z,
-    /// RAR), or a passphrase (an age file) with `passphrase`.
+    /// Encrypted, and nothing given opens it: `asks` says what does, a
+    /// password (ZIP, 7z, RAR), an age file's passphrase, the key file it was
+    /// encrypted to, or that key file's passphrase. `passphrase` is whether it
+    /// is the age file's passphrase. A key file asked again, one given, was not
+    /// the key; `reason` says so.
     #[error("{reason}")]
-    Locked { reason: String, passphrase: bool },
+    Locked {
+        reason: String,
+        passphrase: bool,
+        asks: Asks,
+    },
     /// The password or passphrase given is not its own, or its data is damaged.
     #[error("{reason}")]
     WrongPassword { reason: String },
@@ -86,16 +95,13 @@ impl From<Error> for MobileError {
         match e {
             Error::NotAnArchive | Error::Unsupported(_) => MobileError::NotAnArchive { reason },
             Error::Locked { needs } => match Keys::asks_for(&needs) {
-                Some(Asked::Password) => MobileError::Locked {
+                Some(asked) => MobileError::Locked {
                     reason,
-                    passphrase: false,
+                    passphrase: asked == Asked::Passphrase,
+                    asks: asked.into(),
                 },
-                Some(Asked::Passphrase) => MobileError::Locked {
-                    reason,
-                    passphrase: true,
-                },
-                // Age keys, and their files' passphrases: not on the phone yet.
-                _ => MobileError::Failed { reason },
+                // A kind of key packwing does not read.
+                None => MobileError::Failed { reason },
             },
             Error::WrongPassword | Error::WrongPassphrase | Error::WrongKeyPassphrase => {
                 MobileError::WrongPassword { reason }
@@ -121,13 +127,29 @@ pub fn start(support_folder: String, language: Option<String>) {
 }
 
 /// What opens an encrypted archive: its password (ZIP, 7z, RAR), and the
-/// passphrase of an age file.
-#[derive(Clone, Debug, Default, PartialEq, Eq, uniffi::Record)]
+/// passphrase of an age file, or what is in the key file it was encrypted to
+/// (age's keys, or an SSH key) and that file's own passphrase.
+#[derive(Clone, PartialEq, Eq, uniffi::Record, Default)]
 pub struct Secrets {
     #[uniffi(default = None)]
     pub password: Option<String>,
     #[uniffi(default = None)]
     pub passphrase: Option<String>,
+    #[uniffi(default = None)]
+    pub key_file: Option<Vec<u8>>,
+    #[uniffi(default = None)]
+    pub key_passphrase: Option<String>,
+}
+
+impl std::fmt::Debug for Secrets {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Secrets")
+            .field("password", &self.password.is_some())
+            .field("passphrase", &self.passphrase.is_some())
+            .field("key_file", &self.key_file.is_some())
+            .field("key_passphrase", &self.key_passphrase.is_some())
+            .finish()
+    }
 }
 
 impl Secrets {
@@ -135,7 +157,30 @@ impl Secrets {
         Keys {
             password: self.password.as_ref().map(|p| p.as_bytes().to_vec()),
             passphrase: self.passphrase.as_ref().map(|p| p.as_bytes().to_vec()),
-            ..Keys::default()
+            key_file: self.key_file.clone(),
+            key_passphrase: self.key_passphrase.as_ref().map(|p| p.as_bytes().to_vec()),
+        }
+    }
+}
+
+/// What a locked archive asks for.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, uniffi::Enum)]
+pub enum Asks {
+    Password,
+    Passphrase,
+    /// The key file an age file was encrypted to.
+    KeyFile,
+    /// That key file's own passphrase.
+    KeyPassphrase,
+}
+
+impl From<Asked> for Asks {
+    fn from(asked: Asked) -> Asks {
+        match asked {
+            Asked::Password => Asks::Password,
+            Asked::Passphrase => Asks::Passphrase,
+            Asked::KeyFile => Asks::KeyFile,
+            Asked::KeyPassphrase => Asks::KeyPassphrase,
         }
     }
 }
@@ -617,6 +662,10 @@ pub struct NewArchiveHow {
     /// 7-Zip does.
     #[uniffi(default = None)]
     pub part_size: Option<u64>,
+    /// Encrypts all of it with age to these public keys (age's, or SSH
+    /// keys), in place of a passphrase: formats other than ZIP and 7z.
+    #[uniffi(default = [])]
+    pub age_keys: Vec<String>,
 }
 
 /// Makes an archive of `paths` (files and folders) at `wanted`, or beside it
@@ -654,6 +703,7 @@ impl NewArchiveHow {
             password: how.password.map(String::into_bytes),
             hide_names: how.hide_names && how.format == ArchiveFormat::SevenZip,
             part_size: how.part_size,
+            age_keys: how.age_keys,
             stored_extensions: COMPRESSED_EXTENSIONS
                 .iter()
                 .map(|e| e.to_string())

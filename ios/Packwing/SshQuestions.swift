@@ -388,7 +388,7 @@ struct ImportKeySheet: View {
                                        passphrase: passphrase.isEmpty ? nil : passphrase)
             kept(key)
             dismiss()
-        } catch MobileError.Locked(let why, _) {
+        } catch MobileError.Locked(let why, _, _) {
             asksPassphrase = true
             problem = why
         } catch {

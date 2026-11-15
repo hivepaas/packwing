@@ -3364,11 +3364,11 @@ t0923b4df = 열 수 없음
 # OK
 t85e4b82f = 확인
 
-# {name} is encrypted with a passphrase. Ask the person who sent it for it.
-ta6455c99 = { $name }은(는) 암호 문구로 암호화되어 있습니다. 보낸 사람에게 암호 문구를 물어보세요.
-
 # {name} is locked. Ask the person who sent it for its password.
 te1845608 = { $name }은(는) 잠겨 있습니다. 보낸 사람에게 비밀번호를 물어보세요.
+
+# {name} is encrypted with a passphrase. Ask the person who sent it for it.
+ta6455c99 = { $name }은(는) 암호 문구로 암호화되어 있습니다. 보낸 사람에게 암호 문구를 물어보세요.
 
 # Hide password
 tcd577cde = 비밀번호 숨기기

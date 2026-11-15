@@ -2,16 +2,16 @@
 //! (with and without their passwords), searched, read and extracted.
 
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use packwing_mobile::{
-    Archive, ArchiveFormat, Checksum, ChecksumKind, Compared, CompressionLevel, FileVerdict, Job,
-    JobListener, JobProgress, MobileError, NewArchiveHow, OnExisting, PastedCompared,
-    RemoteStorage, Secrets, SignatureState, SshQuestions, TypedSecret, archive_formats,
-    ask_ssh_with, checksum_kinds, checksum_list, checksum_list_name, compare_checksum,
-    compare_pasted, create_archive, describe_storage, read_key, start, stem, storage_kinds,
-    transfer_items,
+    Archive, ArchiveFormat, Asks, Checksum, ChecksumKind, Compared, CompressionLevel, FileVerdict,
+    Job, JobListener, JobProgress, MobileError, NewArchiveHow, OnExisting, PastedCompared,
+    RemoteStorage, Secrets, SignatureState, SshQuestions, TypedSecret, age_key_is_post_quantum,
+    age_key_problem, age_keys_in, archive_formats, ask_ssh_with, check_key_file, checksum_kinds,
+    checksum_list, checksum_list_name, compare_checksum, compare_pasted, create_archive,
+    describe_storage, read_key, start, stem, storage_kinds, transfer_items,
 };
 
 /// A folder of files to make archives of: `Báo cáo/tổng hợp.txt` and
@@ -38,6 +38,7 @@ fn make(dir: &Path, format: ArchiveFormat, password: Option<&str>, hide_names: b
             password: password.map(str::to_owned),
             hide_names,
             part_size: None,
+            age_keys: vec![],
         },
         Job::quiet(),
     )
@@ -47,7 +48,7 @@ fn make(dir: &Path, format: ArchiveFormat, password: Option<&str>, hide_names: b
 fn with(password: &str) -> Secrets {
     Secrets {
         password: Some(password.to_owned()),
-        passphrase: None,
+        ..Secrets::default()
     }
 }
 
@@ -794,6 +795,7 @@ fn a_storage_is_written_to_from_the_phone() {
                 password: None,
                 hide_names: false,
                 part_size: None,
+                age_keys: vec![],
             },
             Job::quiet(),
         )
@@ -849,6 +851,7 @@ fn every_format_the_desktop_makes_is_made_and_opened_again() {
                     password: password.map(str::to_owned),
                     hide_names: false,
                     part_size: None,
+                    age_keys: vec![],
                 },
                 Job::quiet(),
             )
@@ -856,8 +859,8 @@ fn every_format_the_desktop_makes_is_made_and_opened_again() {
             assert!(made.ends_with(&row.ext), "{made}");
             let secrets = match (password, row.uses_age) {
                 (Some(p), true) => Secrets {
-                    password: None,
                     passphrase: Some(p.to_owned()),
+                    ..Secrets::default()
                 },
                 (Some(p), false) => with(p),
                 (None, _) => Secrets::default(),
@@ -870,4 +873,110 @@ fn every_format_the_desktop_makes_is_made_and_opened_again() {
     }
     // Without one file, those for one file are not offered.
     assert_eq!(archive_formats(false).len(), 8);
+}
+
+/// The core's test data: age files, and the key files they were encrypted to.
+fn core_data(name: &str) -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../core/tests/data")
+        .join(name)
+}
+
+#[test]
+fn an_age_file_opens_with_its_key_file_and_that_files_passphrase() {
+    let file = core_data("x25519.tar.zst.age").display().to_string();
+    // Nothing given: its key file asked for.
+    match Archive::open(file.clone(), Secrets::default(), Job::quiet()) {
+        Err(MobileError::Locked {
+            asks, passphrase, ..
+        }) => {
+            assert_eq!(asks, Asks::KeyFile);
+            assert!(!passphrase);
+        }
+        other => panic!("{:?}", other.map(|a| a.info())),
+    }
+    // Not a key file.
+    assert!(check_key_file(b"hello".to_vec()).is_err());
+    let key = fs::read(core_data("test-age.key")).expect("key");
+    check_key_file(key.clone()).expect("a key file");
+    let archive = Archive::open(
+        file.clone(),
+        Secrets {
+            key_file: Some(key),
+            ..Secrets::default()
+        },
+        Job::quiet(),
+    )
+    .expect("opened with its key");
+    assert!(archive.info().files >= 1);
+
+    // A key file protected itself: its passphrase asked for, then a wrong one said.
+    let file = core_data("ssh-locked.tar.zst.age").display().to_string();
+    let key = fs::read(core_data("test-ssh-locked.key")).expect("key");
+    check_key_file(key.clone()).expect("a key file, protected");
+    let given = |passphrase: Option<&str>| Secrets {
+        key_file: Some(key.clone()),
+        key_passphrase: passphrase.map(str::to_owned),
+        ..Secrets::default()
+    };
+    match Archive::open(file.clone(), given(None), Job::quiet()) {
+        Err(MobileError::Locked { asks, .. }) => assert_eq!(asks, Asks::KeyPassphrase),
+        other => panic!("{:?}", other.map(|a| a.info())),
+    }
+    assert!(matches!(
+        Archive::open(file.clone(), given(Some("sai")), Job::quiet()),
+        Err(MobileError::WrongPassword { .. })
+    ));
+    Archive::open(file, given(Some("khoá ssh")), Job::quiet()).expect("opened");
+}
+
+#[test]
+fn a_new_age_file_is_encrypted_to_public_keys() {
+    let dir = tempfile::tempdir().expect("dir");
+    let folder = files(dir.path());
+    let key = fs::read(core_data("test-age.key")).expect("key");
+    let public = String::from_utf8_lossy(&key)
+        .lines()
+        .find_map(|l| l.strip_prefix("# public key: "))
+        .expect("public")
+        .to_owned();
+    assert_eq!(age_key_problem(public.clone()), None);
+    assert!(age_key_problem("age1nope".to_owned()).is_some());
+    assert!(!age_key_is_post_quantum(public.clone()));
+
+    // A file of keys, as `age -R` reads it.
+    let read = age_keys_in(format!("# mine\n{public}\n").into_bytes()).expect("keys");
+    assert_eq!(read.keys, [public.as_str()]);
+    assert!(age_keys_in(b"# none\n".to_vec()).is_err());
+
+    let wanted = dir.path().join("made.tar.zst.age");
+    let made = create_archive(
+        vec![folder],
+        wanted.display().to_string(),
+        NewArchiveHow {
+            format: ArchiveFormat::TarZst,
+            compression: CompressionLevel::Low,
+            age_keys: read.keys,
+            ..NewArchiveHow::default()
+        },
+        Job::quiet(),
+    )
+    .expect("made");
+    assert!(matches!(
+        Archive::open(made.clone(), Secrets::default(), Job::quiet()),
+        Err(MobileError::Locked {
+            asks: Asks::KeyFile,
+            ..
+        })
+    ));
+    let archive = Archive::open(
+        made,
+        Secrets {
+            key_file: Some(key),
+            ..Secrets::default()
+        },
+        Job::quiet(),
+    )
+    .expect("opened with the key");
+    assert!(archive.info().files >= 1);
 }

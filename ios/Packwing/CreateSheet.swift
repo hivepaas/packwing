@@ -83,6 +83,14 @@ struct CreateSheet: View {
     @State private var password = ""
     @State private var showingPassword = false
     @State private var hideNames = false
+    /// age to public keys, in place of a passphrase.
+    @State private var toKeys = false
+    /// A public key typed or pasted.
+    @State private var key = ""
+    /// A file of public keys chosen, in place of one typed.
+    @State private var keysFile: KeysFile?
+    @State private var keysProblem: String?
+    @State private var choosingKeys = false
     /// The bytes of each part, if it is cut in parts.
     @State private var partSize: UInt64?
     @State private var adding: NewSource?
@@ -121,7 +129,7 @@ struct CreateSheet: View {
                                 if now != draft.suggestedName { named = true }
                             }
                             .accessibilityIdentifier("new-name")
-                        Text(format.ext)
+                        Text(savedExt)
                             .foregroundStyle(Tonal.muted)
                     }
                 }
@@ -155,7 +163,17 @@ struct CreateSheet: View {
                         Text(tr("4 GB (USB stick)")).tag(UInt64?.some(4_000_000_000))
                     }
                     Toggle(format.usesAge ? tr("Encrypt with age") : tr("Protect with a password"), isOn: $locked.animation())
-                    if locked {
+                    if locked && format.usesAge {
+                        Picker(tr("Encrypt with age"), selection: $toKeys.animation()) {
+                            Text(tr("Passphrase")).tag(false)
+                            Text(tr("Public key")).tag(true)
+                        }
+                        .pickerStyle(.segmented)
+                        .accessibilityIdentifier("new-age-to")
+                    }
+                    if locked && format.usesAge && toKeys {
+                        keysPart
+                    } else if locked {
                         HStack(spacing: 8) {
                             Group {
                                 if showingPassword {
@@ -297,7 +315,7 @@ struct CreateSheet: View {
         var said = name.trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: "/", with: "-")
             .replacingOccurrences(of: ":", with: "-")
-        let ext = chosenFormat.ext
+        let ext = savedExt
         if said.lowercased().hasSuffix(ext) { said.removeLast(ext.count) }
         return said.trimmingCharacters(in: .whitespaces)
     }
@@ -332,7 +350,94 @@ struct CreateSheet: View {
     }
 
     private var ready: Bool {
-        !draft.items.isEmpty && draft.fetching == 0 && !fileName.isEmpty && !(locked && password.isEmpty)
+        guard !draft.items.isEmpty && draft.fetching == 0 && !fileName.isEmpty else { return false }
+        guard locked else { return true }
+        return encryptsToKeys ? !ageKeys.isEmpty : !password.isEmpty
+    }
+
+    /// What follows its name: `.age` too where age encrypts it.
+    private var savedExt: String {
+        chosenFormat.ext + (locked && chosenFormat.usesAge ? ".age" : "")
+    }
+
+    /// Whether it is to be encrypted to public keys, with age.
+    private var encryptsToKeys: Bool { locked && toKeys && chosenFormat.usesAge }
+
+    /// The public keys age is to encrypt to: those of the file chosen, or the
+    /// one typed if it is one.
+    private var ageKeys: [String] {
+        guard encryptsToKeys else { return [] }
+        if let keysFile { return keysFile.keys }
+        let typed = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !typed.isEmpty && ageKeyProblem(key: typed) == nil ? [typed] : []
+    }
+
+    /// What is asked for encrypting to keys: one typed, or a file of them.
+    @ViewBuilder private var keysPart: some View {
+        if let keysFile {
+            HStack {
+                Text(trN(keysFile.keys.count, "{n} key from {name}", "{n} keys from {name}", ["name": keysFile.name]))
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .accessibilityIdentifier("new-age-keys-file")
+                Spacer(minLength: 8)
+                Button(tr("Remove")) { self.keysFile = nil }
+                    .buttonStyle(.borderless)
+            }
+            if keysFile.leftOut > 0 {
+                warning(trN(Int(keysFile.leftOut),
+                            "{n} key in it was left out, of a kind age does not encrypt to.",
+                            "{n} keys in it were left out, of a kind age does not encrypt to."))
+            }
+        } else {
+            HStack(spacing: 8) {
+                TextField(tr("age1…, age1pq1… or ssh-ed25519 …"), text: $key)
+                    .textContentType(.oneTimeCode)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .accessibilityIdentifier("new-age-key")
+                Button(tr("From a file…")) { choosingKeys = true }
+                    .buttonStyle(.bordered)
+                    .fixedSize()
+            }
+            .fileImporter(isPresented: $choosingKeys, allowedContentTypes: [.item]) { result in
+                guard case .success(let url) = result else { return }
+                readKeys(url)
+            }
+            let typed = key.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !typed.isEmpty, let problem = ageKeyProblem(key: typed) {
+                warning(problem)
+            }
+        }
+        if let keysProblem { warning(keysProblem) }
+        if ageKeys.contains(where: { ageKeyIsPostQuantum(key: $0) }) {
+            warning(tr("A post-quantum key: to open this, the age tool must be version 1.3 or newer."))
+        }
+        warning(tr("Only the private key that goes with it opens this, and nothing can if that key is lost."))
+    }
+
+    private func warning(_ text: String) -> some View {
+        Label(text, systemImage: "exclamationmark.triangle")
+            .font(.nunito(13, relativeTo: .footnote))
+            .foregroundStyle(Tonal.warnText)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    /// Reads the public keys in the file at `url`, as `age -R` reads them.
+    private func readKeys(_ url: URL) {
+        let scoped = url.startAccessingSecurityScopedResource()
+        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+        do {
+            let handle = try FileHandle(forReadingFrom: url)
+            defer { try? handle.close() }
+            let bytes = try handle.read(upToCount: 16 << 20) ?? Data()
+            let read = try ageKeysIn(contents: bytes)
+            keysFile = KeysFile(name: url.lastPathComponent, keys: read.keys, leftOut: read.leftOut)
+            keysProblem = nil
+        } catch {
+            keysFile = nil
+            keysProblem = (error as? MobileError).map(reason) ?? error.localizedDescription
+        }
     }
 
     private func start(_ folder: URL) {
@@ -341,19 +446,28 @@ struct CreateSheet: View {
         let how = NewArchiveHow(
             format: format,
             compression: level,
-            password: locked ? password : nil,
+            password: locked && !encryptsToKeys ? password : nil,
             hideNames: locked && hideNames && format == .sevenZip,
-            partSize: partSize)
+            partSize: partSize,
+            ageKeys: ageKeys)
         let name = fileName
         if let toStorage {
             model.afterSheet = { [model, draft] in
-                model.create(draft, named: name + format.ext, how: how, on: toStorage.handle, in: toStorage.folder)
+                model.create(draft, named: name + how.ext, how: how, on: toStorage.handle, in: toStorage.folder)
             }
         } else {
             model.afterSheet = { [model, draft] in model.create(draft, named: name, how: how, in: folder) }
         }
         dismiss()
     }
+}
+
+/// A file of public keys age encrypts to.
+private struct KeysFile {
+    let name: String
+    let keys: [String]
+    /// Of a kind age does not encrypt to.
+    let leftOut: UInt64
 }
 
 /// What goes in, in short: the first few as tiles, how many and how big.
