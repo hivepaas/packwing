@@ -34,7 +34,8 @@
 # Without them the app is signed ad hoc,
 # with the same entitlements, and the package is not signed: enough to check
 # what is in it, not to send it. To send it, UPLOAD=1 and an App Store Connect
-# API key: APPLE_API_KEY_PATH, APPLE_API_KEY_ID, APPLE_API_ISSUER_ID.
+# API key: APPLE_API_KEY_PATH, APPLE_API_KEY_ID, APPLE_API_ISSUER_ID; APPLE_ID
+# is the app's id in App Store Connect (default Packwing's, 6834744685).
 
 set -euo pipefail
 
@@ -200,9 +201,17 @@ fi
 
 ## Sent to App Store Connect, checked by it first
 if [ -n "${UPLOAD:-}" ]; then
-	AUTH=(--api-key "$APPLE_API_KEY_ID" --api-issuer "$APPLE_API_ISSUER_ID" --p8-file-path "$APPLE_API_KEY_PATH")
-	xcrun altool --validate-app "$PKG" --type macos "${AUTH[@]}"
-	xcrun altool --upload-package "$PKG" "${AUTH[@]}"
+	# altool reads the key as AuthKey_<key id>.p8 in API_PRIVATE_KEYS_DIR, and
+	# takes the store's id for the app (APPLE_ID) and the bundle's versions.
+	KEYS="$(mktemp -d)"
+	trap 'rm -rf "$KEYS"' EXIT
+	cp "$APPLE_API_KEY_PATH" "$KEYS/AuthKey_$APPLE_API_KEY_ID.p8"
+	export API_PRIVATE_KEYS_DIR="$KEYS"
+	AUTH=(--apiKey "$APPLE_API_KEY_ID" --apiIssuer "$APPLE_API_ISSUER_ID")
+	xcrun altool --validate-app -f "$PKG" -t macos "${AUTH[@]}"
+	xcrun altool --upload-package "$PKG" -t macos --apple-id "${APPLE_ID:-6834744685}" \
+		--bundle-id "$BUNDLE_ID" --bundle-short-version-string "$VERSION" \
+		--bundle-version "$BUILD_NUMBER" "${AUTH[@]}"
 fi
 
 ls -l "$PKG"
