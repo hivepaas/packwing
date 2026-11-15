@@ -50,6 +50,14 @@ final class AppTests: XCTestCase {
         element.tap()
     }
 
+    /// Scrolls until `element` is there: a list's rows below the screen are
+    /// not made until they are scrolled to.
+    private func scrollTo(_ app: XCUIApplication, _ element: XCUIElement) {
+        for _ in 0..<6 where !element.waitForExistence(timeout: 1) {
+            app.swipeUp()
+        }
+    }
+
     private func text(_ app: XCUIApplication, starting prefix: String) -> XCUIElement {
         app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", prefix)).firstMatch
     }
@@ -568,9 +576,12 @@ final class AppTests: XCTestCase {
         app.launch()
         tapWhenReady(app.buttons.matching(NSPredicate(format: "label == 'Settings'")).firstMatch)
         let plan = app.staticTexts["store-plan"]
+        scrollTo(app, plan)
         XCTAssert(plan.waitForExistence(timeout: 10))
         XCTAssertEqual(plan.label, "packwing Free")
         let yearly = app.buttons["store-buy-yearly"]
+        // The terms are the last of the plans: all of them are there then.
+        scrollTo(app, app.descendants(matching: .any)["store-privacy"])
         XCTAssertEqual(yearly.label, "$8.99 a year")
         XCTAssertEqual(app.buttons["store-buy-monthly"].label, "$0.99 a month")
         XCTAssert(app.descendants(matching: .any)["store-terms"].exists)
@@ -585,6 +596,7 @@ final class AppTests: XCTestCase {
         app.launchArguments = ["-AppleLanguages", "(en)", "-language", "", "-store", "fake"]
         app.launch()
         tapWhenReady(app.buttons.matching(NSPredicate(format: "label == 'Settings'")).firstMatch)
+        scrollTo(app, app.descendants(matching: .any)["store-held"])
         XCTAssert(app.descendants(matching: .any)["store-held"].waitForExistence(timeout: 10))
         keep(app, "store-pro")
 
@@ -602,6 +614,7 @@ final class AppTests: XCTestCase {
         app.launch()
         tapWhenReady(app.buttons.matching(NSPredicate(format: "label == 'Settings'")).firstMatch)
         let monthly = app.buttons["store-buy-monthly"]
+        scrollTo(app, monthly)
         XCTAssert(monthly.waitForExistence(timeout: 10))
         XCTAssertEqual(monthly.label, "Monthly")
         XCTAssertEqual(app.buttons["store-buy-yearly"].label, "$8.99 a year")
@@ -858,5 +871,24 @@ final class AppTests: XCTestCase {
         app.buttons["Signature"].tap()
         XCTAssert(app.staticTexts["Signed by \(name)"].waitForExistence(timeout: 15))
         keep(app, "signed-checked")
+    }
+
+    /// Settings has the desktop's choices for new archives and extracting:
+    /// what is compressed already goes in as it is, Mac-only files are left
+    /// out, and an archive may unpack to 100 GB, until changed.
+    func testSettingsHaveTheDesktopsChoices() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-AppleLanguages", "(en)", "-language", "", "-storeCompressed", "YES",
+                               "-skipMacFiles", "YES", "-extractLimit", "100gb"]
+        app.launch()
+        tapWhenReady(app.buttons.matching(NSPredicate(format: "label == 'Settings'")).firstMatch)
+        let stored = app.switches["settings-store-compressed"]
+        XCTAssert(stored.waitForExistence(timeout: 10))
+        XCTAssertEqual(stored.value as? String, "1")
+        XCTAssertEqual(app.switches["settings-skip-mac-files"].value as? String, "1")
+        let limit = app.buttons["settings-extract-limit"]
+        XCTAssert(limit.waitForExistence(timeout: 5))
+        XCTAssert("\(limit.label) \(limit.value ?? "")".contains("100 GB"), "\(limit.label) \(limit.value ?? "")")
+        keep(app, "settings-choices")
     }
 }

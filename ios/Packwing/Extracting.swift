@@ -104,6 +104,13 @@ extension AppModel {
         }
     }
 
+    /// How Settings › Extracting says to extract: the most an archive may
+    /// unpack to (0 for no limit), and never over a file that is there.
+    nonisolated static var extractHow: ExtractHow {
+        let kept = UserDefaults.standard.string(forKey: "extractLimit") ?? ""
+        return ExtractHow(overwrite: false, limit: ExtractLimit(key: kept).bytes)
+    }
+
     private func extractToFiles(
         _ opened: OpenedArchive, _ picked: [[String]], _ parent: URL, _ running: RunningJob
     ) async -> RunningJob.State {
@@ -111,11 +118,12 @@ extension AppModel {
         defer { if scoped { parent.stopAccessingSecurityScopedResource() } }
         let folder = Self.freeFolder(in: parent, named: stem(name: opened.info.name))
         let job = running.job
+        let how = Self.extractHow
         let result = await Task.detached(priority: .userInitiated) {
             Result {
                 try opened.archive.extract(
                     destination: folder.path(percentEncoded: false), picked: picked,
-                    how: ExtractHow(overwrite: false), job: job)
+                    how: how, job: job)
             }
         }.value
         switch result {
@@ -138,11 +146,12 @@ extension AppModel {
         let temp = URL.temporaryDirectory.appending(path: "photos-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: temp) }
         let job = running.job
+        let how = Self.extractHow
         let result = await Task.detached(priority: .userInitiated) {
             Result {
                 try opened.archive.extract(
                     destination: temp.path(percentEncoded: false), picked: picked,
-                    how: ExtractHow(overwrite: false), job: job)
+                    how: how, job: job)
             }
         }.value
         if case .failure(let error) = result { return Self.ended(by: error) }
