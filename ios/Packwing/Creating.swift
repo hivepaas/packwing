@@ -167,14 +167,38 @@ struct PhotoFile: Transferable {
 // MARK: How new archives are made, kept between them
 
 extension ArchiveFormat {
-    static let all: [ArchiveFormat] = [.zip, .sevenZip]
+    /// The desktop's, those for any files; with those for one file by itself.
+    private static let rows = archiveFormats(oneFile: true)
 
-    var key: String { self == .zip ? "zip" : "7z" }
-    var ext: String { self == .zip ? ".zip" : ".7z" }
-    var label: String { self == .zip ? "ZIP" : "7z" }
+    /// Those for any files, as Settings offers them.
+    static let all: [ArchiveFormat] = archiveFormats(oneFile: false).map(\.format)
+
+    /// Those for what is chosen: for one file by itself, those for it too.
+    static func offered(oneFile: Bool) -> [ArchiveFormat] {
+        archiveFormats(oneFile: oneFile).map(\.format)
+    }
+
+    private var row: ArchiveFormatRow { Self.rows.first { $0.format == self } ?? Self.rows[0] }
+
+    /// What follows its name: `.tar.zst`.
+    var ext: String { row.ext }
+    /// What it is kept as in the settings: `zip`, `tar.zst`.
+    var key: String { String(ext.dropFirst()) }
+    var label: String {
+        switch self {
+        case .zip: "ZIP"
+        case .sevenZip: "7z"
+        default: key
+        }
+    }
+    var oneFile: Bool { row.oneFile }
+    /// Its files can go in as they are (Store): ZIP's and 7z's.
+    var stores: Bool { row.stores }
+    /// A password encrypts it whole with age: all but ZIP and 7z.
+    var usesAge: Bool { row.usesAge }
 
     init(key: String) {
-        self = key == "7z" ? .sevenZip : .zip
+        self = Self.rows.first { $0.ext == "." + key }?.format ?? .zip
     }
 }
 
@@ -246,7 +270,8 @@ extension AppModel {
             case .success(let made):
                 let made = URL(filePath: made)
                 running.folder = folder
-                running.made = made
+                // In parts, there is no one file to share: Show in Files.
+                running.made = how.partSize == nil ? made : nil
                 running.finish(.done(detail: tr("{name} in {folder}",
                                                 ["name": made.lastPathComponent, "folder": shown(folder)])))
             case .failure(let error):

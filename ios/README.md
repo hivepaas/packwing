@@ -69,7 +69,7 @@ xcrun simctl launch booted com.hivepaas.packwing -open "<that folder>/Documents/
 | `Packwing/PasswordSheet.swift` | An archive's password, or an age file's passphrase |
 | `Packwing/ExtractSheet.swift`, `Extracting.swift` | Extract: to a new folder in Files (packwing's own, or one chosen), or the pictures and videos to Photos; a file previewed in Quick Look |
 | `Packwing/RunningJob.swift`, `JobScreen.swift` | A long job: how far it is, going on once packwing is left (BGContinuedProcessingTask), how it ended |
-| `Packwing/CreateSheet.swift`, `Creating.swift` | New archive: files, folders and photos chosen, ZIP or 7z, a password (AES-256, and 7z's names hidden too), made in a folder of Files and shared |
+| `Packwing/CreateSheet.swift`, `Creating.swift` | New archive: files, folders and photos chosen, in the desktop's formats (ZIP, 7z, the tar ones; gz, zst, xz, bz2, lz4 for one file), a password (ZIP's and 7z's AES-256, 7z's names hidden too; age around the others), cut in parts or not, made in a folder of Files or of a storage, and shared |
 | `Packwing/Store.swift` | packwing Pro, bought once in the App Store (StoreKit 2, the Mac App Store's purchase too): Settings' License, Buy and Restore Purchases; it lifts the one storage of packwing Free |
 | `Packwing/SettingsView.swift` | The language, how new archives are made, the license, the keys trusted, the SSH keys, the version |
 | `Packwing/Theme.swift` | The desktop's colors, light and dark; Nunito; a file's tag |
