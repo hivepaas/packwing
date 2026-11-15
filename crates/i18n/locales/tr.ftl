@@ -153,17 +153,38 @@ ta24f28a2 = Lisans anahtarı girin
 # Save
 t4d2d5d68 = Kaydet
 
-# Paste the checksum given with the file
-t8333758c = Dosyayla birlikte verilen sağlama toplamını yapıştırın
+# The file could not be read: {why}
+t5daa8455 = Dosya okunamadı: { $why }
 
 # They could not be saved: {why}
 tb45ae457 = Kaydedilemedi: { $why }
 
-# The file could not be read: {why}
-t5daa8455 = Dosya okunamadı: { $why }
+# {picked} selected
+t9addc37e = { $picked } seçili
 
-# Reading…
-t6aad8485 = Okunuyor…
+# Select files or folders in it first.
+t0c04494a = Önce içinden dosya ya da klasör seçin.
+
+# What should it read?
+t35c7f91a = Ne okunsun?
+
+# All {counted}
+t649feaf8 = Tümü: { $counted }
+
+# The archive itself
+t5db318fd = Arşivin kendisi
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = Dosyanın tamamı bu bilgisayardan geçer ve sağlayıcınız okunan veri için ücret alabilir.
+
+# What is read of it passes through this computer, and your provider may charge for it.
+t4c33fc44 = Ondan okunan veri bu bilgisayardan geçer ve sağlayıcınız bunun için ücret alabilir.
+
+# Checksums
+t47dd48d3 = Sağlama toplamları
+
+# Read it
+t80fb8482 = Oku
 
 # Copied
 t8dc21305 = Kopyalandı
@@ -173,6 +194,58 @@ t658f3664 = Kopyala
 
 # weak
 tedbc2ec9 = zayıf
+
+# Reading… {size} of {size2}
+t80036d1c = Okunuyor… { $size } / { $size2 }
+
+# Reading… {size}
+t1569c388 = Okunuyor… { $size }
+
+# There are no files in it to read.
+tcadaddd8 = İçinde okunacak dosya yok.
+
+# {count} file is damaged, and has none: {names} | {count} files are damaged, and have none: {names}
+tc7ad9be4 =
+    { $n ->
+        [one] { $count } dosya bozuk ve sağlama toplamı yok: { $names }
+       *[other] { $count } dosya bozuk ve sağlama toplamları yok: { $names }
+    }
+
+# Links have none of their own: a checking tool reads what they lead to.
+te144c986 = Bağlantıların kendi sağlama toplamı yoktur: denetleme aracı gösterdikleri yeri okur.
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = Zayıf bir sağlama toplamı ({ $names }) bozuk bir dosyayı yakalar, ama eşleşsin diye bilerek değiştirilmiş bir dosyayı yakalamaz.
+
+# Saved as {files}. Where they are extracted, sha256sum -c and the like check them with it, without packwing.
+t7a88cd8e = { $files } olarak kaydedildi. Çıkarıldıkları yerde sha256sum -c ve benzerleri packwing olmadan onlarla denetler.
+
+# Copy all
+t6aef5c37 = Tümünü kopyala
+
+# Saving…
+tbd79b37d = Kaydediliyor…
+
+# Save beside it
+t7f4d85e3 = Yanına kaydet
+
+# Save in…
+t846ddfa1 = Kaydedilecek yer…
+
+# Checksums in {name}
+t71a5c5d3 = { $name } içindeki sağlama toplamları
+
+# Done
+t8dd31791 = Bitti
+
+# Choose the checksums shown
+teec532fe = Gösterilen sağlama toplamlarını seç
+
+# Paste the checksum given with the file
+t8333758c = Dosyayla birlikte verilen sağlama toplamını yapıştırın
+
+# Reading…
+t6aad8485 = Okunuyor…
 
 # There is no checksum in this.
 t231f838a = Bunda sağlama toplamı yok.
@@ -198,41 +271,14 @@ tcbefe458 = Hesapla
 # Compare with
 tbddcfc14 = Şununla karşılaştır
 
-# Reading… {size} of {size2}
-t80036d1c = Okunuyor… { $size } / { $size2 }
-
-# Reading… {size}
-t1569c388 = Okunuyor… { $size }
-
 # Checksums of {name}
 te88f3ed9 = { $name } sağlama toplamları
-
-# All of the file passes through this computer, and your provider may charge for what is read from it.
-t8cca3c05 = Dosyanın tamamı bu bilgisayardan geçer ve sağlayıcınız okunan veri için ücret alabilir.
-
-# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
-t164fdec6 = Zayıf bir sağlama toplamı ({ $names }) bozuk bir dosyayı yakalar, ama eşleşsin diye bilerek değiştirilmiş bir dosyayı yakalamaz.
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = Yanına { $files } olarak kaydedildi; sha256sum -c ve benzerleri packwing olmadan denetler.
 
 # Compare…
 tec85be80 = Karşılaştır…
-
-# Saving…
-tbd79b37d = Kaydediliyor…
-
-# Save beside it
-t7f4d85e3 = Yanına kaydet
-
-# Choose the checksums shown
-teec532fe = Gösterilen sağlama toplamlarını seç
-
-# Read it
-t80fb8482 = Oku
-
-# Done
-t8dd31791 = Bitti
 
 # Nothing chosen yet
 tcf390b0a = Henüz bir şey seçilmedi
@@ -573,12 +619,6 @@ t2380eff7 = { $new_folder } · { $counted }, yani yeni bir klasörde
 
 # Extract here
 t354232ec = Buraya çıkar
-
-# {picked} selected
-t9addc37e = { $picked } seçili
-
-# All {counted}
-t649feaf8 = Tümü: { $counted }
 
 # What should it extract?
 td12e23bf = Neler çıkarılsın?
@@ -1299,9 +1339,6 @@ t3794d625 = Dosya Gezgini'nde aç
 # Open in the file manager
 td1ceabc4 = Dosya yöneticisinde aç
 
-# Copy all
-t6aef5c37 = Tümünü kopyala
-
 # This system has no folder for settings.
 tfd0ff0a1 = Bu sistemde ayarlar için bir klasör yok.
 
@@ -1434,9 +1471,6 @@ tbdf6bcd0 = İmza anahtarı oluştur
 
 # Join parts
 t4eee8c5f = Parçaları birleştir
-
-# Checksums
-t47dd48d3 = Sağlama toplamları
 
 # Audit log started
 tfb8df56f = Denetim günlüğü başladı

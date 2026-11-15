@@ -151,17 +151,38 @@ ta24f28a2 = ライセンスキーを入力
 # Save
 t4d2d5d68 = 保存
 
-# Paste the checksum given with the file
-t8333758c = ファイルと一緒に提供されたチェックサムを貼り付け
+# The file could not be read: {why}
+t5daa8455 = ファイルを読み取れませんでした: { $why }
 
 # They could not be saved: {why}
 tb45ae457 = 保存できませんでした: { $why }
 
-# The file could not be read: {why}
-t5daa8455 = ファイルを読み取れませんでした: { $why }
+# {picked} selected
+t9addc37e = { $picked } を選択中
 
-# Reading…
-t6aad8485 = 読み取り中…
+# Select files or folders in it first.
+t0c04494a = 先に中のファイルやフォルダーを選択してください。
+
+# What should it read?
+t35c7f91a = 何を読み取りますか？
+
+# All {counted}
+t649feaf8 = すべての { $counted }
+
+# The archive itself
+t5db318fd = アーカイブ自体
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = ファイル全体がこのコンピューターを通過し、読み取った分についてプロバイダーから料金がかかる場合があります。
+
+# What is read of it passes through this computer, and your provider may charge for it.
+t4c33fc44 = 読み取る分はこのコンピューターを通過し、プロバイダーから料金がかかる場合があります。
+
+# Checksums
+t47dd48d3 = チェックサム
+
+# Read it
+t80fb8482 = 読み取る
 
 # Copied
 t8dc21305 = コピーしました
@@ -171,6 +192,57 @@ t658f3664 = コピー
 
 # weak
 tedbc2ec9 = 弱い
+
+# Reading… {size} of {size2}
+t80036d1c = 読み取り中… { $size } / { $size2 }
+
+# Reading… {size}
+t1569c388 = 読み取り中… { $size }
+
+# There are no files in it to read.
+tcadaddd8 = 読み取るファイルがありません。
+
+# {count} file is damaged, and has none: {names} | {count} files are damaged, and have none: {names}
+tc7ad9be4 =
+    { $n ->
+       *[other] { $count } 個のファイルが破損していて、チェックサムがありません: { $names }
+    }
+
+# Links have none of their own: a checking tool reads what they lead to.
+te144c986 = リンクには独自のチェックサムがありません。確認ツールはリンク先を読み取ります。
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = 弱いチェックサム（{ $names }）は破損したファイルは見分けられますが、一致するように意図的に変更されたファイルは見分けられません。
+
+# Saved as {files}. Where they are extracted, sha256sum -c and the like check them with it, without packwing.
+t7a88cd8e = { $files } として保存しました。展開した場所で sha256sum -c などを使えば、packwing なしで確認できます。
+
+# Copy all
+t6aef5c37 = すべてコピー
+
+# Saving…
+tbd79b37d = 保存中…
+
+# Save beside it
+t7f4d85e3 = 隣に保存
+
+# Save in…
+t846ddfa1 = 保存先…
+
+# Checksums in {name}
+t71a5c5d3 = { $name } 内のチェックサム
+
+# Done
+t8dd31791 = 完了
+
+# Choose the checksums shown
+teec532fe = 表示するチェックサムを選ぶ
+
+# Paste the checksum given with the file
+t8333758c = ファイルと一緒に提供されたチェックサムを貼り付け
+
+# Reading…
+t6aad8485 = 読み取り中…
 
 # There is no checksum in this.
 t231f838a = チェックサムが含まれていません。
@@ -196,41 +268,14 @@ tcbefe458 = 作成
 # Compare with
 tbddcfc14 = 比較対象
 
-# Reading… {size} of {size2}
-t80036d1c = 読み取り中… { $size } / { $size2 }
-
-# Reading… {size}
-t1569c388 = 読み取り中… { $size }
-
 # Checksums of {name}
 te88f3ed9 = { $name } のチェックサム
-
-# All of the file passes through this computer, and your provider may charge for what is read from it.
-t8cca3c05 = ファイル全体がこのコンピューターを通過し、読み取った分についてプロバイダーから料金がかかる場合があります。
-
-# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
-t164fdec6 = 弱いチェックサム（{ $names }）は破損したファイルは見分けられますが、一致するように意図的に変更されたファイルは見分けられません。
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = { $files } として隣に保存しました。sha256sum -c などで packwing なしで確認できます。
 
 # Compare…
 tec85be80 = 比較…
-
-# Saving…
-tbd79b37d = 保存中…
-
-# Save beside it
-t7f4d85e3 = 隣に保存
-
-# Choose the checksums shown
-teec532fe = 表示するチェックサムを選ぶ
-
-# Read it
-t80fb8482 = 読み取る
-
-# Done
-t8dd31791 = 完了
 
 # Nothing chosen yet
 tcf390b0a = まだ何も選択されていません
@@ -567,12 +612,6 @@ t2380eff7 = { $new_folder } · { $counted }、つまり新しいフォルダ内
 
 # Extract here
 t354232ec = ここに展開
-
-# {picked} selected
-t9addc37e = { $picked } を選択中
-
-# All {counted}
-t649feaf8 = すべての { $counted }
 
 # What should it extract?
 td12e23bf = 何を展開しますか？
@@ -1282,9 +1321,6 @@ t3794d625 = エクスプローラーで開く
 # Open in the file manager
 td1ceabc4 = ファイルマネージャーで開く
 
-# Copy all
-t6aef5c37 = すべてコピー
-
 # This system has no folder for settings.
 tfd0ff0a1 = このシステムには設定用のフォルダがありません。
 
@@ -1416,9 +1452,6 @@ tbdf6bcd0 = 署名鍵を作成
 
 # Join parts
 t4eee8c5f = パーツを結合
-
-# Checksums
-t47dd48d3 = チェックサム
 
 # Audit log started
 tfb8df56f = 監査ログを開始

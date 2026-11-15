@@ -151,17 +151,38 @@ ta24f28a2 = 輸入授權金鑰
 # Save
 t4d2d5d68 = 儲存
 
-# Paste the checksum given with the file
-t8333758c = 貼上隨檔案提供的檢查碼
+# The file could not be read: {why}
+t5daa8455 = 無法讀取檔案：{ $why }
 
 # They could not be saved: {why}
 tb45ae457 = 無法儲存：{ $why }
 
-# The file could not be read: {why}
-t5daa8455 = 無法讀取檔案：{ $why }
+# {picked} selected
+t9addc37e = 已選取 { $picked }
 
-# Reading…
-t6aad8485 = 正在讀取…
+# Select files or folders in it first.
+t0c04494a = 請先選取其中的檔案或資料夾。
+
+# What should it read?
+t35c7f91a = 要讀取哪些內容？
+
+# All {counted}
+t649feaf8 = 全部 { $counted }
+
+# The archive itself
+t5db318fd = 封存檔本身
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = 整個檔案都會經過這台電腦，而你的服務供應商可能會就讀取的資料量收費。
+
+# What is read of it passes through this computer, and your provider may charge for it.
+t4c33fc44 = 讀取的內容會經過這台電腦，而你的服務供應商可能會就此收費。
+
+# Checksums
+t47dd48d3 = 檢查碼
+
+# Read it
+t80fb8482 = 讀取
 
 # Copied
 t8dc21305 = 已複製
@@ -171,6 +192,57 @@ t658f3664 = 複製
 
 # weak
 tedbc2ec9 = 弱
+
+# Reading… {size} of {size2}
+t80036d1c = 正在讀取… { $size } / { $size2 }
+
+# Reading… {size}
+t1569c388 = 正在讀取… { $size }
+
+# There are no files in it to read.
+tcadaddd8 = 其中沒有可讀取的檔案。
+
+# {count} file is damaged, and has none: {names} | {count} files are damaged, and have none: {names}
+tc7ad9be4 =
+    { $n ->
+       *[other] { $count } 個檔案已損毀，沒有檢查碼：{ $names }
+    }
+
+# Links have none of their own: a checking tool reads what they lead to.
+te144c986 = 連結沒有自己的檢查碼：驗證工具會讀取它指向的內容。
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = 弱檢查碼（{ $names }）能發現損壞的檔案，但無法發現被刻意修改成相符的檔案。
+
+# Saved as {files}. Where they are extracted, sha256sum -c and the like check them with it, without packwing.
+t7a88cd8e = 已儲存為 { $files }。在解壓縮的位置，sha256sum -c 等工具不需 packwing 即可用它們驗證。
+
+# Copy all
+t6aef5c37 = 全部複製
+
+# Saving…
+tbd79b37d = 正在儲存…
+
+# Save beside it
+t7f4d85e3 = 儲存在旁邊
+
+# Save in…
+t846ddfa1 = 儲存到…
+
+# Checksums in {name}
+t71a5c5d3 = { $name } 中的檢查碼
+
+# Done
+t8dd31791 = 完成
+
+# Choose the checksums shown
+teec532fe = 選擇顯示的檢查碼
+
+# Paste the checksum given with the file
+t8333758c = 貼上隨檔案提供的檢查碼
+
+# Reading…
+t6aad8485 = 正在讀取…
 
 # There is no checksum in this.
 t231f838a = 這裡面沒有檢查碼。
@@ -196,41 +268,14 @@ tcbefe458 = 產生
 # Compare with
 tbddcfc14 = 比較對象
 
-# Reading… {size} of {size2}
-t80036d1c = 正在讀取… { $size } / { $size2 }
-
-# Reading… {size}
-t1569c388 = 正在讀取… { $size }
-
 # Checksums of {name}
 te88f3ed9 = { $name } 的檢查碼
-
-# All of the file passes through this computer, and your provider may charge for what is read from it.
-t8cca3c05 = 整個檔案都會經過這台電腦，而你的服務供應商可能會就讀取的資料量收費。
-
-# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
-t164fdec6 = 弱檢查碼（{ $names }）能發現損壞的檔案，但無法發現被刻意修改成相符的檔案。
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = 已儲存在旁邊，檔名為 { $files }；sha256sum -c 等工具不需 packwing 即可驗證。
 
 # Compare…
 tec85be80 = 比較…
-
-# Saving…
-tbd79b37d = 正在儲存…
-
-# Save beside it
-t7f4d85e3 = 儲存在旁邊
-
-# Choose the checksums shown
-teec532fe = 選擇顯示的檢查碼
-
-# Read it
-t80fb8482 = 讀取
-
-# Done
-t8dd31791 = 完成
 
 # Nothing chosen yet
 tcf390b0a = 尚未選擇
@@ -567,12 +612,6 @@ t2380eff7 = { $new_folder } · { $counted }，因此解壓縮到新資料夾
 
 # Extract here
 t354232ec = 解壓縮到此處
-
-# {picked} selected
-t9addc37e = 已選取 { $picked }
-
-# All {counted}
-t649feaf8 = 全部 { $counted }
 
 # What should it extract?
 td12e23bf = 要解壓縮什麼？
@@ -1282,9 +1321,6 @@ t3794d625 = 在檔案總管中開啟
 # Open in the file manager
 td1ceabc4 = 在檔案管理員中開啟
 
-# Copy all
-t6aef5c37 = 全部複製
-
 # This system has no folder for settings.
 tfd0ff0a1 = 這個系統沒有存放設定的資料夾。
 
@@ -1416,9 +1452,6 @@ tbdf6bcd0 = 建立簽章金鑰
 
 # Join parts
 t4eee8c5f = 合併分卷
-
-# Checksums
-t47dd48d3 = 檢查碼
 
 # Audit log started
 tfb8df56f = 稽核記錄已開始

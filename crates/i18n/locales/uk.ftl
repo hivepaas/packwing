@@ -157,17 +157,38 @@ ta24f28a2 = Ввести ліцензійний ключ
 # Save
 t4d2d5d68 = Зберегти
 
-# Paste the checksum given with the file
-t8333758c = Вставте контрольну суму, надану разом із файлом
+# The file could not be read: {why}
+t5daa8455 = Не вдалося прочитати файл: { $why }
 
 # They could not be saved: {why}
 tb45ae457 = Не вдалося зберегти: { $why }
 
-# The file could not be read: {why}
-t5daa8455 = Не вдалося прочитати файл: { $why }
+# {picked} selected
+t9addc37e = Вибрано: { $picked }
 
-# Reading…
-t6aad8485 = Читання…
+# Select files or folders in it first.
+t0c04494a = Спершу виберіть у ньому файли або теки.
+
+# What should it read?
+t35c7f91a = Що прочитати?
+
+# All {counted}
+t649feaf8 = Усе: { $counted }
+
+# The archive itself
+t5db318fd = Сам архів
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = Увесь файл проходить через цей комп’ютер, і ваш провайдер може стягнути плату за прочитане з нього.
+
+# What is read of it passes through this computer, and your provider may charge for it.
+t4c33fc44 = Прочитане з нього проходить через цей комп’ютер, і ваш провайдер може стягнути за це плату.
+
+# Checksums
+t47dd48d3 = Контрольні суми
+
+# Read it
+t80fb8482 = Прочитати
 
 # Copied
 t8dc21305 = Скопійовано
@@ -177,6 +198,60 @@ t658f3664 = Копіювати
 
 # weak
 tedbc2ec9 = слабка
+
+# Reading… {size} of {size2}
+t80036d1c = Читання… { $size } з { $size2 }
+
+# Reading… {size}
+t1569c388 = Читання… { $size }
+
+# There are no files in it to read.
+tcadaddd8 = У ньому немає файлів для читання.
+
+# {count} file is damaged, and has none: {names} | {count} files are damaged, and have none: {names}
+tc7ad9be4 =
+    { $n ->
+        [one] { $count } файл пошкоджено, він не має контрольної суми: { $names }
+        [few] { $count } файли пошкоджено, вони не мають контрольних сум: { $names }
+        [many] { $count } файлів пошкоджено, вони не мають контрольних сум: { $names }
+       *[other] { $count } файлу пошкоджено, вони не мають контрольних сум: { $names }
+    }
+
+# Links have none of their own: a checking tool reads what they lead to.
+te144c986 = Посилання не мають власної контрольної суми: засіб перевірки читає те, на що вони вказують.
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = Слабка контрольна сума ({ $names }) виявить пошкоджений файл, але не файл, навмисно змінений так, щоб вона збіглася.
+
+# Saved as {files}. Where they are extracted, sha256sum -c and the like check them with it, without packwing.
+t7a88cd8e = Збережено як { $files }. Там, куди їх видобудуть, sha256sum -c та подібні перевірять їх без packwing.
+
+# Copy all
+t6aef5c37 = Копіювати все
+
+# Saving…
+tbd79b37d = Збереження…
+
+# Save beside it
+t7f4d85e3 = Зберегти поруч
+
+# Save in…
+t846ddfa1 = Зберегти в…
+
+# Checksums in {name}
+t71a5c5d3 = Контрольні суми в { $name }
+
+# Done
+t8dd31791 = Готово
+
+# Choose the checksums shown
+teec532fe = Вибрати показувані контрольні суми
+
+# Paste the checksum given with the file
+t8333758c = Вставте контрольну суму, надану разом із файлом
+
+# Reading…
+t6aad8485 = Читання…
 
 # There is no checksum in this.
 t231f838a = Тут немає контрольної суми.
@@ -202,41 +277,14 @@ tcbefe458 = Обчислити
 # Compare with
 tbddcfc14 = Порівняти з
 
-# Reading… {size} of {size2}
-t80036d1c = Читання… { $size } з { $size2 }
-
-# Reading… {size}
-t1569c388 = Читання… { $size }
-
 # Checksums of {name}
 te88f3ed9 = Контрольні суми { $name }
-
-# All of the file passes through this computer, and your provider may charge for what is read from it.
-t8cca3c05 = Увесь файл проходить через цей комп’ютер, і ваш провайдер може стягнути плату за прочитане з нього.
-
-# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
-t164fdec6 = Слабка контрольна сума ({ $names }) виявить пошкоджений файл, але не файл, навмисно змінений так, щоб вона збіглася.
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = Збережено поруч як { $files }; sha256sum -c та подібні перевірять без packwing.
 
 # Compare…
 tec85be80 = Порівняти…
-
-# Saving…
-tbd79b37d = Збереження…
-
-# Save beside it
-t7f4d85e3 = Зберегти поруч
-
-# Choose the checksums shown
-teec532fe = Вибрати показувані контрольні суми
-
-# Read it
-t80fb8482 = Прочитати
-
-# Done
-t8dd31791 = Готово
 
 # Nothing chosen yet
 tcf390b0a = Ще нічого не вибрано
@@ -585,12 +633,6 @@ t2380eff7 = { $new_folder } · { $counted }, тож у нову папку
 
 # Extract here
 t354232ec = Видобути сюди
-
-# {picked} selected
-t9addc37e = Вибрано: { $picked }
-
-# All {counted}
-t649feaf8 = Усе: { $counted }
 
 # What should it extract?
 td12e23bf = Що видобути?
@@ -1333,9 +1375,6 @@ t3794d625 = Відкрити у Провіднику
 # Open in the file manager
 td1ceabc4 = Відкрити у файловому менеджері
 
-# Copy all
-t6aef5c37 = Копіювати все
-
 # This system has no folder for settings.
 tfd0ff0a1 = У цій системі немає папки для налаштувань.
 
@@ -1470,9 +1509,6 @@ tbdf6bcd0 = Створення ключа підпису
 
 # Join parts
 t4eee8c5f = Об’єднання частин
-
-# Checksums
-t47dd48d3 = Контрольні суми
 
 # Audit log started
 tfb8df56f = Журнал аудиту запущено

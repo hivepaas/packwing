@@ -4,6 +4,7 @@
 
 mod add;
 mod add_storage;
+mod archive_checksum;
 mod checksum;
 mod chosen;
 mod create;
@@ -25,6 +26,9 @@ mod transfer;
 
 pub use add::AddDialog;
 pub use add_storage::AddStorageDialog;
+#[cfg(all(test, feature = "shots"))]
+pub use archive_checksum::Scope as ChecksumScope;
+pub use archive_checksum::{ArchiveChecksumDialog, Selected};
 pub use checksum::ChecksumDialog;
 pub use create::CreateDialog;
 pub(crate) use create::{Format, LEVELS, Level, level_name};

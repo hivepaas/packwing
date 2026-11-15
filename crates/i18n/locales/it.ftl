@@ -153,17 +153,38 @@ ta24f28a2 = Inserisci una chiave di licenza
 # Save
 t4d2d5d68 = Salva
 
-# Paste the checksum given with the file
-t8333758c = Incolla il checksum fornito con il file
+# The file could not be read: {why}
+t5daa8455 = Il file non può essere letto: { $why }
 
 # They could not be saved: {why}
 tb45ae457 = Non è stato possibile salvarli: { $why }
 
-# The file could not be read: {why}
-t5daa8455 = Il file non può essere letto: { $why }
+# {picked} selected
+t9addc37e = { $picked } selezionati
 
-# Reading…
-t6aad8485 = Lettura…
+# Select files or folders in it first.
+t0c04494a = Seleziona prima file o cartelle al suo interno.
+
+# What should it read?
+t35c7f91a = Cosa leggere?
+
+# All {counted}
+t649feaf8 = Tutti: { $counted }
+
+# The archive itself
+t5db318fd = L'archivio stesso
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = Tutto il file passa da questo computer, e il tuo provider può addebitare ciò che viene letto.
+
+# What is read of it passes through this computer, and your provider may charge for it.
+t4c33fc44 = Ciò che ne viene letto passa da questo computer, e il tuo provider può addebitarlo.
+
+# Checksums
+t47dd48d3 = Checksum
+
+# Read it
+t80fb8482 = Leggilo
 
 # Copied
 t8dc21305 = Copiato
@@ -173,6 +194,58 @@ t658f3664 = Copia
 
 # weak
 tedbc2ec9 = debole
+
+# Reading… {size} of {size2}
+t80036d1c = Lettura… { $size } di { $size2 }
+
+# Reading… {size}
+t1569c388 = Lettura… { $size }
+
+# There are no files in it to read.
+tcadaddd8 = Non contiene file da leggere.
+
+# {count} file is damaged, and has none: {names} | {count} files are damaged, and have none: {names}
+tc7ad9be4 =
+    { $n ->
+        [one] { $count } file è danneggiato e non ha checksum: { $names }
+       *[other] { $count } file sono danneggiati e non hanno checksum: { $names }
+    }
+
+# Links have none of their own: a checking tool reads what they lead to.
+te144c986 = I collegamenti non hanno un checksum proprio: uno strumento di verifica legge ciò a cui puntano.
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = Un checksum debole ({ $names }) rileva un file danneggiato, ma non uno modificato apposta, che si può far corrispondere.
+
+# Saved as {files}. Where they are extracted, sha256sum -c and the like check them with it, without packwing.
+t7a88cd8e = Salvati come { $files }. Dove vengono estratti, sha256sum -c e simili li verificano con questi, senza packwing.
+
+# Copy all
+t6aef5c37 = Copia tutto
+
+# Saving…
+tbd79b37d = Salvataggio…
+
+# Save beside it
+t7f4d85e3 = Salva accanto
+
+# Save in…
+t846ddfa1 = Salva in…
+
+# Checksums in {name}
+t71a5c5d3 = Checksum in { $name }
+
+# Done
+t8dd31791 = Fine
+
+# Choose the checksums shown
+teec532fe = Scegli i checksum mostrati
+
+# Paste the checksum given with the file
+t8333758c = Incolla il checksum fornito con il file
+
+# Reading…
+t6aad8485 = Lettura…
 
 # There is no checksum in this.
 t231f838a = Qui non c'è nessun checksum.
@@ -198,41 +271,14 @@ tcbefe458 = Calcolalo
 # Compare with
 tbddcfc14 = Confronta con
 
-# Reading… {size} of {size2}
-t80036d1c = Lettura… { $size } di { $size2 }
-
-# Reading… {size}
-t1569c388 = Lettura… { $size }
-
 # Checksums of {name}
 te88f3ed9 = Checksum di { $name }
-
-# All of the file passes through this computer, and your provider may charge for what is read from it.
-t8cca3c05 = Tutto il file passa da questo computer, e il tuo provider può addebitare ciò che viene letto.
-
-# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
-t164fdec6 = Un checksum debole ({ $names }) rileva un file danneggiato, ma non uno modificato apposta, che si può far corrispondere.
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = Salvati accanto come { $files }, dove sha256sum -c e simili li verificano senza packwing.
 
 # Compare…
 tec85be80 = Confronta…
-
-# Saving…
-tbd79b37d = Salvataggio…
-
-# Save beside it
-t7f4d85e3 = Salva accanto
-
-# Choose the checksums shown
-teec532fe = Scegli i checksum mostrati
-
-# Read it
-t80fb8482 = Leggilo
-
-# Done
-t8dd31791 = Fine
 
 # Nothing chosen yet
 tcf390b0a = Ancora nulla di scelto
@@ -573,12 +619,6 @@ t2380eff7 = { $new_folder } · { $counted }, quindi in una nuova cartella
 
 # Extract here
 t354232ec = Estrai qui
-
-# {picked} selected
-t9addc37e = { $picked } selezionati
-
-# All {counted}
-t649feaf8 = Tutti: { $counted }
 
 # What should it extract?
 td12e23bf = Cosa estrarre?
@@ -1299,9 +1339,6 @@ t3794d625 = Apri in Esplora file
 # Open in the file manager
 td1ceabc4 = Apri nel gestore file
 
-# Copy all
-t6aef5c37 = Copia tutto
-
 # This system has no folder for settings.
 tfd0ff0a1 = Questo sistema non ha una cartella per le impostazioni.
 
@@ -1434,9 +1471,6 @@ tbdf6bcd0 = Crea una chiave di firma
 
 # Join parts
 t4eee8c5f = Unisci le parti
-
-# Checksums
-t47dd48d3 = Checksum
 
 # Audit log started
 tfb8df56f = Registro di controllo avviato

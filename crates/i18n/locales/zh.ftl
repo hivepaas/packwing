@@ -151,17 +151,38 @@ ta24f28a2 = 输入许可证密钥
 # Save
 t4d2d5d68 = 保存
 
-# Paste the checksum given with the file
-t8333758c = 粘贴随文件提供的校验和
+# The file could not be read: {why}
+t5daa8455 = 无法读取文件：{ $why }
 
 # They could not be saved: {why}
 tb45ae457 = 无法保存：{ $why }
 
-# The file could not be read: {why}
-t5daa8455 = 无法读取文件：{ $why }
+# {picked} selected
+t9addc37e = 已选择 { $picked }
 
-# Reading…
-t6aad8485 = 正在读取…
+# Select files or folders in it first.
+t0c04494a = 请先选择其中的文件或文件夹。
+
+# What should it read?
+t35c7f91a = 要读取哪些内容？
+
+# All {counted}
+t649feaf8 = 全部 { $counted }
+
+# The archive itself
+t5db318fd = 压缩包本身
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = 整个文件都会经过此电脑，读取数据可能会产生服务商收费。
+
+# What is read of it passes through this computer, and your provider may charge for it.
+t4c33fc44 = 读取的内容会经过此电脑，可能会产生服务商收费。
+
+# Checksums
+t47dd48d3 = 校验和
+
+# Read it
+t80fb8482 = 读取
 
 # Copied
 t8dc21305 = 已复制
@@ -171,6 +192,57 @@ t658f3664 = 复制
 
 # weak
 tedbc2ec9 = 弱
+
+# Reading… {size} of {size2}
+t80036d1c = 正在读取… { $size } / { $size2 }
+
+# Reading… {size}
+t1569c388 = 正在读取… { $size }
+
+# There are no files in it to read.
+tcadaddd8 = 其中没有可读取的文件。
+
+# {count} file is damaged, and has none: {names} | {count} files are damaged, and have none: {names}
+tc7ad9be4 =
+    { $n ->
+       *[other] { $count } 个文件已损坏，没有校验和：{ $names }
+    }
+
+# Links have none of their own: a checking tool reads what they lead to.
+te144c986 = 链接没有自己的校验和：校验工具会读取其指向的内容。
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = 弱校验和（{ $names }）能发现损坏的文件，但发现不了被故意修改以使其一致的文件。
+
+# Saved as {files}. Where they are extracted, sha256sum -c and the like check them with it, without packwing.
+t7a88cd8e = 已保存为 { $files }。在解压的位置，sha256sum -c 等工具无需 packwing 即可用它们校验。
+
+# Copy all
+t6aef5c37 = 全部复制
+
+# Saving…
+tbd79b37d = 正在保存…
+
+# Save beside it
+t7f4d85e3 = 保存在旁边
+
+# Save in…
+t846ddfa1 = 保存到…
+
+# Checksums in {name}
+t71a5c5d3 = { $name } 中的校验和
+
+# Done
+t8dd31791 = 完成
+
+# Choose the checksums shown
+teec532fe = 选择显示的校验和
+
+# Paste the checksum given with the file
+t8333758c = 粘贴随文件提供的校验和
+
+# Reading…
+t6aad8485 = 正在读取…
 
 # There is no checksum in this.
 t231f838a = 这里面没有校验和。
@@ -196,41 +268,14 @@ tcbefe458 = 生成
 # Compare with
 tbddcfc14 = 比较对象
 
-# Reading… {size} of {size2}
-t80036d1c = 正在读取… { $size } / { $size2 }
-
-# Reading… {size}
-t1569c388 = 正在读取… { $size }
-
 # Checksums of {name}
 te88f3ed9 = { $name } 的校验和
-
-# All of the file passes through this computer, and your provider may charge for what is read from it.
-t8cca3c05 = 整个文件都会经过此电脑，读取数据可能会产生服务商收费。
-
-# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
-t164fdec6 = 弱校验和（{ $names }）能发现损坏的文件，但发现不了被故意修改以使其一致的文件。
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = 已保存在旁边，文件名为 { $files }；sha256sum -c 等工具无需 packwing 即可校验。
 
 # Compare…
 tec85be80 = 比较…
-
-# Saving…
-tbd79b37d = 正在保存…
-
-# Save beside it
-t7f4d85e3 = 保存在旁边
-
-# Choose the checksums shown
-teec532fe = 选择显示的校验和
-
-# Read it
-t80fb8482 = 读取
-
-# Done
-t8dd31791 = 完成
 
 # Nothing chosen yet
 tcf390b0a = 尚未选择
@@ -567,12 +612,6 @@ t2380eff7 = { $new_folder } · { $counted }，因此放入新文件夹
 
 # Extract here
 t354232ec = 解压到此处
-
-# {picked} selected
-t9addc37e = 已选择 { $picked }
-
-# All {counted}
-t649feaf8 = 全部 { $counted }
 
 # What should it extract?
 td12e23bf = 要解压哪些内容？
@@ -1282,9 +1321,6 @@ t3794d625 = 在文件资源管理器中打开
 # Open in the file manager
 td1ceabc4 = 在文件管理器中打开
 
-# Copy all
-t6aef5c37 = 全部复制
-
 # This system has no folder for settings.
 tfd0ff0a1 = 此系统没有用于存放设置的文件夹。
 
@@ -1416,9 +1452,6 @@ tbdf6bcd0 = 创建签名密钥
 
 # Join parts
 t4eee8c5f = 合并分卷
-
-# Checksums
-t47dd48d3 = 校验和
 
 # Audit log started
 tfb8df56f = 审计日志已开始

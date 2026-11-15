@@ -97,6 +97,21 @@ fn names(algorithms: &[Algorithm]) -> String {
 impl ChecksumDialog {
     /// For the file at `path`: one on this computer is read at once.
     pub fn new(storage: Arc<dyn Storage>, path: Vec<String>, cx: &mut Context<Self>) -> Self {
+        let mut dialog = ChecksumDialog::of(storage, path, cx);
+        if !dialog.far() {
+            dialog.start(prefs::prefs(cx).checksums, cx);
+        }
+        dialog
+    }
+
+    /// For the file at `path`, read at once wherever it is: it was asked for.
+    pub fn reading(storage: Arc<dyn Storage>, path: Vec<String>, cx: &mut Context<Self>) -> Self {
+        let mut dialog = ChecksumDialog::of(storage, path, cx);
+        dialog.start(prefs::prefs(cx).checksums, cx);
+        dialog
+    }
+
+    fn of(storage: Arc<dyn Storage>, path: Vec<String>, cx: &mut Context<Self>) -> Self {
         let name = path.last().cloned().unwrap_or_default();
         let pasted = cx.new(|cx| {
             TextInput::said(|| tr!("Paste the checksum given with the file"), cx).multiline(2, 5)
@@ -119,9 +134,6 @@ impl ChecksumDialog {
             _typing: typing,
         };
         dialog.ask_size(cx);
-        if !dialog.far() {
-            dialog.start(prefs::prefs(cx).checksums, cx);
-        }
         dialog
     }
 

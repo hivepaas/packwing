@@ -151,17 +151,38 @@ ta24f28a2 = Nhập khoá giấy phép
 # Save
 t4d2d5d68 = Lưu
 
-# Paste the checksum given with the file
-t8333758c = Dán checksum đi kèm tệp
+# The file could not be read: {why}
+t5daa8455 = Không đọc được tệp: { $why }
 
 # They could not be saved: {why}
 tb45ae457 = Không lưu được: { $why }
 
-# The file could not be read: {why}
-t5daa8455 = Không đọc được tệp: { $why }
+# {picked} selected
+t9addc37e = Đã chọn { $picked }
 
-# Reading…
-t6aad8485 = Đang đọc…
+# Select files or folders in it first.
+t0c04494a = Hãy chọn tệp hoặc thư mục trong đó trước.
+
+# What should it read?
+t35c7f91a = Đọc những gì?
+
+# All {counted}
+t649feaf8 = Toàn bộ { $counted }
+
+# The archive itself
+t5db318fd = Chính tệp nén
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = Toàn bộ tệp sẽ đi qua máy tính này, và nhà cung cấp có thể tính phí cho phần dữ liệu đọc ra.
+
+# What is read of it passes through this computer, and your provider may charge for it.
+t4c33fc44 = Phần đọc ra sẽ đi qua máy tính này, và nhà cung cấp có thể tính phí cho phần đó.
+
+# Checksums
+t47dd48d3 = Checksum
+
+# Read it
+t80fb8482 = Đọc tệp
 
 # Copied
 t8dc21305 = Đã sao chép
@@ -171,6 +192,57 @@ t658f3664 = Sao chép
 
 # weak
 tedbc2ec9 = yếu
+
+# Reading… {size} of {size2}
+t80036d1c = Đang đọc… { $size } / { $size2 }
+
+# Reading… {size}
+t1569c388 = Đang đọc… { $size }
+
+# There are no files in it to read.
+tcadaddd8 = Không có tệp nào trong đó để đọc.
+
+# {count} file is damaged, and has none: {names} | {count} files are damaged, and have none: {names}
+tc7ad9be4 =
+    { $n ->
+       *[other] { $count } tệp bị hỏng nên không có checksum: { $names }
+    }
+
+# Links have none of their own: a checking tool reads what they lead to.
+te144c986 = Liên kết không có checksum riêng: công cụ kiểm tra sẽ đọc thứ mà liên kết trỏ tới.
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = Checksum yếu ({ $names }) vẫn phát hiện được tệp bị hỏng, nhưng không phát hiện được tệp bị cố ý sửa để khớp.
+
+# Saved as {files}. Where they are extracted, sha256sum -c and the like check them with it, without packwing.
+t7a88cd8e = Đã lưu thành { $files }. Ở nơi giải nén, sha256sum -c và các công cụ tương tự kiểm tra được bằng các tệp này mà không cần packwing.
+
+# Copy all
+t6aef5c37 = Sao chép tất cả
+
+# Saving…
+tbd79b37d = Đang lưu…
+
+# Save beside it
+t7f4d85e3 = Lưu cạnh tệp
+
+# Save in…
+t846ddfa1 = Lưu vào…
+
+# Checksums in {name}
+t71a5c5d3 = Checksum trong { $name }
+
+# Done
+t8dd31791 = Xong
+
+# Choose the checksums shown
+teec532fe = Chọn checksum được hiển thị
+
+# Paste the checksum given with the file
+t8333758c = Dán checksum đi kèm tệp
+
+# Reading…
+t6aad8485 = Đang đọc…
 
 # There is no checksum in this.
 t231f838a = Trong này không có checksum nào.
@@ -196,41 +268,14 @@ tcbefe458 = Tạo
 # Compare with
 tbddcfc14 = So sánh với
 
-# Reading… {size} of {size2}
-t80036d1c = Đang đọc… { $size } / { $size2 }
-
-# Reading… {size}
-t1569c388 = Đang đọc… { $size }
-
 # Checksums of {name}
 te88f3ed9 = Checksum của { $name }
-
-# All of the file passes through this computer, and your provider may charge for what is read from it.
-t8cca3c05 = Toàn bộ tệp sẽ đi qua máy tính này, và nhà cung cấp có thể tính phí cho phần dữ liệu đọc ra.
-
-# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
-t164fdec6 = Checksum yếu ({ $names }) vẫn phát hiện được tệp bị hỏng, nhưng không phát hiện được tệp bị cố ý sửa để khớp.
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = Đã lưu cạnh tệp thành { $files }; sha256sum -c và các công cụ tương tự kiểm tra được mà không cần packwing.
 
 # Compare…
 tec85be80 = So sánh…
-
-# Saving…
-tbd79b37d = Đang lưu…
-
-# Save beside it
-t7f4d85e3 = Lưu cạnh tệp
-
-# Choose the checksums shown
-teec532fe = Chọn checksum được hiển thị
-
-# Read it
-t80fb8482 = Đọc tệp
-
-# Done
-t8dd31791 = Xong
 
 # Nothing chosen yet
 tcf390b0a = Chưa chọn gì
@@ -567,12 +612,6 @@ t2380eff7 = { $new_folder } · { $counted }, nên giải nén vào thư mục m�
 
 # Extract here
 t354232ec = Giải nén tại đây
-
-# {picked} selected
-t9addc37e = Đã chọn { $picked }
-
-# All {counted}
-t649feaf8 = Toàn bộ { $counted }
 
 # What should it extract?
 td12e23bf = Giải nén những gì?
@@ -1282,9 +1321,6 @@ t3794d625 = Mở trong File Explorer
 # Open in the file manager
 td1ceabc4 = Mở trong trình quản lý tệp
 
-# Copy all
-t6aef5c37 = Sao chép tất cả
-
 # This system has no folder for settings.
 tfd0ff0a1 = Hệ thống này không có thư mục cho cài đặt.
 
@@ -1416,9 +1452,6 @@ tbdf6bcd0 = Tạo khóa ký
 
 # Join parts
 t4eee8c5f = Ghép các phần
-
-# Checksums
-t47dd48d3 = Checksum
 
 # Audit log started
 tfb8df56f = Bắt đầu nhật ký kiểm tra

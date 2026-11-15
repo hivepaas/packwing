@@ -10,8 +10,9 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use gpui::{AppContext as _, Context, HeadlessAppContext, Window, px, size};
+use gpui::{AppContext as _, Context, Entity, HeadlessAppContext, Window, px, size};
 
+use crate::dialogs::{ArchiveChecksumDialog, ChecksumScope};
 use crate::model::Archive;
 use crate::pages::archive::Shown;
 use crate::pages::settings::{Appearance, Section};
@@ -21,7 +22,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 112] = [
+const SCREENS: [(&str, SetUp); 115] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -84,6 +85,24 @@ const SCREENS: [(&str, SetUp); 112] = [
                 d.read_for_test(cx);
                 d.compare_for_test(&"0".repeat(64), cx);
             });
+    }),
+    // The Archive page's: what to read is asked first.
+    ("archive-checksums", |ws, window, cx| {
+        open_for_checksums(ws, Some("photos"), window, cx);
+    }),
+    ("archive-checksums-files", |ws, window, cx| {
+        let dialog = open_for_checksums(ws, None, window, cx);
+        dialog.update(cx, |d, cx| {
+            d.read_for_test(ChecksumScope::All, cx);
+            d.show_for_test(2, cx);
+        });
+    }),
+    ("archive-checksums-saved", |ws, window, cx| {
+        let dialog = open_for_checksums(ws, Some("photos"), window, cx);
+        dialog.update(cx, |d, cx| {
+            d.read_for_test(ChecksumScope::Picked, cx);
+            d.save_for_test(cx);
+        });
     }),
     ("storages-signed", |ws, _, cx| {
         let dir = sample_storage();
@@ -762,6 +781,47 @@ fn sample_tar() -> PathBuf {
             ("notes.txt", b"Read through hivepack.\n"),
         ],
     )
+}
+
+/// An archive of a few files in two folders, read through, with `chosen`
+/// selected in it, and Checksums… asked of it.
+fn open_for_checksums(
+    ws: &mut Workspace,
+    chosen: Option<&str>,
+    window: &mut Window,
+    cx: &mut Context<Workspace>,
+) -> Entity<ArchiveChecksumDialog> {
+    let path = write_tar(
+        "trip-2026.tar",
+        &[
+            ("docs/", &b""[..]),
+            ("docs/budget.csv", b"day,cost\n1,120\n2,95\n"),
+            (
+                "docs/plan.md",
+                b"# The plan\n\nThe coast, then the hills.\n",
+            ),
+            ("photos/", &b""[..]),
+            ("photos/beach.jpg", &[7u8; 3000][..]),
+            ("photos/hills.jpg", &[9u8; 4200][..]),
+            ("photos/harbour.jpg", &[5u8; 2600][..]),
+            ("notes.txt", b"Read through hivepack.\n"),
+            ("readme.md", b"Photos and plans of the trip.\n"),
+        ],
+    );
+    let listing = packwing_core::list(&path, &packwing_core::Keys::default()).expect("listed");
+    let archive = Archive::read(path.into(), listing, packwing_core::Keys::default(), false);
+    ws.show_archive(Shown::Open(Box::new(archive)), cx);
+    if let Some(name) = chosen {
+        ws.archive_page().update(cx, |p, cx| {
+            let at = p
+                .archive()
+                .and_then(|a| a.entries.iter().position(|e| e.name == name))
+                .expect("it is in the archive");
+            p.select_for_shot(&[at], cx);
+        });
+    }
+    ws.open_archive_checksums(window, cx)
+        .expect("the archive has a file")
 }
 
 /// A tar archive of more files than its list has room for, all at its top.

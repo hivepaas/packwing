@@ -151,17 +151,38 @@ ta24f28a2 = 라이선스 키 입력
 # Save
 t4d2d5d68 = 저장
 
-# Paste the checksum given with the file
-t8333758c = 파일과 함께 제공된 체크섬을 붙여 넣으세요
+# The file could not be read: {why}
+t5daa8455 = 파일을 읽을 수 없습니다: { $why }
 
 # They could not be saved: {why}
 tb45ae457 = 저장할 수 없습니다: { $why }
 
-# The file could not be read: {why}
-t5daa8455 = 파일을 읽을 수 없습니다: { $why }
+# {picked} selected
+t9addc37e = { $picked } 선택됨
 
-# Reading…
-t6aad8485 = 읽는 중…
+# Select files or folders in it first.
+t0c04494a = 먼저 안의 파일이나 폴더를 선택하세요.
+
+# What should it read?
+t35c7f91a = 무엇을 읽을까요?
+
+# All {counted}
+t649feaf8 = 전체 { $counted }
+
+# The archive itself
+t5db318fd = 압축 파일 자체
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = 파일 전체가 이 컴퓨터를 거치므로, 제공업체에서 읽은 양에 따라 요금이 부과될 수 있습니다.
+
+# What is read of it passes through this computer, and your provider may charge for it.
+t4c33fc44 = 읽는 부분은 이 컴퓨터를 거치므로, 제공업체에서 요금이 부과될 수 있습니다.
+
+# Checksums
+t47dd48d3 = 체크섬
+
+# Read it
+t80fb8482 = 읽기
 
 # Copied
 t8dc21305 = 복사됨
@@ -171,6 +192,57 @@ t658f3664 = 복사
 
 # weak
 tedbc2ec9 = 약함
+
+# Reading… {size} of {size2}
+t80036d1c = 읽는 중… { $size } / { $size2 }
+
+# Reading… {size}
+t1569c388 = 읽는 중… { $size }
+
+# There are no files in it to read.
+tcadaddd8 = 읽을 파일이 없습니다.
+
+# {count} file is damaged, and has none: {names} | {count} files are damaged, and have none: {names}
+tc7ad9be4 =
+    { $n ->
+       *[other] 파일 { $count }개가 손상되어 체크섬이 없습니다: { $names }
+    }
+
+# Links have none of their own: a checking tool reads what they lead to.
+te144c986 = 링크에는 자체 체크섬이 없습니다. 확인 도구는 링크가 가리키는 대상을 읽습니다.
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = 약한 체크섬({ $names })은 손상된 파일은 알아내지만, 일치하도록 일부러 바꾼 파일은 알아내지 못합니다.
+
+# Saved as {files}. Where they are extracted, sha256sum -c and the like check them with it, without packwing.
+t7a88cd8e = { $files }(으)로 저장했습니다. 압축을 푼 곳에서 sha256sum -c 등으로 packwing 없이 확인할 수 있습니다.
+
+# Copy all
+t6aef5c37 = 모두 복사
+
+# Saving…
+tbd79b37d = 저장 중…
+
+# Save beside it
+t7f4d85e3 = 옆에 저장
+
+# Save in…
+t846ddfa1 = 저장 위치…
+
+# Checksums in {name}
+t71a5c5d3 = { $name } 안의 체크섬
+
+# Done
+t8dd31791 = 완료
+
+# Choose the checksums shown
+teec532fe = 표시할 체크섬 선택
+
+# Paste the checksum given with the file
+t8333758c = 파일과 함께 제공된 체크섬을 붙여 넣으세요
+
+# Reading…
+t6aad8485 = 읽는 중…
 
 # There is no checksum in this.
 t231f838a = 여기에는 체크섬이 없습니다.
@@ -196,41 +268,14 @@ tcbefe458 = 만들기
 # Compare with
 tbddcfc14 = 비교 대상
 
-# Reading… {size} of {size2}
-t80036d1c = 읽는 중… { $size } / { $size2 }
-
-# Reading… {size}
-t1569c388 = 읽는 중… { $size }
-
 # Checksums of {name}
 te88f3ed9 = { $name }의 체크섬
-
-# All of the file passes through this computer, and your provider may charge for what is read from it.
-t8cca3c05 = 파일 전체가 이 컴퓨터를 거치므로, 제공업체에서 읽은 양에 따라 요금이 부과될 수 있습니다.
-
-# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
-t164fdec6 = 약한 체크섬({ $names })은 손상된 파일은 알아내지만, 일치하도록 일부러 바꾼 파일은 알아내지 못합니다.
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = 옆에 { $files }(으)로 저장했습니다. sha256sum -c 등으로 packwing 없이 확인할 수 있습니다.
 
 # Compare…
 tec85be80 = 비교…
-
-# Saving…
-tbd79b37d = 저장 중…
-
-# Save beside it
-t7f4d85e3 = 옆에 저장
-
-# Choose the checksums shown
-teec532fe = 표시할 체크섬 선택
-
-# Read it
-t80fb8482 = 읽기
-
-# Done
-t8dd31791 = 완료
 
 # Nothing chosen yet
 tcf390b0a = 아직 선택하지 않음
@@ -567,12 +612,6 @@ t2380eff7 = { $new_folder } · { $counted }이므로 새 폴더에
 
 # Extract here
 t354232ec = 여기에 압축 풀기
-
-# {picked} selected
-t9addc37e = { $picked } 선택됨
-
-# All {counted}
-t649feaf8 = 전체 { $counted }
 
 # What should it extract?
 td12e23bf = 무엇을 압축 풀까요?
@@ -1282,9 +1321,6 @@ t3794d625 = 파일 탐색기에서 열기
 # Open in the file manager
 td1ceabc4 = 파일 관리자에서 열기
 
-# Copy all
-t6aef5c37 = 모두 복사
-
 # This system has no folder for settings.
 tfd0ff0a1 = 이 시스템에는 설정 폴더가 없습니다.
 
@@ -1416,9 +1452,6 @@ tbdf6bcd0 = 서명 키 만들기
 
 # Join parts
 t4eee8c5f = 조각 합치기
-
-# Checksums
-t47dd48d3 = 체크섬
 
 # Audit log started
 tfb8df56f = 감사 로그 시작

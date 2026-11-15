@@ -21,10 +21,10 @@ use crate::colors::{self, colors};
 #[cfg(all(test, feature = "test-hooks"))]
 use crate::demo;
 use crate::dialogs::{
-    AddDialog, AddStorageDialog, ChecksumDialog, CreateDialog, Creating, DeleteDialog, DialogEvent,
-    EditDialog, ExtractDialog, Job, OpenFileDialog, OpenStoredDialog, PasswordDialog,
-    PasswordEvent, ProgressDialog, QuestionEvent, QuitDialog, RemoveStorageDialog, Saving,
-    SignDialog, SplitDialog, SshQuestionDialog, State, TransferDialog, Verb, asked_for,
+    AddDialog, AddStorageDialog, ArchiveChecksumDialog, ChecksumDialog, CreateDialog, Creating,
+    DeleteDialog, DialogEvent, EditDialog, ExtractDialog, Job, OpenFileDialog, OpenStoredDialog,
+    PasswordDialog, PasswordEvent, ProgressDialog, QuestionEvent, QuitDialog, RemoveStorageDialog,
+    Saving, SignDialog, SplitDialog, SshQuestionDialog, State, TransferDialog, Verb, asked_for,
 };
 use crate::explorer::{Explorer, ExplorerEvent};
 use crate::history::History;
@@ -704,7 +704,6 @@ impl Workspace {
         }
     }
 
-    /// Shows the checksums of the file of the archive open.
     /// Split into parts…, for the file at `path`.
     fn open_split(&mut self, path: PathBuf, window: &mut Window, cx: &mut Context<Self>) {
         let bytes = std::fs::metadata(&path)
@@ -750,17 +749,24 @@ impl Workspace {
         }
     }
 
+    /// Asks what of the archive open to show the checksums of: what is
+    /// selected, all of its files, or its own file.
     fn open_checksums_archive(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let place = self
-            .archive
-            .read(cx)
-            .archive()
-            .and_then(|a| a.source.as_ref())
-            .and_then(|s| s.place());
-        if let Some((storage, path)) = place {
-            let view = cx.new(|cx| ChecksumDialog::new(storage, path, cx));
-            self.show(view, true, window, cx);
-        }
+        self.open_archive_checksums(window, cx);
+    }
+
+    /// [`Workspace::open_checksums_archive`], the dialog given back: for tests.
+    pub(crate) fn open_archive_checksums(
+        &mut self,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Option<Entity<ArchiveChecksumDialog>> {
+        let page = self.archive.read(cx);
+        let archive = page.archive().filter(|a| a.source.is_some()).cloned()?;
+        let (selected, inside) = (page.selected(), page.inside());
+        let view = cx.new(|_| ArchiveChecksumDialog::new(archive, selected, inside));
+        self.show(view.clone(), true, window, cx);
+        Some(view)
     }
 
     #[cfg(all(test, feature = "test-hooks"))]
