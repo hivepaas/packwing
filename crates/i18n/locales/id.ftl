@@ -3295,6 +3295,12 @@ tecf6b414 = Percayai kunci ini
 # There is no signature beside it.
 te7a28cb7 = Tidak ada tanda tangan di sebelahnya.
 
+# packwing cannot show this file.
+t1ef504d9 = packwing tidak dapat menampilkan berkas ini.
+
+# packwing Free keeps one storage across a network. Pro lifts this.
+tf72ae001 = packwing Free menyimpan satu penyimpanan lewat jaringan. Pro menghilangkan batas ini.
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing tidak bisa lagi mengakses { $name }. Buka lagi untuk melihat isinya.
 
@@ -3366,9 +3372,6 @@ tc2954bc2 = Kembali
 
 # Search in this archive
 tfda7010a = Cari di arsip ini
-
-# packwing cannot show this file.
-t1ef504d9 = packwing tidak dapat menampilkan berkas ini.
 
 # AES-256. In 7z the names are hidden too.
 t9c81b89f = AES-256. Di 7z, nama berkas juga disembunyikan.

@@ -42,8 +42,9 @@ impl Archive {
     /// Whether it can be changed: a ZIP or 7z archive, of one file, under no
     /// layers. Another kind would be written whole again, or has no place to
     /// add to.
+    /// One on a storage, or one Android gave, is not changed here.
     pub fn can_change(&self) -> bool {
-        can_add(&self.listing)
+        matches!(self.source, packwing_core::Source::File(_)) && can_add(&self.listing)
     }
 
     /// It read again, with the secrets it was opened with: what it holds, once

@@ -1,7 +1,8 @@
 //! What the iOS and Android apps call: an archive opened and what it holds,
 //! folder by folder; a file of it read, to preview it; its files extracted;
-//! new ZIP and 7z archives made, and changed; and an archive's own checksums
-//! and signature. The work is packwing-core's, as on the
+//! new ZIP and 7z archives made, and changed; an archive's own checksums and
+//! signature; and storages across the network, browsed, their archives opened
+//! where they are. The work is packwing-core's, as on the
 //! desktop.
 //!
 //! Every call that reads or writes a file blocks until it is done, so the app
@@ -21,6 +22,7 @@ mod checksum;
 mod edit;
 mod i18n;
 mod signature;
+mod storage;
 
 /// Android's document picker hands out no paths: see [`Document`].
 #[cfg(target_os = "android")]
@@ -44,6 +46,10 @@ pub use checksum::{
 pub use edit::OnExisting;
 pub use i18n::LanguageRow;
 pub use signature::{KeyRead, SignatureState, read_key};
+pub use storage::{
+    RemoteStorage, StorageField, StorageKindRow, StoredItem, describe_storage,
+    forget_storage_secrets, keep_storage_secrets, kept_storage_secrets, storage_kinds,
+};
 
 /// Why a call did not do what it was asked, as the app says it: `reason` is
 /// in the user's language already. It is not called `message`, which Kotlin's

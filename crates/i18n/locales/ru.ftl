@@ -3418,6 +3418,12 @@ tecf6b414 = Доверять этому ключу
 # There is no signature beside it.
 te7a28cb7 = Рядом нет подписи.
 
+# packwing cannot show this file.
+t1ef504d9 = packwing не может показать этот файл.
+
+# packwing Free keeps one storage across a network. Pro lifts this.
+tf72ae001 = В packwing Free можно подключить одно хранилище по сети. Pro снимает это ограничение.
+
 # packwing can no longer reach {name}. Open it again to look inside.
 ta6e47f44 = packwing больше не может получить доступ к { $name }. Откройте его снова, чтобы заглянуть внутрь.
 
@@ -3492,9 +3498,6 @@ tc2954bc2 = Назад
 
 # Search in this archive
 tfda7010a = Поиск в этом архиве
-
-# packwing cannot show this file.
-t1ef504d9 = packwing не может показать этот файл.
 
 # AES-256. In 7z the names are hidden too.
 t9c81b89f = AES-256. В 7z скрываются и имена.

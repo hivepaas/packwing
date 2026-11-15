@@ -6,8 +6,38 @@ use packwing_core::Values;
 
 const SERVICE: &str = "packwing storages";
 
-fn entry(id: &str, key: &str) -> io::Result<keyring::Entry> {
-    keyring::Entry::new(SERVICE, &format!("{id}/{key}")).map_err(io::Error::other)
+/// keyring's own `Entry` stands for a store it sets itself, which it has none of
+/// on iOS: there the system keychain's is set, and its entries are keyring-core's.
+#[cfg(not(target_os = "ios"))]
+pub(crate) type Entry = keyring::Entry;
+#[cfg(target_os = "ios")]
+pub(crate) type Entry = keyring_core::Entry;
+
+/// The entry `account` of `service`, in the system's keychain.
+pub(crate) fn keychain(service: &str, account: &str) -> io::Result<Entry> {
+    #[cfg(target_os = "ios")]
+    phone_store()?;
+    Entry::new(service, account).map_err(io::Error::other)
+}
+
+fn entry(id: &str, key: &str) -> io::Result<Entry> {
+    keychain(SERVICE, &format!("{id}/{key}"))
+}
+
+/// On iOS the keyring crate picks no store: the system's own, its keychain of
+/// protected data (the one iOS has), is set the first time one is needed.
+#[cfg(target_os = "ios")]
+pub(crate) fn phone_store() -> io::Result<()> {
+    use std::sync::OnceLock;
+    static SET: OnceLock<Result<(), String>> = OnceLock::new();
+    SET.get_or_init(|| {
+        let store =
+            apple_native_keyring_store::protected::Store::new().map_err(|e| e.to_string())?;
+        keyring_core::set_default_store(store);
+        Ok(())
+    })
+    .clone()
+    .map_err(io::Error::other)
 }
 
 pub fn keep(id: &str, secrets: &Values) -> io::Result<()> {
@@ -23,7 +53,7 @@ pub fn keep(id: &str, secrets: &Values) -> io::Result<()> {
 pub fn get(id: &str, key: &str) -> io::Result<String> {
     match entry(id, key)?.get_password() {
         Ok(secret) => Ok(secret),
-        Err(keyring::Error::NoEntry) => Ok(String::new()),
+        Err(keyring_core::Error::NoEntry) => Ok(String::new()),
         Err(e) => Err(io::Error::other(e)),
     }
 }

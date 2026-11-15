@@ -40,6 +40,15 @@ final class AppTests: XCTestCase {
         add(shot)
     }
 
+    /// Taps `element` once a screen or sheet going has gone: a tap while one
+    /// still slides goes nowhere. (XCTest's `isHittable` says no to SwiftUI's
+    /// rows and buttons after a sheet, though they take a tap.)
+    private func tapWhenReady(_ element: XCUIElement, timeout: TimeInterval = 20) {
+        XCTAssert(element.waitForExistence(timeout: timeout), "no \(element)")
+        sleep(1)
+        element.tap()
+    }
+
     private func text(_ app: XCUIApplication, starting prefix: String) -> XCUIElement {
         app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", prefix)).firstMatch
     }
@@ -328,10 +337,10 @@ final class AppTests: XCTestCase {
         XCTAssert(notes.waitForExistence(timeout: 10))
         notes.press(forDuration: 1.2)
         app.buttons["Rename"].tap()
-        let name = app.alerts.textFields.firstMatch
+        let name = app.textFields["new-name"]
         XCTAssert(name.waitForExistence(timeout: 5))
         name.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 20) + "Notes.txt")
-        app.alerts.buttons["Rename"].tap()
+        app.buttons["Rename"].firstMatch.tap()
         XCTAssert(app.staticTexts["Notes.txt"].waitForExistence(timeout: 15))
         XCTAssertFalse(notes.exists)
 
@@ -356,5 +365,79 @@ final class AppTests: XCTestCase {
         XCTAssert(added.waitForExistence(timeout: 30))
         XCTAssert(app.staticTexts["Notes.txt"].exists)
         keep(app, "changed")
+    }
+
+    /// Against a WebDAV server on this computer (`make webdav-start`): skipped
+    /// without one.
+    func testAnArchiveOnAStorageIsOpenedWhereItIs() throws {
+        let server = "http://127.0.0.1:18335"
+        let folder = "ui-\(UUID().uuidString.prefix(8))"
+        let auth = "Basic " + Data("packwing:packwing".utf8).base64EncodedString()
+        func send(_ method: String, _ path: String, _ body: Data? = nil) -> Int {
+            var request = URLRequest(url: URL(string: "\(server)/\(path)")!)
+            request.httpMethod = method
+            request.setValue(auth, forHTTPHeaderField: "Authorization")
+            request.httpBody = body
+            var status = 0
+            let done = expectation(description: method)
+            URLSession.shared.dataTask(with: request) { _, response, _ in
+                status = (response as? HTTPURLResponse)?.statusCode ?? 0
+                done.fulfill()
+            }.resume()
+            wait(for: [done], timeout: 10)
+            return status
+        }
+        guard send("MKCOL", folder) / 100 == 2 else { throw XCTSkip("no WebDAV server at \(server)") }
+        let sample = Bundle(for: Self.self).url(forResource: "report.zip", withExtension: nil)!
+        XCTAssertEqual(send("PUT", "\(folder)/report.zip", try Data(contentsOf: sample)) / 100, 2)
+
+        let app = XCUIApplication()
+        app.launchArguments = ["-AppleLanguages", "(en)", "-language", "", "-storages", ""]
+        app.launch()
+        let add = app.buttons["storage-new"]
+        XCTAssert(add.waitForExistence(timeout: 15))
+        add.tap()
+        app.buttons["WebDAV folder"].tap()
+        // In the order they are shown: the password last, as its keyboard is iOS's own.
+        let fields = [("storage-address", "\(server)/\(folder)"), ("storage-user", "packwing"),
+                      ("storage-password", "packwing")]
+        for (id, text) in fields {
+            let field = id == "storage-password" ? app.secureTextFields[id] : app.textFields[id]
+            XCTAssert(field.waitForExistence(timeout: 5), id)
+            field.tap()
+            field.typeText(text)
+        }
+        keep(app, "storage-add")
+        app.buttons["storage-add"].tap()
+
+        // Added, once it answered; then browsed.
+        let row = app.buttons["storage-row"]
+        if !row.waitForExistence(timeout: 20) {
+            keep(app, "storage-not-added")
+            XCTFail("not added: \(app.staticTexts.allElementsBoundByIndex.map(\.label).filter { !$0.isEmpty })")
+            return
+        }
+
+        // packwing Free keeps one.
+        tapWhenReady(add)
+        XCTAssert(app.staticTexts["packwing Free keeps one storage across a network. Pro lifts this."].waitForExistence(timeout: 5))
+        app.alerts.buttons["OK"].tap()
+        let gone = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: app.alerts.firstMatch)
+        XCTAssertEqual(XCTWaiter.wait(for: [gone], timeout: 5), .completed)
+        row.tap()
+        let zip = app.buttons.matching(identifier: "stored-file")
+            .matching(NSPredicate(format: "label BEGINSWITH 'report.zip'")).firstMatch
+        XCTAssert(zip.waitForExistence(timeout: 20))
+        keep(app, "storage-folder")
+        // Once the folder has slid in: a list's row is never "hittable" to XCTest.
+        sleep(1)
+        zip.tap()
+
+        // Opened where it is.
+        XCTAssert(app.staticTexts["Báo cáo quý 3"].waitForExistence(timeout: 20))
+        XCTAssert(app.buttons["Extract all"].exists)
+        keep(app, "storage-archive")
+
+        _ = send("DELETE", folder)
     }
 }
