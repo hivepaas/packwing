@@ -2842,6 +2842,12 @@ t6485842e = このストレージが今のところ受け付けるファイル�
 # This storage cannot rename a folder at once, as everything under it would be copied. Use Move to….
 ta87a5d75 = このストレージではフォルダ名を一括で変更できません。配下のすべてがコピーされてしまうためです。「移動先…」を使ってください。
 
+# The key has a passphrase: type it to open the key.
+t253e18ea = この鍵にはパスフレーズがあります。鍵を開くにはパスフレーズを入力してください。
+
+# That is not a private key. Paste the whole of the key file, from its BEGIN OPENSSH PRIVATE KEY line to its END line.
+t86217583 = これは秘密鍵ではありません。鍵ファイルの BEGIN OPENSSH PRIVATE KEY の行から END の行まで、すべて貼り付けてください。
+
 # S3 bucket
 tc5e013b3 = S3 バケット
 
@@ -2880,6 +2886,15 @@ t67b5f42b = 空欄の場合はホームフォルダ
 
 # Empty to use the SSH agent and keys
 tf10e6293 = 空欄の場合は SSH エージェントとキーを使用
+
+# The key of {host} is not the one it had. Someone may be posing as it, or the server was set up again. Its key now is {fingerprint}; the one known is in {file}.
+tf9715f8d = { $host } の鍵が以前のものと違います。誰かがこのサーバーになりすましているか、サーバーが再構築された可能性があります。現在の鍵は { $fingerprint } です。既知の鍵は { $file } にあります。
+
+# {host} was not trusted.
+tb6982896 = { $host } は信頼されませんでした。
+
+# {host} is not known yet, and there is no one to ask whether to trust it.
+ta342611e = { $host } はまだ既知ではなく、信頼するかどうかを尋ねる相手がいません。
 
 # WebDAV folder
 tb2401428 = WebDAV フォルダ

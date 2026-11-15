@@ -2842,6 +2842,12 @@ t6485842e = 이 스토리지는 전송하는 동안 각 파일을 메모리에 �
 # This storage cannot rename a folder at once, as everything under it would be copied. Use Move to….
 ta87a5d75 = 이 스토리지는 폴더 이름을 한 번에 바꿀 수 없습니다. 그 아래의 모든 항목이 복사되기 때문입니다. 이동…을 사용하세요.
 
+# The key has a passphrase: type it to open the key.
+t253e18ea = 이 키에는 암호 문구가 있습니다. 키를 열려면 암호 문구를 입력하세요.
+
+# That is not a private key. Paste the whole of the key file, from its BEGIN OPENSSH PRIVATE KEY line to its END line.
+t86217583 = 개인 키가 아닙니다. 키 파일 전체를 BEGIN OPENSSH PRIVATE KEY 줄부터 END 줄까지 붙여 넣으세요.
+
 # S3 bucket
 tc5e013b3 = S3 버킷
 
@@ -2880,6 +2886,15 @@ t67b5f42b = 홈 폴더는 비워 두세요
 
 # Empty to use the SSH agent and keys
 tf10e6293 = SSH 에이전트와 키를 사용하려면 비워 두세요
+
+# The key of {host} is not the one it had. Someone may be posing as it, or the server was set up again. Its key now is {fingerprint}; the one known is in {file}.
+tf9715f8d = { $host }의 키가 예전 키와 다릅니다. 누군가 이 서버로 위장하고 있거나 서버가 다시 설치되었을 수 있습니다. 지금 키는 { $fingerprint }이며, 알려진 키는 { $file }에 있습니다.
+
+# {host} was not trusted.
+tb6982896 = { $host }을(를) 신뢰하지 않았습니다.
+
+# {host} is not known yet, and there is no one to ask whether to trust it.
+ta342611e = { $host }은(는) 아직 알려지지 않았고, 신뢰할지 물어볼 사람이 없습니다.
 
 # WebDAV folder
 tb2401428 = WebDAV 폴더

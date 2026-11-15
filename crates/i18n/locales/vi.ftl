@@ -2842,6 +2842,12 @@ t6485842e = Hiện nơi lưu trữ này chỉ nhận tệp tối đa { $size }, 
 # This storage cannot rename a folder at once, as everything under it would be copied. Use Move to….
 ta87a5d75 = Nơi lưu trữ này không đổi tên thư mục ngay được, vì mọi thứ dưới nó sẽ bị sao chép. Hãy dùng Di chuyển đến….
 
+# The key has a passphrase: type it to open the key.
+t253e18ea = Khoá có passphrase: hãy nhập passphrase để mở khoá.
+
+# That is not a private key. Paste the whole of the key file, from its BEGIN OPENSSH PRIVATE KEY line to its END line.
+t86217583 = Đây không phải khoá riêng tư. Hãy dán toàn bộ tệp khoá, từ dòng BEGIN OPENSSH PRIVATE KEY đến dòng END.
+
 # S3 bucket
 tc5e013b3 = S3 bucket
 
@@ -2880,6 +2886,15 @@ t67b5f42b = Để trống để dùng thư mục nhà
 
 # Empty to use the SSH agent and keys
 tf10e6293 = Để trống để dùng SSH agent và các khoá
+
+# The key of {host} is not the one it had. Someone may be posing as it, or the server was set up again. Its key now is {fingerprint}; the one known is in {file}.
+tf9715f8d = Khoá của { $host } không còn là khoá trước đây. Có thể ai đó đang giả danh máy chủ này, hoặc máy chủ đã được cài lại. Khoá hiện giờ là { $fingerprint }; khoá đã biết nằm trong { $file }.
+
+# {host} was not trusted.
+tb6982896 = { $host } không được tin cậy.
+
+# {host} is not known yet, and there is no one to ask whether to trust it.
+ta342611e = { $host } chưa được biết, và không có ai để hỏi có nên tin máy chủ này không.
 
 # WebDAV folder
 tb2401428 = Thư mục WebDAV

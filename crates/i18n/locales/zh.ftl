@@ -2842,6 +2842,12 @@ t6485842e = 此存储目前只接受最大 { $size } 的文件，因为每个文
 # This storage cannot rename a folder at once, as everything under it would be copied. Use Move to….
 ta87a5d75 = 此存储无法直接重命名文件夹，因为其下所有内容都要复制。请使用“移动到…”。
 
+# The key has a passphrase: type it to open the key.
+t253e18ea = 此密钥有密码短语：请输入密码短语以打开密钥。
+
+# That is not a private key. Paste the whole of the key file, from its BEGIN OPENSSH PRIVATE KEY line to its END line.
+t86217583 = 这不是私钥。请粘贴完整的密钥文件，从 BEGIN OPENSSH PRIVATE KEY 那一行到 END 那一行。
+
 # S3 bucket
 tc5e013b3 = S3 存储桶
 
@@ -2880,6 +2886,15 @@ t67b5f42b = 留空则使用主目录
 
 # Empty to use the SSH agent and keys
 tf10e6293 = 留空则使用 SSH 代理和密钥
+
+# The key of {host} is not the one it had. Someone may be posing as it, or the server was set up again. Its key now is {fingerprint}; the one known is in {file}.
+tf9715f8d = { $host } 的密钥已不是原来的密钥。可能有人冒充此服务器，或服务器已重新安装。它现在的密钥是 { $fingerprint }；已知的密钥记录在 { $file }。
+
+# {host} was not trusted.
+tb6982896 = 未信任 { $host }。
+
+# {host} is not known yet, and there is no one to ask whether to trust it.
+ta342611e = { $host } 尚未知，且没有人可以询问是否信任它。
 
 # WebDAV folder
 tb2401428 = WebDAV 文件夹

@@ -2882,6 +2882,12 @@ t6485842e = Dieser Speicherort nimmt vorerst nur Dateien bis { $size } an, da je
 # This storage cannot rename a folder at once, as everything under it would be copied. Use Move to….
 ta87a5d75 = Dieser Speicherort kann einen Ordner nicht in einem Zug umbenennen, da alles darunter kopiert würde. Nutze „Verschieben nach…“.
 
+# The key has a passphrase: type it to open the key.
+t253e18ea = Der Schlüssel hat eine Passphrase: Gib sie ein, um den Schlüssel zu öffnen.
+
+# That is not a private key. Paste the whole of the key file, from its BEGIN OPENSSH PRIVATE KEY line to its END line.
+t86217583 = Das ist kein privater Schlüssel. Füge die ganze Schlüsseldatei ein, von ihrer Zeile BEGIN OPENSSH PRIVATE KEY bis zu ihrer END-Zeile.
+
 # S3 bucket
 tc5e013b3 = S3-Bucket
 
@@ -2920,6 +2926,15 @@ t67b5f42b = Leer für den Home-Ordner
 
 # Empty to use the SSH agent and keys
 tf10e6293 = Leer, um den SSH-Agent und Schlüssel zu verwenden
+
+# The key of {host} is not the one it had. Someone may be posing as it, or the server was set up again. Its key now is {fingerprint}; the one known is in {file}.
+tf9715f8d = Der Schlüssel von { $host } ist nicht mehr der, den er hatte. Jemand gibt sich vielleicht als dieser Server aus, oder er wurde neu eingerichtet. Sein Schlüssel ist jetzt { $fingerprint }; der bekannte steht in { $file }.
+
+# {host} was not trusted.
+tb6982896 = { $host } wurde nicht vertraut.
+
+# {host} is not known yet, and there is no one to ask whether to trust it.
+ta342611e = { $host } ist noch nicht bekannt, und es ist niemand da, der gefragt werden kann, ob ihm vertraut werden soll.
 
 # WebDAV folder
 tb2401428 = WebDAV-Ordner

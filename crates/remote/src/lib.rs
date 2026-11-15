@@ -2,9 +2,11 @@
 //! them only through that trait.
 
 mod dal;
+mod keys;
 mod s3;
 mod secrets;
 mod sftp;
+mod trust;
 mod webdav;
 
 use std::sync::Arc;
@@ -12,9 +14,14 @@ use std::sync::Arc;
 use packwing_core::StorageKind;
 
 pub use dal::Dal;
+pub use keys::{KeptKey, KeyRefused, import_key, kept_keys, remove_key};
 pub use s3::{S3Kind, S3Settings, s3};
 pub use secrets::get as secret;
 pub use sftp::{SftpKind, SftpSettings, SftpStorage, sftp};
+pub use trust::{
+    CodeQuestion, HostKeyChanged, HostKeyQuestion, PassphraseQuestion, PasswordQuestion, Questions,
+    Typed, ask_with, keep_in, known_hosts_file,
+};
 pub use webdav::{WebDavKind, WebDavSettings, webdav};
 
 /// The kinds there are; in the Mac App Store's build, all but SFTP.
