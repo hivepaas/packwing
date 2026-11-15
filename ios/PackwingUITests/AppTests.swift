@@ -346,7 +346,7 @@ final class AppTests: XCTestCase {
         let name = app.textFields["new-name"]
         XCTAssert(name.waitForExistence(timeout: 5))
         name.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 20) + "Notes.txt")
-        app.buttons["Rename"].firstMatch.tap()
+        app.buttons["name-confirm"].tap()
         XCTAssert(app.staticTexts["Notes.txt"].waitForExistence(timeout: 15))
         XCTAssertFalse(notes.exists)
 
@@ -575,5 +575,98 @@ final class AppTests: XCTestCase {
         tapWhenReady(app.buttons.matching(NSPredicate(format: "label == 'Settings'")).firstMatch)
         XCTAssert(app.descendants(matching: .any)["store-held"].waitForExistence(timeout: 10))
         keep(app, "store-pro")
+    }
+
+    /// Against the WebDAV server of `make webdav-start`: skipped without one.
+    func testAStorageIsWrittenToFromThePhone() throws {
+        let server = "http://127.0.0.1:18335"
+        let folder = "ui-\(UUID().uuidString.prefix(8))"
+        let auth = "Basic " + Data("packwing:packwing".utf8).base64EncodedString()
+        func send(_ method: String, _ path: String) -> Int {
+            var request = URLRequest(url: URL(string: "\(server)/\(path)")!)
+            request.httpMethod = method
+            request.setValue(auth, forHTTPHeaderField: "Authorization")
+            var status = 0
+            let done = expectation(description: method)
+            URLSession.shared.dataTask(with: request) { _, response, _ in
+                status = (response as? HTTPURLResponse)?.statusCode ?? 0
+                done.fulfill()
+            }.resume()
+            wait(for: [done], timeout: 10)
+            return status
+        }
+        guard send("MKCOL", folder) / 100 == 2 else { throw XCTSkip("no WebDAV server at \(server)") }
+
+        let app = XCUIApplication()
+        app.launchArguments = ["-AppleLanguages", "(en)", "-language", "", "-storages", "", "-store", "fake",
+                               "-fakePro", "NO"]
+        app.launch()
+        tapWhenReady(app.buttons["storage-new"])
+        app.buttons["WebDAV folder"].tap()
+        for (id, text) in [("storage-address", "\(server)/\(folder)"), ("storage-user", "packwing"),
+                           ("storage-password", "packwing")] {
+            let field = id == "storage-password" ? app.secureTextFields[id] : app.textFields[id]
+            XCTAssert(field.waitForExistence(timeout: 5), id)
+            field.tap()
+            field.typeText(text)
+        }
+        app.buttons["storage-add"].tap()
+        tapWhenReady(app.buttons["storage-row"])
+
+        // A folder made, and deleted.
+        tapWhenReady(app.buttons["More"])
+        app.buttons["New folder"].tap()
+        let name = app.textFields["new-name"]
+        XCTAssert(name.waitForExistence(timeout: 5))
+        name.typeText("Drafts")
+        app.buttons["name-confirm"].tap()
+        let drafts = app.staticTexts["Drafts"]
+        XCTAssert(drafts.waitForExistence(timeout: 15))
+        keep(app, "storage-folder-made")
+        sleep(1)
+        drafts.press(forDuration: 1.2)
+        app.buttons["Delete…"].tap()
+        app.buttons.matching(NSPredicate(format: "label == 'Delete'")).firstMatch.tap()
+        let gone = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: drafts)
+        XCTAssertEqual(XCTWaiter.wait(for: [gone], timeout: 15), .completed)
+        app.terminate()
+
+        // A new archive made there.
+        let sample = Bundle(for: Self.self).url(forResource: "report.zip", withExtension: nil)!
+        app.launchArguments = ["-new", sample.path, "-AppleLanguages", "(en)", "-language", "",
+                               "-newFormat", "zip", "-newCompression", "medium"]
+        app.launch()
+        let change = app.buttons["Change"]
+        XCTAssert(change.waitForExistence(timeout: 15))
+        change.tap()
+        app.buttons["Storages"].tap()
+        let entry = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", folder)).firstMatch
+        XCTAssert(entry.waitForExistence(timeout: 10))
+        entry.tap()
+        tapWhenReady(app.buttons["picker-here"])
+        XCTAssert(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", folder)).firstMatch.waitForExistence(timeout: 5))
+        tapWhenReady(app.buttons["Create"].firstMatch)
+        XCTAssert(app.staticTexts["Done"].waitForExistence(timeout: 30))
+        keep(app, "storage-created")
+        XCTAssertEqual(send("HEAD", "\(folder)/report.zip") / 100, 2, "on the server")
+        app.buttons.matching(NSPredicate(format: "label == 'Done'")).firstMatch.tap()
+
+        // Renamed there, and deleted.
+        tapWhenReady(app.buttons["storage-row"])
+        let made = app.buttons.matching(identifier: "stored-file")
+            .matching(NSPredicate(format: "label BEGINSWITH 'report.zip'")).firstMatch
+        XCTAssert(made.waitForExistence(timeout: 15))
+        sleep(1)
+        made.press(forDuration: 1.2)
+        app.buttons["Rename"].tap()
+        XCTAssert(name.waitForExistence(timeout: 5))
+        name.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 12) + "kept.zip")
+        app.buttons["name-confirm"].tap()
+        let kept = app.buttons.matching(identifier: "stored-file")
+            .matching(NSPredicate(format: "label BEGINSWITH 'kept.zip'")).firstMatch
+        XCTAssert(kept.waitForExistence(timeout: 15))
+        XCTAssertEqual(send("HEAD", "\(folder)/kept.zip") / 100, 2, "renamed on the server")
+        keep(app, "storage-renamed")
+        _ = send("DELETE", folder)
     }
 }

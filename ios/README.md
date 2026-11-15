@@ -62,6 +62,7 @@ xcrun simctl launch booted com.hivepaas.packwing -open "<that folder>/Documents/
 | `Packwing/Gallery.swift` | A folder as a grid: its pictures as themselves (read from the archive, made small as they decode), the rest by kind; the grid first where it is pictures mostly |
 | `Packwing/ChecksumSheet.swift`, `FileChecksums.swift` | Checksums of the files picked in an archive, of all of them (in one read of it, listed as sha256sum writes them, copied or kept beside it), or of its own file, and one pasted compared with those (SHA-256 and SHA-1 first, as the desktop's; any of five) |
 | `Packwing/Storages.swift` | Storages across the network (S3, SFTP, WebDAV): added (their secrets in the keychain), browsed, their archives opened where they are; packwing Free keeps one |
+| `Packwing/StorageWrites.swift` | A storage changed from the phone: folders made, files renamed and deleted, copied and moved (between storages, to Files), sent up from Files and Photos, new archives made there |
 | `Packwing/SshQuestions.swift` | What SFTP asks as it connects (a server not known yet, a password, a passphrase, a code), in a window over any other; the SSH keys kept, chosen, added and removed |
 | `Packwing/Editing.swift` | A ZIP or 7z archive changed: files added (from Files or Photos), deleted, renamed; where packwing may not write beside it, a copy changed and written over it |
 | `Packwing/SignatureSheet.swift` | An archive's signature (`name.sig` beside it, or one chosen in Files) checked by the keys trusted; Settings' Keys you trust |

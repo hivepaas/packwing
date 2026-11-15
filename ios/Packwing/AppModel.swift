@@ -113,6 +113,8 @@ final class AppModel {
     var foldersChanged = 0
     /// Counts the changes made to archives, so that what shows one is drawn again.
     var archivesChanged = 0
+    /// Counts the changes made on storages, so that their folders shown read themselves again.
+    var storagesChanged = 0
     /// What is being done to the archive shown, and its name, while it is.
     var changing: (title: String, name: String)?
     @ObservationIgnored var changeJob: Job?
