@@ -145,6 +145,8 @@ final class AppTests: XCTestCase {
         // Named after the one file in it.
         XCTAssertEqual(name.value as? String, "report")
 
+        // The format, from its menu.
+        app.buttons["new-format"].tap()
         app.buttons["7z"].tap()
         app.switches["Protect with a password"].switches.firstMatch.tap()
         // Before the keyboard covers it.
@@ -668,5 +670,38 @@ final class AppTests: XCTestCase {
         XCTAssertEqual(send("HEAD", "\(folder)/kept.zip") / 100, 2, "renamed on the server")
         keep(app, "storage-renamed")
         _ = send("DELETE", folder)
+    }
+
+    func testOneFileIsCompressedByItselfAndEncryptedWithAge() {
+        // Not launch(making:), whose -newFormat would hold the format: it is chosen here.
+        let sample = Bundle(for: Self.self).url(forResource: "report.zip", withExtension: nil)!
+        let app = XCUIApplication()
+        app.launchArguments = ["-new", sample.path, "-AppleLanguages", "(en)", "-language", ""]
+        app.launch()
+        let format = app.buttons["new-format"]
+        XCTAssert(format.waitForExistence(timeout: 15))
+        format.tap()
+        // One file by itself: the formats for one file are offered too.
+        let gz = app.buttons["gz"]
+        XCTAssert(gz.waitForExistence(timeout: 5))
+        gz.tap()
+        XCTAssert(app.staticTexts[".gz"].waitForExistence(timeout: 5))
+
+        // Not ZIP's AES: age, to a passphrase.
+        let age = app.switches["Encrypt with age"]
+        XCTAssert(age.exists)
+        XCTAssertFalse(app.switches.matching(NSPredicate(format: "label BEGINSWITH 'Hide the file names'")).firstMatch.exists)
+        age.switches.firstMatch.tap()
+        let passphrase = app.secureTextFields["new-password"]
+        XCTAssert(passphrase.waitForExistence(timeout: 5))
+        XCTAssertEqual(passphrase.placeholderValue, "Passphrase")
+        passphrase.tap()
+        passphrase.typeText("sample-password")
+        keep(app, "create-gz")
+        app.buttons["Create"].firstMatch.tap()
+
+        XCTAssert(app.staticTexts["Done"].waitForExistence(timeout: 30))
+        XCTAssert(text(app, starting: "report.gz").exists)
+        keep(app, "created-gz")
     }
 }

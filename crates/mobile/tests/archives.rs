@@ -8,9 +8,10 @@ use std::sync::{Arc, Mutex};
 use packwing_mobile::{
     Archive, ArchiveFormat, Checksum, ChecksumKind, Compared, CompressionLevel, FileVerdict, Job,
     JobListener, JobProgress, MobileError, NewArchiveHow, OnExisting, PastedCompared,
-    RemoteStorage, Secrets, SignatureState, SshQuestions, TypedSecret, ask_ssh_with,
-    checksum_kinds, checksum_list, checksum_list_name, compare_checksum, compare_pasted,
-    create_archive, describe_storage, read_key, start, stem, storage_kinds, transfer_items,
+    RemoteStorage, Secrets, SignatureState, SshQuestions, TypedSecret, archive_formats,
+    ask_ssh_with, checksum_kinds, checksum_list, checksum_list_name, compare_checksum,
+    compare_pasted, create_archive, describe_storage, read_key, start, stem, storage_kinds,
+    transfer_items,
 };
 
 /// A folder of files to make archives of: `Báo cáo/tổng hợp.txt` and
@@ -25,8 +26,8 @@ fn files(dir: &Path) -> String {
 
 fn make(dir: &Path, format: ArchiveFormat, password: Option<&str>, hide_names: bool) -> String {
     let name = match format {
-        ArchiveFormat::Zip => "a.zip",
         ArchiveFormat::SevenZip => "a.7z",
+        _ => "a.zip",
     };
     create_archive(
         vec![files(dir)],
@@ -36,6 +37,7 @@ fn make(dir: &Path, format: ArchiveFormat, password: Option<&str>, hide_names: b
             compression: CompressionLevel::Low,
             password: password.map(str::to_owned),
             hide_names,
+            part_size: None,
         },
         Job::quiet(),
     )
@@ -791,6 +793,7 @@ fn a_storage_is_written_to_from_the_phone() {
                 compression: CompressionLevel::Low,
                 password: None,
                 hide_names: false,
+                part_size: None,
             },
             Job::quiet(),
         )
@@ -817,4 +820,54 @@ fn a_storage_is_written_to_from_the_phone() {
 
     there.delete(vec![], vec![folder.clone()]).expect("deleted");
     assert!(!names(vec![]).contains(&folder));
+}
+
+#[test]
+fn every_format_the_desktop_makes_is_made_and_opened_again() {
+    let dir = tempfile::tempdir().expect("dir");
+    let folder = files(dir.path());
+    let one = format!("{folder}/ghi chú.txt");
+    for row in archive_formats(true) {
+        // One file by itself, or the folder.
+        let what = if row.one_file {
+            one.clone()
+        } else {
+            folder.clone()
+        };
+        for password in [None, Some("sample-password")] {
+            if password.is_some() && row.format == ArchiveFormat::Tar {
+                // age around a .tar: as any other; once is enough.
+                continue;
+            }
+            let wanted = dir.path().join(format!("made{}", row.ext));
+            let made = create_archive(
+                vec![what.clone()],
+                wanted.display().to_string(),
+                NewArchiveHow {
+                    format: row.format,
+                    compression: CompressionLevel::Store,
+                    password: password.map(str::to_owned),
+                    hide_names: false,
+                    part_size: None,
+                },
+                Job::quiet(),
+            )
+            .unwrap_or_else(|e| panic!("{} made: {e}", row.ext));
+            assert!(made.ends_with(&row.ext), "{made}");
+            let secrets = match (password, row.uses_age) {
+                (Some(p), true) => Secrets {
+                    password: None,
+                    passphrase: Some(p.to_owned()),
+                },
+                (Some(p), false) => with(p),
+                (None, _) => Secrets::default(),
+            };
+            let archive = Archive::open(made.clone(), secrets, Job::quiet())
+                .unwrap_or_else(|e| panic!("{} opened: {e}", row.ext));
+            assert!(archive.info().files >= 1, "{}", row.ext);
+            fs::remove_file(&made).expect("removed");
+        }
+    }
+    // Without one file, those for one file are not offered.
+    assert_eq!(archive_formats(false).len(), 8);
 }

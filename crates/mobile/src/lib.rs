@@ -464,21 +464,115 @@ impl Archive {
     }
 }
 
-/// The kinds of archive the phone makes.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, uniffi::Enum)]
+/// The kinds of archive the phone makes: the desktop's.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, uniffi::Enum)]
 pub enum ArchiveFormat {
     #[default]
     Zip,
     SevenZip,
+    TarZst,
+    TarGz,
+    TarXz,
+    TarBz2,
+    TarLz4,
+    Tar,
+    /// One file compressed by itself, with no archive around it.
+    Gz,
+    Zst,
+    Xz,
+    Bz2,
+    Lz4,
 }
 
 impl ArchiveFormat {
+    /// Those for any files, most used first, then those for one file by
+    /// itself: as the desktop lists them.
+    const ALL: [ArchiveFormat; 13] = [
+        ArchiveFormat::Zip,
+        ArchiveFormat::SevenZip,
+        ArchiveFormat::TarZst,
+        ArchiveFormat::TarGz,
+        ArchiveFormat::TarXz,
+        ArchiveFormat::TarBz2,
+        ArchiveFormat::TarLz4,
+        ArchiveFormat::Tar,
+        ArchiveFormat::Gz,
+        ArchiveFormat::Zst,
+        ArchiveFormat::Xz,
+        ArchiveFormat::Bz2,
+        ArchiveFormat::Lz4,
+    ];
+
     fn kind(self) -> Kind {
         match self {
             ArchiveFormat::Zip => Kind::Zip,
             ArchiveFormat::SevenZip => Kind::SevenZip,
+            ArchiveFormat::TarZst => Kind::TarZst,
+            ArchiveFormat::TarGz => Kind::TarGz,
+            ArchiveFormat::TarXz => Kind::TarXz,
+            ArchiveFormat::TarBz2 => Kind::TarBz2,
+            ArchiveFormat::TarLz4 => Kind::TarLz4,
+            ArchiveFormat::Tar => Kind::Tar,
+            ArchiveFormat::Gz => Kind::Gz,
+            ArchiveFormat::Zst => Kind::Zst,
+            ArchiveFormat::Xz => Kind::Xz,
+            ArchiveFormat::Bz2 => Kind::Bz2,
+            ArchiveFormat::Lz4 => Kind::Lz4,
         }
     }
+
+    fn ext(self) -> &'static str {
+        match self {
+            ArchiveFormat::Zip => ".zip",
+            ArchiveFormat::SevenZip => ".7z",
+            ArchiveFormat::TarZst => ".tar.zst",
+            ArchiveFormat::TarGz => ".tar.gz",
+            ArchiveFormat::TarXz => ".tar.xz",
+            ArchiveFormat::TarBz2 => ".tar.bz2",
+            ArchiveFormat::TarLz4 => ".tar.lz4",
+            ArchiveFormat::Tar => ".tar",
+            ArchiveFormat::Gz => ".gz",
+            ArchiveFormat::Zst => ".zst",
+            ArchiveFormat::Xz => ".xz",
+            ArchiveFormat::Bz2 => ".bz2",
+            ArchiveFormat::Lz4 => ".lz4",
+        }
+    }
+}
+
+/// A kind of archive, as the app offers it.
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct ArchiveFormatRow {
+    pub format: ArchiveFormat,
+    /// What follows its name: `.tar.zst`.
+    pub ext: String,
+    /// It holds one file by itself, with no archive around it.
+    pub one_file: bool,
+    /// Its files can go in as they are ([`CompressionLevel::Store`]): ZIP's and 7z's.
+    pub stores: bool,
+    /// A password encrypts it whole, with age, to that passphrase: all but ZIP
+    /// and 7z, which have their own AES-256.
+    pub uses_age: bool,
+    /// The names in it can be hidden with its password: 7z's.
+    pub hides_names: bool,
+}
+
+/// The kinds of archive there are to make, in the desktop's order: those for
+/// any files, then, with `one_file`, those for one file by itself.
+#[uniffi::export]
+pub fn archive_formats(one_file: bool) -> Vec<ArchiveFormatRow> {
+    ArchiveFormat::ALL
+        .into_iter()
+        .filter(|f| one_file || !f.kind().one_file())
+        .map(|f| ArchiveFormatRow {
+            format: f,
+            ext: f.ext().to_owned(),
+            one_file: f.kind().one_file(),
+            stores: matches!(f, ArchiveFormat::Zip | ArchiveFormat::SevenZip),
+            uses_age: !matches!(f, ArchiveFormat::Zip | ArchiveFormat::SevenZip),
+            hides_names: f == ArchiveFormat::SevenZip,
+        })
+        .collect()
 }
 
 /// How hard a new archive is compressed, as the desktop's five levels and
@@ -512,12 +606,17 @@ impl CompressionLevel {
 pub struct NewArchiveHow {
     pub format: ArchiveFormat,
     pub compression: CompressionLevel,
-    /// Encrypts its files with AES-256.
+    /// Encrypts its files with AES-256 (ZIP, 7z), or all of it with age to
+    /// this passphrase (the others).
     #[uniffi(default = None)]
     pub password: Option<String>,
     /// Encrypts a 7z archive's names too, with its password.
     #[uniffi(default = false)]
     pub hide_names: bool,
+    /// Cuts it into `name.zip.001`, `name.zip.002`, … of this many bytes, as
+    /// 7-Zip does.
+    #[uniffi(default = None)]
+    pub part_size: Option<u64>,
 }
 
 /// Makes an archive of `paths` (files and folders) at `wanted`, or beside it
@@ -543,9 +642,18 @@ impl NewArchiveHow {
         let how = self.clone();
         NewArchive {
             kind: how.format.kind(),
-            level: how.compression.level(),
+            // Store is ZIP's and 7z's: a tar format's is `.tar`.
+            level: match how.compression {
+                CompressionLevel::Store
+                    if !matches!(how.format, ArchiveFormat::Zip | ArchiveFormat::SevenZip) =>
+                {
+                    Level::Lowest
+                }
+                level => level.level(),
+            },
             password: how.password.map(String::into_bytes),
             hide_names: how.hide_names && how.format == ArchiveFormat::SevenZip,
+            part_size: how.part_size,
             stored_extensions: COMPRESSED_EXTENSIONS
                 .iter()
                 .map(|e| e.to_string())

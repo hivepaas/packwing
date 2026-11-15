@@ -80,6 +80,8 @@ struct CreateSheet: View {
     @State private var password = ""
     @State private var showingPassword = false
     @State private var hideNames = false
+    /// The bytes of each part, if it is cut in parts.
+    @State private var partSize: UInt64?
     @State private var adding: NewSource?
     @State private var choosingFolder = false
     /// A storage's folder to make it in, in place of one of Files.
@@ -90,7 +92,7 @@ struct CreateSheet: View {
         // Read, so that a folder chosen draws it again.
         let _ = model.foldersChanged
         let folder = model.createFolder
-        let format = ArchiveFormat(key: formatKey)
+        let format = chosenFormat
         NavigationStack {
             Form {
                 Section {
@@ -123,33 +125,40 @@ struct CreateSheet: View {
                 .listRowBackground(Tonal.surface)
 
                 Section {
-                    Picker(tr("Format"), selection: $formatKey) {
-                        ForEach(ArchiveFormat.all, id: \.key) { Text($0.label).tag($0.key) }
+                    // ZIP and 7z first, as most people want one; then the desktop's others.
+                    Picker(tr("Format"), selection: Binding { format.key } set: { formatKey = $0 }) {
+                        ForEach(ArchiveFormat.offered(oneFile: oneFile), id: \.key) { Text($0.label).tag($0.key) }
                     }
-                    .pickerStyle(.segmented)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets())
-                } header: {
-                    Text(tr("Format"))
+                    .accessibilityIdentifier("new-format")
                 } footer: {
-                    Text(format == .zip
-                         ? tr("Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.")
-                         : tr("Smaller. Opens with packwing, 7-Zip and most archivers."))
-                        .font(.nunito(13, relativeTo: .footnote))
+                    if format == .zip || format == .sevenZip {
+                        Text(format == .zip
+                             ? tr("Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.")
+                             : tr("Smaller. Opens with packwing, 7-Zip and most archivers."))
+                            .font(.nunito(13, relativeTo: .footnote))
+                    }
                 }
+                .listRowBackground(Tonal.surface)
 
                 Section {
-                    Picker(tr("Compression"), selection: $levelKey) {
-                        ForEach(CompressionLevel.all, id: \.key) { Text($0.label).tag($0.key) }
+                    Picker(tr("Compression"), selection: Binding { level.key } set: { levelKey = $0 }) {
+                        ForEach(CompressionLevel.all.filter { $0 != .store || format.stores }, id: \.key) {
+                            Text($0.label).tag($0.key)
+                        }
                     }
-                    Toggle(tr("Protect with a password"), isOn: $locked.animation())
+                    Picker(tr("Split into parts"), selection: $partSize) {
+                        Text(tr("Don’t split")).tag(UInt64?.none)
+                        Text(tr("25 MB (email)")).tag(UInt64?.some(25_000_000))
+                        Text(tr("4 GB (USB stick)")).tag(UInt64?.some(4_000_000_000))
+                    }
+                    Toggle(format.usesAge ? tr("Encrypt with age") : tr("Protect with a password"), isOn: $locked.animation())
                     if locked {
                         HStack(spacing: 8) {
                             Group {
                                 if showingPassword {
-                                    TextField(tr("Password"), text: $password)
+                                    TextField(format.usesAge ? tr("Passphrase") : tr("Password"), text: $password)
                                 } else {
-                                    SecureField(tr("Password"), text: $password)
+                                    SecureField(format.usesAge ? tr("Passphrase") : tr("Password"), text: $password)
                                 }
                             }
                             // Not an account's password: as one (.newPassword, or
@@ -169,17 +178,20 @@ struct CreateSheet: View {
                             .buttonStyle(.borderless)
                             .accessibilityLabel(showingPassword ? tr("Hide the password") : tr("Show the password"))
                         }
-                        Toggle(isOn: $hideNames) {
-                            VStack(alignment: .leading, spacing: 1) {
-                                Text(tr("Hide the file names too"))
-                                Text(format == .sevenZip
-                                     ? tr("No one sees what is inside without the password.")
-                                     : tr("7z only: ZIP always shows its names."))
-                                    .font(.nunito(12, relativeTo: .caption))
-                                    .foregroundStyle(Tonal.muted)
+                        // age hides it all, names too: only ZIP and 7z have a choice.
+                        if !format.usesAge {
+                            Toggle(isOn: $hideNames) {
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(tr("Hide the file names too"))
+                                    Text(format == .sevenZip
+                                         ? tr("No one sees what is inside without the password.")
+                                         : tr("7z only: ZIP always shows its names."))
+                                        .font(.nunito(12, relativeTo: .caption))
+                                        .foregroundStyle(Tonal.muted)
+                                }
                             }
+                            .disabled(format == .zip)
                         }
-                        .disabled(format == .zip)
                     }
                 }
                 .listRowBackground(Tonal.surface)
@@ -282,9 +294,26 @@ struct CreateSheet: View {
         var said = name.trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: "/", with: "-")
             .replacingOccurrences(of: ":", with: "-")
-        let ext = ArchiveFormat(key: formatKey).ext
+        let ext = chosenFormat.ext
         if said.lowercased().hasSuffix(ext) { said.removeLast(ext.count) }
         return said.trimmingCharacters(in: .whitespaces)
+    }
+
+    /// One file by itself, not a folder: the formats for one file are offered too.
+    private var oneFile: Bool {
+        draft.items.count == 1 && !draft.items[0].folder
+    }
+
+    /// The format chosen, if it is one for what is chosen; ZIP otherwise.
+    private var chosenFormat: ArchiveFormat {
+        let chosen = ArchiveFormat(key: formatKey)
+        return chosen.oneFile && !oneFile ? .zip : chosen
+    }
+
+    /// The level chosen; Store is ZIP's and 7z's, Lowest for the others.
+    private var level: CompressionLevel {
+        let chosen = CompressionLevel(key: levelKey)
+        return chosen == .store && !chosenFormat.stores ? .lowest : chosen
     }
 
     private var ready: Bool {
@@ -293,12 +322,13 @@ struct CreateSheet: View {
 
     private func start(_ folder: URL) {
         guard ready else { return }
-        let format = ArchiveFormat(key: formatKey)
+        let format = chosenFormat
         let how = NewArchiveHow(
             format: format,
-            compression: CompressionLevel(key: levelKey),
+            compression: level,
             password: locked ? password : nil,
-            hideNames: locked && hideNames && format == .sevenZip)
+            hideNames: locked && hideNames && format == .sevenZip,
+            partSize: partSize)
         let name = fileName
         if let toStorage {
             model.afterSheet = { [model, draft] in
