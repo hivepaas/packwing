@@ -286,6 +286,7 @@ impl Archive {
             files: 0,
             layers: Vec::new(),
             container: packwing_core::Container::Data,
+            at: 0,
             encryption: None,
             entries: Vec::new(),
         };
@@ -523,6 +524,7 @@ mod tests {
                 files: 0,
                 layers: Vec::new(),
                 container: packwing_core::Container::Tar,
+                at: 0,
                 encryption: None,
                 entries,
             },

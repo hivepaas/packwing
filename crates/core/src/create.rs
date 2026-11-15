@@ -2521,6 +2521,7 @@ fn why(result: Result<(), Error>, tally: &Tally) -> Result<(), Error> {
 pub fn can_add(listing: &Listing) -> bool {
     matches!(listing.container, Container::Zip | Container::SevenZip)
         && listing.layers.is_empty()
+        && listing.at == 0
         && volume_paths(&listing.folder.join(&listing.name)).len() == 1
 }
 

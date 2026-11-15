@@ -1419,6 +1419,7 @@ fn a_search_finds_names_at_any_depth_whatever_their_case_and_accents() {
         files: 0,
         layers: Vec::new(),
         container: Container::Zip,
+        at: 0,
         encryption: None,
         entries: vec![
             entry("Báo cáo/quý 1/Tổng hợp.xlsx", false, 10),

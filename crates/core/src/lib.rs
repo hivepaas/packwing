@@ -26,6 +26,7 @@ mod mark;
 pub mod memory;
 mod passphrase;
 mod rar;
+mod sfx;
 mod sign;
 mod source;
 mod split;
