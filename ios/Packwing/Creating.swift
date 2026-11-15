@@ -209,6 +209,14 @@ extension ArchiveFormat {
     }
 }
 
+extension NewArchiveHow {
+    /// What follows the name of the archive made: `.age` too where age
+    /// encrypts it, as the desktop names it.
+    var ext: String {
+        format.ext + (format.usesAge && (password != nil || !ageKeys.isEmpty) ? ".age" : "")
+    }
+}
+
 extension CompressionLevel {
     static let all: [CompressionLevel] = [.store, .lowest, .low, .medium, .high, .highest]
 
@@ -256,7 +264,7 @@ extension AppModel {
             showingJob = true
             return
         }
-        let file = name + how.format.ext
+        let file = name + how.ext
         let running = RunningJob(title: tr("Compressing"), name: file)
         job = running
         showingJob = true

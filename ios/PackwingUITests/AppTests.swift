@@ -742,7 +742,7 @@ final class AppTests: XCTestCase {
         app.buttons["Create"].firstMatch.tap()
 
         XCTAssert(app.staticTexts["Done"].waitForExistence(timeout: 30))
-        XCTAssert(text(app, starting: "report.gz").exists)
+        XCTAssert(text(app, starting: "report.gz.age").exists)
         keep(app, "created-gz")
         app.terminate()
 
@@ -753,5 +753,62 @@ final class AppTests: XCTestCase {
         let kept = app.buttons["settings-format"]
         XCTAssert(kept.waitForExistence(timeout: 10))
         XCTAssertFalse("\(kept.label) \(kept.value ?? "")".contains("gz"), "\(kept.label) \(kept.value ?? "")")
+    }
+
+    /// An age file encrypted to a key: its key file asked for, one that is no
+    /// key file refused, and the key pasted opens it.
+    func testAnAgeFileOpensWithItsKeyPasted() throws {
+        let app = launch(opening: "x25519.tar.zst.age")
+        let choose = app.buttons["key-choose"]
+        XCTAssert(choose.waitForExistence(timeout: 15))
+        XCTAssert(app.staticTexts["Choose the key file"].exists)
+        keep(app, "key-asked")
+
+        let paste = app.buttons["Paste"]
+        UIPasteboard.general.string = "hello"
+        tapWhenReady(paste)
+        XCTAssert(app.descendants(matching: .any)["key-problem"].waitForExistence(timeout: 5))
+        keep(app, "key-refused")
+
+        let key = try String(contentsOf: Bundle(for: Self.self).url(forResource: "test-age.key", withExtension: nil)!,
+                             encoding: .utf8)
+        UIPasteboard.general.string = key
+        paste.tap()
+        XCTAssert(text(app, starting: "docs").waitForExistence(timeout: 15))
+        XCTAssertFalse(choose.exists)
+        keep(app, "key-opened")
+    }
+
+    /// A new .tar.zst encrypted with age to a public key typed: one that is
+    /// none said so, and Create only once one is.
+    func testANewArchiveIsEncryptedToAPublicKey() {
+        // .tar.zst as the format of new archives: a long menu for one file
+        // scrolls, and a tap in it may land outside.
+        let sample = Bundle(for: Self.self).url(forResource: "report.zip", withExtension: nil)!
+        let app = XCUIApplication()
+        app.launchArguments = ["-new", sample.path, "-AppleLanguages", "(en)", "-language", "",
+                               "-newFormat", "tar.zst", "-newCompression", "medium"]
+        app.launch()
+        XCTAssert(app.staticTexts[".tar.zst"].waitForExistence(timeout: 15))
+        app.switches["Encrypt with age"].switches.firstMatch.tap()
+        XCTAssert(app.staticTexts[".tar.zst.age"].waitForExistence(timeout: 5))
+        tapWhenReady(app.buttons["Public key"])
+        let field = app.textFields["new-age-key"]
+        XCTAssert(field.waitForExistence(timeout: 5))
+        field.tap()
+        field.typeText("age1nope")
+        XCTAssert(text(app, starting: "Only the private key").exists)
+        let create = app.buttons["Create"].firstMatch
+        XCTAssertFalse(create.isEnabled)
+        keep(app, "age-key-wrong")
+
+        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 8)
+                       + "age1a5yutm5acfpcwcgkap0mcujr3sq8e0pvsvysdnwwlrga6hg8jg8sd3f8nj")
+        XCTAssert(create.isEnabled)
+        keep(app, "age-key")
+        create.tap()
+        XCTAssert(app.staticTexts["Done"].waitForExistence(timeout: 30))
+        XCTAssert(text(app, starting: "report.tar.zst.age").exists)
+        keep(app, "age-key-made")
     }
 }

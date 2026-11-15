@@ -3511,11 +3511,11 @@ t0923b4df = Не удаётся открыть
 # OK
 t85e4b82f = ОК
 
-# {name} is encrypted with a passphrase. Ask the person who sent it for it.
-ta6455c99 = { $name } зашифрован парольной фразой. Попросите её у того, кто его прислал.
-
 # {name} is locked. Ask the person who sent it for its password.
 te1845608 = { $name } защищён паролем. Попросите пароль у того, кто его прислал.
+
+# {name} is encrypted with a passphrase. Ask the person who sent it for it.
+ta6455c99 = { $name } зашифрован парольной фразой. Попросите её у того, кто его прислал.
 
 # Hide password
 tcd577cde = Скрыть пароль

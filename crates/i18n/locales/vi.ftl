@@ -3364,11 +3364,11 @@ t0923b4df = Không mở được
 # OK
 t85e4b82f = OK
 
-# {name} is encrypted with a passphrase. Ask the person who sent it for it.
-ta6455c99 = { $name } được mã hoá bằng cụm mật khẩu. Hãy hỏi người gửi cụm mật khẩu đó.
-
 # {name} is locked. Ask the person who sent it for its password.
 te1845608 = { $name } đã bị khoá. Hãy hỏi người gửi mật khẩu.
+
+# {name} is encrypted with a passphrase. Ask the person who sent it for it.
+ta6455c99 = { $name } được mã hoá bằng cụm mật khẩu. Hãy hỏi người gửi cụm mật khẩu đó.
 
 # Hide password
 tcd577cde = Ẩn mật khẩu

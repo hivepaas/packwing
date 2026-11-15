@@ -239,7 +239,7 @@ struct SignatureSheet: View {
 /// Why a call failed, as the core says it, in the user's language.
 func reason(_ error: MobileError) -> String {
     switch error {
-    case .NotAnArchive(let why), .WrongPassword(let why), .Cancelled(let why), .Failed(let why), .Locked(let why, _):
+    case .NotAnArchive(let why), .WrongPassword(let why), .Cancelled(let why), .Failed(let why), .Locked(let why, _, _):
         why
     }
 }

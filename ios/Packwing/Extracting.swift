@@ -197,7 +197,7 @@ extension AppModel {
     /// What `error` says, in the person's words.
     static func said(_ error: Error) -> String {
         switch error as? MobileError {
-        case .NotAnArchive(let m), .Locked(let m, _), .WrongPassword(let m), .Cancelled(let m), .Failed(let m): m
+        case .NotAnArchive(let m), .Locked(let m, _, _), .WrongPassword(let m), .Cancelled(let m), .Failed(let m): m
         case nil: error.localizedDescription
         }
     }

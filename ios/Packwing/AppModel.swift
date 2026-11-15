@@ -79,8 +79,12 @@ struct PasswordAsk: Identifiable {
     let id = UUID()
     let spot: OpenSpot
     let name: String
-    /// An age file's passphrase, rather than an archive's password.
-    let passphrase: Bool
+    /// An archive's password, an age file's passphrase, the key file it was
+    /// encrypted to, or that key file's passphrase.
+    let asks: Asks
+    /// What was given before, and is given again with what is asked: the key
+    /// file, when its passphrase is asked.
+    let given: Secrets
     /// What was wrong with the one given, if one was.
     let problem: String?
 }
@@ -167,7 +171,7 @@ final class AppModel {
 
     func open(_ url: URL) {
         let url = Self.receive(url)
-        Task { await open(.file(url), secrets: Secrets(password: nil, passphrase: nil)) }
+        Task { await open(.file(url), secrets: Secrets()) }
     }
 
     /// Opens the archive at `spot` with `secrets`: shows it, or asks for what it needs.
@@ -210,16 +214,20 @@ final class AppModel {
                 // Over the storage's folder it is in, to go back to.
                 path.append(Place(archive: opened, folder: []))
             } else {
-                remember(url, opened.info, locked: secrets.password != nil || secrets.passphrase != nil)
+                remember(url, opened.info, locked: secrets != Secrets())
                 path = NavigationPath([Place(archive: opened, folder: [])])
             }
         case .failure(let error):
             if scoped { url.stopAccessingSecurityScopedResource() }
             switch error as? MobileError {
-            case .Locked(_, let passphrase):
-                asking = PasswordAsk(spot: spot, name: name, passphrase: passphrase, problem: nil)
+            case .Locked(let message, _, let asks):
+                // A key file asked for again, one given: it was not the key.
+                let again = asks == .keyFile && secrets.keyFile != nil
+                asking = PasswordAsk(spot: spot, name: name, asks: asks, given: secrets,
+                                     problem: again ? message : nil)
             case .WrongPassword(let message):
-                asking = PasswordAsk(spot: spot, name: name, passphrase: asking?.passphrase ?? false, problem: message)
+                asking = PasswordAsk(spot: spot, name: name, asks: asking?.asks ?? .password,
+                                     given: asking?.given ?? Secrets(), problem: message)
             case .Cancelled:
                 break
             case .NotAnArchive(let message), .Failed(let message):
@@ -239,11 +247,25 @@ final class AppModel {
         opening = nil
     }
 
-    /// Opens what the password sheet asked for, with `secret`.
+    /// Opens what the password sheet asked for, with `secret` typed, and what
+    /// was given before.
     func unlock(_ ask: PasswordAsk, with secret: String) {
-        let secrets = ask.passphrase
-            ? Secrets(password: nil, passphrase: secret)
-            : Secrets(password: secret, passphrase: nil)
+        var secrets = ask.given
+        switch ask.asks {
+        case .password: secrets.password = secret
+        case .passphrase: secrets.passphrase = secret
+        case .keyPassphrase: secrets.keyPassphrase = secret
+        case .keyFile: return
+        }
+        Task { await open(ask.spot, secrets: secrets) }
+    }
+
+    /// Opens what the password sheet asked for with the key file `key`, and
+    /// what was given before but a passphrase of another key file.
+    func unlock(_ ask: PasswordAsk, key: Data) {
+        var secrets = ask.given
+        secrets.keyFile = key
+        secrets.keyPassphrase = nil
         Task { await open(ask.spot, secrets: secrets) }
     }
 

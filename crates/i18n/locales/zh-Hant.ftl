@@ -3373,11 +3373,11 @@ t0923b4df = 無法開啟
 # OK
 t85e4b82f = 好
 
-# {name} is encrypted with a passphrase. Ask the person who sent it for it.
-ta6455c99 = { $name } 以密碼片語加密。請向傳送者索取密碼片語。
-
 # {name} is locked. Ask the person who sent it for its password.
 te1845608 = { $name } 受密碼保護。請向傳送者索取密碼。
+
+# {name} is encrypted with a passphrase. Ask the person who sent it for it.
+ta6455c99 = { $name } 以密碼片語加密。請向傳送者索取密碼片語。
 
 # Hide password
 tcd577cde = 隱藏密碼

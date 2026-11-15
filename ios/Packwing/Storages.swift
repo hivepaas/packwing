@@ -90,7 +90,7 @@ extension AppModel {
     /// Opens the archive `item` of `folder` of `handle`, where it is.
     func open(_ item: StoredItem, in folder: [String], of handle: StorageHandle) {
         let spot = OpenSpot.stored(handle, folder + [item.name], item.size)
-        Task { await open(spot, secrets: Secrets(password: nil, passphrase: nil)) }
+        Task { await open(spot, secrets: Secrets()) }
     }
 
     /// Shows `item` of `folder` of `handle` in Quick Look, read whole first.

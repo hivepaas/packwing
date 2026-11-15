@@ -160,7 +160,7 @@ struct ArchiveFileChecksums: View {
                 switch error as? MobileError {
                 case .Cancelled:
                     break
-                case .NotAnArchive(let why), .WrongPassword(let why), .Failed(let why), .Locked(let why, _):
+                case .NotAnArchive(let why), .WrongPassword(let why), .Failed(let why), .Locked(let why, _, _):
                     problem = tr("The file could not be read: {why}", ["why": why])
                 case nil:
                     problem = tr("The file could not be read: {why}", ["why": error.localizedDescription])
