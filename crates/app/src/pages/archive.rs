@@ -687,6 +687,33 @@ impl ArchivePage {
             .collect()
     }
 
+    /// What is selected in the folder shown, with the files in it and their
+    /// bytes, unpacked: a folder's, all it holds.
+    pub fn selected(&self) -> crate::dialogs::Selected {
+        let paths = self.picked();
+        let Some(a) = self.archive() else {
+            return crate::dialogs::Selected::default();
+        };
+        let children = a
+            .listing
+            .as_ref()
+            .map(|l| l.children(&a.folder))
+            .unwrap_or_default();
+        let (mut files, mut bytes) = (0, 0);
+        for e in self.selected.iter().filter_map(|i| a.entries.get(*i)) {
+            bytes += e.size;
+            files += children
+                .iter()
+                .find(|c| c.name == e.name)
+                .map_or(1, |c| c.files);
+        }
+        crate::dialogs::Selected {
+            paths,
+            files,
+            bytes,
+        }
+    }
+
     fn stop_preview(&mut self) {
         if let Some((cancel, _)) = self.previewing.take() {
             cancel.cancel();

@@ -153,17 +153,38 @@ ta24f28a2 = Introducir una clave de licencia
 # Save
 t4d2d5d68 = Guardar
 
-# Paste the checksum given with the file
-t8333758c = Pega la suma de comprobación que acompaña al archivo
+# The file could not be read: {why}
+t5daa8455 = No se pudo leer el archivo: { $why }
 
 # They could not be saved: {why}
 tb45ae457 = No se pudieron guardar: { $why }
 
-# The file could not be read: {why}
-t5daa8455 = No se pudo leer el archivo: { $why }
+# {picked} selected
+t9addc37e = { $picked } seleccionados
 
-# Reading…
-t6aad8485 = Leyendo…
+# Select files or folders in it first.
+t0c04494a = Selecciona antes archivos o carpetas dentro.
+
+# What should it read?
+t35c7f91a = ¿Qué debe leer?
+
+# All {counted}
+t649feaf8 = Todos: { $counted }
+
+# The archive itself
+t5db318fd = El propio archivo comprimido
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = Todo el archivo pasa por este equipo, y tu proveedor puede cobrar por lo que se lee de él.
+
+# What is read of it passes through this computer, and your provider may charge for it.
+t4c33fc44 = Lo que se lee de él pasa por este equipo, y tu proveedor puede cobrar por ello.
+
+# Checksums
+t47dd48d3 = Sumas de comprobación
+
+# Read it
+t80fb8482 = Leerlo
 
 # Copied
 t8dc21305 = Copiada
@@ -173,6 +194,61 @@ t658f3664 = Copiar
 
 # weak
 tedbc2ec9 = débil
+
+# Reading… {size} of {size2}
+t80036d1c = Leyendo… { $size } de { $size2 }
+
+# Reading… {size}
+t1569c388 = Leyendo… { $size }
+
+# Click a file to see its checksums.
+t179475a4 = Haz clic en un archivo para ver sus sumas de comprobación.
+
+# There are no files in it to read.
+tcadaddd8 = No hay archivos que leer en él.
+
+# {count} file is damaged, and has none: {names} | {count} files are damaged, and have none: {names}
+tc7ad9be4 =
+    { $n ->
+        [one] { $count } archivo está dañado y no tiene suma: { $names }
+       *[other] { $count } archivos están dañados y no tienen suma: { $names }
+    }
+
+# Links have none of their own: a checking tool reads what they lead to.
+te144c986 = Los enlaces no tienen suma propia: una herramienta de comprobación lee aquello a lo que apuntan.
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = Una suma débil ({ $names }) detecta un archivo dañado, pero no uno cambiado a propósito, que puede hacerse coincidir.
+
+# Saved as {files}. Where they are extracted, sha256sum -c and the like check them with it, without packwing.
+t7a88cd8e = Guardadas como { $files }. Donde se extraigan, sha256sum -c y similares los comprueban con ellas, sin packwing.
+
+# Copy all
+t6aef5c37 = Copiar todo
+
+# Saving…
+tbd79b37d = Guardando…
+
+# Save beside it
+t7f4d85e3 = Guardar junto a él
+
+# Save in…
+t846ddfa1 = Guardar en…
+
+# Checksums in {name}
+t71a5c5d3 = Sumas de comprobación en { $name }
+
+# Done
+t8dd31791 = Listo
+
+# Choose the checksums shown
+teec532fe = Elegir las sumas de comprobación que se muestran
+
+# Paste the checksum given with the file
+t8333758c = Pega la suma de comprobación que acompaña al archivo
+
+# Reading…
+t6aad8485 = Leyendo…
 
 # There is no checksum in this.
 t231f838a = Aquí no hay ninguna suma de comprobación.
@@ -198,41 +274,14 @@ tcbefe458 = Calcularla
 # Compare with
 tbddcfc14 = Comparar con
 
-# Reading… {size} of {size2}
-t80036d1c = Leyendo… { $size } de { $size2 }
-
-# Reading… {size}
-t1569c388 = Leyendo… { $size }
-
 # Checksums of {name}
 te88f3ed9 = Sumas de comprobación de { $name }
-
-# All of the file passes through this computer, and your provider may charge for what is read from it.
-t8cca3c05 = Todo el archivo pasa por este equipo, y tu proveedor puede cobrar por lo que se lee de él.
-
-# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
-t164fdec6 = Una suma débil ({ $names }) detecta un archivo dañado, pero no uno cambiado a propósito, que puede hacerse coincidir.
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = Guardadas junto a él como { $files }, donde sha256sum -c y similares las comprueban sin packwing.
 
 # Compare…
 tec85be80 = Comparar…
-
-# Saving…
-tbd79b37d = Guardando…
-
-# Save beside it
-t7f4d85e3 = Guardar junto a él
-
-# Choose the checksums shown
-teec532fe = Elegir las sumas de comprobación que se muestran
-
-# Read it
-t80fb8482 = Leerlo
-
-# Done
-t8dd31791 = Listo
 
 # Nothing chosen yet
 tcf390b0a = Aún no hay nada elegido
@@ -573,12 +622,6 @@ t2380eff7 = { $new_folder } · { $counted }, así que en una carpeta nueva
 
 # Extract here
 t354232ec = Extraer aquí
-
-# {picked} selected
-t9addc37e = { $picked } seleccionados
-
-# All {counted}
-t649feaf8 = Todos: { $counted }
 
 # What should it extract?
 td12e23bf = ¿Qué debe extraer?
@@ -1299,9 +1342,6 @@ t3794d625 = Abrir en el Explorador de archivos
 # Open in the file manager
 td1ceabc4 = Abrir en el gestor de archivos
 
-# Copy all
-t6aef5c37 = Copiar todo
-
 # This system has no folder for settings.
 tfd0ff0a1 = Este sistema no tiene carpeta para los ajustes.
 
@@ -1434,9 +1474,6 @@ tbdf6bcd0 = Crear una clave de firma
 
 # Join parts
 t4eee8c5f = Unir partes
-
-# Checksums
-t47dd48d3 = Sumas de comprobación
 
 # Audit log started
 tfb8df56f = Registro de auditoría iniciado

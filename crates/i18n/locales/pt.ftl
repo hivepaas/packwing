@@ -153,17 +153,38 @@ ta24f28a2 = Introduzir uma chave de licença
 # Save
 t4d2d5d68 = Salvar
 
-# Paste the checksum given with the file
-t8333758c = Cole o checksum fornecido com o arquivo
+# The file could not be read: {why}
+t5daa8455 = Não foi possível ler o arquivo: { $why }
 
 # They could not be saved: {why}
 tb45ae457 = Não foi possível salvá-los: { $why }
 
-# The file could not be read: {why}
-t5daa8455 = Não foi possível ler o arquivo: { $why }
+# {picked} selected
+t9addc37e = { $picked } selecionados
 
-# Reading…
-t6aad8485 = Lendo…
+# Select files or folders in it first.
+t0c04494a = Selecione antes arquivos ou pastas dentro dele.
+
+# What should it read?
+t35c7f91a = O que ler?
+
+# All {counted}
+t649feaf8 = Todos os { $counted }
+
+# The archive itself
+t5db318fd = O próprio arquivo compactado
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = O arquivo inteiro passa por este computador, e seu provedor pode cobrar pelo que for lido dele.
+
+# What is read of it passes through this computer, and your provider may charge for it.
+t4c33fc44 = O que for lido dele passa por este computador, e seu provedor pode cobrar por isso.
+
+# Checksums
+t47dd48d3 = Checksums
+
+# Read it
+t80fb8482 = Ler
 
 # Copied
 t8dc21305 = Copiada
@@ -173,6 +194,61 @@ t658f3664 = Copiar
 
 # weak
 tedbc2ec9 = fraco
+
+# Reading… {size} of {size2}
+t80036d1c = Lendo… { $size } de { $size2 }
+
+# Reading… {size}
+t1569c388 = Lendo… { $size }
+
+# Click a file to see its checksums.
+t179475a4 = Clique em um arquivo para ver seus checksums.
+
+# There are no files in it to read.
+tcadaddd8 = Não há arquivos para ler nele.
+
+# {count} file is damaged, and has none: {names} | {count} files are damaged, and have none: {names}
+tc7ad9be4 =
+    { $n ->
+        [one] { $count } arquivo está danificado e não tem checksum: { $names }
+       *[other] { $count } arquivos estão danificados e não têm checksum: { $names }
+    }
+
+# Links have none of their own: a checking tool reads what they lead to.
+te144c986 = Links não têm checksum próprio: uma ferramenta de verificação lê aquilo para onde apontam.
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = Um checksum fraco ({ $names }) detecta um arquivo danificado, mas não um alterado de propósito, que pode ser feito para corresponder.
+
+# Saved as {files}. Where they are extracted, sha256sum -c and the like check them with it, without packwing.
+t7a88cd8e = Salvos como { $files }. Onde forem extraídos, sha256sum -c e semelhantes os verificam com eles, sem o packwing.
+
+# Copy all
+t6aef5c37 = Copiar tudo
+
+# Saving…
+tbd79b37d = Salvando…
+
+# Save beside it
+t7f4d85e3 = Salvar ao lado
+
+# Save in…
+t846ddfa1 = Salvar em…
+
+# Checksums in {name}
+t71a5c5d3 = Checksums em { $name }
+
+# Done
+t8dd31791 = Concluído
+
+# Choose the checksums shown
+teec532fe = Escolher os checksums mostrados
+
+# Paste the checksum given with the file
+t8333758c = Cole o checksum fornecido com o arquivo
+
+# Reading…
+t6aad8485 = Lendo…
 
 # There is no checksum in this.
 t231f838a = Não há nenhum checksum aqui.
@@ -198,41 +274,14 @@ tcbefe458 = Calcular
 # Compare with
 tbddcfc14 = Comparar com
 
-# Reading… {size} of {size2}
-t80036d1c = Lendo… { $size } de { $size2 }
-
-# Reading… {size}
-t1569c388 = Lendo… { $size }
-
 # Checksums of {name}
 te88f3ed9 = Checksums de { $name }
-
-# All of the file passes through this computer, and your provider may charge for what is read from it.
-t8cca3c05 = O arquivo inteiro passa por este computador, e seu provedor pode cobrar pelo que for lido dele.
-
-# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
-t164fdec6 = Um checksum fraco ({ $names }) detecta um arquivo danificado, mas não um alterado de propósito, que pode ser feito para corresponder.
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = Salvos ao lado como { $files }, onde sha256sum -c e semelhantes os verificam sem o packwing.
 
 # Compare…
 tec85be80 = Comparar…
-
-# Saving…
-tbd79b37d = Salvando…
-
-# Save beside it
-t7f4d85e3 = Salvar ao lado
-
-# Choose the checksums shown
-teec532fe = Escolher os checksums mostrados
-
-# Read it
-t80fb8482 = Ler
-
-# Done
-t8dd31791 = Concluído
 
 # Nothing chosen yet
 tcf390b0a = Nada escolhido ainda
@@ -573,12 +622,6 @@ t2380eff7 = { $new_folder } · { $counted }, ou seja, em uma nova pasta
 
 # Extract here
 t354232ec = Extrair aqui
-
-# {picked} selected
-t9addc37e = { $picked } selecionados
-
-# All {counted}
-t649feaf8 = Todos os { $counted }
 
 # What should it extract?
 td12e23bf = O que extrair?
@@ -1299,9 +1342,6 @@ t3794d625 = Abrir no Explorador de Arquivos
 # Open in the file manager
 td1ceabc4 = Abrir no gerenciador de arquivos
 
-# Copy all
-t6aef5c37 = Copiar tudo
-
 # This system has no folder for settings.
 tfd0ff0a1 = Este sistema não tem uma pasta para configurações.
 
@@ -1434,9 +1474,6 @@ tbdf6bcd0 = Criar uma chave de assinatura
 
 # Join parts
 t4eee8c5f = Juntar partes
-
-# Checksums
-t47dd48d3 = Checksums
 
 # Audit log started
 tfb8df56f = Registro de auditoria iniciado

@@ -151,17 +151,38 @@ ta24f28a2 = Masukkan kunci lisensi
 # Save
 t4d2d5d68 = Simpan
 
-# Paste the checksum given with the file
-t8333758c = Tempel checksum yang diberikan bersama berkas
+# The file could not be read: {why}
+t5daa8455 = Berkas tidak dapat dibaca: { $why }
 
 # They could not be saved: {why}
 tb45ae457 = Tidak dapat disimpan: { $why }
 
-# The file could not be read: {why}
-t5daa8455 = Berkas tidak dapat dibaca: { $why }
+# {picked} selected
+t9addc37e = { $picked } dipilih
 
-# Reading…
-t6aad8485 = Membaca…
+# Select files or folders in it first.
+t0c04494a = Pilih dulu berkas atau folder di dalamnya.
+
+# What should it read?
+t35c7f91a = Apa yang akan dibaca?
+
+# All {counted}
+t649feaf8 = Semua { $counted }
+
+# The archive itself
+t5db318fd = Arsip itu sendiri
+
+# All of the file passes through this computer, and your provider may charge for what is read from it.
+t8cca3c05 = Seluruh berkas melewati komputer ini, dan penyedia Anda mungkin menagih untuk data yang dibaca darinya.
+
+# What is read of it passes through this computer, and your provider may charge for it.
+t4c33fc44 = Data yang dibaca darinya melewati komputer ini, dan penyedia Anda mungkin menagihnya.
+
+# Checksums
+t47dd48d3 = Checksum
+
+# Read it
+t80fb8482 = Baca
 
 # Copied
 t8dc21305 = Disalin
@@ -171,6 +192,60 @@ t658f3664 = Salin
 
 # weak
 tedbc2ec9 = lemah
+
+# Reading… {size} of {size2}
+t80036d1c = Membaca… { $size } dari { $size2 }
+
+# Reading… {size}
+t1569c388 = Membaca… { $size }
+
+# Click a file to see its checksums.
+t179475a4 = Klik sebuah berkas untuk melihat checksum-nya.
+
+# There are no files in it to read.
+tcadaddd8 = Tidak ada berkas di dalamnya untuk dibaca.
+
+# {count} file is damaged, and has none: {names} | {count} files are damaged, and have none: {names}
+tc7ad9be4 =
+    { $n ->
+       *[other] { $count } berkas rusak dan tidak memiliki checksum: { $names }
+    }
+
+# Links have none of their own: a checking tool reads what they lead to.
+te144c986 = Tautan tidak memiliki checksum sendiri: alat pemeriksa membaca apa yang ditujunya.
+
+# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
+t164fdec6 = Checksum lemah ({ $names }) tetap mengenali berkas yang rusak, tetapi tidak berkas yang sengaja diubah, yang bisa dibuat cocok.
+
+# Saved as {files}. Where they are extracted, sha256sum -c and the like check them with it, without packwing.
+t7a88cd8e = Disimpan sebagai { $files }. Di tempat berkas diekstrak, sha256sum -c dan sejenisnya bisa memeriksanya tanpa packwing.
+
+# Copy all
+t6aef5c37 = Salin semua
+
+# Saving…
+tbd79b37d = Menyimpan…
+
+# Save beside it
+t7f4d85e3 = Simpan di sampingnya
+
+# Save in…
+t846ddfa1 = Simpan di…
+
+# Checksums in {name}
+t71a5c5d3 = Checksum dalam { $name }
+
+# Done
+t8dd31791 = Selesai
+
+# Choose the checksums shown
+teec532fe = Pilih checksum yang ditampilkan
+
+# Paste the checksum given with the file
+t8333758c = Tempel checksum yang diberikan bersama berkas
+
+# Reading…
+t6aad8485 = Membaca…
 
 # There is no checksum in this.
 t231f838a = Tidak ada checksum di sini.
@@ -196,41 +271,14 @@ tcbefe458 = Buat
 # Compare with
 tbddcfc14 = Bandingkan dengan
 
-# Reading… {size} of {size2}
-t80036d1c = Membaca… { $size } dari { $size2 }
-
-# Reading… {size}
-t1569c388 = Membaca… { $size }
-
 # Checksums of {name}
 te88f3ed9 = Checksum { $name }
-
-# All of the file passes through this computer, and your provider may charge for what is read from it.
-t8cca3c05 = Seluruh berkas melewati komputer ini, dan penyedia Anda mungkin menagih untuk data yang dibaca darinya.
-
-# A weak checksum ({names}) still tells a damaged file, but not one changed on purpose, which can be made to match.
-t164fdec6 = Checksum lemah ({ $names }) tetap mengenali berkas yang rusak, tetapi tidak berkas yang sengaja diubah, yang bisa dibuat cocok.
 
 # Saved beside it as {files}, where sha256sum -c and the like check it without packwing.
 t1d91952b = Disimpan di sampingnya sebagai { $files }, yang bisa diperiksa sha256sum -c dan sejenisnya tanpa packwing.
 
 # Compare…
 tec85be80 = Bandingkan…
-
-# Saving…
-tbd79b37d = Menyimpan…
-
-# Save beside it
-t7f4d85e3 = Simpan di sampingnya
-
-# Choose the checksums shown
-teec532fe = Pilih checksum yang ditampilkan
-
-# Read it
-t80fb8482 = Baca
-
-# Done
-t8dd31791 = Selesai
 
 # Nothing chosen yet
 tcf390b0a = Belum ada yang dipilih
@@ -567,12 +615,6 @@ t2380eff7 = { $new_folder } · { $counted }, jadi di folder baru
 
 # Extract here
 t354232ec = Ekstrak di sini
-
-# {picked} selected
-t9addc37e = { $picked } dipilih
-
-# All {counted}
-t649feaf8 = Semua { $counted }
 
 # What should it extract?
 td12e23bf = Apa yang akan diekstrak?
@@ -1282,9 +1324,6 @@ t3794d625 = Buka di File Explorer
 # Open in the file manager
 td1ceabc4 = Buka di pengelola berkas
 
-# Copy all
-t6aef5c37 = Salin semua
-
 # This system has no folder for settings.
 tfd0ff0a1 = Sistem ini tidak memiliki folder untuk pengaturan.
 
@@ -1416,9 +1455,6 @@ tbdf6bcd0 = Buat kunci tanda tangan
 
 # Join parts
 t4eee8c5f = Gabungkan bagian
-
-# Checksums
-t47dd48d3 = Checksum
 
 # Audit log started
 tfb8df56f = Log audit dimulai

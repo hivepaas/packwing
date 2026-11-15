@@ -83,22 +83,63 @@ scenario!(
     }
 );
 
+/// The `…` menu of the archive open, opened.
+fn open_more(ui: &mut Ui) {
+    ui.ws(|ws, _, cx| {
+        ws.archive_page().update(cx, |p, cx| {
+            p.open_more_for_shot(gpui::point(gpui::px(600.), gpui::px(200.)), cx)
+        });
+    });
+}
+
 scenario!(
-    /// The archive open has Checksums… in its `…` menu, for its file.
+    /// The archive open has Checksums… in its `…` menu: with nothing selected,
+    /// its own file's are read once asked.
     an_archive_s_checksums_are_shown,
     |ui| {
         let archive = ui.copy_of("sample.7z");
         ui.open(&archive);
-        ui.ws(|ws, _, cx| {
-            ws.archive_page().update(cx, |p, cx| {
-                p.open_more_for_shot(gpui::point(gpui::px(600.), gpui::px(200.)), cx)
-            });
-        });
+        open_more(ui);
         ui.click("menu-checksums");
+        assert!(ui.shows("checksum-scope-file"));
+        ui.click("checksum-start");
         ui.wait_for("checksum-copy-0");
         ui.click("checksum-save");
         ui.wait_for("checksum-saved");
         assert!(ui.work.join("sample.7z.sha256").exists());
+    }
+);
+
+scenario!(
+    /// Checksums… of all of an archive's files lists each, and keeps the list
+    /// beside it, a line for each file.
+    an_archive_s_files_checksums_are_listed_and_kept,
+    |ui| {
+        let archive = ui.copy_of("sample.7z");
+        ui.open(&archive);
+        let files = ui.ws(|ws, _, cx| {
+            ws.archive_page()
+                .read(cx)
+                .archive()
+                .map_or(0, |a| a.files)
+        });
+        open_more(ui);
+        ui.click("menu-checksums");
+        ui.click("checksum-scope-all");
+        ui.click("checksum-start");
+        ui.wait_for("checksum-file-0");
+        // Down shows the first file's checksums, and Up and Down move on.
+        assert!(!ui.shows("checksum-shown: sha256"));
+        ui.keys("down");
+        assert!(ui.shows("checksum-shown: sha256"));
+        ui.keys("end");
+        ui.keys("up");
+        assert!(ui.shows("checksum-shown: sha256"));
+        ui.click("checksum-save");
+        ui.wait_for("checksum-saved");
+        let list = std::fs::read_to_string(ui.work.join("sample.7z.contents.sha256"))
+            .expect("the list beside it");
+        assert_eq!(list.lines().count() as u64, files, "{list}");
     }
 );
 
