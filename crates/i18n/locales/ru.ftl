@@ -3370,9 +3370,6 @@ t87125000 = Переименование…
 # The pictures and videos go to Photos. The other files stay in the archive.
 tad6172e7 = Изображения и видео попадут в «Фото». Остальные файлы останутся в архиве.
 
-# In a new folder, {name}
-tf816656c = В новой папке { $name }
-
 # Show in Files when done
 t5525892c = Показать в «Файлах» по завершении
 
@@ -3384,6 +3381,12 @@ tab679ca5 = Ничего не записывается за пределы эт�
 
 # Extract now
 t97070e5a = Извлечь сейчас
+
+# In a new folder, {name}
+tf816656c = В новой папке { $name }
+
+# Straight into this folder
+t988dace3 = Прямо в эту папку
 
 # {files} · {size} once extracted
 t16e47887 = { $files } · { $size } после извлечения
@@ -3529,11 +3532,23 @@ t6641f326 = Хранится только в памяти, никогда не �
 # Unlock
 t9c799975 = Разблокировать
 
+# In a new folder
+td07fc099 = В новую папку
+
+# Straight into the folder
+tea0de58c = Прямо в папку
+
+# No folder of its own
+t20122851 = Без своей папки
+
 # As the system
 t29f671f7 = Как в системе
 
 # New archives
 t9341f018 = Новые архивы
+
+# Above it, an archive bound for a storage takes no room on this device, but a lost connection means compressing again.
+t63ccb1c2 = Выше этого архив для хранилища не занимает места на этом устройстве, но при обрыве связи сжимать придётся заново.
 
 # Choose its signature…
 tf1c29e90 = Выбрать подпись…

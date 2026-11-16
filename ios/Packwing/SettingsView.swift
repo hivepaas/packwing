@@ -8,6 +8,11 @@ struct SettingsView: View {
     @AppStorage("storeCompressed") private var storeCompressed = true
     @AppStorage("skipMacFiles") private var skipMacFiles = true
     @AppStorage("extractLimit") private var extractLimit = ExtractLimit.standard.key
+    @AppStorage("appearance") private var appearance = Appearance.system.rawValue
+    @AppStorage("hideNames") private var hideNames = true
+    @AppStorage("streamAbove") private var streamAbove = StreamAbove.standard.key
+    @AppStorage("extractTo") private var extractTo = ExtractPlace.smart.rawValue
+    @AppStorage("extractOverwrite") private var overwrite = false
 
     var body: some View {
         NavigationStack {
@@ -22,9 +27,13 @@ struct SettingsView: View {
                     .onChange(of: chosen) { _, now in
                         model.speak(now.isEmpty ? nil : now)
                     }
+                    Picker(tr("Appearance"), selection: $appearance) {
+                        ForEach(Appearance.allCases, id: \.rawValue) { Text($0.label).tag($0.rawValue) }
+                    }
+                    .accessibilityIdentifier("settings-appearance")
                 }
                 .listRowBackground(Tonal.surface)
-                Section(tr("New archives")) {
+                Section {
                     // What an earlier version kept, a format for one file, shows as ZIP.
                     Picker(tr("Format"), selection: Binding { ArchiveFormat.forMany(key: formatKey).key } set: { formatKey = $0 }) {
                         ForEach(ArchiveFormat.all, id: \.key) { Text($0.label).tag($0.key) }
@@ -33,19 +42,54 @@ struct SettingsView: View {
                     Picker(tr("Compression"), selection: $levelKey) {
                         ForEach(CompressionLevel.all, id: \.key) { Text($0.label).tag($0.key) }
                     }
+                    Toggle(isOn: $hideNames) {
+                        Explained(tr("Hide file names behind the password"),
+                                  tr("For 7z: nobody sees what is inside without it"))
+                    }
+                    .accessibilityIdentifier("settings-hide-names")
                     Toggle(isOn: $storeCompressed) {
                         Explained(tr("Don’t compress what already is"),
                                   tr("For ZIP and 7z: pictures, video, sound and archives go in as they are, sooner and no larger"))
                     }
                     .accessibilityIdentifier("settings-store-compressed")
+                    if storeCompressed {
+                        NavigationLink(tr("What goes in as it is")) { StoredExtensionsView() }
+                            .accessibilityIdentifier("settings-stored-extensions")
+                    }
                     Toggle(isOn: $skipMacFiles) {
                         Explained(tr("Leave out Mac-only files"),
                                   tr(".DS_Store, __MACOSX and resource forks, clutter anywhere but a Mac"))
                     }
                     .accessibilityIdentifier("settings-skip-mac-files")
+                    Picker(selection: $streamAbove) {
+                        ForEach(StreamAbove.all, id: \.key) { Text($0.label).tag($0.key) }
+                    } label: {
+                        Text(tr("Write straight to a storage above"))
+                    }
+                    .accessibilityIdentifier("settings-stream-above")
+                } header: {
+                    Text(tr("New archives"))
+                } footer: {
+                    Text(tr("Above it, an archive bound for a storage takes no room on this device, but a lost connection means compressing again."))
                 }
                 .listRowBackground(Tonal.surface)
                 Section {
+                    Picker(tr("Where the files go"), selection: $extractTo) {
+                        ForEach(ExtractPlace.allCases, id: \.rawValue) { place in
+                            VStack(alignment: .leading) {
+                                Text(place.label)
+                                Text(place.detail)
+                            }
+                            .tag(place.rawValue)
+                        }
+                    }
+                    .accessibilityIdentifier("settings-extract-to")
+                    Picker(tr("When a file is already there"), selection: $overwrite) {
+                        Text(tr("Stop and say so")).tag(false)
+                        Text(tr("Replace it")).tag(true)
+                    }
+                    .disabled(extractTo == ExtractPlace.newFolder.rawValue)
+                    .accessibilityIdentifier("settings-extract-existing")
                     // The choice beside its name: what it does goes under, or
                     // the two lines leave no room for it.
                     Picker(tr("Largest an archive may unpack to"), selection: $extractLimit) {
@@ -62,6 +106,7 @@ struct SettingsView: View {
                 TrustedKeysSection()
                 SigningKeysSection()
                 SshKeysSection()
+                ChecksumsSection()
                 Section {
                     NavigationLink {
                         AboutView()

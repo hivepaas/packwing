@@ -3288,9 +3288,6 @@ t87125000 = Renomeando…
 # The pictures and videos go to Photos. The other files stay in the archive.
 tad6172e7 = As imagens e os vídeos vão para o Fotos. Os outros arquivos ficam no arquivo compactado.
 
-# In a new folder, {name}
-tf816656c = Em uma pasta nova, { $name }
-
 # Show in Files when done
 t5525892c = Mostrar no Arquivos ao terminar
 
@@ -3302,6 +3299,12 @@ tab679ca5 = Nada é gravado fora desta pasta ou por meio de links, e uma bomba d
 
 # Extract now
 t97070e5a = Extrair agora
+
+# In a new folder, {name}
+tf816656c = Em uma pasta nova, { $name }
+
+# Straight into this folder
+t988dace3 = Diretamente nesta pasta
 
 # {files} · {size} once extracted
 t16e47887 = { $files } · { $size } depois de extraído
@@ -3437,11 +3440,23 @@ t6641f326 = Fica só na memória, nunca é salva e é esquecida quando o arquivo
 # Unlock
 t9c799975 = Desbloquear
 
+# In a new folder
+td07fc099 = Em uma pasta nova
+
+# Straight into the folder
+tea0de58c = Diretamente na pasta
+
+# No folder of its own
+t20122851 = Sem pasta própria
+
 # As the system
 t29f671f7 = Como o sistema
 
 # New archives
 t9341f018 = Novos arquivos compactados
+
+# Above it, an archive bound for a storage takes no room on this device, but a lost connection means compressing again.
+t63ccb1c2 = Acima disso, um arquivo destinado a um armazenamento não ocupa espaço neste dispositivo, mas uma conexão perdida obriga a comprimir de novo.
 
 # Choose its signature…
 tf1c29e90 = Escolher sua assinatura…

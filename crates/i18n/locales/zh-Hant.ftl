@@ -3247,9 +3247,6 @@ t87125000 = 正在重新命名…
 # The pictures and videos go to Photos. The other files stay in the archive.
 tad6172e7 = 照片和影片會存入「照片」，其他檔案留在封存檔中。
 
-# In a new folder, {name}
-tf816656c = 放在新資料夾「{ $name }」中
-
 # Show in Files when done
 t5525892c = 完成後在「檔案」中顯示
 
@@ -3261,6 +3258,12 @@ tab679ca5 = 不會寫入此資料夾以外的位置，也不會經由連結寫�
 
 # Extract now
 t97070e5a = 立即解壓縮
+
+# In a new folder, {name}
+tf816656c = 放在新資料夾「{ $name }」中
+
+# Straight into this folder
+t988dace3 = 直接放進這個資料夾
 
 # {files} · {size} once extracted
 t16e47887 = { $files } · 解壓縮後 { $size }
@@ -3391,11 +3394,23 @@ t6641f326 = 只保留在記憶體中，絕不會儲存，關閉封存檔後即�
 # Unlock
 t9c799975 = 解鎖
 
+# In a new folder
+td07fc099 = 放進新資料夾
+
+# Straight into the folder
+tea0de58c = 直接放進資料夾
+
+# No folder of its own
+t20122851 = 沒有自己的資料夾
+
 # As the system
 t29f671f7 = 依系統
 
 # New archives
 t9341f018 = 新封存檔
+
+# Above it, an archive bound for a storage takes no room on this device, but a lost connection means compressing again.
+t63ccb1c2 = 超過這個大小時，要存到儲存位置的封存檔不會佔用這部裝置的空間，但連線中斷就得重新壓縮。
 
 # Choose its signature…
 tf1c29e90 = 選擇它的簽章…

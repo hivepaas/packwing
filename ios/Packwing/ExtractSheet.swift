@@ -61,8 +61,8 @@ struct ExtractSheet: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(model.shown(folder))
                                     .font(.nunito(15, .semibold, relativeTo: .subheadline))
-                                Text(tr("In a new folder, {name}",
-                                        ["name": AppModel.freeFolder(in: folder, named: stem(name: archive.info.name)).lastPathComponent]))
+                                Text(placeSaid(in: folder))
+                                    .accessibilityIdentifier("extract-place")
                                     .font(.nunito(13, relativeTo: .footnote))
                                     .foregroundStyle(Tonal.muted)
                             }
@@ -119,6 +119,14 @@ struct ExtractSheet: View {
         .presentationDetents([.large])
         // On an iPad, a page: all of it shows, the keyboard up or not.
         .presentationSizing(.page)
+    }
+
+    /// Where in `folder` the files go, as Settings › Extracting says.
+    private func placeSaid(in folder: URL) -> String {
+        let (into, new) = AppModel.destination(of: archive, picked, in: folder)
+        return new
+            ? tr("In a new folder, {name}", ["name": into.lastPathComponent])
+            : tr("Straight into this folder")
     }
 
     private var summary: String {

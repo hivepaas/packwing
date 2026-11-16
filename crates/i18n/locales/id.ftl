@@ -3247,9 +3247,6 @@ t87125000 = Mengganti nama…
 # The pictures and videos go to Photos. The other files stay in the archive.
 tad6172e7 = Gambar dan video masuk ke Foto. Berkas lainnya tetap di dalam arsip.
 
-# In a new folder, {name}
-tf816656c = Di folder baru, { $name }
-
 # Show in Files when done
 t5525892c = Tampilkan di File setelah selesai
 
@@ -3261,6 +3258,12 @@ tab679ca5 = Tidak ada yang ditulis di luar folder ini atau melalui tautan, dan b
 
 # Extract now
 t97070e5a = Ekstrak sekarang
+
+# In a new folder, {name}
+tf816656c = Di folder baru, { $name }
+
+# Straight into this folder
+t988dace3 = Langsung ke folder ini
 
 # {files} · {size} once extracted
 t16e47887 = { $files } · { $size } setelah diekstrak
@@ -3391,11 +3394,23 @@ t6641f326 = Hanya ada di memori, tidak pernah disimpan, dan dilupakan saat arsip
 # Unlock
 t9c799975 = Buka kunci
 
+# In a new folder
+td07fc099 = Di folder baru
+
+# Straight into the folder
+tea0de58c = Langsung ke folder
+
+# No folder of its own
+t20122851 = Tanpa folder sendiri
+
 # As the system
 t29f671f7 = Sama dengan sistem
 
 # New archives
 t9341f018 = Arsip baru
+
+# Above it, an archive bound for a storage takes no room on this device, but a lost connection means compressing again.
+t63ccb1c2 = Di atasnya, arsip untuk penyimpanan tidak memakan ruang di perangkat ini, tetapi jika koneksi terputus, harus dikompres ulang.
 
 # Choose its signature…
 tf1c29e90 = Pilih tanda tangannya…

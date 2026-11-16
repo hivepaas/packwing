@@ -111,14 +111,28 @@ extension AppModel {
         return ExtractHow(overwrite: false, limit: ExtractLimit(key: kept).bytes)
     }
 
+    /// Where `picked` of `opened` (all of it if none) goes in `parent`, as
+    /// Settings › Extracting says: a new folder named after the archive, or
+    /// the folder itself; Smart takes the folder itself for one item.
+    static func destination(of opened: OpenedArchive, _ picked: [[String]], in parent: URL) -> (folder: URL, new: Bool) {
+        let going = picked.isEmpty ? opened.archive.children(folder: []).count : picked.count
+        if ExtractPlace.chosen.newFolder(going: going) {
+            return (freeFolder(in: parent, named: stem(name: opened.info.name)), true)
+        }
+        return (parent, false)
+    }
+
     private func extractToFiles(
         _ opened: OpenedArchive, _ picked: [[String]], _ parent: URL, _ running: RunningJob
     ) async -> RunningJob.State {
         let scoped = parent.startAccessingSecurityScopedResource()
         defer { if scoped { parent.stopAccessingSecurityScopedResource() } }
-        let folder = Self.freeFolder(in: parent, named: stem(name: opened.info.name))
+        let (folder, new) = Self.destination(of: opened, picked, in: parent)
         let job = running.job
-        let how = Self.extractHow
+        var how = Self.extractHow
+        // A file that is there, which only a folder not new can hold: replaced
+        // where Settings says.
+        how.overwrite = !new && UserDefaults.standard.bool(forKey: "extractOverwrite")
         let result = await Task.detached(priority: .userInitiated) {
             Result {
                 try opened.archive.extract(

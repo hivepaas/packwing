@@ -84,7 +84,8 @@ struct CreateSheet: View {
     @State private var locked = false
     @State private var password = ""
     @State private var showingPassword = false
-    @State private var hideNames = false
+    /// As Settings › New archives says: on, as on the desktop, until it says.
+    @State private var hideNames = UserDefaults.standard.object(forKey: "hideNames") as? Bool ?? true
     /// age to public keys, in place of a passphrase.
     @State private var toKeys = false
     /// A public key typed or pasted.
@@ -511,7 +512,9 @@ struct CreateSheet: View {
             ageKeys: ageKeys,
             storeCompressed: storeCompressed,
             skipMacFiles: skipMacFiles,
-            wholeWithAge: locked && wholeWithAge && !format.usesAge)
+            wholeWithAge: locked && wholeWithAge && !format.usesAge,
+            storedExtensions: StoredExtensions.chosen,
+            streamAbove: StreamAbove.chosen.bytes)
         let name = fileName
         if let toStorage {
             model.afterSheet = { [model, draft] in

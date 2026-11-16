@@ -3288,9 +3288,6 @@ t87125000 = Renommage…
 # The pictures and videos go to Photos. The other files stay in the archive.
 tad6172e7 = Les images et les vidéos vont dans Photos. Les autres fichiers restent dans l'archive.
 
-# In a new folder, {name}
-tf816656c = Dans un nouveau dossier, { $name }
-
 # Show in Files when done
 t5525892c = Afficher dans Fichiers à la fin
 
@@ -3302,6 +3299,12 @@ tab679ca5 = Rien n'est écrit hors de ce dossier ni à travers des liens, et une
 
 # Extract now
 t97070e5a = Extraire maintenant
+
+# In a new folder, {name}
+tf816656c = Dans un nouveau dossier, { $name }
+
+# Straight into this folder
+t988dace3 = Directement dans ce dossier
 
 # {files} · {size} once extracted
 t16e47887 = { $files } · { $size } une fois extraits
@@ -3437,11 +3440,23 @@ t6641f326 = Gardé en mémoire seulement, jamais enregistré, et oublié à la f
 # Unlock
 t9c799975 = Déverrouiller
 
+# In a new folder
+td07fc099 = Dans un nouveau dossier
+
+# Straight into the folder
+tea0de58c = Directement dans le dossier
+
+# No folder of its own
+t20122851 = Pas de dossier à lui
+
 # As the system
 t29f671f7 = Comme le système
 
 # New archives
 t9341f018 = Nouvelles archives
+
+# Above it, an archive bound for a storage takes no room on this device, but a lost connection means compressing again.
+t63ccb1c2 = Au-delà, une archive destinée à un stockage ne prend pas de place sur cet appareil, mais une connexion perdue oblige à recompresser.
 
 # Choose its signature…
 tf1c29e90 = Choisir sa signature…

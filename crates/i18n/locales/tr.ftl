@@ -3288,9 +3288,6 @@ t87125000 = Yeniden adlandırılıyor…
 # The pictures and videos go to Photos. The other files stay in the archive.
 tad6172e7 = Resimler ve videolar Fotoğraflar'a gider. Diğer dosyalar arşivde kalır.
 
-# In a new folder, {name}
-tf816656c = Yeni bir klasörde: { $name }
-
 # Show in Files when done
 t5525892c = Bitince Dosyalar'da göster
 
@@ -3302,6 +3299,12 @@ tab679ca5 = Bu klasörün dışına ya da bağlantılar üzerinden hiçbir şey 
 
 # Extract now
 t97070e5a = Şimdi çıkar
+
+# In a new folder, {name}
+tf816656c = Yeni bir klasörde: { $name }
+
+# Straight into this folder
+t988dace3 = Doğrudan bu klasöre
 
 # {files} · {size} once extracted
 t16e47887 = { $files } · çıkarılınca { $size }
@@ -3437,11 +3440,23 @@ t6641f326 = Yalnızca bellekte tutulur, hiç kaydedilmez ve arşiv kapanınca un
 # Unlock
 t9c799975 = Kilidi aç
 
+# In a new folder
+td07fc099 = Yeni bir klasöre
+
+# Straight into the folder
+tea0de58c = Doğrudan klasöre
+
+# No folder of its own
+t20122851 = Kendi klasörü olmadan
+
 # As the system
 t29f671f7 = Sistemle aynı
 
 # New archives
 t9341f018 = Yeni arşivler
+
+# Above it, an archive bound for a storage takes no room on this device, but a lost connection means compressing again.
+t63ccb1c2 = Bunun üstünde, bir depolama alanına giden arşiv bu aygıtta yer kaplamaz, ama bağlantı koparsa yeniden sıkıştırmak gerekir.
 
 # Choose its signature…
 tf1c29e90 = İmzasını seç…

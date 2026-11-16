@@ -11,8 +11,8 @@ use packwing_mobile::{
     PastedCompared, RemoteStorage, Secrets, SignatureState, SshQuestions, TypedSecret,
     age_key_is_post_quantum, age_key_problem, age_keys_in, archive_formats, ask_ssh_with,
     check_key_file, checksum_kinds, checksum_list, checksum_list_name, compare_checksum,
-    compare_pasted, create_archive, describe_storage, read_key, start, stem, storage_kinds,
-    transfer_items,
+    compare_pasted, create_archive, default_stored_extensions, describe_storage, extensions_in,
+    read_key, start, stem, storage_kinds, transfer_items,
 };
 
 /// A folder of files to make archives of: `Báo cáo/tổng hợp.txt` and
@@ -1096,4 +1096,14 @@ fn a_zip_archive_is_encrypted_whole_with_age_to_a_passphrase_or_keys() {
         let archive = Archive::open(made, secrets, Job::quiet()).expect("opened");
         assert!(archive.info().files >= 2);
     }
+}
+
+#[test]
+fn extensions_are_read_as_the_desktop_reads_them() {
+    assert_eq!(
+        extensions_in("*.JPG .png, mp4;jpg  heic".to_owned()),
+        ["jpg", "png", "mp4", "heic"]
+    );
+    let defaults = default_stored_extensions();
+    assert!(defaults.contains(&"jpg".to_owned()) && defaults.contains(&"zip".to_owned()));
 }

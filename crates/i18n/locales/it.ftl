@@ -3288,9 +3288,6 @@ t87125000 = Ridenominazione…
 # The pictures and videos go to Photos. The other files stay in the archive.
 tad6172e7 = Immagini e video vanno in Foto. Gli altri file restano nell'archivio.
 
-# In a new folder, {name}
-tf816656c = In una nuova cartella, { $name }
-
 # Show in Files when done
 t5525892c = Mostra nell'app File al termine
 
@@ -3302,6 +3299,12 @@ tab679ca5 = Nulla viene scritto fuori da questa cartella o attraverso i collegam
 
 # Extract now
 t97070e5a = Estrai ora
+
+# In a new folder, {name}
+tf816656c = In una nuova cartella, { $name }
+
+# Straight into this folder
+t988dace3 = Direttamente in questa cartella
 
 # {files} · {size} once extracted
 t16e47887 = { $files } · { $size } una volta estratti
@@ -3437,11 +3440,23 @@ t6641f326 = Tenuta solo in memoria, mai salvata, e dimenticata alla chiusura del
 # Unlock
 t9c799975 = Sblocca
 
+# In a new folder
+td07fc099 = In una nuova cartella
+
+# Straight into the folder
+tea0de58c = Direttamente nella cartella
+
+# No folder of its own
+t20122851 = Nessuna cartella propria
+
 # As the system
 t29f671f7 = Come il sistema
 
 # New archives
 t9341f018 = Nuovi archivi
+
+# Above it, an archive bound for a storage takes no room on this device, but a lost connection means compressing again.
+t63ccb1c2 = Oltre questa soglia, un archivio destinato a uno spazio di archiviazione non occupa spazio su questo dispositivo, ma se la connessione cade si deve comprimere di nuovo.
 
 # Choose its signature…
 tf1c29e90 = Scegli la sua firma…

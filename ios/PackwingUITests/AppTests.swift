@@ -63,7 +63,12 @@ final class AppTests: XCTestCase {
     }
 
     func testAnArchiveIsExtractedIntoAFolderOfItsName() {
-        let app = launch(opening: "report.zip")
+        let sample = Bundle(for: Self.self).url(forResource: "report.zip", withExtension: nil)!
+        let app = XCUIApplication()
+        // A new folder, as Settings › Extracting may say.
+        app.launchArguments = ["-open", sample.path, "-AppleLanguages", "(en)", "-language", "",
+                               "-trustedKeys", "", "-extractTo", "new-folder"]
+        app.launch()
         let extractAll = app.buttons["Extract all"]
         XCTAssert(extractAll.waitForExistence(timeout: 15))
         keep(app, "archive")
@@ -71,6 +76,7 @@ final class AppTests: XCTestCase {
 
         let start = app.buttons["Extract 3 files"]
         XCTAssert(start.waitForExistence(timeout: 5))
+        XCTAssert(text(app, starting: "In a new folder, report").exists)
         keep(app, "extract-sheet")
         start.tap()
 
@@ -160,7 +166,8 @@ final class AppTests: XCTestCase {
         // Before the keyboard covers it.
         let hide = app.switches.matching(NSPredicate(format: "label BEGINSWITH %@", "Hide the file names too")).firstMatch
         XCTAssert(hide.waitForExistence(timeout: 5))
-        hide.switches.firstMatch.tap()
+        // On already, as Settings › New archives starts.
+        if hide.value as? String != "1" { hide.switches.firstMatch.tap() }
         XCTAssertEqual(hide.value as? String, "1")
         let password = app.secureTextFields["new-password"]
         password.tap()
@@ -887,6 +894,7 @@ final class AppTests: XCTestCase {
         XCTAssertEqual(stored.value as? String, "1")
         XCTAssertEqual(app.switches["settings-skip-mac-files"].value as? String, "1")
         let limit = app.buttons["settings-extract-limit"]
+        scrollTo(app, limit)
         XCTAssert(limit.waitForExistence(timeout: 5))
         XCTAssert("\(limit.label) \(limit.value ?? "")".contains("100 GB"), "\(limit.label) \(limit.value ?? "")")
         keep(app, "settings-choices")
@@ -946,5 +954,63 @@ final class AppTests: XCTestCase {
             XCTAssert(link.exists, id)
         }
         keep(app, "about-apps")
+    }
+
+    /// Smart, as the desktop starts: an archive of one folder goes straight
+    /// into the folder chosen, with no folder of its own around it.
+    func testAnArchiveOfOneFolderGoesStraightIn() {
+        let sample = Bundle(for: Self.self).url(forResource: "report.zip", withExtension: nil)!
+        let app = XCUIApplication()
+        app.launchArguments = ["-open", sample.path, "-AppleLanguages", "(en)", "-language", "",
+                               "-trustedKeys", "", "-extractTo", "smart", "-extractOverwrite", "YES"]
+        app.launch()
+        let extractAll = app.buttons["Extract all"]
+        XCTAssert(extractAll.waitForExistence(timeout: 15))
+        extractAll.tap()
+        let place = app.staticTexts["extract-place"]
+        XCTAssert(place.waitForExistence(timeout: 5))
+        XCTAssertEqual(place.label, "Straight into this folder")
+        keep(app, "extract-smart")
+        app.buttons["Extract 3 files"].tap()
+        // Again over what is there: replaced, as Settings says.
+        XCTAssert(app.staticTexts["Done"].waitForExistence(timeout: 30))
+    }
+
+    /// Settings has the desktop's other choices: how packwing looks, where
+    /// extracted files go, names hidden, straight to a storage, checksums.
+    func testSettingsHaveTheDesktopsOtherChoices() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-AppleLanguages", "(en)", "-language", "", "-appearance", "system",
+                               "-extractTo", "smart", "-hideNames", "YES", "-streamAbove", "500mb",
+                               "-storeCompressed", "YES", "-storedExtensions", ""]
+        app.launch()
+        tapWhenReady(app.buttons.matching(NSPredicate(format: "label == 'Settings'")).firstMatch)
+        let appearance = app.buttons["settings-appearance"]
+        XCTAssert(appearance.waitForExistence(timeout: 10))
+        XCTAssert(appearance.label.contains("System"), appearance.label)
+        XCTAssertEqual(app.switches["settings-hide-names"].value as? String, "1")
+        let stream = app.buttons["settings-stream-above"]
+        scrollTo(app, stream)
+        XCTAssert(stream.label.contains("500 MB"), stream.label)
+        let place = app.buttons["settings-extract-to"]
+        scrollTo(app, place)
+        XCTAssert(place.label.contains("Smart"), place.label)
+        keep(app, "settings-more")
+
+        // The extensions that go in as they are: the desktop's, until changed.
+        let extensions = app.buttons["settings-stored-extensions"]
+        scrollTo(app, extensions)
+        tapWhenReady(extensions, timeout: 5)
+        // Of several lines: a text view to XCTest.
+        let field = app.descendants(matching: .any)["settings-extensions"]
+        XCTAssert(field.waitForExistence(timeout: 5))
+        XCTAssert((field.value as? String ?? "").contains("jpg"))
+        keep(app, "settings-extensions")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+
+        let sha512 = app.switches["settings-checksum-sha512"]
+        scrollTo(app, sha512)
+        XCTAssert(sha512.exists)
+        keep(app, "settings-checksums")
     }
 }
