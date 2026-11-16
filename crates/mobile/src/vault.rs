@@ -99,7 +99,10 @@ impl CredentialApi for Secret {
     }
 
     fn delete_credential(&self) -> keyring_core::Result<()> {
-        match self.vault.delete(self.service.clone(), self.account.clone()) {
+        match self
+            .vault
+            .delete(self.service.clone(), self.account.clone())
+        {
             Ok(true) => Ok(()),
             Ok(false) => Err(Error::NoEntry),
             Err(e) => Err(failed(e)),
