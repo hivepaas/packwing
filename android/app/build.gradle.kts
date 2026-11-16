@@ -36,6 +36,8 @@ android {
         versionName = workspaceVersion
         // What the Rust library is built for: phones and the emulator.
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
+        // The UI tests (app/src/androidTest; make android-test).
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
@@ -72,6 +74,8 @@ android {
     // Nunito, the desktop's typeface, from where the desktop app keeps it:
     // one copy for every platform.
     sourceSets["main"].assets.srcDir("../../crates/app/assets/fonts")
+    // The UI tests' archives are the iOS app's: one set for both phones.
+    sourceSets["androidTest"].assets.srcDir("../../ios/PackwingUITests/Samples")
 }
 
 dependencies {
@@ -89,4 +93,11 @@ dependencies {
     implementation(libs.documentfile)
     // What the generated Kotlin calls the Rust library through.
     implementation(libs.jna) { artifact { type = "aar" } }
+
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.junit)
+    debugImplementation(libs.compose.ui.test.manifest)
 }
