@@ -36,6 +36,18 @@ struct PackwingApp: App {
                         try? FileManager.default.copyItem(at: URL(filePath: path), to: copy)
                         model.open(copy)
                     }
+                    // `-dropFiles <path>|<path>…`: those dropped on the first
+                    // screen, as Files gives them.
+                    if let paths = UserDefaults.standard.string(forKey: "dropFiles") {
+                        let providers = paths.split(separator: "|").compactMap { path in
+                            let url = URL(filePath: String(path))
+                            let provider = NSItemProvider(contentsOf: url)
+                            // As Files names what it gives.
+                            provider?.suggestedName = url.lastPathComponent
+                            return provider
+                        }
+                        _ = DroppedFile.accept(providers, refusing: nil) { model.take($0) }
+                    }
                     // `-new <path>|<path>…`: New archive, of those.
                     if let paths = UserDefaults.standard.string(forKey: "new") {
                         model.drafting = NewArchiveDraft(

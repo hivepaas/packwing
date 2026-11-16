@@ -3118,6 +3118,12 @@ t1c18cb9b = Mật khẩu hoặc token ứng dụng
 # This archive is not where it was any more.
 t4d0917ba = Tệp nén này không còn ở chỗ cũ nữa.
 
+# Drop to add to {name}
+te2479c90 = Thả để thêm vào { $name }
+
+# Drop an archive to open it, other files to make one
+tfe0a252d = Thả một tệp nén để mở, thả tệp khác để tạo tệp nén
+
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->

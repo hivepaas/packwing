@@ -20,7 +20,7 @@ final class AppTests: XCTestCase {
     }
 
     /// The app, showing New archive of the samples `names` as it starts.
-    private func launch(making names: [String]) -> XCUIApplication {
+    private func launch(making names: [String], format: String = "zip") -> XCUIApplication {
         let samples = names.map { name in
             let sample = Bundle(for: Self.self).url(forResource: name, withExtension: nil)
             XCTAssertNotNil(sample, "no sample \(name)")
@@ -28,7 +28,7 @@ final class AppTests: XCTestCase {
         }
         let app = XCUIApplication()
         app.launchArguments = ["-new", samples.joined(separator: "|"), "-AppleLanguages", "(en)", "-language", "",
-                               "-newFormat", "zip", "-newCompression", "medium"]
+                               "-newFormat", format, "-newCompression", "medium"]
         app.launch()
         return app
     }
@@ -153,15 +153,13 @@ final class AppTests: XCTestCase {
     }
 
     func testANewArchiveIsLockedWithItsNamesHidden() {
-        let app = launch(making: ["report.zip"])
+        // 7z, as Settings may say: a tap in the format's menu now and then
+        // lands beside it, and the sheet goes.
+        let app = launch(making: ["report.zip"], format: "7z")
         let name = app.textFields["new-name"]
         XCTAssert(name.waitForExistence(timeout: 15))
         // Named after the one file in it.
         XCTAssertEqual(name.value as? String, "report")
-
-        // The format, from its menu.
-        app.buttons["new-format"].tap()
-        app.buttons["7z"].tap()
         app.switches["Protect with a password"].switches.firstMatch.tap()
         // Before the keyboard covers it.
         let hide = app.switches.matching(NSPredicate(format: "label BEGINSWITH %@", "Hide the file names too")).firstMatch
@@ -393,6 +391,66 @@ final class AppTests: XCTestCase {
         XCTAssert(added.waitForExistence(timeout: 30))
         XCTAssert(app.staticTexts["Notes.txt"].exists)
         keep(app, "changed")
+    }
+
+    /// A file dragged out of an archive is extracted once it is dropped;
+    /// files dropped on an archive that can change are added where it shows.
+    /// One dropped on its own archive again is there already: asked of here,
+    /// as `-dropOwn` takes it as any file. (`-dragBack`: the drag but its
+    /// gesture, as a test's press opens the context menu.)
+    func testAFileDraggedOutAndDroppedInIsExtractedAndAdded() {
+        let app = openReportFolder(dropOwn: true)
+        // Its name is in the folder: asked what of it.
+        XCTAssert(app.staticTexts["If a file of that name is there"].waitForExistence(timeout: 15))
+        XCTAssert(app.staticTexts["Ghi chú.txt"].exists)
+        keep(app, "dropped-asked")
+        app.buttons["Replace it"].tap()
+        XCTAssert(app.staticTexts["Ghi chú.txt"].waitForExistence(timeout: 15))
+        XCTAssert(app.staticTexts["Doanh thu.csv"].exists)
+        XCTAssertFalse(app.staticTexts["Can’t open it"].exists)
+    }
+
+    /// A file dragged out of an archive and let go on it again: nothing done.
+    func testAFileDroppedOnItsOwnArchiveIsLeft() {
+        let app = openReportFolder(dropOwn: false)
+        XCTAssert(app.staticTexts["Ghi chú.txt"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.staticTexts["If a file of that name is there"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Adding…"].exists)
+    }
+
+    /// One archive dropped on the first screen is opened.
+    func testAnArchiveDroppedIsOpened() {
+        let sample = Bundle(for: Self.self).url(forResource: "report.zip", withExtension: nil)!
+        let app = XCUIApplication()
+        app.launchArguments = ["-dropFiles", sample.path, "-AppleLanguages", "(en)", "-language", "",
+                               "-trustedKeys", ""]
+        app.launch()
+        XCTAssert(app.staticTexts["Báo cáo quý 3"].waitForExistence(timeout: 15))
+    }
+
+    /// Files dropped on the first screen, more than one archive: New archive, of them.
+    func testFilesDroppedMakeANewArchive() {
+        let samples = ["report.zip", "locked.7z"].map { Bundle(for: Self.self).url(forResource: $0, withExtension: nil)!.path }
+        let app = XCUIApplication()
+        app.launchArguments = ["-dropFiles", samples.joined(separator: "|"), "-AppleLanguages", "(en)", "-language", "",
+                               "-newFormat", "zip"]
+        app.launch()
+        XCTAssert(app.staticTexts["2 files"].waitForExistence(timeout: 15))
+        keep(app, "dropped-new")
+    }
+
+    /// report.zip given as Mail gives one, which packwing may change, open at
+    /// its folder.
+    private func openReportFolder(dropOwn: Bool) -> XCUIApplication {
+        let sample = Bundle(for: Self.self).url(forResource: "report.zip", withExtension: nil)!
+        let app = XCUIApplication()
+        app.launchArguments = ["-receive", sample.path, "-AppleLanguages", "(en)", "-language", "",
+                               "-trustedKeys", "", "-dropOwn", dropOwn ? "YES" : "NO", "-dragBack", "Ghi chú.txt"]
+        app.launch()
+        let folder = app.staticTexts["Báo cáo quý 3"]
+        XCTAssert(folder.waitForExistence(timeout: 15))
+        folder.tap()
+        return app
     }
 
     /// Against a WebDAV server on this computer (`make webdav-start`): skipped
