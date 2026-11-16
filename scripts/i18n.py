@@ -10,6 +10,8 @@ English, as crates/i18n computes it.
                              each translation up to date: kept where its
                              English still is, dropped where it is gone, a
                              commented line for each still to translate.
+                             Writes the iOS app's Shortcuts strings too
+                             (ios/Packwing/Shortcuts/*.lproj) from them.
     scripts/i18n.py check    fails if en.ftl or a translation is out of step
                              (stale or broken entries); says how many are left
                              to translate in each.
@@ -48,6 +50,22 @@ TR_N = re.compile(r"\btr_n!\(\s*[^;]*?,\s*" + STRING + r"\s*,\s*" + STRING, re.S
 APP_TR = re.compile(r"\btr\(\s*" + STRING, re.S)
 APP_TR_N = re.compile(r'\btrN\(\s*[^";]*?,\s*' + STRING + r"\s*,\s*" + STRING, re.S)
 ENTRY = re.compile(r"^(t[0-9a-f]{8})\s*=")
+
+# The iOS app's Shortcuts actions: literals Xcode takes out at build time, not
+# tr()'s, which iOS reads from Localizable.strings (titles, descriptions,
+# parameters) and AppShortcuts.strings (what Siri hears). A value in them is
+# `\(\.$files)` or `\(.applicationName)`: `{files}` in the catalogs, `${files}`
+# in the strings files.
+INTENTS = ROOT / "ios" / "Packwing" / "Intents.swift"
+SHORTCUTS = ROOT / "ios" / "Packwing" / "Shortcuts"
+INTENT_TEXT = re.compile(
+    r"(?:LocalizedStringResource = |IntentDescription\(|\btitle: |\bdescription: "
+    r"|TypeDisplayRepresentation\(name: |\bSummary\(|needsValueError\(|shortTitle: )" + STRING
+)
+PHRASES = re.compile(r"phrases:\s*\[(.*?)\]", re.S)
+INTERPOLATION = re.compile(r"\\\((?:\\\.\$|\.)([A-Za-z_]+)\)")
+# The catalogs' names where iOS names a language otherwise.
+APPLE = {"pt": "pt-BR", "zh": "zh-Hans"}
 
 
 def unescape(s):
@@ -106,7 +124,54 @@ def messages():
         for _, one, other in sorted(hits, key=lambda h: h[0]):
             english = one if other is None else one + "\n" + other
             found.setdefault(id_of(english), (one, other))
+    for english, _ in intent_messages():
+        found.setdefault(id_of(english), (english, None))
     return found
+
+
+def intent_messages():
+    """The Shortcuts actions' English, in order: (english, whether Siri hears it)."""
+    if not INTENTS.exists():
+        return []
+    text = "\n".join(
+        "" if l.lstrip().startswith("//") else l
+        for l in INTENTS.read_text(encoding="utf-8").splitlines()
+    )
+    hits = [(m.start(), m.group(1), False) for m in INTENT_TEXT.finditer(text)]
+    for block in PHRASES.finditer(text):
+        hits += [(block.start(), m.group(1), True) for m in re.finditer(STRING, block.group(1))]
+    out = []
+    for _, literal, heard in sorted(hits, key=lambda h: h[0]):
+        english = unescape(INTERPOLATION.sub(lambda m: "{" + m.group(1) + "}", literal))
+        if (english, heard) not in out:
+            out.append((english, heard))
+    return out
+
+
+def strings_files():
+    """The Shortcuts strings each translation gives: path -> text."""
+    intents = intent_messages()
+    files = {}
+    for path in translations():
+        _, entries = read_catalog(path)
+        lang = APPLE.get(path.stem, path.stem)
+        for heard, name in ((False, "Localizable.strings"), (True, "AppShortcuts.strings")):
+            lines = ["/* Shortcuts' words, from crates/i18n/locales/" + path.name
+                     + " (scripts/i18n.py update writes it: do not edit). */"]
+            for english, h in intents:
+                entry = entries.get(id_of(english))
+                if h != heard or not entry or len(entry) != 1:
+                    continue
+                value = entry[0].split("=", 1)[1].strip()
+                value = re.sub(r"\{ \$([A-Za-z_][A-Za-z0-9_]*) \}", r"${\1}", value)
+                key = re.sub(r"\{([A-Za-z_][A-Za-z0-9_]*)\}", r"${\1}", english)
+                lines.append('"%s" = "%s";' % (strings_escape(key), strings_escape(value)))
+            files[SHORTCUTS / f"{lang}.lproj" / name] = "\n".join(lines) + "\n"
+    return files
+
+
+def strings_escape(s):
+    return s.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
 
 
 def fluent_text(english, indent="    "):
@@ -200,6 +265,9 @@ def update():
         write_catalog(path, found, header, entries)
         left = sum(1 for m in found if m not in entries)
         print(f"{path.name}: {len(found) - left} of {len(found)} translated")
+    for path, text in strings_files().items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
 
 
 def check():
@@ -232,6 +300,10 @@ def check():
                     ok = False
         left = sum(1 for m in found if m not in entries)
         print(f"{path.name}: {len(found) - left} of {len(found)} translated")
+    for path, text in strings_files().items():
+        if not path.exists() or path.read_text(encoding="utf-8") != text:
+            print(f"{path.relative_to(ROOT)} is out of step with the catalogs: run scripts/i18n.py update")
+            ok = False
     return ok
 
 

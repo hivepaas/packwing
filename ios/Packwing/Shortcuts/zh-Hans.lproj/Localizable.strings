@@ -1,0 +1,19 @@
+/* Shortcuts' words, from crates/i18n/locales/zh.ftl (scripts/i18n.py update writes it: do not edit). */
+"Format" = "格式";
+"Compress Files" = "压缩文件";
+"Makes an archive of the files given, as Settings › New archives says." = "按“设置 › 新压缩包”把给定的文件制作成压缩包。";
+"Files" = "文件";
+"Name" = "名称";
+"Without its extension. After what it holds if none is given." = "不含扩展名。未提供时按内容命名。";
+"Password" = "密码";
+"Kept in the shortcut as it is typed. Leave it empty for none." = "会照输入原样保存在快捷指令中。不需要密码请留空。";
+"Compress ${files} as ${format}" = "将 ${files} 压缩为 ${format}";
+"Extract Archive" = "解压压缩包";
+"Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens." = "给出压缩包中的文件和文件夹：ZIP、7z、RAR、tar 以及 packwing 能打开的其他格式。";
+"Archive" = "压缩包";
+"For an encrypted archive: asked for when it is needed and not given." = "用于加密的压缩包：需要却未提供时会询问。";
+"Extract ${archive}" = "解压 ${archive}";
+"Get Archive Contents" = "获取压缩包内容";
+"Lists the paths of the files an archive holds, without extracting them." = "列出压缩包中文件的路径，无需解压。";
+"Get the contents of ${archive}" = "获取 ${archive} 的内容";
+"This archive is encrypted. What is its password?" = "这个压缩包已加密。它的密码是什么？";

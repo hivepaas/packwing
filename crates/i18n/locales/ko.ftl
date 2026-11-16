@@ -3654,3 +3654,54 @@ tea731324 = 그 폴더 밖이나 링크를 통해서는 아무것도 쓰지 않�
 
 # Extract the pictures
 t5dc33540 = 사진 및 동영상 압축 풀기
+
+# Compress Files
+tcfc05ece = 파일 압축
+
+# Makes an archive of the files given, as Settings › New archives says.
+tf7e6e15f = 주어진 파일로 아카이브를 만듭니다. 설정 › 새 아카이브를 따릅니다.
+
+# Without its extension. After what it holds if none is given.
+t7ad1db5f = 확장자 없이. 비워 두면 내용에 따라 이름을 정합니다.
+
+# Kept in the shortcut as it is typed. Leave it empty for none.
+ta369a2e2 = 입력한 그대로 단축어에 저장됩니다. 없으면 비워 두세요.
+
+# Compress {files} as {format}
+t70ecbc1f = { $files }을(를) { $format }(으)로 압축
+
+# Extract Archive
+te0339060 = 아카이브 풀기
+
+# Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens.
+t5aea21bf = 아카이브에 든 파일과 폴더를 돌려줍니다: ZIP, 7z, RAR, tar 등 packwing이 여는 형식.
+
+# For an encrypted archive: asked for when it is needed and not given.
+tb5ee37c7 = 암호화된 아카이브용: 필요한데 없으면 물어봅니다.
+
+# Extract {archive}
+t2a41b282 = { $archive } 풀기
+
+# Get Archive Contents
+t4a868d51 = 아카이브 내용 가져오기
+
+# Lists the paths of the files an archive holds, without extracting them.
+t8b374ed6 = 아카이브에 든 파일의 경로를 풀지 않고 나열합니다.
+
+# Get the contents of {archive}
+tf3d4453b = { $archive }의 내용 가져오기
+
+# Compress files with {applicationName}
+tcfd8e587 = { $applicationName }(으)로 파일 압축
+
+# Make an archive with {applicationName}
+t27402325 = { $applicationName }(으)로 아카이브 만들기
+
+# Extract an archive with {applicationName}
+t90fbe320 = { $applicationName }(으)로 아카이브 풀기
+
+# Show what is in an archive with {applicationName}
+t2e34c233 = { $applicationName }(으)로 아카이브 내용 보기
+
+# This archive is encrypted. What is its password?
+t0787d3d3 = 이 아카이브는 암호화되어 있습니다. 암호가 무엇인가요?

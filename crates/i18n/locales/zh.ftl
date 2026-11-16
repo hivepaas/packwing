@@ -3654,3 +3654,54 @@ tea731324 = 不会写入该文件夹以外的位置，也不会经由链接写�
 
 # Extract the pictures
 t5dc33540 = 解压照片和视频
+
+# Compress Files
+tcfc05ece = 压缩文件
+
+# Makes an archive of the files given, as Settings › New archives says.
+tf7e6e15f = 按“设置 › 新压缩包”把给定的文件制作成压缩包。
+
+# Without its extension. After what it holds if none is given.
+t7ad1db5f = 不含扩展名。未提供时按内容命名。
+
+# Kept in the shortcut as it is typed. Leave it empty for none.
+ta369a2e2 = 会照输入原样保存在快捷指令中。不需要密码请留空。
+
+# Compress {files} as {format}
+t70ecbc1f = 将 { $files } 压缩为 { $format }
+
+# Extract Archive
+te0339060 = 解压压缩包
+
+# Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens.
+t5aea21bf = 给出压缩包中的文件和文件夹：ZIP、7z、RAR、tar 以及 packwing 能打开的其他格式。
+
+# For an encrypted archive: asked for when it is needed and not given.
+tb5ee37c7 = 用于加密的压缩包：需要却未提供时会询问。
+
+# Extract {archive}
+t2a41b282 = 解压 { $archive }
+
+# Get Archive Contents
+t4a868d51 = 获取压缩包内容
+
+# Lists the paths of the files an archive holds, without extracting them.
+t8b374ed6 = 列出压缩包中文件的路径，无需解压。
+
+# Get the contents of {archive}
+tf3d4453b = 获取 { $archive } 的内容
+
+# Compress files with {applicationName}
+tcfd8e587 = 用 { $applicationName } 压缩文件
+
+# Make an archive with {applicationName}
+t27402325 = 用 { $applicationName } 制作压缩包
+
+# Extract an archive with {applicationName}
+t90fbe320 = 用 { $applicationName } 解压
+
+# Show what is in an archive with {applicationName}
+t2e34c233 = 用 { $applicationName } 查看压缩包里有什么
+
+# This archive is encrypted. What is its password?
+t0787d3d3 = 这个压缩包已加密。它的密码是什么？

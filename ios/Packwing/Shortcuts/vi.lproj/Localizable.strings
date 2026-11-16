@@ -1,0 +1,19 @@
+/* Shortcuts' words, from crates/i18n/locales/vi.ftl (scripts/i18n.py update writes it: do not edit). */
+"Format" = "Định dạng";
+"Compress Files" = "Nén tệp";
+"Makes an archive of the files given, as Settings › New archives says." = "Tạo tệp nén từ các tệp được đưa vào, theo Cài đặt › Tệp nén mới.";
+"Files" = "Tệp";
+"Name" = "Tên";
+"Without its extension. After what it holds if none is given." = "Không kèm phần mở rộng. Nếu để trống, đặt theo nội dung bên trong.";
+"Password" = "Mật khẩu";
+"Kept in the shortcut as it is typed. Leave it empty for none." = "Được lưu nguyên văn trong phím tắt. Để trống nếu không cần mật khẩu.";
+"Compress ${files} as ${format}" = "Nén ${files} thành ${format}";
+"Extract Archive" = "Giải nén tệp nén";
+"Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens." = "Trả về các tệp và thư mục trong một tệp nén: ZIP, 7z, RAR, tar và các định dạng khác packwing mở được.";
+"Archive" = "Tệp nén";
+"For an encrypted archive: asked for when it is needed and not given." = "Với tệp nén có mã hoá: sẽ được hỏi khi cần mà chưa có.";
+"Extract ${archive}" = "Giải nén ${archive}";
+"Get Archive Contents" = "Xem nội dung tệp nén";
+"Lists the paths of the files an archive holds, without extracting them." = "Liệt kê đường dẫn các tệp trong một tệp nén mà không giải nén.";
+"Get the contents of ${archive}" = "Xem nội dung của ${archive}";
+"This archive is encrypted. What is its password?" = "Tệp nén này được mã hoá. Mật khẩu của nó là gì?";

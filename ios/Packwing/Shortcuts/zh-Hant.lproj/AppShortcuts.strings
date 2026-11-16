@@ -1,0 +1,5 @@
+/* Shortcuts' words, from crates/i18n/locales/zh-Hant.ftl (scripts/i18n.py update writes it: do not edit). */
+"Compress files with ${applicationName}" = "用 ${applicationName} 壓縮檔案";
+"Make an archive with ${applicationName}" = "用 ${applicationName} 製作壓縮檔";
+"Extract an archive with ${applicationName}" = "用 ${applicationName} 解壓縮";
+"Show what is in an archive with ${applicationName}" = "用 ${applicationName} 查看壓縮檔裡有什麼";

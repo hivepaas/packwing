@@ -31,6 +31,7 @@ targets:
         embed: false
     scheme:
       testTargets:
+        - PackwingTests
         - PackwingUITests
       # Pro bought in Xcode's own App Store when packwing runs from it (the
       # Simulator), not the real one: Packwing.storekit.
@@ -101,6 +102,24 @@ targets:
         EXCLUDED_ARCHS[sdk=iphonesimulator*]: x86_64
         # What the Rust library needs from the system.
         OTHER_LDFLAGS: ["-lc++", "-lz", "-liconv", "-framework", "Security", "-framework", "SystemConfiguration"]
+
+  # What runs inside the app without its screens: Shortcuts' actions.
+  PackwingTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: PackwingTests
+      # The same samples the UI tests open.
+      - path: PackwingUITests/Samples
+        buildPhase: resources
+    dependencies:
+      - target: Packwing
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.hivepaas.packwing.tests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Packwing.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Packwing
+        BUNDLE_LOADER: $(TEST_HOST)
 
   # The app as a person uses it, on the Simulator (make ios-test).
   PackwingUITests:

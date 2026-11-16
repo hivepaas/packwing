@@ -1,0 +1,5 @@
+/* Shortcuts' words, from crates/i18n/locales/ru.ftl (scripts/i18n.py update writes it: do not edit). */
+"Compress files with ${applicationName}" = "Сжать файлы в ${applicationName}";
+"Make an archive with ${applicationName}" = "Создать архив в ${applicationName}";
+"Extract an archive with ${applicationName}" = "Распаковать архив в ${applicationName}";
+"Show what is in an archive with ${applicationName}" = "Показать, что в архиве, в ${applicationName}";

@@ -3810,3 +3810,54 @@ tea731324 = Нічого не записується поза тією папк�
 
 # Extract the pictures
 t5dc33540 = Видобути зображення
+
+# Compress Files
+tcfc05ece = Стиснути файли
+
+# Makes an archive of the files given, as Settings › New archives says.
+tf7e6e15f = Створює архів із переданих файлів, як указано в Налаштування › Нові архіви.
+
+# Without its extension. After what it holds if none is given.
+t7ad1db5f = Без розширення. Якщо не задано — за вмістом.
+
+# Kept in the shortcut as it is typed. Leave it empty for none.
+ta369a2e2 = Зберігається в швидкій команді так, як введено. Залиште порожнім, якщо пароль не потрібен.
+
+# Compress {files} as {format}
+t70ecbc1f = Стиснути { $files } у { $format }
+
+# Extract Archive
+te0339060 = Розпакувати архів
+
+# Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens.
+t5aea21bf = Повертає файли й теки архіву: ZIP, 7z, RAR, tar та все інше, що відкриває packwing.
+
+# For an encrypted archive: asked for when it is needed and not given.
+tb5ee37c7 = Для зашифрованого архіву: буде запитано, якщо потрібен, але не заданий.
+
+# Extract {archive}
+t2a41b282 = Розпакувати { $archive }
+
+# Get Archive Contents
+t4a868d51 = Отримати вміст архіву
+
+# Lists the paths of the files an archive holds, without extracting them.
+t8b374ed6 = Перелічує шляхи файлів в архіві, не розпаковуючи їх.
+
+# Get the contents of {archive}
+tf3d4453b = Отримати вміст { $archive }
+
+# Compress files with {applicationName}
+tcfd8e587 = Стиснути файли в { $applicationName }
+
+# Make an archive with {applicationName}
+t27402325 = Створити архів у { $applicationName }
+
+# Extract an archive with {applicationName}
+t90fbe320 = Розпакувати архів у { $applicationName }
+
+# Show what is in an archive with {applicationName}
+t2e34c233 = Показати, що в архіві, у { $applicationName }
+
+# This archive is encrypted. What is its password?
+t0787d3d3 = Цей архів зашифровано. Який у нього пароль?

@@ -1,0 +1,5 @@
+/* Shortcuts' words, from crates/i18n/locales/ko.ftl (scripts/i18n.py update writes it: do not edit). */
+"Compress files with ${applicationName}" = "${applicationName}(으)로 파일 압축";
+"Make an archive with ${applicationName}" = "${applicationName}(으)로 아카이브 만들기";
+"Extract an archive with ${applicationName}" = "${applicationName}(으)로 아카이브 풀기";
+"Show what is in an archive with ${applicationName}" = "${applicationName}(으)로 아카이브 내용 보기";

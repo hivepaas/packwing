@@ -145,8 +145,8 @@ final class AppModel {
     }
 
     init() {
-        start(supportFolder: Self.support.path(percentEncoded: false),
-              language: UserDefaults.standard.string(forKey: "language"))
+        // Started already if a Shortcuts action ran before packwing showed.
+        Core.ready()
         language = Packwing.language()
         // SFTP's questions, asked in a window of their own.
         askSshWith(questions: SshAsker())
@@ -159,6 +159,7 @@ final class AppModel {
         recent = Self.loadRecent()
         sweepReceived()
         DroppedFile.sweep()
+        IntentWork.sweep()
     }
 
     /// The app's own folder for what it keeps: Application Support.

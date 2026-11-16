@@ -3663,3 +3663,54 @@ tea731324 = 不會寫入該資料夾以外的位置，也不會經由連結寫�
 
 # Extract the pictures
 t5dc33540 = 解壓縮照片和影片
+
+# Compress Files
+tcfc05ece = 壓縮檔案
+
+# Makes an archive of the files given, as Settings › New archives says.
+tf7e6e15f = 依「設定 › 新壓縮檔」把給定的檔案製作成壓縮檔。
+
+# Without its extension. After what it holds if none is given.
+t7ad1db5f = 不含副檔名。未提供時依內容命名。
+
+# Kept in the shortcut as it is typed. Leave it empty for none.
+ta369a2e2 = 會照輸入原樣存在捷徑中。不需要密碼請留空。
+
+# Compress {files} as {format}
+t70ecbc1f = 將 { $files } 壓縮為 { $format }
+
+# Extract Archive
+te0339060 = 解壓縮壓縮檔
+
+# Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens.
+t5aea21bf = 給出壓縮檔中的檔案與資料夾：ZIP、7z、RAR、tar 以及 packwing 能打開的其他格式。
+
+# For an encrypted archive: asked for when it is needed and not given.
+tb5ee37c7 = 用於加密的壓縮檔：需要卻未提供時會詢問。
+
+# Extract {archive}
+t2a41b282 = 解壓縮 { $archive }
+
+# Get Archive Contents
+t4a868d51 = 取得壓縮檔內容
+
+# Lists the paths of the files an archive holds, without extracting them.
+t8b374ed6 = 列出壓縮檔中檔案的路徑，不需解壓縮。
+
+# Get the contents of {archive}
+tf3d4453b = 取得 { $archive } 的內容
+
+# Compress files with {applicationName}
+tcfd8e587 = 用 { $applicationName } 壓縮檔案
+
+# Make an archive with {applicationName}
+t27402325 = 用 { $applicationName } 製作壓縮檔
+
+# Extract an archive with {applicationName}
+t90fbe320 = 用 { $applicationName } 解壓縮
+
+# Show what is in an archive with {applicationName}
+t2e34c233 = 用 { $applicationName } 查看壓縮檔裡有什麼
+
+# This archive is encrypted. What is its password?
+t0787d3d3 = 這個壓縮檔已加密。它的密碼是什麼？
