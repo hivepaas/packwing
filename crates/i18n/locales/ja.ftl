@@ -3529,6 +3529,9 @@ t9f263b45 = packwing はフォルダ { $name } を作成できませんでした
 # The gallery would not take {name}.
 td2cca604 = { $name } をギャラリーに追加できませんでした。
 
+# packwing could not reach its keychain.
+t4355b914 = packwing からキーチェーンにアクセスできませんでした。
+
 # Select all
 t6af21072 = すべて選択
 

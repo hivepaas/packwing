@@ -29,6 +29,10 @@ packwing-remote.workspace = true
 thiserror = "2"
 uniffi = "0.32"
 
+# Android's keychain is the app's (vault.rs), as keyring-core's default store.
+[target.'cfg(target_os = "android")'.dependencies]
+keyring-core = "1"
+
 [dev-dependencies]
 tempfile = "3"
 

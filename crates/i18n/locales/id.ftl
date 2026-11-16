@@ -3538,6 +3538,9 @@ t9f263b45 = packwing tidak dapat membuat folder { $name }.
 # The gallery would not take {name}.
 td2cca604 = Galeri tidak mau menerima { $name }.
 
+# packwing could not reach its keychain.
+t4355b914 = packwing tidak bisa mengakses keychain-nya.
+
 # Select all
 t6af21072 = Pilih semua
 

@@ -3529,6 +3529,9 @@ t9f263b45 = packwing이 { $name } 폴더를 만들 수 없습니다.
 # The gallery would not take {name}.
 td2cca604 = 갤러리에 { $name }을(를) 추가할 수 없습니다.
 
+# packwing could not reach its keychain.
+t4355b914 = packwing이 키체인에 접근할 수 없습니다.
+
 # Select all
 t6af21072 = 모두 선택
 

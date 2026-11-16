@@ -36,6 +36,9 @@ import uniffi.packwing_mobile.NewArchiveHow
 import uniffi.packwing_mobile.OnExisting
 import uniffi.packwing_mobile.Secrets
 import uniffi.packwing_mobile.createArchive
+import uniffi.packwing_mobile.RemoteStorage
+import uniffi.packwing_mobile.forgetStorageSecrets
+import uniffi.packwing_mobile.keepStorageSecrets
 import uniffi.packwing_mobile.pictureFits
 import uniffi.packwing_mobile.readKey
 import java.io.Closeable
@@ -49,7 +52,8 @@ import java.util.UUID
  */
 class Opened(
     val uri: Uri,
-    private val held: Documents.Opening,
+    /** What keeps its file reachable: a document's descriptor, a copy; nothing on a storage. */
+    private val held: Closeable,
     val archive: Archive,
     val secrets: Secrets,
     private val writable: Boolean,
@@ -85,6 +89,12 @@ sealed interface Screen {
     data object Settings : Screen
     data object Create : Screen
     data object Running : Screen
+
+    /** A folder of the storage `id`: its path, empty for the top. */
+    data class Storage(val id: String, val folder: List<String> = emptyList()) : Screen
+
+    /** A storage to add: its kind and settings, tried before it is kept. */
+    data object AddStorage : Screen
 
     /** A folder of the open archive; `photos` shows its pictures as a grid. */
     data class Folder(val path: List<String>, val photos: Boolean = false) : Screen
@@ -282,6 +292,42 @@ class AppModel(private val context: Context) {
         stopPicking()
     }
 
+    // MARK: Storages
+
+    /** The storages added: their kinds and settings. */
+    var storages by mutableStateOf(settings.storages)
+        private set
+
+    /** The storages open, by id: a connection is kept for what follows. */
+    private val connected = mutableMapOf<String, Pair<Settings.StorageEntry, RemoteStorage>>()
+
+    /** `entry` open, the one open already if it is; it touches the network only once used. */
+    fun storage(entry: Settings.StorageEntry): RemoteStorage = synchronized(connected) {
+        connected[entry.id]?.takeIf { it.first == entry }?.second
+            ?: RemoteStorage.open(entry.kind, entry.id, entry.values, null).also { connected[entry.id] = entry to it }
+    }
+
+    /** Keeps `entry`, its `secrets` in the vault. */
+    fun addStorage(entry: Settings.StorageEntry, secrets: Map<String, String>) {
+        keepStorageSecrets(entry.kind, entry.id, secrets)
+        storages = storages + entry
+        settings.storages = storages
+    }
+
+    /** Forgets `entry` and its secrets; its files stay where they are. */
+    fun removeStorage(entry: Settings.StorageEntry) {
+        forgetStorageSecrets(entry.kind, entry.id)
+        storages = storages.filter { it.id != entry.id }
+        settings.storages = storages
+        synchronized(connected) { connected.remove(entry.id) }
+        val gone = recent.filter { Stored.of(it.uri)?.id == entry.id }
+        gone.forEach { forget(it.uri) }
+    }
+
+    /** Opens the archive at `path` of the storage `entry`, of `size` bytes, where it is. */
+    fun openStored(entry: Settings.StorageEntry, path: List<String>, size: ULong) =
+        open(Stored(entry.id, path, size).uri)
+
     // MARK: Picking
 
     /** Picks `row`, at `path`, or lets it go; the first one picked starts picking. */
@@ -307,8 +353,9 @@ class AppModel(private val context: Context) {
 
     // MARK: Opening
 
-    /** Opens what another app handed us, or what the picker gave. */
+    /** Opens what another app handed us, or what the picker gave, or an archive on a storage. */
     fun open(uri: Uri, secrets: Secrets = Secrets(null, null)) {
+        if (uri.scheme == Stored.SCHEME) return openStored(uri, secrets)
         val picked = Documents.picked(context, uri)
         Documents.keepAccess(context, uri)
         opening = picked.name
@@ -318,14 +365,35 @@ class AppModel(private val context: Context) {
                 runCatching { opening(uri, secrets) }
             }
             opening = null
-            result.onSuccess { archive ->
-                opened?.close()
-                opened = archive
-                sheet = null
-                remember(archive)
-                stack.add(Screen.Folder(emptyList(), photos = mostlyPictures(archive)))
-                list(emptyList())
-            }.onFailure { e -> failed(uri, picked.name, e) }
+            result.onSuccess { shown(it) }.onFailure { e -> failed(uri, picked.name, e) }
+        }
+    }
+
+    /**
+     * The archive on a storage `uri` names, opened where it is with `secrets`:
+     * the core reads only what it needs of it. Off the main thread, as
+     * opening a file is.
+     */
+    private fun openStored(uri: Uri, secrets: Secrets) {
+        val stored = Stored.of(uri)
+        val entry = stored?.let { s -> storages.firstOrNull { it.id == s.id } }
+        if (stored == null || entry == null) {
+            forget(uri)
+            failure = tr("packwing can no longer reach {name}. Open it again to look inside.", "name" to (uri.lastPathSegment ?: ""))
+            return
+        }
+        val name = stored.path.last()
+        opening = name
+        failure = null
+        scope.launch {
+            val result = withContext(Dispatchers.IO) {
+                runCatching {
+                    val archive = storage(entry).openArchive(stored.path, stored.size, secrets, Job.quiet())
+                    Opened(uri, {}, archive, secrets, writable = false)
+                }
+            }
+            opening = null
+            result.onSuccess { shown(it) }.onFailure { e -> failed(uri, name, e) }
         }
     }
 
@@ -350,6 +418,16 @@ class AppModel(private val context: Context) {
             Archive.openDocument(held.document, secrets, Job.quiet())
         is Documents.Opening.AsFile ->
             Archive.open(held.path, secrets, Job.quiet())
+    }
+
+    /** An archive opened, shown: its top folder, as a grid if it is pictures mostly. */
+    private fun shown(archive: Opened) {
+        opened?.close()
+        opened = archive
+        sheet = null
+        remember(archive)
+        stack.add(Screen.Folder(emptyList(), photos = mostlyPictures(archive)))
+        list(emptyList())
     }
 
     /** What to say, or ask, when an archive would not open. */

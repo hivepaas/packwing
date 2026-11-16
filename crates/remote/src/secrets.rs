@@ -7,12 +7,13 @@ use packwing_core::Values;
 const SERVICE: &str = "packwing storages";
 
 /// keyring's own `Entry` stands for a store it sets itself, which it has none of
-/// on iOS: there the system keychain's is set, and its entries are keyring-core's.
+/// on iOS or Android: on iOS the system keychain's is set, on Android the app's
+/// (crates/mobile's vault), and their entries are keyring-core's.
 /// The tests take keyring-core's too, with its mock store set: never the
 /// computer's keychain, and none is needed where there is none (CI's Linux).
-#[cfg(not(any(target_os = "ios", test)))]
+#[cfg(not(any(target_os = "ios", target_os = "android", test)))]
 pub(crate) type Entry = keyring::Entry;
-#[cfg(any(target_os = "ios", test))]
+#[cfg(any(target_os = "ios", target_os = "android", test))]
 pub(crate) type Entry = keyring_core::Entry;
 
 /// The entry `account` of `service`, in the system's keychain.

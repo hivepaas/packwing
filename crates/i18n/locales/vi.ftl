@@ -3529,6 +3529,9 @@ t9f263b45 = packwing không tạo được thư mục { $name }.
 # The gallery would not take {name}.
 td2cca604 = Thư viện ảnh không nhận { $name }.
 
+# packwing could not reach its keychain.
+t4355b914 = packwing không truy cập được chuỗi khoá của mình.
+
 # Select all
 t6af21072 = Chọn tất cả
 

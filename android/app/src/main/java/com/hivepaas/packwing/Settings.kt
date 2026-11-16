@@ -57,6 +57,35 @@ class Settings(context: Context) {
             prefs.edit().putString(TRUSTED_KEYS, rows.toString()).apply()
         }
 
+    /** A storage across the network: its kind and settings; its secrets are in the vault, under its id. */
+    data class StorageEntry(val id: String, val kind: String, val values: Map<String, String>)
+
+    var storages: List<StorageEntry>
+        get() = runCatching {
+            val rows = JSONArray(prefs.getString(STORAGES, "[]"))
+            (0 until rows.length()).map { at ->
+                val row = rows.getJSONObject(at)
+                val values = row.getJSONObject("values")
+                StorageEntry(
+                    row.getString("id"),
+                    row.getString("kind"),
+                    values.keys().asSequence().associateWith { values.getString(it) },
+                )
+            }
+        }.getOrDefault(emptyList())
+        set(value) {
+            val rows = JSONArray()
+            value.forEach {
+                rows.put(JSONObject().put("id", it.id).put("kind", it.kind).put("values", JSONObject(it.values)))
+            }
+            prefs.edit().putString(STORAGES, rows.toString()).apply()
+        }
+
+    /** Whether a storage's folders show the files whose names start with a dot. */
+    var storageHidden: Boolean
+        get() = prefs.getBoolean(STORAGE_HIDDEN, false)
+        set(value) = prefs.edit().putBoolean(STORAGE_HIDDEN, value).apply()
+
     var tellWhenDone: Boolean
         get() = prefs.getBoolean(TELL_WHEN_DONE, true)
         set(value) = prefs.edit().putBoolean(TELL_WHEN_DONE, value).apply()
@@ -120,6 +149,8 @@ class Settings(context: Context) {
         const val TELL_WHEN_DONE = "tellWhenDone"
         const val CHECKSUMS = "checksums"
         const val TRUSTED_KEYS = "trustedKeys"
+        const val STORAGES = "storages"
+        const val STORAGE_HIDDEN = "storageHidden"
         const val RECENT = "recent"
         const val MOST_RECENT = 40
     }

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Backups and moves to a new device, from Android 12. The vault's secrets
+     are sealed by a key of the Android Keystore, which neither carries: they
+     stay on the device. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="vault.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="vault.xml" />
+    </device-transfer>
+</data-extraction-rules>

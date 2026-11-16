@@ -3585,6 +3585,9 @@ t9f263b45 = packwing no pudo crear la carpeta { $name }.
 # The gallery would not take {name}.
 td2cca604 = La galería no aceptó { $name }.
 
+# packwing could not reach its keychain.
+t4355b914 = packwing no puede acceder a su llavero.
+
 # Select all
 t6af21072 = Seleccionar todo
 

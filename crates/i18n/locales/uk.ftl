@@ -3679,6 +3679,9 @@ t9f263b45 = packwing не вдалося створити папку { $name }.
 # The gallery would not take {name}.
 td2cca604 = Галерея не прийняла { $name }.
 
+# packwing could not reach its keychain.
+t4355b914 = packwing не має доступу до свого сховища ключів.
+
 # Select all
 t6af21072 = Вибрати все
 

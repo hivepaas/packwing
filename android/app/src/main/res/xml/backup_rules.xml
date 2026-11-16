@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Backups up to Android 11. The vault's secrets are sealed by a key of the
+     Android Keystore, which a backup never holds: they stay on the device. -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="vault.xml" />
+</full-backup-content>
