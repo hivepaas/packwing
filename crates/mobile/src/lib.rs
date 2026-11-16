@@ -34,6 +34,13 @@ mod document;
 #[cfg(target_os = "android")]
 pub use document::Document;
 
+/// Android has no keychain the keyring crate can reach: see [`Vault`].
+#[cfg(target_os = "android")]
+mod vault;
+
+#[cfg(target_os = "android")]
+pub use vault::{Vault, keep_secrets_in};
+
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};

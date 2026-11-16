@@ -3585,6 +3585,9 @@ t9f263b45 = packwing { $name } klasörünü oluşturamadı.
 # The gallery would not take {name}.
 td2cca604 = Galeri { $name } dosyasını kabul etmedi.
 
+# packwing could not reach its keychain.
+t4355b914 = packwing anahtar zincirine erişemiyor.
+
 # Select all
 t6af21072 = Tümünü seç
 

@@ -124,6 +124,17 @@ fun HomeScreen(model: AppModel) {
                 )
             }
 
+            item {
+                Text(
+                    tr("Storages"),
+                    modifier = Modifier.padding(start = 4.dp, top = 4.dp),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = c.accent,
+                )
+            }
+            item { StoragesGroup(model) }
+
             if (model.opening != null) {
                 item {
                     Row(
@@ -181,17 +192,21 @@ fun HomeScreen(model: AppModel) {
                 }
             }
         }
-
-        ExtendedFloatingActionButton(
-            onClick = { model.go(Screen.Create) },
-            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
-            containerColor = c.accent,
-            contentColor = c.onAccent,
-            shape = RoundedCornerShape(20.dp),
-            icon = { Icon(Icons.Outlined.Add, null) },
-            text = { Text(tr("New archive"), fontWeight = FontWeight.SemiBold) },
-        )
     }
+}
+
+/** A new archive: the Scaffold's, so that what is said in passing goes above it. */
+@Composable
+fun NewArchiveButton(model: AppModel) {
+    val c = tonal()
+    ExtendedFloatingActionButton(
+        onClick = { model.go(Screen.Create) },
+        containerColor = c.accent,
+        contentColor = c.onAccent,
+        shape = RoundedCornerShape(20.dp),
+        icon = { Icon(Icons.Outlined.Add, null) },
+        text = { Text(tr("New archive"), fontWeight = FontWeight.SemiBold) },
+    )
 }
 
 @Composable

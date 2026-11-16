@@ -5562,6 +5562,7 @@ dependencies = [
 name = "packwing-mobile"
 version = "0.3.0"
 dependencies = [
+ "keyring-core",
  "packwing-core",
  "packwing-i18n",
  "packwing-remote",

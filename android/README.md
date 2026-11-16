@@ -70,6 +70,20 @@ over it, and it is read again: a change that fails or is stopped leaves the
 archive as it was. One another app handed over to be looked at is read only,
 and offers none of this (`AppModel.change`).
 
+**Storages** across the network (S3, WebDAV, SFTP) are added on the Archives
+tab, tried before they are kept, and browsed; an archive on one is opened
+where it is, the core reading only what it needs of it, and any other file
+previewed (`StorageScreen.kt`). A storage's secrets are not kept with its
+settings: they go to Android's keychain, `Vault.kt`, each encrypted by a key of
+the Android Keystore that never leaves it, and left out of backups, which the
+key could never come with. The keyring crate has no Android store it can set
+for itself (the one there is needs JNI, and the app reaches the core through
+JNA), so the app's vault is keyring-core's default store
+(`crates/mobile/src/vault.rs`).
+
+The storage tests run against the WebDAV server of `make webdav-start`, which
+the emulator reaches at `10.0.2.2`, and are skipped without one.
+
 ## How Android's storage shapes it
 
 Android hands out `content://` URIs, and nothing in its storage has a path
@@ -118,9 +132,10 @@ writes what it reads to whatever takes it (`Documents.kt`, `Trees.kt`).
 
 - Pausing a job. The core can stop one, not hold it; the progress screen
   offers Cancel alone. The design's Pause button has nothing behind it.
-- Storages (S3, WebDAV, SFTP), signing,
-  `age` files, the desktop's other formats for new archives, and Pro: the
-  iOS app has them (`ios/README.md`), and they come here one by one.
+- SFTP's questions as it connects and its SSH keys, files written to a
+  storage, signing, `age` files, the desktop's other formats for new
+  archives, and Pro: the iOS app has them (`ios/README.md`), and they come
+  here one by one.
 - The comic reader and the audit log, which are the desktop's alone.
 - The system's own wallpaper colours. The app keeps packwing's palette on
   every device; the design names this as an option, and it is not wired up.

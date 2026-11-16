@@ -299,7 +299,7 @@ fun ArchiveScreen(model: AppModel, screen: Screen.Folder) {
     }
 
     preview?.let { path ->
-        PreviewDialog(model, path) { preview = null }
+        PreviewDialog(path.last(), { model.preview(path) }) { preview = null }
     }
 
     val signed = signedBeside(opened.uri)
@@ -592,12 +592,12 @@ private fun Tile(
 /** A picture or a text of the archive, shown without extracting it. */
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
-private fun PreviewDialog(model: AppModel, path: List<String>, close: () -> Unit) {
+internal fun PreviewDialog(name: String, load: suspend () -> ByteArray?, close: () -> Unit) {
     val c = tonal()
-    var bytes by remember(path) { mutableStateOf<ByteArray?>(null) }
-    var missing by remember(path) { mutableStateOf(false) }
-    LaunchedEffect(path) {
-        val read = model.preview(path)
+    var bytes by remember(name) { mutableStateOf<ByteArray?>(null) }
+    var missing by remember(name) { mutableStateOf(false) }
+    LaunchedEffect(name) {
+        val read = load()
         if (read == null) missing = true else bytes = read
     }
     BasicAlertDialog(onDismissRequest = close) {
@@ -609,7 +609,7 @@ private fun PreviewDialog(model: AppModel, path: List<String>, close: () -> Unit
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
-                path.last(),
+                name,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
                 color = c.text,
@@ -622,12 +622,12 @@ private fun PreviewDialog(model: AppModel, path: List<String>, close: () -> Unit
                 read == null -> Box(Modifier.fillMaxWidth().height(120.dp), Alignment.Center) {
                     CircularProgressIndicator(color = c.accent)
                 }
-                AppModel.isPicture(path.last()) && pictureFits(read) -> {
+                AppModel.isPicture(name) && pictureFits(read) -> {
                     val bitmap = remember(read) { BitmapFactory.decodeByteArray(read, 0, read.size) }
                     if (bitmap != null) {
                         androidx.compose.foundation.Image(
                             bitmap.asImageBitmap(),
-                            path.last(),
+                            name,
                             modifier = Modifier.fillMaxWidth().heightIn(max = 420.dp),
                             contentScale = ContentScale.Fit,
                         )

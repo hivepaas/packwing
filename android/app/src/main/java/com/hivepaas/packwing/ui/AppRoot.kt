@@ -82,6 +82,7 @@ fun AppRoot(model: AppModel) {
         // The Scaffold's, so that what is said in passing goes above it, not over it.
         floatingActionButton = {
             if (screen is Screen.Folder && model.opened != null) ExtractButton(model)
+            if (screen is Screen.Home) NewArchiveButton(model)
         },
     ) { insets ->
         Box(Modifier.fillMaxSize().padding(bottom = insets.calculateBottomPadding())) {
@@ -92,6 +93,8 @@ fun AppRoot(model: AppModel) {
                 is Screen.Create -> CreateScreen(model)
                 is Screen.Running -> RunningScreen(model)
                 is Screen.Checksums -> ChecksumsScreen(model, screen)
+                is Screen.Storage -> StorageScreen(model, screen)
+                Screen.AddStorage -> AddStorageScreen(model)
             }
         }
     }

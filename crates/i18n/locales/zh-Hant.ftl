@@ -3538,6 +3538,9 @@ t9f263b45 = packwing 無法建立資料夾 { $name }。
 # The gallery would not take {name}.
 td2cca604 = 圖庫無法接收 { $name }。
 
+# packwing could not reach its keychain.
+t4355b914 = packwing 無法存取它的鑰匙圈。
+
 # Select all
 t6af21072 = 全選
 

@@ -3,6 +3,7 @@ package com.hivepaas.packwing
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import uniffi.packwing_mobile.keepSecretsIn
 import uniffi.packwing_mobile.start
 
 /**
@@ -20,6 +21,8 @@ class PackwingApp : Application() {
         // The journal of extractions lives in the app's own folder, so what a
         // job left behind when the app was ended is cleaned up next time.
         start(filesDir.absolutePath, Settings(this).language)
+        // A storage's secrets and the keys kept, before anything asks for one.
+        keepSecretsIn(KeystoreVault(this))
         model = AppModel(this)
         notifications()
     }

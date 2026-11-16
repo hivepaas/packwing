@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -21,6 +22,9 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -85,13 +89,11 @@ class AppTests {
     fun aLockedArchiveAsksForItsPassword() {
         open("locked.7z")
         ui.waitForText("Enter the password")
-        ui.onNode(hasSetTextAction()).performTextInput("not it")
-        ui.onNodeWithText("Unlock").performClick()
+        typePassword("not it")
         ui.waitForText("The password is wrong", substring = true)
 
         ui.onNode(hasSetTextAction()).performTextClearance()
-        ui.onNode(hasSetTextAction()).performTextInput("sample-password")
-        ui.onNodeWithText("Unlock").performClick()
+        typePassword("sample-password")
         // Its names were hidden: there now.
         until { model.opened != null && model.sheet == null }
         ui.waitForText("Báo cáo quý 3")
@@ -292,7 +294,82 @@ class AppTests {
         File(app.cacheDir, "samples/report.zip").setWritable(true)
     }
 
+    /**
+     * Against the WebDAV server of `make webdav-start`, which the emulator
+     * reaches at 10.0.2.2: skipped without one.
+     */
+    @Test
+    fun anArchiveOnAStorageIsOpenedWhereItIsAndItsPasswordKept() {
+        assumeTrue("no WebDAV server: make webdav-start", webdav("PROPFIND", "") in 200..299)
+        val folder = "ui-${java.util.UUID.randomUUID().toString().take(8)}"
+        assertTrue(webdav("MKCOL", folder) in 200..299)
+        val zip = InstrumentationRegistry.getInstrumentation().context.assets.open("report.zip").use { it.readBytes() }
+        assertTrue(webdav("PUT", "$folder/report.zip", zip) in 200..299)
+        onMain { model.storages.forEach { model.removeStorage(it) } }
+
+        onMain { model.go(Screen.AddStorage) }
+        ui.onNodeWithTag("storage-kind-webdav").performClick()
+        ui.onNodeWithTag("storage-address").performTextInput("http://$HOST:$WEBDAV_PORT")
+        ui.onNodeWithTag("storage-user").performTextInput("packwing")
+        ui.onNodeWithTag("storage-password").performTextInput("packwing")
+        ui.onNodeWithTag("storage-add").performClick()
+        ui.waitUntilAtLeastOneExists(hasTestTag("storage-row"), TIMEOUT)
+
+        // Its password is in the vault, sealed by the Keystore, not with its settings.
+        var entry: Settings.StorageEntry? = null
+        onMain { entry = model.storages.single() }
+        assertEquals("packwing", uniffi.packwing_mobile.keptStorageSecrets(entry!!.kind, entry!!.id)["password"])
+        assertFalse(entry!!.values.containsKey("password"))
+
+        ui.onNodeWithTag("storage-row").performClick()
+        ui.waitUntilAtLeastOneExists(hasTestTag("stored-$folder"), TIMEOUT)
+        ui.onNodeWithTag("stored-$folder").performClick()
+        ui.waitUntilAtLeastOneExists(hasTestTag("stored-report.zip"), TIMEOUT)
+        ui.onNodeWithTag("stored-report.zip").performClick()
+        // Read where it is, its folders listed as a file's are.
+        ui.waitForText("Báo cáo quý 3")
+        until { model.recent.firstOrNull()?.uri?.scheme == Stored.SCHEME }
+
+        // Removed: its password goes with it.
+        onMain { model.removeStorage(entry!!) }
+        assertEquals("", uniffi.packwing_mobile.keptStorageSecrets(entry!!.kind, entry!!.id)["password"])
+        webdav("DELETE", "$folder/")
+    }
+
     // MARK: Helpers
+
+    /**
+     * Types `password` in the sheet asking for one, and Unlock once it takes
+     * it: a sheet still coming up may not have, and Unlock is off while the
+     * field is empty.
+     */
+    private fun typePassword(password: String) {
+        ui.onNode(hasSetTextAction()).performTextInput(password)
+        ui.waitUntilAtLeastOneExists(hasText("Unlock") and isEnabled(), TIMEOUT)
+        ui.onNodeWithText("Unlock").performClick()
+    }
+
+    /**
+     * A WebDAV request to the test server, its status; 0 if it cannot be
+     * reached. A socket of its own: Android keeps its HTTP clients off plain
+     * HTTP, and the server is the test's, not the app's.
+     */
+    private fun webdav(method: String, path: String, body: ByteArray = ByteArray(0)): Int = runCatching {
+        java.net.Socket().use { socket ->
+            socket.connect(java.net.InetSocketAddress(HOST, WEBDAV_PORT), 2_000)
+            socket.soTimeout = 10_000
+            val auth = android.util.Base64.encodeToString("packwing:packwing".toByteArray(), android.util.Base64.NO_WRAP)
+            val head = "$method /${Uri.encode(path, "/")} HTTP/1.1\r\nHost: $HOST:$WEBDAV_PORT\r\n" +
+                "Authorization: Basic $auth\r\nDepth: 0\r\nContent-Length: ${body.size}\r\nConnection: close\r\n\r\n"
+            socket.getOutputStream().apply {
+                write(head.toByteArray())
+                write(body)
+                flush()
+            }
+            val status = socket.getInputStream().bufferedReader().readLine() ?: ""
+            status.split(' ').getOrNull(1)?.toIntOrNull() ?: 0
+        }
+    }.getOrDefault(0)
 
     private fun forgetKeys() = onMain { model.trustedKeys.forEach { model.distrust(it.key.line) } }
 
@@ -338,6 +415,10 @@ class AppTests {
     private companion object {
         /** Long enough for the emulator's first read of an archive. */
         const val TIMEOUT = 15_000L
+
+        /** This computer, as the emulator reaches it, and the port of `make webdav-start`. */
+        const val HOST = "10.0.2.2"
+        const val WEBDAV_PORT = 18335
 
         /** report.zip's own, and its Ghi chú.txt's. */
         const val REPORT_SHA256 = "ff5b00b6e9f828d6a94e05f8f4487dd8aa6c0132a3674008ef14dd50a82b6e5d"
