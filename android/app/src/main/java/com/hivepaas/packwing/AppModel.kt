@@ -37,6 +37,7 @@ import uniffi.packwing_mobile.OnExisting
 import uniffi.packwing_mobile.Secrets
 import uniffi.packwing_mobile.createArchive
 import uniffi.packwing_mobile.RemoteStorage
+import uniffi.packwing_mobile.transferItems
 import uniffi.packwing_mobile.forgetStorageSecrets
 import uniffi.packwing_mobile.keepStorageSecrets
 import uniffi.packwing_mobile.pictureFits
@@ -87,7 +88,8 @@ val MobileException.said: String
 sealed interface Screen {
     data object Home : Screen
     data object Settings : Screen
-    data object Create : Screen
+    /** A new archive: in a folder of the phone's, or `on` a storage's folder. */
+    data class Create(val on: Storage? = null) : Screen
     data object Running : Screen
 
     /** A folder of the storage `id`: its path, empty for the top. */
@@ -331,6 +333,78 @@ class AppModel(private val context: Context) {
         synchronized(connected) { connected.remove(entry.id) }
         val gone = recent.filter { Stored.of(it.uri)?.id == entry.id }
         gone.forEach { forget(it.uri) }
+    }
+
+    /** Bumped once a storage was changed from here: its folders shown read themselves again. */
+    var storagesChanged by mutableStateOf(0)
+        private set
+
+    /**
+     * Does `work` on a storage, saying `title` and `name` while it does, with
+     * Stop; then each storage's folder shown reads itself again. A storage
+     * across the network has no Trash: a delete there is for good.
+     */
+    fun onStorage(title: String, name: String, after: () -> Unit = {}, work: (Job) -> Unit) {
+        if (changing != null) return
+        val job = Job.quiet()
+        changeJob = job
+        changing = title
+        changingName = name
+        scope.launch {
+            val result = withContext(Dispatchers.IO) { runCatching { work(job) }.also { after() } }
+            changing = null
+            changingName = null
+            changeJob = null
+            storagesChanged++
+            result.onFailure { e ->
+                if (e is MobileException.Cancelled) return@onFailure
+                Log.w("packwing", "could not do $title on a storage", e)
+                failure = (e as? MobileException)?.said ?: e.message ?: e.toString()
+            }
+        }
+    }
+
+    /** What is changed, by name, while `changing` says how; the archive's name for one. */
+    var changingName by mutableStateOf<String?>(null)
+        private set
+
+    /** One name, or how many there are. */
+    private fun named(names: List<String>): String =
+        names.singleOrNull() ?: tr("{many} items", "many" to names.size.toString())
+
+    /**
+     * Sends `files` (copies in the app's own folder, each with what is under
+     * it) up into `folder` of the storage `entry`; the copies go once it is done.
+     */
+    fun upload(files: List<File>, entry: Settings.StorageEntry, folder: List<String>) {
+        if (files.isEmpty()) return
+        onStorage(tr("Uploading…"), named(files.map { it.name }), after = { files.forEach { it.parentFile?.deleteRecursively() } }) { job ->
+            val to = storage(entry)
+            files.groupBy { it.parentFile!! }.forEach { (from, here) ->
+                transferItems(RemoteStorage.local(from.path), emptyList(), here.map { it.name }, to, folder, false, OnExisting.STOP, job)
+            }
+        }
+    }
+
+    /** Copies, or moves, `names` of `folder` of `entry` into `to`, a folder of a storage. */
+    fun transfer(names: List<String>, entry: Settings.StorageEntry, folder: List<String>, to: Screen.Storage, moving: Boolean) {
+        val target = storages.firstOrNull { it.id == to.id } ?: return
+        onStorage(if (moving) tr("Moving…") else tr("Copying…"), named(names)) { job ->
+            transferItems(storage(entry), folder, names, storage(target), to.folder, moving, OnExisting.STOP, job)
+        }
+    }
+
+    /**
+     * Copies `names` of `folder` of `entry` down into `tree`, a folder the
+     * user pointed at: through the app's own folder, as a document tree has
+     * no path to write to.
+     */
+    fun download(names: List<String>, entry: Settings.StorageEntry, folder: List<String>, tree: Uri) {
+        val staging = Documents.staging(context)
+        onStorage(tr("Download"), named(names), after = { staging.deleteRecursively() }) { job ->
+            transferItems(storage(entry), folder, names, RemoteStorage.local(staging.path), emptyList(), false, OnExisting.STOP, job)
+            names.forEach { Documents.copyToTree(context, File(staging, it), tree) }
+        }
     }
 
     /** Opens the archive at `path` of the storage `entry`, of `size` bytes, where it is. */
@@ -622,6 +696,35 @@ class AppModel(private val context: Context) {
      * which a new archive still needs: it is written as it is made, in no
      * order, and a document tree takes a file only from its start.
      */
+    /**
+     * Makes an archive of `paths` called `name` (with its extension, as the
+     * storage gets it) in `folder` of the storage `entry`: written there, or
+     * made here first and sent, as the core sees fit.
+     */
+    fun create(paths: List<File>, name: String, how: NewArchiveHow, entry: Settings.StorageEntry, folder: List<String>) {
+        if (running != null) return
+        val job = Running(Running.What.Create, name, Job.quiet())
+        val held = Job(job.listener)
+        running = job
+        go(Screen.Running)
+        ExtractService.start(context)
+        scope.launch {
+            val result = withContext(Dispatchers.IO) {
+                runCatching {
+                    val made = storage(entry).createArchive(paths.map { it.path }, folder, name, how, held)
+                    made to storage(entry).showPath(folder)
+                }.also { paths.forEach { it.parentFile?.deleteRecursively() } }
+            }
+            storagesChanged++
+            result.onSuccess { (called, where) -> job.done = tr("{name} in {folder}", "name" to called, "folder" to where) }
+                .onFailure { e ->
+                    job.failed = (e as? MobileException)?.said
+                        ?: tr("packwing could not make {name}.", "name" to name)
+                }
+            finished(job)
+        }
+    }
+
     fun create(paths: List<File>, name: String, how: NewArchiveHow, into: Uri) {
         if (running != null) return
         val job = Running(Running.What.Create, name, Job.quiet())

@@ -3534,11 +3534,11 @@ t09d5ea2a =
 # packwing could not extract {name}.
 t7e40b6ef = packwing non è riuscito a estrarre { $name }.
 
-# {name} is ready
-t17060a6b = { $name } è pronto
-
 # packwing could not make {name}.
 t25251132 = packwing non è riuscito a creare { $name }.
+
+# {name} is ready
+t17060a6b = { $name } è pronto
 
 # packwing could not write {name}.
 teb1bce81 = packwing non è riuscito a scrivere { $name }.
@@ -3548,6 +3548,9 @@ t7c55848c = packwing non è riuscito a leggere { $name }.
 
 # packwing can no longer reach that folder.
 t899e6af1 = packwing non riesce più a raggiungere quella cartella.
+
+# packwing could not make the folder {name}.
+t9f263b45 = packwing non è riuscito a creare la cartella { $name }.
 
 # Extracting {name}
 t77dce80b = Estrazione di { $name }
@@ -3578,9 +3581,6 @@ te0bf8e8f = packwing non è riuscito a scrivere un file senza nome.
 
 # packwing could not write what it extracted.
 ted881a0f = packwing non è riuscito a scrivere ciò che ha estratto.
-
-# packwing could not make the folder {name}.
-t9f263b45 = packwing non è riuscito a creare la cartella { $name }.
 
 # The gallery would not take {name}.
 td2cca604 = La galleria non ha accettato { $name }.

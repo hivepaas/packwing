@@ -1,5 +1,21 @@
 package com.hivepaas.packwing.ui
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.automirrored.outlined.DriveFileMove
+import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.CreateNewFolder
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.DriveFileRenameOutline
+import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.ui.platform.LocalContext
+import com.hivepaas.packwing.Documents
+import java.io.File
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -193,8 +209,40 @@ fun StorageScreen(model: AppModel, screen: Screen.Storage) {
     var hidden by remember { mutableStateOf(model.settings.storageHidden) }
     var preview by remember { mutableStateOf<StoredItem?>(null) }
     var tries by remember { mutableStateOf(0) }
+    // What is asked before the storage is changed.
+    var renaming by remember { mutableStateOf<String?>(null) }
+    var deleting by remember { mutableStateOf<List<String>?>(null) }
+    var naming by remember { mutableStateOf(false) }
+    var sending by remember { mutableStateOf<Pair<List<String>, Boolean>?>(null) }
+    var downloading by remember { mutableStateOf<List<String>?>(null) }
+    val context = LocalContext.current
+    val work = rememberCoroutineScope()
+    val up: (suspend () -> List<File>) -> Unit = { copy ->
+        work.launch {
+            val files = withContext(Dispatchers.IO) { runCatching { copy() }.getOrDefault(emptyList()) }
+            model.upload(files, entry, screen.folder)
+        }
+    }
+    val addFiles = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
+        if (uris.isNotEmpty()) up { Documents.copyIn(context, uris) }
+    }
+    val addFolder = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { tree ->
+        if (tree != null) up { listOf(Documents.copyTreeIn(context, tree)) }
+    }
+    val addPhotos = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris ->
+        if (uris.isNotEmpty()) up { Documents.copyIn(context, uris) }
+    }
+    val downloadInto = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { tree ->
+        val names = downloading
+        downloading = null
+        if (tree != null && names != null) {
+            Documents.keepAccess(context, tree, write = true)
+            model.download(names, entry, screen.folder, tree)
+        }
+    }
 
-    LaunchedEffect(screen, tries) {
+    // Read again once something here, or anywhere, changed.
+    LaunchedEffect(screen, tries, model.storagesChanged) {
         problem = null
         withContext(Dispatchers.IO) {
             runCatching { model.storage(entry).list(screen.folder, Job.quiet()) }
@@ -223,12 +271,35 @@ fun StorageScreen(model: AppModel, screen: Screen.Storage) {
                 maxLines = 1,
                 overflow = TextOverflow.MiddleEllipsis,
             )
+            // Up from the phone: files, a folder, photos.
+            AddMenu(
+                files = { addFiles.launch(arrayOf("*/*")) },
+                folder = { addFolder.launch(null) },
+                photos = { addPhotos.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)) },
+            )
             var open by remember { mutableStateOf(false) }
             Box {
                 IconButton(onClick = { open = true }, Modifier.testTag("storage-menu")) {
                     Icon(Icons.Outlined.MoreVert, tr("More"), tint = c.text)
                 }
                 DropdownMenu(expanded = open, onDismissRequest = { open = false }, containerColor = c.surface) {
+                    DropdownMenuItem(
+                        text = { Text(tr("New folder"), color = c.text) },
+                        leadingIcon = { Icon(Icons.Outlined.CreateNewFolder, null, tint = c.muted) },
+                        onClick = {
+                            open = false
+                            naming = true
+                        },
+                        modifier = Modifier.testTag("storage-new-folder"),
+                    )
+                    DropdownMenuItem(
+                        text = { Text(tr("New archive"), color = c.text) },
+                        leadingIcon = { Icon(Icons.Outlined.Inventory2, null, tint = c.muted) },
+                        onClick = {
+                            open = false
+                            model.go(Screen.Create(on = screen))
+                        },
+                    )
                     DropdownMenuItem(
                         text = { Text(tr("Show hidden files"), color = c.text) },
                         leadingIcon = {
@@ -246,6 +317,8 @@ fun StorageScreen(model: AppModel, screen: Screen.Storage) {
                 }
             }
         }
+
+        model.changing?.let { title -> Busy(title, model.changingName ?: "") { model.stopChanging() } }
 
         when {
             problem != null -> Column(
@@ -297,15 +370,19 @@ fun StorageScreen(model: AppModel, screen: Screen.Storage) {
                                 else -> preview = item
                             }
                         },
-                        menu = if (item.folder || item.link) {
-                            null
-                        } else {
-                            {
-                                StoredMenu(
-                                    openIt = { model.openStored(entry, path, item.size) },
-                                    previewIt = { preview = item },
-                                )
-                            }
+                        menu = {
+                            StoredMenu(
+                                item,
+                                openIt = { model.openStored(entry, path, item.size) },
+                                previewIt = { preview = item },
+                                download = {
+                                    downloading = listOf(item.name)
+                                    downloadInto.launch(null)
+                                },
+                                send = { moving -> sending = listOf(item.name) to moving },
+                                rename = { renaming = item.name },
+                                delete = { deleting = listOf(item.name) },
+                            )
                         },
                     )
                     HorizontalDivider(color = c.field)
@@ -328,6 +405,49 @@ fun StorageScreen(model: AppModel, screen: Screen.Storage) {
                 CircularProgressIndicator(Modifier.size(20.dp), color = c.onTonal, strokeWidth = 2.5.dp)
                 Text(tr("Opening {name}", "name" to name), fontSize = 15.sp, color = c.onTonal)
             }
+        }
+    }
+
+    renaming?.let { name ->
+        NameDialog(tr("Rename {what}", "what" to name), name, tr("Rename"), close = { renaming = null }) { to ->
+            renaming = null
+            model.onStorage(tr("Renaming…"), name) { model.storage(entry).rename(screen.folder, name, to) }
+        }
+    }
+    if (naming) {
+        NameDialog(tr("New folder"), null, tr("Create"), close = { naming = false }) { name ->
+            naming = false
+            model.onStorage(tr("New folder"), name) { model.storage(entry).makeFolder(screen.folder, name) }
+        }
+    }
+    deleting?.let { names ->
+        val what = names.singleOrNull() ?: tr("{many} items", "many" to names.size.toString())
+        AlertDialog(
+            onDismissRequest = { deleting = null },
+            containerColor = c.surface,
+            title = { Text(tr("Delete {what}?", "what" to what), color = c.text) },
+            text = { Text(tr("This cannot be undone from packwing."), color = c.muted) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        deleting = null
+                        model.onStorage(tr("Deleting…"), what) { model.storage(entry).delete(screen.folder, names) }
+                    },
+                    modifier = Modifier.testTag("delete-confirm"),
+                ) { Text(tr("Delete"), color = c.badText, fontWeight = FontWeight.SemiBold) }
+            },
+            dismissButton = { TextButton(onClick = { deleting = null }) { Text(tr("Cancel"), color = c.accent) } },
+        )
+    }
+    sending?.let { (names, moving) ->
+        StorageFolderPicker(
+            model,
+            title = if (moving) tr("Move to…") else tr("Copy to…"),
+            confirm = if (moving) tr("Move here") else tr("Copy here"),
+            close = { sending = null },
+        ) { to ->
+            sending = null
+            model.transfer(names, entry, screen.folder, to, moving)
         }
     }
 
@@ -377,33 +497,166 @@ private fun StoredRow(item: StoredItem, kind: FileKind, open: () -> Unit, menu: 
     }
 }
 
-/** What a file's ⋮ offers: to open it as an archive, whatever its name, or to look at it. */
+/**
+ * What a file's or folder's ⋮ offers: to open a file as an archive, whatever
+ * its name, or look at it; to download it, copy or move it, rename or delete it.
+ */
 @Composable
-private fun StoredMenu(openIt: () -> Unit, previewIt: () -> Unit) {
+private fun StoredMenu(
+    item: StoredItem,
+    openIt: () -> Unit,
+    previewIt: () -> Unit,
+    download: () -> Unit,
+    send: (moving: Boolean) -> Unit,
+    rename: () -> Unit,
+    delete: () -> Unit,
+) {
     val c = tonal()
     var open by remember { mutableStateOf(false) }
-    Box {
-        IconButton(onClick = { open = true }) { Icon(Icons.Outlined.MoreVert, tr("More"), tint = c.muted) }
-        DropdownMenu(expanded = open, onDismissRequest = { open = false }, containerColor = c.surface) {
+    val entries = buildList {
+        if (!item.folder && !item.link) {
             // packwing tells an archive by what is in it, whatever its name.
+            add(Triple(tr("Open"), Icons.Outlined.Inventory2, openIt))
+            add(Triple(tr("Preview"), Icons.Outlined.Visibility, previewIt))
+        }
+        add(Triple(tr("Download"), Icons.Outlined.Download, download))
+        add(Triple(tr("Copy to…"), Icons.Outlined.ContentCopy) { send(false) })
+        add(Triple(tr("Move to…"), Icons.AutoMirrored.Outlined.DriveFileMove) { send(true) })
+        add(Triple(tr("Rename"), Icons.Outlined.DriveFileRenameOutline, rename))
+    }
+    Box {
+        IconButton(onClick = { open = true }, Modifier.testTag("stored-menu-${item.name}")) {
+            Icon(Icons.Outlined.MoreVert, tr("More"), tint = c.muted)
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }, containerColor = c.surface) {
+            entries.forEach { (label, icon, act) ->
+                DropdownMenuItem(
+                    text = { Text(label, color = c.text) },
+                    leadingIcon = { Icon(icon, null, tint = c.muted) },
+                    onClick = {
+                        open = false
+                        act()
+                    },
+                )
+            }
             DropdownMenuItem(
-                text = { Text(tr("Open"), color = c.text) },
-                leadingIcon = { Icon(Icons.Outlined.Inventory2, null, tint = c.muted) },
+                text = { Text(tr("Delete…"), color = c.badText) },
+                leadingIcon = { Icon(Icons.Outlined.Delete, null, tint = c.badText) },
                 onClick = {
                     open = false
-                    openIt()
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(tr("Preview"), color = c.text) },
-                leadingIcon = { Icon(Icons.Outlined.Visibility, null, tint = c.muted) },
-                onClick = {
-                    open = false
-                    previewIt()
+                    delete()
                 },
             )
         }
     }
+}
+
+/**
+ * A folder of a storage to copy or move to: the storages added, then their
+ * folders, and `confirm` for the one shown.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun StorageFolderPicker(
+    model: AppModel,
+    title: String,
+    confirm: String,
+    close: () -> Unit,
+    chosen: (Screen.Storage) -> Unit,
+) {
+    val c = tonal()
+    var at by remember { mutableStateOf<Screen.Storage?>(null) }
+    var folders by remember(at) { mutableStateOf<List<StoredItem>?>(null) }
+    var problem by remember(at) { mutableStateOf<String?>(null) }
+    val here = at
+    LaunchedEffect(here) {
+        val entry = here?.let { spot -> model.storages.firstOrNull { it.id == spot.id } } ?: return@LaunchedEffect
+        withContext(Dispatchers.IO) { runCatching { model.storage(entry).list(here.folder, Job.quiet()) } }
+            .onSuccess { items -> folders = items.filter { it.folder && !it.hidden } }
+            .onFailure { problem = said(it) }
+    }
+    val shownTitle = here?.let { spot ->
+        spot.folder.lastOrNull()
+            ?: model.storages.firstOrNull { it.id == spot.id }?.let { describeStorage(it.kind, it.values) }
+    } ?: title
+    ModalBottomSheet(
+        onDismissRequest = close,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = c.page,
+        contentColor = c.text,
+    ) {
+        Column(
+            Modifier.padding(start = 16.dp, end = 16.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (here != null) {
+                    IconButton(onClick = { at = if (here.folder.isEmpty()) null else here.copy(folder = here.folder.dropLast(1)) }) {
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, tr("Back"), tint = c.text)
+                    }
+                }
+                Text(
+                    shownTitle,
+                    Modifier.padding(start = 4.dp).weight(1f),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = c.text,
+                    maxLines = 1,
+                    overflow = TextOverflow.MiddleEllipsis,
+                )
+            }
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 420.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(c.surface)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                when {
+                    here == null -> model.storages.forEach { entry ->
+                        PickerRow(describeStorage(entry.kind, entry.values), "picker-storage") { at = Screen.Storage(entry.id) }
+                    }
+                    problem != null -> Text(problem!!, Modifier.padding(16.dp), fontSize = 14.sp, color = c.warnText)
+                    folders == null -> CircularProgressIndicator(
+                        Modifier.padding(16.dp).size(22.dp),
+                        color = c.accent,
+                        strokeWidth = 3.dp,
+                    )
+                    else -> folders!!.forEach { folder ->
+                        PickerRow(folder.name, "picker-folder-${folder.name}") { at = here.copy(folder = here.folder + folder.name) }
+                    }
+                }
+            }
+            if (here != null) {
+                Button(
+                    onClick = { chosen(here) },
+                    shape = RoundedCornerShape(28.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = c.accent, contentColor = c.onAccent),
+                    modifier = Modifier.fillMaxWidth().height(52.dp).testTag("picker-here"),
+                ) { Text(confirm, fontSize = 17.sp, fontWeight = FontWeight.Bold) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PickerRow(label: String, tag: String, go: () -> Unit) {
+    val c = tonal()
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .heightIn(min = 52.dp)
+            .clickable(onClick = go)
+            .padding(horizontal = 16.dp)
+            .testTag(tag),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Icon(Icons.Outlined.Folder, null, tint = c.accent)
+        Text(label, fontSize = 16.sp, color = c.text, maxLines = 1, overflow = TextOverflow.MiddleEllipsis)
+    }
+    HorizontalDivider(color = c.field)
 }
 
 // MARK: Adding one

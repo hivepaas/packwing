@@ -3478,11 +3478,11 @@ t09d5ea2a =
 # packwing could not extract {name}.
 t7e40b6ef = packwing は { $name } を展開できませんでした。
 
-# {name} is ready
-t17060a6b = { $name } の準備ができました
-
 # packwing could not make {name}.
 t25251132 = packwing は { $name } を作成できませんでした。
+
+# {name} is ready
+t17060a6b = { $name } の準備ができました
 
 # packwing could not write {name}.
 teb1bce81 = packwing は { $name } を書き込めませんでした。
@@ -3492,6 +3492,9 @@ t7c55848c = packwing は { $name } を読み取れませんでした。
 
 # packwing can no longer reach that folder.
 t899e6af1 = packwing からそのフォルダにアクセスできなくなりました。
+
+# packwing could not make the folder {name}.
+t9f263b45 = packwing はフォルダ { $name } を作成できませんでした。
 
 # Extracting {name}
 t77dce80b = { $name } を展開中
@@ -3522,9 +3525,6 @@ te0bf8e8f = packwing は名前のないファイルを書き込めませんで�
 
 # packwing could not write what it extracted.
 ted881a0f = packwing は展開したものを書き込めませんでした。
-
-# packwing could not make the folder {name}.
-t9f263b45 = packwing はフォルダ { $name } を作成できませんでした。
 
 # The gallery would not take {name}.
 td2cca604 = { $name } をギャラリーに追加できませんでした。

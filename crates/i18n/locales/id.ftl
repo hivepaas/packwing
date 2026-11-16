@@ -3487,11 +3487,11 @@ t09d5ea2a =
 # packwing could not extract {name}.
 t7e40b6ef = packwing tidak dapat mengekstrak { $name }.
 
-# {name} is ready
-t17060a6b = { $name } sudah siap
-
 # packwing could not make {name}.
 t25251132 = packwing tidak dapat membuat { $name }.
+
+# {name} is ready
+t17060a6b = { $name } sudah siap
 
 # packwing could not write {name}.
 teb1bce81 = packwing tidak dapat menulis { $name }.
@@ -3501,6 +3501,9 @@ t7c55848c = packwing tidak dapat membaca { $name }.
 
 # packwing can no longer reach that folder.
 t899e6af1 = packwing tidak bisa lagi mengakses folder itu.
+
+# packwing could not make the folder {name}.
+t9f263b45 = packwing tidak dapat membuat folder { $name }.
 
 # Extracting {name}
 t77dce80b = Mengekstrak { $name }
@@ -3531,9 +3534,6 @@ te0bf8e8f = packwing tidak dapat menulis berkas tanpa nama.
 
 # packwing could not write what it extracted.
 ted881a0f = packwing tidak dapat menulis hasil ekstraknya.
-
-# packwing could not make the folder {name}.
-t9f263b45 = packwing tidak dapat membuat folder { $name }.
 
 # The gallery would not take {name}.
 td2cca604 = Galeri tidak mau menerima { $name }.

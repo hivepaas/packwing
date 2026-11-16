@@ -200,7 +200,7 @@ fun HomeScreen(model: AppModel) {
 fun NewArchiveButton(model: AppModel) {
     val c = tonal()
     ExtendedFloatingActionButton(
-        onClick = { model.go(Screen.Create) },
+        onClick = { model.go(Screen.Create()) },
         containerColor = c.accent,
         contentColor = c.onAccent,
         shape = RoundedCornerShape(20.dp),

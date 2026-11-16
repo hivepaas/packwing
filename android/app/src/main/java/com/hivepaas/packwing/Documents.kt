@@ -290,6 +290,30 @@ object Documents {
         return folder
     }
 
+    /**
+     * `from` (a file, or a folder with all it holds) copied into the tree the
+     * user pointed at, under its own name; one there already of that name is
+     * left as it is, and the provider gives the copy the next name free.
+     * Call this off the main thread.
+     */
+    fun copyToTree(context: Context, from: File, tree: Uri) {
+        val root = DocumentFile.fromTreeUri(context, tree) ?: error(tr("packwing can no longer reach that folder."))
+        fun copy(file: File, into: DocumentFile) {
+            if (file.isDirectory) {
+                val made = into.findFile(file.name)?.takeIf { it.isDirectory } ?: into.createDirectory(file.name)
+                    ?: error(tr("packwing could not make the folder {name}.", "name" to file.name))
+                file.listFiles()?.forEach { copy(it, made) }
+            } else {
+                val made = into.createFile(saveMime(file.name), file.name)
+                    ?: error(tr("packwing could not write {name}.", "name" to file.name))
+                context.contentResolver.openOutputStream(made.uri, "wt")?.use { out ->
+                    file.inputStream().use { it.copyTo(out, COPY_BUFFER) }
+                } ?: error(tr("packwing could not write {name}.", "name" to file.name))
+            }
+        }
+        copy(from, root)
+    }
+
     /** A megabyte at a time: an archive is copied whole. */
     private const val COPY_BUFFER = 1 shl 20
 

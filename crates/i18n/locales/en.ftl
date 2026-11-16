@@ -1304,11 +1304,12 @@ t09d5ea2a =
        *[other] { $n } files are ready
     }
 t7e40b6ef = packwing could not extract { $name }.
-t17060a6b = { $name } is ready
 t25251132 = packwing could not make { $name }.
+t17060a6b = { $name } is ready
 teb1bce81 = packwing could not write { $name }.
 t7c55848c = packwing could not read { $name }.
 t899e6af1 = packwing can no longer reach that folder.
+t9f263b45 = packwing could not make the folder { $name }.
 t77dce80b = Extracting { $name }
 t5245af2d = Making { $name }
 tede81435 = { $done } of { $all }
@@ -1319,7 +1320,6 @@ t2339ecd9 = Finished jobs
 tfdbeaf1a = When a job is through, or could not finish
 te0bf8e8f = packwing could not write a file with no name.
 ted881a0f = packwing could not write what it extracted.
-t9f263b45 = packwing could not make the folder { $name }.
 td2cca604 = The gallery would not take { $name }.
 t4355b914 = packwing could not reach its keychain.
 t6af21072 = Select all
