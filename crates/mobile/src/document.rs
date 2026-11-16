@@ -96,8 +96,13 @@ impl Storage for OneDocument {
         Err(one_file_only())
     }
 
+    /// The document from its start, read a block at a time where it is asked
+    /// for: what checking its signature reads it as, all of it once.
     fn open(&self, _path: &[String]) -> io::Result<Box<dyn Read + Send>> {
-        Err(one_file_only())
+        Ok(Box::new(FromStart {
+            document: Arc::clone(&self.0),
+            at: 0,
+        }))
     }
 
     fn put(
@@ -124,6 +129,26 @@ impl Storage for OneDocument {
 
     fn delete(&self, _folder: &[String], _names: &[String]) -> io::Result<()> {
         Err(one_file_only())
+    }
+}
+
+/// A document read from its start to its end.
+struct FromStart {
+    document: Arc<dyn Document>,
+    at: u64,
+}
+
+impl Read for FromStart {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        let want = u32::try_from(buf.len()).unwrap_or(u32::MAX);
+        let got = self
+            .document
+            .read_at(self.at, want)
+            .map_err(io::Error::other)?;
+        let n = got.len().min(buf.len());
+        buf[..n].copy_from_slice(&got[..n]);
+        self.at += n as u64;
+        Ok(n)
     }
 }
 

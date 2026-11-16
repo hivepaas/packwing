@@ -191,7 +191,64 @@ class AppTests {
         ui.waitUntilAtLeastOneExists(hasTestTag("checksum-sha256") and hasText(NOTE_SHA256), TIMEOUT)
     }
 
+    @Test
+    fun anArchiveSSignatureSaysWhoSignedItOnceItsKeyIsTrusted() {
+        forgetKeys()
+        // report.zip.sig: report.zip signed with `ssh-keygen -Y sign -n file`, beside it.
+        sample("report.zip.sig")
+        open("report.zip")
+        ui.waitForText("Báo cáo quý 3")
+        ui.onNodeWithTag("archive-menu").performClick()
+        ui.onNodeWithText("Signature").performClick()
+
+        // By a key not trusted yet, which proves nothing.
+        ui.waitForText("Signed by a key you do not trust: $SIGNER")
+        ui.onNodeWithTag("trust-key").performClick()
+        ui.onNodeWithTag("key-name").performTextInput("Tester")
+        ui.onNodeWithTag("key-trust").performClick()
+        // Checked again, against all of it.
+        ui.waitForText("Signed by Tester")
+
+        // Kept in Settings.
+        onMain {
+            model.sheet = null
+            model.home()
+            model.go(Screen.Settings)
+        }
+        ui.waitForText("Tester")
+        ui.waitForText(SIGNER)
+
+        // Beside an archive it is not of: by a key trusted, and it does not match.
+        sample("report.zip.sig", "photos.zip.sig")
+        open("photos.zip")
+        ui.waitUntilAtLeastOneExists(hasTestTag("archive-menu"), TIMEOUT)
+        ui.onNodeWithTag("archive-menu").performClick()
+        ui.onNodeWithText("Signature").performClick()
+        ui.waitUntilAtLeastOneExists(hasTestTag("signature-mismatch"), TIMEOUT)
+        forgetKeys()
+    }
+
+    @Test
+    fun aPublicKeyPastedInSettingsIsTrusted() {
+        forgetKeys()
+        onMain { model.go(Screen.Settings) }
+        ui.waitUntilAtLeastOneExists(hasTestTag("add-key"), TIMEOUT)
+        ui.onNodeWithTag("add-key").performClick()
+        ui.onNodeWithTag("key-text").performTextInput("not a key")
+        ui.onNodeWithTag("key-text").performTextClearance()
+        ui.onNodeWithTag("key-text").performTextInput("$SIGNER_KEY tester@example")
+        // Its fingerprint, as ssh-keygen -l says it, once it reads as a key.
+        ui.waitForText(SIGNER)
+        ui.onNodeWithTag("key-name").performTextInput("Pasted")
+        ui.onNodeWithTag("key-trust").performClick()
+        ui.waitForText("Pasted")
+        until { model.trustedKeys.singleOrNull()?.fingerprint == SIGNER }
+        forgetKeys()
+    }
+
     // MARK: Helpers
+
+    private fun forgetKeys() = onMain { model.trustedKeys.forEach { model.distrust(it.key.line) } }
 
     /** Opens the sample `name`, from a copy in the app's cache, as Files would hand it over. */
     private fun open(name: String, password: String? = null) {
@@ -204,9 +261,10 @@ class AppTests {
         }
     }
 
-    private fun sample(name: String): File {
+    /** The sample `name`, copied as `called` into one folder: a signature goes beside its archive. */
+    private fun sample(name: String, called: String = name): File {
         val into = File(app.cacheDir, "samples").apply { mkdirs() }
-        val file = File(into, name)
+        val file = File(into, called)
         InstrumentationRegistry.getInstrumentation().context.assets.open(name).use { from ->
             file.outputStream().use { from.copyTo(it) }
         }
@@ -237,6 +295,10 @@ class AppTests {
         /** report.zip's own, and its Ghi chú.txt's. */
         const val REPORT_SHA256 = "ff5b00b6e9f828d6a94e05f8f4487dd8aa6c0132a3674008ef14dd50a82b6e5d"
         const val REPORT_MD5 = "4af0f880e412e4c0abdca3ecbb0e8367"
+        /** The key report.zip.sig was made with. */
+        const val SIGNER = "SHA256:4mHGiWUeHRWTUW56vDGyBZfe9CwbQ32QEVMD86pJVto"
+        const val SIGNER_KEY = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP94XxTfx8LLpUBb2U8OiCshCNyBWeea1VO3AJVc6Qvv"
+
         const val NOTE_SHA256 = "a96b0aa7a284474b68cdea5ab0da0fb0251c340809610dd147c6329a634d09a7"
 
         /** What `sha256sum` writes of report.zip's files, extracted. */

@@ -30,11 +30,13 @@ import uniffi.packwing_mobile.FoundRow
 import uniffi.packwing_mobile.Job
 import uniffi.packwing_mobile.JobListener
 import uniffi.packwing_mobile.JobProgress
+import uniffi.packwing_mobile.KeyRead
 import uniffi.packwing_mobile.MobileException
 import uniffi.packwing_mobile.NewArchiveHow
 import uniffi.packwing_mobile.Secrets
 import uniffi.packwing_mobile.createArchive
 import uniffi.packwing_mobile.pictureFits
+import uniffi.packwing_mobile.readKey
 import java.io.Closeable
 import java.io.File
 import java.io.FileNotFoundException
@@ -100,6 +102,12 @@ sealed interface Sheet {
 
     /** Extracting: all of it, or the paths picked. */
     data class Extract(val picked: Picked = Picked()) : Sheet
+
+    /** Whether the open archive is what a key the user trusts signed. */
+    data object Signature : Sheet
+
+    /** A public key to trust: Settings › Keys you trust. */
+    data object AddKey : Sheet
 }
 
 /** Where what is extracted ends up. */
@@ -175,6 +183,35 @@ class AppModel(private val context: Context) {
         checksumKeys = keys
         settings.checksums = keys
     }
+
+    /** The keys a signature is trusted by, each with its fingerprint. */
+    var trustedKeys by mutableStateOf(settings.trustedKeys.map(::Trusted))
+        private set
+
+    /** A key trusted, and how it is told from others. */
+    data class Trusted(val key: Settings.TrustedKey) {
+        val fingerprint: String = runCatching { readKey(key.line).fingerprint }.getOrDefault("")
+    }
+
+    /**
+     * Trusts `key`, under `name`, or the start of its fingerprint if that says
+     * nothing. One trusted already keeps the name it has.
+     */
+    fun trust(key: KeyRead, name: String) {
+        if (trustedKeys.any { it.key.line == key.line }) return
+        val called = name.trim().ifEmpty { key.fingerprint.take(19) }
+        trustedKeys = trustedKeys + Trusted(Settings.TrustedKey(called, key.line))
+        settings.trustedKeys = trustedKeys.map { it.key }
+    }
+
+    fun distrust(line: String) {
+        trustedKeys = trustedKeys.filter { it.key.line != line }
+        settings.trustedKeys = trustedKeys.map { it.key }
+    }
+
+    /** What the user calls the key of `fingerprint`, or the fingerprint. */
+    fun signer(fingerprint: String): String =
+        trustedKeys.firstOrNull { it.fingerprint == fingerprint }?.key?.name ?: fingerprint
 
     /** What the open folder holds, and what a search found. */
     var rows by mutableStateOf<List<EntryRow>>(emptyList())

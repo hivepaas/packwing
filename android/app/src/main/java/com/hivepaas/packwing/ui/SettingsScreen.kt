@@ -97,6 +97,18 @@ fun SettingsScreen(model: AppModel) {
             }
         }
 
+        item { Heading(tr("Keys you trust")) }
+        item { TrustedKeys(model) }
+        item {
+            Text(
+                tr("A signature by one of these says who signed a file. One by any other key proves nothing, whatever it matches."),
+                modifier = Modifier.padding(horizontal = 8.dp),
+                fontSize = 13.sp,
+                lineHeight = 19.sp,
+                color = c.muted,
+            )
+        }
+
         item { Heading(tr("While it works")) }
         item {
             Group {

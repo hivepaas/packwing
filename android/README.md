@@ -55,6 +55,13 @@ one read of it, listed as `sha256sum` writes them, to copy or save in a
 folder), or of the archive's own file; and checksums given with the files,
 pasted, are compared with them, a list or one alone (`ChecksumsScreen.kt`).
 
+The archive's ⋮ also checks its **Signature** (`name.sig`, as `ssh-keygen -Y
+sign` makes one) by the keys trusted in Settings › Keys you trust: one beside
+it where packwing can look (a file it reaches by its path), or one chosen with
+the document picker, which is what a file Android handed over alone needs. A
+signature by a key not trusted says whose it is, and offers to trust it
+(`SignatureSheet.kt`).
+
 ## How Android's storage shapes it
 
 Android hands out `content://` URIs, and nothing in its storage has a path
@@ -103,7 +110,7 @@ writes what it reads to whatever takes it (`Documents.kt`, `Trees.kt`).
 
 - Pausing a job. The core can stop one, not hold it; the progress screen
   offers Cancel alone. The design's Pause button has nothing behind it.
-- Storages (S3, WebDAV, SFTP), signatures and signing, editing an archive,
+- Storages (S3, WebDAV, SFTP), signing, editing an archive,
   `age` files, the desktop's other formats for new archives, and Pro: the
   iOS app has them (`ios/README.md`), and they come here one by one.
 - The comic reader and the audit log, which are the desktop's alone.
