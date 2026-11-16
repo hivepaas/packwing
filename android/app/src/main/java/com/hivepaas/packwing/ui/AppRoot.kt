@@ -99,6 +99,8 @@ fun AppRoot(model: AppModel) {
     when (val sheet = model.sheet) {
         is Sheet.Password -> PasswordSheet(model, sheet)
         is Sheet.Extract -> ExtractSheet(model, sheet)
+        Sheet.Signature -> SignatureSheet(model)
+        Sheet.AddKey -> AddKeySheet(model)
         null -> Unit
     }
 }

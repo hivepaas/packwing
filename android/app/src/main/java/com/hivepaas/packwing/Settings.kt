@@ -39,6 +39,24 @@ class Settings(context: Context) {
         get() = prefs.getString(CHECKSUMS, null) ?: "sha256 sha1"
         set(value) = prefs.edit().putString(CHECKSUMS, value).apply()
 
+    /** A public key the user trusts, by the name they gave it; `line` as `readKey` gives it. */
+    data class TrustedKey(val name: String, val line: String)
+
+    /** The keys a signature is trusted by: Settings › Keys you trust. */
+    var trustedKeys: List<TrustedKey>
+        get() = runCatching {
+            val rows = JSONArray(prefs.getString(TRUSTED_KEYS, "[]"))
+            (0 until rows.length()).map { at ->
+                val row = rows.getJSONObject(at)
+                TrustedKey(row.getString("name"), row.getString("line"))
+            }
+        }.getOrDefault(emptyList())
+        set(value) {
+            val rows = JSONArray()
+            value.forEach { rows.put(JSONObject().put("name", it.name).put("line", it.line)) }
+            prefs.edit().putString(TRUSTED_KEYS, rows.toString()).apply()
+        }
+
     var tellWhenDone: Boolean
         get() = prefs.getBoolean(TELL_WHEN_DONE, true)
         set(value) = prefs.edit().putBoolean(TELL_WHEN_DONE, value).apply()
@@ -101,6 +119,7 @@ class Settings(context: Context) {
         const val OVERWRITE = "overwrite"
         const val TELL_WHEN_DONE = "tellWhenDone"
         const val CHECKSUMS = "checksums"
+        const val TRUSTED_KEYS = "trustedKeys"
         const val RECENT = "recent"
         const val MOST_RECENT = 40
     }

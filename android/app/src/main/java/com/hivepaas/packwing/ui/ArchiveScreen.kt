@@ -34,6 +34,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Draw
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.SelectAll
@@ -333,6 +334,14 @@ private fun ArchiveMenu(model: AppModel) {
                 onClick = {
                     open = false
                     model.go(Screen.Checksums(if (model.selecting) model.pickedNow() else Picked()))
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(tr("Signature"), color = c.text) },
+                leadingIcon = { Icon(Icons.Outlined.Draw, null, tint = c.muted) },
+                onClick = {
+                    open = false
+                    model.sheet = Sheet.Signature
                 },
             )
         }
