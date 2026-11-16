@@ -692,6 +692,11 @@ pub struct NewArchiveHow {
     /// What only a Mac uses (`.DS_Store`, `__MACOSX`, resource forks) is left out.
     #[uniffi(default = true)]
     pub skip_mac_files: bool,
+    /// Encrypts a ZIP or 7z archive whole with age, as the other formats are,
+    /// in place of its own AES-256: to `password` as a passphrase, or to
+    /// `age_keys`; its names are hidden too. Saved as `name.zip.age`.
+    #[uniffi(default = false)]
+    pub whole_with_age: bool,
 }
 
 impl Default for NewArchiveHow {
@@ -705,6 +710,7 @@ impl Default for NewArchiveHow {
             age_keys: Vec::new(),
             store_compressed: true,
             skip_mac_files: true,
+            whole_with_age: false,
         }
     }
 }
@@ -742,7 +748,11 @@ impl NewArchiveHow {
                 level => level.level(),
             },
             password: how.password.map(String::into_bytes),
-            hide_names: how.hide_names && how.format == ArchiveFormat::SevenZip,
+            hide_names: how.hide_names
+                && how.format == ArchiveFormat::SevenZip
+                && !how.whole_with_age,
+            whole_with_age: how.whole_with_age
+                && matches!(how.format, ArchiveFormat::Zip | ArchiveFormat::SevenZip),
             part_size: how.part_size,
             age_keys: how.age_keys,
             stored_extensions: if how.store_compressed {

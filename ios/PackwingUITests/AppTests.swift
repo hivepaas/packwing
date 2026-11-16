@@ -891,4 +891,37 @@ final class AppTests: XCTestCase {
         XCTAssert("\(limit.label) \(limit.value ?? "")".contains("100 GB"), "\(limit.label) \(limit.value ?? "")")
         keep(app, "settings-choices")
     }
+
+    /// A ZIP encrypted whole with age, in place of its own AES-256, and cut in
+    /// parts of a size typed: one too small is said, and Create waits for one.
+    func testAZipIsEncryptedWithAgeInPartsOfASizeTyped() {
+        let app = launch(making: ["report.zip"])
+        let split = app.buttons["new-split"]
+        XCTAssert(split.waitForExistence(timeout: 15))
+        split.tap()
+        tapWhenReady(app.buttons["Custom size…"], timeout: 5)
+        let size = app.textFields["new-part-size"]
+        XCTAssert(size.waitForExistence(timeout: 5))
+        size.tap()
+        size.typeText("0,5")
+        XCTAssert(app.staticTexts["A part takes a size of 1 MB or more, such as 100 MB."].waitForExistence(timeout: 5))
+        let create = app.buttons["Create"].firstMatch
+        XCTAssertFalse(create.isEnabled)
+        size.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 3) + "2")
+        XCTAssertFalse(app.staticTexts["A part takes a size of 1 MB or more, such as 100 MB."].exists)
+
+        app.switches["Protect with a password"].switches.firstMatch.tap()
+        tapWhenReady(app.buttons["age"], timeout: 5)
+        XCTAssertFalse(app.switches.matching(NSPredicate(format: "label BEGINSWITH 'Hide the file names'")).firstMatch.exists)
+        let passphrase = app.secureTextFields["new-password"]
+        XCTAssert(passphrase.waitForExistence(timeout: 5))
+        XCTAssertEqual(passphrase.placeholderValue, "Passphrase")
+        passphrase.tap()
+        passphrase.typeText("sample-password")
+        keep(app, "zip-age-parts")
+        create.tap()
+        XCTAssert(app.staticTexts["Done"].waitForExistence(timeout: 30))
+        XCTAssert(text(app, starting: "report.zip.age").exists)
+        keep(app, "zip-age-made")
+    }
 }

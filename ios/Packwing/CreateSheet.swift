@@ -93,8 +93,12 @@ struct CreateSheet: View {
     @State private var keysFile: KeysFile?
     @State private var keysProblem: String?
     @State private var choosingKeys = false
-    /// The bytes of each part, if it is cut in parts.
-    @State private var partSize: UInt64?
+    /// How it is cut in parts, if it is; a custom size is typed, in MB or GB.
+    @State private var split: Split = .none
+    @State private var customSize = ""
+    @State private var customUnit: UInt64 = 1_000_000
+    /// A ZIP or 7z archive encrypted whole with age, in place of its own AES-256.
+    @State private var wholeWithAge = false
     @State private var adding: NewSource?
     @State private var choosingFolder = false
     /// A storage's folder to make it in, in place of one of Files.
@@ -159,13 +163,50 @@ struct CreateSheet: View {
                             Text($0.label).tag($0.key)
                         }
                     }
-                    Picker(tr("Split into parts"), selection: $partSize) {
-                        Text(tr("Don’t split")).tag(UInt64?.none)
-                        Text(tr("25 MB (email)")).tag(UInt64?.some(25_000_000))
-                        Text(tr("4 GB (USB stick)")).tag(UInt64?.some(4_000_000_000))
+                    Picker(tr("Split into parts"), selection: $split.animation()) {
+                        Text(tr("Don’t split")).tag(Split.none)
+                        Text(tr("25 MB (email)")).tag(Split.email)
+                        Text(tr("4 GB (USB stick)")).tag(Split.usb)
+                        Text(tr("Custom size…")).tag(Split.custom)
                     }
-                    Toggle(format.usesAge ? tr("Encrypt with age") : tr("Protect with a password"), isOn: $locked.animation())
-                    if locked && format.usesAge {
+                    .accessibilityIdentifier("new-split")
+                    if split == .custom {
+                        HStack(spacing: 8) {
+                            Text(tr("Each part"))
+                            Spacer(minLength: 8)
+                            TextField("100", text: $customSize)
+                                .keyboardType(.decimalPad)
+                                .multilineTextAlignment(.trailing)
+                                .frame(maxWidth: 110)
+                                .accessibilityIdentifier("new-part-size")
+                            Picker(tr("Each part"), selection: $customUnit) {
+                                Text("MB").tag(UInt64(1_000_000))
+                                Text("GB").tag(UInt64(1_000_000_000))
+                            }
+                            .pickerStyle(.segmented)
+                            .fixedSize()
+                            .accessibilityIdentifier("new-part-unit")
+                        }
+                        if !customSize.isEmpty && partSize == nil {
+                            warning(tr("A part takes a size of 1 MB or more, such as 100 MB."))
+                        }
+                    }
+                    if split != .none {
+                        Text(tr("Parts open in 7-Zip and archivers like it, not in the tools built into Windows and macOS."))
+                            .font(.nunito(12, relativeTo: .caption))
+                            .foregroundStyle(Tonal.muted)
+                    }
+                    Toggle(withAge ? tr("Encrypt with age") : tr("Protect with a password"), isOn: $locked.animation())
+                    // ZIP and 7z have their own AES-256, or age around them, as the others have.
+                    if locked && !format.usesAge {
+                        Picker(tr("Protect with a password"), selection: $wholeWithAge.animation()) {
+                            Text("\(format.label.uppercased()) AES-256").tag(false)
+                            Text("age").tag(true)
+                        }
+                        .pickerStyle(.segmented)
+                        .accessibilityIdentifier("new-encryption")
+                    }
+                    if locked && withAge {
                         Picker(tr("Encrypt with age"), selection: $toKeys.animation()) {
                             Text(tr("Passphrase")).tag(false)
                             Text(tr("Public key")).tag(true)
@@ -173,15 +214,15 @@ struct CreateSheet: View {
                         .pickerStyle(.segmented)
                         .accessibilityIdentifier("new-age-to")
                     }
-                    if locked && format.usesAge && toKeys {
+                    if locked && withAge && toKeys {
                         keysPart
                     } else if locked {
                         HStack(spacing: 8) {
                             Group {
                                 if showingPassword {
-                                    TextField(format.usesAge ? tr("Passphrase") : tr("Password"), text: $password)
+                                    TextField(withAge ? tr("Passphrase") : tr("Password"), text: $password)
                                 } else {
-                                    SecureField(format.usesAge ? tr("Passphrase") : tr("Password"), text: $password)
+                                    SecureField(withAge ? tr("Passphrase") : tr("Password"), text: $password)
                                 }
                             }
                             // Not an account's password: as one (.newPassword, or
@@ -201,8 +242,8 @@ struct CreateSheet: View {
                             .buttonStyle(.borderless)
                             .accessibilityLabel(showingPassword ? tr("Hide the password") : tr("Show the password"))
                         }
-                        // age hides it all, names too: only ZIP and 7z have a choice.
-                        if !format.usesAge {
+                        // age hides it all, names too: only ZIP's and 7z's own AES have a choice.
+                        if !withAge {
                             Toggle(isOn: $hideNames) {
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(tr("Hide the file names too"))
@@ -353,17 +394,33 @@ struct CreateSheet: View {
 
     private var ready: Bool {
         guard !draft.items.isEmpty && draft.fetching == 0 && !fileName.isEmpty else { return false }
+        if split == .custom && partSize == nil { return false }
         guard locked else { return true }
         return encryptsToKeys ? !ageKeys.isEmpty : !password.isEmpty
     }
 
     /// What follows its name: `.age` too where age encrypts it.
     private var savedExt: String {
-        chosenFormat.ext + (locked && chosenFormat.usesAge ? ".age" : "")
+        chosenFormat.ext + (locked && withAge ? ".age" : "")
     }
 
     /// Whether it is to be encrypted to public keys, with age.
-    private var encryptsToKeys: Bool { locked && toKeys && chosenFormat.usesAge }
+    private var encryptsToKeys: Bool { locked && toKeys && withAge }
+
+    /// Whether age encrypts it: a format age is around, or ZIP and 7z when
+    /// it is chosen in place of their own AES-256.
+    private var withAge: Bool { chosenFormat.usesAge || wholeWithAge }
+
+    /// The bytes of each part, if it is cut in parts; none for a custom size
+    /// that is not one.
+    private var partSize: UInt64? {
+        switch split {
+        case .none: nil
+        case .email: 25_000_000
+        case .usb: 4_000_000_000
+        case .custom: Split.bytes(customSize, unit: customUnit)
+        }
+    }
 
     /// The public keys age is to encrypt to: those of the file chosen, or the
     /// one typed if it is one.
@@ -449,11 +506,12 @@ struct CreateSheet: View {
             format: format,
             compression: level,
             password: locked && !encryptsToKeys ? password : nil,
-            hideNames: locked && hideNames && format == .sevenZip,
+            hideNames: locked && hideNames && format == .sevenZip && !withAge,
             partSize: partSize,
             ageKeys: ageKeys,
             storeCompressed: storeCompressed,
-            skipMacFiles: skipMacFiles)
+            skipMacFiles: skipMacFiles,
+            wholeWithAge: locked && wholeWithAge && !format.usesAge)
         let name = fileName
         if let toStorage {
             model.afterSheet = { [model, draft] in
@@ -463,6 +521,24 @@ struct CreateSheet: View {
             model.afterSheet = { [model, draft] in model.create(draft, named: name, how: how, in: folder) }
         }
         dismiss()
+    }
+}
+
+/// How a new archive is cut in parts.
+private enum Split: Hashable {
+    case none, email, usb, custom
+
+    /// The smallest part: a ZIP's parts are 64 KB or more, and parts this
+    /// small help nobody.
+    static let smallest: UInt64 = 1_000_000
+
+    /// A size typed in, in bytes: a number of `unit`s, a comma working as the
+    /// decimal point, of 1 MB or more; as the desktop reads it.
+    static func bytes(_ typed: String, unit: UInt64) -> UInt64? {
+        guard let n = Double(typed.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: ",", with: "."))
+        else { return nil }
+        let bytes = n * Double(unit)
+        return bytes.isFinite && bytes >= Double(smallest) ? UInt64(bytes.rounded()) : nil
     }
 }
 
