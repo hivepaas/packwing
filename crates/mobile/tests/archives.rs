@@ -1042,3 +1042,58 @@ fn what_only_a_mac_uses_is_left_out_unless_asked_and_a_limit_stops_a_bomb() {
         )
         .expect("no limit");
 }
+
+#[test]
+fn a_zip_archive_is_encrypted_whole_with_age_to_a_passphrase_or_keys() {
+    let dir = tempfile::tempdir().expect("dir");
+    let folder = files(dir.path());
+    let key = fs::read(core_data("test-age.key")).expect("key");
+    let public = String::from_utf8_lossy(&key)
+        .lines()
+        .find_map(|l| l.strip_prefix("# public key: "))
+        .expect("public")
+        .to_owned();
+    for (password, keys) in [(Some("sample-password"), vec![]), (None, vec![public])] {
+        let wanted = dir
+            .path()
+            .join(format!("whole-{}.zip.age", password.is_some()));
+        let made = create_archive(
+            vec![folder.clone()],
+            wanted.display().to_string(),
+            NewArchiveHow {
+                format: ArchiveFormat::Zip,
+                password: password.map(str::to_owned),
+                age_keys: keys.clone(),
+                whole_with_age: true,
+                ..NewArchiveHow::default()
+            },
+            Job::quiet(),
+        )
+        .expect("made");
+        assert!(made.ends_with(".zip.age"), "{made}");
+        // age's, not ZIP's: its header says so.
+        let head = fs::read(&made).expect("read");
+        assert!(head.starts_with(b"age-encryption.org/v1"), "{made}");
+        let asked = if password.is_some() {
+            Asks::Passphrase
+        } else {
+            Asks::KeyFile
+        };
+        match Archive::open(made.clone(), Secrets::default(), Job::quiet()) {
+            Err(MobileError::Locked { asks, .. }) => assert_eq!(asks, asked),
+            other => panic!("{:?}", other.map(|a| a.info())),
+        }
+        let secrets = match password {
+            Some(p) => Secrets {
+                passphrase: Some(p.to_owned()),
+                ..Secrets::default()
+            },
+            None => Secrets {
+                key_file: Some(key.clone()),
+                ..Secrets::default()
+            },
+        };
+        let archive = Archive::open(made, secrets, Job::quiet()).expect("opened");
+        assert!(archive.info().files >= 2);
+    }
+}

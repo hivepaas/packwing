@@ -213,7 +213,7 @@ extension NewArchiveHow {
     /// What follows the name of the archive made: `.age` too where age
     /// encrypts it, as the desktop names it.
     var ext: String {
-        format.ext + (format.usesAge && (password != nil || !ageKeys.isEmpty) ? ".age" : "")
+        format.ext + ((format.usesAge || wholeWithAge) && (password != nil || !ageKeys.isEmpty) ? ".age" : "")
     }
 }
 
