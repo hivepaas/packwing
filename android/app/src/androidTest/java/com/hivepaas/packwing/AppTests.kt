@@ -13,6 +13,7 @@ import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
@@ -336,7 +337,75 @@ class AppTests {
         webdav("DELETE", "$folder/")
     }
 
+    /**
+     * Against the SFTP server of `make sftp-start` (its Docker container, on
+     * port 18322 of this computer, 10.0.2.2 to the emulator): skipped without one.
+     */
+    @Test
+    fun anSftpServerIsAskedAboutOnceTrustedAndBrowsed() {
+        assumeTrue("no SFTP server: make sftp-start", listening(SFTP_PORT))
+        // No server trusted yet, as on a new phone.
+        File(app.filesDir, "ssh/known_hosts").delete()
+        onMain { model.storages.forEach { model.removeStorage(it) } }
+
+        onMain { model.go(Screen.AddStorage) }
+        ui.onNodeWithTag("storage-kind-sftp").performClick()
+        ui.onNodeWithTag("storage-host").performTextInput("tester@$HOST:$SFTP_PORT")
+        ui.onNodeWithTag("storage-password").performTextInput("packwing")
+        ui.onNodeWithTag("storage-add").performClick()
+
+        // A server not known yet: asked about, with its fingerprint, whole.
+        ui.waitForText("Trust this server?", timeout = 30_000)
+        ui.waitForText("$HOST:$SFTP_PORT")
+        ui.waitUntilAtLeastOneExists(hasTestTag("ssh-fingerprint") and hasText("SHA256:", substring = true), TIMEOUT)
+        ui.onNodeWithTag("ssh-yes").performClick()
+
+        // Added, and browsed: the tester's home.
+        ui.waitUntilAtLeastOneExists(hasTestTag("storage-row"), 30_000)
+        assertTrue(File(app.filesDir, "ssh/known_hosts").readText().contains("[$HOST]:$SFTP_PORT"))
+        ui.onNodeWithTag("storage-row").performClick()
+        ui.waitUntilAtLeastOneExists(hasTestTag("stored-logs"), 30_000)
+        onMain { model.storages.forEach { model.removeStorage(it) } }
+    }
+
+    @Test
+    fun aPrivateKeyIsKeptAndOneWithAPassphraseAsksForIt() {
+        onMain { uniffi.packwing_mobile.sshKeys().forEach { uniffi.packwing_mobile.removeSshKey(it.id) } }
+        onMain { model.go(Screen.Settings) }
+        ui.waitUntilAtLeastOneExists(hasTestTag("ssh-key-add"), TIMEOUT)
+
+        ui.onNodeWithTag("ssh-key-add").performClick()
+        ui.onNodeWithTag("private-key-text").performTextInput(TEST_KEY)
+        ui.onNodeWithTag("private-key-name").performTextInput("Plain")
+        ui.onNodeWithTag("private-key-add").performClick()
+        ui.waitForText("ED25519 · $TEST_KEY_FINGERPRINT")
+
+        // One with a passphrase asks for it, and is kept once it is given.
+        ui.onNodeWithTag("ssh-key-add").performClick()
+        ui.onNodeWithTag("private-key-text").performTextInput(TEST_KEY_LOCKED)
+        ui.onNodeWithTag("private-key-name").performTextInput("Locked")
+        ui.onNodeWithTag("private-key-add").performClick()
+        ui.waitUntilAtLeastOneExists(hasTestTag("private-key-passphrase"), TIMEOUT)
+        ui.onNodeWithTag("private-key-passphrase").performScrollTo().performTextInput("sample-password")
+        // Below the field now, with the keyboard up: in sight first, as a thumb would bring it.
+        ui.onNodeWithTag("private-key-add").performScrollTo().performClick()
+        // Listed by its fingerprint: the name alone is in the field typed too.
+        ui.waitForText("ED25519 · $TEST_KEY_LOCKED_FINGERPRINT")
+
+        // Kept in the vault, with no passphrase of its own.
+        var kept = emptyList<String>()
+        onMain { kept = uniffi.packwing_mobile.sshKeys().map { it.name } }
+        assertEquals(setOf("Plain", "Locked"), kept.toSet())
+        onMain { uniffi.packwing_mobile.sshKeys().forEach { uniffi.packwing_mobile.removeSshKey(it.id) } }
+    }
+
     // MARK: Helpers
+
+    /** Whether something on this computer answers on `port`. */
+    private fun listening(port: Int): Boolean = runCatching {
+        java.net.Socket().use { it.connect(java.net.InetSocketAddress(HOST, port), 2_000) }
+        true
+    }.getOrDefault(false)
 
     /**
      * Types `password` in the sheet asking for one, and Unlock once it takes
@@ -419,6 +488,33 @@ class AppTests {
         /** This computer, as the emulator reaches it, and the port of `make webdav-start`. */
         const val HOST = "10.0.2.2"
         const val WEBDAV_PORT = 18335
+        const val SFTP_PORT = 18322
+
+        /**
+         * Two ED25519 keys made for these tests alone, with no server that
+         * takes them: one plain, one sealed with the passphrase `sample-password`.
+         */
+        val TEST_KEY = """
+            -----BEGIN OPENSSH PRIVATE KEY-----
+            b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+            QyNTUxOQAAACD7Ouyap78Jl6K09mfXOAnT/R3eKn2dG0HhLzqSrDQaYgAAAJixnJxMsZyc
+            TAAAAAtzc2gtZWQyNTUxOQAAACD7Ouyap78Jl6K09mfXOAnT/R3eKn2dG0HhLzqSrDQaYg
+            AAAED6C22MQMMjnwPVAiUXZMpXrss20WMYqoOIAOB4e/X1S/s67JqnvwmXorT2Z9c4CdP9
+            Hd4qfZ0bQeEvOpKsNBpiAAAAFXBhY2t3aW5nLWFuZHJvaWQtdGVzdA==
+            -----END OPENSSH PRIVATE KEY-----
+        """.trimIndent() + "\n"
+        const val TEST_KEY_FINGERPRINT = "SHA256:RjrGEhAM//nEvxizpMphtF9tYTkMjHLr39GgCeqkFWQ"
+        const val TEST_KEY_LOCKED_FINGERPRINT = "SHA256:R64XpmaMW/a9nxshuBLEJ2yuN1bmbXMWmuLjjd6CTic"
+        val TEST_KEY_LOCKED = """
+            -----BEGIN OPENSSH PRIVATE KEY-----
+            b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABAqSMScA9
+            HsVpMm8OIdCD1wAAAAGAAAAAEAAAAzAAAAC3NzaC1lZDI1NTE5AAAAIAVOV+Vn3JdHBGVA
+            ZO9AVvimcyfIdNQvQzAKxLOgMTJ+AAAAoCWL/3URMpRr3dZzEr+7RPHzM78ZlCmXCbjoQm
+            PYaC2gXfk0SehaxOyao74kzPlKDad4+ZThP6GyssA4TYh3IZzhpq7/a97YwLLqASG92lQ4
+            cWpUTomyinnPlky8FylH8e5TxaT3TULjTEkMMfp1NqwqSXnKz+rCGABx6FAT2+TJmqjI5F
+            EdVTyoSTPEITBwvH55mU045sYOoi8lOME9E9E=
+            -----END OPENSSH PRIVATE KEY-----
+        """.trimIndent() + "\n"
 
         /** report.zip's own, and its Ghi chú.txt's. */
         const val REPORT_SHA256 = "ff5b00b6e9f828d6a94e05f8f4487dd8aa6c0132a3674008ef14dd50a82b6e5d"

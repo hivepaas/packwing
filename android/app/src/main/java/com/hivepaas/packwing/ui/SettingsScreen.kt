@@ -109,6 +109,9 @@ fun SettingsScreen(model: AppModel) {
             )
         }
 
+        item { Heading(tr("SSH keys")) }
+        item { SshKeys() }
+
         item { Heading(tr("While it works")) }
         item {
             Group {

@@ -81,8 +81,17 @@ for itself (the one there is needs JNI, and the app reaches the core through
 JNA), so the app's vault is keyring-core's default store
 (`crates/mobile/src/vault.rs`).
 
-The storage tests run against the WebDAV server of `make webdav-start`, which
-the emulator reaches at `10.0.2.2`, and are skipped without one.
+SFTP asks as it connects, over whatever shows (`SshAsker.kt`): whether to
+trust a server packwing has not connected to before, with its fingerprint
+whole; a password or a key's passphrase, kept in the vault if the user says
+so; a code. The servers trusted are in packwing's own known_hosts, as a phone
+has no `~/.ssh`. A storage signs in with a key packwing keeps, or any of them;
+Settings › SSH keys keeps them (pasted or from their file, opened with their
+passphrase), copies their public halves and removes them (`SshScreens.kt`).
+
+The storage tests run against the servers of `make webdav-start` and
+`make sftp-start`, which the emulator reaches at `10.0.2.2`, and are skipped
+without them.
 
 ## How Android's storage shapes it
 
@@ -132,10 +141,9 @@ writes what it reads to whatever takes it (`Documents.kt`, `Trees.kt`).
 
 - Pausing a job. The core can stop one, not hold it; the progress screen
   offers Cancel alone. The design's Pause button has nothing behind it.
-- SFTP's questions as it connects and its SSH keys, files written to a
-  storage, signing, `age` files, the desktop's other formats for new
-  archives, and Pro: the iOS app has them (`ios/README.md`), and they come
-  here one by one.
+- Files written to a storage, signing, `age` files, the desktop's other
+  formats for new archives, and Pro: the iOS app has them (`ios/README.md`),
+  and they come here one by one.
 - The comic reader and the audit log, which are the desktop's alone.
 - The system's own wallpaper colours. The app keeps packwing's palette on
   every device; the design names this as an option, and it is not wired up.
