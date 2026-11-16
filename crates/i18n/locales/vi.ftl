@@ -3478,8 +3478,14 @@ t17060a6b = { $name } đã sẵn sàng
 # packwing could not make {name}.
 t25251132 = packwing không tạo được { $name }.
 
+# packwing could not write {name}.
+teb1bce81 = packwing không ghi được { $name }.
+
 # packwing could not read {name}.
 t7c55848c = packwing không đọc được { $name }.
+
+# packwing can no longer reach that folder.
+t899e6af1 = packwing không còn truy cập được thư mục đó.
 
 # Extracting {name}
 t77dce80b = Đang giải nén { $name }
@@ -3508,17 +3514,11 @@ tfdbeaf1a = Khi một tác vụ xong, hoặc không hoàn tất được
 # packwing could not write a file with no name.
 te0bf8e8f = packwing không ghi được một tệp không có tên.
 
-# packwing could not write {name}.
-teb1bce81 = packwing không ghi được { $name }.
-
 # packwing could not write what it extracted.
 ted881a0f = packwing không ghi được những gì đã giải nén.
 
 # packwing could not make the folder {name}.
 t9f263b45 = packwing không tạo được thư mục { $name }.
-
-# packwing can no longer reach that folder.
-t899e6af1 = packwing không còn truy cập được thư mục đó.
 
 # The gallery would not take {name}.
 td2cca604 = Thư viện ảnh không nhận { $name }.

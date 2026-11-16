@@ -33,6 +33,7 @@ import uniffi.packwing_mobile.JobProgress
 import uniffi.packwing_mobile.KeyRead
 import uniffi.packwing_mobile.MobileException
 import uniffi.packwing_mobile.NewArchiveHow
+import uniffi.packwing_mobile.OnExisting
 import uniffi.packwing_mobile.Secrets
 import uniffi.packwing_mobile.createArchive
 import uniffi.packwing_mobile.pictureFits
@@ -40,10 +41,23 @@ import uniffi.packwing_mobile.readKey
 import java.io.Closeable
 import java.io.File
 import java.io.FileNotFoundException
+import java.util.UUID
 
-/** An archive open: the core's, and what keeps its file reachable. */
-class Opened(val uri: Uri, private val held: Documents.Opening, val archive: Archive) : Closeable {
+/**
+ * An archive open: the core's, what keeps its file reachable, the secrets it
+ * was opened with, and whether packwing may write over its file.
+ */
+class Opened(
+    val uri: Uri,
+    private val held: Documents.Opening,
+    val archive: Archive,
+    val secrets: Secrets,
+    private val writable: Boolean,
+) : Closeable {
     val info: ArchiveInfo = archive.info()
+
+    /** A ZIP or 7z of one file, which packwing may write over: files added, deleted, renamed. */
+    val canChange: Boolean = writable && archive.canChange()
 
     override fun close() {
         runCatching { archive.close() }
@@ -301,15 +315,7 @@ class AppModel(private val context: Context) {
         failure = null
         scope.launch {
             val result = withContext(Dispatchers.IO) {
-                runCatching {
-                    val held = Documents.open(context, uri)
-                    try {
-                        Opened(uri, held, read(held, secrets))
-                    } catch (e: Throwable) {
-                        held.close()
-                        throw e
-                    }
-                }
+                runCatching { opening(uri, secrets) }
             }
             opening = null
             result.onSuccess { archive ->
@@ -320,6 +326,17 @@ class AppModel(private val context: Context) {
                 stack.add(Screen.Folder(emptyList(), photos = mostlyPictures(archive)))
                 list(emptyList())
             }.onFailure { e -> failed(uri, picked.name, e) }
+        }
+    }
+
+    /** `uri` opened with `secrets`, for the core to read. Call this off the main thread. */
+    private fun opening(uri: Uri, secrets: Secrets): Opened {
+        val held = Documents.open(context, uri)
+        try {
+            return Opened(uri, held, read(held, secrets), secrets, Documents.writable(context, uri))
+        } catch (e: Throwable) {
+            held.close()
+            throw e
         }
     }
 
@@ -560,6 +577,83 @@ class AppModel(private val context: Context) {
     fun cancel() {
         running?.job?.cancel()
     }
+
+    // MARK: Changing
+
+    /** What the archive is being changed by, as it says it: Adding…, Deleting…. */
+    var changing by mutableStateOf<String?>(null)
+        private set
+    private var changeJob: Job? = null
+
+    /**
+     * Changes the open archive by `work` (given the archive, and the path of
+     * the file to change), saying `title` while it does, and reads it again
+     * once it is changed. Android gives no path to change it at, so a copy of
+     * it is changed, in the app's own folder, and written over it: a change
+     * that fails or is stopped leaves the copy, never the archive, as it was.
+     * `after` is run either way, off the main thread: what was added is let go.
+     */
+    private fun change(title: String, after: () -> Unit = {}, work: (Archive, String, Job) -> Unit) {
+        val now = opened ?: return
+        if (changing != null || !now.canChange) return
+        val job = Job.quiet()
+        changeJob = job
+        changing = title
+        scope.launch {
+            val result = withContext(Dispatchers.IO) {
+                val dir = File(Documents.cache(context, "changing"), UUID.randomUUID().toString()).apply { mkdirs() }
+                runCatching {
+                    val copy = File(dir, now.info.name)
+                    Documents.copyOut(context, now.uri, copy)
+                    work(now.archive, copy.path, job)
+                    Documents.writeOver(context, now.uri, copy)
+                    opening(now.uri, now.secrets)
+                }.also {
+                    dir.deleteRecursively()
+                    after()
+                }
+            }
+            changing = null
+            changeJob = null
+            result.onSuccess { fresh ->
+                if (opened !== now) {
+                    fresh.close()
+                    return@onSuccess
+                }
+                now.close()
+                opened = fresh
+                stopPicking()
+                remember(fresh)
+                (screen as? Screen.Folder)?.let { list(it.path) }
+            }.onFailure { e ->
+                if (e is MobileException.Cancelled) return@onFailure
+                Log.w("packwing", "could not change ${now.info.name}", e)
+                failure = (e as? MobileException)?.said ?: tr("packwing could not write {name}.", "name" to now.info.name)
+            }
+        }
+    }
+
+    /** Stops the change being made: the archive stays as it was. */
+    fun stopChanging() {
+        changeJob?.cancel()
+    }
+
+    /** Deletes `picked` from the archive, each with what is under it. */
+    fun delete(picked: List<List<String>>) =
+        change(tr("Deleting…")) { archive, file, job -> archive.delete(file, picked, job) }
+
+    fun rename(path: List<String>, name: String) =
+        change(tr("Renaming…")) { archive, file, job -> archive.rename(file, path, name, job) }
+
+    /**
+     * Adds `files` (copies in the app's own folder, each with what is under
+     * it) to `folder` of the archive; one whose name is there goes as
+     * `onExisting` says. The copies go once it is done.
+     */
+    fun add(files: List<File>, folder: List<String>, onExisting: OnExisting) =
+        change(tr("Adding…"), after = { files.forEach { it.parentFile?.deleteRecursively() } }) { archive, file, job ->
+            archive.add(file, files.map { it.path }, folder, onExisting, job)
+        }
 
     /** The job is over and its word has been read: the screen can forget it. */
     fun clearJob() {

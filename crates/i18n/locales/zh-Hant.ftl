@@ -3487,8 +3487,14 @@ t17060a6b = { $name } 已就緒
 # packwing could not make {name}.
 t25251132 = packwing 無法建立 { $name }。
 
+# packwing could not write {name}.
+teb1bce81 = packwing 無法寫入 { $name }。
+
 # packwing could not read {name}.
 t7c55848c = packwing 無法讀取 { $name }。
+
+# packwing can no longer reach that folder.
+t899e6af1 = packwing 已無法存取該資料夾。
 
 # Extracting {name}
 t77dce80b = 正在解壓縮 { $name }
@@ -3517,17 +3523,11 @@ tfdbeaf1a = 工作完成或未能完成時
 # packwing could not write a file with no name.
 te0bf8e8f = packwing 無法寫入沒有名稱的檔案。
 
-# packwing could not write {name}.
-teb1bce81 = packwing 無法寫入 { $name }。
-
 # packwing could not write what it extracted.
 ted881a0f = packwing 無法寫入解壓縮出的內容。
 
 # packwing could not make the folder {name}.
 t9f263b45 = packwing 無法建立資料夾 { $name }。
-
-# packwing can no longer reach that folder.
-t899e6af1 = packwing 已無法存取該資料夾。
 
 # The gallery would not take {name}.
 td2cca604 = 圖庫無法接收 { $name }。

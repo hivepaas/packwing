@@ -3478,8 +3478,14 @@ t17060a6b = { $name } 준비 완료
 # packwing could not make {name}.
 t25251132 = packwing이 { $name }을(를) 만들 수 없습니다.
 
+# packwing could not write {name}.
+teb1bce81 = packwing이 { $name }을(를) 쓸 수 없습니다.
+
 # packwing could not read {name}.
 t7c55848c = packwing이 { $name }을(를) 읽을 수 없습니다.
+
+# packwing can no longer reach that folder.
+t899e6af1 = packwing이 더 이상 그 폴더에 접근할 수 없습니다.
 
 # Extracting {name}
 t77dce80b = { $name } 압축 푸는 중
@@ -3508,17 +3514,11 @@ tfdbeaf1a = 작업이 끝났거나 끝내지 못했을 때
 # packwing could not write a file with no name.
 te0bf8e8f = packwing이 이름 없는 파일을 쓸 수 없습니다.
 
-# packwing could not write {name}.
-teb1bce81 = packwing이 { $name }을(를) 쓸 수 없습니다.
-
 # packwing could not write what it extracted.
 ted881a0f = packwing이 압축을 푼 내용을 쓸 수 없습니다.
 
 # packwing could not make the folder {name}.
 t9f263b45 = packwing이 { $name } 폴더를 만들 수 없습니다.
-
-# packwing can no longer reach that folder.
-t899e6af1 = packwing이 더 이상 그 폴더에 접근할 수 없습니다.
 
 # The gallery would not take {name}.
 td2cca604 = 갤러리에 { $name }을(를) 추가할 수 없습니다.

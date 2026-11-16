@@ -7,7 +7,8 @@
 //! always let the app write beside the file it opened (iOS gives an app the
 //! file chosen, not its folder): the app then changes a copy of it, at the
 //! path it gives, and writes that over the file. So every change takes the
-//! path of the file to change, the archive's own or its copy's.
+//! path of the file to change, the archive's own or its copy's. Android's
+//! document has no path at all: it is always changed as a copy.
 
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -42,15 +43,19 @@ impl Archive {
     /// Whether it can be changed: a ZIP or 7z archive, of one file, under no
     /// layers. Another kind would be written whole again, or has no place to
     /// add to.
-    /// One on a storage, or one Android gave, is not changed here.
+    /// One on a storage is not changed here; one Android gave is, as a copy
+    /// the app writes over it, where Android lets it write.
     pub fn can_change(&self) -> bool {
-        matches!(self.source, packwing_core::Source::File(_)) && can_add(&self.listing)
+        (self.document || matches!(self.source, packwing_core::Source::File(_)))
+            && can_add(&self.listing)
     }
 
     /// It read again, with the secrets it was opened with: what it holds, once
     /// it is changed.
     pub fn reopen(&self, job: Arc<Job>) -> Result<Arc<Archive>, MobileError> {
-        Archive::of(self.source.clone(), self.secrets.clone(), job)
+        let mut archive = Archive::read(self.source.clone(), self.secrets.clone(), job)?;
+        archive.document = self.document;
+        Ok(Arc::new(archive))
     }
 
     /// Deletes `picked` (paths in it), each with what is under it, from the

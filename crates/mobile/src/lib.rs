@@ -386,6 +386,9 @@ pub struct Archive {
     pub(crate) source: Source,
     pub(crate) secrets: Secrets,
     pub(crate) listing: Listing,
+    /// Read from a file the system opened for the app (Android's document):
+    /// it is changed as a copy, which the app writes over it.
+    pub(crate) document: bool,
 }
 
 #[uniffi::export]
@@ -515,16 +518,26 @@ impl Archive {
         secrets: Secrets,
         job: Arc<Job>,
     ) -> Result<Arc<Archive>, MobileError> {
+        Archive::read(source, secrets, job).map(Arc::new)
+    }
+
+    /// The archive `source` holds, read with `secrets`.
+    pub(crate) fn read(
+        source: Source,
+        secrets: Secrets,
+        job: Arc<Job>,
+    ) -> Result<Archive, MobileError> {
         let listen = Listen {
             cancel: Some(job.cancel.clone()),
             ..Listen::default()
         };
         let listing = packwing_core::list_as_read(source.clone(), &secrets.keys(), listen)?;
-        Ok(Arc::new(Archive {
+        Ok(Archive {
             source,
             secrets,
             listing,
-        }))
+            document: false,
+        })
     }
 }
 
