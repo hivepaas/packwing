@@ -12,6 +12,9 @@ coroutines = "1.11.0"
 documentfile = "1.1.0"
 # UniFFI's Kotlin calls the Rust library through JNA.
 jna = "5.19.1"
+# The UI tests, run on a device or the emulator (make android-test).
+androidxTestRunner = "1.7.0"
+androidxTestJunit = "1.3.0"
 
 [libraries]
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
@@ -27,6 +30,11 @@ lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", 
 coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 documentfile = { group = "androidx.documentfile", name = "documentfile", version.ref = "documentfile" }
 jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
+compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidxTestRunner" }
+androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "androidxTestRunner" }
+androidx-test-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestJunit" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

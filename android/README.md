@@ -21,7 +21,16 @@ export JAVA_HOME=/path/to/jdk-21        # unless java is already 21
 export ANDROID_HOME=$HOME/Android/Sdk
 make android                            # the library, its Kotlin, and a debug APK
 make android-install                    # onto the device or emulator that is running
+make android-test                       # the UI tests, on the device or emulator that is running
 ```
+
+`make android-test` runs the UI tests (`app/src/androidTest`): the app driven
+as a person would, over the archives the iOS app's tests open
+(`ios/PackwingUITests/Samples`, one set for both phones). An archive is
+opened, looked through, searched and previewed; a locked one asks for its
+password again when it is wrong; one of pictures is a grid, and goes to the
+gallery. A device with the screen on is needed: an emulator started with
+`-no-window` is one, and `adb shell svc power stayon true` keeps it awake.
 
 `make android` runs [`scripts/build_android.sh`](../scripts/build_android.sh),
 which builds `packwing-mobile` as a shared library for `arm64-v8a` and

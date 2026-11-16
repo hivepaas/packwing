@@ -32,7 +32,7 @@ SFTP_UNTRUST := touch $(HOME)/.ssh/known_hosts; \
 	printf '%s\n' "$$lines" >$(HOME)/.ssh/known_hosts
 
 .DEFAULT_GOAL := help
-.PHONY: help debug release build build-debug ios ios-sim ios-test android android-install cli cli-slim test \
+.PHONY: help debug release build build-debug ios ios-sim ios-test android android-install android-test cli cli-slim test \
 	test-window test-ui lint fmt clean s3-start s3-stop webdav-start webdav-stop sftp-start sftp-stop
 
 help: ## List the targets
@@ -71,6 +71,9 @@ android: ## The Android app: its Rust library, its Kotlin and a debug APK
 
 android-install: ## Install the Android app on the device or emulator that is running
 	cd android && ./gradlew installDebug
+
+android-test: ## Run the Android app's UI tests on the device or emulator that is running (after make android)
+	cd android && ./gradlew connectedDebugAndroidTest
 
 cli: ## Build the command line, with no window: target/release/pkw
 	$(CARGO) build --release -p packwing-cli
