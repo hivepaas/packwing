@@ -328,33 +328,6 @@ fun ArchiveScreen(model: AppModel, screen: Screen.Folder) {
             model.add(files, screen.path, onExisting)
         }
     }
-
-    val signed = signedBeside(opened.uri)
-    deleting?.let { picked ->
-        DeleteDialog(picked, signed, close = { deleting = null }) {
-            deleting = null
-            model.delete(picked)
-        }
-    }
-    renaming?.let { path ->
-        RenameDialog(path.last(), signed, close = { renaming = null }) { name ->
-            renaming = null
-            model.rename(path, name)
-        }
-    }
-    clashing?.let { files ->
-        val names = model.rows.map { it.name }.toSet()
-        ClashDialog(
-            files.map { it.name }.filter { it in names },
-            close = {
-                clashing = null
-                work.launch(Dispatchers.IO) { files.forEach { it.parentFile?.deleteRecursively() } }
-            },
-        ) { onExisting ->
-            clashing = null
-            model.add(files, screen.path, onExisting)
-        }
-    }
 }
 
 @Composable
