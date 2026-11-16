@@ -3523,11 +3523,17 @@ t899e6af1 = packwing không còn truy cập được thư mục đó.
 # The gallery would not take {name}.
 td2cca604 = Thư viện ảnh không nhận { $name }.
 
+# Select all
+t6af21072 = Chọn tất cả
+
 # Back
 tc2954bc2 = Quay lại
 
 # Search in this archive
 tfda7010a = Tìm trong tệp nén này
+
+# Selected
+tef233294 = Đã chọn
 
 # AES-256. In 7z the names are hidden too.
 t9c81b89f = AES-256. Với 7z, tên tệp cũng được ẩn.

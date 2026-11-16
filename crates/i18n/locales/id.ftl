@@ -3532,11 +3532,17 @@ t899e6af1 = packwing tidak bisa lagi mengakses folder itu.
 # The gallery would not take {name}.
 td2cca604 = Galeri tidak mau menerima { $name }.
 
+# Select all
+t6af21072 = Pilih semua
+
 # Back
 tc2954bc2 = Kembali
 
 # Search in this archive
 tfda7010a = Cari di arsip ini
+
+# Selected
+tef233294 = Dipilih
 
 # AES-256. In 7z the names are hidden too.
 t9c81b89f = AES-256. Di 7z, nama berkas juga disembunyikan.

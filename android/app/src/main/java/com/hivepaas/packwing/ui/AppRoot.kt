@@ -24,12 +24,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.hivepaas.packwing.AppModel
 import com.hivepaas.packwing.Screen
 import com.hivepaas.packwing.Sheet
 import com.hivepaas.packwing.tr
+import kotlinx.coroutines.flow.filterNotNull
 
 /**
  * Everything on screen: the screen the user is on, the navigation bar on the
@@ -51,21 +53,23 @@ fun AppRoot(model: AppModel) {
         }
     }
 
-    model.failure?.let { said ->
-        LaunchedEffect(said) {
-            snackbar.showSnackbar(said, duration = SnackbarDuration.Long)
+    // Each is said once, and taken as said as it starts: the window may go
+    // before it has been on screen its while, and the next one would say it
+    // again, over what is there by then.
+    LaunchedEffect(Unit) {
+        snapshotFlow { model.failure }.filterNotNull().collect { said ->
             model.failure = null
+            snackbar.showSnackbar(said, duration = SnackbarDuration.Long)
         }
     }
-
-    model.note?.let { said ->
-        LaunchedEffect(said) {
-            snackbar.showSnackbar(said, duration = SnackbarDuration.Short)
+    LaunchedEffect(Unit) {
+        snapshotFlow { model.note }.filterNotNull().collect { said ->
             model.note = null
+            snackbar.showSnackbar(said, duration = SnackbarDuration.Short)
         }
     }
 
-    BackHandler(enabled = model.stack.size > 1 || model.sheet != null) { model.back() }
+    BackHandler(enabled = model.stack.size > 1 || model.sheet != null || model.selecting) { model.back() }
 
     Scaffold(
         containerColor = tonal().page,
@@ -75,6 +79,10 @@ fun AppRoot(model: AppModel) {
                 BottomBar(model, screen)
             }
         },
+        // The Scaffold's, so that what is said in passing goes above it, not over it.
+        floatingActionButton = {
+            if (screen is Screen.Folder && model.opened != null) ExtractButton(model)
+        },
     ) { insets ->
         Box(Modifier.fillMaxSize().padding(bottom = insets.calculateBottomPadding())) {
             when (screen) {
@@ -83,6 +91,7 @@ fun AppRoot(model: AppModel) {
                 is Screen.Folder -> ArchiveScreen(model, screen)
                 is Screen.Create -> CreateScreen(model)
                 is Screen.Running -> RunningScreen(model)
+                is Screen.Checksums -> ChecksumsScreen(model, screen)
             }
         }
     }

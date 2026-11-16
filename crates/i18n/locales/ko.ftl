@@ -3523,11 +3523,17 @@ t899e6af1 = packwing이 더 이상 그 폴더에 접근할 수 없습니다.
 # The gallery would not take {name}.
 td2cca604 = 갤러리에 { $name }을(를) 추가할 수 없습니다.
 
+# Select all
+t6af21072 = 모두 선택
+
 # Back
 tc2954bc2 = 뒤로
 
 # Search in this archive
 tfda7010a = 이 압축 파일에서 검색
+
+# Selected
+tef233294 = 선택됨
 
 # AES-256. In 7z the names are hidden too.
 t9c81b89f = AES-256. 7z에서는 파일 이름도 숨겨집니다.

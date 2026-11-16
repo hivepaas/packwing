@@ -3523,11 +3523,17 @@ t899e6af1 = packwing 已无法访问该文件夹。
 # The gallery would not take {name}.
 td2cca604 = 图库无法接收 { $name }。
 
+# Select all
+t6af21072 = 全选
+
 # Back
 tc2954bc2 = 返回
 
 # Search in this archive
 tfda7010a = 在此压缩包中搜索
+
+# Selected
+tef233294 = 已选择
 
 # AES-256. In 7z the names are hidden too.
 t9c81b89f = AES-256。7z 还会隐藏文件名。
