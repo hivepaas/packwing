@@ -310,7 +310,13 @@ fun ArchiveScreen(model: AppModel, screen: Screen.Folder) {
         }
     }
     renaming?.let { path ->
-        RenameDialog(path.last(), signed, close = { renaming = null }) { name ->
+        NameDialog(
+            tr("Rename {what}", "what" to path.last()),
+            path.last(),
+            tr("Rename"),
+            note = if (signed) UNSIGNED else null,
+            close = { renaming = null },
+        ) { name ->
             renaming = null
             model.rename(path, name)
         }
@@ -677,7 +683,7 @@ fun ExtractButton(model: AppModel) {
 
 /** Files, a folder or photos to add to the archive: Android's own pickers. */
 @Composable
-private fun AddMenu(files: () -> Unit, folder: () -> Unit, photos: () -> Unit) {
+internal fun AddMenu(files: () -> Unit, folder: () -> Unit, photos: () -> Unit) {
     val c = tonal()
     var open by remember { mutableStateOf(false) }
     Box {
@@ -705,7 +711,7 @@ private fun AddMenu(files: () -> Unit, folder: () -> Unit, photos: () -> Unit) {
 
 /** What the archive is being changed by, and Stop. */
 @Composable
-private fun Busy(title: String, name: String, stop: () -> Unit) {
+internal fun Busy(title: String, name: String, stop: () -> Unit) {
     val c = tonal()
     Row(
         Modifier
@@ -749,17 +755,27 @@ private fun DeleteDialog(picked: List<List<String>>, signed: Boolean, close: () 
     )
 }
 
-/** A file's or folder's new name: not the one it has, nor one with a slash. */
+/**
+ * A name to give: a file's or folder's new one (not the one it has), a new
+ * folder's (`current` none); never one with a slash.
+ */
 @Composable
-private fun RenameDialog(current: String, signed: Boolean, close: () -> Unit, rename: (String) -> Unit) {
+internal fun NameDialog(
+    title: String,
+    current: String?,
+    confirm: String,
+    note: String? = null,
+    close: () -> Unit,
+    named: (String) -> Unit,
+) {
     val c = tonal()
-    var name by remember { mutableStateOf(current) }
+    var name by remember { mutableStateOf(current ?: "") }
     val wanted = name.trim()
     val ready = wanted.isNotEmpty() && wanted != current && '/' !in wanted
     AlertDialog(
         onDismissRequest = close,
         containerColor = c.surface,
-        title = { Text(tr("Rename {what}", "what" to current), color = c.text) },
+        title = { Text(title, color = c.text) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedTextField(
@@ -769,12 +785,12 @@ private fun RenameDialog(current: String, signed: Boolean, close: () -> Unit, re
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth().testTag("new-name"),
                 )
-                if (signed) Text(UNSIGNED, fontSize = 13.sp, color = c.muted)
+                note?.let { Text(it, fontSize = 13.sp, color = c.muted) }
             }
         },
         confirmButton = {
-            TextButton(onClick = { rename(wanted) }, enabled = ready, modifier = Modifier.testTag("name-confirm")) {
-                Text(tr("Rename"), color = if (ready) c.accent else c.faint, fontWeight = FontWeight.SemiBold)
+            TextButton(onClick = { named(wanted) }, enabled = ready, modifier = Modifier.testTag("name-confirm")) {
+                Text(confirm, color = if (ready) c.accent else c.faint, fontWeight = FontWeight.SemiBold)
             }
         },
         dismissButton = { TextButton(onClick = close) { Text(tr("Cancel"), color = c.accent) } },

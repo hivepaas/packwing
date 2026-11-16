@@ -46,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hivepaas.packwing.AppModel
 import com.hivepaas.packwing.Documents
+import com.hivepaas.packwing.Screen
 import com.hivepaas.packwing.tr
 import com.hivepaas.packwing.trN
 import kotlinx.coroutines.Dispatchers
@@ -63,9 +65,14 @@ import uniffi.packwing_mobile.CompressionLevel
 import uniffi.packwing_mobile.NewArchiveHow
 import java.io.File
 
-/** A new ZIP or 7z of files the user picked, with AES-256 if they ask. */
+/**
+ * A new ZIP or 7z of files the user picked, with AES-256 if they ask: in a
+ * folder of the phone's, or in a storage's folder (`screen.on`).
+ */
 @Composable
-fun CreateScreen(model: AppModel) {
+fun CreateScreen(model: AppModel, screen: Screen.Create) {
+    val on = screen.on
+    val onEntry = on?.let { spot -> model.storages.firstOrNull { it.id == spot.id } }
     val c = tonal()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -305,7 +312,10 @@ fun CreateScreen(model: AppModel) {
                     Column(Modifier.weight(1f)) {
                         Text(tr("Where it goes"), fontSize = 13.sp, color = c.muted)
                         Text(
-                            folder?.let { Documents.treeName(context, it) } ?: tr("No folder chosen yet"),
+                            when {
+                                on != null && onEntry != null -> model.storage(onEntry).showPath(on.folder)
+                                else -> folder?.let { Documents.treeName(context, it) } ?: tr("No folder chosen yet")
+                            },
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = c.text,
@@ -313,12 +323,15 @@ fun CreateScreen(model: AppModel) {
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
-                    TextButton(onClick = { pickFolder.launch(folder) }) {
-                        Text(
-                            if (folder == null) tr("Choose") else tr("Change"),
-                            color = c.accent,
-                            fontWeight = FontWeight.SemiBold,
-                        )
+                    // A storage's folder is where it was asked for: no other is chosen here.
+                    if (on == null) {
+                        TextButton(onClick = { pickFolder.launch(folder) }) {
+                            Text(
+                                if (folder == null) tr("Choose") else tr("Change"),
+                                color = c.accent,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
                     }
                 }
             }
@@ -327,22 +340,23 @@ fun CreateScreen(model: AppModel) {
         Box(Modifier.padding(16.dp)) {
             Button(
                 onClick = {
-                    model.create(
-                        paths = files,
-                        name = name.ifBlank { "archive" },
-                        how = NewArchiveHow(
-                            format = if (sevenZip) ArchiveFormat.SEVEN_ZIP else ArchiveFormat.ZIP,
-                            compression = levelOf(level),
-                            password = password.takeIf { locked && it.isNotEmpty() },
-                            hideNames = sevenZip && locked,
-                        ),
-                        into = folder ?: return@Button,
+                    val how = NewArchiveHow(
+                        format = if (sevenZip) ArchiveFormat.SEVEN_ZIP else ArchiveFormat.ZIP,
+                        compression = levelOf(level),
+                        password = password.takeIf { locked && it.isNotEmpty() },
+                        hideNames = sevenZip && locked,
                     )
+                    val called = name.ifBlank { "archive" }
+                    if (on != null && onEntry != null) {
+                        model.create(files, called + if (sevenZip) ".7z" else ".zip", how, onEntry, on.folder)
+                    } else {
+                        model.create(paths = files, name = called, how = how, into = folder ?: return@Button)
+                    }
                 },
-                enabled = files.isNotEmpty() && !copying && folder != null && (!locked || password.isNotEmpty()),
+                enabled = files.isNotEmpty() && !copying && (on != null || folder != null) && (!locked || password.isNotEmpty()),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = c.accent, contentColor = c.onAccent),
-                modifier = Modifier.fillMaxWidth().height(56.dp),
+                modifier = Modifier.fillMaxWidth().height(56.dp).testTag("create-make"),
             ) {
                 Text(
                     tr("Make {kind}", "kind" to if (sevenZip) "7z" else "ZIP"),

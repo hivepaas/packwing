@@ -368,6 +368,86 @@ class AppTests {
         onMain { model.storages.forEach { model.removeStorage(it) } }
     }
 
+    /** Against the WebDAV server of `make webdav-start`: skipped without one. */
+    @Test
+    fun aStorageIsWrittenToFromThePhone() {
+        assumeTrue("no WebDAV server: make webdav-start", webdav("PROPFIND", "") in 200..299)
+        val folder = "ui-${java.util.UUID.randomUUID().toString().take(8)}"
+        assertTrue(webdav("MKCOL", folder) in 200..299)
+        val entry = Settings.StorageEntry(
+            java.util.UUID.randomUUID().toString(),
+            "webdav",
+            mapOf("address" to "http://$HOST:$WEBDAV_PORT", "user" to "packwing"),
+        )
+        onMain {
+            model.storages.forEach { model.removeStorage(it) }
+            model.addStorage(entry, mapOf("password" to "packwing"))
+            model.go(Screen.Storage(entry.id, listOf(folder)))
+        }
+        ui.waitForText("This folder is empty.")
+
+        // A folder made.
+        ui.onNodeWithTag("storage-menu").performClick()
+        ui.onNodeWithTag("storage-new-folder").performClick()
+        ui.onNodeWithTag("new-name").performTextInput("Mới")
+        ui.onNodeWithTag("name-confirm").performClick()
+        ui.waitUntilAtLeastOneExists(hasTestTag("stored-Mới"), TIMEOUT)
+
+        // A file sent up, as the picker's copy of it is; then renamed.
+        val note = File(File(app.cacheDir, "making/up").apply { mkdirs() }, "Ghi chú.txt").apply { writeText("lên") }
+        onMain { model.upload(listOf(note), entry, listOf(folder)) }
+        ui.waitUntilAtLeastOneExists(hasTestTag("stored-Ghi chú.txt"), TIMEOUT)
+        until { model.changing == null }
+        ui.onNodeWithTag("stored-menu-Ghi chú.txt").performClick()
+        ui.onNodeWithText("Rename").performClick()
+        ui.onNodeWithTag("new-name").performTextClearance()
+        ui.onNodeWithTag("new-name").performTextInput("Đổi.txt")
+        ui.onNodeWithTag("name-confirm").performClick()
+        ui.waitUntilAtLeastOneExists(hasTestTag("stored-Đổi.txt"), TIMEOUT)
+        until { model.changing == null }
+
+        // Copied into the folder made, through the picker of storages and folders.
+        ui.onNodeWithTag("stored-menu-Đổi.txt").performClick()
+        ui.onNodeWithText("Copy to…").performClick()
+        ui.onNodeWithTag("picker-storage").performClick()
+        ui.waitUntilAtLeastOneExists(hasTestTag("picker-folder-$folder"), TIMEOUT)
+        ui.onNodeWithTag("picker-folder-$folder").performClick()
+        ui.waitUntilAtLeastOneExists(hasTestTag("picker-folder-Mới"), TIMEOUT)
+        ui.onNodeWithTag("picker-folder-Mới").performClick()
+        ui.onNodeWithTag("picker-here").performClick()
+        until { model.changing == null }
+        eventually { webdav("PROPFIND", "$folder/Mới/Đổi.txt") in 200..299 }
+
+        // Deleted, for good: a storage has no Trash.
+        ui.onNodeWithTag("stored-menu-Đổi.txt").performClick()
+        ui.onNodeWithText("Delete…").performClick()
+        ui.onNodeWithTag("delete-confirm").performClick()
+        until { model.changing == null }
+        eventually { webdav("PROPFIND", "$folder/Đổi.txt") == 404 }
+
+        // A new archive made there.
+        val inside = File(File(app.cacheDir, "making/zip").apply { mkdirs() }, "a.txt").apply { writeText("a") }
+        onMain {
+            model.create(
+                listOf(inside),
+                "made.zip",
+                uniffi.packwing_mobile.NewArchiveHow(
+                    uniffi.packwing_mobile.ArchiveFormat.ZIP,
+                    uniffi.packwing_mobile.CompressionLevel.MEDIUM,
+                ),
+                entry,
+                listOf(folder),
+            )
+        }
+        eventually { webdav("PROPFIND", "$folder/made.zip") in 200..299 }
+
+        onMain {
+            model.clearJob()
+            model.removeStorage(entry)
+        }
+        webdav("DELETE", "$folder/")
+    }
+
     @Test
     fun aPrivateKeyIsKeptAndOneWithAPassphraseAsksForIt() {
         onMain { uniffi.packwing_mobile.sshKeys().forEach { uniffi.packwing_mobile.removeSshKey(it.id) } }
@@ -400,6 +480,16 @@ class AppTests {
     }
 
     // MARK: Helpers
+
+    /** Waits for `done`, asked on the test's own thread: one that goes to the network may not be on the main one. */
+    private fun eventually(done: () -> Boolean) {
+        val by = System.currentTimeMillis() + TIMEOUT
+        while (System.currentTimeMillis() < by) {
+            if (done()) return
+            Thread.sleep(200)
+        }
+        throw AssertionError("it did not come to be in ${TIMEOUT / 1000} s")
+    }
 
     /** Whether something on this computer answers on `port`. */
     private fun listening(port: Int): Boolean = runCatching {

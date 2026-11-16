@@ -90,7 +90,7 @@ fun AppRoot(model: AppModel) {
                 is Screen.Home -> HomeScreen(model)
                 is Screen.Settings -> SettingsScreen(model)
                 is Screen.Folder -> ArchiveScreen(model, screen)
-                is Screen.Create -> CreateScreen(model)
+                is Screen.Create -> CreateScreen(model, screen)
                 is Screen.Running -> RunningScreen(model)
                 is Screen.Checksums -> ChecksumsScreen(model, screen)
                 is Screen.Storage -> StorageScreen(model, screen)

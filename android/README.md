@@ -89,6 +89,14 @@ has no `~/.ssh`. A storage signs in with a key packwing keeps, or any of them;
 Settings › SSH keys keeps them (pasted or from their file, opened with their
 passphrase), copies their public halves and removes them (`SshScreens.kt`).
 
+A storage is **written to** from the phone, as the desktop writes to one:
+folders made; files and folders renamed, deleted (for good: a storage across
+the network has no Trash), copied and moved to a folder of any storage added,
+and downloaded to a folder of the phone; files, a folder or photos sent up;
+new archives made there (its ⋮ › New archive). What comes from the phone is
+copied into the app's own folder first, and what goes to it through there,
+as a document tree has no path the core can write to (`AppModel.onStorage`).
+
 The storage tests run against the servers of `make webdav-start` and
 `make sftp-start`, which the emulator reaches at `10.0.2.2`, and are skipped
 without them.
@@ -141,9 +149,8 @@ writes what it reads to whatever takes it (`Documents.kt`, `Trees.kt`).
 
 - Pausing a job. The core can stop one, not hold it; the progress screen
   offers Cancel alone. The design's Pause button has nothing behind it.
-- Files written to a storage, signing, `age` files, the desktop's other
-  formats for new archives, and Pro: the iOS app has them (`ios/README.md`),
-  and they come here one by one.
+- Signing, `age` files, the desktop's other formats for new archives, and
+  Pro: the iOS app has them (`ios/README.md`), and they come here one by one.
 - The comic reader and the audit log, which are the desktop's alone.
 - The system's own wallpaper colours. The app keeps packwing's palette on
   every device; the design names this as an option, and it is not wired up.
