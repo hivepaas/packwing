@@ -3238,9 +3238,6 @@ t87125000 = Đang đổi tên…
 # The pictures and videos go to Photos. The other files stay in the archive.
 tad6172e7 = Ảnh và video sẽ được lưu vào Ảnh. Các tệp khác vẫn ở trong tệp nén.
 
-# In a new folder, {name}
-tf816656c = Trong thư mục mới, { $name }
-
 # Show in Files when done
 t5525892c = Hiện trong Tệp khi xong
 
@@ -3252,6 +3249,12 @@ tab679ca5 = Không có gì được ghi ra ngoài thư mục này hay qua liên 
 
 # Extract now
 t97070e5a = Giải nén ngay
+
+# In a new folder, {name}
+tf816656c = Trong thư mục mới, { $name }
+
+# Straight into this folder
+t988dace3 = Thẳng vào thư mục này
 
 # {files} · {size} once extracted
 t16e47887 = { $files } · { $size } khi giải nén
@@ -3382,11 +3385,23 @@ t6641f326 = Chỉ giữ trong bộ nhớ, không bao giờ lưu lại, và bị 
 # Unlock
 t9c799975 = Mở khoá
 
+# In a new folder
+td07fc099 = Vào thư mục mới
+
+# Straight into the folder
+tea0de58c = Thẳng vào thư mục
+
+# No folder of its own
+t20122851 = Không có thư mục riêng
+
 # As the system
 t29f671f7 = Theo hệ thống
 
 # New archives
 t9341f018 = Tệp nén mới
+
+# Above it, an archive bound for a storage takes no room on this device, but a lost connection means compressing again.
+t63ccb1c2 = Lớn hơn mức này, archive gửi lên nơi lưu trữ không chiếm chỗ trên thiết bị, nhưng nếu mất kết nối thì phải nén lại.
 
 # Choose its signature…
 tf1c29e90 = Chọn chữ ký của nó…

@@ -3238,9 +3238,6 @@ t87125000 = 名前を変更中…
 # The pictures and videos go to Photos. The other files stay in the archive.
 tad6172e7 = 写真とビデオは「写真」に保存されます。ほかのファイルはアーカイブに残ります。
 
-# In a new folder, {name}
-tf816656c = 新しいフォルダ「{ $name }」の中へ
-
 # Show in Files when done
 t5525892c = 完了したら「ファイル」で表示
 
@@ -3252,6 +3249,12 @@ tab679ca5 = このフォルダの外やリンクの先には何も書き込み�
 
 # Extract now
 t97070e5a = 今すぐ展開
+
+# In a new folder, {name}
+tf816656c = 新しいフォルダ「{ $name }」の中へ
+
+# Straight into this folder
+t988dace3 = このフォルダに直接
 
 # {files} · {size} once extracted
 t16e47887 = { $files } · 展開後 { $size }
@@ -3382,11 +3385,23 @@ t6641f326 = メモリ内にだけ保持し、保存はしません。アーカ�
 # Unlock
 t9c799975 = ロック解除
 
+# In a new folder
+td07fc099 = 新しいフォルダに
+
+# Straight into the folder
+tea0de58c = フォルダに直接
+
+# No folder of its own
+t20122851 = 専用のフォルダなし
+
 # As the system
 t29f671f7 = システムに従う
 
 # New archives
 t9341f018 = 新規アーカイブ
+
+# Above it, an archive bound for a storage takes no room on this device, but a lost connection means compressing again.
+t63ccb1c2 = これを超えると、ストレージ宛てのアーカイブはこのデバイスの容量を使いませんが、接続が切れると圧縮し直しになります。
 
 # Choose its signature…
 tf1c29e90 = 署名を選択…

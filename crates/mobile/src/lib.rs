@@ -697,6 +697,16 @@ pub struct NewArchiveHow {
     /// `age_keys`; its names are hidden too. Saved as `name.zip.age`.
     #[uniffi(default = false)]
     pub whole_with_age: bool,
+    /// What goes in as it is, with `store_compressed`: the files whose names
+    /// end in these, whatever their case; none for the desktop's list
+    /// ([`default_stored_extensions`]).
+    #[uniffi(default = None)]
+    pub stored_extensions: Option<Vec<String>>,
+    /// Bound for a storage across the network, it is written straight there
+    /// if its files come to more than this many bytes and the storage takes
+    /// it so; made here first and sent otherwise, and if this is none.
+    #[uniffi(default = None)]
+    pub stream_above: Option<u64>,
 }
 
 impl Default for NewArchiveHow {
@@ -711,6 +721,8 @@ impl Default for NewArchiveHow {
             store_compressed: true,
             skip_mac_files: true,
             whole_with_age: false,
+            stored_extensions: None,
+            stream_above: None,
         }
     }
 }
@@ -755,18 +767,44 @@ impl NewArchiveHow {
                 && matches!(how.format, ArchiveFormat::Zip | ArchiveFormat::SevenZip),
             part_size: how.part_size,
             age_keys: how.age_keys,
-            stored_extensions: if how.store_compressed {
-                COMPRESSED_EXTENSIONS
-                    .iter()
-                    .map(|e| e.to_string())
-                    .collect()
-            } else {
-                Vec::new()
+            stored_extensions: match (how.store_compressed, how.stored_extensions) {
+                (false, _) => Vec::new(),
+                (true, Some(chosen)) => chosen,
+                (true, None) => default_stored_extensions(),
             },
+            stream_above: how.stream_above,
             skip_mac_files: how.skip_mac_files,
             ..NewArchive::default()
         }
     }
+}
+
+/// The extensions of what is compressed already, which goes in as it is: the
+/// desktop's list, as Settings starts with it.
+#[uniffi::export]
+pub fn default_stored_extensions() -> Vec<String> {
+    COMPRESSED_EXTENSIONS
+        .iter()
+        .map(|e| e.to_string())
+        .collect()
+}
+
+/// The extensions in `text`, as typed, as the desktop reads them: apart by
+/// spaces or commas, with or without their dot (or `*.`), each once, in
+/// lower case.
+#[uniffi::export]
+pub fn extensions_in(text: String) -> Vec<String> {
+    let mut found: Vec<String> = Vec::new();
+    for word in text.split(|c: char| c.is_whitespace() || c == ',' || c == ';') {
+        let ext = word
+            .trim_start_matches('*')
+            .trim_start_matches('.')
+            .to_lowercase();
+        if !ext.is_empty() && !found.contains(&ext) {
+            found.push(ext);
+        }
+    }
+    found
 }
 
 /// Whether a picture's `bytes` are of a size that is safe to decode and show:

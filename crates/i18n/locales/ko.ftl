@@ -3238,9 +3238,6 @@ t87125000 = 이름 바꾸는 중…
 # The pictures and videos go to Photos. The other files stay in the archive.
 tad6172e7 = 사진과 동영상은 사진 앱에 저장됩니다. 나머지 파일은 압축 파일에 그대로 남습니다.
 
-# In a new folder, {name}
-tf816656c = 새 폴더 { $name } 안에
-
 # Show in Files when done
 t5525892c = 완료되면 파일 앱에서 보기
 
@@ -3252,6 +3249,12 @@ tab679ca5 = 이 폴더 밖이나 링크를 통해서는 아무것도 쓰지 않�
 
 # Extract now
 t97070e5a = 지금 압축 풀기
+
+# In a new folder, {name}
+tf816656c = 새 폴더 { $name } 안에
+
+# Straight into this folder
+t988dace3 = 이 폴더에 바로
 
 # {files} · {size} once extracted
 t16e47887 = { $files } · 풀면 { $size }
@@ -3382,11 +3385,23 @@ t6641f326 = 메모리에만 보관되고 저장되지 않으며, 압축 파일�
 # Unlock
 t9c799975 = 잠금 해제
 
+# In a new folder
+td07fc099 = 새 폴더에
+
+# Straight into the folder
+tea0de58c = 폴더에 바로
+
+# No folder of its own
+t20122851 = 별도 폴더 없음
+
 # As the system
 t29f671f7 = 시스템 설정 따르기
 
 # New archives
 t9341f018 = 새 압축 파일
+
+# Above it, an archive bound for a storage takes no room on this device, but a lost connection means compressing again.
+t63ccb1c2 = 이보다 크면 스토리지로 보내는 아카이브가 이 기기의 공간을 차지하지 않지만, 연결이 끊기면 다시 압축해야 합니다.
 
 # Choose its signature…
 tf1c29e90 = 서명 선택…

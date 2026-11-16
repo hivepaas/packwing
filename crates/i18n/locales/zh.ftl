@@ -3238,9 +3238,6 @@ t87125000 = 正在重命名…
 # The pictures and videos go to Photos. The other files stay in the archive.
 tad6172e7 = 照片和视频会存入“照片”，其他文件留在压缩包中。
 
-# In a new folder, {name}
-tf816656c = 放在新文件夹“{ $name }”中
-
 # Show in Files when done
 t5525892c = 完成后在“文件”中显示
 
@@ -3252,6 +3249,12 @@ tab679ca5 = 不会写入此文件夹以外的位置，也不会经由链接写�
 
 # Extract now
 t97070e5a = 立即解压
+
+# In a new folder, {name}
+tf816656c = 放在新文件夹“{ $name }”中
+
+# Straight into this folder
+t988dace3 = 直接放入此文件夹
 
 # {files} · {size} once extracted
 t16e47887 = { $files } · 解压后 { $size }
@@ -3382,11 +3385,23 @@ t6641f326 = 仅保存在内存中，从不写入存储，关闭压缩包后即�
 # Unlock
 t9c799975 = 解锁
 
+# In a new folder
+td07fc099 = 放入新文件夹
+
+# Straight into the folder
+tea0de58c = 直接放入文件夹
+
+# No folder of its own
+t20122851 = 没有自己的文件夹
+
 # As the system
 t29f671f7 = 跟随系统
 
 # New archives
 t9341f018 = 新建压缩包
+
+# Above it, an archive bound for a storage takes no room on this device, but a lost connection means compressing again.
+t63ccb1c2 = 超过此大小时，要存到存储的归档不会占用此设备的空间，但连接中断就得重新压缩。
 
 # Choose its signature…
 tf1c29e90 = 选择它的签名…

@@ -49,6 +49,7 @@ struct PackwingApp: App {
 
 struct RootView: View {
     @Environment(AppModel.self) private var model
+    @AppStorage("appearance") private var appearance = Appearance.system.rawValue
     @Environment(\.scenePhase) private var phase
 
     var body: some View {
@@ -65,6 +66,8 @@ struct RootView: View {
                 SearchView()
             }
         }
+        // Light or dark, as Settings says; the system's until it does.
+        .preferredColorScheme(Appearance(rawValue: appearance)?.scheme)
         // A subscription may have ended, or been renewed, while packwing was away.
         .onChange(of: phase) { _, now in
             if now == .active { Task { await model.store.refresh() } }
