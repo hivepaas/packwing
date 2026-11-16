@@ -1,0 +1,19 @@
+/* Shortcuts' words, from crates/i18n/locales/tr.ftl (scripts/i18n.py update writes it: do not edit). */
+"Format" = "Biçim";
+"Compress Files" = "Dosyaları Sıkıştır";
+"Makes an archive of the files given, as Settings › New archives says." = "Verilen dosyalardan, Ayarlar › Yeni arşivler’de belirtildiği gibi bir arşiv oluşturur.";
+"Files" = "Dosyalar";
+"Name" = "Ad";
+"Without its extension. After what it holds if none is given." = "Uzantısı olmadan. Verilmezse içeriğine göre adlandırılır.";
+"Password" = "Parola";
+"Kept in the shortcut as it is typed. Leave it empty for none." = "Kestirmede yazıldığı gibi saklanır. Parola istemiyorsanız boş bırakın.";
+"Compress ${files} as ${format}" = "${files} öğesini ${format} olarak sıkıştır";
+"Extract Archive" = "Arşivi Çıkar";
+"Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens." = "Bir arşivdeki dosya ve klasörleri verir: ZIP, 7z, RAR, tar ve packwing’in açtığı diğerleri.";
+"Archive" = "Arşiv";
+"For an encrypted archive: asked for when it is needed and not given." = "Şifreli bir arşiv için: gerektiğinde ve verilmediğinde sorulur.";
+"Extract ${archive}" = "${archive} arşivini çıkar";
+"Get Archive Contents" = "Arşiv İçeriğini Al";
+"Lists the paths of the files an archive holds, without extracting them." = "Bir arşivdeki dosyaların yollarını çıkarmadan listeler.";
+"Get the contents of ${archive}" = "${archive} içeriğini al";
+"This archive is encrypted. What is its password?" = "Bu arşiv şifreli. Parolası nedir?";

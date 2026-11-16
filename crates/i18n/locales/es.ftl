@@ -3712,3 +3712,54 @@ tea731324 = No se escribe nada fuera de esa carpeta ni a través de enlaces, y u
 
 # Extract the pictures
 t5dc33540 = Extraer las imágenes
+
+# Compress Files
+tcfc05ece = Comprimir archivos
+
+# Makes an archive of the files given, as Settings › New archives says.
+tf7e6e15f = Crea un archivo comprimido con los archivos dados, según Ajustes › Archivos comprimidos nuevos.
+
+# Without its extension. After what it holds if none is given.
+t7ad1db5f = Sin su extensión. Si no se indica, según lo que contiene.
+
+# Kept in the shortcut as it is typed. Leave it empty for none.
+ta369a2e2 = Se guarda en el atajo tal como se escribe. Déjalo vacío para no usar ninguna.
+
+# Compress {files} as {format}
+t70ecbc1f = Comprimir { $files } como { $format }
+
+# Extract Archive
+te0339060 = Extraer archivo comprimido
+
+# Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens.
+t5aea21bf = Da los archivos y carpetas que contiene un archivo comprimido: ZIP, 7z, RAR, tar y el resto que abre packwing.
+
+# For an encrypted archive: asked for when it is needed and not given.
+tb5ee37c7 = Para un archivo comprimido cifrado: se pide cuando hace falta y no se ha dado.
+
+# Extract {archive}
+t2a41b282 = Extraer { $archive }
+
+# Get Archive Contents
+t4a868d51 = Obtener contenido del archivo comprimido
+
+# Lists the paths of the files an archive holds, without extracting them.
+t8b374ed6 = Enumera las rutas de los archivos que contiene un archivo comprimido, sin extraerlos.
+
+# Get the contents of {archive}
+tf3d4453b = Obtener el contenido de { $archive }
+
+# Compress files with {applicationName}
+tcfd8e587 = Comprimir archivos con { $applicationName }
+
+# Make an archive with {applicationName}
+t27402325 = Crear un archivo comprimido con { $applicationName }
+
+# Extract an archive with {applicationName}
+t90fbe320 = Extraer un archivo comprimido con { $applicationName }
+
+# Show what is in an archive with {applicationName}
+t2e34c233 = Mostrar qué hay en un archivo comprimido con { $applicationName }
+
+# This archive is encrypted. What is its password?
+t0787d3d3 = Este archivo comprimido está cifrado. ¿Cuál es su contraseña?

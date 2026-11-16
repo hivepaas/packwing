@@ -1,0 +1,19 @@
+/* Shortcuts' words, from crates/i18n/locales/de.ftl (scripts/i18n.py update writes it: do not edit). */
+"Format" = "Format";
+"Compress Files" = "Dateien komprimieren";
+"Makes an archive of the files given, as Settings › New archives says." = "Erstellt ein Archiv aus den übergebenen Dateien, wie unter Einstellungen › Neue Archive festgelegt.";
+"Files" = "Dateien";
+"Name" = "Name";
+"Without its extension. After what it holds if none is given." = "Ohne Dateiendung. Ohne Angabe nach dem Inhalt benannt.";
+"Password" = "Passwort";
+"Kept in the shortcut as it is typed. Leave it empty for none." = "Wird so, wie es eingegeben wird, im Kurzbefehl gespeichert. Leer lassen für keines.";
+"Compress ${files} as ${format}" = "${files} als ${format} komprimieren";
+"Extract Archive" = "Archiv entpacken";
+"Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens." = "Liefert die Dateien und Ordner eines Archivs: ZIP, 7z, RAR, tar und alles andere, was packwing öffnet.";
+"Archive" = "Archiv";
+"For an encrypted archive: asked for when it is needed and not given." = "Für ein verschlüsseltes Archiv: wird abgefragt, wenn es nötig ist und fehlt.";
+"Extract ${archive}" = "${archive} entpacken";
+"Get Archive Contents" = "Archivinhalt abrufen";
+"Lists the paths of the files an archive holds, without extracting them." = "Listet die Pfade der Dateien eines Archivs auf, ohne sie zu entpacken.";
+"Get the contents of ${archive}" = "Inhalt von ${archive} abrufen";
+"This archive is encrypted. What is its password?" = "Dieses Archiv ist verschlüsselt. Wie lautet sein Passwort?";

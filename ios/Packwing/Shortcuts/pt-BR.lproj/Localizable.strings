@@ -1,0 +1,19 @@
+/* Shortcuts' words, from crates/i18n/locales/pt.ftl (scripts/i18n.py update writes it: do not edit). */
+"Format" = "Formato";
+"Compress Files" = "Comprimir arquivos";
+"Makes an archive of the files given, as Settings › New archives says." = "Cria um arquivo compactado com os arquivos dados, conforme Ajustes › Novos arquivos compactados.";
+"Files" = "Arquivos";
+"Name" = "Nome";
+"Without its extension. After what it holds if none is given." = "Sem a extensão. Se não for dado, conforme o conteúdo.";
+"Password" = "Senha";
+"Kept in the shortcut as it is typed. Leave it empty for none." = "Guardada no atalho como foi digitada. Deixe vazia para nenhuma.";
+"Compress ${files} as ${format}" = "Comprimir ${files} como ${format}";
+"Extract Archive" = "Extrair arquivo compactado";
+"Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens." = "Dá os arquivos e pastas de um arquivo compactado: ZIP, 7z, RAR, tar e os demais que o packwing abre.";
+"Archive" = "Arquivo";
+"For an encrypted archive: asked for when it is needed and not given." = "Para um arquivo compactado criptografado: pedida quando necessária e não informada.";
+"Extract ${archive}" = "Extrair ${archive}";
+"Get Archive Contents" = "Obter conteúdo do arquivo compactado";
+"Lists the paths of the files an archive holds, without extracting them." = "Lista os caminhos dos arquivos de um arquivo compactado, sem extraí-los.";
+"Get the contents of ${archive}" = "Obter o conteúdo de ${archive}";
+"This archive is encrypted. What is its password?" = "Este arquivo compactado está criptografado. Qual é a senha?";

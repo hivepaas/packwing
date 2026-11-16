@@ -3712,3 +3712,54 @@ tea731324 = Nulla viene scritto fuori da quella cartella o attraverso i collegam
 
 # Extract the pictures
 t5dc33540 = Estrai le immagini
+
+# Compress Files
+tcfc05ece = Comprimi file
+
+# Makes an archive of the files given, as Settings › New archives says.
+tf7e6e15f = Crea un archivio dei file dati, come indicato in Impostazioni › Nuovi archivi.
+
+# Without its extension. After what it holds if none is given.
+t7ad1db5f = Senza estensione. Se non indicato, in base al contenuto.
+
+# Kept in the shortcut as it is typed. Leave it empty for none.
+ta369a2e2 = Salvata nel comando rapido così come è scritta. Lascia vuoto per nessuna.
+
+# Compress {files} as {format}
+t70ecbc1f = Comprimi { $files } come { $format }
+
+# Extract Archive
+te0339060 = Estrai archivio
+
+# Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens.
+t5aea21bf = Restituisce i file e le cartelle di un archivio: ZIP, 7z, RAR, tar e gli altri che packwing apre.
+
+# For an encrypted archive: asked for when it is needed and not given.
+tb5ee37c7 = Per un archivio cifrato: richiesta quando serve e non è stata data.
+
+# Extract {archive}
+t2a41b282 = Estrai { $archive }
+
+# Get Archive Contents
+t4a868d51 = Ottieni contenuto archivio
+
+# Lists the paths of the files an archive holds, without extracting them.
+t8b374ed6 = Elenca i percorsi dei file di un archivio, senza estrarli.
+
+# Get the contents of {archive}
+tf3d4453b = Ottieni il contenuto di { $archive }
+
+# Compress files with {applicationName}
+tcfd8e587 = Comprimi file con { $applicationName }
+
+# Make an archive with {applicationName}
+t27402325 = Crea un archivio con { $applicationName }
+
+# Extract an archive with {applicationName}
+t90fbe320 = Estrai un archivio con { $applicationName }
+
+# Show what is in an archive with {applicationName}
+t2e34c233 = Mostra cosa c’è in un archivio con { $applicationName }
+
+# This archive is encrypted. What is its password?
+t0787d3d3 = Questo archivio è cifrato. Qual è la password?

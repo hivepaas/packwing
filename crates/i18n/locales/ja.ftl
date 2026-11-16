@@ -3654,3 +3654,54 @@ tea731324 = そのフォルダの外やリンクの先には何も書き込み�
 
 # Extract the pictures
 t5dc33540 = 写真と動画を展開
+
+# Compress Files
+tcfc05ece = ファイルを圧縮
+
+# Makes an archive of the files given, as Settings › New archives says.
+tf7e6e15f = 渡されたファイルからアーカイブを作成します（設定 › 新規アーカイブに従います）。
+
+# Without its extension. After what it holds if none is given.
+t7ad1db5f = 拡張子なし。指定がなければ中身に合わせて名付けます。
+
+# Kept in the shortcut as it is typed. Leave it empty for none.
+ta369a2e2 = 入力したままショートカットに保存されます。不要なら空欄に。
+
+# Compress {files} as {format}
+t70ecbc1f = { $files } を { $format } に圧縮
+
+# Extract Archive
+te0339060 = アーカイブを展開
+
+# Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens.
+t5aea21bf = アーカイブ内のファイルとフォルダを返します：ZIP、7z、RAR、tar など packwing が開ける形式。
+
+# For an encrypted archive: asked for when it is needed and not given.
+tb5ee37c7 = 暗号化されたアーカイブ用：必要なのに指定がないときに尋ねます。
+
+# Extract {archive}
+t2a41b282 = { $archive } を展開
+
+# Get Archive Contents
+t4a868d51 = アーカイブの内容を取得
+
+# Lists the paths of the files an archive holds, without extracting them.
+t8b374ed6 = アーカイブ内のファイルのパスを、展開せずに一覧にします。
+
+# Get the contents of {archive}
+tf3d4453b = { $archive } の内容を取得
+
+# Compress files with {applicationName}
+tcfd8e587 = { $applicationName } でファイルを圧縮
+
+# Make an archive with {applicationName}
+t27402325 = { $applicationName } でアーカイブを作成
+
+# Extract an archive with {applicationName}
+t90fbe320 = { $applicationName } でアーカイブを展開
+
+# Show what is in an archive with {applicationName}
+t2e34c233 = { $applicationName } でアーカイブの中身を表示
+
+# This archive is encrypted. What is its password?
+t0787d3d3 = このアーカイブは暗号化されています。パスワードは？

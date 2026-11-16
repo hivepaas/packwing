@@ -3712,3 +3712,54 @@ tea731324 = Nichts wird außerhalb des Ordners oder über Verknüpfungen geschri
 
 # Extract the pictures
 t5dc33540 = Bilder entpacken
+
+# Compress Files
+tcfc05ece = Dateien komprimieren
+
+# Makes an archive of the files given, as Settings › New archives says.
+tf7e6e15f = Erstellt ein Archiv aus den übergebenen Dateien, wie unter Einstellungen › Neue Archive festgelegt.
+
+# Without its extension. After what it holds if none is given.
+t7ad1db5f = Ohne Dateiendung. Ohne Angabe nach dem Inhalt benannt.
+
+# Kept in the shortcut as it is typed. Leave it empty for none.
+ta369a2e2 = Wird so, wie es eingegeben wird, im Kurzbefehl gespeichert. Leer lassen für keines.
+
+# Compress {files} as {format}
+t70ecbc1f = { $files } als { $format } komprimieren
+
+# Extract Archive
+te0339060 = Archiv entpacken
+
+# Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens.
+t5aea21bf = Liefert die Dateien und Ordner eines Archivs: ZIP, 7z, RAR, tar und alles andere, was packwing öffnet.
+
+# For an encrypted archive: asked for when it is needed and not given.
+tb5ee37c7 = Für ein verschlüsseltes Archiv: wird abgefragt, wenn es nötig ist und fehlt.
+
+# Extract {archive}
+t2a41b282 = { $archive } entpacken
+
+# Get Archive Contents
+t4a868d51 = Archivinhalt abrufen
+
+# Lists the paths of the files an archive holds, without extracting them.
+t8b374ed6 = Listet die Pfade der Dateien eines Archivs auf, ohne sie zu entpacken.
+
+# Get the contents of {archive}
+tf3d4453b = Inhalt von { $archive } abrufen
+
+# Compress files with {applicationName}
+tcfd8e587 = Dateien mit { $applicationName } komprimieren
+
+# Make an archive with {applicationName}
+t27402325 = Archiv mit { $applicationName } erstellen
+
+# Extract an archive with {applicationName}
+t90fbe320 = Archiv mit { $applicationName } entpacken
+
+# Show what is in an archive with {applicationName}
+t2e34c233 = Mit { $applicationName } zeigen, was in einem Archiv ist
+
+# This archive is encrypted. What is its password?
+t0787d3d3 = Dieses Archiv ist verschlüsselt. Wie lautet sein Passwort?

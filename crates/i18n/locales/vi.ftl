@@ -3654,3 +3654,54 @@ tea731324 = Không có gì được ghi ra ngoài thư mục đó hay qua liên 
 
 # Extract the pictures
 t5dc33540 = Giải nén ảnh
+
+# Compress Files
+tcfc05ece = Nén tệp
+
+# Makes an archive of the files given, as Settings › New archives says.
+tf7e6e15f = Tạo tệp nén từ các tệp được đưa vào, theo Cài đặt › Tệp nén mới.
+
+# Without its extension. After what it holds if none is given.
+t7ad1db5f = Không kèm phần mở rộng. Nếu để trống, đặt theo nội dung bên trong.
+
+# Kept in the shortcut as it is typed. Leave it empty for none.
+ta369a2e2 = Được lưu nguyên văn trong phím tắt. Để trống nếu không cần mật khẩu.
+
+# Compress {files} as {format}
+t70ecbc1f = Nén { $files } thành { $format }
+
+# Extract Archive
+te0339060 = Giải nén tệp nén
+
+# Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens.
+t5aea21bf = Trả về các tệp và thư mục trong một tệp nén: ZIP, 7z, RAR, tar và các định dạng khác packwing mở được.
+
+# For an encrypted archive: asked for when it is needed and not given.
+tb5ee37c7 = Với tệp nén có mã hoá: sẽ được hỏi khi cần mà chưa có.
+
+# Extract {archive}
+t2a41b282 = Giải nén { $archive }
+
+# Get Archive Contents
+t4a868d51 = Xem nội dung tệp nén
+
+# Lists the paths of the files an archive holds, without extracting them.
+t8b374ed6 = Liệt kê đường dẫn các tệp trong một tệp nén mà không giải nén.
+
+# Get the contents of {archive}
+tf3d4453b = Xem nội dung của { $archive }
+
+# Compress files with {applicationName}
+tcfd8e587 = Nén tệp bằng { $applicationName }
+
+# Make an archive with {applicationName}
+t27402325 = Tạo tệp nén bằng { $applicationName }
+
+# Extract an archive with {applicationName}
+t90fbe320 = Giải nén bằng { $applicationName }
+
+# Show what is in an archive with {applicationName}
+t2e34c233 = Xem trong tệp nén có gì bằng { $applicationName }
+
+# This archive is encrypted. What is its password?
+t0787d3d3 = Tệp nén này được mã hoá. Mật khẩu của nó là gì?

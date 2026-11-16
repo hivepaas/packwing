@@ -3712,3 +3712,54 @@ tea731324 = Rien n'est écrit hors de ce dossier ni à travers des liens, et une
 
 # Extract the pictures
 t5dc33540 = Extraire les images
+
+# Compress Files
+tcfc05ece = Compresser des fichiers
+
+# Makes an archive of the files given, as Settings › New archives says.
+tf7e6e15f = Crée une archive des fichiers donnés, comme l’indique Réglages › Nouvelles archives.
+
+# Without its extension. After what it holds if none is given.
+t7ad1db5f = Sans son extension. D’après son contenu si aucun n’est donné.
+
+# Kept in the shortcut as it is typed. Leave it empty for none.
+ta369a2e2 = Gardé dans le raccourci tel qu’il est saisi. Laissez vide pour aucun.
+
+# Compress {files} as {format}
+t70ecbc1f = Compresser { $files } en { $format }
+
+# Extract Archive
+te0339060 = Extraire une archive
+
+# Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens.
+t5aea21bf = Donne les fichiers et dossiers d’une archive : ZIP, 7z, RAR, tar et tout ce que packwing ouvre.
+
+# For an encrypted archive: asked for when it is needed and not given.
+tb5ee37c7 = Pour une archive chiffrée : demandé quand il le faut et qu’il manque.
+
+# Extract {archive}
+t2a41b282 = Extraire { $archive }
+
+# Get Archive Contents
+t4a868d51 = Obtenir le contenu d’une archive
+
+# Lists the paths of the files an archive holds, without extracting them.
+t8b374ed6 = Liste les chemins des fichiers d’une archive, sans les extraire.
+
+# Get the contents of {archive}
+tf3d4453b = Obtenir le contenu de { $archive }
+
+# Compress files with {applicationName}
+tcfd8e587 = Compresser des fichiers avec { $applicationName }
+
+# Make an archive with {applicationName}
+t27402325 = Créer une archive avec { $applicationName }
+
+# Extract an archive with {applicationName}
+t90fbe320 = Extraire une archive avec { $applicationName }
+
+# Show what is in an archive with {applicationName}
+t2e34c233 = Montrer le contenu d’une archive avec { $applicationName }
+
+# This archive is encrypted. What is its password?
+t0787d3d3 = Cette archive est chiffrée. Quel est son mot de passe ?

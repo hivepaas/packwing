@@ -3663,3 +3663,54 @@ tea731324 = Tidak ada yang ditulis di luar folder itu atau melalui tautan, dan b
 
 # Extract the pictures
 t5dc33540 = Ekstrak gambar
+
+# Compress Files
+tcfc05ece = Kompres File
+
+# Makes an archive of the files given, as Settings › New archives says.
+tf7e6e15f = Membuat arsip dari file yang diberikan, sesuai Pengaturan › Arsip baru.
+
+# Without its extension. After what it holds if none is given.
+t7ad1db5f = Tanpa ekstensinya. Dinamai menurut isinya jika tidak diisi.
+
+# Kept in the shortcut as it is typed. Leave it empty for none.
+ta369a2e2 = Disimpan di pintasan apa adanya. Kosongkan jika tanpa kata sandi.
+
+# Compress {files} as {format}
+t70ecbc1f = Kompres { $files } sebagai { $format }
+
+# Extract Archive
+te0339060 = Ekstrak Arsip
+
+# Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens.
+t5aea21bf = Memberikan file dan folder dalam arsip: ZIP, 7z, RAR, tar, dan lainnya yang bisa dibuka packwing.
+
+# For an encrypted archive: asked for when it is needed and not given.
+tb5ee37c7 = Untuk arsip terenkripsi: ditanyakan saat diperlukan dan belum diberikan.
+
+# Extract {archive}
+t2a41b282 = Ekstrak { $archive }
+
+# Get Archive Contents
+t4a868d51 = Ambil Isi Arsip
+
+# Lists the paths of the files an archive holds, without extracting them.
+t8b374ed6 = Mendaftar jalur file dalam arsip tanpa mengekstraknya.
+
+# Get the contents of {archive}
+tf3d4453b = Ambil isi { $archive }
+
+# Compress files with {applicationName}
+tcfd8e587 = Kompres file dengan { $applicationName }
+
+# Make an archive with {applicationName}
+t27402325 = Buat arsip dengan { $applicationName }
+
+# Extract an archive with {applicationName}
+t90fbe320 = Ekstrak arsip dengan { $applicationName }
+
+# Show what is in an archive with {applicationName}
+t2e34c233 = Tampilkan isi arsip dengan { $applicationName }
+
+# This archive is encrypted. What is its password?
+t0787d3d3 = Arsip ini terenkripsi. Apa kata sandinya?

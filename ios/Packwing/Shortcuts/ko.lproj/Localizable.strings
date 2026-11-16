@@ -1,0 +1,19 @@
+/* Shortcuts' words, from crates/i18n/locales/ko.ftl (scripts/i18n.py update writes it: do not edit). */
+"Format" = "형식";
+"Compress Files" = "파일 압축";
+"Makes an archive of the files given, as Settings › New archives says." = "주어진 파일로 아카이브를 만듭니다. 설정 › 새 아카이브를 따릅니다.";
+"Files" = "파일";
+"Name" = "이름";
+"Without its extension. After what it holds if none is given." = "확장자 없이. 비워 두면 내용에 따라 이름을 정합니다.";
+"Password" = "비밀번호";
+"Kept in the shortcut as it is typed. Leave it empty for none." = "입력한 그대로 단축어에 저장됩니다. 없으면 비워 두세요.";
+"Compress ${files} as ${format}" = "${files}을(를) ${format}(으)로 압축";
+"Extract Archive" = "아카이브 풀기";
+"Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens." = "아카이브에 든 파일과 폴더를 돌려줍니다: ZIP, 7z, RAR, tar 등 packwing이 여는 형식.";
+"Archive" = "압축 파일";
+"For an encrypted archive: asked for when it is needed and not given." = "암호화된 아카이브용: 필요한데 없으면 물어봅니다.";
+"Extract ${archive}" = "${archive} 풀기";
+"Get Archive Contents" = "아카이브 내용 가져오기";
+"Lists the paths of the files an archive holds, without extracting them." = "아카이브에 든 파일의 경로를 풀지 않고 나열합니다.";
+"Get the contents of ${archive}" = "${archive}의 내용 가져오기";
+"This archive is encrypted. What is its password?" = "이 아카이브는 암호화되어 있습니다. 암호가 무엇인가요?";

@@ -1,0 +1,19 @@
+/* Shortcuts' words, from crates/i18n/locales/ja.ftl (scripts/i18n.py update writes it: do not edit). */
+"Format" = "形式";
+"Compress Files" = "ファイルを圧縮";
+"Makes an archive of the files given, as Settings › New archives says." = "渡されたファイルからアーカイブを作成します（設定 › 新規アーカイブに従います）。";
+"Files" = "ファイル";
+"Name" = "名前";
+"Without its extension. After what it holds if none is given." = "拡張子なし。指定がなければ中身に合わせて名付けます。";
+"Password" = "パスワード";
+"Kept in the shortcut as it is typed. Leave it empty for none." = "入力したままショートカットに保存されます。不要なら空欄に。";
+"Compress ${files} as ${format}" = "${files} を ${format} に圧縮";
+"Extract Archive" = "アーカイブを展開";
+"Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens." = "アーカイブ内のファイルとフォルダを返します：ZIP、7z、RAR、tar など packwing が開ける形式。";
+"Archive" = "アーカイブ";
+"For an encrypted archive: asked for when it is needed and not given." = "暗号化されたアーカイブ用：必要なのに指定がないときに尋ねます。";
+"Extract ${archive}" = "${archive} を展開";
+"Get Archive Contents" = "アーカイブの内容を取得";
+"Lists the paths of the files an archive holds, without extracting them." = "アーカイブ内のファイルのパスを、展開せずに一覧にします。";
+"Get the contents of ${archive}" = "${archive} の内容を取得";
+"This archive is encrypted. What is its password?" = "このアーカイブは暗号化されています。パスワードは？";

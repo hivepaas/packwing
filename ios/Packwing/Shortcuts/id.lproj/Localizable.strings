@@ -1,0 +1,19 @@
+/* Shortcuts' words, from crates/i18n/locales/id.ftl (scripts/i18n.py update writes it: do not edit). */
+"Format" = "Format";
+"Compress Files" = "Kompres File";
+"Makes an archive of the files given, as Settings › New archives says." = "Membuat arsip dari file yang diberikan, sesuai Pengaturan › Arsip baru.";
+"Files" = "File";
+"Name" = "Nama";
+"Without its extension. After what it holds if none is given." = "Tanpa ekstensinya. Dinamai menurut isinya jika tidak diisi.";
+"Password" = "Kata sandi";
+"Kept in the shortcut as it is typed. Leave it empty for none." = "Disimpan di pintasan apa adanya. Kosongkan jika tanpa kata sandi.";
+"Compress ${files} as ${format}" = "Kompres ${files} sebagai ${format}";
+"Extract Archive" = "Ekstrak Arsip";
+"Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens." = "Memberikan file dan folder dalam arsip: ZIP, 7z, RAR, tar, dan lainnya yang bisa dibuka packwing.";
+"Archive" = "Arsip";
+"For an encrypted archive: asked for when it is needed and not given." = "Untuk arsip terenkripsi: ditanyakan saat diperlukan dan belum diberikan.";
+"Extract ${archive}" = "Ekstrak ${archive}";
+"Get Archive Contents" = "Ambil Isi Arsip";
+"Lists the paths of the files an archive holds, without extracting them." = "Mendaftar jalur file dalam arsip tanpa mengekstraknya.";
+"Get the contents of ${archive}" = "Ambil isi ${archive}";
+"This archive is encrypted. What is its password?" = "Arsip ini terenkripsi. Apa kata sandinya?";

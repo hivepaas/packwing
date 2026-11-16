@@ -1,0 +1,19 @@
+/* Shortcuts' words, from crates/i18n/locales/uk.ftl (scripts/i18n.py update writes it: do not edit). */
+"Format" = "Формат";
+"Compress Files" = "Стиснути файли";
+"Makes an archive of the files given, as Settings › New archives says." = "Створює архів із переданих файлів, як указано в Налаштування › Нові архіви.";
+"Files" = "Файли";
+"Name" = "Назва";
+"Without its extension. After what it holds if none is given." = "Без розширення. Якщо не задано — за вмістом.";
+"Password" = "Пароль";
+"Kept in the shortcut as it is typed. Leave it empty for none." = "Зберігається в швидкій команді так, як введено. Залиште порожнім, якщо пароль не потрібен.";
+"Compress ${files} as ${format}" = "Стиснути ${files} у ${format}";
+"Extract Archive" = "Розпакувати архів";
+"Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens." = "Повертає файли й теки архіву: ZIP, 7z, RAR, tar та все інше, що відкриває packwing.";
+"Archive" = "Архів";
+"For an encrypted archive: asked for when it is needed and not given." = "Для зашифрованого архіву: буде запитано, якщо потрібен, але не заданий.";
+"Extract ${archive}" = "Розпакувати ${archive}";
+"Get Archive Contents" = "Отримати вміст архіву";
+"Lists the paths of the files an archive holds, without extracting them." = "Перелічує шляхи файлів в архіві, не розпаковуючи їх.";
+"Get the contents of ${archive}" = "Отримати вміст ${archive}";
+"This archive is encrypted. What is its password?" = "Цей архів зашифровано. Який у нього пароль?";

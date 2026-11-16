@@ -3712,3 +3712,54 @@ tea731324 = Nada é gravado fora dessa pasta ou por meio de links, e uma bomba d
 
 # Extract the pictures
 t5dc33540 = Extrair as imagens
+
+# Compress Files
+tcfc05ece = Comprimir arquivos
+
+# Makes an archive of the files given, as Settings › New archives says.
+tf7e6e15f = Cria um arquivo compactado com os arquivos dados, conforme Ajustes › Novos arquivos compactados.
+
+# Without its extension. After what it holds if none is given.
+t7ad1db5f = Sem a extensão. Se não for dado, conforme o conteúdo.
+
+# Kept in the shortcut as it is typed. Leave it empty for none.
+ta369a2e2 = Guardada no atalho como foi digitada. Deixe vazia para nenhuma.
+
+# Compress {files} as {format}
+t70ecbc1f = Comprimir { $files } como { $format }
+
+# Extract Archive
+te0339060 = Extrair arquivo compactado
+
+# Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens.
+t5aea21bf = Dá os arquivos e pastas de um arquivo compactado: ZIP, 7z, RAR, tar e os demais que o packwing abre.
+
+# For an encrypted archive: asked for when it is needed and not given.
+tb5ee37c7 = Para um arquivo compactado criptografado: pedida quando necessária e não informada.
+
+# Extract {archive}
+t2a41b282 = Extrair { $archive }
+
+# Get Archive Contents
+t4a868d51 = Obter conteúdo do arquivo compactado
+
+# Lists the paths of the files an archive holds, without extracting them.
+t8b374ed6 = Lista os caminhos dos arquivos de um arquivo compactado, sem extraí-los.
+
+# Get the contents of {archive}
+tf3d4453b = Obter o conteúdo de { $archive }
+
+# Compress files with {applicationName}
+tcfd8e587 = Comprimir arquivos com { $applicationName }
+
+# Make an archive with {applicationName}
+t27402325 = Criar um arquivo compactado com { $applicationName }
+
+# Extract an archive with {applicationName}
+t90fbe320 = Extrair um arquivo compactado com { $applicationName }
+
+# Show what is in an archive with {applicationName}
+t2e34c233 = Mostrar o que há num arquivo compactado com { $applicationName }
+
+# This archive is encrypted. What is its password?
+t0787d3d3 = Este arquivo compactado está criptografado. Qual é a senha?

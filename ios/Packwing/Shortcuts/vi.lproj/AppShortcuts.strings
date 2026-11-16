@@ -1,0 +1,5 @@
+/* Shortcuts' words, from crates/i18n/locales/vi.ftl (scripts/i18n.py update writes it: do not edit). */
+"Compress files with ${applicationName}" = "Nén tệp bằng ${applicationName}";
+"Make an archive with ${applicationName}" = "Tạo tệp nén bằng ${applicationName}";
+"Extract an archive with ${applicationName}" = "Giải nén bằng ${applicationName}";
+"Show what is in an archive with ${applicationName}" = "Xem trong tệp nén có gì bằng ${applicationName}";

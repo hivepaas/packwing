@@ -1,0 +1,5 @@
+/* Shortcuts' words, from crates/i18n/locales/ja.ftl (scripts/i18n.py update writes it: do not edit). */
+"Compress files with ${applicationName}" = "${applicationName} でファイルを圧縮";
+"Make an archive with ${applicationName}" = "${applicationName} でアーカイブを作成";
+"Extract an archive with ${applicationName}" = "${applicationName} でアーカイブを展開";
+"Show what is in an archive with ${applicationName}" = "${applicationName} でアーカイブの中身を表示";

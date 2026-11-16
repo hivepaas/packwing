@@ -3712,3 +3712,54 @@ tea731324 = O klasörün dışına ya da bağlantılar üzerinden hiçbir şey y
 
 # Extract the pictures
 t5dc33540 = Resimleri çıkar
+
+# Compress Files
+tcfc05ece = Dosyaları Sıkıştır
+
+# Makes an archive of the files given, as Settings › New archives says.
+tf7e6e15f = Verilen dosyalardan, Ayarlar › Yeni arşivler’de belirtildiği gibi bir arşiv oluşturur.
+
+# Without its extension. After what it holds if none is given.
+t7ad1db5f = Uzantısı olmadan. Verilmezse içeriğine göre adlandırılır.
+
+# Kept in the shortcut as it is typed. Leave it empty for none.
+ta369a2e2 = Kestirmede yazıldığı gibi saklanır. Parola istemiyorsanız boş bırakın.
+
+# Compress {files} as {format}
+t70ecbc1f = { $files } öğesini { $format } olarak sıkıştır
+
+# Extract Archive
+te0339060 = Arşivi Çıkar
+
+# Gives the files and folders an archive holds: ZIP, 7z, RAR, tar and the rest packwing opens.
+t5aea21bf = Bir arşivdeki dosya ve klasörleri verir: ZIP, 7z, RAR, tar ve packwing’in açtığı diğerleri.
+
+# For an encrypted archive: asked for when it is needed and not given.
+tb5ee37c7 = Şifreli bir arşiv için: gerektiğinde ve verilmediğinde sorulur.
+
+# Extract {archive}
+t2a41b282 = { $archive } arşivini çıkar
+
+# Get Archive Contents
+t4a868d51 = Arşiv İçeriğini Al
+
+# Lists the paths of the files an archive holds, without extracting them.
+t8b374ed6 = Bir arşivdeki dosyaların yollarını çıkarmadan listeler.
+
+# Get the contents of {archive}
+tf3d4453b = { $archive } içeriğini al
+
+# Compress files with {applicationName}
+tcfd8e587 = { $applicationName } ile dosyaları sıkıştır
+
+# Make an archive with {applicationName}
+t27402325 = { $applicationName } ile arşiv oluştur
+
+# Extract an archive with {applicationName}
+t90fbe320 = { $applicationName } ile arşivi çıkar
+
+# Show what is in an archive with {applicationName}
+t2e34c233 = { $applicationName } ile arşivde ne olduğunu göster
+
+# This archive is encrypted. What is its password?
+t0787d3d3 = Bu arşiv şifreli. Parolası nedir?
