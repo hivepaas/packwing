@@ -294,6 +294,15 @@ class AppModel(private val context: Context) {
 
     // MARK: Storages
 
+    /** SFTP's questions waiting for the user, the first one shown (SshAsker). */
+    val questions = mutableStateListOf<Asked>()
+
+    /** Answers `asked`, and shows the next one. */
+    fun answer(asked: Asked, said: SshAnswer) {
+        questions.remove(asked)
+        asked.answer(said)
+    }
+
     /** The storages added: their kinds and settings. */
     var storages by mutableStateOf(settings.storages)
         private set

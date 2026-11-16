@@ -532,7 +532,7 @@ private fun copyIn(context: Context, uri: Uri): Pair<String, File> {
 }
 
 /** At most `most` bytes of what is left: `readNBytes` is Android 13's. */
-private fun java.io.InputStream.upTo(most: Int): ByteArray {
+internal fun java.io.InputStream.upTo(most: Int): ByteArray {
     val read = java.io.ByteArrayOutputStream()
     val buffer = ByteArray(8192)
     while (read.size() < most) {

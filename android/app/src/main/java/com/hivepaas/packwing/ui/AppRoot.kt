@@ -106,6 +106,9 @@ fun AppRoot(model: AppModel) {
         Sheet.AddKey -> AddKeySheet(model)
         null -> Unit
     }
+
+    // Over all of it, sheets too: SFTP asks as it connects, from anywhere.
+    SshQuestionDialog(model)
 }
 
 @Composable

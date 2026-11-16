@@ -501,6 +501,9 @@ fun AddStorageScreen(model: AppModel) {
                     modifier = Modifier.fillMaxWidth().testTag("storage-${field.key}"),
                 )
             }
+            kind.keyValue?.let { setting ->
+                SshKeyPicker(values[setting] ?: "") { values[setting] = it }
+            }
             if (kind.fields.any { it.secret }) {
                 Text(
                     tr("Secrets go in the system’s keychain, not with the settings."),

@@ -3,6 +3,7 @@ package com.hivepaas.packwing
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import uniffi.packwing_mobile.askSshWith
 import uniffi.packwing_mobile.keepSecretsIn
 import uniffi.packwing_mobile.start
 
@@ -24,6 +25,8 @@ class PackwingApp : Application() {
         // A storage's secrets and the keys kept, before anything asks for one.
         keepSecretsIn(KeystoreVault(this))
         model = AppModel(this)
+        // SFTP's questions, asked over whatever shows.
+        askSshWith(SshAsker(model))
         notifications()
     }
 
