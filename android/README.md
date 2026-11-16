@@ -48,6 +48,13 @@ tapping one in a chat or an email. Look inside, folder by folder, search it
 extract it to a folder you point at or to the gallery, and make a ZIP or a 7z
 with AES-256. The work is all `packwing-core`'s, as on the desktop.
 
+A long press picks a file or folder, and a tap then picks more: what is
+picked is extracted alone. Its ⋮ menu, and the archive's, read **Checksums**,
+as the desktop's Checksums… does: of what is picked, of all of its files (in
+one read of it, listed as `sha256sum` writes them, to copy or save in a
+folder), or of the archive's own file; and checksums given with the files,
+pasted, are compared with them, a list or one alone (`ChecksumsScreen.kt`).
+
 ## How Android's storage shapes it
 
 Android hands out `content://` URIs, and nothing in its storage has a path
@@ -94,13 +101,11 @@ writes what it reads to whatever takes it (`Documents.kt`, `Trees.kt`).
 
 ## What is not here yet
 
-- Picking only some files to extract. The core takes a list of paths
-  (`Archive.extractInto`'s `picked`), and the screen has no way to choose
-  them yet.
 - Pausing a job. The core can stop one, not hold it; the progress screen
   offers Cancel alone. The design's Pause button has nothing behind it.
-- The comic reader, storages (S3, WebDAV, SFTP), signatures, checksums,
-  editing an archive, `age` files and the audit log: all of these are the
-  desktop's for now, as on iOS.
+- Storages (S3, WebDAV, SFTP), signatures and signing, editing an archive,
+  `age` files, the desktop's other formats for new archives, and Pro: the
+  iOS app has them (`ios/README.md`), and they come here one by one.
+- The comic reader and the audit log, which are the desktop's alone.
 - The system's own wallpaper colours. The app keeps packwing's palette on
   every device; the design names this as an option, and it is not wired up.

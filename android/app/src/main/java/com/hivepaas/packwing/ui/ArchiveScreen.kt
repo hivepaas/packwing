@@ -3,7 +3,8 @@ package com.hivepaas.packwing.ui
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,12 +31,20 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.GridView
-import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.SelectAll
+import androidx.compose.material.icons.outlined.Tag
+import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.automirrored.outlined.ViewList
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -54,6 +63,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -61,6 +71,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hivepaas.packwing.AppModel
+import com.hivepaas.packwing.Picked
 import com.hivepaas.packwing.Screen
 import com.hivepaas.packwing.Sheet
 import com.hivepaas.packwing.tr
@@ -76,6 +87,24 @@ fun ArchiveScreen(model: AppModel, screen: Screen.Folder) {
     var preview by remember { mutableStateOf<List<String>?>(null) }
     var grid by remember(screen.path) { mutableStateOf(screen.photos) }
 
+    val rows = if (model.query.isBlank()) model.rows else model.found.map { it.entry }
+    val paths: (EntryRow) -> List<String> = { row ->
+        if (model.query.isBlank()) {
+            screen.path + row.name
+        } else {
+            model.found.first { it.entry.name == row.name }.path + row.name
+        }
+    }
+    val shown = rows.map { paths(it) to it }
+    // A tap picks while picking; otherwise it opens a folder, or previews a file.
+    val tap: (EntryRow, Boolean) -> Unit = { row, photos ->
+        when {
+            model.selecting -> model.pick(paths(row), row)
+            row.folder -> model.go(Screen.Folder(screen.path + row.name, photos = photos))
+            !row.link -> preview = paths(row)
+        }
+    }
+
     Box(Modifier.fillMaxSize()) {
         Column(
             Modifier
@@ -86,6 +115,23 @@ fun ArchiveScreen(model: AppModel, screen: Screen.Folder) {
                 modifier = Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                if (model.selecting) {
+                    IconButton(onClick = { model.stopPicking() }, Modifier.testTag("picking-done")) {
+                        Icon(Icons.Outlined.Close, tr("Done"), tint = c.text)
+                    }
+                    Text(
+                        tr("{picked} selected", "picked" to model.picked.size.toString()),
+                        modifier = Modifier.weight(1f),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = c.text,
+                    )
+                    IconButton(onClick = { model.pickAll(shown) }, Modifier.testTag("pick-all")) {
+                        Icon(Icons.Outlined.SelectAll, tr("Select all"), tint = c.text)
+                    }
+                    ArchiveMenu(model)
+                    return@Row
+                }
                 IconButton(onClick = { model.back() }) {
                     Icon(Icons.AutoMirrored.Outlined.ArrowBack, tr("Back"), tint = c.text)
                 }
@@ -119,6 +165,7 @@ fun ArchiveScreen(model: AppModel, screen: Screen.Folder) {
                         tint = c.text,
                     )
                 }
+                ArchiveMenu(model)
             }
 
             SearchField(model.query, c) { model.search(it) }
@@ -134,15 +181,6 @@ fun ArchiveScreen(model: AppModel, screen: Screen.Folder) {
                 )
             }
 
-            val rows = if (model.query.isBlank()) model.rows else model.found.map { it.entry }
-            val paths: (EntryRow) -> List<String> = { row ->
-                if (model.query.isBlank()) {
-                    screen.path + row.name
-                } else {
-                    model.found.first { it.entry.name == row.name }.path + row.name
-                }
-            }
-
             if (grid) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
@@ -152,10 +190,14 @@ fun ArchiveScreen(model: AppModel, screen: Screen.Folder) {
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     items(rows, key = { it.name }) { row ->
-                        Tile(model, paths(row), row) {
-                            if (row.folder) model.go(Screen.Folder(screen.path + row.name, photos = true))
-                            else preview = paths(row)
-                        }
+                        Tile(
+                            model,
+                            paths(row),
+                            row,
+                            picked = paths(row) in model.picked,
+                            open = { tap(row, true) },
+                            pick = { model.pick(paths(row), row) },
+                        )
                     }
                 }
             } else {
@@ -167,15 +209,15 @@ fun ArchiveScreen(model: AppModel, screen: Screen.Folder) {
                         Box(Modifier.height(8.dp))
                     }
                     items(rows, key = { it.name }) { row ->
-                        Column(
-                            Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(0.dp))
-                                .background(c.surface),
-                        ) {
-                            EntryLine(row) {
-                                if (row.folder) model.go(Screen.Folder(screen.path + row.name))
-                                else preview = paths(row)
+                        Column(Modifier.fillMaxWidth()) {
+                            EntryLine(
+                                row,
+                                picking = model.selecting,
+                                picked = paths(row) in model.picked,
+                                open = { tap(row, false) },
+                                pick = { model.pick(paths(row), row) },
+                            ) {
+                                EntryMenu(model, paths(row), row) { preview = paths(row) }
                             }
                             HorizontalDivider(color = c.field, thickness = 1.dp)
                         }
@@ -183,16 +225,6 @@ fun ArchiveScreen(model: AppModel, screen: Screen.Folder) {
                 }
             }
         }
-
-        ExtendedFloatingActionButton(
-            onClick = { model.sheet = Sheet.Extract() },
-            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
-            containerColor = c.accent,
-            contentColor = c.onAccent,
-            shape = RoundedCornerShape(20.dp),
-            icon = { Icon(Icons.Outlined.Image, null) },
-            text = { Text(tr("Extract all"), fontWeight = FontWeight.SemiBold) },
-        )
     }
 
     preview?.let { path ->
@@ -230,19 +262,38 @@ private fun SearchField(query: String, c: Tonal, onChange: (String) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun EntryLine(row: EntryRow, open: () -> Unit) {
+private fun EntryLine(
+    row: EntryRow,
+    picking: Boolean,
+    picked: Boolean,
+    open: () -> Unit,
+    pick: () -> Unit,
+    menu: @Composable () -> Unit,
+) {
     val c = tonal()
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 64.dp)
-            .clickable(onClick = open)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .background(if (picked) c.tonal else c.surface)
+            .combinedClickable(onClick = open, onLongClick = pick)
+            .padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp)
+            .testTag("entry-${row.name}"),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        KindTile(row.name, FileKind.of(row.name, row.folder, row.link), size = 40.dp)
+        if (picked) {
+            Box(
+                Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(c.accent),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Outlined.Check, tr("Selected"), tint = c.onAccent)
+            }
+        } else {
+            KindTile(row.name, FileKind.of(row.name, row.folder, row.link), size = 40.dp)
+        }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
             Text(
                 row.name,
@@ -262,14 +313,86 @@ private fun EntryLine(row: EntryRow, open: () -> Unit) {
                 color = c.muted,
             )
         }
+        if (!picking) menu() else Box(Modifier.size(12.dp))
+    }
+}
+
+/** What the archive's ⋮ offers: its checksums, of what is picked or asked about. */
+@Composable
+private fun ArchiveMenu(model: AppModel) {
+    val c = tonal()
+    var open by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { open = true }, Modifier.testTag("archive-menu")) {
+            Icon(Icons.Outlined.MoreVert, tr("More"), tint = c.text)
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }, containerColor = c.surface) {
+            DropdownMenuItem(
+                text = { Text(tr("Checksums"), color = c.text) },
+                leadingIcon = { Icon(Icons.Outlined.Tag, null, tint = c.muted) },
+                onClick = {
+                    open = false
+                    model.go(Screen.Checksums(if (model.selecting) model.pickedNow() else Picked()))
+                },
+            )
+        }
+    }
+}
+
+/** What a file or folder's ⋮ offers: to look at it, extract it, or read its checksums. */
+@Composable
+private fun EntryMenu(model: AppModel, path: List<String>, row: EntryRow, preview: () -> Unit) {
+    val c = tonal()
+    var open by remember { mutableStateOf(false) }
+    val alone = { mapOf(path to row).let { with(AppModel) { it.toPicked() } } }
+    Box {
+        IconButton(onClick = { open = true }, Modifier.testTag("menu-${row.name}")) {
+            Icon(Icons.Outlined.MoreVert, tr("More"), tint = c.muted)
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }, containerColor = c.surface) {
+            if (!row.folder && !row.link) {
+                DropdownMenuItem(
+                    text = { Text(tr("Preview"), color = c.text) },
+                    leadingIcon = { Icon(Icons.Outlined.Visibility, null, tint = c.muted) },
+                    onClick = {
+                        open = false
+                        preview()
+                    },
+                )
+            }
+            DropdownMenuItem(
+                text = { Text(tr("Extract"), color = c.text) },
+                leadingIcon = { Icon(Icons.Outlined.Download, null, tint = c.muted) },
+                onClick = {
+                    open = false
+                    model.sheet = Sheet.Extract(alone())
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(tr("Checksums"), color = c.text) },
+                leadingIcon = { Icon(Icons.Outlined.Tag, null, tint = c.muted) },
+                onClick = {
+                    open = false
+                    model.go(Screen.Checksums(alone(), atOnce = true))
+                },
+            )
+        }
     }
 }
 
 /** How many pixels across a picture in the grid is, at the least. */
 private const val TILE_PIXELS = 320
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun Tile(model: AppModel, path: List<String>, row: EntryRow, open: () -> Unit) {
+private fun Tile(
+    model: AppModel,
+    path: List<String>,
+    row: EntryRow,
+    picked: Boolean,
+    open: () -> Unit,
+    pick: () -> Unit,
+) {
     val c = tonal()
     val kind = FileKind.of(row.name, row.folder, row.link)
     // The archive holds no thumbnail, so a picture is read whole to show a
@@ -287,7 +410,8 @@ private fun Tile(model: AppModel, path: List<String>, row: EntryRow, open: () ->
             .aspectRatio(1f)
             .clip(RoundedCornerShape(12.dp))
             .background(kind.tint(isDark()).ground)
-            .clickable(onClick = open),
+            .combinedClickable(onClick = open, onLongClick = pick)
+            .testTag("entry-${row.name}"),
         contentAlignment = Alignment.Center,
     ) {
         val made = small
@@ -317,6 +441,19 @@ private fun Tile(model: AppModel, path: List<String>, row: EntryRow, open: () ->
                 fontWeight = FontWeight.Bold,
                 color = kind.tint(isDark()).ink,
             )
+        }
+        if (picked) {
+            Box(
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(6.dp)
+                    .size(26.dp)
+                    .clip(RoundedCornerShape(13.dp))
+                    .background(c.accent),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Outlined.Check, tr("Selected"), tint = c.onAccent, modifier = Modifier.size(18.dp))
+            }
         }
     }
 }
@@ -380,4 +517,29 @@ private fun PreviewDialog(model: AppModel, path: List<String>, close: () -> Unit
             }
         }
     }
+}
+
+/** Extract all of the archive, or what is picked; nothing while nothing is. */
+@Composable
+fun ExtractButton(model: AppModel) {
+    val c = tonal()
+    if (model.selecting && model.picked.isEmpty()) return
+    ExtendedFloatingActionButton(
+        onClick = { model.sheet = Sheet.Extract(if (model.selecting) model.pickedNow() else Picked()) },
+        modifier = Modifier.testTag("extract"),
+        containerColor = c.accent,
+        contentColor = c.onAccent,
+        shape = RoundedCornerShape(20.dp),
+        icon = { Icon(Icons.Outlined.Download, null) },
+        text = {
+            Text(
+                if (model.selecting) {
+                    trN(model.picked.size, "Extract {n}", "Extract {n}", "n" to model.picked.size.toString())
+                } else {
+                    tr("Extract all")
+                },
+                fontWeight = FontWeight.SemiBold,
+            )
+        },
+    )
 }

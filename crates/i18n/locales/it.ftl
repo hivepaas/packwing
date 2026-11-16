@@ -3579,11 +3579,17 @@ t899e6af1 = packwing non riesce più a raggiungere quella cartella.
 # The gallery would not take {name}.
 td2cca604 = La galleria non ha accettato { $name }.
 
+# Select all
+t6af21072 = Seleziona tutto
+
 # Back
 tc2954bc2 = Indietro
 
 # Search in this archive
 tfda7010a = Cerca in questo archivio
+
+# Selected
+tef233294 = Selezionato
 
 # AES-256. In 7z the names are hidden too.
 t9c81b89f = AES-256. In 7z anche i nomi sono nascosti.

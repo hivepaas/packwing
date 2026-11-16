@@ -72,7 +72,21 @@ sealed interface Screen {
 
     /** A folder of the open archive; `photos` shows its pictures as a grid. */
     data class Folder(val path: List<String>, val photos: Boolean = false) : Screen
+
+    /**
+     * Checksums of the open archive: of `picked` (paths in it), of all of its
+     * files, or of its own file, as asked first; `atOnce` reads those picked
+     * without asking, for one file asked for alone.
+     */
+    data class Checksums(val picked: Picked = Picked(), val atOnce: Boolean = false) : Screen
 }
+
+/** Paths in the open archive, picked, and what they hold: files, and their bytes. */
+data class Picked(
+    val paths: List<List<String>> = emptyList(),
+    val files: ULong = 0UL,
+    val bytes: ULong = 0UL,
+)
 
 /** What is asked over the screen. */
 sealed interface Sheet {
@@ -85,7 +99,7 @@ sealed interface Sheet {
     ) : Sheet
 
     /** Extracting: all of it, or the paths picked. */
-    data class Extract(val picked: List<List<String>> = emptyList()) : Sheet
+    data class Extract(val picked: Picked = Picked()) : Sheet
 }
 
 /** Where what is extracted ends up. */
@@ -147,6 +161,21 @@ class AppModel(private val context: Context) {
     var recent by mutableStateOf(settings.recent)
         private set
 
+    /** Picking files and folders in the archive, and those picked, by their paths. */
+    var selecting by mutableStateOf(false)
+        private set
+    var picked by mutableStateOf<Map<List<String>, EntryRow>>(emptyMap())
+        private set
+
+    /** The checksums shown, by their keys (`sha256 sha1`): Checksums' menu sets them. */
+    var checksumKeys by mutableStateOf(settings.checksums)
+        private set
+
+    fun showChecksums(keys: String) {
+        checksumKeys = keys
+        settings.checksums = keys
+    }
+
     /** What the open folder holds, and what a search found. */
     var rows by mutableStateOf<List<EntryRow>>(emptyList())
         private set
@@ -159,7 +188,10 @@ class AppModel(private val context: Context) {
 
     fun go(where: Screen) {
         stack.add(where)
-        if (where is Screen.Folder) list(where.path)
+        if (where is Screen.Folder) {
+            stopPicking()
+            list(where.path)
+        }
     }
 
     /** Back a screen; false when there is nowhere to go, so the system takes it. */
@@ -169,8 +201,17 @@ class AppModel(private val context: Context) {
             return true
         }
         if (stack.size <= 1) return false
-        stack.removeAt(stack.size - 1)
-        (screen as? Screen.Folder)?.let { list(it.path) }
+        if (selecting && screen is Screen.Folder) {
+            stopPicking()
+            return true
+        }
+        val left = stack.removeAt(stack.size - 1)
+        // Back from a folder to the one above; not from Checksums, whose
+        // folder is as it was, with what was picked in it.
+        if (left is Screen.Folder) {
+            stopPicking()
+            (screen as? Screen.Folder)?.let { list(it.path) }
+        }
         if (stack.none { it is Screen.Folder }) letGo()
         return true
     }
@@ -187,7 +228,31 @@ class AppModel(private val context: Context) {
         rows = emptyList()
         found = emptyList()
         query = ""
+        stopPicking()
     }
+
+    // MARK: Picking
+
+    /** Picks `row`, at `path`, or lets it go; the first one picked starts picking. */
+    fun pick(path: List<String>, row: EntryRow) {
+        selecting = true
+        // A path is a list, so `-` would take its parts for keys.
+        picked = if (path in picked) picked.filterKeys { it != path } else picked + (path to row)
+    }
+
+    /** Picks every row shown, or lets them all go when they all are. */
+    fun pickAll(shown: List<Pair<List<String>, EntryRow>>) {
+        selecting = true
+        picked = if (shown.all { it.first in picked }) emptyMap() else picked + shown
+    }
+
+    fun stopPicking() {
+        selecting = false
+        picked = emptyMap()
+    }
+
+    /** Those picked, with what they hold. */
+    fun pickedNow(): Picked = picked.toPicked()
 
     // MARK: Opening
 
@@ -365,6 +430,7 @@ class AppModel(private val context: Context) {
      * asked for it there and then, so nothing is written twice.
      */
     fun extract(picked: List<List<String>>, destination: Destination) {
+        stopPicking()
         val archive = opened ?: return
         if (running != null) return
         val name = archive.info.name.substringBeforeLast('.')
@@ -469,6 +535,13 @@ class AppModel(private val context: Context) {
     }
 
     companion object {
+        /** `rows`, by path, as picked: a folder's files and bytes are what is under it. */
+        fun Map<List<String>, EntryRow>.toPicked(): Picked = Picked(
+            paths = keys.toList(),
+            files = values.sumOf { if (it.folder) it.files else 1UL },
+            bytes = values.sumOf { it.size },
+        )
+
         /** The most of an entry read to make a picture of it: 64 MiB. */
         val MOST_PICTURE: ULong = 64UL * 1024UL * 1024UL
 

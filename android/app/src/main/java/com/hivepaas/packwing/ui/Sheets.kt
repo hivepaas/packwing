@@ -169,6 +169,10 @@ fun ExtractSheet(model: AppModel, ask: Sheet.Extract) {
     val c = tonal()
     val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val opened = model.opened ?: return
+    // All of it, or what was picked: what is said of it, and what goes.
+    val all = ask.picked.paths.isEmpty()
+    val files = if (all) opened.info.files else ask.picked.files
+    val bytes = if (all) opened.info.unpacked else ask.picked.bytes
     var toGallery by remember { mutableStateOf(false) }
     var folder by remember { mutableStateOf(model.settings.destination) }
     var overwrite by remember { mutableStateOf(model.settings.overwrite) }
@@ -214,7 +218,11 @@ fun ExtractSheet(model: AppModel, ask: Sheet.Extract) {
                 KindTile(opened.info.name, FileKind.of(opened.info.name))
                 Column {
                     Text(
-                        opened.info.name,
+                        if (all || ask.picked.paths.size > 1) {
+                            opened.info.name
+                        } else {
+                            ask.picked.paths.first().last()
+                        },
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = c.onTonal,
@@ -224,13 +232,8 @@ fun ExtractSheet(model: AppModel, ask: Sheet.Extract) {
                     Text(
                         tr(
                             "{files} · {size} once extracted",
-                            "files" to trN(
-                                opened.info.files,
-                                "{n} file",
-                                "{n} files",
-                                "n" to opened.info.files.toString(),
-                            ),
-                            "size" to sizeText(opened.info.unpacked),
+                            "files" to trN(files, "{n} file", "{n} files", "n" to files.toString()),
+                            "size" to sizeText(bytes),
                         ),
                         fontSize = 13.sp,
                         color = c.onTonal,
@@ -358,7 +361,7 @@ fun ExtractSheet(model: AppModel, ask: Sheet.Extract) {
             Button(
                 onClick = {
                     val where = if (toGallery) Destination.Gallery else Destination.Folder(folder ?: return@Button)
-                    model.extract(ask.picked, where)
+                    model.extract(ask.picked.paths, where)
                 },
                 enabled = toGallery || folder != null,
                 shape = RoundedCornerShape(28.dp),
@@ -371,12 +374,7 @@ fun ExtractSheet(model: AppModel, ask: Sheet.Extract) {
                     if (toGallery) {
                         tr("Extract the pictures")
                     } else {
-                        trN(
-                            opened.info.files,
-                            "Extract {n} file",
-                            "Extract {n} files",
-                            "n" to opened.info.files.toString(),
-                        )
+                        trN(files, "Extract {n} file", "Extract {n} files", "n" to files.toString())
                     },
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,

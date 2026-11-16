@@ -34,6 +34,11 @@ class Settings(context: Context) {
         get() = prefs.getBoolean(OVERWRITE, false)
         set(value) = prefs.edit().putBoolean(OVERWRITE, value).apply()
 
+    /** The checksums shown, by their keys, apart by spaces: the desktop's first two. */
+    var checksums: String
+        get() = prefs.getString(CHECKSUMS, null) ?: "sha256 sha1"
+        set(value) = prefs.edit().putString(CHECKSUMS, value).apply()
+
     var tellWhenDone: Boolean
         get() = prefs.getBoolean(TELL_WHEN_DONE, true)
         set(value) = prefs.edit().putBoolean(TELL_WHEN_DONE, value).apply()
@@ -95,6 +100,7 @@ class Settings(context: Context) {
         const val KEEP_FOLDERS = "keepFolders"
         const val OVERWRITE = "overwrite"
         const val TELL_WHEN_DONE = "tellWhenDone"
+        const val CHECKSUMS = "checksums"
         const val RECENT = "recent"
         const val MOST_RECENT = 40
     }

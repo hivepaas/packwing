@@ -3579,11 +3579,17 @@ t899e6af1 = packwing artık o klasöre erişemiyor.
 # The gallery would not take {name}.
 td2cca604 = Galeri { $name } dosyasını kabul etmedi.
 
+# Select all
+t6af21072 = Tümünü seç
+
 # Back
 tc2954bc2 = Geri
 
 # Search in this archive
 tfda7010a = Bu arşivde ara
+
+# Selected
+tef233294 = Seçili
 
 # AES-256. In 7z the names are hidden too.
 t9c81b89f = AES-256. 7z'de adlar da gizlenir.

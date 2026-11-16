@@ -3532,11 +3532,17 @@ t899e6af1 = packwing 已無法存取該資料夾。
 # The gallery would not take {name}.
 td2cca604 = 圖庫無法接收 { $name }。
 
+# Select all
+t6af21072 = 全選
+
 # Back
 tc2954bc2 = 返回
 
 # Search in this archive
 tfda7010a = 在此封存檔中搜尋
+
+# Selected
+tef233294 = 已選取
 
 # AES-256. In 7z the names are hidden too.
 t9c81b89f = AES-256。7z 還會隱藏檔名。

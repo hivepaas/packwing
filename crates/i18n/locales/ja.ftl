@@ -3523,11 +3523,17 @@ t899e6af1 = packwing からそのフォルダにアクセスできなくなり�
 # The gallery would not take {name}.
 td2cca604 = { $name } をギャラリーに追加できませんでした。
 
+# Select all
+t6af21072 = すべて選択
+
 # Back
 tc2954bc2 = 戻る
 
 # Search in this archive
 tfda7010a = このアーカイブ内を検索
+
+# Selected
+tef233294 = 選択済み
 
 # AES-256. In 7z the names are hidden too.
 t9c81b89f = AES-256。7z ではファイル名も隠れます。
