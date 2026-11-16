@@ -3540,8 +3540,14 @@ t17060a6b = { $name } hazır
 # packwing could not make {name}.
 t25251132 = packwing { $name } dosyasını oluşturamadı.
 
+# packwing could not write {name}.
+teb1bce81 = packwing { $name } dosyasını yazamadı.
+
 # packwing could not read {name}.
 t7c55848c = packwing { $name } dosyasını okuyamadı.
+
+# packwing can no longer reach that folder.
+t899e6af1 = packwing artık o klasöre erişemiyor.
 
 # Extracting {name}
 t77dce80b = { $name } çıkarılıyor
@@ -3570,17 +3576,11 @@ tfdbeaf1a = Bir iş bittiğinde ya da tamamlanamadığında
 # packwing could not write a file with no name.
 te0bf8e8f = packwing adı olmayan bir dosyayı yazamadı.
 
-# packwing could not write {name}.
-teb1bce81 = packwing { $name } dosyasını yazamadı.
-
 # packwing could not write what it extracted.
 ted881a0f = packwing çıkardıklarını yazamadı.
 
 # packwing could not make the folder {name}.
 t9f263b45 = packwing { $name } klasörünü oluşturamadı.
-
-# packwing can no longer reach that folder.
-t899e6af1 = packwing artık o klasöre erişemiyor.
 
 # The gallery would not take {name}.
 td2cca604 = Galeri { $name } dosyasını kabul etmedi.

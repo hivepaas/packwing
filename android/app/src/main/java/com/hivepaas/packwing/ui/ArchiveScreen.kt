@@ -31,17 +31,24 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.DriveFileRenameOutline
+import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Draw
 import androidx.compose.material.icons.outlined.GridView
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material.icons.outlined.Tag
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.automirrored.outlined.ViewList
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -50,6 +57,7 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -57,6 +65,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,6 +73,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -71,13 +81,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import com.hivepaas.packwing.AppModel
+import com.hivepaas.packwing.Documents
 import com.hivepaas.packwing.Picked
 import com.hivepaas.packwing.Screen
 import com.hivepaas.packwing.Sheet
 import com.hivepaas.packwing.tr
 import com.hivepaas.packwing.trN
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import uniffi.packwing_mobile.EntryRow
+import uniffi.packwing_mobile.OnExisting
+import java.io.File
 import uniffi.packwing_mobile.pictureFits
 
 /** What is in the archive, folder by folder, and what a search found. */
@@ -97,6 +117,33 @@ fun ArchiveScreen(model: AppModel, screen: Screen.Folder) {
         }
     }
     val shown = rows.map { paths(it) to it }
+    // What is asked before the archive is changed.
+    var deleting by remember { mutableStateOf<List<List<String>>?>(null) }
+    var renaming by remember { mutableStateOf<List<String>?>(null) }
+    var clashing by remember { mutableStateOf<List<File>?>(null) }
+    val context = LocalContext.current
+    val work = rememberCoroutineScope()
+    // Adds what came, or asks first what of those whose names are there.
+    val take: (List<File>) -> Unit = { files ->
+        val names = model.rows.map { it.name }.toSet()
+        when {
+            files.isEmpty() -> Unit
+            files.any { it.name in names } -> clashing = files
+            else -> model.add(files, screen.path, OnExisting.STOP)
+        }
+    }
+    val copied: (suspend () -> List<File>) -> Unit = { copy ->
+        work.launch { take(withContext(Dispatchers.IO) { runCatching { copy() }.getOrDefault(emptyList()) }) }
+    }
+    val addFiles = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
+        if (uris.isNotEmpty()) copied { Documents.copyIn(context, uris) }
+    }
+    val addFolder = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { tree ->
+        if (tree != null) copied { listOf(Documents.copyTreeIn(context, tree)) }
+    }
+    val addPhotos = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris ->
+        if (uris.isNotEmpty()) copied { Documents.copyIn(context, uris) }
+    }
     // A tap picks while picking; otherwise it opens a folder, or previews a file.
     val tap: (EntryRow, Boolean) -> Unit = { row, photos ->
         when {
@@ -129,6 +176,11 @@ fun ArchiveScreen(model: AppModel, screen: Screen.Folder) {
                     )
                     IconButton(onClick = { model.pickAll(shown) }, Modifier.testTag("pick-all")) {
                         Icon(Icons.Outlined.SelectAll, tr("Select all"), tint = c.text)
+                    }
+                    if (opened.canChange && model.picked.isNotEmpty()) {
+                        IconButton(onClick = { deleting = model.picked.keys.toList() }, Modifier.testTag("delete-picked")) {
+                            Icon(Icons.Outlined.Delete, tr("Delete"), tint = c.text)
+                        }
                     }
                     ArchiveMenu(model)
                     return@Row
@@ -166,8 +218,19 @@ fun ArchiveScreen(model: AppModel, screen: Screen.Folder) {
                         tint = c.text,
                     )
                 }
+                if (opened.canChange) {
+                    AddMenu(
+                        files = { addFiles.launch(arrayOf("*/*")) },
+                        folder = { addFolder.launch(null) },
+                        photos = {
+                            addPhotos.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo))
+                        },
+                    )
+                }
                 ArchiveMenu(model)
             }
+
+            model.changing?.let { title -> Busy(title, opened.info.name) { model.stopChanging() } }
 
             SearchField(model.query, c) { model.search(it) }
 
@@ -218,7 +281,14 @@ fun ArchiveScreen(model: AppModel, screen: Screen.Folder) {
                                 open = { tap(row, false) },
                                 pick = { model.pick(paths(row), row) },
                             ) {
-                                EntryMenu(model, paths(row), row) { preview = paths(row) }
+                                EntryMenu(
+                                    model,
+                                    paths(row),
+                                    row,
+                                    preview = { preview = paths(row) },
+                                    rename = { renaming = paths(row) },
+                                    delete = { deleting = listOf(paths(row)) },
+                                )
                             }
                             HorizontalDivider(color = c.field, thickness = 1.dp)
                         }
@@ -230,6 +300,33 @@ fun ArchiveScreen(model: AppModel, screen: Screen.Folder) {
 
     preview?.let { path ->
         PreviewDialog(model, path) { preview = null }
+    }
+
+    val signed = signedBeside(opened.uri)
+    deleting?.let { picked ->
+        DeleteDialog(picked, signed, close = { deleting = null }) {
+            deleting = null
+            model.delete(picked)
+        }
+    }
+    renaming?.let { path ->
+        RenameDialog(path.last(), signed, close = { renaming = null }) { name ->
+            renaming = null
+            model.rename(path, name)
+        }
+    }
+    clashing?.let { files ->
+        val names = model.rows.map { it.name }.toSet()
+        ClashDialog(
+            files.map { it.name }.filter { it in names },
+            close = {
+                clashing = null
+                work.launch(Dispatchers.IO) { files.forEach { it.parentFile?.deleteRecursively() } }
+            },
+        ) { onExisting ->
+            clashing = null
+            model.add(files, screen.path, onExisting)
+        }
     }
 }
 
@@ -350,7 +447,14 @@ private fun ArchiveMenu(model: AppModel) {
 
 /** What a file or folder's ⋮ offers: to look at it, extract it, or read its checksums. */
 @Composable
-private fun EntryMenu(model: AppModel, path: List<String>, row: EntryRow, preview: () -> Unit) {
+private fun EntryMenu(
+    model: AppModel,
+    path: List<String>,
+    row: EntryRow,
+    preview: () -> Unit,
+    rename: () -> Unit,
+    delete: () -> Unit,
+) {
     val c = tonal()
     var open by remember { mutableStateOf(false) }
     val alone = { mapOf(path to row).let { with(AppModel) { it.toPicked() } } }
@@ -385,6 +489,24 @@ private fun EntryMenu(model: AppModel, path: List<String>, row: EntryRow, previe
                     model.go(Screen.Checksums(alone(), atOnce = true))
                 },
             )
+            if (model.opened?.canChange == true) {
+                DropdownMenuItem(
+                    text = { Text(tr("Rename"), color = c.text) },
+                    leadingIcon = { Icon(Icons.Outlined.DriveFileRenameOutline, null, tint = c.muted) },
+                    onClick = {
+                        open = false
+                        rename()
+                    },
+                )
+                DropdownMenuItem(
+                    text = { Text(tr("Delete…"), color = c.badText) },
+                    leadingIcon = { Icon(Icons.Outlined.Delete, null, tint = c.badText) },
+                    onClick = {
+                        open = false
+                        delete()
+                    },
+                )
+            }
         }
     }
 }
@@ -552,3 +674,137 @@ fun ExtractButton(model: AppModel) {
         },
     )
 }
+
+/** Files, a folder or photos to add to the archive: Android's own pickers. */
+@Composable
+private fun AddMenu(files: () -> Unit, folder: () -> Unit, photos: () -> Unit) {
+    val c = tonal()
+    var open by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { open = true }, Modifier.testTag("add-menu")) {
+            Icon(Icons.Outlined.Add, tr("Add files"), tint = c.text)
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }, containerColor = c.surface) {
+            listOf(
+                Triple(tr("Files"), Icons.Outlined.Description, files),
+                Triple(tr("A folder"), Icons.Outlined.Folder, folder),
+                Triple(tr("Photos"), Icons.Outlined.Image, photos),
+            ).forEach { (label, icon, pick) ->
+                DropdownMenuItem(
+                    text = { Text(label, color = c.text) },
+                    leadingIcon = { Icon(icon, null, tint = c.muted) },
+                    onClick = {
+                        open = false
+                        pick()
+                    },
+                )
+            }
+        }
+    }
+}
+
+/** What the archive is being changed by, and Stop. */
+@Composable
+private fun Busy(title: String, name: String, stop: () -> Unit) {
+    val c = tonal()
+    Row(
+        Modifier
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(c.tonal)
+            .padding(start = 16.dp, end = 6.dp, top = 8.dp, bottom = 8.dp)
+            .testTag("changing"),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        CircularProgressIndicator(Modifier.size(20.dp), color = c.onTonal, strokeWidth = 2.5.dp)
+        Column(Modifier.weight(1f)) {
+            Text(title, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = c.onTonal)
+            Text(name, fontSize = 13.sp, color = c.onTonal, maxLines = 1, overflow = TextOverflow.MiddleEllipsis)
+        }
+        TextButton(onClick = stop) { Text(tr("Stop"), color = c.onTonal, fontWeight = FontWeight.SemiBold) }
+    }
+}
+
+private val GONE_FOR_GOOD get() = tr("It goes from the archive for good, folders with all they hold. This can’t be undone.")
+private val UNSIGNED get() =
+    tr("This archive is signed. After this change it will no longer match its signature, until it is signed again.")
+
+@Composable
+private fun DeleteDialog(picked: List<List<String>>, signed: Boolean, close: () -> Unit, delete: () -> Unit) {
+    val c = tonal()
+    val what = if (picked.size == 1) picked[0].last() else tr("{many} items", "many" to picked.size.toString())
+    AlertDialog(
+        onDismissRequest = close,
+        containerColor = c.surface,
+        title = { Text(tr("Delete {what}?", "what" to what), color = c.text) },
+        text = { Text(if (signed) GONE_FOR_GOOD + "\n\n" + UNSIGNED else GONE_FOR_GOOD, color = c.muted) },
+        confirmButton = {
+            TextButton(onClick = delete, modifier = Modifier.testTag("delete-confirm")) {
+                Text(tr("Delete"), color = c.badText, fontWeight = FontWeight.SemiBold)
+            }
+        },
+        dismissButton = { TextButton(onClick = close) { Text(tr("Cancel"), color = c.accent) } },
+    )
+}
+
+/** A file's or folder's new name: not the one it has, nor one with a slash. */
+@Composable
+private fun RenameDialog(current: String, signed: Boolean, close: () -> Unit, rename: (String) -> Unit) {
+    val c = tonal()
+    var name by remember { mutableStateOf(current) }
+    val wanted = name.trim()
+    val ready = wanted.isNotEmpty() && wanted != current && '/' !in wanted
+    AlertDialog(
+        onDismissRequest = close,
+        containerColor = c.surface,
+        title = { Text(tr("Rename {what}", "what" to current), color = c.text) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text(tr("Name")) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth().testTag("new-name"),
+                )
+                if (signed) Text(UNSIGNED, fontSize = 13.sp, color = c.muted)
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { rename(wanted) }, enabled = ready, modifier = Modifier.testTag("name-confirm")) {
+                Text(tr("Rename"), color = if (ready) c.accent else c.faint, fontWeight = FontWeight.SemiBold)
+            }
+        },
+        dismissButton = { TextButton(onClick = close) { Text(tr("Cancel"), color = c.accent) } },
+    )
+}
+
+/** Files added whose names the folder holds: replace them, or skip them. */
+@Composable
+private fun ClashDialog(names: List<String>, close: () -> Unit, add: (OnExisting) -> Unit) {
+    val c = tonal()
+    AlertDialog(
+        onDismissRequest = close,
+        containerColor = c.surface,
+        title = { Text(tr("If a file of that name is there"), color = c.text) },
+        text = { Text(names.joinToString(", "), color = c.muted) },
+        confirmButton = {
+            Row {
+                TextButton(onClick = { add(OnExisting.SKIP) }) { Text(tr("Skip it"), color = c.accent) }
+                TextButton(onClick = { add(OnExisting.REPLACE) }, modifier = Modifier.testTag("replace-it")) {
+                    Text(tr("Replace it"), color = c.accent, fontWeight = FontWeight.SemiBold)
+                }
+            }
+        },
+        dismissButton = { TextButton(onClick = close) { Text(tr("Cancel"), color = c.accent) } },
+    )
+}
+
+/**
+ * Whether the archive has a signature beside it, which a change leaves
+ * behind: only to be told where packwing can look beside it.
+ */
+private fun signedBeside(uri: Uri): Boolean =
+    uri.scheme == "file" && uri.path?.let { File("$it.sig").exists() } == true

@@ -241,6 +241,58 @@ object Documents {
         else -> "application/octet-stream"
     }
 
+    /**
+     * Whether packwing may write over `uri`: a file the picker gave with
+     * leave to, or one of its own. Another app's, handed over to be looked
+     * at, is read only. Nothing is written to find out.
+     */
+    fun writable(context: Context, uri: Uri): Boolean = runCatching {
+        context.contentResolver.openFileDescriptor(uri, "rw")?.use { true } ?: false
+    }.getOrDefault(false)
+
+    /** `uri`'s bytes, copied to `to`, which is made. Call this off the main thread. */
+    fun copyOut(context: Context, uri: Uri, to: File) {
+        context.contentResolver.openInputStream(uri)?.use { from ->
+            to.outputStream().use { into -> from.copyTo(into, COPY_BUFFER) }
+        } ?: error(tr("packwing could not read {name}.", "name" to to.name))
+    }
+
+    /**
+     * `uri`'s bytes made `from`'s, in place: all an app may do to a file it
+     * was given without its folder. Call this off the main thread.
+     */
+    fun writeOver(context: Context, uri: Uri, from: File) {
+        context.contentResolver.openOutputStream(uri, "wt")?.use { into ->
+            from.inputStream().use { it.copyTo(into, COPY_BUFFER) }
+        } ?: error(tr("packwing could not write {name}.", "name" to from.name))
+    }
+
+    /**
+     * The folder the user pointed at, copied into the app's own folder with
+     * all it holds, under its own name: adding to an archive reads paths.
+     * Call this off the main thread.
+     */
+    fun copyTreeIn(context: Context, tree: Uri): File {
+        val root = DocumentFile.fromTreeUri(context, tree) ?: error(tr("packwing can no longer reach that folder."))
+        val into = File(cache(context, "making"), UUID.randomUUID().toString()).apply { mkdirs() }
+        fun copy(from: DocumentFile, to: File) {
+            if (from.isDirectory) {
+                to.mkdirs()
+                from.listFiles().forEach { child -> child.name?.let { copy(child, File(to, it)) } }
+            } else {
+                context.contentResolver.openInputStream(from.uri)?.use { input ->
+                    to.outputStream().use { input.copyTo(it, COPY_BUFFER) }
+                }
+            }
+        }
+        val folder = File(into, root.name ?: treeName(context, tree))
+        copy(root, folder)
+        return folder
+    }
+
+    /** A megabyte at a time: an archive is copied whole. */
+    private const val COPY_BUFFER = 1 shl 20
+
     /** Keeps reaching `uri` after the app is closed and opened again. */
     fun keepAccess(context: Context, uri: Uri, write: Boolean = false) {
         val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or

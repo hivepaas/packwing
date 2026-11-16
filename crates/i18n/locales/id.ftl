@@ -3493,8 +3493,14 @@ t17060a6b = { $name } sudah siap
 # packwing could not make {name}.
 t25251132 = packwing tidak dapat membuat { $name }.
 
+# packwing could not write {name}.
+teb1bce81 = packwing tidak dapat menulis { $name }.
+
 # packwing could not read {name}.
 t7c55848c = packwing tidak dapat membaca { $name }.
+
+# packwing can no longer reach that folder.
+t899e6af1 = packwing tidak bisa lagi mengakses folder itu.
 
 # Extracting {name}
 t77dce80b = Mengekstrak { $name }
@@ -3523,17 +3529,11 @@ tfdbeaf1a = Saat tugas selesai, atau tidak dapat diselesaikan
 # packwing could not write a file with no name.
 te0bf8e8f = packwing tidak dapat menulis berkas tanpa nama.
 
-# packwing could not write {name}.
-teb1bce81 = packwing tidak dapat menulis { $name }.
-
 # packwing could not write what it extracted.
 ted881a0f = packwing tidak dapat menulis hasil ekstraknya.
 
 # packwing could not make the folder {name}.
 t9f263b45 = packwing tidak dapat membuat folder { $name }.
-
-# packwing can no longer reach that folder.
-t899e6af1 = packwing tidak bisa lagi mengakses folder itu.
 
 # The gallery would not take {name}.
 td2cca604 = Galeri tidak mau menerima { $name }.

@@ -3634,8 +3634,14 @@ t17060a6b = { $name } готовий
 # packwing could not make {name}.
 t25251132 = packwing не вдалося створити { $name }.
 
+# packwing could not write {name}.
+teb1bce81 = packwing не вдалося записати { $name }.
+
 # packwing could not read {name}.
 t7c55848c = packwing не вдалося прочитати { $name }.
+
+# packwing can no longer reach that folder.
+t899e6af1 = packwing більше не має доступу до цієї папки.
 
 # Extracting {name}
 t77dce80b = Видобування { $name }
@@ -3664,17 +3670,11 @@ tfdbeaf1a = Коли завдання виконано або перервано
 # packwing could not write a file with no name.
 te0bf8e8f = packwing не вдалося записати файл без назви.
 
-# packwing could not write {name}.
-teb1bce81 = packwing не вдалося записати { $name }.
-
 # packwing could not write what it extracted.
 ted881a0f = packwing не вдалося записати видобуте.
 
 # packwing could not make the folder {name}.
 t9f263b45 = packwing не вдалося створити папку { $name }.
-
-# packwing can no longer reach that folder.
-t899e6af1 = packwing більше не має доступу до цієї папки.
 
 # The gallery would not take {name}.
 td2cca604 = Галерея не прийняла { $name }.

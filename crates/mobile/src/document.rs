@@ -166,11 +166,13 @@ impl Archive {
     ) -> Result<Arc<Archive>, MobileError> {
         let (name, size) = (document.name(), document.size());
         let storage: Arc<dyn Storage> = Arc::new(OneDocument(document));
-        Archive::of(
+        let mut archive = Archive::read(
             Source::Stored(Stored::new(storage, vec![name], size)),
             secrets,
             job,
-        )
+        )?;
+        archive.document = true;
+        Ok(Arc::new(archive))
     }
 }
 

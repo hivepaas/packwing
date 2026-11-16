@@ -3540,8 +3540,14 @@ t17060a6b = { $name } está listo
 # packwing could not make {name}.
 t25251132 = packwing no pudo crear { $name }.
 
+# packwing could not write {name}.
+teb1bce81 = packwing no pudo escribir { $name }.
+
 # packwing could not read {name}.
 t7c55848c = packwing no pudo leer { $name }.
+
+# packwing can no longer reach that folder.
+t899e6af1 = packwing ya no puede acceder a esa carpeta.
 
 # Extracting {name}
 t77dce80b = Extrayendo { $name }
@@ -3570,17 +3576,11 @@ tfdbeaf1a = Cuando una tarea termina o no se pudo completar
 # packwing could not write a file with no name.
 te0bf8e8f = packwing no pudo escribir un archivo sin nombre.
 
-# packwing could not write {name}.
-teb1bce81 = packwing no pudo escribir { $name }.
-
 # packwing could not write what it extracted.
 ted881a0f = packwing no pudo escribir lo que extrajo.
 
 # packwing could not make the folder {name}.
 t9f263b45 = packwing no pudo crear la carpeta { $name }.
-
-# packwing can no longer reach that folder.
-t899e6af1 = packwing ya no puede acceder a esa carpeta.
 
 # The gallery would not take {name}.
 td2cca604 = La galería no aceptó { $name }.

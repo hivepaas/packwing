@@ -246,12 +246,58 @@ class AppTests {
         forgetKeys()
     }
 
+    @Test
+    fun filesInAnArchiveAreRenamedDeletedAndAdded() {
+        val copy = open("report.zip")
+        ui.waitForText("Báo cáo quý 3")
+        ui.onNodeWithText("Báo cáo quý 3").performClick()
+        ui.waitForText("Ghi chú.txt")
+
+        ui.onNodeWithTag("menu-Ghi chú.txt").performClick()
+        ui.onNodeWithText("Rename").performClick()
+        ui.onNodeWithTag("new-name").performTextClearance()
+        ui.onNodeWithTag("new-name").performTextInput("Ghi chú mới.txt")
+        ui.onNodeWithTag("name-confirm").performClick()
+        ui.waitForText("Ghi chú mới.txt")
+        until { model.changing == null }
+
+        // Picked, then deleted.
+        ui.onNodeWithTag("entry-Doanh thu.csv").performTouchInput { longClick() }
+        ui.onNodeWithTag("delete-picked").performClick()
+        ui.onNodeWithTag("delete-confirm").performClick()
+        until { model.changing == null && model.rows.none { it.name == "Doanh thu.csv" } && model.rows.isNotEmpty() }
+
+        // A file added, as the picker's copy of it is.
+        val added = File(File(app.cacheDir, "making/added").apply { mkdirs() }, "Thêm.txt").apply { writeText("thêm") }
+        onMain { model.add(listOf(added), listOf("Báo cáo quý 3"), uniffi.packwing_mobile.OnExisting.STOP) }
+        ui.waitForText("Thêm.txt")
+        until { model.changing == null }
+
+        // Written over the file it was opened from.
+        val now = uniffi.packwing_mobile.Archive.open(copy.path, uniffi.packwing_mobile.Secrets(null, null, null, null), uniffi.packwing_mobile.Job.quiet())
+        assertEquals(
+            setOf("Hình ảnh", "Ghi chú mới.txt", "Thêm.txt"),
+            now.children(listOf("Báo cáo quý 3")).map { it.name }.toSet(),
+        )
+        now.close()
+    }
+
+    @Test
+    fun anArchivePackwingMayNotWriteIsNotChanged() {
+        sample("report.zip").setReadOnly()
+        onMain { model.open(Uri.fromFile(File(app.cacheDir, "samples/report.zip"))) }
+        ui.waitForText("Báo cáo quý 3")
+        until { model.opened?.canChange == false }
+        ui.onNodeWithTag("add-menu").assertDoesNotExist()
+        File(app.cacheDir, "samples/report.zip").setWritable(true)
+    }
+
     // MARK: Helpers
 
     private fun forgetKeys() = onMain { model.trustedKeys.forEach { model.distrust(it.key.line) } }
 
     /** Opens the sample `name`, from a copy in the app's cache, as Files would hand it over. */
-    private fun open(name: String, password: String? = null) {
+    private fun open(name: String, password: String? = null): File {
         val copy = sample(name)
         onMain {
             model.open(
@@ -259,12 +305,13 @@ class AppTests {
                 uniffi.packwing_mobile.Secrets(password, null, null, null),
             )
         }
+        return copy
     }
 
     /** The sample `name`, copied as `called` into one folder: a signature goes beside its archive. */
     private fun sample(name: String, called: String = name): File {
         val into = File(app.cacheDir, "samples").apply { mkdirs() }
-        val file = File(into, called)
+        val file = File(into, called).apply { if (exists()) setWritable(true) }
         InstrumentationRegistry.getInstrumentation().context.assets.open(name).use { from ->
             file.outputStream().use { from.copyTo(it) }
         }

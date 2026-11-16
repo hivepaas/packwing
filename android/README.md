@@ -62,6 +62,14 @@ the document picker, which is what a file Android handed over alone needs. A
 signature by a key not trusted says whose it is, and offers to trust it
 (`SignatureSheet.kt`).
 
+A ZIP or 7z archive packwing may write over is **changed** as the desktop
+changes one: files, a folder or photos added (the + in its bar), files
+renamed and deleted (a file's ⋮, or those picked). Android gives no path to
+change it at, so a copy of it is changed in the app's own folder and written
+over it, and it is read again: a change that fails or is stopped leaves the
+archive as it was. One another app handed over to be looked at is read only,
+and offers none of this (`AppModel.change`).
+
 ## How Android's storage shapes it
 
 Android hands out `content://` URIs, and nothing in its storage has a path
@@ -110,7 +118,7 @@ writes what it reads to whatever takes it (`Documents.kt`, `Trees.kt`).
 
 - Pausing a job. The core can stop one, not hold it; the progress screen
   offers Cancel alone. The design's Pause button has nothing behind it.
-- Storages (S3, WebDAV, SFTP), signing, editing an archive,
+- Storages (S3, WebDAV, SFTP), signing,
   `age` files, the desktop's other formats for new archives, and Pro: the
   iOS app has them (`ios/README.md`), and they come here one by one.
 - The comic reader and the audit log, which are the desktop's alone.
