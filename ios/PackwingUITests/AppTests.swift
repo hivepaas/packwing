@@ -924,4 +924,27 @@ final class AppTests: XCTestCase {
         XCTAssert(text(app, starting: "report.zip.age").exists)
         keep(app, "zip-age-made")
     }
+
+    /// Settings › About, as the desktop has it: the build, and the other apps
+    /// from HivePaaS with the way to each.
+    func testAboutShowsTheBuildAndTheOtherApps() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-AppleLanguages", "(en)", "-language", ""]
+        app.launch()
+        tapWhenReady(app.buttons.matching(NSPredicate(format: "label == 'Settings'")).firstMatch)
+        let about = app.buttons["settings-about"]
+        scrollTo(app, about)
+        tapWhenReady(about, timeout: 5)
+        let version = app.staticTexts["about-version"]
+        XCTAssert(version.waitForExistence(timeout: 5))
+        XCTAssert(version.label.hasPrefix("Version "), version.label)
+        XCTAssert(app.buttons["about-copy-version"].exists)
+        keep(app, "about")
+        for id in ["about-shellwing", "about-tracewing", "about-hivepaas"] {
+            let link = app.descendants(matching: .any)[id]
+            scrollTo(app, link)
+            XCTAssert(link.exists, id)
+        }
+        keep(app, "about-apps")
+    }
 }

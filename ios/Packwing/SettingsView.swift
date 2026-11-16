@@ -62,8 +62,18 @@ struct SettingsView: View {
                 TrustedKeysSection()
                 SigningKeysSection()
                 SshKeysSection()
-                Section(tr("About")) {
-                    LabeledContent("packwing", value: version)
+                Section {
+                    NavigationLink {
+                        AboutView()
+                    } label: {
+                        HStack(spacing: 12) {
+                            PackwingLogo(size: 36)
+                            Text(tr("About"))
+                            Spacer(minLength: 8)
+                            Text(version).foregroundStyle(Tonal.muted)
+                        }
+                    }
+                    .accessibilityIdentifier("settings-about")
                 }
                 .listRowBackground(Tonal.surface)
             }
