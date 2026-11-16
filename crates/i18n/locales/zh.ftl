@@ -3118,6 +3118,12 @@ t1c18cb9b = 密码或应用令牌
 # This archive is not where it was any more.
 t4d0917ba = 此压缩包已不在原来的位置。
 
+# Drop to add to {name}
+te2479c90 = 松开以添加到 { $name }
+
+# Drop an archive to open it, other files to make one
+tfe0a252d = 松开压缩包即可打开，松开其他文件即可制作压缩包
+
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->

@@ -3118,6 +3118,12 @@ t1c18cb9b = 비밀번호 또는 앱 토큰
 # This archive is not where it was any more.
 t4d0917ba = 이 압축 파일이 더 이상 원래 위치에 없습니다.
 
+# Drop to add to {name}
+te2479c90 = 놓아서 { $name }에 추가
+
+# Drop an archive to open it, other files to make one
+tfe0a252d = 아카이브를 놓으면 열고, 다른 파일을 놓으면 새 아카이브를 만듭니다
+
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->

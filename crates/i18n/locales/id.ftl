@@ -3127,6 +3127,12 @@ t1c18cb9b = Kata sandi atau token aplikasi
 # This archive is not where it was any more.
 t4d0917ba = Arsip ini sudah tidak ada di tempatnya semula.
 
+# Drop to add to {name}
+te2479c90 = Lepaskan untuk menambahkan ke { $name }
+
+# Drop an archive to open it, other files to make one
+tfe0a252d = Lepaskan arsip untuk membukanya, file lain untuk membuat arsip
+
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->

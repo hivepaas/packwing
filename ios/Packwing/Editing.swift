@@ -164,6 +164,8 @@ struct ArchiveChanges: ViewModifier {
     @Binding var deleting: [[String]]?
     @Binding var renaming: [String]?
     @Binding var adding: NewSource?
+    /// Files dropped on it, until they are added.
+    @Binding var dropping: DroppedItems?
     /// Items whose names are in the folder already, until it is said what of them.
     @State private var clashing: [NewItem]?
 
@@ -194,6 +196,11 @@ struct ArchiveChanges: ViewModifier {
             } photos: { picked in
                 Task { take(await photoItems(picked)) }
             }
+            .onChange(of: dropping) { _, now in
+                guard let now else { return }
+                dropping = nil
+                take(now.items)
+            }
             .confirmationDialog(tr("If a file of that name is there"),
                                 isPresented: Binding { clashing != nil } set: { if !$0 { clashing = nil } },
                                 titleVisibility: .visible, presenting: clashing) { items in
@@ -222,6 +229,14 @@ struct ArchiveChanges: ViewModifier {
             model.add(items, to: folder, of: opened, onExisting: .stop)
         }
     }
+}
+
+/// Files dropped on an archive, to add to it.
+struct DroppedItems: Equatable {
+    let id = UUID()
+    let items: [NewItem]
+
+    static func == (a: DroppedItems, b: DroppedItems) -> Bool { a.id == b.id }
 }
 
 /// What the Rename sheet renames.

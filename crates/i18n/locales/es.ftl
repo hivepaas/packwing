@@ -3164,6 +3164,12 @@ t1c18cb9b = Contraseña o token de app
 # This archive is not where it was any more.
 t4d0917ba = Este archivo comprimido ya no está donde estaba.
 
+# Drop to add to {name}
+te2479c90 = Suelta para añadir a { $name }
+
+# Drop an archive to open it, other files to make one
+tfe0a252d = Suelta un archivo comprimido para abrirlo, otros archivos para crear uno
+
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->

@@ -158,6 +158,7 @@ final class AppModel {
         #endif
         recent = Self.loadRecent()
         sweepReceived()
+        DroppedFile.sweep()
     }
 
     /// The app's own folder for what it keeps: Application Support.
@@ -345,32 +346,37 @@ final class AppModel {
         guard parts.starts(with: home), parts.count > home.count + 1,
               let inbox = parts[home.count...].dropLast().firstIndex(where: { $0 == "Inbox" || $0.hasSuffix("-Inbox") })
         else { return url }
-        let files = FileManager.default
-        let kept: URL
-        if let same = keptAlready(file) {
-            // The same attachment shared again: the copy kept the first time.
-            try? files.removeItem(at: file)
-            kept = same
-        } else {
-            let folder = received.appending(path: UUID().uuidString, directoryHint: .isDirectory)
-            kept = folder.appending(path: file.lastPathComponent)
-            do {
-                try files.createDirectory(at: folder, withIntermediateDirectories: true)
-                do {
-                    try files.moveItem(at: file, to: kept)
-                } catch {
-                    try files.copyItem(at: file, to: kept)
-                    try? files.removeItem(at: file)
-                }
-            } catch {
-                try? files.removeItem(at: folder)
-                return url
-            }
-        }
+        guard let kept = keep(given: file) else { return url }
         // The Inbox goes once it is empty, and with it its folder in Files.
         let inboxFolder = URL(filePath: NSString.path(withComponents: Array(parts[...inbox])), directoryHint: .isDirectory)
         if (try? FileManager.default.contentsOfDirectory(atPath: inboxFolder.path(percentEncoded: false)))?.isEmpty == true {
             try? FileManager.default.removeItem(at: inboxFolder)
+        }
+        return kept
+    }
+
+    /// Where the copy `file` another app gave is kept now, moved out of where
+    /// it was given: in Received, with the same one kept before if there is.
+    static func keep(given file: URL) -> URL? {
+        let files = FileManager.default
+        if let same = keptAlready(file) {
+            // The same attachment shared again: the copy kept the first time.
+            try? files.removeItem(at: file)
+            return same
+        }
+        let folder = received.appending(path: UUID().uuidString, directoryHint: .isDirectory)
+        let kept = folder.appending(path: file.lastPathComponent)
+        do {
+            try files.createDirectory(at: folder, withIntermediateDirectories: true)
+            do {
+                try files.moveItem(at: file, to: kept)
+            } catch {
+                try files.copyItem(at: file, to: kept)
+                try? files.removeItem(at: file)
+            }
+        } catch {
+            try? files.removeItem(at: folder)
+            return nil
         }
         return kept
     }

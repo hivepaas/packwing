@@ -194,6 +194,7 @@ struct GalleryGrid: View {
             }
         }
         .buttonStyle(.plain)
+        .modifier(Draggable(opened: opened, path: path, entry: entry))
         .contextMenu {
             if !entry.folder && !entry.link {
                 Button(tr("Preview"), systemImage: "eye") { model.preview(opened, path) }
