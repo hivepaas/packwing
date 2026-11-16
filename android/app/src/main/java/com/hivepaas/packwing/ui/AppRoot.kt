@@ -117,6 +117,7 @@ fun AppRoot(model: AppModel) {
         is Sheet.Extract -> ExtractSheet(model, sheet)
         Sheet.Signature -> SignatureSheet(model)
         Sheet.AddKey -> AddKeySheet(model)
+        Sheet.Sign -> SignSheet(model)
         null -> Unit
     }
 

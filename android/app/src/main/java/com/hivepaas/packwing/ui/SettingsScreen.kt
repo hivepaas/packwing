@@ -31,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -63,7 +64,7 @@ fun SettingsScreen(model: AppModel) {
     }
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().testTag("settings-list"),
         contentPadding = PaddingValues(
             top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 8.dp,
             bottom = 24.dp,
@@ -102,6 +103,18 @@ fun SettingsScreen(model: AppModel) {
         item {
             Text(
                 tr("A signature by one of these says who signed a file. One by any other key proves nothing, whatever it matches."),
+                modifier = Modifier.padding(horizontal = 8.dp),
+                fontSize = 13.sp,
+                lineHeight = 19.sp,
+                color = c.muted,
+            )
+        }
+
+        item { Heading(tr("Signing keys")) }
+        item { SigningKeys(model) }
+        item {
+            Text(
+                tr("Kept in this device’s keychain. Anyone can check what a key signs with its public half."),
                 modifier = Modifier.padding(horizontal = 8.dp),
                 fontSize = 13.sp,
                 lineHeight = 19.sp,

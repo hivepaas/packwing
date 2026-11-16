@@ -92,8 +92,21 @@ impl Storage for OneDocument {
         Err(one_file_only())
     }
 
-    fn stat(&self, _folder: &[String], _name: &str) -> io::Result<Option<Item>> {
-        Err(one_file_only())
+    /// The one file it is, at its top; nothing else is there. What signing it
+    /// asks first, for its size.
+    fn stat(&self, folder: &[String], name: &str) -> io::Result<Option<Item>> {
+        if !folder.is_empty() || name != self.0.name() {
+            return Ok(None);
+        }
+        Ok(Some(Item {
+            name: name.to_owned(),
+            dir: false,
+            link: false,
+            hidden: false,
+            size: self.0.size(),
+            modified: None,
+            mode: None,
+        }))
     }
 
     /// The document from its start, read a block at a time where it is asked

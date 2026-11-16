@@ -41,6 +41,7 @@ import androidx.compose.material.icons.outlined.DriveFileRenameOutline
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Draw
 import androidx.compose.material.icons.outlined.GridView
+import androidx.compose.material.icons.outlined.HistoryEdu
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.SelectAll
@@ -446,6 +447,15 @@ private fun ArchiveMenu(model: AppModel) {
                     open = false
                     model.sheet = Sheet.Signature
                 },
+            )
+            DropdownMenuItem(
+                text = { Text(tr("Sign…"), color = c.text) },
+                leadingIcon = { Icon(Icons.Outlined.HistoryEdu, null, tint = c.muted) },
+                onClick = {
+                    open = false
+                    model.sheet = Sheet.Sign
+                },
+                modifier = Modifier.testTag("archive-sign"),
             )
         }
     }
