@@ -3238,6 +3238,12 @@ t1c18cb9b = Пароль или токен приложения
 # This archive is not where it was any more.
 t4d0917ba = Этого архива больше нет там, где он был.
 
+# Drop to add to {name}
+te2479c90 = Отпустите, чтобы добавить в { $name }
+
+# Drop an archive to open it, other files to make one
+tfe0a252d = Отпустите архив, чтобы открыть его, или другие файлы, чтобы создать архив
+
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->

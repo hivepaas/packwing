@@ -3127,6 +3127,12 @@ t1c18cb9b = 密碼或應用程式權杖
 # This archive is not where it was any more.
 t4d0917ba = 這個封存檔已不在原來的位置。
 
+# Drop to add to {name}
+te2479c90 = 放開以加入 { $name }
+
+# Drop an archive to open it, other files to make one
+tfe0a252d = 放開壓縮檔即可打開，放開其他檔案即可製作壓縮檔
+
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->

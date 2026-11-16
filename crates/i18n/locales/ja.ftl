@@ -3118,6 +3118,12 @@ t1c18cb9b = パスワードまたはアプリトークン
 # This archive is not where it was any more.
 t4d0917ba = このアーカイブは、もう元の場所にありません。
 
+# Drop to add to {name}
+te2479c90 = ドロップして { $name } に追加
+
+# Drop an archive to open it, other files to make one
+tfe0a252d = アーカイブをドロップすると開き、ほかのファイルなら新しいアーカイブを作成
+
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->

@@ -3164,6 +3164,12 @@ t1c18cb9b = Passwort oder App-Token
 # This archive is not where it was any more.
 t4d0917ba = Dieses Archiv ist nicht mehr dort, wo es war.
 
+# Drop to add to {name}
+te2479c90 = Zum Hinzufügen zu { $name } ablegen
+
+# Drop an archive to open it, other files to make one
+tfe0a252d = Archiv ablegen, um es zu öffnen, andere Dateien, um eines zu erstellen
+
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->

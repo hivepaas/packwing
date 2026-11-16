@@ -1154,6 +1154,8 @@ t700560f3 = Address
 te0a63e12 = User
 t1c18cb9b = Password or app token
 t4d0917ba = This archive is not where it was any more.
+te2479c90 = Drop to add to { $name }
+tfe0a252d = Drop an archive to open it, other files to make one
 t76dbca4b =
     { $n ->
         [one] Search its { $n } file

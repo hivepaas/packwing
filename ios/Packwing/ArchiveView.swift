@@ -20,8 +20,45 @@ struct ArchiveView: View {
     @State private var deleting: [[String]]?
     @State private var renaming: [String]?
     @State private var adding: NewSource?
+    @State private var dropping: DroppedItems?
 
     private var info: ArchiveInfo { place.archive.info }
+
+    /// Files dropped on it: added where it shows, if it can change; else as
+    /// on the first screen.
+    private func tookDropped(_ dropped: [DroppedFile]) {
+        if canChange {
+            dropping = DroppedItems(items: dropped.map(\.item))
+        } else {
+            model.take(dropped)
+        }
+    }
+
+    #if DEBUG
+    @MainActor private static var draggedBack = false
+
+    /// `-dragBack <name>`: the file of that name in this folder, as a drag
+    /// out of it gives it, dropped on it, once: what a finger does but the
+    /// gesture, which a UI test's press opens the context menu with.
+    private func dragBack() {
+        guard !Self.draggedBack, let name = UserDefaults.standard.string(forKey: "dragBack"),
+              let entry = entries.first(where: { $0.name == name }) else { return }
+        Self.draggedBack = true
+        // Its name as the archive has it: one typed may be written otherwise.
+        let provider = place.archive.dragged(place.folder + [entry.name], folder: entry.folder)
+        _ = DroppedFile.accept([provider], refusing: refusedDrags, take: tookDropped)
+    }
+    #endif
+
+    /// Its own files dragged back on it: they are there already.
+    private var refusedDrags: String? {
+        #if DEBUG
+        // `-dropOwn YES`: taken as any other files, for a test to drag one
+        // out and drop it in again.
+        if UserDefaults.standard.bool(forKey: "dropOwn") { return nil }
+        #endif
+        return place.archive.dragTag
+    }
 
     /// Whether files can be added to it, deleted and renamed: a ZIP or 7z
     /// archive of one file.
@@ -44,6 +81,9 @@ struct ArchiveView: View {
                 list
             }
         }
+        .dropZone(canChange ? tr("Drop to add to {name}", ["name": place.folder.last ?? info.name])
+                            : tr("Drop an archive to open it, other files to make one"),
+                  refusing: refusedDrags, take: tookDropped)
         // Its own bar at the bottom, Select and Extract, in the tabs' place.
         .toolbar(.hidden, for: .tabBar)
         .navigationTitle(place.folder.last ?? info.name)
@@ -132,7 +172,7 @@ struct ArchiveView: View {
         }
         .quickLookPreview($model.previewing)
         .modifier(ArchiveChanges(opened: place.archive, folder: place.folder, names: Set(entries.map(\.name)),
-                                 deleting: $deleting, renaming: $renaming, adding: $adding))
+                                 deleting: $deleting, renaming: $renaming, adding: $adding, dropping: $dropping))
         .overlay(alignment: .bottom) {
             if let name = model.reading {
                 BusyBanner(title: tr("Opening"), name: name) { model.stopReading() }
@@ -145,6 +185,9 @@ struct ArchiveView: View {
         // Read again once the archive is changed.
         .task(id: model.archivesChanged) {
             entries = place.archive.archive.children(folder: place.folder)
+            #if DEBUG
+            dragBack()
+            #endif
             if !query.isEmpty { found = place.archive.archive.search(query: query) }
             selecting = false
             picked = []
@@ -163,6 +206,11 @@ struct ArchiveView: View {
                 Section {
                     ForEach(entries, id: \.name) { entry in
                         row(entry, at: place.folder + [entry.name], showing: nil)
+                    }
+                    // A list takes what is dropped on its rows itself: where
+                    // among them it goes is no matter.
+                    .onInsert(of: [.item]) { _, providers in
+                        _ = DroppedFile.accept(providers, refusing: refusedDrags, take: tookDropped)
                     }
                 } footer: {
                     if entries.isEmpty {
@@ -233,6 +281,8 @@ struct ArchiveView: View {
         }
         .tag(path)
         .listRowBackground(Tonal.surface)
+        // Out to Files, Mail, Notes: extracted once it is dropped.
+        .modifier(Draggable(opened: place.archive, path: path, entry: entry))
         .contextMenu {
             if !entry.folder && !entry.link {
                 Button(tr("Preview"), systemImage: "eye") { model.preview(place.archive, path) }
@@ -243,6 +293,22 @@ struct ArchiveView: View {
                 Button(tr("Rename"), systemImage: "pencil") { renaming = path }
                 Button(tr("Delete…"), systemImage: "trash", role: .destructive) { deleting = [path] }
             }
+        }
+    }
+}
+
+/// A file or folder of an archive, dragged out to Files, Mail, Notes:
+/// extracted once it is dropped. Not a link: there is nothing to give of one.
+struct Draggable: ViewModifier {
+    let opened: OpenedArchive
+    let path: [String]
+    let entry: EntryRow
+
+    func body(content: Content) -> some View {
+        if entry.link {
+            content
+        } else {
+            content.onDrag { opened.dragged(path, folder: entry.folder) }
         }
     }
 }

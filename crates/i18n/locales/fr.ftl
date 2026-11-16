@@ -3164,6 +3164,12 @@ t1c18cb9b = Mot de passe ou jeton d'application
 # This archive is not where it was any more.
 t4d0917ba = Cette archive n'est plus là où elle était.
 
+# Drop to add to {name}
+te2479c90 = Déposer pour ajouter à { $name }
+
+# Drop an archive to open it, other files to make one
+tfe0a252d = Déposez une archive pour l’ouvrir, d’autres fichiers pour en créer une
+
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->

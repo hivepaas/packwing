@@ -3164,6 +3164,12 @@ t1c18cb9b = Parola veya uygulama belirteci
 # This archive is not where it was any more.
 t4d0917ba = Bu arşiv artık eskiden olduğu yerde değil.
 
+# Drop to add to {name}
+te2479c90 = { $name } içine eklemek için bırakın
+
+# Drop an archive to open it, other files to make one
+tfe0a252d = Açmak için bir arşiv, arşiv oluşturmak için başka dosyalar bırakın
+
 # Search its {n} file | Search all {n} files
 t76dbca4b =
     { $n ->

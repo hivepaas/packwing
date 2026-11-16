@@ -25,6 +25,8 @@ struct HomeView: View {
                 .padding(.bottom, 24)
             }
             .background(Tonal.page)
+            // From Files or another app, beside packwing on an iPad.
+            .dropZone(tr("Drop an archive to open it, other files to make one")) { model.take($0) }
             .navigationTitle(tr("Archives"))
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {

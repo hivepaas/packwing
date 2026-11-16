@@ -114,10 +114,17 @@ struct CreateSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    NavigationLink {
-                        NewItemsList(draft: draft)
-                    } label: {
-                        ItemsSummary(draft: draft)
+                    // A row of its own, for files dropped on it to be taken:
+                    // a form takes what is dropped on its rows itself.
+                    ForEach([draft.id], id: \.self) { _ in
+                        NavigationLink {
+                            NewItemsList(draft: draft)
+                        } label: {
+                            ItemsSummary(draft: draft)
+                        }
+                    }
+                    .onInsert(of: [.item]) { _, providers in
+                        _ = DroppedFile.accept(providers, refusing: nil) { draft.add($0.map(\.item)) }
                     }
                     AddMenu(source: $adding) {
                         Label(tr("Add more"), systemImage: "plus")

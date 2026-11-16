@@ -15,11 +15,15 @@ final class NewItem: Identifiable, @unchecked Sendable {
     /// From Photos, as a copy of its own.
     let photo: Bool
     private let scoped: Bool
+    /// A copy of packwing's, in a folder of its own: a photo's, or one of a
+    /// file dropped.
+    private let copied: Bool
 
-    init(url: URL, scoped: Bool, photo: Bool = false) {
+    init(url: URL, scoped: Bool, photo: Bool = false, copied: Bool = false) {
         self.url = url
         self.scoped = scoped
         self.photo = photo
+        self.copied = photo || copied
         folder = (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
     }
 
@@ -30,8 +34,7 @@ final class NewItem: Identifiable, @unchecked Sendable {
 
     deinit {
         if scoped { url.stopAccessingSecurityScopedResource() }
-        // A photo's copy is in a folder of its own.
-        if photo { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        if copied { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
     }
 
     var name: String { url.lastPathComponent }
