@@ -3600,35 +3600,8 @@ tfda7010a = Pesquisar neste arquivo compactado
 # Selected
 tef233294 = Selecionado
 
-# AES-256. In 7z the names are hidden too.
-t9c81b89f = AES-256. No 7z, os nomes também ficam ocultos.
-
-# AES-256.
-tf18b3f5a = AES-256.
-
-# No files yet
-t129e61cf = Nenhum arquivo ainda
-
-# Copying them in…
-taf5cb443 = Copiando…
-
-# Where it goes
-t6e56ac09 = Onde vai ficar
-
 # No folder chosen yet
 t9c10d9de = Nenhuma pasta escolhida ainda
-
-# Make {kind}
-ted3ef83b = Criar { $kind }
-
-# Store, fastest
-ta65137d8 = Armazenar, mais rápido
-
-# Normal
-t58de2772 = Normal
-
-# Smallest
-t39eb3f74 = Menor tamanho
 
 # From the Files app, a USB drive or Drive
 te849b010 = Do app Arquivos, de uma unidade USB ou do Drive

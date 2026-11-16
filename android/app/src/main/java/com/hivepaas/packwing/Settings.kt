@@ -86,6 +86,31 @@ class Settings(context: Context) {
         get() = prefs.getBoolean(STORAGE_HIDDEN, false)
         set(value) = prefs.edit().putBoolean(STORAGE_HIDDEN, value).apply()
 
+    /** The format of new archives, by its key (`zip`, `tar.zst`): one for many files. */
+    var newFormat: String
+        get() = prefs.getString(NEW_FORMAT, null) ?: "zip"
+        set(value) = prefs.edit().putString(NEW_FORMAT, value).apply()
+
+    /** How hard new archives are compressed, by its key (`medium`). */
+    var newCompression: String
+        get() = prefs.getString(NEW_COMPRESSION, null) ?: "medium"
+        set(value) = prefs.edit().putString(NEW_COMPRESSION, value).apply()
+
+    /** A 7z's names hidden with its password, as the desktop does unless told. */
+    var hideNames: Boolean
+        get() = prefs.getBoolean(HIDE_NAMES, true)
+        set(value) = prefs.edit().putBoolean(HIDE_NAMES, value).apply()
+
+    /** What is compressed already goes into a ZIP or 7z as it is. */
+    var storeCompressed: Boolean
+        get() = prefs.getBoolean(STORE_COMPRESSED, true)
+        set(value) = prefs.edit().putBoolean(STORE_COMPRESSED, value).apply()
+
+    /** What only a Mac uses is left out of new archives. */
+    var skipMacFiles: Boolean
+        get() = prefs.getBoolean(SKIP_MAC_FILES, true)
+        set(value) = prefs.edit().putBoolean(SKIP_MAC_FILES, value).apply()
+
     var tellWhenDone: Boolean
         get() = prefs.getBoolean(TELL_WHEN_DONE, true)
         set(value) = prefs.edit().putBoolean(TELL_WHEN_DONE, value).apply()
@@ -150,6 +175,11 @@ class Settings(context: Context) {
         const val CHECKSUMS = "checksums"
         const val TRUSTED_KEYS = "trustedKeys"
         const val STORAGES = "storages"
+        const val NEW_FORMAT = "newFormat"
+        const val NEW_COMPRESSION = "newCompression"
+        const val HIDE_NAMES = "hideNames"
+        const val STORE_COMPRESSED = "storeCompressed"
+        const val SKIP_MAC_FILES = "skipMacFiles"
         const val STORAGE_HIDDEN = "storageHidden"
         const val RECENT = "recent"
         const val MOST_RECENT = 40

@@ -3544,35 +3544,8 @@ tfda7010a = 이 압축 파일에서 검색
 # Selected
 tef233294 = 선택됨
 
-# AES-256. In 7z the names are hidden too.
-t9c81b89f = AES-256. 7z에서는 파일 이름도 숨겨집니다.
-
-# AES-256.
-tf18b3f5a = AES-256.
-
-# No files yet
-t129e61cf = 아직 파일 없음
-
-# Copying them in…
-taf5cb443 = 가져오는 중…
-
-# Where it goes
-t6e56ac09 = 저장 위치
-
 # No folder chosen yet
 t9c10d9de = 아직 선택한 폴더 없음
-
-# Make {kind}
-ted3ef83b = { $kind } 만들기
-
-# Store, fastest
-ta65137d8 = 저장만, 가장 빠름
-
-# Normal
-t58de2772 = 보통
-
-# Smallest
-t39eb3f74 = 가장 작게
 
 # From the Files app, a USB drive or Drive
 te849b010 = 파일 앱, USB 드라이브 또는 Google 드라이브에서

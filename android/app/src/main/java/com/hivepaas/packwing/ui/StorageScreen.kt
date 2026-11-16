@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -557,7 +558,7 @@ private fun StoredMenu(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun StorageFolderPicker(
+internal fun StorageFolderPicker(
     model: AppModel,
     title: String,
     confirm: String,
@@ -703,7 +704,9 @@ fun AddStorageScreen(model: AppModel) {
     Column(
         Modifier
             .fillMaxSize()
-            .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()),
+            .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding())
+            // Its button above the keyboard, not under it.
+            .imePadding(),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 4.dp),

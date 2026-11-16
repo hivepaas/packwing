@@ -3600,35 +3600,8 @@ tfda7010a = In diesem Archiv suchen
 # Selected
 tef233294 = Ausgewählt
 
-# AES-256. In 7z the names are hidden too.
-t9c81b89f = AES-256. Bei 7z sind auch die Namen verborgen.
-
-# AES-256.
-tf18b3f5a = AES-256.
-
-# No files yet
-t129e61cf = Noch keine Dateien
-
-# Copying them in…
-taf5cb443 = Wird hineinkopiert…
-
-# Where it goes
-t6e56ac09 = Ziel
-
 # No folder chosen yet
 t9c10d9de = Noch kein Ordner gewählt
-
-# Make {kind}
-ted3ef83b = { $kind } erstellen
-
-# Store, fastest
-ta65137d8 = Speichern, am schnellsten
-
-# Normal
-t58de2772 = Normal
-
-# Smallest
-t39eb3f74 = Am kleinsten
 
 # From the Files app, a USB drive or Drive
 te849b010 = Aus der Dateien-App, von einem USB-Laufwerk oder aus Drive

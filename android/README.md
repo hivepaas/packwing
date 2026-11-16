@@ -45,8 +45,17 @@ symbols so the two always match. Neither
 Open an archive from the Files app, from `Share › packwing` in any app, or by
 tapping one in a chat or an email. Look inside, folder by folder, search it
 (`bao cao` finds `Báo cáo`), preview its pictures and texts without extracting,
-extract it to a folder you point at or to the gallery, and make a ZIP or a 7z
-with AES-256. The work is all `packwing-core`'s, as on the desktop.
+extract it to a folder you point at or to the gallery, and make a new archive.
+The work is all `packwing-core`'s, as on the desktop.
+
+**New archive** takes files, a folder or photos, and makes an archive in the
+desktop's formats: ZIP, 7z, the tar ones (`tar.zst`, `tar.gz`, `tar.xz`,
+`tar.bz2`, `tar.lz4`, `tar`), and, for one file by itself, `gz`, `zst`, `xz`,
+`bz2` or `lz4`. A password is ZIP's and 7z's own AES-256 (7z's names hidden
+too), or age around all of it: to a passphrase, or to public keys (age's, or
+SSH ones; typed, or a file of them). It is cut in parts of 25 MB, 4 GB or a
+size typed, and made in a folder of the phone's or of a storage. The format
+and how hard it compresses are kept for the next one (`CreateScreen.kt`).
 
 A long press picks a file or folder, and a tap then picks more: what is
 picked is extracted alone. Its ⋮ menu, and the archive's, read **Checksums**,
@@ -149,8 +158,9 @@ writes what it reads to whatever takes it (`Documents.kt`, `Trees.kt`).
 
 - Pausing a job. The core can stop one, not hold it; the progress screen
   offers Cancel alone. The design's Pause button has nothing behind it.
-- Signing, `age` files, the desktop's other formats for new archives, and
-  Pro: the iOS app has them (`ios/README.md`), and they come here one by one.
+- Signing, the desktop's other settings (Settings › New archives and
+  Extracting), and Pro: the iOS app has them (`ios/README.md`), and they come
+  here one by one.
 - The comic reader and the audit log, which are the desktop's alone.
 - The system's own wallpaper colours. The app keeps packwing's palette on
   every device; the design names this as an option, and it is not wired up.

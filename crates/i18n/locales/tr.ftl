@@ -3600,35 +3600,8 @@ tfda7010a = Bu arşivde ara
 # Selected
 tef233294 = Seçili
 
-# AES-256. In 7z the names are hidden too.
-t9c81b89f = AES-256. 7z'de adlar da gizlenir.
-
-# AES-256.
-tf18b3f5a = AES-256.
-
-# No files yet
-t129e61cf = Henüz dosya yok
-
-# Copying them in…
-taf5cb443 = Kopyalanıyor…
-
-# Where it goes
-t6e56ac09 = Nereye kaydedilecek
-
 # No folder chosen yet
 t9c10d9de = Henüz klasör seçilmedi
-
-# Make {kind}
-ted3ef83b = { $kind } oluştur
-
-# Store, fastest
-ta65137d8 = Sakla, en hızlı
-
-# Normal
-t58de2772 = Normal
-
-# Smallest
-t39eb3f74 = En küçük
 
 # From the Files app, a USB drive or Drive
 te849b010 = Files uygulamasından, bir USB sürücüden ya da Drive'dan

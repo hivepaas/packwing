@@ -3553,35 +3553,8 @@ tfda7010a = 在此封存檔中搜尋
 # Selected
 tef233294 = 已選取
 
-# AES-256. In 7z the names are hidden too.
-t9c81b89f = AES-256。7z 還會隱藏檔名。
-
-# AES-256.
-tf18b3f5a = AES-256。
-
-# No files yet
-t129e61cf = 還沒有檔案
-
-# Copying them in…
-taf5cb443 = 正在複製…
-
-# Where it goes
-t6e56ac09 = 儲存位置
-
 # No folder chosen yet
 t9c10d9de = 尚未選擇資料夾
-
-# Make {kind}
-ted3ef83b = 建立 { $kind }
-
-# Store, fastest
-ta65137d8 = 僅儲存，最快
-
-# Normal
-t58de2772 = 標準
-
-# Smallest
-t39eb3f74 = 最小
 
 # From the Files app, a USB drive or Drive
 te849b010 = 來自「檔案」應用程式、USB 隨身碟或 Google 雲端硬碟

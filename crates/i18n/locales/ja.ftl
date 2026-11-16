@@ -3544,35 +3544,8 @@ tfda7010a = このアーカイブ内を検索
 # Selected
 tef233294 = 選択済み
 
-# AES-256. In 7z the names are hidden too.
-t9c81b89f = AES-256。7z ではファイル名も隠れます。
-
-# AES-256.
-tf18b3f5a = AES-256。
-
-# No files yet
-t129e61cf = まだファイルがありません
-
-# Copying them in…
-taf5cb443 = 取り込んでいます…
-
-# Where it goes
-t6e56ac09 = 保存先
-
 # No folder chosen yet
 t9c10d9de = フォルダがまだ選ばれていません
-
-# Make {kind}
-ted3ef83b = { $kind } を作成
-
-# Store, fastest
-ta65137d8 = 無圧縮（最速）
-
-# Normal
-t58de2772 = 標準
-
-# Smallest
-t39eb3f74 = 最小
 
 # From the Files app, a USB drive or Drive
 te849b010 = 「ファイル」アプリ、USB ドライブ、Google ドライブから

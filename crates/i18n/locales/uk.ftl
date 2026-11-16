@@ -3694,35 +3694,8 @@ tfda7010a = Шукати в цьому архіві
 # Selected
 tef233294 = Вибрано
 
-# AES-256. In 7z the names are hidden too.
-t9c81b89f = AES-256. У 7z приховуються й назви.
-
-# AES-256.
-tf18b3f5a = AES-256.
-
-# No files yet
-t129e61cf = Файлів поки немає
-
-# Copying them in…
-taf5cb443 = Копіювання…
-
-# Where it goes
-t6e56ac09 = Куди зберегти
-
 # No folder chosen yet
 t9c10d9de = Папку ще не вибрано
-
-# Make {kind}
-ted3ef83b = Створити { $kind }
-
-# Store, fastest
-ta65137d8 = Без стиснення, найшвидше
-
-# Normal
-t58de2772 = Звичайний
-
-# Smallest
-t39eb3f74 = Найменший розмір
 
 # From the Files app, a USB drive or Drive
 te849b010 = Із застосунку «Файли», з USB-накопичувача або Google Диска
