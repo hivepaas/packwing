@@ -88,8 +88,11 @@ val MobileException.said: String
 sealed interface Screen {
     data object Home : Screen
     data object Settings : Screen
-    /** A new archive: in a folder of the phone's, or `on` a storage's folder. */
-    data class Create(val on: Storage? = null) : Screen
+    /**
+     * A new archive: in a folder of the phone's, or `on` a storage's folder;
+     * of `files` to begin with (copies in the app's own folder), if any.
+     */
+    data class Create(val on: Storage? = null, val files: List<java.io.File> = emptyList()) : Screen
     data object Running : Screen
 
     /** A folder of the storage `id`: its path, empty for the top. */
@@ -691,12 +694,6 @@ class AppModel(private val context: Context) {
     }
 
     /**
-     * Makes an archive of `paths` (files the picker gave) called `name`, in
-     * the folder `into`. The core writes it in the app's own folder first,
-     * which a new archive still needs: it is written as it is made, in no
-     * order, and a document tree takes a file only from its start.
-     */
-    /**
      * Makes an archive of `paths` called `name` (with its extension, as the
      * storage gets it) in `folder` of the storage `entry`: written there, or
      * made here first and sent, as the core sees fit.
@@ -725,6 +722,13 @@ class AppModel(private val context: Context) {
         }
     }
 
+    /**
+     * Makes an archive of `paths` (files and folders the picker gave, copied
+     * in) called `name` (with its extension), in the folder `into`. The core
+     * writes it in the app's own folder first, which a new archive still
+     * needs: it is written as it is made, in no order, and a document tree
+     * takes a file only from its start. Cut in parts, every part is copied.
+     */
     fun create(paths: List<File>, name: String, how: NewArchiveHow, into: Uri) {
         if (running != null) return
         val job = Running(Running.What.Create, name, Job.quiet())
@@ -735,11 +739,17 @@ class AppModel(private val context: Context) {
         scope.launch {
             val result = withContext(Dispatchers.IO) {
                 val staging = Documents.staging(context)
-                val wanted = File(staging, name + if (how.format == ArchiveFormat.ZIP) ".zip" else ".7z")
+                val wanted = File(staging, name)
                 runCatching {
-                    val made = createArchive(paths.map { it.path }, wanted.path, how, held)
-                    Documents.exportFileToTree(context, File(made), into)
-                }.also { staging.deleteRecursively() }
+                    createArchive(paths.map { it.path }, wanted.path, how, held)
+                    // Its parts, name.zip.001 on, or the one file: all the core wrote there.
+                    staging.listFiles().orEmpty().sortedBy { it.name }
+                        .map { Documents.exportFileToTree(context, it, into) }
+                        .first()
+                }.also {
+                    staging.deleteRecursively()
+                    paths.forEach { it.parentFile?.deleteRecursively() }
+                }
             }
             result.onSuccess { called -> job.done = tr("{name} is ready", "name" to called) }
                 .onFailure { e ->

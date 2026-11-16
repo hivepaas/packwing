@@ -23,10 +23,12 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.hivepaas.packwing.AppModel
 import com.hivepaas.packwing.Screen
 import com.hivepaas.packwing.Sheet
@@ -73,7 +75,14 @@ fun AppRoot(model: AppModel) {
 
     Scaffold(
         containerColor = tonal().page,
-        snackbarHost = { SnackbarHost(snackbar) },
+        // Above a screen's own button at its foot (Create, Add storage, Read it), not over it.
+        snackbarHost = {
+            val above = when (screen) {
+                is Screen.Create, Screen.AddStorage, is Screen.Checksums -> 80.dp
+                else -> 0.dp
+            }
+            SnackbarHost(snackbar, Modifier.padding(bottom = above))
+        },
         bottomBar = {
             if (screen is Screen.Home || screen is Screen.Settings) {
                 BottomBar(model, screen)
@@ -86,6 +95,9 @@ fun AppRoot(model: AppModel) {
         },
     ) { insets ->
         Box(Modifier.fillMaxSize().padding(bottom = insets.calculateBottomPadding())) {
+            // Each screen of the stack its own state: a New archive gone to
+            // from another, with nothing between, starts afresh.
+            key(model.stack.size, screen) {
             when (screen) {
                 is Screen.Home -> HomeScreen(model)
                 is Screen.Settings -> SettingsScreen(model)
@@ -95,6 +107,7 @@ fun AppRoot(model: AppModel) {
                 is Screen.Checksums -> ChecksumsScreen(model, screen)
                 is Screen.Storage -> StorageScreen(model, screen)
                 Screen.AddStorage -> AddStorageScreen(model)
+            }
             }
         }
     }

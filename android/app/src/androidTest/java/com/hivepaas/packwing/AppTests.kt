@@ -54,12 +54,10 @@ class AppTests {
     private val model: AppModel get() = PackwingApp.model()
 
     @Before
-    fun startAtHome() = onMain {
-        model.home()
+    fun startAtHome() {
+        onMain { model.home() }
         // The last test's keyboard, if it typed, is not this one's.
-        val window = ui.activity.window
-        androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
-            .hide(androidx.core.view.WindowInsetsCompat.Type.ime())
+        hideKeyboard()
     }
 
     @After
@@ -136,7 +134,8 @@ class AppTests {
         ui.onNodeWithText("Checksums").performClick()
         ui.onNodeWithTag("checksum-scope-file").performClick()
         ui.onNodeWithTag("checksum-read").performClick()
-        ui.waitUntilAtLeastOneExists(hasTestTag("checksum-sha256") and hasText(REPORT_SHA256), TIMEOUT)
+        // All of its file read, by a debug build, the emulator busy with others: give it time.
+        ui.waitUntilAtLeastOneExists(hasTestTag("checksum-sha256") and hasText(REPORT_SHA256), 2 * TIMEOUT)
 
         ui.onNodeWithTag("checksum-pasted").performTextInput(REPORT_SHA256.uppercase())
         ui.waitUntilAtLeastOneExists(hasTestTag("checksum-matches"), TIMEOUT)
@@ -448,6 +447,100 @@ class AppTests {
         webdav("DELETE", "$folder/")
     }
 
+    /**
+     * New archives in the formats and ways the desktop makes them, made on the
+     * WebDAV server of `make webdav-start`, where they can be looked for:
+     * skipped without one.
+     */
+    @Test
+    fun newArchivesAreMadeInTheFormatAndWayChosen() {
+        assumeTrue("no WebDAV server: make webdav-start", webdav("PROPFIND", "") in 200..299)
+        val folder = "ui-${java.util.UUID.randomUUID().toString().take(8)}"
+        assertTrue(webdav("MKCOL", folder) in 200..299)
+        val entry = Settings.StorageEntry(
+            java.util.UUID.randomUUID().toString(),
+            "webdav",
+            mapOf("address" to "http://$HOST:$WEBDAV_PORT", "user" to "packwing"),
+        )
+        onMain {
+            model.storages.forEach { model.removeStorage(it) }
+            model.addStorage(entry, mapOf("password" to "packwing"))
+            model.settings.newFormat = "zip"
+        }
+        val spot = Screen.Storage(entry.id, listOf(folder))
+        fun twoFiles(): List<File> {
+            val into = File(app.cacheDir, "making/${java.util.UUID.randomUUID()}").apply { mkdirs() }
+            return listOf(File(into, "a.txt").apply { writeText("a") }, File(into, "b.txt").apply { writeText("b") })
+        }
+
+        // tar.zst, encrypted whole with age to a passphrase: Archive.tar.zst.age.
+        onMain { model.go(Screen.Create(spot, twoFiles())) }
+        ui.waitUntilAtLeastOneExists(hasTestTag("new-format"), TIMEOUT)
+        ui.onNodeWithTag("new-format").performClick()
+        ui.onNodeWithTag("new-format-tar.zst").performClick()
+        ui.waitForText(".tar.zst")
+        ui.onNodeWithTag("new-locked").performClick()
+        ui.waitForText(".tar.zst.age")
+        ui.onNodeWithTag("new-password").performScrollTo().performTextInput("sample-password")
+        makeIt()
+        madeWithoutFailing()
+        eventually { webdav("PROPFIND", "$folder/Archive.tar.zst.age") in 200..299 }
+
+        // Opened where it is, with its passphrase: what went in is there.
+        val size = Regex("<D:getcontentlength>(\\d+)").find(webdavBody("$folder/Archive.tar.zst.age"))?.groupValues?.get(1)?.toULong() ?: 0UL
+        onMain { model.home() }
+        onMain {
+            model.open(
+                Stored(entry.id, listOf(folder, "Archive.tar.zst.age"), size).uri,
+                uniffi.packwing_mobile.Secrets(null, "sample-password", null, null),
+            )
+        }
+        ui.waitForText("a.txt")
+        ui.waitForText("b.txt")
+
+        // ZIP, in parts of 1 MB: Archive.zip.001, .002.
+        val big = File(File(app.cacheDir, "making/${java.util.UUID.randomUUID()}").apply { mkdirs() }, "big.bin")
+            .apply { writeBytes(java.util.Random(7).let { r -> ByteArray(2_500_000).also { r.nextBytes(it) } }) }
+        onMain {
+            model.home()
+            model.go(Screen.Create(spot, listOf(big)))
+        }
+        ui.waitUntilAtLeastOneExists(hasTestTag("new-split"), TIMEOUT)
+        ui.onNodeWithTag("new-format").performClick()
+        ui.onNodeWithTag("new-format-zip").performClick()
+        ui.onNodeWithTag("new-split").performClick()
+        ui.onNodeWithTag("new-split-Custom").performClick()
+        ui.onNodeWithTag("new-part-size").performScrollTo().performTextInput("1")
+        makeIt()
+        madeWithoutFailing()
+        eventually { webdav("PROPFIND", "$folder/big.zip.003") in 200..299 }
+        assertTrue(webdav("PROPFIND", "$folder/big.zip.001") in 200..299)
+
+        // 7z, encrypted whole with age to a public key (an SSH one): Archive.7z.age.
+        onMain {
+            model.home()
+            model.go(Screen.Create(spot, twoFiles()))
+        }
+        ui.waitUntilAtLeastOneExists(hasTestTag("new-format"), TIMEOUT)
+        ui.onNodeWithTag("new-format").performClick()
+        ui.onNodeWithTag("new-format-7z").performClick()
+        ui.onNodeWithTag("new-locked").performClick()
+        ui.onNodeWithTag("new-encryption-1").performScrollTo().performClick()
+        ui.onNodeWithTag("new-age-to-1").performScrollTo().performClick()
+        ui.onNodeWithTag("new-age-key").performScrollTo().performTextInput(SIGNER_KEY)
+        makeIt()
+        madeWithoutFailing()
+        eventually { webdav("PROPFIND", "$folder/Archive.7z.age") in 200..299 }
+
+        onMain {
+            model.clearJob()
+            model.home()
+            model.removeStorage(entry)
+            model.settings.newFormat = "zip"
+        }
+        webdav("DELETE", "$folder/")
+    }
+
     @Test
     fun aPrivateKeyIsKeptAndOneWithAPassphraseAsksForIt() {
         onMain { uniffi.packwing_mobile.sshKeys().forEach { uniffi.packwing_mobile.removeSshKey(it.id) } }
@@ -480,6 +573,57 @@ class AppTests {
     }
 
     // MARK: Helpers
+
+    /**
+     * Waits for the archive being made to be made, and says why if it was
+     * not: compressed by a debug build and sent, with others running, it may
+     * take more than a few seconds. Then forgets the job, as its screen does.
+     */
+    private fun madeWithoutFailing() {
+        until(90_000) { model.running?.let { it.done != null || it.failed != null } == true }
+        var said: String? = null
+        var done: String? = null
+        onMain {
+            said = model.running?.failed
+            done = model.running?.done
+            model.clearJob()
+        }
+        assertEquals(null, said)
+        // What it says of it, in passing, gone: it lies over what is tapped next.
+        done?.let { ui.waitUntilDoesNotExist(hasText(it), 20_000) }
+    }
+
+    /** Create, once it is on: it is off while what it needs is still being typed. */
+    private fun makeIt() {
+        ui.waitUntilAtLeastOneExists(hasTestTag("create-make") and isEnabled(), TIMEOUT)
+        // Done typing, as a thumb says it: the keyboard goes, and Create is where it stays.
+        hideKeyboard()
+        ui.waitForIdle()
+        ui.onNodeWithTag("create-make").performClick()
+        until { model.running != null }
+    }
+
+    private fun hideKeyboard() = onMain {
+        val window = ui.activity.window
+        androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
+            .hide(androidx.core.view.WindowInsetsCompat.Type.ime())
+    }
+
+    /** What the test server says of `path` (Depth 0), as text: its size, for one. */
+    private fun webdavBody(path: String): String = runCatching {
+        java.net.Socket().use { socket ->
+            socket.connect(java.net.InetSocketAddress(HOST, WEBDAV_PORT), 2_000)
+            socket.soTimeout = 10_000
+            val auth = android.util.Base64.encodeToString("packwing:packwing".toByteArray(), android.util.Base64.NO_WRAP)
+            val head = "PROPFIND /${Uri.encode(path, "/")} HTTP/1.1\r\nHost: $HOST:$WEBDAV_PORT\r\n" +
+                "Authorization: Basic $auth\r\nDepth: 0\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
+            socket.getOutputStream().apply {
+                write(head.toByteArray())
+                flush()
+            }
+            socket.getInputStream().bufferedReader().readText()
+        }
+    }.getOrDefault("")
 
     /** Waits for `done`, asked on the test's own thread: one that goes to the network may not be on the main one. */
     private fun eventually(done: () -> Boolean) {
@@ -557,15 +701,15 @@ class AppTests {
     private val app get() = InstrumentationRegistry.getInstrumentation().targetContext
 
     /** Waits for the model to come to `done`, which the core reaches off the main thread. */
-    private fun until(done: () -> Boolean) {
-        val by = System.currentTimeMillis() + TIMEOUT
+    private fun until(timeout: Long = TIMEOUT, done: () -> Boolean) {
+        val by = System.currentTimeMillis() + timeout
         while (System.currentTimeMillis() < by) {
             var now = false
             onMain { now = done() }
             if (now) return
             Thread.sleep(100)
         }
-        throw AssertionError("the app did not get there in ${TIMEOUT / 1000} s")
+        throw AssertionError("the app did not get there in ${timeout / 1000} s")
     }
 
     private fun onMain(work: () -> Unit) =

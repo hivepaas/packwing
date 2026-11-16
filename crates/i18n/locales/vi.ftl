@@ -3544,35 +3544,8 @@ tfda7010a = Tìm trong tệp nén này
 # Selected
 tef233294 = Đã chọn
 
-# AES-256. In 7z the names are hidden too.
-t9c81b89f = AES-256. Với 7z, tên tệp cũng được ẩn.
-
-# AES-256.
-tf18b3f5a = AES-256.
-
-# No files yet
-t129e61cf = Chưa có tệp nào
-
-# Copying them in…
-taf5cb443 = Đang sao chép vào…
-
-# Where it goes
-t6e56ac09 = Lưu ở đâu
-
 # No folder chosen yet
 t9c10d9de = Chưa chọn thư mục
-
-# Make {kind}
-ted3ef83b = Tạo { $kind }
-
-# Store, fastest
-ta65137d8 = Không nén, nhanh nhất
-
-# Normal
-t58de2772 = Bình thường
-
-# Smallest
-t39eb3f74 = Nhỏ nhất
 
 # From the Files app, a USB drive or Drive
 te849b010 = Từ ứng dụng Files, ổ USB hoặc Drive

@@ -3544,35 +3544,8 @@ tfda7010a = 在此压缩包中搜索
 # Selected
 tef233294 = 已选择
 
-# AES-256. In 7z the names are hidden too.
-t9c81b89f = AES-256。7z 还会隐藏文件名。
-
-# AES-256.
-tf18b3f5a = AES-256。
-
-# No files yet
-t129e61cf = 还没有文件
-
-# Copying them in…
-taf5cb443 = 正在复制…
-
-# Where it goes
-t6e56ac09 = 保存位置
-
 # No folder chosen yet
 t9c10d9de = 尚未选择文件夹
-
-# Make {kind}
-ted3ef83b = 创建 { $kind }
-
-# Store, fastest
-ta65137d8 = 仅存储，最快
-
-# Normal
-t58de2772 = 标准
-
-# Smallest
-t39eb3f74 = 最小
 
 # From the Files app, a USB drive or Drive
 te849b010 = 来自“文件”应用、U 盘或 Google 云端硬盘

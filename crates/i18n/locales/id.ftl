@@ -3553,35 +3553,8 @@ tfda7010a = Cari di arsip ini
 # Selected
 tef233294 = Dipilih
 
-# AES-256. In 7z the names are hidden too.
-t9c81b89f = AES-256. Di 7z, nama berkas juga disembunyikan.
-
-# AES-256.
-tf18b3f5a = AES-256.
-
-# No files yet
-t129e61cf = Belum ada berkas
-
-# Copying them in…
-taf5cb443 = Menyalin berkas…
-
-# Where it goes
-t6e56ac09 = Tujuan
-
 # No folder chosen yet
 t9c10d9de = Belum ada folder yang dipilih
-
-# Make {kind}
-ted3ef83b = Buat { $kind }
-
-# Store, fastest
-ta65137d8 = Simpan, tercepat
-
-# Normal
-t58de2772 = Normal
-
-# Smallest
-t39eb3f74 = Terkecil
 
 # From the Files app, a USB drive or Drive
 te849b010 = Dari aplikasi Files, drive USB, atau Drive
