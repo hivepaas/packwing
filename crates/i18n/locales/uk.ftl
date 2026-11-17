@@ -3682,11 +3682,11 @@ td2cca604 = Галерея не прийняла { $name }.
 # packwing could not reach its keychain.
 t4355b914 = packwing не має доступу до свого сховища ключів.
 
-# Select all
-t6af21072 = Вибрати все
-
 # Back
 tc2954bc2 = Назад
+
+# Select all
+t6af21072 = Вибрати все
 
 # Search in this archive
 tfda7010a = Шукати в цьому архіві
@@ -3750,9 +3750,6 @@ t28634679 = Під час роботи
 
 # Tell me when a job is through
 t51e39cf5 = Повідомляти про завершення завдання
-
-# Licence
-t58c031d4 = Ліцензія
 
 # The password is never saved
 t98c65e5a = Пароль ніколи не зберігається

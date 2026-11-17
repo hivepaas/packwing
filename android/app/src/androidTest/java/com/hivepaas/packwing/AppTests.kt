@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isEnabled
@@ -696,6 +697,33 @@ class AppTests {
             model.settings.extractLimit = ExtractLimit.standard.key
             model.showChecksums("sha256 sha1")
         }
+    }
+
+    @Test
+    fun aboutSaysWhichBuildThisIsAndCopiesIt() {
+        onMain { model.go(Screen.Settings) }
+        inSettings(hasTestTag("settings-about"))
+        ui.onNodeWithTag("settings-about").performClick()
+        ui.waitUntilAtLeastOneExists(hasTestTag("about-version"), TIMEOUT)
+        ui.onNodeWithTag("about-version").assertTextContains(BuildConfig.VERSION_NAME, substring = true)
+
+        // Copied as a problem report wants it, as the desktop copies it.
+        ui.onNodeWithTag("about-copy-version").performClick()
+        ui.waitForText("Copied")
+        var copied: String? = null
+        onMain {
+            val clipboard = app.getSystemService(android.content.ClipboardManager::class.java)
+            copied = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+        }
+        assertEquals(com.hivepaas.packwing.ui.versionInfo, copied)
+        assertTrue(copied!!.startsWith("packwing ${BuildConfig.VERSION_NAME} (Android "))
+
+        // The other apps, at its foot.
+        ui.onNodeWithTag("about-list").performScrollToNode(hasTestTag("about-hivepaas"))
+        ui.onNodeWithTag("about-hivepaas").assertExists()
+
+        onMain { model.back() }
+        ui.waitUntilAtLeastOneExists(hasTestTag("settings-list"), TIMEOUT)
     }
 
     // MARK: Helpers

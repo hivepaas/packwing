@@ -101,6 +101,7 @@ fun AppRoot(model: AppModel) {
             when (screen) {
                 is Screen.Home -> HomeScreen(model)
                 is Screen.Settings -> SettingsScreen(model)
+                Screen.About -> AboutScreen(model)
                 is Screen.Folder -> ArchiveScreen(model, screen)
                 is Screen.Create -> CreateScreen(model, screen)
                 is Screen.Running -> RunningScreen(model)

@@ -3532,11 +3532,11 @@ td2cca604 = Thư viện ảnh không nhận { $name }.
 # packwing could not reach its keychain.
 t4355b914 = packwing không truy cập được chuỗi khoá của mình.
 
-# Select all
-t6af21072 = Chọn tất cả
-
 # Back
 tc2954bc2 = Quay lại
+
+# Select all
+t6af21072 = Chọn tất cả
 
 # Search in this archive
 tfda7010a = Tìm trong tệp nén này
@@ -3594,9 +3594,6 @@ t28634679 = Khi đang chạy
 
 # Tell me when a job is through
 t51e39cf5 = Báo khi tác vụ xong
-
-# Licence
-t58c031d4 = Giấy phép
 
 # The password is never saved
 t98c65e5a = Mật khẩu không bao giờ được lưu

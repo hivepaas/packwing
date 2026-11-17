@@ -3541,11 +3541,11 @@ td2cca604 = Galeri tidak mau menerima { $name }.
 # packwing could not reach its keychain.
 t4355b914 = packwing tidak bisa mengakses keychain-nya.
 
-# Select all
-t6af21072 = Pilih semua
-
 # Back
 tc2954bc2 = Kembali
+
+# Select all
+t6af21072 = Pilih semua
 
 # Search in this archive
 tfda7010a = Cari di arsip ini
@@ -3603,9 +3603,6 @@ t28634679 = Saat berjalan
 
 # Tell me when a job is through
 t51e39cf5 = Beri tahu saat tugas selesai
-
-# Licence
-t58c031d4 = Lisensi
 
 # The password is never saved
 t98c65e5a = Kata sandi tidak pernah disimpan

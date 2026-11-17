@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- packwing's feather, as LogoFeather draws it; tinted where it is shown. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="92"
+    android:viewportHeight="92">
+    <group android:translateX="-4.5" android:translateY="-6.5">
+        <path android:fillColor="#000000" android:fillType="evenOdd" android:pathData="M50 63c16 8 18 23 4 34-12-7-18-22-4-34zM48.6 68q3.2 13 3.4 25h2.2q-.4-12-3.4-25z" />
+    </group>
+</vector>

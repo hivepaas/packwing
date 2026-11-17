@@ -3541,11 +3541,11 @@ td2cca604 = 圖庫無法接收 { $name }。
 # packwing could not reach its keychain.
 t4355b914 = packwing 無法存取它的鑰匙圈。
 
-# Select all
-t6af21072 = 全選
-
 # Back
 tc2954bc2 = 返回
+
+# Select all
+t6af21072 = 全選
 
 # Search in this archive
 tfda7010a = 在此封存檔中搜尋
@@ -3603,9 +3603,6 @@ t28634679 = 處理期間
 
 # Tell me when a job is through
 t51e39cf5 = 工作完成時通知我
-
-# Licence
-t58c031d4 = 授權
 
 # The password is never saved
 t98c65e5a = 密碼絕不會被儲存

@@ -100,6 +100,12 @@ there stops it or is replaced, and the most an archive may unpack to; the
 keys; the checksums shown; and whether a job that is through is told
 (`SettingsScreen.kt`).
 
+Settings › **About** says what packwing is and which build this is, copies
+that as a problem report wants it (`packwing 0.3.0 (Android 16 arm64)`), opens
+its licence, source, issues and release notes, and shows the other apps from
+HivePaaS, each with its mark (`AboutScreen.kt`; the marks are the iOS app's,
+as vector drawables).
+
 **Storages** across the network (S3, WebDAV, SFTP) are added on the Archives
 tab, tried before they are kept, and browsed; an archive on one is opened
 where it is, the core reading only what it needs of it, and any other file
@@ -179,8 +185,9 @@ writes what it reads to whatever takes it (`Documents.kt`, `Trees.kt`).
 
 - Pausing a job. The core can stop one, not hold it; the progress screen
   offers Cancel alone. The design's Pause button has nothing behind it.
-- Pro, and Settings › About as the iOS app has it (`ios/README.md`): they
-  come here one by one.
+- Pro, through Google Play Billing, as the iOS app has it through the App
+  Store (`ios/README.md`). About says nothing of updates until the app is on
+  Google Play to keep it up to date.
 - The comic reader and the audit log, which are the desktop's alone.
 - The system's own wallpaper colours. The app keeps packwing's palette on
   every device; the design names this as an option, and it is not wired up.
