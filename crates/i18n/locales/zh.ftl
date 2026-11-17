@@ -3583,26 +3583,17 @@ t601e2927 = 共 { $all }
 # You can leave the app. A notification shows how far it got.
 t018c236f = 你可以离开应用，通知会显示进度。
 
-# Where files go
-t7621af9b = 文件保存位置
+# Follow the system
+t37548210 = 跟随系统
 
 # Ask every time
 t26ab736e = 每次询问
-
-# Replace a file already there
-t3c16bbc4 = 替换已有的文件
 
 # While it works
 t28634679 = 处理期间
 
 # Tell me when a job is through
 t51e39cf5 = 任务完成时通知我
-
-# How it looks
-te7ee60d2 = 外观
-
-# Follow the system
-t37548210 = 跟随系统
 
 # Licence
 t58c031d4 = 许可证
@@ -3616,11 +3607,17 @@ t2c3d6fce = 以后再说
 # The gallery
 t59937d9a = 图库
 
+# Where files go
+t7621af9b = 文件保存位置
+
 # Android asks for this folder once. packwing keeps no other access to your storage.
 t684d18e2 = Android 只会就此文件夹询问一次。packwing 不会保留对你存储空间的其他访问权限。
 
 # The pictures and videos go to your gallery. The other files stay in the archive.
 tc93762ab = 照片和视频会存入图库，其他文件留在压缩包中。
+
+# Replace a file already there
+t3c16bbc4 = 替换已有的文件
 
 # Nothing is written through links, and an archive bomb stops at its size limit.
 t2d95067b = 不会经由链接写入；压缩炸弹到达大小上限即会停止。

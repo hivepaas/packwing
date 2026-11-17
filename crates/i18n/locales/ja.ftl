@@ -3583,26 +3583,17 @@ t601e2927 = { $all } 中
 # You can leave the app. A notification shows how far it got.
 t018c236f = アプリを離れても大丈夫です。進み具合は通知でわかります。
 
-# Where files go
-t7621af9b = 保存先
+# Follow the system
+t37548210 = システムに従う
 
 # Ask every time
 t26ab736e = 毎回確認する
-
-# Replace a file already there
-t3c16bbc4 = 同じ名前のファイルを置き換える
 
 # While it works
 t28634679 = 処理中
 
 # Tell me when a job is through
 t51e39cf5 = 作業が終わったら知らせる
-
-# How it looks
-te7ee60d2 = 表示
-
-# Follow the system
-t37548210 = システムに従う
 
 # Licence
 t58c031d4 = ライセンス
@@ -3616,11 +3607,17 @@ t2c3d6fce = 今はしない
 # The gallery
 t59937d9a = ギャラリー
 
+# Where files go
+t7621af9b = 保存先
+
 # Android asks for this folder once. packwing keeps no other access to your storage.
 t684d18e2 = Android がこのフォルダへのアクセスを確認するのは一度だけです。packwing がストレージのほかの場所にアクセスすることはありません。
 
 # The pictures and videos go to your gallery. The other files stay in the archive.
 tc93762ab = 写真と動画はギャラリーに保存されます。ほかのファイルはアーカイブに残ります。
+
+# Replace a file already there
+t3c16bbc4 = 同じ名前のファイルを置き換える
 
 # Nothing is written through links, and an archive bomb stops at its size limit.
 t2d95067b = リンクの先には何も書き込みません。アーカイブ爆弾はサイズの上限で止まります。

@@ -88,6 +88,18 @@ over it, and it is read again: a change that fails or is stopped leaves the
 archive as it was. One another app handed over to be looked at is read only,
 and offers none of this (`AppModel.change`).
 
+**Settings** are the desktop's and the iOS app's, kept by the same keys
+(`Preferences.kt`): the language, and light, dark or as the system is; what a
+new archive is made with (its format and compression, 7z names hidden, what is
+compressed already put in as it is, from an extension list that can be edited,
+Mac-only files left out, and the size above which one bound for a storage is
+written straight there); where extracted files go (Smart: one item straight
+into the folder, more in a new one; always a new folder named after the
+archive, `report 2` beside `report`; or straight in), whether a file already
+there stops it or is replaced, and the most an archive may unpack to; the
+keys; the checksums shown; and whether a job that is through is told
+(`SettingsScreen.kt`).
+
 **Storages** across the network (S3, WebDAV, SFTP) are added on the Archives
 tab, tried before they are kept, and browsed; an archive on one is opened
 where it is, the core reading only what it needs of it, and any other file
@@ -152,8 +164,8 @@ writes what it reads to whatever takes it (`Documents.kt`, `Trees.kt`).
   the name's extension, and as nothing it knows when there is none.
 - **Replacing is the app's own check.** What hivepack checks of a folder —
   nothing written outside it, nor over what is there — has no meaning for a
-  destination that takes entries, so Settings' "Replace a file already there"
-  is honoured in `DocumentTree` itself. It was not honoured at all while the
+  destination that takes entries, so "Replace a file already there" (Settings
+  › Extracting, and the Extract sheet) is honoured in `DocumentTree` itself. It was not honoured at all while the
   app copied what it extracted across.
 - **No storage permission is asked for.** The document picker and MediaStore
   are the only ways in and out, which is also why the folder a user picks is
@@ -167,9 +179,8 @@ writes what it reads to whatever takes it (`Documents.kt`, `Trees.kt`).
 
 - Pausing a job. The core can stop one, not hold it; the progress screen
   offers Cancel alone. The design's Pause button has nothing behind it.
-- The desktop's other settings (Settings › New archives and Extracting),
-  and Pro: the iOS app has them (`ios/README.md`), and they come
-  here one by one.
+- Pro, and Settings › About as the iOS app has it (`ios/README.md`): they
+  come here one by one.
 - The comic reader and the audit log, which are the desktop's alone.
 - The system's own wallpaper colours. The app keeps packwing's palette on
   every device; the design names this as an option, and it is not wired up.

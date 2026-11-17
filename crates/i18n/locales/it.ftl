@@ -3641,26 +3641,17 @@ t601e2927 = di { $all }
 # You can leave the app. A notification shows how far it got.
 t018c236f = Puoi uscire dall'app. Una notifica mostra a che punto è.
 
-# Where files go
-t7621af9b = Dove vanno i file
+# Follow the system
+t37548210 = Segui il sistema
 
 # Ask every time
 t26ab736e = Chiedi ogni volta
-
-# Replace a file already there
-t3c16bbc4 = Sostituisci un file già presente
 
 # While it works
 t28634679 = Durante il lavoro
 
 # Tell me when a job is through
 t51e39cf5 = Avvisami quando un'attività è finita
-
-# How it looks
-te7ee60d2 = Aspetto
-
-# Follow the system
-t37548210 = Segui il sistema
 
 # Licence
 t58c031d4 = Licenza
@@ -3674,11 +3665,17 @@ t2c3d6fce = Non ora
 # The gallery
 t59937d9a = La galleria
 
+# Where files go
+t7621af9b = Dove vanno i file
+
 # Android asks for this folder once. packwing keeps no other access to your storage.
 t684d18e2 = Android chiede questa cartella una sola volta. packwing non mantiene nessun altro accesso alla tua memoria.
 
 # The pictures and videos go to your gallery. The other files stay in the archive.
 tc93762ab = Immagini e video vanno nella tua galleria. Gli altri file restano nell'archivio.
+
+# Replace a file already there
+t3c16bbc4 = Sostituisci un file già presente
 
 # Nothing is written through links, and an archive bomb stops at its size limit.
 t2d95067b = Nulla viene scritto attraverso i collegamenti, e una bomba di archivi si ferma al suo limite di dimensione.

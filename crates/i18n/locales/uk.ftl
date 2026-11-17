@@ -3739,26 +3739,17 @@ t601e2927 = з { $all }
 # You can leave the app. A notification shows how far it got.
 t018c236f = Можна вийти із застосунку: перебіг покаже сповіщення.
 
-# Where files go
-t7621af9b = Куди зберігати файли
+# Follow the system
+t37548210 = Як у системі
 
 # Ask every time
 t26ab736e = Питати щоразу
-
-# Replace a file already there
-t3c16bbc4 = Замінювати наявний файл
 
 # While it works
 t28634679 = Під час роботи
 
 # Tell me when a job is through
 t51e39cf5 = Повідомляти про завершення завдання
-
-# How it looks
-te7ee60d2 = Вигляд
-
-# Follow the system
-t37548210 = Як у системі
 
 # Licence
 t58c031d4 = Ліцензія
@@ -3772,11 +3763,17 @@ t2c3d6fce = Не зараз
 # The gallery
 t59937d9a = Галерея
 
+# Where files go
+t7621af9b = Куди зберігати файли
+
 # Android asks for this folder once. packwing keeps no other access to your storage.
 t684d18e2 = Android запитає доступ до цієї папки один раз. Іншого доступу до пам’яті пристрою packwing не має.
 
 # The pictures and videos go to your gallery. The other files stay in the archive.
 tc93762ab = Зображення й відео потраплять до галереї. Решта файлів лишиться в архіві.
+
+# Replace a file already there
+t3c16bbc4 = Замінювати наявний файл
 
 # Nothing is written through links, and an archive bomb stops at its size limit.
 t2d95067b = Нічого не записується через посилання, а архівна бомба зупиняється на межі розміру.

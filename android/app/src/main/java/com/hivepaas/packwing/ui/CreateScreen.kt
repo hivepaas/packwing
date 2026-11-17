@@ -71,6 +71,7 @@ import androidx.compose.ui.unit.sp
 import com.hivepaas.packwing.AppModel
 import com.hivepaas.packwing.Documents
 import com.hivepaas.packwing.Screen
+import com.hivepaas.packwing.StreamAbove
 import com.hivepaas.packwing.said
 import com.hivepaas.packwing.tr
 import com.hivepaas.packwing.trN
@@ -86,6 +87,7 @@ import uniffi.packwing_mobile.ageKeyIsPostQuantum
 import uniffi.packwing_mobile.ageKeyProblem
 import uniffi.packwing_mobile.ageKeysIn
 import uniffi.packwing_mobile.archiveFormats
+import uniffi.packwing_mobile.extensionsIn
 import java.io.File
 import java.util.Locale
 
@@ -102,19 +104,19 @@ private enum class Split { None, Email, Usb, Custom }
 private data class KeysFile(val name: String, val keys: List<String>, val leftOut: ULong)
 
 /** The formats, those for one file by itself too, with what each can do. */
-private val formats: List<ArchiveFormatRow> by lazy { archiveFormats(true) }
+internal val formats: List<ArchiveFormatRow> by lazy { archiveFormats(true) }
 
-private val ArchiveFormatRow.key: String get() = ext.removePrefix(".")
+internal val ArchiveFormatRow.key: String get() = ext.removePrefix(".")
 
 /** As it is called: ZIP and 7z by their names, the others by what follows a name. */
-private val ArchiveFormatRow.label: String
+internal val ArchiveFormatRow.label: String
     get() = when (format) {
         ArchiveFormat.ZIP -> "ZIP"
         ArchiveFormat.SEVEN_ZIP -> "7z"
         else -> key
     }
 
-private val levels = listOf(
+internal val levels = listOf(
     CompressionLevel.STORE,
     CompressionLevel.LOWEST,
     CompressionLevel.LOW,
@@ -123,9 +125,9 @@ private val levels = listOf(
     CompressionLevel.HIGHEST,
 )
 
-private val CompressionLevel.key: String get() = name.lowercase(Locale.ROOT)
+internal val CompressionLevel.key: String get() = name.lowercase(Locale.ROOT)
 
-private val CompressionLevel.label: String
+internal val CompressionLevel.label: String
     get() = when (this) {
         CompressionLevel.STORE -> tr("Store")
         CompressionLevel.LOWEST -> tr("Lowest")
@@ -279,6 +281,9 @@ fun CreateScreen(model: AppModel, screen: Screen.Create) {
             storeCompressed = model.settings.storeCompressed,
             skipMacFiles = model.settings.skipMacFiles,
             wholeWithAge = locked && wholeWithAge && !format.usesAge,
+            // Typed in Settings, or the desktop's list until any are.
+            storedExtensions = model.settings.storedExtensions.takeIf { it.isNotBlank() }?.let(::extensionsIn),
+            streamAbove = StreamAbove.of(model.settings.streamAbove).bytes,
         )
         val paths = items.map { it.file }
         val spot = onStorage
@@ -686,74 +691,6 @@ private fun Heading(text: String) = Text(
     fontWeight = FontWeight.Bold,
     color = tonal().accent,
 )
-
-/** A choice of a few, as a row that says the one chosen and opens the others. */
-@Composable
-private fun Choice(title: String, chosen: String, options: List<Pair<String, String>>, tag: String, choose: (String) -> Unit) {
-    val c = tonal()
-    var open by remember { mutableStateOf(false) }
-    Box {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .heightIn(min = 56.dp)
-                .clickable { open = true }
-                .padding(horizontal = 16.dp)
-                .testTag(tag),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(title, Modifier.weight(1f), fontSize = 16.sp, color = c.text)
-            Text(chosen, fontSize = 15.sp, color = c.muted)
-            Icon(Icons.Outlined.ExpandMore, null, tint = c.muted)
-        }
-        DropdownMenu(expanded = open, onDismissRequest = { open = false }, containerColor = c.surface) {
-            options.forEach { (label, key) ->
-                DropdownMenuItem(
-                    text = { Text(label, color = c.text) },
-                    onClick = {
-                        open = false
-                        choose(key)
-                    },
-                    modifier = Modifier.testTag("$tag-$key"),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun Toggle(
-    title: String,
-    on: Boolean,
-    tag: String,
-    detail: String? = null,
-    enabled: Boolean = true,
-    set: (Boolean) -> Unit,
-) {
-    val c = tonal()
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = 16.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(title, fontSize = 16.sp, color = if (enabled) c.text else c.faint)
-            detail?.let { Text(it, fontSize = 12.sp, color = c.muted) }
-        }
-        Switch(
-            checked = on,
-            onCheckedChange = set,
-            enabled = enabled,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = c.surface,
-                checkedTrackColor = c.accent,
-                uncheckedThumbColor = c.outline,
-                uncheckedTrackColor = c.field,
-                uncheckedBorderColor = c.outline,
-            ),
-            modifier = Modifier.testTag(tag),
-        )
-    }
-}
 
 /** Two choices side by side, one picked. */
 @Composable

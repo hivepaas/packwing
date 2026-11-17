@@ -3739,26 +3739,17 @@ t601e2927 = из { $all }
 # You can leave the app. A notification shows how far it got.
 t018c236f = Можно выйти из приложения: ход выполнения покажет уведомление.
 
-# Where files go
-t7621af9b = Куда сохранять файлы
+# Follow the system
+t37548210 = Как в системе
 
 # Ask every time
 t26ab736e = Спрашивать каждый раз
-
-# Replace a file already there
-t3c16bbc4 = Заменять уже существующий файл
 
 # While it works
 t28634679 = Во время работы
 
 # Tell me when a job is through
 t51e39cf5 = Сообщать о завершении задачи
-
-# How it looks
-te7ee60d2 = Внешний вид
-
-# Follow the system
-t37548210 = Как в системе
 
 # Licence
 t58c031d4 = Лицензия
@@ -3772,11 +3763,17 @@ t2c3d6fce = Не сейчас
 # The gallery
 t59937d9a = Галерея
 
+# Where files go
+t7621af9b = Куда сохранять файлы
+
 # Android asks for this folder once. packwing keeps no other access to your storage.
 t684d18e2 = Android запросит доступ к этой папке один раз. Другого доступа к памяти устройства у packwing нет.
 
 # The pictures and videos go to your gallery. The other files stay in the archive.
 tc93762ab = Изображения и видео попадут в галерею. Остальные файлы останутся в архиве.
+
+# Replace a file already there
+t3c16bbc4 = Заменять уже существующий файл
 
 # Nothing is written through links, and an archive bomb stops at its size limit.
 t2d95067b = Ничего не записывается по ссылкам, а архивная бомба останавливается на пределе размера.

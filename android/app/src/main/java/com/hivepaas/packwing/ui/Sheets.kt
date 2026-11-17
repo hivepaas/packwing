@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import com.hivepaas.packwing.AppModel
 import com.hivepaas.packwing.Destination
 import com.hivepaas.packwing.Documents
+import com.hivepaas.packwing.ExtractPlace
 import com.hivepaas.packwing.Sheet
 import com.hivepaas.packwing.tr
 import com.hivepaas.packwing.trN
@@ -317,29 +318,32 @@ fun ExtractSheet(model: AppModel, ask: Sheet.Extract) {
                 )
             }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(c.surface)
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(tr("Replace a file already there"), Modifier.weight(1f), fontSize = 16.sp, color = c.text)
-                Switch(
-                    checked = overwrite,
-                    onCheckedChange = {
-                        overwrite = it
-                        model.settings.overwrite = it
-                    },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = c.surface,
-                        checkedTrackColor = c.accent,
-                        uncheckedThumbColor = c.outline,
-                        uncheckedTrackColor = c.field,
-                        uncheckedBorderColor = c.outline,
-                    ),
-                )
+            // A new folder holds nothing yet: nothing to replace (Settings › Extracting).
+            if (ExtractPlace.of(model.settings.extractTo) != ExtractPlace.NewFolder) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(c.surface)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(tr("Replace a file already there"), Modifier.weight(1f), fontSize = 16.sp, color = c.text)
+                    Switch(
+                        checked = overwrite,
+                        onCheckedChange = {
+                            overwrite = it
+                            model.settings.overwrite = it
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = c.surface,
+                            checkedTrackColor = c.accent,
+                            uncheckedThumbColor = c.outline,
+                            uncheckedTrackColor = c.field,
+                            uncheckedBorderColor = c.outline,
+                        ),
+                    )
+                }
             }
 
             Text(

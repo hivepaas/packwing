@@ -3641,26 +3641,17 @@ t601e2927 = toplam { $all }
 # You can leave the app. A notification shows how far it got.
 t018c236f = Uygulamadan çıkabilirsiniz. Bir bildirim ne kadar ilerlediğini gösterir.
 
-# Where files go
-t7621af9b = Dosyaların gideceği yer
+# Follow the system
+t37548210 = Sistemle aynı
 
 # Ask every time
 t26ab736e = Her seferinde sor
-
-# Replace a file already there
-t3c16bbc4 = Var olan dosyanın üzerine yaz
 
 # While it works
 t28634679 = Çalışırken
 
 # Tell me when a job is through
 t51e39cf5 = Bir iş bitince bana haber ver
-
-# How it looks
-te7ee60d2 = Görünüm
-
-# Follow the system
-t37548210 = Sistemle aynı
 
 # Licence
 t58c031d4 = Lisans
@@ -3674,11 +3665,17 @@ t2c3d6fce = Şimdi değil
 # The gallery
 t59937d9a = Galeri
 
+# Where files go
+t7621af9b = Dosyaların gideceği yer
+
 # Android asks for this folder once. packwing keeps no other access to your storage.
 t684d18e2 = Android bu klasör için yalnızca bir kez izin ister. packwing depolama alanınıza başka hiçbir erişim tutmaz.
 
 # The pictures and videos go to your gallery. The other files stay in the archive.
 tc93762ab = Resimler ve videolar galeriye gider. Diğer dosyalar arşivde kalır.
+
+# Replace a file already there
+t3c16bbc4 = Var olan dosyanın üzerine yaz
 
 # Nothing is written through links, and an archive bomb stops at its size limit.
 t2d95067b = Bağlantılar üzerinden hiçbir şey yazılmaz ve bir arşiv bombası boyut sınırında durur.

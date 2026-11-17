@@ -655,6 +655,15 @@ class AppModel(private val context: Context) {
         val archive = opened ?: return
         if (running != null) return
         val name = archive.info.name.substringBeforeLast('.')
+        // As Settings › Extracting says: a new folder named after the archive,
+        // or the folder itself; Smart takes the folder itself for one item.
+        val going = if (picked.isEmpty()) archive.archive.children(emptyList()).size else picked.size
+        val newFolder = ExtractPlace.of(settings.extractTo).newFolder(going)
+        // A file that is there, which only a folder not new can hold: replaced where Settings says.
+        val how = ExtractHow(
+            overwrite = !newFolder && settings.overwrite,
+            limit = ExtractLimit.of(settings.extractLimit).bytes,
+        )
         val job = Running(Running.What.Extract, archive.info.name, Job.quiet())
         val held = Job(job.listener)
         running = job
@@ -666,12 +675,12 @@ class AppModel(private val context: Context) {
                 runCatching {
                     val into: Made = when (destination) {
                         is Destination.Folder ->
-                            DocumentTree.under(context, destination.uri, name, settings.overwrite)
+                            DocumentTree.into(context, destination.uri, name.takeIf { newFolder }, how.overwrite)
                         Destination.Gallery -> GalleryTree(context, name)
                     }
                     val done = try {
                         archive.archive
-                            .extractInto(into, picked, ExtractHow(settings.overwrite), held)
+                            .extractInto(into, picked, how, held)
                     } catch (e: Throwable) {
                         // Stopped, or it would not write: nothing is left behind.
                         into.undo()
@@ -861,6 +870,15 @@ class AppModel(private val context: Context) {
     /** The job is over and its word has been read: the screen can forget it. */
     fun clearJob() {
         running = null
+    }
+
+    /** Light, dark, or as the system is: Settings › General. */
+    var appearance by mutableStateOf(Appearance.of(settings.appearance))
+        private set
+
+    fun chooseAppearance(to: Appearance) {
+        appearance = to
+        settings.appearance = to.key
     }
 
     fun setLanguage(tag: String?) {

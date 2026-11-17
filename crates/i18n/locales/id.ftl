@@ -3592,26 +3592,17 @@ t601e2927 = dari { $all }
 # You can leave the app. A notification shows how far it got.
 t018c236f = Anda bisa meninggalkan aplikasi. Notifikasi akan menunjukkan sejauh mana prosesnya.
 
-# Where files go
-t7621af9b = Tujuan berkas
+# Follow the system
+t37548210 = Ikuti sistem
 
 # Ask every time
 t26ab736e = Selalu tanya
-
-# Replace a file already there
-t3c16bbc4 = Ganti berkas yang sudah ada
 
 # While it works
 t28634679 = Saat berjalan
 
 # Tell me when a job is through
 t51e39cf5 = Beri tahu saat tugas selesai
-
-# How it looks
-te7ee60d2 = Tampilan
-
-# Follow the system
-t37548210 = Ikuti sistem
 
 # Licence
 t58c031d4 = Lisensi
@@ -3625,11 +3616,17 @@ t2c3d6fce = Nanti saja
 # The gallery
 t59937d9a = Galeri
 
+# Where files go
+t7621af9b = Tujuan berkas
+
 # Android asks for this folder once. packwing keeps no other access to your storage.
 t684d18e2 = Android hanya sekali meminta izin untuk folder ini. packwing tidak menyimpan akses lain ke penyimpanan Anda.
 
 # The pictures and videos go to your gallery. The other files stay in the archive.
 tc93762ab = Gambar dan video masuk ke galeri. Berkas lainnya tetap di dalam arsip.
+
+# Replace a file already there
+t3c16bbc4 = Ganti berkas yang sudah ada
 
 # Nothing is written through links, and an archive bomb stops at its size limit.
 t2d95067b = Tidak ada yang ditulis melalui tautan, dan bom arsip berhenti di batas ukurannya.
