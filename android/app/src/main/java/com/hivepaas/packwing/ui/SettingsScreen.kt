@@ -65,7 +65,7 @@ import uniffi.packwing_mobile.languages
 /**
  * What the user chooses, as the desktop's Settings and the iOS app's: the
  * language and how it looks, what new archives are made with, where extracted
- * files go, the keys, the checksums shown, and what to be told.
+ * files go, packwing Pro, the keys, the checksums shown, and what to be told.
  */
 @Composable
 fun SettingsScreen(model: AppModel) {
@@ -257,6 +257,10 @@ fun SettingsScreen(model: AppModel) {
             }
         }
         item { Note(tr("Stops archive bombs: small files that unpack to fill the disk")) }
+
+        item { Heading(tr("License")) }
+        item { Group { License(model) } }
+        item { Note(tr("Pro by subscription, on every Android phone and tablet with your Google Account.")) }
 
         item { Heading(tr("Keys you trust")) }
         item { TrustedKeys(model) }

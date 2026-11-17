@@ -111,6 +111,7 @@ private fun said(e: Throwable): String = (e as? MobileException)?.said ?: e.mess
 fun StoragesGroup(model: AppModel) {
     val c = tonal()
     var removing by remember { mutableStateOf<Settings.StorageEntry?>(null) }
+    var limited by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(c.surface)) {
         model.storages.forEach { entry ->
             val kind = storageKinds().firstOrNull { it.id == entry.kind }
@@ -154,7 +155,7 @@ fun StoragesGroup(model: AppModel) {
             Modifier
                 .fillMaxWidth()
                 .heightIn(min = 56.dp)
-                .clickable { model.go(Screen.AddStorage) }
+                .clickable { if (model.mayAddStorage) model.go(Screen.AddStorage) else limited = true }
                 .padding(horizontal = 18.dp)
                 .testTag("storage-new"),
             verticalAlignment = Alignment.CenterVertically,
@@ -163,6 +164,36 @@ fun StoragesGroup(model: AppModel) {
             Icon(Icons.Outlined.Add, null, tint = c.accent)
             Text(tr("Add storage"), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = c.accent)
         }
+    }
+
+    if (limited) {
+        AlertDialog(
+            onDismissRequest = { limited = false },
+            containerColor = c.surface,
+            title = { Text(tr("Add storage"), color = c.text) },
+            text = { Text(tr("packwing Free keeps one storage across a network. Pro lifts this."), color = c.muted) },
+            confirmButton = {
+                TextButton(onClick = { limited = false }, modifier = Modifier.testTag("storage-limit-ok")) {
+                    Text(tr("OK"), color = c.accent)
+                }
+            },
+            // The plans are in Settings, with what renews and how to stop it.
+            dismissButton = if (model.store.sold != false) {
+                {
+                    TextButton(
+                        onClick = {
+                            limited = false
+                            model.go(Screen.Settings)
+                        },
+                        modifier = Modifier.testTag("storage-limit-settings"),
+                    ) {
+                        Text(tr("Settings"), color = c.accent)
+                    }
+                }
+            } else {
+                null
+            },
+        )
     }
 
     removing?.let { entry ->

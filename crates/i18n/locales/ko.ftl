@@ -3568,6 +3568,21 @@ t5af2ebc0 =
        *[other] { $n }개월 전
     }
 
+# Google Play does not sell Pro in your country or region, or not on this device. A subscription of this Google Account can still be restored.
+t5fd84703 = Google Play는 사용자의 국가 또는 지역에서, 또는 이 기기에서 Pro를 판매하지 않습니다. 이 Google 계정의 구독은 복원할 수 있습니다.
+
+# Payment is charged to your Google Account. A subscription renews automatically for the same period and price until you cancel it; manage or cancel it in your Google Play subscriptions.
+t2fec51fc = 결제 금액은 Google 계정으로 청구됩니다. 구독은 취소할 때까지 같은 기간과 가격으로 자동 갱신됩니다. Google Play 구독에서 관리하거나 취소할 수 있습니다.
+
+# Waiting for the payment: packwing turns Pro once it is through.
+t897b1c86 = 결제를 기다리는 중: 결제가 완료되면 packwing이 Pro가 됩니다.
+
+# Google Play found no subscription of this Google Account.
+t75029269 = Google Play에서 이 Google 계정의 구독을 찾지 못했습니다.
+
+# Google Play could not do it: {why}
+t18614428 = Google Play에서 처리하지 못했습니다: { $why }
+
 # Making an archive
 tff4bea1d = 압축 파일 만드는 중
 
@@ -3588,6 +3603,9 @@ t37548210 = 시스템 설정 따르기
 
 # Ask every time
 t26ab736e = 매번 묻기
+
+# Pro by subscription, on every Android phone and tablet with your Google Account.
+t4cea5687 = 구독형 Pro, Google 계정을 사용하는 모든 Android 휴대전화와 태블릿에서.
 
 # While it works
 t28634679 = 작업 중

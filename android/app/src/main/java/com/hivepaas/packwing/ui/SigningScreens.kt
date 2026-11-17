@@ -25,6 +25,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Draw
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.MoreVert
@@ -66,6 +67,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hivepaas.packwing.AppModel
+import com.hivepaas.packwing.Screen
 import com.hivepaas.packwing.Stored
 import com.hivepaas.packwing.said
 import com.hivepaas.packwing.tr
@@ -152,6 +154,7 @@ fun SignSheet(model: AppModel) {
     }
 
     fun sign() {
+        if (!model.store.holds) return
         val with = key ?: return
         chosen = with.id
         model.settings.signingKey = with.id
@@ -210,7 +213,32 @@ fun SignSheet(model: AppModel) {
                 maxLines = 2,
                 overflow = TextOverflow.MiddleEllipsis,
             )
-            if (!maySign(name)) {
+            if (!model.store.holds) {
+                // Checking one is free: the Signature sheet, not this one.
+                Column(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(c.surface).padding(16.dp).testTag("sign-pro"),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Icon(Icons.Outlined.Draw, null, tint = c.accent)
+                        Text(
+                            tr("Signing takes packwing Pro: Settings › License. Checking a signature is free."),
+                            fontSize = 15.sp,
+                            lineHeight = 20.sp,
+                            color = c.text,
+                        )
+                    }
+                    TextButton(
+                        onClick = {
+                            model.sheet = null
+                            model.go(Screen.Settings)
+                        },
+                        modifier = Modifier.align(Alignment.End).testTag("sign-pro-settings"),
+                    ) {
+                        Text(tr("Settings"), color = c.accent, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            } else if (!maySign(name)) {
                 Warn(tr("This is one part of a file cut in several. A signature covers one file, and would seem to cover them all, so packwing does not sign parts."))
             } else {
                 Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(c.surface)) {

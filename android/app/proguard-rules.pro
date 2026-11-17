@@ -7,3 +7,5 @@
 # handed to Rust, which calls them back by their JNA names.
 -keep class com.hivepaas.packwing.uniffi.** { *; }
 -keep class uniffi.packwing_mobile.** { *; }
+# JNA's AWT helpers, which Android has no AWT for and the app never calls.
+-dontwarn java.awt.**

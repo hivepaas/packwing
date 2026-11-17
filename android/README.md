@@ -106,6 +106,19 @@ its licence, source, issues and release notes, and shows the other apps from
 HivePaaS, each with its mark (`AboutScreen.kt`; the marks are the iOS app's,
 as vector drawables).
 
+Settings › **License** sells **packwing Pro** through Google Play Billing, by
+subscription, a month or a year (`Store.kt`, `License.kt`): one subscription,
+`pro`, of two base plans, `monthly` and `yearly`. packwing Free does all
+but sign files, and keeps one storage across a network; the Sign sheet
+and Add storage say so and lead to Settings. Only a purchase Google Play
+signed with the Play Console's licence key counts (checked on the device, as
+the iOS app checks the App Store's), and only while it is current: it is
+asked again whenever packwing comes back to the screen, and acknowledged once
+held. A build is given the key as `PACKWING_PLAY_LICENSE_KEY`; one without it
+holds Pro by no purchase. Pro on Android is Google Play's alone: a
+subscription of the App Store's or of the desktop's does not carry over. The
+UI tests play the store with `FakeStore`, which a debug build swaps in.
+
 **Storages** across the network (S3, WebDAV, SFTP) are added on the Archives
 tab, tried before they are kept, and browsed; an archive on one is opened
 where it is, the core reading only what it needs of it, and any other file
@@ -185,9 +198,9 @@ writes what it reads to whatever takes it (`Documents.kt`, `Trees.kt`).
 
 - Pausing a job. The core can stop one, not hold it; the progress screen
   offers Cancel alone. The design's Pause button has nothing behind it.
-- Pro, through Google Play Billing, as the iOS app has it through the App
-  Store (`ios/README.md`). About says nothing of updates until the app is on
-  Google Play to keep it up to date.
+- About says nothing of updates until the app is on Google Play to keep it
+  up to date. Pro has been bought through no real Google Play yet: the
+  subscription and its plans are made in the Play Console with the app.
 - The comic reader and the audit log, which are the desktop's alone.
 - The system's own wallpaper colours. The app keeps packwing's palette on
   every device; the design names this as an option, and it is not wired up.

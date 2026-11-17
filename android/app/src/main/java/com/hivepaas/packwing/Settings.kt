@@ -144,6 +144,11 @@ class Settings(context: Context) {
         get() = prefs.getString(SIGNING_KEY, null) ?: ""
         set(value) = prefs.edit().putString(SIGNING_KEY, value).apply()
 
+    /** Pro, as the UI tests' store ([FakeStore]) keeps it: bought, and not yet ended. */
+    var fakePro: Boolean
+        get() = prefs.getBoolean(FAKE_PRO, false)
+        set(value) = prefs.edit().putBoolean(FAKE_PRO, value).apply()
+
     var tellWhenDone: Boolean
         get() = prefs.getBoolean(TELL_WHEN_DONE, true)
         set(value) = prefs.edit().putBoolean(TELL_WHEN_DONE, value).apply()
@@ -220,6 +225,7 @@ class Settings(context: Context) {
         const val EXTRACT_LIMIT = "extractLimit"
         const val APPEARANCE = "appearance"
         const val STORAGE_HIDDEN = "storageHidden"
+        const val FAKE_PRO = "fakePro"
         const val RECENT = "recent"
         const val MOST_RECENT = 40
     }
