@@ -3583,26 +3583,17 @@ t601e2927 = trên { $all }
 # You can leave the app. A notification shows how far it got.
 t018c236f = Bạn có thể rời ứng dụng. Một thông báo sẽ cho biết tiến độ.
 
-# Where files go
-t7621af9b = Nơi lưu tệp
+# Follow the system
+t37548210 = Theo hệ thống
 
 # Ask every time
 t26ab736e = Hỏi mỗi lần
-
-# Replace a file already there
-t3c16bbc4 = Thay tệp đã có sẵn
 
 # While it works
 t28634679 = Khi đang chạy
 
 # Tell me when a job is through
 t51e39cf5 = Báo khi tác vụ xong
-
-# How it looks
-te7ee60d2 = Giao diện
-
-# Follow the system
-t37548210 = Theo hệ thống
 
 # Licence
 t58c031d4 = Giấy phép
@@ -3616,11 +3607,17 @@ t2c3d6fce = Để sau
 # The gallery
 t59937d9a = Thư viện ảnh
 
+# Where files go
+t7621af9b = Nơi lưu tệp
+
 # Android asks for this folder once. packwing keeps no other access to your storage.
 t684d18e2 = Android chỉ hỏi quyền cho thư mục này một lần. packwing không giữ quyền truy cập nào khác vào bộ nhớ của bạn.
 
 # The pictures and videos go to your gallery. The other files stay in the archive.
 tc93762ab = Ảnh và video sẽ được lưu vào thư viện ảnh. Các tệp khác vẫn ở trong tệp nén.
+
+# Replace a file already there
+t3c16bbc4 = Thay tệp đã có sẵn
 
 # Nothing is written through links, and an archive bomb stops at its size limit.
 t2d95067b = Không có gì được ghi qua liên kết, và bom nén sẽ dừng ở giới hạn dung lượng.

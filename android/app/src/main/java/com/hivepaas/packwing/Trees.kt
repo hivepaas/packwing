@@ -38,14 +38,15 @@ class DocumentTree(
     private val context: Context,
     private val top: DocumentFile,
     private val overwrite: Boolean,
+    madeTop: Boolean = false,
 ) : Made {
 
     private val folders = HashMap<String, DocumentFile>()
     private var writing: OutputStream? = null
     private var made: DocumentFile? = null
 
-    /** What was not there before, newest last. */
-    private val wrote = ArrayList<DocumentFile>()
+    /** What was not there before, newest last: the folder made for it first. */
+    private val wrote = ArrayList<DocumentFile>().apply { if (madeTop) add(top) }
 
     override fun `directory`(path: List<String>) {
         folder(path)
@@ -58,7 +59,7 @@ class DocumentTree(
             if (!overwrite) fail(tr("{name} is already in the folder.", "name" to name))
             there.delete()
         }
-        val file = into.createFile(Documents.saveMime(name), name)
+        val file = newFile(into, name)
             ?: fail(tr("packwing could not write {name}.", "name" to name))
         wrote.add(file)
         made = file
@@ -96,6 +97,19 @@ class DocumentTree(
         made = null
     }
 
+    /**
+     * A file called `name` in `into`. In a folder reached by its path it is
+     * made by that path: DocumentFile would add the extension of its kind to
+     * the name, which a document provider, told the kind it reads from the
+     * name, does not.
+     */
+    private fun newFile(into: DocumentFile, name: String): DocumentFile? {
+        val path = into.uri.takeIf { it.scheme == "file" }?.path
+            ?: return into.createFile(Documents.saveMime(name), name)
+        val file = java.io.File(path, name)
+        return if (file.createNewFile()) DocumentFile.fromFile(file) else null
+    }
+
     /** The folder at `path`, and the ones above it, made as they are needed. */
     private fun folder(path: List<String>): DocumentFile {
         if (path.isEmpty()) return top
@@ -124,17 +138,22 @@ class DocumentTree(
 
     companion object {
         /**
-         * A folder called `name` in the tree the user pointed at, made if it
-         * is not there, to write an archive's files into.
+         * Into the tree the user pointed at: straight into it, or into a new
+         * folder there called `newFolder`, or `newFolder 2`, … if that is taken.
          */
-        fun under(context: Context, tree: Uri, name: String, overwrite: Boolean): DocumentTree {
-            val root = DocumentFile.fromTreeUri(context, tree)
+        fun into(context: Context, tree: Uri, newFolder: String?, overwrite: Boolean): DocumentTree {
+            // A folder reached by its path (`file:`) too: one of the app's own, as the tests use.
+            val root = (if (tree.scheme == "file") tree.path?.let { DocumentFile.fromFile(java.io.File(it)) } else null)
+                ?: DocumentFile.fromTreeUri(context, tree)
                 ?: fail(tr("packwing can no longer reach that folder."))
-            val folder = named(name)
-            val top = root.findFile(folder)?.takeIf { it.isDirectory }
-                ?: root.createDirectory(folder)
-                ?: fail(tr("packwing could not make the folder {name}.", "name" to folder))
-            return DocumentTree(context, top, overwrite)
+            if (newFolder == null) return DocumentTree(context, root, overwrite)
+            val base = named(newFolder)
+            val free = generateSequence(1) { it + 1 }
+                .map { n -> if (n == 1) base else "$base $n" }
+                .first { root.findFile(it) == null }
+            val top = root.createDirectory(free)
+                ?: fail(tr("packwing could not make the folder {name}.", "name" to free))
+            return DocumentTree(context, top, overwrite, madeTop = true)
         }
     }
 }

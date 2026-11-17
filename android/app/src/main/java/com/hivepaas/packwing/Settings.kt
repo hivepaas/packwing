@@ -111,6 +111,34 @@ class Settings(context: Context) {
         get() = prefs.getBoolean(SKIP_MAC_FILES, true)
         set(value) = prefs.edit().putBoolean(SKIP_MAC_FILES, value).apply()
 
+    /**
+     * What goes in as it is, with [storeCompressed]: extensions apart by
+     * spaces; empty for the desktop's list, which it then follows.
+     */
+    var storedExtensions: String
+        get() = prefs.getString(STORED_EXTENSIONS, null) ?: ""
+        set(value) = prefs.edit().putString(STORED_EXTENSIONS, value).apply()
+
+    /** Above how many bytes an archive bound for a storage is written straight there, by its key. */
+    var streamAbove: String
+        get() = prefs.getString(STREAM_ABOVE, null) ?: StreamAbove.standard.key
+        set(value) = prefs.edit().putString(STREAM_ABOVE, value).apply()
+
+    /** Where an archive's files go in the folder chosen, by its key ([ExtractPlace]). */
+    var extractTo: String
+        get() = prefs.getString(EXTRACT_TO, null) ?: ExtractPlace.Smart.key
+        set(value) = prefs.edit().putString(EXTRACT_TO, value).apply()
+
+    /** The most an archive may unpack to, by its key ([ExtractLimit]). */
+    var extractLimit: String
+        get() = prefs.getString(EXTRACT_LIMIT, null) ?: ExtractLimit.standard.key
+        set(value) = prefs.edit().putString(EXTRACT_LIMIT, value).apply()
+
+    /** Light, dark, or as the system is, by its key ([Appearance]). */
+    var appearance: String
+        get() = prefs.getString(APPEARANCE, null) ?: Appearance.System.key
+        set(value) = prefs.edit().putString(APPEARANCE, value).apply()
+
     /** The signing key signed with last, by its id, to start with. */
     var signingKey: String
         get() = prefs.getString(SIGNING_KEY, null) ?: ""
@@ -186,6 +214,11 @@ class Settings(context: Context) {
         const val HIDE_NAMES = "hideNames"
         const val STORE_COMPRESSED = "storeCompressed"
         const val SKIP_MAC_FILES = "skipMacFiles"
+        const val STORED_EXTENSIONS = "storedExtensions"
+        const val STREAM_ABOVE = "streamAbove"
+        const val EXTRACT_TO = "extractTo"
+        const val EXTRACT_LIMIT = "extractLimit"
+        const val APPEARANCE = "appearance"
         const val STORAGE_HIDDEN = "storageHidden"
         const val RECENT = "recent"
         const val MOST_RECENT = 40

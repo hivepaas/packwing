@@ -4,6 +4,7 @@ import android.Manifest
 import android.net.Uri
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isEnabled
@@ -220,7 +221,7 @@ class AppTests {
             model.home()
             model.go(Screen.Settings)
         }
-        ui.waitForText("Tester")
+        inSettings(hasText("Tester"))
         ui.waitForText(SIGNER)
 
         // Beside an archive it is not of: by a key trusted, and it does not match.
@@ -268,8 +269,8 @@ class AppTests {
             model.home()
             model.go(Screen.Settings)
         }
-        ui.waitUntilAtLeastOneExists(hasTestTag("signing-key-menu-Tester"), TIMEOUT)
-        ui.onNodeWithTag("signing-key-menu-Tester").performScrollTo().performClick()
+        inSettings(hasTestTag("signing-key-menu-Tester"))
+        ui.onNodeWithTag("signing-key-menu-Tester").performClick()
         ui.onNodeWithText("Remove").performClick()
         ui.onNodeWithTag("signing-remove").performClick()
         until { uniffi.packwing_mobile.signingKeys().isEmpty() }
@@ -282,7 +283,7 @@ class AppTests {
     fun aPublicKeyPastedInSettingsIsTrusted() {
         forgetKeys()
         onMain { model.go(Screen.Settings) }
-        ui.waitUntilAtLeastOneExists(hasTestTag("add-key"), TIMEOUT)
+        inSettings(hasTestTag("add-key"))
         ui.onNodeWithTag("add-key").performClick()
         ui.onNodeWithTag("key-text").performTextInput("not a key")
         ui.onNodeWithTag("key-text").performTextClearance()
@@ -598,10 +599,8 @@ class AppTests {
     fun aPrivateKeyIsKeptAndOneWithAPassphraseAsksForIt() {
         onMain { uniffi.packwing_mobile.sshKeys().forEach { uniffi.packwing_mobile.removeSshKey(it.id) } }
         onMain { model.go(Screen.Settings) }
-        ui.waitUntilAtLeastOneExists(hasTestTag("settings-list"), TIMEOUT)
-
         // Below the signing keys: in sight first, clear of the bar at the foot.
-        ui.onNodeWithTag("settings-list").performScrollToNode(hasTestTag("ssh-key-add"))
+        inSettings(hasTestTag("ssh-key-add"))
         ui.onNodeWithTag("ssh-key-add").performClick()
         ui.onNodeWithTag("private-key-text").performTextInput(TEST_KEY)
         ui.onNodeWithTag("private-key-name").performTextInput("Plain")
@@ -628,7 +627,108 @@ class AppTests {
         onMain { uniffi.packwing_mobile.sshKeys().forEach { uniffi.packwing_mobile.removeSshKey(it.id) } }
     }
 
+    @Test
+    fun settingsSayHowArchivesAreMadeAndWhereTheirFilesGo() {
+        onMain {
+            model.settings.extractTo = ExtractPlace.Smart.key
+            model.settings.overwrite = false
+            model.settings.storedExtensions = ""
+            model.showChecksums("sha256 sha1")
+            model.go(Screen.Settings)
+        }
+        ui.waitUntilAtLeastOneExists(hasTestTag("settings-list"), TIMEOUT)
+
+        // Dark, whatever the system is; then as it is again.
+        choose("settings-appearance", Appearance.Dark.key)
+        until { model.appearance == Appearance.Dark && model.settings.appearance == "dark" }
+        choose("settings-appearance", Appearance.System.key)
+        until { model.appearance == Appearance.System }
+
+        // New archives: the format and what goes in as it is.
+        choose("settings-format", "7z")
+        assertEquals("7z", model.settings.newFormat)
+        choose("settings-format", "zip")
+        ui.onNodeWithTag("settings-list").performScrollToNode(hasTestTag("settings-stored-extensions"))
+        ui.onNodeWithTag("settings-stored-extensions").performClick()
+        ui.waitUntilAtLeastOneExists(hasTestTag("settings-extensions"), TIMEOUT)
+        ui.onNodeWithTag("settings-extensions").performTextClearance()
+        ui.onNodeWithTag("settings-extensions").performTextInput("ABC .def")
+        until { model.settings.storedExtensions == "abc def" }
+        ui.onNodeWithTag("settings-extensions-reset").performClick()
+        until { model.settings.storedExtensions == "" }
+        hideKeyboard()
+        onMain { model.home() }
+        onMain { model.go(Screen.Settings) }
+        ui.waitUntilAtLeastOneExists(hasTestTag("settings-list"), TIMEOUT)
+
+        // A checksum shown too, as Checksums' menu would.
+        ui.onNodeWithTag("settings-list").performScrollToNode(hasTestTag("settings-checksum-md5"))
+        ui.onNodeWithTag("settings-checksum-md5").performClick()
+        until { "md5" in model.checksumKeys.split(' ') }
+
+        // Extracting: in a new folder, named after the archive, and another beside it.
+        choose("settings-extract-to", ExtractPlace.NewFolder.key)
+        choose("settings-extract-limit", "none")
+        assertEquals("none", model.settings.extractLimit)
+        val folder = File(app.cacheDir, "extracted-${java.util.UUID.randomUUID()}").apply { mkdirs() }
+        open("report.zip")
+        ui.waitForText("Báo cáo quý 3")
+        assertEquals(null, extractInto(folder))
+        assertEquals(null, extractInto(folder))
+        assertEquals(setOf("report", "report 2"), folder.list()!!.toSet())
+        assertTrue(folder.walk().joinToString { it.relativeTo(folder).path }, File(folder, "report 2/Báo cáo quý 3/Ghi chú.txt").isFile)
+
+        // Straight into the folder; and again, which stops, a file being there.
+        onMain { model.settings.extractTo = ExtractPlace.Here.key }
+        val straight = File(folder, "straight").apply { mkdirs() }
+        assertEquals(null, extractInto(straight))
+        assertTrue(File(straight, "Báo cáo quý 3/Doanh thu.csv").isFile)
+        assertTrue(extractInto(straight) != null)
+
+        // Smart: one folder in it, so straight in, as Here.
+        onMain { model.settings.extractTo = ExtractPlace.Smart.key }
+        val smart = File(folder, "smart").apply { mkdirs() }
+        assertEquals(null, extractInto(smart))
+        assertEquals(setOf("Báo cáo quý 3"), smart.list()!!.toSet())
+
+        folder.deleteRecursively()
+        onMain {
+            model.settings.extractLimit = ExtractLimit.standard.key
+            model.showChecksums("sha256 sha1")
+        }
+    }
+
     // MARK: Helpers
+
+    /** Brings what `matches` into sight in Settings: a row far down is not there until it is. */
+    private fun inSettings(matches: SemanticsMatcher) {
+        ui.waitUntilAtLeastOneExists(hasTestTag("settings-list"), TIMEOUT)
+        ui.onNodeWithTag("settings-list").performScrollToNode(matches)
+    }
+
+    /** Picks `key` in the Settings row `tag`, scrolled to first. */
+    private fun choose(tag: String, key: String) {
+        inSettings(hasTestTag(tag))
+        ui.onNodeWithTag(tag).performClick()
+        ui.waitUntilAtLeastOneExists(hasTestTag("$tag-$key"), TIMEOUT)
+        ui.onNodeWithTag("$tag-$key").performClick()
+        ui.waitUntilDoesNotExist(hasTestTag("$tag-$key"), TIMEOUT)
+    }
+
+    /** Extracts all of the archive open into `folder`, by its path; what it said if it failed. */
+    private fun extractInto(folder: File): String? {
+        onMain {
+            model.clearJob()
+            model.extract(emptyList(), Destination.Folder(Uri.fromFile(folder)))
+        }
+        until(60_000) { model.running?.let { it.done != null || it.failed != null } == true }
+        var said: String? = null
+        onMain {
+            said = model.running?.failed
+            model.clearJob()
+        }
+        return said
+    }
 
     /**
      * Waits for the archive being made to be made, and says why if it was

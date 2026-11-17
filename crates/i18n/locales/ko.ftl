@@ -3583,26 +3583,17 @@ t601e2927 = / { $all }
 # You can leave the app. A notification shows how far it got.
 t018c236f = 앱을 떠나도 됩니다. 진행 상황은 알림으로 보여 줍니다.
 
-# Where files go
-t7621af9b = 저장 위치
+# Follow the system
+t37548210 = 시스템 설정 따르기
 
 # Ask every time
 t26ab736e = 매번 묻기
-
-# Replace a file already there
-t3c16bbc4 = 이미 있는 파일 바꾸기
 
 # While it works
 t28634679 = 작업 중
 
 # Tell me when a job is through
 t51e39cf5 = 작업이 끝나면 알리기
-
-# How it looks
-te7ee60d2 = 화면
-
-# Follow the system
-t37548210 = 시스템 설정 따르기
 
 # Licence
 t58c031d4 = 라이선스
@@ -3616,11 +3607,17 @@ t2c3d6fce = 나중에
 # The gallery
 t59937d9a = 갤러리
 
+# Where files go
+t7621af9b = 저장 위치
+
 # Android asks for this folder once. packwing keeps no other access to your storage.
 t684d18e2 = Android는 이 폴더에 대해 한 번만 묻습니다. packwing은 저장공간의 다른 곳에는 접근하지 않습니다.
 
 # The pictures and videos go to your gallery. The other files stay in the archive.
 tc93762ab = 사진과 동영상은 갤러리에 저장됩니다. 나머지 파일은 압축 파일에 그대로 남습니다.
+
+# Replace a file already there
+t3c16bbc4 = 이미 있는 파일 바꾸기
 
 # Nothing is written through links, and an archive bomb stops at its size limit.
 t2d95067b = 링크를 통해서는 아무것도 쓰지 않으며, 압축 폭탄은 크기 한도에서 멈춥니다.
