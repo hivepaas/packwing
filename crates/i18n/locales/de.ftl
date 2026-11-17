@@ -3588,11 +3588,11 @@ td2cca604 = Die Galerie hat { $name } nicht angenommen.
 # packwing could not reach its keychain.
 t4355b914 = packwing kann seinen Schlüsselbund nicht erreichen.
 
-# Select all
-t6af21072 = Alle auswählen
-
 # Back
 tc2954bc2 = Zurück
+
+# Select all
+t6af21072 = Alle auswählen
 
 # Search in this archive
 tfda7010a = In diesem Archiv suchen
@@ -3652,9 +3652,6 @@ t28634679 = Während der Arbeit
 
 # Tell me when a job is through
 t51e39cf5 = Melden, wenn eine Aufgabe fertig ist
-
-# Licence
-t58c031d4 = Lizenz
 
 # The password is never saved
 t98c65e5a = Das Passwort wird nie gespeichert

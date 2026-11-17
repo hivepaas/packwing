@@ -3532,11 +3532,11 @@ td2cca604 = 갤러리에 { $name }을(를) 추가할 수 없습니다.
 # packwing could not reach its keychain.
 t4355b914 = packwing이 키체인에 접근할 수 없습니다.
 
-# Select all
-t6af21072 = 모두 선택
-
 # Back
 tc2954bc2 = 뒤로
+
+# Select all
+t6af21072 = 모두 선택
 
 # Search in this archive
 tfda7010a = 이 압축 파일에서 검색
@@ -3594,9 +3594,6 @@ t28634679 = 작업 중
 
 # Tell me when a job is through
 t51e39cf5 = 작업이 끝나면 알리기
-
-# Licence
-t58c031d4 = 라이선스
 
 # The password is never saved
 t98c65e5a = 비밀번호는 저장되지 않습니다

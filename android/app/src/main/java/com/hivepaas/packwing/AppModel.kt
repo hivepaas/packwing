@@ -88,6 +88,9 @@ val MobileException.said: String
 sealed interface Screen {
     data object Home : Screen
     data object Settings : Screen
+
+    /** Settings › About. */
+    data object About : Screen
     /**
      * A new archive: in a folder of the phone's, or `on` a storage's folder;
      * of `files` to begin with (copies in the app's own folder), if any.

@@ -3532,11 +3532,11 @@ td2cca604 = 图库无法接收 { $name }。
 # packwing could not reach its keychain.
 t4355b914 = packwing 无法访问它的钥匙串。
 
-# Select all
-t6af21072 = 全选
-
 # Back
 tc2954bc2 = 返回
+
+# Select all
+t6af21072 = 全选
 
 # Search in this archive
 tfda7010a = 在此压缩包中搜索
@@ -3594,9 +3594,6 @@ t28634679 = 处理期间
 
 # Tell me when a job is through
 t51e39cf5 = 任务完成时通知我
-
-# Licence
-t58c031d4 = 许可证
 
 # The password is never saved
 t98c65e5a = 密码绝不会被保存

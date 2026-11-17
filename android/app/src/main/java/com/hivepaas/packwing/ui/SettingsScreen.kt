@@ -52,6 +52,7 @@ import com.hivepaas.packwing.BuildConfig
 import com.hivepaas.packwing.Documents
 import com.hivepaas.packwing.ExtractLimit
 import com.hivepaas.packwing.ExtractPlace
+import com.hivepaas.packwing.Screen
 import com.hivepaas.packwing.StreamAbove
 import com.hivepaas.packwing.tr
 import uniffi.packwing_mobile.ArchiveFormat
@@ -283,12 +284,23 @@ fun SettingsScreen(model: AppModel) {
             }
         }
 
-        item { Heading(tr("About")) }
         item {
             Group {
-                Line("packwing", BuildConfig.VERSION_NAME, open = null)
-                HorizontalDivider(color = c.field)
-                Line(tr("Licence"), "GPL-3.0-or-later", open = null)
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 60.dp)
+                        .clickable { model.go(Screen.About) }
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                        .testTag("settings-about"),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    PackwingLogo(36.dp)
+                    Text(tr("About"), Modifier.weight(1f), fontSize = 16.sp, color = c.text)
+                    Text(BuildConfig.VERSION_NAME, fontSize = 15.sp, color = c.muted)
+                    Icon(Icons.Outlined.ChevronRight, null, tint = c.muted)
+                }
             }
         }
     }

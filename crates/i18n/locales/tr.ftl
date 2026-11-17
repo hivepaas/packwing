@@ -3588,11 +3588,11 @@ td2cca604 = Galeri { $name } dosyasını kabul etmedi.
 # packwing could not reach its keychain.
 t4355b914 = packwing anahtar zincirine erişemiyor.
 
-# Select all
-t6af21072 = Tümünü seç
-
 # Back
 tc2954bc2 = Geri
+
+# Select all
+t6af21072 = Tümünü seç
 
 # Search in this archive
 tfda7010a = Bu arşivde ara
@@ -3652,9 +3652,6 @@ t28634679 = Çalışırken
 
 # Tell me when a job is through
 t51e39cf5 = Bir iş bitince bana haber ver
-
-# Licence
-t58c031d4 = Lisans
 
 # The password is never saved
 t98c65e5a = Parola asla kaydedilmez

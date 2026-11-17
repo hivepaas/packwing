@@ -3532,11 +3532,11 @@ td2cca604 = { $name } をギャラリーに追加できませんでした。
 # packwing could not reach its keychain.
 t4355b914 = packwing からキーチェーンにアクセスできませんでした。
 
-# Select all
-t6af21072 = すべて選択
-
 # Back
 tc2954bc2 = 戻る
+
+# Select all
+t6af21072 = すべて選択
 
 # Search in this archive
 tfda7010a = このアーカイブ内を検索
@@ -3594,9 +3594,6 @@ t28634679 = 処理中
 
 # Tell me when a job is through
 t51e39cf5 = 作業が終わったら知らせる
-
-# Licence
-t58c031d4 = ライセンス
 
 # The password is never saved
 t98c65e5a = パスワードは保存されません
