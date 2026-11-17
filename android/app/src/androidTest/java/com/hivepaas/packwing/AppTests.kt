@@ -2,6 +2,7 @@ package com.hivepaas.packwing
 
 import android.Manifest
 import android.net.Uri
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasTestTag
@@ -14,6 +15,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
@@ -231,6 +234,51 @@ class AppTests {
     }
 
     @Test
+    fun aFileIsSignedWithAKeyMadeHereAndItsSignatureChecks() {
+        forgetKeys()
+        onMain { uniffi.packwing_mobile.signingKeys().forEach { uniffi.packwing_mobile.removeSigningKey(it.id) } }
+        val copy = sample("report.zip")
+        File(copy.path + ".sig").delete()
+        open("report.zip")
+        ui.waitForText("Báo cáo quý 3")
+
+        // A key made where it signs, and the signature beside the file.
+        ui.onNodeWithTag("archive-menu").performClick()
+        ui.onNodeWithTag("archive-sign").performClick()
+        ui.waitUntilAtLeastOneExists(hasTestTag("sign-new-key"), TIMEOUT)
+        ui.onNodeWithTag("sign-new-key").performClick()
+        ui.onNodeWithTag("new-name").performTextInput("Tester")
+        ui.onNodeWithTag("name-confirm").performClick()
+        ui.waitForText("Tester")
+        ui.onNodeWithTag("sign-confirm").performClick()
+        ui.waitUntilAtLeastOneExists(hasTestTag("signed"), 2 * TIMEOUT)
+        assertTrue(File(copy.path + ".sig").readText().startsWith("-----BEGIN SSH SIGNATURE-----"))
+
+        // Whoever holds the key trusts it: the signature says who signed it.
+        // As a person does: the Sign sheet closed, then Signature from the ⋮.
+        onMain { model.sheet = null }
+        ui.waitForIdle()
+        ui.onNodeWithTag("archive-menu").performClick()
+        ui.onNodeWithText("Signature").performClick()
+        ui.waitForText("Signed by Tester", timeout = 2 * TIMEOUT)
+
+        // Kept in Settings, and removed there.
+        onMain {
+            model.sheet = null
+            model.home()
+            model.go(Screen.Settings)
+        }
+        ui.waitUntilAtLeastOneExists(hasTestTag("signing-key-menu-Tester"), TIMEOUT)
+        ui.onNodeWithTag("signing-key-menu-Tester").performScrollTo().performClick()
+        ui.onNodeWithText("Remove").performClick()
+        ui.onNodeWithTag("signing-remove").performClick()
+        until { uniffi.packwing_mobile.signingKeys().isEmpty() }
+
+        forgetKeys()
+        File(copy.path + ".sig").delete()
+    }
+
+    @Test
     fun aPublicKeyPastedInSettingsIsTrusted() {
         forgetKeys()
         onMain { model.go(Screen.Settings) }
@@ -322,7 +370,9 @@ class AppTests {
         assertFalse(entry!!.values.containsKey("password"))
 
         ui.onNodeWithTag("storage-row").performClick()
-        ui.waitUntilAtLeastOneExists(hasTestTag("stored-$folder"), TIMEOUT)
+        // Among the folders other runs left, maybe below what is in sight.
+        ui.waitUntilAtLeastOneExists(hasTestTag("stored-list"), TIMEOUT)
+        ui.onNodeWithTag("stored-list").performScrollToNode(hasTestTag("stored-$folder"))
         ui.onNodeWithTag("stored-$folder").performClick()
         ui.waitUntilAtLeastOneExists(hasTestTag("stored-report.zip"), TIMEOUT)
         ui.onNodeWithTag("stored-report.zip").performClick()
@@ -408,12 +458,15 @@ class AppTests {
         // Copied into the folder made, through the picker of storages and folders.
         ui.onNodeWithTag("stored-menu-Đổi.txt").performClick()
         ui.onNodeWithText("Copy to…").performClick()
-        ui.onNodeWithTag("picker-storage").performClick()
+        // Tapped as what they are, not where: among the folders other runs left,
+        // a row below the sheet's fold is tapped on the scrim, and the sheet goes.
+        ui.waitUntilAtLeastOneExists(hasTestTag("picker-storage"), TIMEOUT)
+        ui.onNodeWithTag("picker-storage").performSemanticsAction(SemanticsActions.OnClick)
         ui.waitUntilAtLeastOneExists(hasTestTag("picker-folder-$folder"), TIMEOUT)
-        ui.onNodeWithTag("picker-folder-$folder").performClick()
+        ui.onNodeWithTag("picker-folder-$folder").performSemanticsAction(SemanticsActions.OnClick)
         ui.waitUntilAtLeastOneExists(hasTestTag("picker-folder-Mới"), TIMEOUT)
-        ui.onNodeWithTag("picker-folder-Mới").performClick()
-        ui.onNodeWithTag("picker-here").performClick()
+        ui.onNodeWithTag("picker-folder-Mới").performSemanticsAction(SemanticsActions.OnClick)
+        ui.onNodeWithTag("picker-here").performSemanticsAction(SemanticsActions.OnClick)
         until { model.changing == null }
         eventually { webdav("PROPFIND", "$folder/Mới/Đổi.txt") in 200..299 }
 
@@ -545,8 +598,10 @@ class AppTests {
     fun aPrivateKeyIsKeptAndOneWithAPassphraseAsksForIt() {
         onMain { uniffi.packwing_mobile.sshKeys().forEach { uniffi.packwing_mobile.removeSshKey(it.id) } }
         onMain { model.go(Screen.Settings) }
-        ui.waitUntilAtLeastOneExists(hasTestTag("ssh-key-add"), TIMEOUT)
+        ui.waitUntilAtLeastOneExists(hasTestTag("settings-list"), TIMEOUT)
 
+        // Below the signing keys: in sight first, clear of the bar at the foot.
+        ui.onNodeWithTag("settings-list").performScrollToNode(hasTestTag("ssh-key-add"))
         ui.onNodeWithTag("ssh-key-add").performClick()
         ui.onNodeWithTag("private-key-text").performTextInput(TEST_KEY)
         ui.onNodeWithTag("private-key-name").performTextInput("Plain")
@@ -554,6 +609,7 @@ class AppTests {
         ui.waitForText("ED25519 · $TEST_KEY_FINGERPRINT")
 
         // One with a passphrase asks for it, and is kept once it is given.
+        ui.onNodeWithTag("settings-list").performScrollToNode(hasTestTag("ssh-key-add"))
         ui.onNodeWithTag("ssh-key-add").performClick()
         ui.onNodeWithTag("private-key-text").performTextInput(TEST_KEY_LOCKED)
         ui.onNodeWithTag("private-key-name").performTextInput("Locked")

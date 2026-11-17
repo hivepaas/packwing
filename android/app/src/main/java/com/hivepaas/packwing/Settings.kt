@@ -111,6 +111,11 @@ class Settings(context: Context) {
         get() = prefs.getBoolean(SKIP_MAC_FILES, true)
         set(value) = prefs.edit().putBoolean(SKIP_MAC_FILES, value).apply()
 
+    /** The signing key signed with last, by its id, to start with. */
+    var signingKey: String
+        get() = prefs.getString(SIGNING_KEY, null) ?: ""
+        set(value) = prefs.edit().putString(SIGNING_KEY, value).apply()
+
     var tellWhenDone: Boolean
         get() = prefs.getBoolean(TELL_WHEN_DONE, true)
         set(value) = prefs.edit().putBoolean(TELL_WHEN_DONE, value).apply()
@@ -176,6 +181,7 @@ class Settings(context: Context) {
         const val TRUSTED_KEYS = "trustedKeys"
         const val STORAGES = "storages"
         const val NEW_FORMAT = "newFormat"
+        const val SIGNING_KEY = "signingKey"
         const val NEW_COMPRESSION = "newCompression"
         const val HIDE_NAMES = "hideNames"
         const val STORE_COMPRESSED = "storeCompressed"

@@ -71,6 +71,15 @@ the document picker, which is what a file Android handed over alone needs. A
 signature by a key not trusted says whose it is, and offers to trust it
 (`SignatureSheet.kt`).
 
+It **signs** one too, as `ssh-keygen -Y sign` does, with a key from Settings ›
+Signing keys: one made here (a hybrid of Ed25519 and ML-DSA-65) or a key file
+added. The signature is written beside the archive where packwing can write
+there (a storage, or a file it reaches by its path), and is saved with the
+document picker otherwise; the signer's own key is trusted, so the archive
+checks at once. Settings shares or copies a key's public half, saves a copy of
+one made here (with a passphrase), and removes it from the device's keychain
+(`SigningScreens.kt`).
+
 A ZIP or 7z archive packwing may write over is **changed** as the desktop
 changes one: files, a folder or photos added (the + in its bar), files
 renamed and deleted (a file's ⋮, or those picked). Android gives no path to
@@ -158,8 +167,8 @@ writes what it reads to whatever takes it (`Documents.kt`, `Trees.kt`).
 
 - Pausing a job. The core can stop one, not hold it; the progress screen
   offers Cancel alone. The design's Pause button has nothing behind it.
-- Signing, the desktop's other settings (Settings › New archives and
-  Extracting), and Pro: the iOS app has them (`ios/README.md`), and they come
+- The desktop's other settings (Settings › New archives and Extracting),
+  and Pro: the iOS app has them (`ios/README.md`), and they come
   here one by one.
 - The comic reader and the audit log, which are the desktop's alone.
 - The system's own wallpaper colours. The app keeps packwing's palette on

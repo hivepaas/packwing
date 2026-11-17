@@ -137,6 +137,9 @@ sealed interface Sheet {
 
     /** A public key to trust: Settings › Keys you trust. */
     data object AddKey : Sheet
+
+    /** The open archive's file signed with a key kept. */
+    data object Sign : Sheet
 }
 
 /** Where what is extracted ends up. */

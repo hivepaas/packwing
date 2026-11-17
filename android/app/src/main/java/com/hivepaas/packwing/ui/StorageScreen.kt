@@ -354,7 +354,7 @@ fun StorageScreen(model: AppModel, screen: Screen.Storage) {
                 color = c.muted,
             )
             else -> LazyColumn(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).testTag("stored-list"),
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 24.dp),
             ) {
                 items(shown, key = { it.name }) { item ->
