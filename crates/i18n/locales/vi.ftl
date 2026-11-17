@@ -3568,6 +3568,21 @@ t5af2ebc0 =
        *[other] { $n } tháng trước
     }
 
+# Google Play does not sell Pro in your country or region, or not on this device. A subscription of this Google Account can still be restored.
+t5fd84703 = Google Play không bán Pro ở quốc gia hoặc khu vực của bạn, hoặc không bán trên thiết bị này. Gói đăng ký của Tài khoản Google này vẫn khôi phục được.
+
+# Payment is charged to your Google Account. A subscription renews automatically for the same period and price until you cancel it; manage or cancel it in your Google Play subscriptions.
+t2fec51fc = Khoản thanh toán được tính vào Tài khoản Google của bạn. Gói đăng ký tự gia hạn với cùng kỳ hạn và giá cho đến khi bạn huỷ; quản lý hoặc huỷ trong mục gói đăng ký của Google Play.
+
+# Waiting for the payment: packwing turns Pro once it is through.
+t897b1c86 = Đang chờ thanh toán: packwing sẽ thành Pro ngay khi thanh toán xong.
+
+# Google Play found no subscription of this Google Account.
+t75029269 = Google Play không tìm thấy gói đăng ký nào của Tài khoản Google này.
+
+# Google Play could not do it: {why}
+t18614428 = Google Play không thể thực hiện: { $why }
+
 # Making an archive
 tff4bea1d = Đang tạo tệp nén
 
@@ -3588,6 +3603,9 @@ t37548210 = Theo hệ thống
 
 # Ask every time
 t26ab736e = Hỏi mỗi lần
+
+# Pro by subscription, on every Android phone and tablet with your Google Account.
+t4cea5687 = Pro theo gói đăng ký, trên mọi điện thoại và máy tính bảng Android dùng Tài khoản Google của bạn.
 
 # While it works
 t28634679 = Khi đang chạy

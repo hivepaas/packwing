@@ -3577,6 +3577,21 @@ t5af2ebc0 =
        *[other] { $n } 個月前
     }
 
+# Google Play does not sell Pro in your country or region, or not on this device. A subscription of this Google Account can still be restored.
+t5fd84703 = Google Play 未在你所在的國家或地區，或未在此裝置上販售 Pro。此 Google 帳戶的訂閱仍可回復。
+
+# Payment is charged to your Google Account. A subscription renews automatically for the same period and price until you cancel it; manage or cancel it in your Google Play subscriptions.
+t2fec51fc = 費用將從你的 Google 帳戶扣款。訂閱會以相同週期與價格自動續訂，直到你取消為止；你可以在 Google Play 的訂閱項目中管理或取消。
+
+# Waiting for the payment: packwing turns Pro once it is through.
+t897b1c86 = 正在等待付款：付款完成後 packwing 即成為 Pro。
+
+# Google Play found no subscription of this Google Account.
+t75029269 = Google Play 找不到此 Google 帳戶的訂閱。
+
+# Google Play could not do it: {why}
+t18614428 = Google Play 無法完成：{ $why }
+
 # Making an archive
 tff4bea1d = 正在建立封存檔
 
@@ -3597,6 +3612,9 @@ t37548210 = 依系統
 
 # Ask every time
 t26ab736e = 每次詢問
+
+# Pro by subscription, on every Android phone and tablet with your Google Account.
+t4cea5687 = 訂閱 Pro，可在使用你 Google 帳戶的所有 Android 手機和平板電腦上使用。
 
 # While it works
 t28634679 = 處理期間

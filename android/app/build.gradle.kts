@@ -21,6 +21,10 @@ fun versionCodeOf(version: String): Int {
 // they come out unsigned.
 val keystore: String? = System.getenv("PACKWING_KEYSTORE")
 
+// The Play Console's licence key (Monetize › Monetization setup), which a
+// purchase of Pro is checked against; a build without it holds Pro by none.
+val playLicenceKey: String = System.getenv("PACKWING_PLAY_LICENSE_KEY") ?: ""
+
 android {
     namespace = "com.hivepaas.packwing"
     compileSdk = 37
@@ -38,6 +42,7 @@ android {
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
         // The UI tests (app/src/androidTest; make android-test).
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "PLAY_LICENSE_KEY", "\"$playLicenceKey\"")
     }
 
     signingConfigs {
@@ -93,6 +98,7 @@ dependencies {
     implementation(libs.documentfile)
     // What the generated Kotlin calls the Rust library through.
     implementation(libs.jna) { artifact { type = "aar" } }
+    implementation(libs.billing.ktx)
 
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.compose.ui.test.junit4)

@@ -3577,6 +3577,21 @@ t5af2ebc0 =
        *[other] { $n } bulan lalu
     }
 
+# Google Play does not sell Pro in your country or region, or not on this device. A subscription of this Google Account can still be restored.
+t5fd84703 = Google Play tidak menjual Pro di negara atau wilayah Anda, atau tidak di perangkat ini. Langganan Akun Google ini tetap bisa dipulihkan.
+
+# Payment is charged to your Google Account. A subscription renews automatically for the same period and price until you cancel it; manage or cancel it in your Google Play subscriptions.
+t2fec51fc = Pembayaran dibebankan ke Akun Google Anda. Langganan diperpanjang otomatis untuk periode dan harga yang sama sampai Anda membatalkannya; kelola atau batalkan di langganan Google Play Anda.
+
+# Waiting for the payment: packwing turns Pro once it is through.
+t897b1c86 = Menunggu pembayaran: packwing menjadi Pro setelah pembayaran selesai.
+
+# Google Play found no subscription of this Google Account.
+t75029269 = Google Play tidak menemukan langganan dari Akun Google ini.
+
+# Google Play could not do it: {why}
+t18614428 = Google Play tidak dapat melakukannya: { $why }
+
 # Making an archive
 tff4bea1d = Membuat arsip
 
@@ -3597,6 +3612,9 @@ t37548210 = Ikuti sistem
 
 # Ask every time
 t26ab736e = Selalu tanya
+
+# Pro by subscription, on every Android phone and tablet with your Google Account.
+t4cea5687 = Pro dengan berlangganan, di setiap ponsel dan tablet Android dengan Akun Google Anda.
 
 # While it works
 t28634679 = Saat berjalan

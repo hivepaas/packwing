@@ -3625,6 +3625,21 @@ t5af2ebc0 =
        *[other] vor { $n } Monaten
     }
 
+# Google Play does not sell Pro in your country or region, or not on this device. A subscription of this Google Account can still be restored.
+t5fd84703 = Google Play verkauft Pro in deinem Land oder deiner Region nicht, oder nicht auf diesem Gerät. Ein Abo dieses Google-Kontos kann trotzdem wiederhergestellt werden.
+
+# Payment is charged to your Google Account. A subscription renews automatically for the same period and price until you cancel it; manage or cancel it in your Google Play subscriptions.
+t2fec51fc = Die Zahlung wird deinem Google-Konto belastet. Ein Abo verlängert sich automatisch für denselben Zeitraum und Preis, bis du es kündigst; verwalte oder kündige es in deinen Google Play-Abos.
+
+# Waiting for the payment: packwing turns Pro once it is through.
+t897b1c86 = Warte auf die Zahlung: packwing wird Pro, sobald sie eingegangen ist.
+
+# Google Play found no subscription of this Google Account.
+t75029269 = Google Play hat kein Abo dieses Google-Kontos gefunden.
+
+# Google Play could not do it: {why}
+t18614428 = Google Play konnte es nicht tun: { $why }
+
 # Making an archive
 tff4bea1d = Archiv wird erstellt
 
@@ -3646,6 +3661,9 @@ t37548210 = Dem System folgen
 
 # Ask every time
 t26ab736e = Jedes Mal fragen
+
+# Pro by subscription, on every Android phone and tablet with your Google Account.
+t4cea5687 = Pro im Abo, auf jedem Android-Smartphone und -Tablet mit deinem Google-Konto.
 
 # While it works
 t28634679 = Während der Arbeit

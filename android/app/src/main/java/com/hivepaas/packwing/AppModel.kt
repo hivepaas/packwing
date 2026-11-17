@@ -180,6 +180,27 @@ class Running(val what: What, val name: String, val job: Job) {
  */
 class AppModel(private val context: Context) {
     val settings = Settings(context)
+
+    /** packwing Pro, of Google Play: what signing and a second storage take. */
+    var store: Store by mutableStateOf(PlayStore(context, BuildConfig.PLAY_LICENSE_KEY))
+        private set
+
+    /**
+     * The UI tests' store in place of Google Play's: Pro held or not, as
+     * `pro` says, and kept so by what the test buys or ends; `noMonthly`
+     * leaves the monthly price out. Debug builds only.
+     */
+    fun fakeStore(pro: Boolean, noMonthly: Boolean = false) {
+        check(BuildConfig.DEBUG) { "the fake store is the UI tests'" }
+        settings.fakePro = pro
+        store = FakeStore(settings, noMonthly)
+    }
+
+    /** The UI tests' store as it would be when packwing starts again: what was bought, kept. */
+    fun restartFakeStore() {
+        check(BuildConfig.DEBUG) { "the fake store is the UI tests'" }
+        store = FakeStore(settings)
+    }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     /** The screens the user came through; the last one is on top. */
@@ -317,6 +338,9 @@ class AppModel(private val context: Context) {
     /** The storages added: their kinds and settings. */
     var storages by mutableStateOf(settings.storages)
         private set
+
+    /** Whether another storage can be added: packwing Free keeps one. */
+    val mayAddStorage: Boolean get() = store.holds || storages.size < Store.FREE_STORAGES
 
     /** The storages open, by id: a connection is kept for what follows. */
     private val connected = mutableMapOf<String, Pair<Settings.StorageEntry, RemoteStorage>>()

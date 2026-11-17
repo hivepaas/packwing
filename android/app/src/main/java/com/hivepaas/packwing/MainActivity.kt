@@ -47,6 +47,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Subscribed on another device, renewed, ended, refunded: as it is now.
+        model.store.refresh()
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handed(intent)?.let(model::open)

@@ -60,7 +60,11 @@ class AppTests {
 
     @Before
     fun startAtHome() {
-        onMain { model.home() }
+        onMain {
+            model.home()
+            // Google Play's store is no test's: Pro held, for what signs or adds a storage.
+            model.fakeStore(pro = true)
+        }
         // The last test's keyboard, if it typed, is not this one's.
         hideKeyboard()
     }
@@ -417,6 +421,107 @@ class AppTests {
         ui.onNodeWithTag("storage-row").performClick()
         ui.waitUntilAtLeastOneExists(hasTestTag("stored-logs"), 30_000)
         onMain { model.storages.forEach { model.removeStorage(it) } }
+    }
+
+    /** Pro by subscription, as the fake store plays Google Play: a year's, kept, and Free again once it ends. */
+    @Test
+    fun proIsSubscribedToInSettingsAndKeptAfterARestart() {
+        onMain {
+            model.fakeStore(pro = false)
+            model.go(Screen.Settings)
+        }
+        inSettings(hasTestTag("store-plan"))
+        ui.onNodeWithTag("store-plan").assertTextContains("packwing Free")
+        // The terms are the last of the plans: all of them are there then.
+        inSettings(hasTestTag("store-privacy"))
+        ui.onNodeWithTag("store-buy-yearly").assertTextContains("$8.99 a year")
+        ui.onNodeWithTag("store-buy-monthly").assertTextContains("$0.99 a month")
+        ui.onNodeWithTag("store-terms").assertExists()
+        ui.onNodeWithTag("store-buy-yearly").performClick()
+        ui.waitUntilAtLeastOneExists(hasTestTag("store-held"), TIMEOUT)
+        ui.onNodeWithTag("store-plan").assertTextContains("packwing Pro")
+
+        // Kept, as packwing starts again.
+        onMain { model.restartFakeStore() }
+        inSettings(hasTestTag("store-held"))
+        ui.onNodeWithTag("store-plan").assertTextContains("packwing Pro")
+
+        // Ended: Free, and the plans again.
+        ui.onNodeWithTag("store-manage").performClick()
+        ui.waitUntilAtLeastOneExists(hasTestTag("store-buy-yearly"), TIMEOUT)
+        ui.onNodeWithTag("store-plan").assertTextContains("packwing Free")
+
+        // Restored: nothing of this account's to restore, and it says so.
+        inSettings(hasTestTag("store-restore"))
+        ui.onNodeWithTag("store-restore").performClick()
+        inSettings(hasTestTag("store-said"))
+        ui.onNodeWithTag("store-said").assertTextContains("found no subscription", substring = true)
+    }
+
+    /** A price Google Play left out: the plan's name on its button. */
+    @Test
+    fun aPlanWithNoPriceShowsItsName() {
+        onMain {
+            model.fakeStore(pro = false, noMonthly = true)
+            model.go(Screen.Settings)
+        }
+        inSettings(hasTestTag("store-buy-monthly"))
+        ui.onNodeWithTag("store-buy-monthly").assertTextContains("Monthly")
+        ui.onNodeWithTag("store-buy-yearly").assertTextContains("$8.99 a year")
+    }
+
+    /** Signing takes Pro: packwing Free says so, and where to get it. */
+    @Test
+    fun signingTakesPro() {
+        onMain { model.fakeStore(pro = false) }
+        open("report.zip")
+        ui.waitForText("Báo cáo quý 3")
+        ui.onNodeWithTag("archive-menu").performClick()
+        ui.onNodeWithTag("archive-sign").performClick()
+        ui.waitUntilAtLeastOneExists(hasTestTag("sign-pro"), TIMEOUT)
+        ui.onNodeWithTag("sign-confirm").assertDoesNotExist()
+        ui.onNodeWithTag("sign-new-key").assertDoesNotExist()
+        // Settings, where the plans are.
+        ui.onNodeWithTag("sign-pro-settings").performClick()
+        inSettings(hasTestTag("store-plan"))
+        ui.onNodeWithTag("store-plan").assertTextContains("packwing Free")
+    }
+
+    /** packwing Free keeps one storage: a second is Pro's, and it says so. */
+    @Test
+    fun packwingFreeKeepsOneStorage() {
+        val entry = Settings.StorageEntry(
+            java.util.UUID.randomUUID().toString(),
+            "webdav",
+            mapOf("address" to "http://$HOST:$WEBDAV_PORT", "user" to "packwing"),
+        )
+        onMain {
+            model.storages.forEach { model.removeStorage(it) }
+            model.fakeStore(pro = false)
+        }
+        // None yet: one may be added.
+        ui.waitUntilAtLeastOneExists(hasTestTag("storage-new"), TIMEOUT)
+        ui.onNodeWithTag("storage-new").performClick()
+        until { model.screen == Screen.AddStorage }
+        onMain {
+            model.home()
+            model.addStorage(entry, mapOf("password" to "packwing"))
+        }
+        // One kept: no other.
+        ui.waitUntilAtLeastOneExists(hasTestTag("storage-row"), TIMEOUT)
+        ui.onNodeWithTag("storage-new").performClick()
+        ui.waitForText("packwing Free keeps one storage across a network. Pro lifts this.")
+        ui.onNodeWithTag("storage-limit-ok").performClick()
+        assertEquals(Screen.Home, model.screen)
+
+        // With Pro, another.
+        onMain { model.fakeStore(pro = true) }
+        ui.onNodeWithTag("storage-new").performClick()
+        until { model.screen == Screen.AddStorage }
+        onMain {
+            model.home()
+            model.removeStorage(entry)
+        }
     }
 
     /** Against the WebDAV server of `make webdav-start`: skipped without one. */
@@ -780,10 +885,12 @@ class AppTests {
     /** Create, once it is on: it is off while what it needs is still being typed. */
     private fun makeIt() {
         ui.waitUntilAtLeastOneExists(hasTestTag("create-make") and isEnabled(), TIMEOUT)
-        // Done typing, as a thumb says it: the keyboard goes, and Create is where it stays.
+        // Done typing, as a thumb says it: the keyboard goes. Create sits
+        // above it and slides down as it goes, by the system's animation,
+        // which waitForIdle does not wait for: a tap where it was may miss.
         hideKeyboard()
         ui.waitForIdle()
-        ui.onNodeWithTag("create-make").performClick()
+        ui.onNodeWithTag("create-make").performSemanticsAction(SemanticsActions.OnClick)
         until { model.running != null }
     }
 

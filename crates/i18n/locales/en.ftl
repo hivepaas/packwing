@@ -1337,6 +1337,11 @@ t5af2ebc0 =
         [one] { $n } month ago
        *[other] { $n } months ago
     }
+t5fd84703 = Google Play does not sell Pro in your country or region, or not on this device. A subscription of this Google Account can still be restored.
+t2fec51fc = Payment is charged to your Google Account. A subscription renews automatically for the same period and price until you cancel it; manage or cancel it in your Google Play subscriptions.
+t897b1c86 = Waiting for the payment: packwing turns Pro once it is through.
+t75029269 = Google Play found no subscription of this Google Account.
+t18614428 = Google Play could not do it: { $why }
 tff4bea1d = Making an archive
 t2defd942 =
     { $n ->
@@ -1347,6 +1352,7 @@ t601e2927 = of { $all }
 t018c236f = You can leave the app. A notification shows how far it got.
 t37548210 = Follow the system
 t26ab736e = Ask every time
+t4cea5687 = Pro by subscription, on every Android phone and tablet with your Google Account.
 t28634679 = While it works
 t51e39cf5 = Tell me when a job is through
 t98c65e5a = The password is never saved

@@ -3568,6 +3568,21 @@ t5af2ebc0 =
        *[other] { $n } か月前
     }
 
+# Google Play does not sell Pro in your country or region, or not on this device. A subscription of this Google Account can still be restored.
+t5fd84703 = お住まいの国または地域、またはこのデバイスでは、Google Play で Pro は販売されていません。この Google アカウントのサブスクリプションは復元できます。
+
+# Payment is charged to your Google Account. A subscription renews automatically for the same period and price until you cancel it; manage or cancel it in your Google Play subscriptions.
+t2fec51fc = お支払いは Google アカウントに請求されます。解約するまで、サブスクリプションは同じ期間と価格で自動更新されます。管理や解約は Google Play の定期購入で行えます。
+
+# Waiting for the payment: packwing turns Pro once it is through.
+t897b1c86 = お支払いを待っています。完了すると packwing は Pro になります。
+
+# Google Play found no subscription of this Google Account.
+t75029269 = この Google アカウントのサブスクリプションは Google Play で見つかりませんでした。
+
+# Google Play could not do it: {why}
+t18614428 = Google Play で実行できませんでした: { $why }
+
 # Making an archive
 tff4bea1d = アーカイブを作成中
 
@@ -3588,6 +3603,9 @@ t37548210 = システムに従う
 
 # Ask every time
 t26ab736e = 毎回確認する
+
+# Pro by subscription, on every Android phone and tablet with your Google Account.
+t4cea5687 = サブスクリプションの Pro。同じ Google アカウントのすべての Android スマートフォンとタブレットで使えます。
 
 # While it works
 t28634679 = 処理中
