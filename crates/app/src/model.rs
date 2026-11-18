@@ -95,6 +95,14 @@ impl Kind {
             | "tbz" | "lz" | "lz4" | "tlz4" | "lzma" | "tlz" | "7z" | "rar" | "age" | "iso"
             | "cpio" | "xar" | "sqfs" | "squashfs" | "war" | "ear" | "xpi" | "cbz" | "cbr"
             | "cb7" | "cbt" => Kind::Archive,
+            // A disk image: a raw one, as a card is dumped, and the
+            // containers a virtual machine keeps one in. packwing opens them
+            // down to the files in their partitions, as it opens an ISO, so
+            // they carry an archive's box and a double click steps inside.
+            // `.img` is the common name for a card dump and for much else;
+            // one that holds no disk says so when it is opened, as a file
+            // named `.zip` that is not one does.
+            "img" | "dd" | "vhd" | "vhdx" | "qcow2" | "vmdk" => Kind::Archive,
             _ => Kind::Other,
         }
     }
@@ -357,7 +365,9 @@ pub fn date(secs: i64) -> String {
 }
 
 /// The letters on a file's tag: DIR for a folder, LINK for a symbolic link,
-/// else its last extension in capitals (`tar.zst` gives ZST), at most four.
+/// else its last extension in capitals (`tar.zst` gives ZST), at most four —
+/// a longer one packwing opens by the short name it is known by (`qcow2`
+/// gives QCOW), and any other FILE.
 pub fn tag_of(name: &str, kind: Kind) -> String {
     match kind {
         Kind::Folder => return "DIR".into(),
@@ -372,6 +382,13 @@ pub fn tag_of(name: &str, kind: Kind) -> String {
     };
     match name.rsplit_once('.') {
         Some((_, ext)) if !ext.is_empty() && ext.len() <= 4 => ext.to_uppercase(),
+        // Longer than the box holds, and a format packwing opens: the short
+        // name it is known by. Anything else keeps FILE.
+        Some((_, ext)) => match ext.to_ascii_lowercase().as_str() {
+            "qcow2" => "QCOW".into(),
+            "squashfs" => "SQFS".into(),
+            _ => "FILE".into(),
+        },
         _ => "FILE".into(),
     }
 }
@@ -709,10 +726,52 @@ mod tests {
             assert!(reads_as_text(name), "{name}");
         }
         for name in [
-            "a.pdf", "b.docx", "c.xlsx", "d.zip", "e.exe", "f.mp4", "g.png", "h.heic", "i.deb",
+            "a.pdf",
+            "b.docx",
+            "c.xlsx",
+            "d.zip",
+            "e.exe",
+            "f.mp4",
+            "g.png",
+            "h.heic",
+            "i.deb",
+            "card.img",
+            "disk.qcow2",
         ] {
             assert!(!reads_as_text(name), "{name}");
         }
+    }
+
+    /// A disk image is an archive to packwing: its box in the list, a double
+    /// click steps inside it, and the viewer does not try to show its bytes
+    /// as a text (which is what a name it knows nothing of would do).
+    #[test]
+    fn a_disk_image_is_an_archive_to_open() {
+        for name in [
+            "card.img",
+            "CARD.IMG",
+            "evidence.dd",
+            "disk.vhd",
+            "ext4.vhdx",
+            "vm.qcow2",
+            "guest.vmdk",
+        ] {
+            assert_eq!(Kind::of(name, false), Kind::Archive, "{name}");
+            assert!(opens_in_packwing(name), "{name}");
+            assert!(!reads_as_text(name), "{name}");
+        }
+        // The letters on the box: the extension, or the short name a longer
+        // one is known by.
+        assert_eq!(tag_of("card.img", Kind::Archive), "IMG");
+        assert_eq!(tag_of("ext4.vhdx", Kind::Archive), "VHDX");
+        assert_eq!(tag_of("vm.qcow2", Kind::Archive), "QCOW");
+        assert_eq!(tag_of("rootfs.squashfs", Kind::Archive), "SQFS");
+        assert_eq!(tag_of("session.dat", Kind::Other), "DAT");
+        assert_eq!(tag_of("a.properties", Kind::Other), "FILE");
+        // What it unpacks to, a layer over it and all.
+        assert_eq!(stem("card.img"), "card");
+        assert_eq!(stem("card.img.zst"), "card");
+        assert_eq!(stem("ubuntu-26.04.qcow2"), "ubuntu-26.04");
     }
 
     #[test]

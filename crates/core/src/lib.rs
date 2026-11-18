@@ -668,7 +668,7 @@ const _: () = assert!(hivepack::zstd::UNSAFE_FAST);
 /// `name` without its archive extensions and a part number: what it unpacks
 /// to (`Báo cáo.part1.rar` → `Báo cáo`, `backup.tar.zst.age` → `backup`).
 pub fn stem(name: &str) -> &str {
-    const EXTENSIONS: [&str; 41] = [
+    const EXTENSIONS: [&str; 47] = [
         ".age",
         ".zst",
         ".gz",
@@ -689,6 +689,14 @@ pub fn stem(name: &str) -> &str {
         ".zip",
         ".rar",
         ".iso",
+        // A disk image: a raw one and the containers a virtual machine keeps
+        // one in, so `card.img.zst` unpacks to `card`.
+        ".img",
+        ".dd",
+        ".vhd",
+        ".vhdx",
+        ".qcow2",
+        ".vmdk",
         ".cpio",
         ".rpm",
         ".xar",
