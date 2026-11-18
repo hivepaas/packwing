@@ -1,11 +1,14 @@
-//! General: the language, light or dark, the text's size, how many cores to use,
-//! and the text editor.
+//! General: the language, light or dark and how each looks, the text's size,
+//! how many cores to use, and the text editor.
 
-use gpui::{Context, Entity, EventEmitter, Render, Subscription, Window, div, prelude::*, rgb};
+use gpui::{
+    Context, Div, ElementId, Entity, EventEmitter, FontWeight, Render, Stateful, Subscription,
+    Window, div, prelude::*, rgb,
+};
 use packwing_i18n::tr;
 
 use super::{explain, group, heading, label, section};
-use crate::colors::colors;
+use crate::colors::{self, DarkStyle, LightStyle, Palette, colors};
 use crate::input::{Changed, TextInput};
 use crate::text_size::ui;
 use crate::widgets::{Chosen, Select, SelectLook, segment, segments};
@@ -218,10 +221,21 @@ impl General {
         self.appearance = a;
         cx.notify();
     }
-}
 
-impl Render for General {
-    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    /// Kept, and every window drawn in it at once.
+    fn choose_styles(light: LightStyle, dark: DarkStyle, cx: &mut Context<Self>) {
+        crate::prefs::change(cx, |p| {
+            p.light_style = light;
+            p.dark_style = dark;
+        });
+        colors::set_styles(light, dark);
+        cx.refresh_windows();
+    }
+
+    /// Light, dark or the system's, and under it a row of styles for each
+    /// mode that can be on screen: light's when light is chosen, dark's when
+    /// dark is, both when the system's is.
+    fn appearance(&self, cx: &mut Context<Self>) -> Div {
         let looks = [Appearance::Light, Appearance::Dark, Appearance::System]
             .into_iter()
             .map(|a| {
@@ -233,13 +247,120 @@ impl Render for General {
                     },
                 ))
             });
+        let kept = crate::prefs::prefs(cx);
+        let (now_light, now_dark) = (kept.light_style, kept.dark_style);
+        let light = LightStyle::ALL.into_iter().map(|style| {
+            style_chip(
+                ("light-style", style as usize),
+                chip_name(style.name(), style == LightStyle::default()),
+                style.palette(),
+                style == now_light,
+            )
+            .on_click(cx.listener(move |_, _, _, cx| Self::choose_styles(style, now_dark, cx)))
+        });
+        let dark = DarkStyle::ALL.into_iter().map(|style| {
+            style_chip(
+                ("dark-style", style as usize),
+                chip_name(style.name(), style == DarkStyle::default()),
+                style.palette(),
+                style == now_dark,
+            )
+            .on_click(cx.listener(move |_, _, _, cx| Self::choose_styles(now_light, style, cx)))
+        });
+        group()
+            .child(heading(
+                tr!("Appearance"),
+                tr!("Light and dark each come in styles: the grounds change, the text and the accent stay."),
+            ))
+            .child(div().max_w(ui(480.)).child(segments(looks)))
+            .when(self.appearance != Appearance::Dark, |d| {
+                d.child(style_row(tr!("Light"))).child(chips().children(light))
+            })
+            .when(self.appearance != Appearance::Light, |d| {
+                d.child(style_row(tr!("Dark"))).child(chips().children(dark))
+            })
+    }
+}
+
+fn chip_name(name: String, default: bool) -> String {
+    if default {
+        tr!("{name} (default)", name = name)
+    } else {
+        name
+    }
+}
+
+/// The name over a row of styles.
+fn style_row(name: String) -> Div {
+    div()
+        .pt(ui(2.))
+        .text_size(ui(13.))
+        .font_weight(FontWeight::SEMIBOLD)
+        .text_color(rgb(colors().muted))
+        .child(name)
+}
+
+fn chips() -> Div {
+    div().flex().flex_row().flex_wrap().gap(ui(6.))
+}
+
+/// A style's chip: its name after a dot of its card on its page, so that it
+/// shows how it looks before it is chosen.
+fn style_chip(
+    id: impl Into<ElementId>,
+    name: String,
+    palette: &Palette,
+    on: bool,
+) -> Stateful<Div> {
+    let c = colors();
+    let id = id.into();
+    let selector = id.to_string();
+    div()
+        .debug_selector(|| selector)
+        .id(id)
+        .h(ui(32.))
+        .pl(ui(7.))
+        .pr(ui(13.))
+        .rounded_full()
+        .flex()
+        .items_center()
+        .gap(ui(8.))
+        .cursor_pointer()
+        .text_size(ui(13.))
+        .font_weight(FontWeight::BOLD)
+        .when(on, |d| d.bg(rgb(c.accent)).text_color(rgb(c.on_accent)))
+        .when(!on, |d| {
+            d.bg(rgb(c.field))
+                .text_color(rgb(c.text))
+                .hover(|s| s.bg(rgb(c.well_hover)))
+        })
+        .child(
+            div()
+                .size(ui(20.))
+                .flex_shrink_0()
+                .p(ui(1.))
+                .rounded_full()
+                .bg(rgb(palette.outline))
+                .child(
+                    div()
+                        .size_full()
+                        .rounded_full()
+                        .border(ui(4.))
+                        .border_color(rgb(palette.page))
+                        .bg(rgb(palette.surface)),
+                ),
+        )
+        .child(name)
+}
+
+impl Render for General {
+    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let custom = self.editor.read(cx).chosen() == self.editors.len() + 1;
+        // Two to a row, but the appearance, whose styles take a row of their own.
+        let two = || div().grid().grid_cols(2).gap(ui(12.));
         section()
             .child(
-                div()
-                    .grid()
-                    .grid_cols(2)
-                    .gap(ui(12.))
+                two()
                     .child(
                         group()
                             .child(label(tr!("Language")))
@@ -247,40 +368,42 @@ impl Render for General {
                     )
                     .child(
                         group()
-                            .child(label(tr!("Appearance")))
-                            .child(segments(looks)),
-                    )
-                    .child(
-                        group()
                             .child(label(tr!("Text size")))
                             .child(self.text_size.clone()),
+                    ),
+            )
+            .child(self.appearance(cx))
+            .child(
+                two()
+                    .child(
+                        group()
+                            .child(heading(
+                                tr!("Processor cores to use"),
+                                tr!("More is faster; fewer leaves room for other work."),
+                            ))
+                            .child(self.threads.clone()),
                     )
                     .child(
                         group()
-                            .child(label(tr!("Processor cores to use")))
-                            .child(self.threads.clone()),
+                            .child(heading(
+                                tr!("Text editor"),
+                                tr!("What Edit opens a file of a storage in"),
+                            ))
+                            .child(self.editor.clone())
+                            .when(custom, |d| {
+                                d.child(
+                                    div()
+                                        .h(ui(40.))
+                                        .flex()
+                                        .items_center()
+                                        .px(ui(16.))
+                                        .rounded_full()
+                                        .bg(rgb(colors().field))
+                                        .child(self.editor_command.clone()),
+                                )
+                                .child(explain(tr!("The file’s path is added at the end.")))
+                            }),
                     ),
-            )
-            .child(
-                group()
-                    .child(heading(
-                        tr!("Text editor"),
-                        tr!("What Edit opens a file of a storage in"),
-                    ))
-                    .child(self.editor.clone())
-                    .when(custom, |d| {
-                        d.child(
-                            div()
-                                .h(ui(40.))
-                                .flex()
-                                .items_center()
-                                .px(ui(16.))
-                                .rounded_full()
-                                .bg(rgb(colors().field))
-                                .child(self.editor_command.clone()),
-                        )
-                        .child(explain(tr!("The file’s path is added at the end.")))
-                    }),
             )
     }
 }

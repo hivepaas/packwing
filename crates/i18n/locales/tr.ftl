@@ -13,6 +13,54 @@ t546d19d2 = İzin Ver
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Görünüm: { $name }. { $name2 } için tıklayın.
 
+# Mint
+td6696d39 = Nane
+
+# Paper
+tfea8bfd9 = Kâğıt
+
+# Soft gray
+t6d3b9d7c = Yumuşak gri
+
+# High contrast
+tdc2a9fd1 = Yüksek kontrast
+
+# Mist
+td071b28c = Sis
+
+# Lavender
+t40f6ad0e = Lavanta
+
+# Dusk
+t44655688 = Alacakaranlık
+
+# Night
+t8c9a1101 = Gece
+
+# Neutral
+te9330778 = Nötr
+
+# Graphite
+tcc5f9dad = Grafit
+
+# Midnight
+tfc321421 = Gece yarısı
+
+# Dim
+t35691dd9 = Loş
+
+# Deep sea
+t372a2e54 = Derin deniz
+
+# Espresso
+t77f4d515 = Espresso
+
+# Forest
+t953ca480 = Orman
+
+# Plum
+t1d8d478b = Erik
+
 # Stop and say so
 tdc8b782b = Dur ve bildir
 
@@ -2107,17 +2155,26 @@ tf65ec196 = Tümü ({ $count })
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = örn. code -n veya /path/to/editor --flag
 
-# Language
-t9a73db9b = Dil
-
 # Appearance
 t31018b9f = Görünüm
+
+# Light and dark each come in styles: the grounds change, the text and the accent stay.
+t9fa95458 = Açık ve koyu görünümün her birinin birkaç stili vardır: arka planlar değişir, metin ve vurgu rengi aynı kalır.
+
+# {name} (default)
+td3f56fa8 = { $name } (varsayılan)
+
+# Language
+t9a73db9b = Dil
 
 # Text size
 t2c041143 = Yazı boyutu
 
 # Processor cores to use
 t2f9c3d17 = Kullanılacak işlemci çekirdekleri
+
+# More is faster; fewer leaves room for other work.
+t9d71a0bc = Daha çoğu daha hızlıdır; daha azı başka işlere yer bırakır.
 
 # Text editor
 t1ca82aab = Metin düzenleyici

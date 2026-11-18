@@ -13,6 +13,54 @@ t546d19d2 = Izinkan
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Tampilan: { $name }. Klik untuk { $name2 }.
 
+# Mint
+td6696d39 = Mint
+
+# Paper
+tfea8bfd9 = Kertas
+
+# Soft gray
+t6d3b9d7c = Abu-abu lembut
+
+# High contrast
+tdc2a9fd1 = Kontras tinggi
+
+# Mist
+td071b28c = Kabut
+
+# Lavender
+t40f6ad0e = Lavender
+
+# Dusk
+t44655688 = Senja
+
+# Night
+t8c9a1101 = Malam
+
+# Neutral
+te9330778 = Netral
+
+# Graphite
+tcc5f9dad = Grafit
+
+# Midnight
+tfc321421 = Tengah malam
+
+# Dim
+t35691dd9 = Redup
+
+# Deep sea
+t372a2e54 = Laut dalam
+
+# Espresso
+t77f4d515 = Espresso
+
+# Forest
+t953ca480 = Hutan
+
+# Plum
+t1d8d478b = Plum
+
 # Stop and say so
 tdc8b782b = Berhenti dan beri tahu
 
@@ -2077,17 +2125,26 @@ tf65ec196 = Semua ({ $count })
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = mis. code -n, atau /path/to/editor --flag
 
-# Language
-t9a73db9b = Bahasa
-
 # Appearance
 t31018b9f = Tampilan
+
+# Light and dark each come in styles: the grounds change, the text and the accent stay.
+t9fa95458 = Terang dan gelap masing-masing punya beberapa gaya: latarnya berubah, teks dan warna aksen tetap.
+
+# {name} (default)
+td3f56fa8 = { $name } (bawaan)
+
+# Language
+t9a73db9b = Bahasa
 
 # Text size
 t2c041143 = Ukuran teks
 
 # Processor cores to use
 t2f9c3d17 = Inti prosesor yang dipakai
+
+# More is faster; fewer leaves room for other work.
+t9d71a0bc = Lebih banyak lebih cepat; lebih sedikit menyisakan ruang untuk pekerjaan lain.
 
 # Text editor
 t1ca82aab = Editor teks
