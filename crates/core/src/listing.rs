@@ -1,7 +1,7 @@
 //! What an archive holds: its entries, as it names them, and its folders
 //! as they show, those it only implies by its paths too.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs::File;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
@@ -10,6 +10,7 @@ use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
 use hivepack::extract::Cancel;
+use hivepack::image::Disk;
 use hivepack::open::{Container, Layer, Opener};
 use hivepack::tar::{Reader, TYPE_DIR, TYPE_SYMLINK, TYPE_X_GLOBAL_HEADER};
 use hivepack::udf::{Udf, VType};
@@ -17,6 +18,7 @@ use hivepack::zip::{Archive, Flags, OpenFlags, Volumes, em, opsys, volume_paths}
 use unicode_normalization::UnicodeNormalization;
 use unicode_normalization::char::is_combining_mark;
 
+use crate::image::{self, Holds, Image, blocks};
 use crate::rar;
 use crate::sfx;
 use crate::source::Source;
@@ -489,6 +491,30 @@ fn listed(source: Source, keys: &Keys, listen: Listen<'_>) -> Result<Listing, Er
                 link: None,
             }]
         }
+        // A disk image: read by random access, as a UDF volume is, so under
+        // layers it is written to a file first. Its partitions are folders
+        // and the file systems in them hold the files.
+        Container::PartitionedDisk
+        | Container::Vhd
+        | Container::Qcow2
+        | Container::Vhdx
+        | Container::Vmdk => {
+            let blocks = blocks(source, &mut opened, &layers)?;
+            let image = Image::open(container, blocks.file.try_clone()?, blocks.path.as_deref())?;
+            disk_entries(&image, &mut gather)?
+        }
+        // One file system with no table in front of it: an EFI system
+        // partition taken out on its own, a camera's card, a floppy image.
+        Container::Fat | Container::Ext | Container::Ntfs => {
+            let blocks = blocks(source, &mut opened, &layers)?;
+            let disk: &dyn Disk = &blocks.file;
+            let holds = image::holds_at(disk, 0, disk.size()?);
+            if matches!(holds, Holds::Bytes) {
+                return Err(Error::NotAnArchive);
+            }
+            file_system_entries(&holds, &[], &mut gather)?;
+            std::mem::take(&mut gather.entries)
+        }
         // What a later hivepack tells and packwing does not read yet.
         _ => return Err(Error::NotAnArchive),
     };
@@ -798,6 +824,130 @@ fn squashfs_entries<R: Read + io::Seek>(
         })
     })?;
     Ok(std::mem::take(&mut gather.entries))
+}
+
+/// A disk image's entries: **a folder for each partition**, named by its
+/// number and what it holds (`1-EFI`, `2-ext4`), with the files of its file
+/// system under it. A partition whose file system packwing does not read is
+/// one file of its bytes (`3-swap.img`), so that it can still be taken off
+/// the disk.
+///
+/// A disk no table names a partition on is one file system over its whole
+/// length, as WSL2's `ext4.vhdx` holds; one that is neither is not an
+/// archive.
+fn disk_entries(image: &Image, gather: &mut Gather) -> Result<Vec<Entry>, Error> {
+    let disk = image.disk();
+    let partitions = image::table_of(disk)?;
+    if partitions.is_empty() {
+        let size = disk.size()?;
+        let holds = image::holds_at(disk, 0, size);
+        if matches!(holds, Holds::Bytes) {
+            return Err(Error::NotAnArchive);
+        }
+        file_system_entries(&holds, &[], gather)?;
+        return Ok(std::mem::take(&mut gather.entries));
+    }
+    for partition in &partitions {
+        let holds = image::holds(disk, partition);
+        let name = image::name_of(partition, &holds);
+        if matches!(holds, Holds::Bytes) {
+            gather.push(Entry {
+                path: vec![format!("{name}.img")],
+                dir: false,
+                size: partition.size,
+                modified: None,
+                link: None,
+            })?;
+            continue;
+        }
+        gather.push(Entry {
+            path: vec![name.clone()],
+            dir: true,
+            size: 0,
+            modified: None,
+            link: None,
+        })?;
+        file_system_entries(&holds, std::slice::from_ref(&name), gather)?;
+    }
+    Ok(std::mem::take(&mut gather.entries))
+}
+
+/// One file system's entries, under `at` (a partition's folder, or nothing
+/// for a file system with no table in front of it).
+///
+/// A file with more than one name is counted once: its data is at the first
+/// name the walk gives, as a SquashFS image's hard links are.
+fn file_system_entries(holds: &Holds<'_>, at: &[String], gather: &mut Gather) -> Result<(), Error> {
+    let under = |path: &str| {
+        let mut components = at.to_vec();
+        components.extend(path.split('/').map(str::to_owned));
+        components
+    };
+    match holds {
+        Holds::Fat(fs, _) => {
+            let mut walk = fs.walk().map_err(failed)?;
+            while let Some((path, entry)) = walk.next(fs).map_err(failed)? {
+                gather.push(Entry {
+                    path: under(&path),
+                    dir: entry.is_dir(),
+                    size: if entry.is_dir() { 0 } else { entry.size },
+                    modified: entry.modified.map(|t| t.unix()),
+                    link: None,
+                })?;
+            }
+        }
+        Holds::Ext(fs, _) => {
+            let mut walk = fs.walk().map_err(failed)?;
+            let mut met: BTreeSet<u32> = BTreeSet::new();
+            while let Some(step) = walk.next(fs).map_err(failed)? {
+                let node = &step.node;
+                let first = met.insert(node.ino);
+                let link = node.is_symlink().then(|| Link {
+                    target: fs.read_link(node).ok().and_then(|t| Link::to(&t).target),
+                });
+                gather.push(Entry {
+                    path: under(&String::from_utf8_lossy(&step.path)),
+                    dir: node.is_dir(),
+                    size: if node.is_file() && first {
+                        node.size
+                    } else {
+                        0
+                    },
+                    modified: node.modified.map(|t| t.seconds),
+                    link,
+                })?;
+            }
+        }
+        // Every call into the library that reads NTFS is caught: a damaged
+        // directory index panics it, and the fix is in no release yet.
+        Holds::Ntfs(fs) => image::caught(|| {
+            let mut walk = fs.walk().map_err(failed)?;
+            let mut met: BTreeSet<u64> = BTreeSet::new();
+            while let Some((path, entry)) = walk.next(fs).map_err(failed)? {
+                let first = met.insert(entry.record());
+                gather.push(Entry {
+                    path: under(&path),
+                    dir: entry.is_dir(),
+                    size: if entry.is_file() && first {
+                        entry.size
+                    } else {
+                        0
+                    },
+                    modified: entry.modified.map(|t| t.unix().0),
+                    link: None,
+                })?;
+            }
+            Ok(())
+        })?,
+        // Its bytes are the file, and `disk_entries` wrote that entry.
+        Holds::Bytes => {}
+    }
+    Ok(())
+}
+
+/// What a reader refused, as packwing carries it.
+fn failed<E: std::fmt::Display>(e: E) -> Error {
+    Error::Failed(e.to_string())
 }
 
 #[cfg(test)]

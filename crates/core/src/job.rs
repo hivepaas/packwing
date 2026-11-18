@@ -11,19 +11,22 @@ use std::sync::{Arc, Mutex, PoisonError};
 use std::time::Duration;
 
 use hivepack::extract::{
-    Cancel, Damaged, ErrorKind, LinkOutside, Links, NameDecoder, NameError, NameRules, OnDamaged,
-    OnLinksOutside, OnRefused, OnUnnamable, Options, Owners, Permissions, Progress, ProgressFn,
-    RarProblem, Select, Sink, Summary, WrittenKind, extract_7z, extract_7z_to, extract_cpio,
-    extract_cpio_to, extract_iso, extract_iso_to, extract_rar, extract_rar_to, extract_squashfs,
-    extract_squashfs_to, extract_tar, extract_tar_to, extract_udf, extract_udf_to, extract_xar,
-    extract_xar_to, extract_zip, extract_zip_to,
+    Cancel, Damaged, Entry as SinkEntry, ErrorKind, LinkOutside, Links, NameDecoder, NameError,
+    NameRules, OnDamaged, OnLinksOutside, OnRefused, OnUnnamable, Options, Owners, Permissions,
+    Progress, ProgressFn, RarProblem, Select, Sink, Summary, WrittenKind, extract_7z,
+    extract_7z_to, extract_cpio, extract_cpio_to, extract_ext, extract_ext_to, extract_fat,
+    extract_fat_to, extract_iso, extract_iso_to, extract_ntfs, extract_ntfs_to, extract_rar,
+    extract_rar_to, extract_squashfs, extract_squashfs_to, extract_tar, extract_tar_to,
+    extract_udf, extract_udf_to, extract_xar, extract_xar_to, extract_zip, extract_zip_to,
 };
+use hivepack::image::Disk;
 use hivepack::open::{Container, Opened, Opener};
 use hivepack::tar::Reader;
 use hivepack::udf::{Udf, VType};
 use hivepack::zip::{Archive, Flags, OpenFlags, ReadAt, Volumes};
 
 use crate::audit;
+use crate::image;
 use crate::rar;
 use crate::sfx;
 use crate::source::Source;
@@ -1023,7 +1026,7 @@ fn extract_naming(
             let name = without_layers(&source.name(), &layers);
             match into {
                 WriteTo::Folder(destination) => {
-                    let done = extract_one(opened, &name, destination, how, control);
+                    let done = extract_one(&mut opened, &name, destination, how, control);
                     if let (Ok(_), Some(written)) = (&done, written) {
                         written
                             .lock()
@@ -1039,6 +1042,29 @@ fn extract_naming(
                     Ok(summary)
                 }
             }
+        }
+        // A disk image: read by random access, as a UDF volume is, so under
+        // layers it is written to a file first. Each partition is a folder,
+        // and the file system in it holds the files.
+        Container::PartitionedDisk
+        | Container::Vhd
+        | Container::Qcow2
+        | Container::Vhdx
+        | Container::Vmdk => {
+            let blocks = image::blocks(source, &mut opened, &layers)?;
+            let image =
+                image::Image::open(container, blocks.file.try_clone()?, blocks.path.as_deref())?;
+            extract_disk(&image, into, &options, how, control)
+        }
+        // One file system with no table in front of it.
+        Container::Fat | Container::Ext | Container::Ntfs => {
+            let blocks = image::blocks(source, &mut opened, &layers)?;
+            let disk: &dyn Disk = &blocks.file;
+            let holds = image::holds_at(disk, 0, disk.size()?);
+            if matches!(holds, image::Holds::Bytes) {
+                return Err(Error::NotAnArchive);
+            }
+            extract_file_system(&holds, None, into, &options)
         }
         // What a later hivepack tells and packwing does not read yet.
         _ => Err(Error::NotAnArchive),
@@ -1158,7 +1184,7 @@ pub(crate) fn copy_progress(control: &Control, done: &mut Progress, bytes: usize
 /// One file under layers, written as `name` in `destination`: over what is
 /// there only if asked, and removed if it fails or is cancelled.
 fn extract_one(
-    mut opened: Opened<'_>,
+    from: &mut impl Read,
     name: &str,
     destination: &Path,
     how: &ExtractOptions,
@@ -1180,7 +1206,7 @@ fn extract_one(
         })?;
     let mut done = Progress::default();
     done.total_entries = 1;
-    let result = copy(&mut opened, &mut file, control, &mut done);
+    let result = copy(from, &mut file, control, &mut done);
     let written = match result.and_then(|n| file.sync_all().map(|_| n).map_err(Error::from)) {
         Ok(n) => n,
         Err(e) => {
@@ -1197,9 +1223,366 @@ fn extract_one(
     Ok(summary)
 }
 
+/// Reads every file of a disk image through, as `test` reads an archive's:
+/// each partition's file system, and the bytes of a partition packwing
+/// reads no file system in.
+///
+/// A file system carries no check of its own — no CRC-32 over a file's
+/// data, as ZIP and RAR have — so what this proves is that every file's
+/// bytes are where the file system says they are and can be read. A file
+/// NTFS compressed or encrypted is passed over, as it is not read at all.
+fn test_disk(
+    image: &image::Image,
+    control: &Control,
+    summary: &mut Summary,
+    done: &mut Progress,
+) -> Result<(), Error> {
+    let disk = image.disk();
+    let mut partitions = image::table_of(disk)?;
+    // No table: the disk is one file system over its whole length.
+    if partitions.is_empty() {
+        let holds = image::holds_at(disk, 0, disk.size()?);
+        if matches!(holds, image::Holds::Bytes) {
+            return Err(Error::NotAnArchive);
+        }
+        return test_file_system(&holds, control, summary, done);
+    }
+    // What there is to read, so that what is told of the progress is of the
+    // whole image and not of each partition in turn.
+    for partition in &partitions {
+        let holds = image::holds(disk, partition);
+        if matches!(holds, image::Holds::Bytes) {
+            done.total_entries += 1;
+            done.total_bytes += partition.size;
+            continue;
+        }
+        image::each_file(&holds, &mut |_, size, _| {
+            done.total_entries += 1;
+            done.total_bytes += size;
+            Ok(())
+        })?;
+    }
+    for partition in partitions.drain(..) {
+        control.check()?;
+        let holds = image::holds(disk, &partition);
+        if matches!(holds, image::Holds::Bytes) {
+            let mut bytes = image::bytes_of(disk, partition.at, partition.size);
+            summary.bytes += copy(&mut bytes, &mut io::sink(), control, done)?;
+            summary.files += 1;
+            done.entries += 1;
+            control.report(done);
+            continue;
+        }
+        test_file_system(&holds, control, summary, done)?;
+    }
+    Ok(())
+}
+
+/// Reads every file of one file system through.
+fn test_file_system(
+    holds: &image::Holds<'_>,
+    control: &Control,
+    summary: &mut Summary,
+    done: &mut Progress,
+) -> Result<(), Error> {
+    image::each_file(holds, &mut |_, _, data| {
+        control.check()?;
+        summary.bytes += copy(data, &mut io::sink(), control, done)?;
+        summary.files += 1;
+        done.entries += 1;
+        control.report(done);
+        Ok(())
+    })
+}
+
+/// Extracts a disk image: **each partition into a folder of its name**, the
+/// file system in it extracted as a file system with no table in front of
+/// it is, and a partition packwing reads no file system in written as one
+/// file of its bytes (`3-swap.img`).
+///
+/// The partitions are walked first, as every extractor here checks before
+/// it writes: what that gives is how much the whole job writes, so that
+/// what is told of its progress never goes back between one partition and
+/// the next, and which partitions hold something that was picked, so that
+/// picking one file does not leave the other partitions' folders behind,
+/// empty.
+///
+/// Each partition's limits are what is left of the job's: the bytes and the
+/// entries the ones before it wrote come off `Limits`, so an archive bomb
+/// in the last partition of a disk is held to the same total as one in the
+/// first.
+fn extract_disk(
+    image: &image::Image,
+    mut into: WriteTo<'_>,
+    options: &Options,
+    how: &ExtractOptions,
+    control: &Control,
+) -> Result<Summary, Error> {
+    let disk = image.disk();
+    let partitions = image::table_of(disk)?;
+    // No table names a partition: the disk is one file system over its
+    // whole length, as WSL2's ext4.vhdx holds.
+    if partitions.is_empty() {
+        let holds = image::holds_at(disk, 0, disk.size()?);
+        if matches!(holds, image::Holds::Bytes) {
+            return Err(Error::NotAnArchive);
+        }
+        return extract_file_system(&holds, None, into, options);
+    }
+
+    let planned = plan_disk(disk, &partitions, options, control)?;
+    let whole = planned.iter().fold((0u64, 0u64), |(e, b), part| {
+        (e + part.entries, b + part.bytes)
+    });
+    let mut summary = Summary::default();
+    for (partition, planned) in partitions.iter().zip(&planned) {
+        control.check()?;
+        // Nothing of this partition was picked: no folder for it either.
+        if planned.entries == 0 {
+            continue;
+        }
+        let holds = image::holds(disk, partition);
+        let name = image::name_of(partition, &holds);
+        let mut per = options.clone();
+        per.limits.max_total_size = options.limits.max_total_size.saturating_sub(summary.bytes);
+        per.limits.max_entries = options
+            .limits
+            .max_entries
+            .saturating_sub(summary.files + summary.directories);
+        // Told of the whole job, from where the partitions before it left
+        // off, so that the fraction grows and never goes back.
+        if let Some(told) = options.progress.clone() {
+            let base = (summary.files + summary.directories, summary.bytes);
+            per.progress = Some(Arc::new(move |p: &Progress| {
+                let mut through = *p;
+                through.entries = base.0 + p.entries;
+                through.total_entries = whole.0;
+                through.bytes = base.1 + p.bytes;
+                through.total_bytes = whole.1;
+                told(&through);
+            }));
+        }
+        if matches!(holds, image::Holds::Bytes) {
+            let file = format!("{name}.img");
+            let mut bytes = image::bytes_of(disk, partition.at, partition.size);
+            let done = match &mut into {
+                WriteTo::Folder(destination) => {
+                    extract_one(&mut bytes, &file, destination, how, control)?
+                }
+                WriteTo::Taker(taker) => {
+                    let mut one = Summary::default();
+                    one.bytes = taker.one_file(&file, &mut bytes, control)?;
+                    one.files = 1;
+                    one
+                }
+            };
+            added(&mut summary, done);
+            continue;
+        }
+        // The names under this partition, as the listing shows them, are
+        // what was picked: the file systems know nothing of the folder
+        // their partition is, so the pick is asked of the longer path.
+        if let Some(select) = options.select.clone() {
+            let at = name.clone();
+            per.select = Some(Arc::new(move |path: &[String]| select(&under(&at, path))));
+        }
+        let done = match &mut into {
+            WriteTo::Folder(destination) => extract_file_system(
+                &holds,
+                Some(&name),
+                WriteTo::Folder(&destination.join(&name)),
+                &per,
+            )?,
+            WriteTo::Taker(taker) => {
+                extract_file_system(&holds, Some(&name), WriteTo::Taker(*taker), &per)?
+            }
+        };
+        added(&mut summary, done);
+    }
+    Ok(summary)
+}
+
+/// `path` under `at`, which is a partition's folder.
+fn under(at: &str, path: &[String]) -> Vec<String> {
+    let mut whole = Vec::with_capacity(path.len() + 1);
+    whole.push(at.to_owned());
+    whole.extend_from_slice(path);
+    whole
+}
+
+/// What one partition writes: how many files, and how many bytes.
+struct Planned {
+    entries: u64,
+    bytes: u64,
+}
+
+/// What each partition of the disk would write, picked entries only: what
+/// the progress is told of, and which partitions have anything to write.
+///
+/// This walks every file system on the disk, and reads none of their data.
+fn plan_disk(
+    disk: &dyn Disk,
+    partitions: &[hivepack::image::Partition],
+    options: &Options,
+    control: &Control,
+) -> Result<Vec<Planned>, Error> {
+    let picked = |path: &[String]| match &options.select {
+        Some(select) => select(path),
+        None => true,
+    };
+    let mut planned = Vec::with_capacity(partitions.len());
+    for partition in partitions {
+        control.check()?;
+        let holds = image::holds(disk, partition);
+        let name = image::name_of(partition, &holds);
+        let mut one = Planned {
+            entries: 0,
+            bytes: 0,
+        };
+        if matches!(holds, image::Holds::Bytes) {
+            if picked(&[format!("{name}.img")]) {
+                one.entries = 1;
+                one.bytes = partition.size;
+            }
+            planned.push(one);
+            continue;
+        }
+        image::each_file(&holds, &mut |path, size, _| {
+            let components: Vec<String> = path.split('/').map(str::to_owned).collect();
+            if picked(&under(&name, &components)) {
+                one.entries += 1;
+                one.bytes += size;
+            }
+            Ok(())
+        })?;
+        planned.push(one);
+    }
+    Ok(planned)
+}
+
+/// One file system into a folder or a taker. `at` is the partition's folder
+/// where it is one partition of a disk, and none where the file system is
+/// the whole of what was opened: a taker is given the partition's name in
+/// front of every path, as the listing shows them.
+fn extract_file_system(
+    holds: &image::Holds<'_>,
+    at: Option<&str>,
+    into: WriteTo<'_>,
+    options: &Options,
+) -> Result<Summary, Error> {
+    Ok(match (holds, into) {
+        (image::Holds::Fat(fs, _), WriteTo::Folder(destination)) => {
+            extract_fat(fs, destination, options)?
+        }
+        (image::Holds::Fat(fs, _), WriteTo::Taker(taker)) => {
+            let mut taker = Prefixed::new(at, taker);
+            extract_fat_to(fs, &mut taker, options)?
+        }
+        (image::Holds::Ext(fs, _), WriteTo::Folder(destination)) => {
+            extract_ext(fs, destination, options)?
+        }
+        (image::Holds::Ext(fs, _), WriteTo::Taker(taker)) => {
+            let mut taker = Prefixed::new(at, taker);
+            extract_ext_to(fs, &mut taker, options)?
+        }
+        // Behind `catch_unwind`, as every call into that library is.
+        (image::Holds::Ntfs(fs), WriteTo::Folder(destination)) => {
+            image::caught(|| Ok(extract_ntfs(fs, destination, options)?))?
+        }
+        (image::Holds::Ntfs(fs), WriteTo::Taker(taker)) => {
+            let mut taker = Prefixed::new(at, taker);
+            image::caught(|| Ok(extract_ntfs_to(fs, &mut taker, options)?))?
+        }
+        // Its bytes are the file, which `extract_disk` writes itself.
+        (image::Holds::Bytes, _) => return Err(Error::NotAnArchive),
+    })
+}
+
+/// A sink with a partition's folder in front of every path it is given: what
+/// turns a disk image into an archive whose folders are its partitions.
+struct Prefixed<'t> {
+    at: Option<String>,
+    to: &'t mut dyn Sink,
+}
+
+impl<'t> Prefixed<'t> {
+    fn new(at: Option<&str>, to: &'t mut dyn Sink) -> Prefixed<'t> {
+        Prefixed {
+            at: at.map(str::to_owned),
+            to,
+        }
+    }
+
+    /// `entry` with the folder in front of its path, where there is one.
+    fn with<T>(
+        &mut self,
+        entry: &SinkEntry<'_>,
+        each: impl FnOnce(&mut dyn Sink, &SinkEntry<'_>) -> T,
+    ) -> T {
+        match &self.at {
+            None => each(self.to, entry),
+            Some(at) => {
+                let path = under(at, entry.path);
+                let mut moved = *entry;
+                moved.path = &path;
+                each(self.to, &moved)
+            }
+        }
+    }
+}
+
+impl Sink for Prefixed<'_> {
+    fn directory(&mut self, entry: &SinkEntry<'_>) -> io::Result<()> {
+        self.with(entry, |to, entry| to.directory(entry))
+    }
+
+    fn start_file(&mut self, entry: &SinkEntry<'_>) -> io::Result<()> {
+        self.with(entry, |to, entry| to.start_file(entry))
+    }
+
+    fn write(&mut self, data: &[u8]) -> io::Result<()> {
+        self.to.write(data)
+    }
+
+    fn finish_file(&mut self) -> io::Result<()> {
+        self.to.finish_file()
+    }
+
+    fn discard_file(&mut self) {
+        self.to.discard_file();
+    }
+
+    fn symlink(&mut self, entry: &SinkEntry<'_>, target: &str) -> io::Result<()> {
+        self.with(entry, |to, entry| to.symlink(entry, target))
+    }
+
+    fn hard_link(&mut self, entry: &SinkEntry<'_>, target: &[String]) -> io::Result<()> {
+        let target = match &self.at {
+            None => target.to_vec(),
+            Some(at) => under(at, target),
+        };
+        self.with(entry, |to, entry| to.hard_link(entry, &target))
+    }
+
+    fn damaged(&mut self, error: &hivepack::extract::Error) {
+        self.to.damaged(error);
+    }
+}
+
+/// `one` added to `all`: what the partitions of a disk write, together.
+fn added(all: &mut Summary, one: Summary) {
+    all.files += one.files;
+    all.directories += one.directories;
+    all.links += one.links;
+    all.bytes += one.bytes;
+    all.skipped.extend(one.skipped);
+    all.renamed.extend(one.renamed);
+    all.damaged.extend(one.damaged);
+}
+
 /// `from` into `to`, a piece at a time, `done` told each.
 fn copy(
-    from: &mut impl Read,
+    from: &mut (impl Read + ?Sized),
     to: &mut impl Write,
     control: &Control,
     done: &mut Progress,
@@ -1390,6 +1773,27 @@ fn test_source(source: &Source, keys: &Keys, control: &Control) -> Result<Summar
         Container::Data => {
             summary.bytes = copy(&mut opened, &mut io::sink(), control, &mut done)?;
             summary.files = 1;
+        }
+        // A disk image, and a file system with no table in front of it:
+        // every file read where the file system says its bytes are.
+        Container::PartitionedDisk
+        | Container::Vhd
+        | Container::Qcow2
+        | Container::Vhdx
+        | Container::Vmdk => {
+            let blocks = image::blocks(source, &mut opened, &layers)?;
+            let image =
+                image::Image::open(container, blocks.file.try_clone()?, blocks.path.as_deref())?;
+            test_disk(&image, control, &mut summary, &mut done)?;
+        }
+        Container::Fat | Container::Ext | Container::Ntfs => {
+            let blocks = image::blocks(source, &mut opened, &layers)?;
+            let disk: &dyn Disk = &blocks.file;
+            let holds = image::holds_at(disk, 0, disk.size()?);
+            if matches!(holds, image::Holds::Bytes) {
+                return Err(Error::NotAnArchive);
+            }
+            test_file_system(&holds, control, &mut summary, &mut done)?;
         }
         // What a later hivepack tells and packwing does not read yet.
         _ => return Err(Error::NotAnArchive),

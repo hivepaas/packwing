@@ -36,8 +36,18 @@ gpui_platform = { package = "gpui-pre-platform", version = "=0.3.9", default-fea
 # archive by writing it again (sevenz::Writer::copy_from). 0.11 opens Debian
 # packages down to their data.tar (open::Layer::Deb), reads and extracts
 # SquashFS images, in threads (extract_squashfs, Options::threads), for snaps
-# and AppImages (hivepack::appimage), with LZO among their compressions.
-hivepack = { version = "0.11.0", features = ["rar", "unsafe-fast", "memory"] }
+# and AppImages (hivepack::appimage), with LZO among their compressions. 0.12
+# reads disk images and the file systems in them: a container's block device
+# and the partitions its table names (hivepack::image), FAT12/16/32
+# (hivepack::fat), ext2/3/4 (hivepack::ext) and NTFS (hivepack::ntfs), each
+# extracted by extract_fat, extract_ext and extract_ntfs.
+#
+# With `ntfs`, which hivepack leaves off by default: the crate that reads
+# NTFS's structures panics on a damaged directory index, and the fix is in no
+# release of it yet (hivepack's docs/ntfs.md). packwing takes that feature and
+# reads NTFS behind `catch_unwind`, so a damaged image fails its job rather
+# than the program: crates/core/src/image.rs says where.
+hivepack = { version = "0.12.0", features = ["rar", "unsafe-fast", "memory", "ntfs"] }
 packwing-audit = { path = "crates/audit" }
 packwing-core = { path = "crates/core" }
 packwing-remote = { path = "crates/remote" }

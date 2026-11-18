@@ -2824,6 +2824,9 @@ t528232e6 = 上传已停止。
 # “{pattern}” names no file or folder.
 te17b2bfa = “{ $pattern }”没有指向任何文件或文件夹。
 
+# This NTFS file system is damaged in a way the library that reads it cannot report.
+# tbe293ed1 =
+
 # a colon, which Windows does not allow
 t3ba6a1aa = 含有 Windows 不允许的冒号
 

@@ -2824,6 +2824,9 @@ t528232e6 = 업로드가 중단되었습니다.
 # “{pattern}” names no file or folder.
 te17b2bfa = “{ $pattern }”은(는) 어떤 파일이나 폴더도 가리키지 않습니다.
 
+# This NTFS file system is damaged in a way the library that reads it cannot report.
+# tbe293ed1 =
+
 # a colon, which Windows does not allow
 t3ba6a1aa = Windows에서 쓸 수 없는 콜론
 

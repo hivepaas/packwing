@@ -31,8 +31,9 @@ use crate::secrets::Secrets;
     about = "packwing on the command line: open, extract, check and make archives",
     long_about = "packwing on the command line: open, extract, check and make archives.\n\n\
         It reads ZIP, 7z, RAR, tar and its compressed kinds, ISO and UDF images, cpio, \
-        RPM, XAR, Debian packages, snaps and AppImages (SquashFS) and age, telling each \
-        by its bytes, and makes ZIP, 7z and tar ones. \
+        RPM, XAR, Debian packages, snaps and AppImages (SquashFS), disk images (raw, \
+        VHD, VHDX, QCOW2, VMDK) down to the FAT, ext and NTFS file systems in their \
+        partitions, and age, telling each by its bytes, and makes ZIP, 7z and tar ones. \
         Extraction never writes outside where it is told, and keeps the mark of \
         files from the Internet.\n\n\
         A password is never given on the command line: pkw asks for it in a \

@@ -7,6 +7,12 @@ packwing-core's tests read them.
 - `sample.iso.zst`: ISO 9660, with Rock Ridge and Joliet, under zstd.
 - `sample-udf.iso.zst`: UDF beside ISO 9660, as DVDs and Windows' images
   are, which hivepack::open finds as a UDF volume, under zstd.
+- `card.img.zst`: a GPT disk of 10 MiB under zstd, 1.5 KB of it since the
+  rest is zeros - three partitions: an EFI system partition holding FAT
+  (`qemu-img`'s vvfat wrote it from a folder), a Linux one holding ext2
+  (`mke2fs -d`), and a swap partition, which holds no file system at all. It
+  is what `tests/images.rs` reads, so that the disk-image tests need no tool
+  and run everywhere. How it was made is at the end of this file.
 - `sample.7z`: 7-Zip's defaults, LZMA2 in one solid block.
 - `secret.7z`: the same, its files encrypted with AES; password `secret`.
 - `hidden.7z`: the same, its names encrypted too (`-mhe=on`).
@@ -94,4 +100,35 @@ truncate -s 8192 links/sparse.bin && printf 'end\n' >> links/sparse.bin
 find links -exec touch -h -d '2026-09-01 12:00:00 UTC' {} +
 mksquashfs links links.sqfs -noappend -quiet -no-progress -comp zstd -b 4K \
   -all-root -no-xattrs -mkfs-time 1788264000 -processors 1
+```
+
+A disk image of three partitions, for `tests/images.rs`. The partitions go
+where the table says they are, which is not where their sizes alone would put
+them: `sfdisk` aligns the first to a mebibyte.
+
+```sh
+mkdir -p tree/docs root/etc
+printf 'hello from the boot partition\n' > tree/README.TXT
+printf 'a note\n' > tree/docs/note.txt
+printf 'root file system\n' > root/etc/hostname
+printf 'deeper\n' > root/etc/deeper.conf
+qemu-img convert -f vvfat -O raw "fat:floppy:$PWD/tree" p1.img   # 2,949,120 bytes
+mke2fs -q -F -t ext2 -b 1024 -d root p2.img 3072
+truncate -s 10M card.img
+printf 'label: gpt\nsize=5760, type=uefi, name="EFI"\nsize=6144, type=linux, name="root"\nsize=2048, type=swap, name="swap"\n' \
+  | sfdisk card.img
+python3 -c '
+import json, subprocess
+table = json.loads(subprocess.run(["sfdisk", "-J", "card.img"],
+                                  capture_output=True, text=True).stdout)["partitiontable"]
+card = bytearray(open("card.img", "rb").read())
+for part, name in zip(table["partitions"], ("p1.img", "p2.img", None)):
+    if name is None:
+        continue
+    data = open(name, "rb").read()
+    at = part["start"] * table["sectorsize"]
+    card[at:at + len(data)] = data
+open("card.img", "wb").write(bytes(card))
+'
+zstd -19 card.img -o card.img.zst
 ```

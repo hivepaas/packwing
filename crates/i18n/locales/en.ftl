@@ -1053,6 +1053,7 @@ t2c3e91c4 = “{ $bare }” is already in the archive. Nothing was changed.
 tdb9326d3 = Before it is uploaded, this archive is made in { $folder }, where it may take up to { $need }. Only { $free } is free there.
 t528232e6 = The upload stopped.
 te17b2bfa = “{ $pattern }” names no file or folder.
+tbe293ed1 = This NTFS file system is damaged in a way the library that reads it cannot report.
 t3ba6a1aa = a colon, which Windows does not allow
 t0b11ab21 = a character Windows does not allow (\ < > " | ? *)
 t8cac89ee = a name Windows keeps for a device
