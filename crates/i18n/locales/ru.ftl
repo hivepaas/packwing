@@ -13,6 +13,54 @@ t546d19d2 = Разрешить
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Оформление: { $name }. Нажмите, чтобы выбрать: { $name2 }.
 
+# Mint
+td6696d39 = Мята
+
+# Paper
+tfea8bfd9 = Бумага
+
+# Soft gray
+t6d3b9d7c = Мягкий серый
+
+# High contrast
+tdc2a9fd1 = Высокий контраст
+
+# Mist
+td071b28c = Туман
+
+# Lavender
+t40f6ad0e = Лаванда
+
+# Dusk
+t44655688 = Сумерки
+
+# Night
+t8c9a1101 = Ночь
+
+# Neutral
+te9330778 = Нейтральный
+
+# Graphite
+tcc5f9dad = Графит
+
+# Midnight
+tfc321421 = Полночь
+
+# Dim
+t35691dd9 = Приглушённый
+
+# Deep sea
+t372a2e54 = Глубокое море
+
+# Espresso
+t77f4d515 = Эспрессо
+
+# Forest
+t953ca480 = Лес
+
+# Plum
+t1d8d478b = Слива
+
 # Stop and say so
 tdc8b782b = Остановить и сообщить
 
@@ -2167,17 +2215,26 @@ tf65ec196 = Все ({ $count })
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = например, code -n или /path/to/editor --flag
 
-# Language
-t9a73db9b = Язык
-
 # Appearance
 t31018b9f = Внешний вид
+
+# Light and dark each come in styles: the grounds change, the text and the accent stay.
+t9fa95458 = У светлого и тёмного оформления есть по нескольку стилей: меняется фон, а текст и акцентный цвет остаются прежними.
+
+# {name} (default)
+td3f56fa8 = { $name } (по умолчанию)
+
+# Language
+t9a73db9b = Язык
 
 # Text size
 t2c041143 = Размер текста
 
 # Processor cores to use
 t2f9c3d17 = Сколько ядер процессора использовать
+
+# More is faster; fewer leaves room for other work.
+t9d71a0bc = Больше — быстрее; меньше — останется место для другой работы.
 
 # Text editor
 t1ca82aab = Текстовый редактор

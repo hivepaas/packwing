@@ -13,6 +13,54 @@ t546d19d2 = 허용
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = 모양: { $name }. 클릭하면 { $name2 }(으)로 바뀝니다.
 
+# Mint
+td6696d39 = 민트
+
+# Paper
+tfea8bfd9 = 페이퍼
+
+# Soft gray
+t6d3b9d7c = 소프트 그레이
+
+# High contrast
+tdc2a9fd1 = 고대비
+
+# Mist
+td071b28c = 미스트
+
+# Lavender
+t40f6ad0e = 라벤더
+
+# Dusk
+t44655688 = 황혼
+
+# Night
+t8c9a1101 = 나이트
+
+# Neutral
+te9330778 = 뉴트럴
+
+# Graphite
+tcc5f9dad = 그래파이트
+
+# Midnight
+tfc321421 = 미드나이트
+
+# Dim
+t35691dd9 = 딤
+
+# Deep sea
+t372a2e54 = 딥 시
+
+# Espresso
+t77f4d515 = 에스프레소
+
+# Forest
+t953ca480 = 포레스트
+
+# Plum
+t1d8d478b = 플럼
+
 # Stop and say so
 tdc8b782b = 중지하고 알림
 
@@ -2077,17 +2125,26 @@ tf65ec196 = 모두 ({ $count })
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = 예: code -n 또는 /path/to/editor --flag
 
-# Language
-t9a73db9b = 언어
-
 # Appearance
 t31018b9f = 모양
+
+# Light and dark each come in styles: the grounds change, the text and the accent stay.
+t9fa95458 = 라이트와 다크에는 각각 여러 스타일이 있습니다. 배경이 바뀌고, 텍스트와 강조 색상은 그대로입니다.
+
+# {name} (default)
+td3f56fa8 = { $name } (기본값)
+
+# Language
+t9a73db9b = 언어
 
 # Text size
 t2c041143 = 글자 크기
 
 # Processor cores to use
 t2f9c3d17 = 사용할 프로세서 코어
+
+# More is faster; fewer leaves room for other work.
+t9d71a0bc = 많을수록 빠르고, 적을수록 다른 작업에 여유가 남습니다.
 
 # Text editor
 t1ca82aab = 텍스트 편집기

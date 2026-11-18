@@ -13,6 +13,54 @@ t546d19d2 = Permitir
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Apariencia: { $name }. Haz clic para cambiar a { $name2 }.
 
+# Mint
+td6696d39 = Menta
+
+# Paper
+tfea8bfd9 = Papel
+
+# Soft gray
+t6d3b9d7c = Gris suave
+
+# High contrast
+tdc2a9fd1 = Alto contraste
+
+# Mist
+td071b28c = Niebla
+
+# Lavender
+t40f6ad0e = Lavanda
+
+# Dusk
+t44655688 = Atardecer
+
+# Night
+t8c9a1101 = Noche
+
+# Neutral
+te9330778 = Neutro
+
+# Graphite
+tcc5f9dad = Grafito
+
+# Midnight
+tfc321421 = Medianoche
+
+# Dim
+t35691dd9 = Atenuado
+
+# Deep sea
+t372a2e54 = Mar profundo
+
+# Espresso
+t77f4d515 = Espresso
+
+# Forest
+t953ca480 = Bosque
+
+# Plum
+t1d8d478b = Ciruela
+
 # Stop and say so
 tdc8b782b = Detenerse y avisar
 
@@ -2107,17 +2155,26 @@ tf65ec196 = Todos ({ $count })
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = p. ej., code -n, o /path/to/editor --flag
 
-# Language
-t9a73db9b = Idioma
-
 # Appearance
 t31018b9f = Apariencia
+
+# Light and dark each come in styles: the grounds change, the text and the accent stay.
+t9fa95458 = Claro y oscuro tienen varios estilos cada uno: cambian los fondos; el texto y el color de acento se mantienen.
+
+# {name} (default)
+td3f56fa8 = { $name } (predeterminada)
+
+# Language
+t9a73db9b = Idioma
 
 # Text size
 t2c041143 = Tamaño del texto
 
 # Processor cores to use
 t2f9c3d17 = Núcleos del procesador a usar
+
+# More is faster; fewer leaves room for other work.
+t9d71a0bc = Más es más rápido; menos deja sitio para otras tareas.
 
 # Text editor
 t1ca82aab = Editor de texto

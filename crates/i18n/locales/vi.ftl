@@ -13,6 +13,54 @@ t546d19d2 = Cho phép
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Giao diện: { $name }. Bấm để chuyển sang { $name2 }.
 
+# Mint
+td6696d39 = Bạc hà
+
+# Paper
+tfea8bfd9 = Giấy
+
+# Soft gray
+t6d3b9d7c = Xám dịu
+
+# High contrast
+tdc2a9fd1 = Tương phản cao
+
+# Mist
+td071b28c = Sương
+
+# Lavender
+t40f6ad0e = Oải hương
+
+# Dusk
+t44655688 = Hoàng hôn
+
+# Night
+t8c9a1101 = Đêm
+
+# Neutral
+te9330778 = Trung tính
+
+# Graphite
+tcc5f9dad = Than chì
+
+# Midnight
+tfc321421 = Nửa đêm
+
+# Dim
+t35691dd9 = Dịu
+
+# Deep sea
+t372a2e54 = Biển sâu
+
+# Espresso
+t77f4d515 = Espresso
+
+# Forest
+t953ca480 = Rừng
+
+# Plum
+t1d8d478b = Mận
+
 # Stop and say so
 tdc8b782b = Dừng và báo lỗi
 
@@ -2077,17 +2125,26 @@ tf65ec196 = Tất cả ({ $count })
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = ví dụ code -n, hoặc /đường/dẫn/trình-soạn-thảo --flag
 
-# Language
-t9a73db9b = Ngôn ngữ
-
 # Appearance
 t31018b9f = Giao diện
+
+# Light and dark each come in styles: the grounds change, the text and the accent stay.
+t9fa95458 = Sáng và tối đều có nhiều kiểu: nền thay đổi, chữ và màu nhấn giữ nguyên.
+
+# {name} (default)
+td3f56fa8 = { $name } (mặc định)
+
+# Language
+t9a73db9b = Ngôn ngữ
 
 # Text size
 t2c041143 = Cỡ chữ
 
 # Processor cores to use
 t2f9c3d17 = Số nhân xử lý được dùng
+
+# More is faster; fewer leaves room for other work.
+t9d71a0bc = Càng nhiều càng nhanh; ít hơn thì chừa chỗ cho việc khác.
 
 # Text editor
 t1ca82aab = Trình soạn thảo văn bản

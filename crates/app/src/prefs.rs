@@ -15,6 +15,7 @@ use packwing_core::{
     Values, read_public_key,
 };
 
+use crate::colors::{DarkStyle, LightStyle};
 use crate::dialogs::Format;
 use crate::pages::settings::Appearance;
 use crate::placement::WindowPlace;
@@ -127,6 +128,10 @@ pub struct Prefs {
     /// How the window was last left; none before it has been.
     pub window: Option<WindowPlace>,
     pub appearance: Appearance,
+    /// How light looks, and how dark does: one of each is in use whatever
+    /// the appearance, the system's switching between them.
+    pub light_style: LightStyle,
+    pub dark_style: DarkStyle,
     pub format: Format,
     pub level: Level,
     pub hide_names: bool,
@@ -195,6 +200,8 @@ impl Default for Prefs {
             text_size: None,
             window: None,
             appearance: Appearance::System,
+            light_style: LightStyle::default(),
+            dark_style: DarkStyle::default(),
             format: Format::Zip,
             level: Level::Medium,
             hide_names: true,
@@ -287,6 +294,8 @@ impl Prefs {
                         _ => Appearance::System,
                     }
                 }
+                "light_style" => p.light_style = LightStyle::from_key(value),
+                "dark_style" => p.dark_style = DarkStyle::from_key(value),
                 "format" => {
                     if let Some(f) = Format::ALL.into_iter().find(|f| f.ext() == value) {
                         p.format = f;
@@ -443,10 +452,12 @@ impl Prefs {
             text += &format!("window={}\n", window.to_text());
         }
         text += &format!(
-            "appearance={appearance}\nformat={}\nlevel={level}\nhide_names={}\n\
+            "appearance={appearance}\nlight_style={}\ndark_style={}\nformat={}\nlevel={level}\nhide_names={}\n\
              skip_mac_files={}\nstore_compressed={}\nstream_above={}\nextract_to={}\noverwrite={}\nlimit={limit}\nkeep_mark={}\n\
              portable_names={}\nrestore_owners={}\nrestore_xattrs={}\nask_before_open={}\naudit_log={}\n\
              audit_retention_days={}\nthreads={}\n",
+            self.light_style.key(),
+            self.dark_style.key(),
             self.format.ext(),
             self.hide_names,
             self.skip_mac_files,
@@ -853,6 +864,21 @@ mod tests {
     }
 
     #[test]
+    fn a_style_from_a_later_version_is_the_default_and_spoils_nothing() {
+        let p = Prefs::parse("appearance=dark\nlight_style=aurora\ndark_style=plum\nformat=.7z\n");
+        assert_eq!(p.light_style, LightStyle::Mint);
+        assert_eq!(p.dark_style, DarkStyle::Plum);
+        assert_eq!(p.appearance, Appearance::Dark);
+        assert_eq!(p.format, Format::SevenZip);
+        // None kept: the design's.
+        let p = Prefs::parse("");
+        assert_eq!(
+            (p.light_style, p.dark_style),
+            (LightStyle::Mint, DarkStyle::Night)
+        );
+    }
+
+    #[test]
     fn what_is_kept_comes_back() {
         let mut p = Prefs {
             language: Some("en".to_owned()),
@@ -864,6 +890,8 @@ mod tests {
                 mode: crate::placement::WindowMode::Maximized,
             }),
             appearance: Appearance::Dark,
+            light_style: LightStyle::Paper,
+            dark_style: DarkStyle::DeepSea,
             format: Format::TarZst,
             level: Level::Highest,
             hide_names: false,

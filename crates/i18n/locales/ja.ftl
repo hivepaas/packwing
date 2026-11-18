@@ -13,6 +13,54 @@ t546d19d2 = 許可
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = 外観：{ $name }。クリックすると { $name2 } になります。
 
+# Mint
+td6696d39 = ミント
+
+# Paper
+tfea8bfd9 = ペーパー
+
+# Soft gray
+t6d3b9d7c = ソフトグレー
+
+# High contrast
+tdc2a9fd1 = ハイコントラスト
+
+# Mist
+td071b28c = ミスト
+
+# Lavender
+t40f6ad0e = ラベンダー
+
+# Dusk
+t44655688 = ダスク
+
+# Night
+t8c9a1101 = ナイト
+
+# Neutral
+te9330778 = ニュートラル
+
+# Graphite
+tcc5f9dad = グラファイト
+
+# Midnight
+tfc321421 = ミッドナイト
+
+# Dim
+t35691dd9 = ディム
+
+# Deep sea
+t372a2e54 = ディープシー
+
+# Espresso
+t77f4d515 = エスプレッソ
+
+# Forest
+t953ca480 = フォレスト
+
+# Plum
+t1d8d478b = プラム
+
 # Stop and say so
 tdc8b782b = 停止して知らせる
 
@@ -2077,17 +2125,26 @@ tf65ec196 = すべて ({ $count })
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = 例：code -n、または /path/to/editor --flag
 
-# Language
-t9a73db9b = 言語
-
 # Appearance
 t31018b9f = 外観
+
+# Light and dark each come in styles: the grounds change, the text and the accent stay.
+t9fa95458 = ライトとダークにはそれぞれ複数のスタイルがあります。背景が変わり、文字とアクセントカラーはそのままです。
+
+# {name} (default)
+td3f56fa8 = { $name }(既定)
+
+# Language
+t9a73db9b = 言語
 
 # Text size
 t2c041143 = 文字サイズ
 
 # Processor cores to use
 t2f9c3d17 = 使用するプロセッサコア数
+
+# More is faster; fewer leaves room for other work.
+t9d71a0bc = 多いほど速く、少ないほどほかの作業に余裕が残ります。
 
 # Text editor
 t1ca82aab = テキストエディタ

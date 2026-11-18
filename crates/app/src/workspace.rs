@@ -526,6 +526,8 @@ impl Workspace {
             Appearance::System => self.system_dark,
         };
         colors::set_dark(dark);
+        let kept = prefs::prefs(cx);
+        colors::set_styles(kept.light_style, kept.dark_style);
         window.refresh();
         cx.notify();
     }

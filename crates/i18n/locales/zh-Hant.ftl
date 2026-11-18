@@ -13,6 +13,54 @@ t546d19d2 = 允許
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = 外觀：{ $name }。按一下切換為{ $name2 }。
 
+# Mint
+td6696d39 = 薄荷
+
+# Paper
+tfea8bfd9 = 紙張
+
+# Soft gray
+t6d3b9d7c = 柔灰
+
+# High contrast
+tdc2a9fd1 = 高對比
+
+# Mist
+td071b28c = 薄霧
+
+# Lavender
+t40f6ad0e = 薰衣草
+
+# Dusk
+t44655688 = 黃昏
+
+# Night
+t8c9a1101 = 夜晚
+
+# Neutral
+te9330778 = 中性
+
+# Graphite
+tcc5f9dad = 石墨
+
+# Midnight
+tfc321421 = 午夜
+
+# Dim
+t35691dd9 = 柔暗
+
+# Deep sea
+t372a2e54 = 深海
+
+# Espresso
+t77f4d515 = 濃縮咖啡
+
+# Forest
+t953ca480 = 森林
+
+# Plum
+t1d8d478b = 梅子
+
 # Stop and say so
 tdc8b782b = 停止並告知
 
@@ -2077,17 +2125,26 @@ tf65ec196 = 全部 ({ $count })
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = 例如 code -n，或 /path/to/editor --flag
 
-# Language
-t9a73db9b = 語言
-
 # Appearance
 t31018b9f = 外觀
+
+# Light and dark each come in styles: the grounds change, the text and the accent stay.
+t9fa95458 = 淺色與深色各有多種樣式：背景會改變，文字與強調色維持不變。
+
+# {name} (default)
+td3f56fa8 = { $name }(預設)
+
+# Language
+t9a73db9b = 語言
 
 # Text size
 t2c041143 = 文字大小
 
 # Processor cores to use
 t2f9c3d17 = 使用的處理器核心數
+
+# More is faster; fewer leaves room for other work.
+t9d71a0bc = 越多越快；越少則為其他工作留出餘裕。
 
 # Text editor
 t1ca82aab = 文字編輯器

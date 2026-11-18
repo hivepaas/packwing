@@ -22,7 +22,7 @@ use crate::workspace::{Page, Workspace};
 type SetUp = fn(&mut Workspace, &mut Window, &mut Context<Workspace>);
 
 /// Each screen's name, and how to get to it.
-const SCREENS: [(&str, SetUp); 117] = [
+const SCREENS: [(&str, SetUp); 119] = [
     ("archive-more", |ws, _, cx| {
         ws.archive_page().update(cx, |p, cx| {
             p.open_more_for_shot(gpui::point(px(1180.), px(250.)), cx)
@@ -205,6 +205,15 @@ const SCREENS: [(&str, SetUp); 117] = [
     }),
     ("settings-editor", |ws, _, cx| {
         ws.show_settings(Section::General, cx)
+    }),
+    // Light and dark in styles of their own: Paper and Plum, chosen in General.
+    ("settings-styles", |ws, _, cx| {
+        other_styles(cx);
+        ws.show_settings(Section::General, cx)
+    }),
+    ("archive-styled", |ws, window, cx| {
+        other_styles(cx);
+        ws.open_archive(sample_tar(), false, window, cx)
     }),
     ("archive", |_, _, _| {}),
     ("archive-opened", |ws, window, cx| {
@@ -1050,6 +1059,16 @@ fn sample_png() -> Vec<u8> {
         .write_to(&mut bytes, image::ImageFormat::Png)
         .expect("cannot make a picture");
     bytes.into_inner()
+}
+
+/// Paper for light and Plum for dark, kept and in use.
+fn other_styles(cx: &mut gpui::App) {
+    use crate::colors::{DarkStyle, LightStyle};
+    crate::prefs::change(cx, |p| {
+        p.light_style = LightStyle::Paper;
+        p.dark_style = DarkStyle::Plum;
+    });
+    crate::colors::set_styles(LightStyle::Paper, DarkStyle::Plum);
 }
 
 fn out_dir() -> PathBuf {

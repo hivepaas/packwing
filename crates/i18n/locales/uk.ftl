@@ -13,6 +13,54 @@ t546d19d2 = Дозволити
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Вигляд: { $name }. Натисніть, щоб перейти на { $name2 }.
 
+# Mint
+td6696d39 = М’ята
+
+# Paper
+tfea8bfd9 = Папір
+
+# Soft gray
+t6d3b9d7c = М'який сірий
+
+# High contrast
+tdc2a9fd1 = Висока контрастність
+
+# Mist
+td071b28c = Туман
+
+# Lavender
+t40f6ad0e = Лаванда
+
+# Dusk
+t44655688 = Сутінки
+
+# Night
+t8c9a1101 = Ніч
+
+# Neutral
+te9330778 = Нейтральний
+
+# Graphite
+tcc5f9dad = Графіт
+
+# Midnight
+tfc321421 = Північ
+
+# Dim
+t35691dd9 = Приглушений
+
+# Deep sea
+t372a2e54 = Глибоке море
+
+# Espresso
+t77f4d515 = Еспресо
+
+# Forest
+t953ca480 = Ліс
+
+# Plum
+t1d8d478b = Слива
+
 # Stop and say so
 tdc8b782b = Зупинитися й повідомити
 
@@ -2167,17 +2215,26 @@ tf65ec196 = Усі ({ $count })
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = наприклад, code -n або /path/to/editor --flag
 
-# Language
-t9a73db9b = Мова
-
 # Appearance
 t31018b9f = Вигляд
+
+# Light and dark each come in styles: the grounds change, the text and the accent stay.
+t9fa95458 = Світле й темне оформлення мають по кілька стилів: змінюється тло, а текст і акцентний колір лишаються.
+
+# {name} (default)
+td3f56fa8 = { $name } (типово)
+
+# Language
+t9a73db9b = Мова
 
 # Text size
 t2c041143 = Розмір тексту
 
 # Processor cores to use
 t2f9c3d17 = Скільки ядер процесора використовувати
+
+# More is faster; fewer leaves room for other work.
+t9d71a0bc = Більше — швидше; менше — лишиться місце для іншої роботи.
 
 # Text editor
 t1ca82aab = Текстовий редактор
