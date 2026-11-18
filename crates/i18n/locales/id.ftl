@@ -2833,6 +2833,9 @@ t528232e6 = Pengunggahan dihentikan.
 # “{pattern}” names no file or folder.
 te17b2bfa = “{ $pattern }” tidak menunjuk file atau folder apa pun.
 
+# This NTFS file system is damaged in a way the library that reads it cannot report.
+# tbe293ed1 =
+
 # a colon, which Windows does not allow
 t3ba6a1aa = titik dua, yang tidak diizinkan Windows
 

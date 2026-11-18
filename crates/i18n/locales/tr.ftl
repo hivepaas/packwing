@@ -2869,6 +2869,9 @@ t528232e6 = Yükleme durdu.
 # “{pattern}” names no file or folder.
 te17b2bfa = “{ $pattern }” hiçbir dosya ya da klasörü belirtmiyor.
 
+# This NTFS file system is damaged in a way the library that reads it cannot report.
+# tbe293ed1 =
+
 # a colon, which Windows does not allow
 t3ba6a1aa = Windows'un izin vermediği iki nokta
 

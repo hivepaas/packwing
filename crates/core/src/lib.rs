@@ -18,6 +18,7 @@ mod create;
 mod destination;
 mod entry_checksum;
 mod filter;
+mod image;
 mod job;
 mod joined;
 mod journal;

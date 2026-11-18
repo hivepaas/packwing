@@ -2941,6 +2941,9 @@ t528232e6 = Загрузка остановлена.
 # “{pattern}” names no file or folder.
 te17b2bfa = «{ $pattern }» не указывает ни на файл, ни на папку.
 
+# This NTFS file system is damaged in a way the library that reads it cannot report.
+# tbe293ed1 =
+
 # a colon, which Windows does not allow
 t3ba6a1aa = двоеточие, которое Windows не допускает
 
