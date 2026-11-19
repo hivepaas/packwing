@@ -206,7 +206,7 @@ impl Render for PasswordDialog {
         let (title, label, why) = words(self.asked);
         let shown = self.shown;
         let picks_file = self.asked == Asked::KeyFile;
-        let close = icon_button("close", "x", 40.)
+        let close = icon_button("close", "x", 40., tr!("Close"))
             .on_click(cx.listener(|_, _, _, cx| cx.emit(PasswordEvent::Cancelled)));
         let eye = div()
             .id("show-password")

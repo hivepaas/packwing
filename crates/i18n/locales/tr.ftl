@@ -10,6 +10,15 @@ tab0752f7 = packwing'in bu klasöre yazmak için izninize ihtiyacı var. İzin V
 # Allow
 t546d19d2 = İzin Ver
 
+# Minimize
+tf0ffec5d = Simge durumuna küçült
+
+# Maximize
+t604e45af = Ekranı kapla
+
+# Close
+tcd86acc3 = Kapat
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Görünüm: { $name }. { $name2 } için tıklayın.
 
@@ -70,6 +79,9 @@ t1e17fc0c = Değiştir
 # Skip it
 tad9909cb = Atla
 
+# If a file of that name is there
+t34c69cec = Aynı adlı dosya varsa
+
 # Add
 t9dc3aa14 = Ekle
 
@@ -98,9 +110,6 @@ t0d53ac5e = Ekle: { $name }
 
 # Goes in
 t36e95c22 = Gireceği yer
-
-# If a file of that name is there
-t34c69cec = Aynı adlı dosya varsa
 
 # This archive is signed. With more in it, it will no longer match its signature, until it is signed again.
 t55ed1cfd = Bu arşiv imzalı. İçine bir şey eklenirse imzasıyla artık eşleşmez; yeniden imzalanana kadar.
@@ -426,6 +435,12 @@ tfc6b3ea5 = 4 GB (USB bellek)
 # Custom size…
 t0fcf9e2d = Özel boyut…
 
+# Format
+tffb0ff72 = Biçim
+
+# Split into parts
+tca4436bd = Parçalara böl
+
 # Size
 ta6478e7c = Boyut
 
@@ -569,9 +584,6 @@ t32239aa8 = Küçük bloklar her çekirdeği çalıştırır: iki kata kadar dah
 
 # Large blocks make the smallest archive, on fewer cores where there is less to compress.
 t66a490d9 = Büyük bloklar en küçük arşivi yapar; sıkıştırılacak az şey varken daha az çekirdekle.
-
-# Split into parts
-tca4436bd = Parçalara böl
 
 # Each part
 t642c444d = Her parça
@@ -1039,9 +1051,6 @@ tc1421590 =
        *[other] { $count } dosya baştan sona okundu, { $size }, hatasız.
     }
 
-# Close
-tcd86acc3 = Kapat
-
 # “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
 t145d7a09 = “{ $path }” hasarlı: { $why }. Durdurulsun mu, atlansın mı, yoksa okunabilen kısmı tutulsun mu?
 
@@ -1256,6 +1265,9 @@ ta642b6e3 = Sunucu soruyor
 # Send
 tf28e14cf = Gönder
 
+# If a name is taken
+tc99c037f = Ad kullanımdaysa
+
 # Move {what}
 tc168ca56 = Taşı: { $what }
 
@@ -1270,9 +1282,6 @@ t85f0245a = Buraya kopyala
 
 # Move
 t7f2c2a34 = Taşı
-
-# If a name is taken
-tc99c037f = Ad kullanımdaysa
 
 # They are in this folder already. Choose another.
 t5318c14e = Bunlar bu klasörde zaten var. Başka birini seçin.
@@ -1322,6 +1331,12 @@ td8d39fb8 = Metin düzenleyicide düzenle
 # Edit in {editor}
 te44cd57b = { $editor } ile düzenle
 
+# Up a folder
+te9124369 = Bir klasör yukarı
+
+# Refresh
+t0815aad4 = Yenile
+
 # Modified
 tdd13a6b2 = Değiştirilme
 
@@ -1336,9 +1351,6 @@ t41f9a787 = Tüm klasörde ara
 
 # Load {n} more
 t30bed46a = { $n } tane daha yükle
-
-# Refresh
-t0815aad4 = Yenile
 
 # Hide hidden files
 t3375c9c0 = Gizli dosyaları gizle
@@ -1472,6 +1484,9 @@ tdd45c7bb = Dosya ekle
 
 # Test
 t2ffcbe05 = Sına
+
+# More
+t4f34d900 = Diğer
 
 # Reading what’s inside…
 t1bbda9f5 = İçindekiler okunuyor…
@@ -2017,11 +2032,14 @@ t0632975a = hivepaas.com sitesini ziyaret et
 # Always
 tad4bbd04 = Her zaman
 
-# Extensions, apart by spaces
-tc709375f = Uzantılar, boşlukla ayrılmış
-
 # Format of new archives
 t3b50d238 = Yeni arşivlerin biçimi
+
+# Write straight to a storage above
+ta4975128 = Doğrudan yukarıdaki bir depolama alanına yaz
+
+# Extensions, apart by spaces
+tc709375f = Uzantılar, boşlukla ayrılmış
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = Yeni arşiv bununla başlar; orada başkasını seçebilirsiniz.
@@ -2031,9 +2049,6 @@ t2595cbcb = Sakla, ZIP ve 7z arşivlerinin dosyalarını olduğu gibi koyar. tar
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = Daha yüksek düzey daha küçük arşivler üretir; arşivlerin oluşması uzun sürer, açılması değil.
-
-# Write straight to a storage above
-ta4975128 = Doğrudan yukarıdaki bir depolama alanına yaz
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = Büyük dosyalar bu bilgisayarda yer kaplamaz, ama bağlantı kesilirse yeniden sıkıştırmak gerekir. S3 bu yolla tar ve ZIP kabul eder, SFTP ise her biçimi.
@@ -2074,8 +2089,17 @@ t983e37f7 = Ada göre
 # By number
 tcbbada8d = Numaraya göre
 
+# When a file is already there
+tca514dda = Dosya zaten varsa
+
 # No limit
 t6de7f47d = Sınır yok
+
+# Largest an archive may unpack to
+t5957c426 = Bir arşivin açılabileceği en büyük boyut
+
+# Owners from a backup
+t38a7cf66 = Yedekten sahipler
 
 # Where the files go
 t77e60aba = Dosyaların gideceği yer
@@ -2098,14 +2122,8 @@ t4691c928 = Arşivin yanına
 # Straight into its folder
 t99d1df43 = Doğrudan kendi klasörüne
 
-# When a file is already there
-tca514dda = Dosya zaten varsa
-
 # A file of the same name in the folder the files go to
 t296ad686 = Dosyaların gideceği klasörde aynı adlı bir dosya
-
-# Largest an archive may unpack to
-t5957c426 = Bir arşivin açılabileceği en büyük boyut
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = Arşiv bombalarını durdurur: diski doldurmak üzere açılan küçük dosyalar
@@ -2115,9 +2133,6 @@ tf47f4968 = Yalnızca her sistemin kullanabildiği adlar
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = Windows'un kullanamadığı a:b.txt gibi adlar ve yalnızca büyük/küçük harfle ayrılan adlar bu bilgisayarda da sorulur
-
-# Owners from a backup
-t38a7cf66 = Yedekten sahipler
 
 # Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
 t46908bee = Bir tar arşivi onları koruduysa: sizin ya da arşivin, ada veya numaraya göre. Dosyaları başkalarına yalnızca bir yönetici verebilir
@@ -2146,11 +2161,23 @@ t1d68c60b = Sistemin
 # Custom…
 ta391dade = Özel…
 
+# Language
+t9a73db9b = Dil
+
 # The system’s ({size} px)
 ta51f1877 = Sistemin boyutu ({ $size } px)
 
+# Text size
+t2c041143 = Yazı boyutu
+
 # All ({count})
 tf65ec196 = Tümü ({ $count })
+
+# Processor cores to use
+t2f9c3d17 = Kullanılacak işlemci çekirdekleri
+
+# Text editor
+t1ca82aab = Metin düzenleyici
 
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = örn. code -n veya /path/to/editor --flag
@@ -2164,20 +2191,8 @@ t9fa95458 = Açık ve koyu görünümün her birinin birkaç stili vardır: arka
 # {name} (default)
 td3f56fa8 = { $name } (varsayılan)
 
-# Language
-t9a73db9b = Dil
-
-# Text size
-t2c041143 = Yazı boyutu
-
-# Processor cores to use
-t2f9c3d17 = Kullanılacak işlemci çekirdekleri
-
 # More is faster; fewer leaves room for other work.
 t9d71a0bc = Daha çoğu daha hızlıdır; daha azı başka işlere yer bırakır.
-
-# Text editor
-t1ca82aab = Metin düzenleyici
 
 # What Edit opens a file of a storage in
 t62506ced = Bir depolama alanındaki dosyayı Düzenle ile açan uygulama
@@ -2485,14 +2500,14 @@ t76d5d951 = Çıkarmadan dosya açmadan önce sor
 # Opening a file inside an archive puts a copy in a temporary folder. A program always asks.
 t9173caaa = Arşivdeki bir dosyayı açmak, geçici bir klasöre bir kopya koyar. Bir program için her zaman sorulur.
 
+# Keep its records for
+tf423722f = Kayıtları şu süre sakla
+
 # Paste a public key
 t0bf72f73 = Bir genel anahtar yapıştırın
 
 # What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
 t2162955d = packwing'in yaptıkları, bu bilgisayarda tutulur: çıkarılan, oluşturulan, dönüştürülen ve kopyalanan arşivler, ne zaman ve kim tarafından. Asla bir parola ya da dosya içeriği yazılmaz.
-
-# Keep its records for
-tf423722f = Kayıtları şu süre sakla
 
 # Older ones are taken away, and that is recorded too
 t7073f273 = Daha eskileri silinir ve bu da kaydedilir
@@ -2719,11 +2734,23 @@ t5b9dcaca = Geçersiz desen
 # No matches
 td29421ef = Eşleşme yok
 
+# Previous match
+tca660309 = Önceki eşleşme
+
+# Next match
+t2e113a49 = Sonraki eşleşme
+
 # Hide the list of files ({keys})
 t165a997f = Dosya listesini gizle ({ $keys })
 
 # Show the list of files ({keys})
 tde6e8c38 = Dosya listesini göster ({ $keys })
+
+# Previous file
+t254b864e = Önceki dosya
+
+# Next file
+te3a48d8e = Sonraki dosya
 
 # Fit the window (0)
 tbe39720a = Pencereye sığdır (0)
@@ -3243,9 +3270,6 @@ t78956399 = Liste olarak göster
 # Show a grid
 tb50700d9 = Izgara olarak göster
 
-# More
-t4f34d900 = Diğer
-
 # Select
 t3e892b4d = Seç
 
@@ -3288,9 +3312,6 @@ tcde554d0 = Fotoğraflar
 
 # Add more
 t5d2a8a05 = Daha fazla ekle
-
-# Format
-tffb0ff72 = Biçim
 
 # Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
 t96cb3408 = Her yerde açılır. Parolayla (AES-256) Windows'un kendi Dosya Gezgini açamaz; 7-Zip ve packwing açabilir.

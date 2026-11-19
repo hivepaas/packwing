@@ -25,9 +25,9 @@
 
 use gpui::{
     App, BoxShadow, Corners, CursorStyle, Decorations, Div, Edges, FontWeight, HitboxBehavior,
-    Hsla, MouseButton, Pixels, Point, ResizeEdge, Size, Stateful, Tiling, Window, WindowButton,
-    WindowButtonLayout, WindowControlArea, canvas, div, point, prelude::*, px, rgb, rgba, svg,
-    transparent_black,
+    Hsla, MouseButton, Pixels, Point, ResizeEdge, Role, Size, Stateful, Tiling, Window,
+    WindowButton, WindowButtonLayout, WindowControlArea, canvas, div, point, prelude::*, px, rgb,
+    rgba, svg, transparent_black,
 };
 use packwing_i18n::tr;
 
@@ -174,8 +174,15 @@ fn gnome_button(b: WindowButton) -> Stateful<Div> {
         WindowButton::Maximize => ("icons/maximize.svg", |w, _| w.zoom_window()),
         WindowButton::Close => ("icons/close.svg", close),
     };
+    let name = match b {
+        WindowButton::Minimize => tr!("Minimize"),
+        WindowButton::Maximize => tr!("Maximize"),
+        WindowButton::Close => tr!("Close"),
+    };
     div()
         .id(b.id())
+        .role(Role::Button)
+        .aria_label(name)
         .size(px(24.))
         .flex()
         .items_center()
@@ -211,6 +218,8 @@ pub fn appearance_switch(now: Appearance) -> Stateful<Div> {
     );
     div()
         .id("appearance")
+        .role(Role::Button)
+        .aria_label(said.clone())
         .flex()
         .flex_shrink_0()
         .items_center()
@@ -239,6 +248,9 @@ pub fn update_badge(said: String, tooltip: String) -> Stateful<Div> {
     let c = colors();
     div()
         .id("update-badge")
+        .role(Role::Button)
+        .aria_label(said.clone())
+        .aria_description(tooltip.clone())
         .flex()
         .flex_shrink_0()
         .items_center()

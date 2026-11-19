@@ -344,6 +344,9 @@ pub fn run(extensions: Extensions) {
         let menu = cx.new(RightClickMenu::installed);
         open_with::keep_current(cx);
         let opened = cx.open_window(options, |window, cx| {
+            // What the window is called where nothing draws a title (Linux):
+            // the task switcher's name for it, and a screen reader's.
+            window.set_window_title("packwing");
             let ws = cx.new(|cx| {
                 let mut ws = workspace::Workspace::new(first_run, menu, window, cx);
                 ws.track_bounds(window, cx);

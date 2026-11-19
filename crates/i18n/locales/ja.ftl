@@ -10,6 +10,15 @@ tab0752f7 = このフォルダに書き込むには許可が必要です。「�
 # Allow
 t546d19d2 = 許可
 
+# Minimize
+tf0ffec5d = 最小化
+
+# Maximize
+t604e45af = 最大化
+
+# Close
+tcd86acc3 = 閉じる
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = 外観：{ $name }。クリックすると { $name2 } になります。
 
@@ -70,6 +79,9 @@ t1e17fc0c = 置き換える
 # Skip it
 tad9909cb = スキップする
 
+# If a file of that name is there
+t34c69cec = 同じ名前のファイルがある場合
+
 # Add
 t9dc3aa14 = 追加
 
@@ -96,9 +108,6 @@ t0d53ac5e = { $name } に追加
 
 # Goes in
 t36e95c22 = 追加先
-
-# If a file of that name is there
-t34c69cec = 同じ名前のファイルがある場合
 
 # This archive is signed. With more in it, it will no longer match its signature, until it is signed again.
 t55ed1cfd = このアーカイブには署名があります。内容を追加すると、再度署名するまで署名と一致しなくなります。
@@ -418,6 +427,12 @@ tfc6b3ea5 = 4 GB（USB メモリ用）
 # Custom size…
 t0fcf9e2d = サイズを指定…
 
+# Format
+tffb0ff72 = 形式
+
+# Split into parts
+tca4436bd = パートに分割
+
 # Size
 ta6478e7c = サイズ
 
@@ -561,9 +576,6 @@ t32239aa8 = 小さいブロックはすべてのコアを働かせます。最�
 
 # Large blocks make the smallest archive, on fewer cores where there is less to compress.
 t66a490d9 = 大きいブロックは最も小さいアーカイブになります。圧縮するものが少ないと、使うコアは少なくなります。
-
-# Split into parts
-tca4436bd = パートに分割
 
 # Each part
 t642c444d = 1 パートあたり
@@ -1024,9 +1036,6 @@ tc1421590 =
        *[other] { $count } 個のファイル（{ $size }）をエラーなしで最後まで読み取りました。
     }
 
-# Close
-tcd86acc3 = 閉じる
-
 # “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
 t145d7a09 = 「{ $path }」は破損しています: { $why }。中止しますか、このファイルを除外しますか、読み取れた部分を残しますか?
 
@@ -1234,6 +1243,9 @@ ta642b6e3 = サーバーからの質問
 # Send
 tf28e14cf = 送信
 
+# If a name is taken
+tc99c037f = 同じ名前がある場合
+
 # Move {what}
 tc168ca56 = { $what } を移動
 
@@ -1248,9 +1260,6 @@ t85f0245a = ここにコピー
 
 # Move
 t7f2c2a34 = 移動
-
-# If a name is taken
-tc99c037f = 同じ名前がある場合
 
 # They are in this folder already. Choose another.
 t5318c14e = すでにこのフォルダにあります。別のフォルダを選んでください。
@@ -1300,6 +1309,12 @@ td8d39fb8 = テキストエディタで編集
 # Edit in {editor}
 te44cd57b = { $editor } で編集
 
+# Up a folder
+te9124369 = 1つ上のフォルダ
+
+# Refresh
+t0815aad4 = 更新
+
 # Modified
 tdd13a6b2 = 更新日時
 
@@ -1314,9 +1329,6 @@ t41f9a787 = フォルダ全体を検索
 
 # Load {n} more
 t30bed46a = さらに { $n } 件を読み込む
-
-# Refresh
-t0815aad4 = 更新
 
 # Hide hidden files
 t3375c9c0 = 隠しファイルを隠す
@@ -1449,6 +1461,9 @@ tdd45c7bb = ファイルを追加
 
 # Test
 t2ffcbe05 = テスト
+
+# More
+t4f34d900 = その他
 
 # Reading what’s inside…
 t1bbda9f5 = 中身を読み取っています…
@@ -1987,11 +2002,14 @@ t0632975a = hivepaas.com を見る
 # Always
 tad4bbd04 = 常に
 
-# Extensions, apart by spaces
-tc709375f = 拡張子（スペース区切り）
-
 # Format of new archives
 t3b50d238 = 新規アーカイブの形式
+
+# Write straight to a storage above
+ta4975128 = 上のストレージに直接書き込む
+
+# Extensions, apart by spaces
+tc709375f = 拡張子（スペース区切り）
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = 新規アーカイブはこの形式で始まります。そこで別の形式も選べます。
@@ -2001,9 +2019,6 @@ t2595cbcb = 無圧縮は ZIP と 7z のファイルをそのまま格納しま�
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = 高くするとアーカイブは小さくなりますが、作成に時間がかかります。開く速さは変わりません。
-
-# Write straight to a storage above
-ta4975128 = 上のストレージに直接書き込む
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = 大きなファイルがこのコンピューターの容量を使いませんが、接続が切れると圧縮からやり直しになります。S3 では tar と ZIP、SFTP ではすべての形式がこの方法で使えます。
@@ -2044,8 +2059,17 @@ t983e37f7 = 名前で
 # By number
 tcbbada8d = 番号で
 
+# When a file is already there
+tca514dda = ファイルがすでにある場合
+
 # No limit
 t6de7f47d = 制限なし
+
+# Largest an archive may unpack to
+t5957c426 = アーカイブを展開できる最大サイズ
+
+# Owners from a backup
+t38a7cf66 = バックアップの所有者
 
 # Where the files go
 t77e60aba = ファイルの置き場所
@@ -2068,14 +2092,8 @@ t4691c928 = アーカイブの隣
 # Straight into its folder
 t99d1df43 = そのフォルダに直接
 
-# When a file is already there
-tca514dda = ファイルがすでにある場合
-
 # A file of the same name in the folder the files go to
 t296ad686 = 展開先のフォルダに同じ名前のファイルがある場合
-
-# Largest an archive may unpack to
-t5957c426 = アーカイブを展開できる最大サイズ
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = アーカイブ爆弾（展開するとディスクを埋め尽くす小さなファイル）を防ぎます
@@ -2085,9 +2103,6 @@ tf47f4968 = すべてのシステムで使える名前だけ
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = a:b.txt など Windows で使えない名前や、大文字・小文字だけが違う名前も、このコンピューターで確認します
-
-# Owners from a backup
-t38a7cf66 = バックアップの所有者
 
 # Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
 t46908bee = tar アーカイブが保持している場合：自分のもの、またはアーカイブのものを名前か番号で。ほかのユーザーにファイルを渡せるのは管理者だけです
@@ -2116,11 +2131,23 @@ t1d68c60b = システムの設定
 # Custom…
 ta391dade = カスタム…
 
+# Language
+t9a73db9b = 言語
+
 # The system’s ({size} px)
 ta51f1877 = システムの設定（{ $size } px）
 
+# Text size
+t2c041143 = 文字サイズ
+
 # All ({count})
 tf65ec196 = すべて ({ $count })
+
+# Processor cores to use
+t2f9c3d17 = 使用するプロセッサコア数
+
+# Text editor
+t1ca82aab = テキストエディタ
 
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = 例：code -n、または /path/to/editor --flag
@@ -2134,20 +2161,8 @@ t9fa95458 = ライトとダークにはそれぞれ複数のスタイルがあ�
 # {name} (default)
 td3f56fa8 = { $name }(既定)
 
-# Language
-t9a73db9b = 言語
-
-# Text size
-t2c041143 = 文字サイズ
-
-# Processor cores to use
-t2f9c3d17 = 使用するプロセッサコア数
-
 # More is faster; fewer leaves room for other work.
 t9d71a0bc = 多いほど速く、少ないほどほかの作業に余裕が残ります。
-
-# Text editor
-t1ca82aab = テキストエディタ
 
 # What Edit opens a file of a storage in
 t62506ced = ストレージ上のファイルを「編集」で開くアプリ
@@ -2455,14 +2470,14 @@ t76d5d951 = 展開せずに開く前に確認する
 # Opening a file inside an archive puts a copy in a temporary folder. A program always asks.
 t9173caaa = アーカイブ内のファイルを開くと、一時フォルダにコピーが作られます。プログラムは常に確認されます。
 
+# Keep its records for
+tf423722f = 記録の保存期間
+
 # Paste a public key
 t0bf72f73 = 公開鍵を貼り付け
 
 # What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
 t2162955d = packwing の操作をこのコンピューターに記録します：展開・作成・変換・コピーしたアーカイブ、その日時と実行者。パスワードやファイルの内容は記録しません。
-
-# Keep its records for
-tf423722f = 記録の保存期間
 
 # Older ones are taken away, and that is recorded too
 t7073f273 = 古い記録は削除され、その削除も記録されます
@@ -2677,11 +2692,23 @@ t5b9dcaca = 無効なパターン
 # No matches
 td29421ef = 一致なし
 
+# Previous match
+tca660309 = 前の一致
+
+# Next match
+t2e113a49 = 次の一致
+
 # Hide the list of files ({keys})
 t165a997f = ファイル一覧を隠す ({ $keys })
 
 # Show the list of files ({keys})
 tde6e8c38 = ファイル一覧を表示 ({ $keys })
+
+# Previous file
+t254b864e = 前のファイル
+
+# Next file
+te3a48d8e = 次のファイル
 
 # Fit the window (0)
 tbe39720a = ウィンドウに合わせる (0)
@@ -3196,9 +3223,6 @@ t78956399 = リスト表示
 # Show a grid
 tb50700d9 = グリッド表示
 
-# More
-t4f34d900 = その他
-
 # Select
 t3e892b4d = 選択
 
@@ -3240,9 +3264,6 @@ tcde554d0 = 写真
 
 # Add more
 t5d2a8a05 = さらに追加
-
-# Format
-tffb0ff72 = 形式
 
 # Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
 t96cb3408 = どこでも開けます。パスワードを付けると AES-256 になり、Windows のエクスプローラーでは開けませんが、7-Zip と packwing では開けます。

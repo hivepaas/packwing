@@ -10,6 +10,15 @@ tab0752f7 = 이 폴더에 쓰려면 packwing에 권한이 필요합니다. 허�
 # Allow
 t546d19d2 = 허용
 
+# Minimize
+tf0ffec5d = 최소화
+
+# Maximize
+t604e45af = 최대화
+
+# Close
+tcd86acc3 = 닫기
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = 모양: { $name }. 클릭하면 { $name2 }(으)로 바뀝니다.
 
@@ -70,6 +79,9 @@ t1e17fc0c = 교체
 # Skip it
 tad9909cb = 건너뛰기
 
+# If a file of that name is there
+t34c69cec = 같은 이름의 파일이 있을 때
+
 # Add
 t9dc3aa14 = 추가
 
@@ -96,9 +108,6 @@ t0d53ac5e = { $name }에 추가
 
 # Goes in
 t36e95c22 = 추가 위치
-
-# If a file of that name is there
-t34c69cec = 같은 이름의 파일이 있을 때
 
 # This archive is signed. With more in it, it will no longer match its signature, until it is signed again.
 t55ed1cfd = 이 압축 파일은 서명되어 있습니다. 항목을 더 추가하면 서명과 일치하지 않게 되며, 다시 서명하기 전까지 그대로입니다.
@@ -418,6 +427,12 @@ tfc6b3ea5 = 4GB (USB 메모리)
 # Custom size…
 t0fcf9e2d = 직접 지정…
 
+# Format
+tffb0ff72 = 형식
+
+# Split into parts
+tca4436bd = 분할
+
 # Size
 ta6478e7c = 크기
 
@@ -561,9 +576,6 @@ t32239aa8 = 작은 블록은 모든 코어를 일하게 합니다. 최대 두 �
 
 # Large blocks make the smallest archive, on fewer cores where there is less to compress.
 t66a490d9 = 큰 블록은 가장 작은 압축 파일을 만듭니다. 압축할 것이 적으면 더 적은 코어를 씁니다.
-
-# Split into parts
-tca4436bd = 분할
 
 # Each part
 t642c444d = 분할 크기
@@ -1024,9 +1036,6 @@ tc1421590 =
        *[other] 파일 { $count }개({ $size })를 오류 없이 모두 읽었습니다.
     }
 
-# Close
-tcd86acc3 = 닫기
-
 # “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
 t145d7a09 = “{ $path }” 파일이 손상되었습니다: { $why }. 중지할까요, 이 파일을 건너뛸까요, 읽은 부분을 남길까요?
 
@@ -1234,6 +1243,9 @@ ta642b6e3 = 서버의 질문
 # Send
 tf28e14cf = 보내기
 
+# If a name is taken
+tc99c037f = 이름이 겹칠 때
+
 # Move {what}
 tc168ca56 = { $what } 이동
 
@@ -1248,9 +1260,6 @@ t85f0245a = 여기로 복사
 
 # Move
 t7f2c2a34 = 이동
-
-# If a name is taken
-tc99c037f = 이름이 겹칠 때
 
 # They are in this folder already. Choose another.
 t5318c14e = 이미 이 폴더에 있습니다. 다른 폴더를 선택하세요.
@@ -1300,6 +1309,12 @@ td8d39fb8 = 텍스트 편집기에서 편집
 # Edit in {editor}
 te44cd57b = { $editor }에서 편집
 
+# Up a folder
+te9124369 = 상위 폴더
+
+# Refresh
+t0815aad4 = 새로 고침
+
 # Modified
 tdd13a6b2 = 수정한 날짜
 
@@ -1314,9 +1329,6 @@ t41f9a787 = 폴더 전체 검색
 
 # Load {n} more
 t30bed46a = { $n }개 더 불러오기
-
-# Refresh
-t0815aad4 = 새로 고침
 
 # Hide hidden files
 t3375c9c0 = 숨김 파일 숨기기
@@ -1449,6 +1461,9 @@ tdd45c7bb = 파일 추가
 
 # Test
 t2ffcbe05 = 테스트
+
+# More
+t4f34d900 = 더 보기
 
 # Reading what’s inside…
 t1bbda9f5 = 내용을 읽는 중…
@@ -1987,11 +2002,14 @@ t0632975a = hivepaas.com 방문
 # Always
 tad4bbd04 = 항상
 
-# Extensions, apart by spaces
-tc709375f = 확장자, 공백으로 구분
-
 # Format of new archives
 t3b50d238 = 새 압축 파일의 형식
+
+# Write straight to a storage above
+ta4975128 = 위의 스토리지에 바로 쓰기
+
+# Extensions, apart by spaces
+tc709375f = 확장자, 공백으로 구분
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = 새 압축 파일은 이 형식으로 시작하며, 만들 때 다른 형식을 선택할 수 있습니다.
@@ -2001,9 +2019,6 @@ t2595cbcb = 저장만은 ZIP과 7z 압축 파일의 파일을 그대로 넣습�
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = 높을수록 압축 파일이 작아지며, 만드는 시간이 길어지지만 여는 시간은 그대로입니다.
-
-# Write straight to a storage above
-ta4975128 = 위의 스토리지에 바로 쓰기
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = 큰 파일이 이 컴퓨터의 공간을 차지하지 않지만, 연결이 끊기면 처음부터 다시 압축해야 합니다. S3는 tar와 ZIP, SFTP는 모든 형식에서 이 방식을 사용할 수 있습니다.
@@ -2044,8 +2059,17 @@ t983e37f7 = 이름으로
 # By number
 tcbbada8d = 번호로
 
+# When a file is already there
+tca514dda = 이미 파일이 있을 때
+
 # No limit
 t6de7f47d = 제한 없음
+
+# Largest an archive may unpack to
+t5957c426 = 압축을 풀 수 있는 최대 크기
+
+# Owners from a backup
+t38a7cf66 = 백업의 소유자
 
 # Where the files go
 t77e60aba = 파일을 풀 위치
@@ -2068,14 +2092,8 @@ t4691c928 = 압축 파일 옆에
 # Straight into its folder
 t99d1df43 = 해당 폴더에 바로
 
-# When a file is already there
-tca514dda = 이미 파일이 있을 때
-
 # A file of the same name in the folder the files go to
 t296ad686 = 파일을 풀 폴더에 같은 이름의 파일이 있을 때
-
-# Largest an archive may unpack to
-t5957c426 = 압축을 풀 수 있는 최대 크기
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = 작은 파일이 풀리면서 디스크를 가득 채우는 압축 폭탄을 막습니다
@@ -2085,9 +2103,6 @@ tf47f4968 = 모든 시스템에서 쓸 수 있는 이름만
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = a:b.txt처럼 Windows에서 쓸 수 없는 이름과 대소문자만 다른 이름도 이 컴퓨터에서 묻습니다
-
-# Owners from a backup
-t38a7cf66 = 백업의 소유자
 
 # Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
 t46908bee = tar 아카이브에 보존된 경우: 내 것, 또는 아카이브의 것을 이름이나 번호로. 다른 사람에게 파일을 줄 수 있는 것은 관리자뿐입니다
@@ -2116,11 +2131,23 @@ t1d68c60b = 시스템 설정
 # Custom…
 ta391dade = 사용자 지정…
 
+# Language
+t9a73db9b = 언어
+
 # The system’s ({size} px)
 ta51f1877 = 시스템 설정({ $size } px)
 
+# Text size
+t2c041143 = 글자 크기
+
 # All ({count})
 tf65ec196 = 모두 ({ $count })
+
+# Processor cores to use
+t2f9c3d17 = 사용할 프로세서 코어
+
+# Text editor
+t1ca82aab = 텍스트 편집기
 
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = 예: code -n 또는 /path/to/editor --flag
@@ -2134,20 +2161,8 @@ t9fa95458 = 라이트와 다크에는 각각 여러 스타일이 있습니다. �
 # {name} (default)
 td3f56fa8 = { $name } (기본값)
 
-# Language
-t9a73db9b = 언어
-
-# Text size
-t2c041143 = 글자 크기
-
-# Processor cores to use
-t2f9c3d17 = 사용할 프로세서 코어
-
 # More is faster; fewer leaves room for other work.
 t9d71a0bc = 많을수록 빠르고, 적을수록 다른 작업에 여유가 남습니다.
-
-# Text editor
-t1ca82aab = 텍스트 편집기
 
 # What Edit opens a file of a storage in
 t62506ced = 스토리지의 파일을 편집할 때 여는 프로그램
@@ -2455,14 +2470,14 @@ t76d5d951 = 압축을 풀지 않고 파일을 열기 전에 확인
 # Opening a file inside an archive puts a copy in a temporary folder. A program always asks.
 t9173caaa = 압축 파일 안의 파일을 열면 임시 폴더에 사본을 만듭니다. 프로그램은 항상 확인을 요청합니다.
 
+# Keep its records for
+tf423722f = 기록 보관 기간
+
 # Paste a public key
 t0bf72f73 = 공개 키 붙여넣기
 
 # What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
 t2162955d = packwing이 한 일을 이 컴퓨터에 기록합니다: 압축을 풀거나 만들거나 변환하거나 복사한 압축 파일, 그 시각과 사용자. 비밀번호나 파일 내용은 절대 기록하지 않습니다.
-
-# Keep its records for
-tf423722f = 기록 보관 기간
 
 # Older ones are taken away, and that is recorded too
 t7073f273 = 오래된 기록은 삭제되며, 삭제 사실도 기록됩니다
@@ -2677,11 +2692,23 @@ t5b9dcaca = 잘못된 패턴
 # No matches
 td29421ef = 일치 항목 없음
 
+# Previous match
+tca660309 = 이전 일치 항목
+
+# Next match
+t2e113a49 = 다음 일치 항목
+
 # Hide the list of files ({keys})
 t165a997f = 파일 목록 숨기기 ({ $keys })
 
 # Show the list of files ({keys})
 tde6e8c38 = 파일 목록 보기 ({ $keys })
+
+# Previous file
+t254b864e = 이전 파일
+
+# Next file
+te3a48d8e = 다음 파일
 
 # Fit the window (0)
 tbe39720a = 창에 맞춤 (0)
@@ -3196,9 +3223,6 @@ t78956399 = 목록으로 보기
 # Show a grid
 tb50700d9 = 격자로 보기
 
-# More
-t4f34d900 = 더 보기
-
 # Select
 t3e892b4d = 선택
 
@@ -3240,9 +3264,6 @@ tcde554d0 = 사진
 
 # Add more
 t5d2a8a05 = 더 추가
-
-# Format
-tffb0ff72 = 형식
 
 # Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
 t96cb3408 = 어디서나 열립니다. 비밀번호를 설정하면 AES-256이 되어 Windows 탐색기로는 열 수 없지만, 7-Zip과 packwing으로는 열 수 있습니다.

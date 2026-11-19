@@ -10,6 +10,15 @@ tab0752f7 = O packwing precisa da sua permissão para gravar nesta pasta. Escolh
 # Allow
 t546d19d2 = Permitir
 
+# Minimize
+tf0ffec5d = Minimizar
+
+# Maximize
+t604e45af = Maximizar
+
+# Close
+tcd86acc3 = Fechar
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Aparência: { $name }. Clique para { $name2 }.
 
@@ -70,6 +79,9 @@ t1e17fc0c = Substituir
 # Skip it
 tad9909cb = Pular
 
+# If a file of that name is there
+t34c69cec = Se já houver um arquivo com esse nome
+
 # Add
 t9dc3aa14 = Adicionar
 
@@ -98,9 +110,6 @@ t0d53ac5e = Adicionar a { $name }
 
 # Goes in
 t36e95c22 = Vai para
-
-# If a file of that name is there
-t34c69cec = Se já houver um arquivo com esse nome
 
 # This archive is signed. With more in it, it will no longer match its signature, until it is signed again.
 t55ed1cfd = Este arquivo está assinado. Com mais itens nele, deixará de corresponder à assinatura, até ser assinado de novo.
@@ -426,6 +435,12 @@ tfc6b3ea5 = 4 GB (pen drive)
 # Custom size…
 t0fcf9e2d = Tamanho personalizado…
 
+# Format
+tffb0ff72 = Formato
+
+# Split into parts
+tca4436bd = Dividir em partes
+
 # Size
 ta6478e7c = Tamanho
 
@@ -569,9 +584,6 @@ t32239aa8 = Blocos pequenos mantêm todos os núcleos a trabalhar: até duas vez
 
 # Large blocks make the smallest archive, on fewer cores where there is less to compress.
 t66a490d9 = Blocos grandes dão o arquivo mais pequeno, em menos núcleos quando há pouco para comprimir.
-
-# Split into parts
-tca4436bd = Dividir em partes
 
 # Each part
 t642c444d = Cada parte
@@ -1039,9 +1051,6 @@ tc1421590 =
        *[other] { $count } arquivos lidos por inteiro, { $size }, sem erros.
     }
 
-# Close
-tcd86acc3 = Fechar
-
 # “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
 t145d7a09 = “{ $path }” está danificado: { $why }. Parar, deixá-lo de fora ou manter o que foi possível ler?
 
@@ -1256,6 +1265,9 @@ ta642b6e3 = O servidor pergunta
 # Send
 tf28e14cf = Enviar
 
+# If a name is taken
+tc99c037f = Se um nome já existir
+
 # Move {what}
 tc168ca56 = Mover { $what }
 
@@ -1270,9 +1282,6 @@ t85f0245a = Copiar para cá
 
 # Move
 t7f2c2a34 = Mover
-
-# If a name is taken
-tc99c037f = Se um nome já existir
 
 # They are in this folder already. Choose another.
 t5318c14e = Eles já estão nesta pasta. Escolha outra.
@@ -1322,6 +1331,12 @@ td8d39fb8 = Editar no editor de texto
 # Edit in {editor}
 te44cd57b = Editar em { $editor }
 
+# Up a folder
+te9124369 = Subir uma pasta
+
+# Refresh
+t0815aad4 = Atualizar
+
 # Modified
 tdd13a6b2 = Modificado
 
@@ -1336,9 +1351,6 @@ t41f9a787 = Pesquisar na pasta inteira
 
 # Load {n} more
 t30bed46a = Carregar mais { $n }
-
-# Refresh
-t0815aad4 = Atualizar
 
 # Hide hidden files
 t3375c9c0 = Ocultar arquivos ocultos
@@ -1472,6 +1484,9 @@ tdd45c7bb = Adicionar arquivos
 
 # Test
 t2ffcbe05 = Testar
+
+# More
+t4f34d900 = Mais
 
 # Reading what’s inside…
 t1bbda9f5 = Lendo o que há dentro…
@@ -2017,11 +2032,14 @@ t0632975a = Visitar hivepaas.com
 # Always
 tad4bbd04 = Sempre
 
-# Extensions, apart by spaces
-tc709375f = Extensões, separadas por espaços
-
 # Format of new archives
 t3b50d238 = Formato dos novos arquivos compactados
+
+# Write straight to a storage above
+ta4975128 = Gravar direto em um armazenamento acima
+
+# Extensions, apart by spaces
+tc709375f = Extensões, separadas por espaços
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = Um novo arquivo começa com ele; você pode escolher outro lá.
@@ -2031,9 +2049,6 @@ t2595cbcb = Armazenar coloca como estão os arquivos de arquivos ZIP e 7z. Forma
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = Um nível mais alto gera arquivos menores, que levam mais tempo para criar, não para abrir.
-
-# Write straight to a storage above
-ta4975128 = Gravar direto em um armazenamento acima
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = Arquivos maiores não ocupam espaço neste computador, mas uma conexão perdida obriga a compactar de novo. O S3 aceita tar e ZIP assim; o SFTP, todos os formatos.
@@ -2074,8 +2089,17 @@ t983e37f7 = Por nome
 # By number
 tcbbada8d = Por número
 
+# When a file is already there
+tca514dda = Quando já existe um arquivo
+
 # No limit
 t6de7f47d = Sem limite
+
+# Largest an archive may unpack to
+t5957c426 = Maior tamanho a que um arquivo compactado pode se expandir
+
+# Owners from a backup
+t38a7cf66 = Proprietários de um backup
 
 # Where the files go
 t77e60aba = Para onde vão os arquivos
@@ -2098,14 +2122,8 @@ t4691c928 = Ao lado do arquivo compactado
 # Straight into its folder
 t99d1df43 = Direto na pasta dele
 
-# When a file is already there
-tca514dda = Quando já existe um arquivo
-
 # A file of the same name in the folder the files go to
 t296ad686 = Um arquivo com o mesmo nome na pasta para onde os arquivos vão
-
-# Largest an archive may unpack to
-t5957c426 = Maior tamanho a que um arquivo compactado pode se expandir
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = Impede bombas de compactação: arquivos pequenos que se expandem até encher o disco
@@ -2115,9 +2133,6 @@ tf47f4968 = Só nomes que todo sistema pode usar
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = Nomes que o Windows não aceita, como a:b.txt, e nomes que diferem só em maiúsculas também são perguntados neste computador
-
-# Owners from a backup
-t38a7cf66 = Proprietários de um backup
 
 # Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
 t46908bee = Onde um arquivo tar os manteve: seus, ou os do arquivo por nome ou por número. Só um administrador pode dar arquivos a outros
@@ -2146,11 +2161,23 @@ t1d68c60b = O do sistema
 # Custom…
 ta391dade = Personalizado…
 
+# Language
+t9a73db9b = Idioma
+
 # The system’s ({size} px)
 ta51f1877 = A do sistema ({ $size } px)
 
+# Text size
+t2c041143 = Tamanho do texto
+
 # All ({count})
 tf65ec196 = Todos ({ $count })
+
+# Processor cores to use
+t2f9c3d17 = Núcleos do processador a usar
+
+# Text editor
+t1ca82aab = Editor de texto
 
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = ex.: code -n ou /path/to/editor --flag
@@ -2164,20 +2191,8 @@ t9fa95458 = Claro e escuro têm, cada um, vários estilos: os fundos mudam; o te
 # {name} (default)
 td3f56fa8 = { $name } (padrão)
 
-# Language
-t9a73db9b = Idioma
-
-# Text size
-t2c041143 = Tamanho do texto
-
-# Processor cores to use
-t2f9c3d17 = Núcleos do processador a usar
-
 # More is faster; fewer leaves room for other work.
 t9d71a0bc = Mais é mais rápido; menos deixa espaço para outras tarefas.
-
-# Text editor
-t1ca82aab = Editor de texto
 
 # What Edit opens a file of a storage in
 t62506ced = Com o que o Editar abre um arquivo de um armazenamento
@@ -2485,14 +2500,14 @@ t76d5d951 = Perguntar antes de abrir arquivos sem extrair
 # Opening a file inside an archive puts a copy in a temporary folder. A program always asks.
 t9173caaa = Abrir um arquivo dentro de um arquivo compactado coloca uma cópia em uma pasta temporária. Um programa sempre pergunta.
 
+# Keep its records for
+tf423722f = Manter os registros por
+
 # Paste a public key
 t0bf72f73 = Cole uma chave pública
 
 # What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
 t2162955d = O que o packwing faz, guardado neste computador: arquivos compactados extraídos, criados, convertidos e copiados, quando e por quem. Nunca uma senha nem o conteúdo de um arquivo.
-
-# Keep its records for
-tf423722f = Manter os registros por
 
 # Older ones are taken away, and that is recorded too
 t7073f273 = Os mais antigos são removidos, e isso também é registrado
@@ -2719,11 +2734,23 @@ t5b9dcaca = Padrão inválido
 # No matches
 td29421ef = Nenhuma correspondência
 
+# Previous match
+tca660309 = Ocorrência anterior
+
+# Next match
+t2e113a49 = Próxima ocorrência
+
 # Hide the list of files ({keys})
 t165a997f = Ocultar a lista de arquivos ({ $keys })
 
 # Show the list of files ({keys})
 tde6e8c38 = Mostrar a lista de arquivos ({ $keys })
+
+# Previous file
+t254b864e = Arquivo anterior
+
+# Next file
+te3a48d8e = Próximo arquivo
 
 # Fit the window (0)
 tbe39720a = Ajustar à janela (0)
@@ -3243,9 +3270,6 @@ t78956399 = Mostrar em lista
 # Show a grid
 tb50700d9 = Mostrar em grade
 
-# More
-t4f34d900 = Mais
-
 # Select
 t3e892b4d = Selecionar
 
@@ -3288,9 +3312,6 @@ tcde554d0 = Fotos
 
 # Add more
 t5d2a8a05 = Adicionar mais
-
-# Format
-tffb0ff72 = Formato
 
 # Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
 t96cb3408 = Abre em qualquer lugar. Com senha, AES-256: o Explorador do próprio Windows não consegue abrir, o 7-Zip e o packwing conseguem.

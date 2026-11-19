@@ -48,7 +48,9 @@ impl Compressing {
             .position(|f| *f == kept.format)
             .unwrap_or(0);
         let format = cx.new(|_| {
-            Select::new(&Format::ALL.map(Format::ext), chosen, SelectLook::Pill).marked("format")
+            Select::new(&Format::ALL.map(Format::ext), chosen, SelectLook::Pill)
+                .marked("format")
+                .named(tr!("Format of new archives"))
         });
         let format_chosen = cx.subscribe(&format, |_, select, _: &Chosen, cx| {
             let format = Format::of_option(select.read(cx).chosen());
@@ -64,6 +66,7 @@ impl Compressing {
                 chosen,
                 SelectLook::Pill,
             )
+            .named(tr!("Write straight to a storage above"))
         });
         let stream_above_chosen = cx.subscribe(&stream_above, |_, select, _: &Chosen, cx| {
             let bytes = STREAM_ABOVE[select.read(cx).chosen().min(STREAM_ABOVE.len() - 1)];
@@ -114,8 +117,8 @@ impl Render for Compressing {
                 },
             ))
         });
-        let toggle = |id: &'static str, on: bool, flip: fn(&mut Compressing)| {
-            switch(id, on).on_click(cx.listener(move |this, _, _, cx| {
+        let toggle = |id: &'static str, on: bool, name: String, flip: fn(&mut Compressing)| {
+            switch(id, on, name).on_click(cx.listener(move |this, _, _, cx| {
                 flip(this);
                 let (skip, hide, store) =
                     (this.skip_mac_files, this.hide_names, this.store_compressed);
@@ -153,7 +156,7 @@ impl Render for Compressing {
             .child(setting(
                 tr!("Don’t compress what already is"),
                 tr!("For ZIP and 7z: pictures, video, sound and archives go in as they are, sooner and no larger"),
-                toggle("store-compressed", self.store_compressed, |s| {
+                toggle("store-compressed", self.store_compressed, tr!("Don’t compress what already is"), |s| {
                     s.store_compressed = !s.store_compressed
                 }),
             ))
@@ -194,14 +197,14 @@ impl Render for Compressing {
                 setting(
                     tr!("Leave out Mac-only files"),
                     tr!(".DS_Store, __MACOSX and resource forks, clutter anywhere but a Mac"),
-                    toggle("skip-mac-files", self.skip_mac_files, |s| {
+                    toggle("skip-mac-files", self.skip_mac_files, tr!("Leave out Mac-only files"), |s| {
                         s.skip_mac_files = !s.skip_mac_files
                     }),
                 ),
                 setting(
                     tr!("Hide file names behind the password"),
                     tr!("For 7z: nobody sees what is inside without it"),
-                    toggle("hide-names", self.hide_names, |s| {
+                    toggle("hide-names", self.hide_names, tr!("Hide file names behind the password"), |s| {
                         s.hide_names = !s.hide_names
                     }),
                 ),

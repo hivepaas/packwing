@@ -21,6 +21,13 @@ To see every screen, light and dark, without opening the app (Linux, with a Vulk
 cargo test -p packwing --features shots shots   # writes target/shots/*.png
 ```
 
+To see what a screen reader is told, start packwing and walk its accessibility tree as Orca would (Linux; at-spi2's GObject bindings, `gir1.2-atspi-2.0` on Ubuntu). Each control says its role, its name and whether it is on or chosen; the shared ones get these in `crates/app/src/widgets.rs`, and a control drawn as an icon alone is named where it is used.
+
+```sh
+scripts/a11y_tree.py                    # the window's tree, as it is now
+scripts/a11y_tree.py --click Settings   # press a control by its name, then the tree
+```
+
 To try storages with no account anywhere, Docker runs throwaway servers, reached from this computer only. Stopping one throws away what it holds.
 
 ```sh

@@ -1211,11 +1211,11 @@ impl Explorer {
             .px(ui(8.))
             .pb(ui(12.))
             .child(
-                icon_button("up", "arrow-up", 40.)
+                icon_button("up", "arrow-up", 40., tr!("Up a folder"))
                     .on_click(cx.listener(|this, _, _, cx| this.go_up(cx))),
             )
             .child(
-                icon_button("refresh", "refresh", 40.)
+                icon_button("refresh", "refresh", 40., tr!("Refresh"))
                     .on_click(cx.listener(|this, _, _, cx| this.refresh(cx))),
             )
             .child(

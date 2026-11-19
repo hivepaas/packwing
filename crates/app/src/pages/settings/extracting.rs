@@ -45,6 +45,7 @@ impl Extracting {
         let existing = cx.new(|_| {
             Select::new(&existing(), usize::from(kept.overwrite), SelectLook::Pill)
                 .marked("existing")
+                .named(tr!("When a file is already there"))
         });
         let limit = cx.new(|_| {
             Select::new(
@@ -55,6 +56,7 @@ impl Extracting {
                 kept.limit,
                 SelectLook::Pill,
             )
+            .named(tr!("Largest an archive may unpack to"))
         });
         let restore_owners = cx.new(|_| {
             Select::new(
@@ -66,6 +68,7 @@ impl Extracting {
                 SelectLook::Pill,
             )
             .marked("restore-owners")
+            .named(tr!("Owners from a backup"))
         });
         let chosen = vec![
             cx.subscribe(&existing, |_, select, _: &Chosen, cx| {
@@ -98,7 +101,7 @@ impl Render for Extracting {
         let c = colors();
         let place = |id: &'static str, to: ExtractTo, title: String, detail: String| {
             let on = self.extract_to == to;
-            option_card(id, on)
+            option_card(id, on, title.clone())
                 .px(ui(14.))
                 .py(ui(12.))
                 .rounded(ui(18.))
@@ -160,14 +163,17 @@ impl Render for Extracting {
                             "Names Windows can’t use, such as a:b.txt, and names differing only \
                          in case are asked about on this computer too"
                         ),
-                        switch("portable-names", self.portable_names).on_click(cx.listener(
-                            |this, _, _, cx| {
-                                this.portable_names = !this.portable_names;
-                                let on = this.portable_names;
-                                change(cx, |p| p.portable_names = on);
-                                cx.notify();
-                            },
-                        )),
+                        switch(
+                            "portable-names",
+                            self.portable_names,
+                            tr!("Only names every system can use"),
+                        )
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.portable_names = !this.portable_names;
+                            let on = this.portable_names;
+                            change(cx, |p| p.portable_names = on);
+                            cx.notify();
+                        })),
                     ),
                 ]
                 .into_iter()
@@ -185,14 +191,17 @@ impl Render for Extracting {
                     setting(
                         tr!("Extended attributes from a backup"),
                         tr!("Where a tar archive kept them, ACLs among them"),
-                        switch("restore-xattrs", self.restore_xattrs).on_click(cx.listener(
-                            |this, _, _, cx| {
-                                this.restore_xattrs = !this.restore_xattrs;
-                                let on = this.restore_xattrs;
-                                change(cx, |p| p.restore_xattrs = on);
-                                cx.notify();
-                            },
-                        )),
+                        switch(
+                            "restore-xattrs",
+                            self.restore_xattrs,
+                            tr!("Extended attributes from a backup"),
+                        )
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.restore_xattrs = !this.restore_xattrs;
+                            let on = this.restore_xattrs;
+                            change(cx, |p| p.restore_xattrs = on);
+                            cx.notify();
+                        })),
                     )
                 })),
             ))

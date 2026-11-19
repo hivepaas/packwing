@@ -13,8 +13,8 @@ pub use general::{Appearance, AppearanceChosen};
 pub use security::ShowAuditLog;
 
 use gpui::{
-    AnyView, Context, Div, Entity, EventEmitter, FontWeight, IntoElement, Render, ScrollHandle,
-    SharedString, Subscription, Window, div, point, prelude::*, px, rgb,
+    AnyView, Context, Div, Entity, EventEmitter, FontWeight, IntoElement, Render, Role,
+    ScrollHandle, SharedString, Subscription, Window, div, point, prelude::*, px, rgb,
 };
 use packwing_i18n::tr;
 
@@ -151,6 +151,9 @@ impl SettingsPage {
             div()
                 .debug_selector(|| format!("section-{i}"))
                 .id(("section", i))
+                .role(Role::Tab)
+                .aria_label(s.name())
+                .aria_selected(on)
                 .flex()
                 .items_center()
                 .h(ui(52.))
@@ -171,6 +174,10 @@ impl SettingsPage {
                 .child(s.name())
         });
         div()
+            .id("sections")
+            .role(Role::TabList)
+            .aria_label(tr!("Settings"))
+            .aria_orientation(gpui::Orientation::Vertical)
             .w(ui(240.))
             .flex_shrink_0()
             .flex()

@@ -276,7 +276,7 @@ impl ExtractDialog {
         let c = colors();
         let on = |d: &Dest| std::mem::discriminant(d) == std::mem::discriminant(&self.dest);
         let smart = on(&Dest::Smart);
-        let recommended = option_card("dest-smart", smart)
+        let recommended = option_card("dest-smart", smart, tr!("Smart"))
             .on_click(cx.listener(|this, _, _, cx| {
                 this.dest = Dest::Smart;
                 cx.notify();
@@ -314,7 +314,7 @@ impl ExtractDialog {
                     .min_w_0()
                     .gap(ui(8.))
                     .child(
-                        option_card("dest-new", new_folder)
+                        option_card("dest-new", new_folder, tr!("New folder"))
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.dest = Dest::NewFolder;
                                 cx.notify();
@@ -322,7 +322,7 @@ impl ExtractDialog {
                             .child(title(tr!("New folder"), new_folder)),
                     )
                     .child(
-                        option_card("dest-here", here)
+                        option_card("dest-here", here, tr!("Right here"))
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.dest = Dest::Here;
                                 cx.notify();
@@ -330,16 +330,24 @@ impl ExtractDialog {
                             .child(title(tr!("Right here"), here)),
                     )
                     .child(
-                        option_card("dest-folder", folder)
-                            .on_click(cx.listener(|this, _, _, cx| this.choose_folder(cx)))
-                            .child(title(
-                                if chosen {
-                                    tr!("Another folder")
-                                } else {
-                                    tr!("Choose…")
-                                },
-                                folder,
-                            )),
+                        option_card(
+                            "dest-folder",
+                            folder,
+                            if chosen {
+                                tr!("Another folder")
+                            } else {
+                                tr!("Choose…")
+                            },
+                        )
+                        .on_click(cx.listener(|this, _, _, cx| this.choose_folder(cx)))
+                        .child(title(
+                            if chosen {
+                                tr!("Another folder")
+                            } else {
+                                tr!("Choose…")
+                            },
+                            folder,
+                        )),
                     ),
             )
             // Smart's card says where already.
@@ -450,7 +458,7 @@ impl Render for ExtractDialog {
             ),
             size(a.unpacked)
         );
-        let close = icon_button("close", "x", 40.)
+        let close = icon_button("close", "x", 40., tr!("Close"))
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         card()
             .id("extract-dialog")

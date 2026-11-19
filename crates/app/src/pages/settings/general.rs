@@ -2,8 +2,8 @@
 //! how many cores to use, and the text editor.
 
 use gpui::{
-    Context, Div, ElementId, Entity, EventEmitter, FontWeight, Render, Stateful, Subscription,
-    Window, div, prelude::*, rgb,
+    Context, Div, ElementId, Entity, EventEmitter, FontWeight, Render, Role, Stateful,
+    Subscription, Toggled, Window, div, prelude::*, rgb,
 };
 use packwing_i18n::tr;
 
@@ -125,7 +125,8 @@ impl General {
             .iter()
             .position(|(tag, _)| kept.as_deref() == Some(*tag))
             .map_or(0, |at| at + 1);
-        let language = cx.new(|_| Select::new(&languages(), chosen, SelectLook::Field));
+        let language =
+            cx.new(|_| Select::new(&languages(), chosen, SelectLook::Field).named(tr!("Language")));
         let language_chosen = cx.subscribe(&language, |_, select, _: &Chosen, cx| {
             let tag = language_of_option(select.read(cx).chosen());
             packwing_i18n::set_language(tag);
@@ -145,8 +146,11 @@ impl General {
             .text_size
             .and_then(|s| crate::text_size::CHOICES.iter().position(|c| *c == s))
             .map_or(0, |at| at + 1);
-        let text_size =
-            cx.new(|_| Select::new(&sizes, chosen, SelectLook::Field).marked("text-size"));
+        let text_size = cx.new(|_| {
+            Select::new(&sizes, chosen, SelectLook::Field)
+                .marked("text-size")
+                .named(tr!("Text size"))
+        });
         let text_size_chosen = cx.subscribe(&text_size, |_, select, _: &Chosen, cx| {
             let at = select.read(cx).chosen();
             let size = at
@@ -167,7 +171,11 @@ impl General {
             })
             .collect();
         let chosen = choices.iter().position(|n| *n == kept_threads).unwrap_or(0);
-        let threads = cx.new(|_| Select::new(&names, chosen, SelectLook::Field).marked("threads"));
+        let threads = cx.new(|_| {
+            Select::new(&names, chosen, SelectLook::Field)
+                .marked("threads")
+                .named(tr!("Processor cores to use"))
+        });
         let threads_chosen = cx.subscribe(&threads, move |_, select, _: &Chosen, cx| {
             let count = choices.get(select.read(cx).chosen()).copied().unwrap_or(0);
             crate::prefs::change(cx, |p| p.threads = count);
@@ -175,8 +183,10 @@ impl General {
         let editors = crate::editors::installed();
         let kept_editor = crate::prefs::prefs(cx).editor;
         let chosen_editor = editor_option(kept_editor.as_deref(), &editors);
-        let editor =
-            cx.new(|_| Select::new(&editor_options(&editors), chosen_editor, SelectLook::Field));
+        let editor = cx.new(|_| {
+            Select::new(&editor_options(&editors), chosen_editor, SelectLook::Field)
+                .named(tr!("Text editor"))
+        });
         let editor_command = cx.new(|cx| {
             let mut field = TextInput::said(|| tr!("e.g. code -n, or /path/to/editor --flag"), cx);
             if chosen_editor == editors.len() + 1 {
@@ -318,6 +328,9 @@ fn style_chip(
     div()
         .debug_selector(|| selector)
         .id(id)
+        .role(Role::RadioButton)
+        .aria_label(name.clone())
+        .aria_toggled(if on { Toggled::True } else { Toggled::False })
         .h(ui(32.))
         .pl(ui(7.))
         .pr(ui(13.))

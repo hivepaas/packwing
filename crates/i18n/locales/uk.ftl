@@ -10,6 +10,15 @@ tab0752f7 = packwing потрібен ваш дозвіл, щоб записув
 # Allow
 t546d19d2 = Дозволити
 
+# Minimize
+tf0ffec5d = Згорнути
+
+# Maximize
+t604e45af = Розгорнути
+
+# Close
+tcd86acc3 = Закрити
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Вигляд: { $name }. Натисніть, щоб перейти на { $name2 }.
 
@@ -70,6 +79,9 @@ t1e17fc0c = Замінити
 # Skip it
 tad9909cb = Пропустити
 
+# If a file of that name is there
+t34c69cec = Якщо файл із такою назвою вже є
+
 # Add
 t9dc3aa14 = Додати
 
@@ -102,9 +114,6 @@ t0d53ac5e = Додати до { $name }
 
 # Goes in
 t36e95c22 = Куди потрапить
-
-# If a file of that name is there
-t34c69cec = Якщо файл із такою назвою вже є
 
 # This archive is signed. With more in it, it will no longer match its signature, until it is signed again.
 t55ed1cfd = Цей архів підписано. Якщо додати до нього файли, він більше не збігатиметься зі своїм підписом, доки його не підписати знову.
@@ -442,6 +451,12 @@ tfc6b3ea5 = 4 GB (флешка)
 # Custom size…
 t0fcf9e2d = Свій розмір…
 
+# Format
+tffb0ff72 = Формат
+
+# Split into parts
+tca4436bd = Ділити на частини
+
 # Size
 ta6478e7c = Розмір
 
@@ -585,9 +600,6 @@ t32239aa8 = Дрібні блоки завантажують усі ядра: д
 
 # Large blocks make the smallest archive, on fewer cores where there is less to compress.
 t66a490d9 = Великі блоки дають найменший архів, на меншій кількості ядер, коли стискати небагато.
-
-# Split into parts
-tca4436bd = Ділити на частини
 
 # Each part
 t642c444d = Кожна частина
@@ -1069,9 +1081,6 @@ tc1421590 =
        *[other] Прочитано { $count } файлу, { $size }, без помилок.
     }
 
-# Close
-tcd86acc3 = Закрити
-
 # “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
 t145d7a09 = «{ $path }» пошкоджено: { $why }. Зупинити, пропустити його чи зберегти те, що вдалося прочитати?
 
@@ -1300,6 +1309,9 @@ ta642b6e3 = Сервер питає
 # Send
 tf28e14cf = Надіслати
 
+# If a name is taken
+tc99c037f = Якщо назва вже зайнята
+
 # Move {what}
 tc168ca56 = Перемістити { $what }
 
@@ -1314,9 +1326,6 @@ t85f0245a = Скопіювати сюди
 
 # Move
 t7f2c2a34 = Перемістити
-
-# If a name is taken
-tc99c037f = Якщо назва вже зайнята
 
 # They are in this folder already. Choose another.
 t5318c14e = Вони вже в цій папці. Виберіть іншу.
@@ -1366,6 +1375,12 @@ td8d39fb8 = Редагувати в текстовому редакторі
 # Edit in {editor}
 te44cd57b = Редагувати в { $editor }
 
+# Up a folder
+te9124369 = На папку вище
+
+# Refresh
+t0815aad4 = Оновити
+
 # Modified
 tdd13a6b2 = Змінено
 
@@ -1380,9 +1395,6 @@ t41f9a787 = Шукати в усій папці
 
 # Load {n} more
 t30bed46a = Завантажити ще { $n }
-
-# Refresh
-t0815aad4 = Оновити
 
 # Hide hidden files
 t3375c9c0 = Сховати приховані файли
@@ -1518,6 +1530,9 @@ tdd45c7bb = Додати файли
 
 # Test
 t2ffcbe05 = Перевірити
+
+# More
+t4f34d900 = Більше
 
 # Reading what’s inside…
 t1bbda9f5 = Читання вмісту…
@@ -2077,11 +2092,14 @@ t0632975a = Перейти на hivepaas.com
 # Always
 tad4bbd04 = Завжди
 
-# Extensions, apart by spaces
-tc709375f = Розширення через пробіл
-
 # Format of new archives
 t3b50d238 = Формат нових архівів
+
+# Write straight to a storage above
+ta4975128 = Писати прямо в сховище вище
+
+# Extensions, apart by spaces
+tc709375f = Розширення через пробіл
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = Новий архів починається з нього; там можна вибрати інший.
@@ -2091,9 +2109,6 @@ t2595cbcb = «Без стиснення» кладе файли архівів Z
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = Вищий рівень дає менші архіви, які довше створюються, але не довше відкриваються.
-
-# Write straight to a storage above
-ta4975128 = Писати прямо в сховище вище
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = Більші файли не займають місця на цьому комп’ютері, але якщо з’єднання втратиться, стискати доведеться заново. S3 приймає так tar і ZIP, SFTP також усі формати.
@@ -2134,8 +2149,17 @@ t983e37f7 = За іменем
 # By number
 tcbbada8d = За номером
 
+# When a file is already there
+tca514dda = Коли файл уже є
+
 # No limit
 t6de7f47d = Без обмеження
+
+# Largest an archive may unpack to
+t5957c426 = Найбільший розмір, до якого може розпакуватися архів
+
+# Owners from a backup
+t38a7cf66 = Власники з резервної копії
 
 # Where the files go
 t77e60aba = Куди йдуть файли
@@ -2158,14 +2182,8 @@ t4691c928 = Поруч з архівом
 # Straight into its folder
 t99d1df43 = Прямо в його папку
 
-# When a file is already there
-tca514dda = Коли файл уже є
-
 # A file of the same name in the folder the files go to
 t296ad686 = Файл із такою самою назвою в папці, куди йдуть файли
-
-# Largest an archive may unpack to
-t5957c426 = Найбільший розмір, до якого може розпакуватися архів
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = Захищає від архівних бомб: малих файлів, що розпаковуються й заповнюють диск
@@ -2175,9 +2193,6 @@ tf47f4968 = Лише імена, придатні для будь-якої си�
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = Імена, яких не дозволяє Windows, як-от a:b.txt, та імена, що різняться лише регістром, запитуються й на цьому комп’ютері
-
-# Owners from a backup
-t38a7cf66 = Власники з резервної копії
 
 # Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
 t46908bee = Якщо tar-архів їх зберіг: ваші або з архіву — за іменем чи за номером. Віддати файли іншим може лише адміністратор
@@ -2206,11 +2221,23 @@ t1d68c60b = Системна
 # Custom…
 ta391dade = Інший…
 
+# Language
+t9a73db9b = Мова
+
 # The system’s ({size} px)
 ta51f1877 = Як у системі ({ $size } px)
 
+# Text size
+t2c041143 = Розмір тексту
+
 # All ({count})
 tf65ec196 = Усі ({ $count })
+
+# Processor cores to use
+t2f9c3d17 = Скільки ядер процесора використовувати
+
+# Text editor
+t1ca82aab = Текстовий редактор
 
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = наприклад, code -n або /path/to/editor --flag
@@ -2224,20 +2251,8 @@ t9fa95458 = Світле й темне оформлення мають по кі
 # {name} (default)
 td3f56fa8 = { $name } (типово)
 
-# Language
-t9a73db9b = Мова
-
-# Text size
-t2c041143 = Розмір тексту
-
-# Processor cores to use
-t2f9c3d17 = Скільки ядер процесора використовувати
-
 # More is faster; fewer leaves room for other work.
 t9d71a0bc = Більше — швидше; менше — лишиться місце для іншої роботи.
-
-# Text editor
-t1ca82aab = Текстовий редактор
 
 # What Edit opens a file of a storage in
 t62506ced = У чому Редагувати відкриває файл зі сховища
@@ -2545,14 +2560,14 @@ t76d5d951 = Питати перед відкриттям файлів без в�
 # Opening a file inside an archive puts a copy in a temporary folder. A program always asks.
 t9173caaa = Відкриття файлу з архіву кладе копію в тимчасову папку. Програму завжди запитують.
 
+# Keep its records for
+tf423722f = Зберігати записи
+
 # Paste a public key
 t0bf72f73 = Вставте відкритий ключ
 
 # What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
 t2162955d = Дії packwing, записані на цьому комп’ютері: які архіви видобуто, створено, перетворено й скопійовано, коли і ким. Ніколи — паролі чи вміст файлів.
-
-# Keep its records for
-tf423722f = Зберігати записи
 
 # Older ones are taken away, and that is recorded too
 t7073f273 = Старіші видаляються, і це теж записується
@@ -2785,11 +2800,23 @@ t5b9dcaca = Неправильний шаблон
 # No matches
 td29421ef = Збігів немає
 
+# Previous match
+tca660309 = Попередній збіг
+
+# Next match
+t2e113a49 = Наступний збіг
+
 # Hide the list of files ({keys})
 t165a997f = Сховати список файлів ({ $keys })
 
 # Show the list of files ({keys})
 tde6e8c38 = Показати список файлів ({ $keys })
+
+# Previous file
+t254b864e = Попередній файл
+
+# Next file
+te3a48d8e = Наступний файл
 
 # Fit the window (0)
 tbe39720a = Вписати у вікно (0)
@@ -3319,9 +3346,6 @@ t78956399 = Показати списком
 # Show a grid
 tb50700d9 = Показати сіткою
 
-# More
-t4f34d900 = Більше
-
 # Select
 t3e892b4d = Вибрати
 
@@ -3366,9 +3390,6 @@ tcde554d0 = Фотографії
 
 # Add more
 t5d2a8a05 = Додати ще
-
-# Format
-tffb0ff72 = Формат
 
 # Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
 t96cb3408 = Відкривається всюди. З паролем — AES-256: Провідник Windows його не відкриє, а 7-Zip і packwing відкриють.

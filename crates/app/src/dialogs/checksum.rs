@@ -532,7 +532,7 @@ impl Render for ChecksumDialog {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
         let mono = self.mono.get_or_insert_with(|| mono_font(window)).clone();
-        let close = icon_button("close", "x", 40.)
+        let close = icon_button("close", "x", 40., tr!("Close"))
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         let shown = {
             let mut shown = prefs::prefs(cx).checksums;
@@ -662,11 +662,16 @@ impl Render for ChecksumDialog {
                         )
                     })
                     .child(
-                        icon_button("checksum-settings", "sliders", 40.)
-                            .tooltip(tip(tr!("Choose the checksums shown")))
-                            .on_click(cx.listener(|_, _, _, cx| {
-                                cx.emit(DialogEvent::ShowChecksumSettings)
-                            })),
+                        icon_button(
+                            "checksum-settings",
+                            "sliders",
+                            40.,
+                            tr!("Choose the checksums shown"),
+                        )
+                        .tooltip(tip(tr!("Choose the checksums shown")))
+                        .on_click(
+                            cx.listener(|_, _, _, cx| cx.emit(DialogEvent::ShowChecksumSettings)),
+                        ),
                     )
                     .child(div().flex_1())
                     .when(far && !self.started(), |d| {

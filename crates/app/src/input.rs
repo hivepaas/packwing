@@ -16,7 +16,7 @@ use gpui::{
     App, Bounds, ClipboardItem, Context, CursorStyle, ElementId, ElementInputHandler, Entity,
     EntityInputHandler, FocusHandle, Focusable, GlobalElementId, KeyDownEvent, LayoutId,
     MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent, PaintQuad, Pixels, Point, Rems,
-    Render, ShapedLine, SharedString, Style, TextRun, UTF16Selection, UnderlineStyle, Window,
+    Render, Role, ShapedLine, SharedString, Style, TextRun, UTF16Selection, UnderlineStyle, Window,
     anchored, deferred, div, fill, point, prelude::*, px, relative, rems, rgb, rgba, size,
 };
 use packwing_i18n::tr;
@@ -1334,8 +1334,25 @@ impl Render for TextInput {
             Placeholder::Text(text) => text.to_string(),
             Placeholder::Said(say) => say(),
         };
+        // To assistive technology: a field called what it asks for, with
+        // what is typed in it, which a password's is not.
+        let role = if self.masked {
+            Role::PasswordInput
+        } else if self.lines.is_some() {
+            Role::MultilineTextInput
+        } else {
+            Role::TextInput
+        };
         div()
-            .debug_selector(|| format!("field: {hint}"))
+            .debug_selector({
+                let hint = hint.clone();
+                move || format!("field: {hint}")
+            })
+            .id("field")
+            .role(role)
+            .aria_label(hint.clone())
+            .aria_placeholder(hint)
+            .when(!self.masked, |d| d.aria_value(self.content.clone()))
             .flex()
             .flex_1()
             .min_w_0()

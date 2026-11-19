@@ -10,6 +10,15 @@ tab0752f7 = packwing memerlukan izin Anda untuk menulis di folder ini. Pilih Izi
 # Allow
 t546d19d2 = Izinkan
 
+# Minimize
+tf0ffec5d = Minimalkan
+
+# Maximize
+t604e45af = Maksimalkan
+
+# Close
+tcd86acc3 = Tutup
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Tampilan: { $name }. Klik untuk { $name2 }.
 
@@ -70,6 +79,9 @@ t1e17fc0c = Ganti
 # Skip it
 tad9909cb = Lewati
 
+# If a file of that name is there
+t34c69cec = Jika berkas dengan nama itu sudah ada
+
 # Add
 t9dc3aa14 = Tambah
 
@@ -96,9 +108,6 @@ t0d53ac5e = Tambahkan ke { $name }
 
 # Goes in
 t36e95c22 = Tujuan
-
-# If a file of that name is there
-t34c69cec = Jika berkas dengan nama itu sudah ada
 
 # This archive is signed. With more in it, it will no longer match its signature, until it is signed again.
 t55ed1cfd = Arsip ini bertanda tangan. Jika ditambah isinya, arsip tidak akan lagi cocok dengan tanda tangannya, sampai ditandatangani ulang.
@@ -418,6 +427,12 @@ tfc6b3ea5 = 4 GB (flash disk)
 # Custom size…
 t0fcf9e2d = Ukuran kustom…
 
+# Format
+tffb0ff72 = Format
+
+# Split into parts
+tca4436bd = Pecah menjadi bagian
+
 # Size
 ta6478e7c = Ukuran
 
@@ -561,9 +576,6 @@ t32239aa8 = Blok kecil membuat semua inti bekerja: hingga dua kali lebih cepat, 
 
 # Large blocks make the smallest archive, on fewer cores where there is less to compress.
 t66a490d9 = Blok besar menghasilkan arsip terkecil, dengan lebih sedikit inti saat yang dikompresi tidak banyak.
-
-# Split into parts
-tca4436bd = Pecah menjadi bagian
 
 # Each part
 t642c444d = Setiap bagian
@@ -1024,9 +1036,6 @@ tc1421590 =
        *[other] { $count } berkas dibaca sampai habis, { $size }, tanpa kesalahan.
     }
 
-# Close
-tcd86acc3 = Tutup
-
 # “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
 t145d7a09 = “{ $path }” rusak: { $why }. Berhenti, lewati, atau simpan bagian yang terbaca?
 
@@ -1234,6 +1243,9 @@ ta642b6e3 = Server bertanya
 # Send
 tf28e14cf = Kirim
 
+# If a name is taken
+tc99c037f = Jika nama sudah dipakai
+
 # Move {what}
 tc168ca56 = Pindahkan { $what }
 
@@ -1248,9 +1260,6 @@ t85f0245a = Salin ke sini
 
 # Move
 t7f2c2a34 = Pindahkan
-
-# If a name is taken
-tc99c037f = Jika nama sudah dipakai
 
 # They are in this folder already. Choose another.
 t5318c14e = Sudah ada di folder ini. Pilih yang lain.
@@ -1300,6 +1309,12 @@ td8d39fb8 = Edit di editor teks
 # Edit in {editor}
 te44cd57b = Edit di { $editor }
 
+# Up a folder
+te9124369 = Naik satu folder
+
+# Refresh
+t0815aad4 = Muat ulang
+
 # Modified
 tdd13a6b2 = Diubah
 
@@ -1314,9 +1329,6 @@ t41f9a787 = Cari di seluruh folder
 
 # Load {n} more
 t30bed46a = Muat { $n } lagi
-
-# Refresh
-t0815aad4 = Muat ulang
 
 # Hide hidden files
 t3375c9c0 = Sembunyikan berkas tersembunyi
@@ -1449,6 +1461,9 @@ tdd45c7bb = Tambah berkas
 
 # Test
 t2ffcbe05 = Uji
+
+# More
+t4f34d900 = Lainnya
 
 # Reading what’s inside…
 t1bbda9f5 = Membaca isinya…
@@ -1987,11 +2002,14 @@ t0632975a = Kunjungi hivepaas.com
 # Always
 tad4bbd04 = Selalu
 
-# Extensions, apart by spaces
-tc709375f = Ekstensi, dipisahkan spasi
-
 # Format of new archives
 t3b50d238 = Format arsip baru
+
+# Write straight to a storage above
+ta4975128 = Tulis langsung ke penyimpanan di atas
+
+# Extensions, apart by spaces
+tc709375f = Ekstensi, dipisahkan spasi
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = Arsip baru dimulai dengan format ini; Anda dapat memilih yang lain di sana.
@@ -2001,9 +2019,6 @@ t2595cbcb = Simpan memasukkan file arsip ZIP dan 7z apa adanya. Format tar memak
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = Makin tinggi, arsip makin kecil, dan makin lama dibuat, bukan dibuka.
-
-# Write straight to a storage above
-ta4975128 = Tulis langsung ke penyimpanan di atas
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = Berkas yang lebih besar tidak memakan ruang di komputer ini, tetapi koneksi yang putus berarti kompresi ulang. S3 menerima tar dan ZIP dengan cara ini, SFTP menerima semua format.
@@ -2044,8 +2059,17 @@ t983e37f7 = Menurut nama
 # By number
 tcbbada8d = Menurut nomor
 
+# When a file is already there
+tca514dda = Jika berkas sudah ada
+
 # No limit
 t6de7f47d = Tanpa batas
+
+# Largest an archive may unpack to
+t5957c426 = Ukuran terbesar hasil ekstrak sebuah arsip
+
+# Owners from a backup
+t38a7cf66 = Pemilik dari cadangan
 
 # Where the files go
 t77e60aba = Tujuan berkas
@@ -2068,14 +2092,8 @@ t4691c928 = Di sebelah arsip
 # Straight into its folder
 t99d1df43 = Langsung ke foldernya
 
-# When a file is already there
-tca514dda = Jika berkas sudah ada
-
 # A file of the same name in the folder the files go to
 t296ad686 = Berkas bernama sama di folder tujuan berkas
-
-# Largest an archive may unpack to
-t5957c426 = Ukuran terbesar hasil ekstrak sebuah arsip
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = Mencegah bom arsip: berkas kecil yang saat diekstrak memenuhi disk
@@ -2085,9 +2103,6 @@ tf47f4968 = Hanya nama yang bisa dipakai di semua sistem
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = Nama yang tidak diizinkan Windows, seperti a:b.txt, dan nama yang hanya beda huruf besar/kecil juga ditanyakan di komputer ini
-
-# Owners from a backup
-t38a7cf66 = Pemilik dari cadangan
 
 # Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
 t46908bee = Jika arsip tar menyimpannya: milik Anda, atau milik arsip menurut nama atau nomor. Hanya administrator yang dapat memberikan berkas kepada orang lain
@@ -2116,11 +2131,23 @@ t1d68c60b = Milik sistem
 # Custom…
 ta391dade = Kustom…
 
+# Language
+t9a73db9b = Bahasa
+
 # The system’s ({size} px)
 ta51f1877 = Bawaan sistem ({ $size } px)
 
+# Text size
+t2c041143 = Ukuran teks
+
 # All ({count})
 tf65ec196 = Semua ({ $count })
+
+# Processor cores to use
+t2f9c3d17 = Inti prosesor yang dipakai
+
+# Text editor
+t1ca82aab = Editor teks
 
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = mis. code -n, atau /path/to/editor --flag
@@ -2134,20 +2161,8 @@ t9fa95458 = Terang dan gelap masing-masing punya beberapa gaya: latarnya berubah
 # {name} (default)
 td3f56fa8 = { $name } (bawaan)
 
-# Language
-t9a73db9b = Bahasa
-
-# Text size
-t2c041143 = Ukuran teks
-
-# Processor cores to use
-t2f9c3d17 = Inti prosesor yang dipakai
-
 # More is faster; fewer leaves room for other work.
 t9d71a0bc = Lebih banyak lebih cepat; lebih sedikit menyisakan ruang untuk pekerjaan lain.
-
-# Text editor
-t1ca82aab = Editor teks
 
 # What Edit opens a file of a storage in
 t62506ced = Aplikasi untuk membuka berkas penyimpanan saat Edit
@@ -2455,14 +2470,14 @@ t76d5d951 = Tanya sebelum membuka berkas tanpa mengekstrak
 # Opening a file inside an archive puts a copy in a temporary folder. A program always asks.
 t9173caaa = Membuka berkas di dalam arsip menaruh salinan di folder sementara. Program selalu ditanyakan.
 
+# Keep its records for
+tf423722f = Simpan catatan selama
+
 # Paste a public key
 t0bf72f73 = Tempel kunci publik
 
 # What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
 t2162955d = Apa yang dilakukan packwing, disimpan di komputer ini: arsip yang diekstrak, dibuat, dikonversi, dan disalin, kapan dan oleh siapa. Tidak pernah kata sandi atau isi berkas.
-
-# Keep its records for
-tf423722f = Simpan catatan selama
 
 # Older ones are taken away, and that is recorded too
 t7073f273 = Yang lebih lama dihapus, dan itu juga dicatat
@@ -2686,11 +2701,23 @@ t5b9dcaca = Pola tidak valid
 # No matches
 td29421ef = Tidak ada yang cocok
 
+# Previous match
+tca660309 = Kecocokan sebelumnya
+
+# Next match
+t2e113a49 = Kecocokan berikutnya
+
 # Hide the list of files ({keys})
 t165a997f = Sembunyikan daftar file ({ $keys })
 
 # Show the list of files ({keys})
 tde6e8c38 = Tampilkan daftar file ({ $keys })
+
+# Previous file
+t254b864e = Berkas sebelumnya
+
+# Next file
+te3a48d8e = Berkas berikutnya
 
 # Fit the window (0)
 tbe39720a = Paskan ke jendela (0)
@@ -3205,9 +3232,6 @@ t78956399 = Tampilkan daftar
 # Show a grid
 tb50700d9 = Tampilkan kisi
 
-# More
-t4f34d900 = Lainnya
-
 # Select
 t3e892b4d = Pilih
 
@@ -3249,9 +3273,6 @@ tcde554d0 = Foto
 
 # Add more
 t5d2a8a05 = Tambah lagi
-
-# Format
-tffb0ff72 = Format
 
 # Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
 t96cb3408 = Bisa dibuka di mana saja. Dengan kata sandi (AES-256), File Explorer bawaan Windows tidak dapat membukanya, tetapi 7-Zip dan packwing bisa.

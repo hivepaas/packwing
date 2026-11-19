@@ -10,6 +10,15 @@ tab0752f7 = packwing cần bạn cho phép ghi vào thư mục này. Chọn Cho 
 # Allow
 t546d19d2 = Cho phép
 
+# Minimize
+tf0ffec5d = Thu nhỏ
+
+# Maximize
+t604e45af = Phóng to
+
+# Close
+tcd86acc3 = Đóng
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Giao diện: { $name }. Bấm để chuyển sang { $name2 }.
 
@@ -70,6 +79,9 @@ t1e17fc0c = Thay luôn
 # Skip it
 tad9909cb = Bỏ qua
 
+# If a file of that name is there
+t34c69cec = Nếu đã có tệp trùng tên
+
 # Add
 t9dc3aa14 = Thêm
 
@@ -96,9 +108,6 @@ t0d53ac5e = Thêm vào { $name }
 
 # Goes in
 t36e95c22 = Đặt vào
-
-# If a file of that name is there
-t34c69cec = Nếu đã có tệp trùng tên
 
 # This archive is signed. With more in it, it will no longer match its signature, until it is signed again.
 t55ed1cfd = Tệp nén này đã được ký. Thêm tệp vào thì nó sẽ không còn khớp chữ ký cho đến khi được ký lại.
@@ -418,6 +427,12 @@ tfc6b3ea5 = 4 GB (USB)
 # Custom size…
 t0fcf9e2d = Cỡ tuỳ chỉnh…
 
+# Format
+tffb0ff72 = Định dạng
+
+# Split into parts
+tca4436bd = Chia thành nhiều phần
+
 # Size
 ta6478e7c = Cỡ chữ
 
@@ -561,9 +576,6 @@ t32239aa8 = Khối nhỏ cho mọi lõi cùng làm việc: nhanh hơn tới gấ
 
 # Large blocks make the smallest archive, on fewer cores where there is less to compress.
 t66a490d9 = Khối lớn cho tệp nén nhỏ nhất, dùng ít lõi hơn khi có ít dữ liệu để nén.
-
-# Split into parts
-tca4436bd = Chia thành nhiều phần
 
 # Each part
 t642c444d = Mỗi phần
@@ -1024,9 +1036,6 @@ tc1421590 =
        *[other] Đã đọc hết { $count } tệp, { $size }, không có lỗi.
     }
 
-# Close
-tcd86acc3 = Đóng
-
 # “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
 t145d7a09 = “{ $path }” bị hỏng: { $why }. Dừng lại, bỏ qua file này, hay giữ phần đọc được?
 
@@ -1234,6 +1243,9 @@ ta642b6e3 = Máy chủ hỏi
 # Send
 tf28e14cf = Gửi
 
+# If a name is taken
+tc99c037f = Nếu trùng tên
+
 # Move {what}
 tc168ca56 = Di chuyển { $what }
 
@@ -1248,9 +1260,6 @@ t85f0245a = Sao chép vào đây
 
 # Move
 t7f2c2a34 = Di chuyển
-
-# If a name is taken
-tc99c037f = Nếu trùng tên
 
 # They are in this folder already. Choose another.
 t5318c14e = Chúng đã có trong thư mục này. Hãy chọn thư mục khác.
@@ -1300,6 +1309,12 @@ td8d39fb8 = Sửa bằng trình soạn thảo
 # Edit in {editor}
 te44cd57b = Sửa bằng { $editor }
 
+# Up a folder
+te9124369 = Lên một thư mục
+
+# Refresh
+t0815aad4 = Làm mới
+
 # Modified
 tdd13a6b2 = Ngày sửa
 
@@ -1314,9 +1329,6 @@ t41f9a787 = Tìm trong cả thư mục
 
 # Load {n} more
 t30bed46a = Tải thêm { $n }
-
-# Refresh
-t0815aad4 = Làm mới
 
 # Hide hidden files
 t3375c9c0 = Ẩn tệp ẩn
@@ -1449,6 +1461,9 @@ tdd45c7bb = Thêm tệp
 
 # Test
 t2ffcbe05 = Kiểm tra
+
+# More
+t4f34d900 = Thêm
 
 # Reading what’s inside…
 t1bbda9f5 = Đang đọc nội dung bên trong…
@@ -1987,11 +2002,14 @@ t0632975a = Xem hivepaas.com
 # Always
 tad4bbd04 = Luôn luôn
 
-# Extensions, apart by spaces
-tc709375f = Các đuôi, cách nhau bằng dấu cách
-
 # Format of new archives
 t3b50d238 = Định dạng của tệp nén mới
+
+# Write straight to a storage above
+ta4975128 = Ghi thẳng vào nơi lưu trữ ở trên
+
+# Extensions, apart by spaces
+tc709375f = Các đuôi, cách nhau bằng dấu cách
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = Tệp nén mới bắt đầu với định dạng này; bạn có thể chọn định dạng khác ở đó.
@@ -2001,9 +2019,6 @@ t2595cbcb = Không nén đưa nguyên trạng các tệp của tệp nén ZIP v�
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = Mức cao hơn cho tệp nén nhỏ hơn, tạo lâu hơn nhưng mở không chậm hơn.
-
-# Write straight to a storage above
-ta4975128 = Ghi thẳng vào nơi lưu trữ ở trên
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = Tệp lớn không chiếm chỗ trên máy tính này, nhưng mất kết nối thì phải nén lại. S3 nhận tar và ZIP theo cách này, SFTP nhận cả mọi định dạng khác.
@@ -2044,8 +2059,17 @@ t983e37f7 = Theo tên
 # By number
 tcbbada8d = Theo số
 
+# When a file is already there
+tca514dda = Khi đã có tệp đó
+
 # No limit
 t6de7f47d = Không giới hạn
+
+# Largest an archive may unpack to
+t5957c426 = Dung lượng tối đa tệp nén được giải ra
+
+# Owners from a backup
+t38a7cf66 = Chủ sở hữu từ bản sao lưu
 
 # Where the files go
 t77e60aba = Nơi đặt các tệp
@@ -2068,14 +2092,8 @@ t4691c928 = Cạnh tệp nén
 # Straight into its folder
 t99d1df43 = Thẳng vào thư mục của nó
 
-# When a file is already there
-tca514dda = Khi đã có tệp đó
-
 # A file of the same name in the folder the files go to
 t296ad686 = Tệp trùng tên trong thư mục nhận các tệp
-
-# Largest an archive may unpack to
-t5957c426 = Dung lượng tối đa tệp nén được giải ra
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = Chặn bom nén: các tệp nhỏ giải ra lấp đầy ổ đĩa
@@ -2085,9 +2103,6 @@ tf47f4968 = Chỉ nhận tên dùng được trên mọi hệ điều hành
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = Tên Windows không dùng được, như a:b.txt, và tên chỉ khác chữ hoa/thường cũng sẽ được hỏi trên máy này
-
-# Owners from a backup
-t38a7cf66 = Chủ sở hữu từ bản sao lưu
 
 # Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
 t46908bee = Khi tệp nén tar có lưu: của bạn, hoặc của tệp nén theo tên hay theo số. Chỉ quản trị viên mới giao được tệp cho người khác
@@ -2116,11 +2131,23 @@ t1d68c60b = Của hệ thống
 # Custom…
 ta391dade = Tuỳ chỉnh…
 
+# Language
+t9a73db9b = Ngôn ngữ
+
 # The system’s ({size} px)
 ta51f1877 = Theo hệ thống ({ $size } px)
 
+# Text size
+t2c041143 = Cỡ chữ
+
 # All ({count})
 tf65ec196 = Tất cả ({ $count })
+
+# Processor cores to use
+t2f9c3d17 = Số nhân xử lý được dùng
+
+# Text editor
+t1ca82aab = Trình soạn thảo văn bản
 
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = ví dụ code -n, hoặc /đường/dẫn/trình-soạn-thảo --flag
@@ -2134,20 +2161,8 @@ t9fa95458 = Sáng và tối đều có nhiều kiểu: nền thay đổi, chữ 
 # {name} (default)
 td3f56fa8 = { $name } (mặc định)
 
-# Language
-t9a73db9b = Ngôn ngữ
-
-# Text size
-t2c041143 = Cỡ chữ
-
-# Processor cores to use
-t2f9c3d17 = Số nhân xử lý được dùng
-
 # More is faster; fewer leaves room for other work.
 t9d71a0bc = Càng nhiều càng nhanh; ít hơn thì chừa chỗ cho việc khác.
-
-# Text editor
-t1ca82aab = Trình soạn thảo văn bản
 
 # What Edit opens a file of a storage in
 t62506ced = Dùng để mở tệp trong nơi lưu trữ khi chọn Sửa
@@ -2455,14 +2470,14 @@ t76d5d951 = Hỏi trước khi mở tệp mà không giải nén
 # Opening a file inside an archive puts a copy in a temporary folder. A program always asks.
 t9173caaa = Mở một tệp trong tệp nén là đặt một bản sao vào thư mục tạm. Chương trình thì luôn bị hỏi.
 
+# Keep its records for
+tf423722f = Giữ bản ghi trong
+
 # Paste a public key
 t0bf72f73 = Dán một khoá công khai
 
 # What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
 t2162955d = Những gì packwing làm, lưu trên máy này: tệp nén được giải nén, tạo, chuyển đổi và sao chép, lúc nào và bởi ai. Không bao giờ ghi mật khẩu hay nội dung tệp.
-
-# Keep its records for
-tf423722f = Giữ bản ghi trong
 
 # Older ones are taken away, and that is recorded too
 t7073f273 = Bản ghi cũ hơn sẽ bị xoá, và việc xoá cũng được ghi lại
@@ -2677,11 +2692,23 @@ t5b9dcaca = Mẫu không hợp lệ
 # No matches
 td29421ef = Không tìm thấy
 
+# Previous match
+tca660309 = Kết quả trước
+
+# Next match
+t2e113a49 = Kết quả tiếp theo
+
 # Hide the list of files ({keys})
 t165a997f = Ẩn danh sách tệp ({ $keys })
 
 # Show the list of files ({keys})
 tde6e8c38 = Hiện danh sách tệp ({ $keys })
+
+# Previous file
+t254b864e = Tệp trước
+
+# Next file
+te3a48d8e = Tệp tiếp theo
 
 # Fit the window (0)
 tbe39720a = Vừa khung cửa sổ (0)
@@ -3196,9 +3223,6 @@ t78956399 = Xem dạng danh sách
 # Show a grid
 tb50700d9 = Xem dạng lưới
 
-# More
-t4f34d900 = Thêm
-
 # Select
 t3e892b4d = Chọn
 
@@ -3240,9 +3264,6 @@ tcde554d0 = Ảnh
 
 # Add more
 t5d2a8a05 = Thêm nữa
-
-# Format
-tffb0ff72 = Định dạng
 
 # Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
 t96cb3408 = Mở được ở mọi nơi. Có mật khẩu (AES-256) thì File Explorer của Windows không mở được, nhưng 7-Zip và packwing thì mở được.
