@@ -694,7 +694,7 @@ impl AuditPage {
             .child(self.results.clone())
             .child(search)
             .child(
-                icon_button("audit-refresh", "refresh", 40.)
+                icon_button("audit-refresh", "refresh", 40., tr!("Read again"))
                     .tooltip(crate::widgets::tip(tr!("Read again")))
                     .on_click(cx.listener(|this, _, _, cx| this.reload(cx))),
             )
@@ -942,12 +942,12 @@ impl AuditPage {
                             .child(line.label()),
                     )
                     .child(
-                        icon_button("audit-detail-close", "x", 32.).on_click(cx.listener(
-                            |this, _, _, cx| {
+                        icon_button("audit-detail-close", "x", 32., tr!("Close")).on_click(
+                            cx.listener(|this, _, _, cx| {
                                 this.chosen = None;
                                 cx.notify();
-                            },
-                        )),
+                            }),
+                        ),
                     ),
             )
             .child(

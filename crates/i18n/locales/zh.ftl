@@ -10,6 +10,15 @@ tab0752f7 = packwing 需要你的允许才能写入此文件夹。请选择“�
 # Allow
 t546d19d2 = 允许
 
+# Minimize
+tf0ffec5d = 最小化
+
+# Maximize
+t604e45af = 最大化
+
+# Close
+tcd86acc3 = 关闭
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = 外观：{ $name }。点击切换为{ $name2 }。
 
@@ -70,6 +79,9 @@ t1e17fc0c = 替换
 # Skip it
 tad9909cb = 跳过
 
+# If a file of that name is there
+t34c69cec = 如果已有同名文件
+
 # Add
 t9dc3aa14 = 添加
 
@@ -96,9 +108,6 @@ t0d53ac5e = 添加到 { $name }
 
 # Goes in
 t36e95c22 = 放入位置
-
-# If a file of that name is there
-t34c69cec = 如果已有同名文件
 
 # This archive is signed. With more in it, it will no longer match its signature, until it is signed again.
 t55ed1cfd = 此压缩包已签名。加入更多内容后，它将与签名不再匹配，需重新签名。
@@ -418,6 +427,12 @@ tfc6b3ea5 = 4 GB（U 盘）
 # Custom size…
 t0fcf9e2d = 自定义大小…
 
+# Format
+tffb0ff72 = 格式
+
+# Split into parts
+tca4436bd = 分卷
+
 # Size
 ta6478e7c = 大小
 
@@ -561,9 +576,6 @@ t32239aa8 = 小块让每个核心都在工作：最多快两倍，压缩包大�
 
 # Large blocks make the smallest archive, on fewer cores where there is less to compress.
 t66a490d9 = 大块生成最小的压缩包，要压缩的内容较少时，用到的核心较少。
-
-# Split into parts
-tca4436bd = 分卷
 
 # Each part
 t642c444d = 每卷
@@ -1024,9 +1036,6 @@ tc1421590 =
        *[other] 已读取 { $count } 个文件，共 { $size }，没有错误。
     }
 
-# Close
-tcd86acc3 = 关闭
-
 # “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
 t145d7a09 = “{ $path }”已损坏：{ $why }。要停止、跳过它，还是保留已读出的部分？
 
@@ -1234,6 +1243,9 @@ ta642b6e3 = 服务器询问
 # Send
 tf28e14cf = 发送
 
+# If a name is taken
+tc99c037f = 如果名称已被占用
+
 # Move {what}
 tc168ca56 = 移动 { $what }
 
@@ -1248,9 +1260,6 @@ t85f0245a = 复制到此处
 
 # Move
 t7f2c2a34 = 移动
-
-# If a name is taken
-tc99c037f = 如果名称已被占用
 
 # They are in this folder already. Choose another.
 t5318c14e = 它们已在此文件夹中。请选择其他文件夹。
@@ -1300,6 +1309,12 @@ td8d39fb8 = 在文本编辑器中编辑
 # Edit in {editor}
 te44cd57b = 在 { $editor } 中编辑
 
+# Up a folder
+te9124369 = 上一级文件夹
+
+# Refresh
+t0815aad4 = 刷新
+
 # Modified
 tdd13a6b2 = 修改时间
 
@@ -1314,9 +1329,6 @@ t41f9a787 = 搜索整个文件夹
 
 # Load {n} more
 t30bed46a = 再加载 { $n } 项
-
-# Refresh
-t0815aad4 = 刷新
 
 # Hide hidden files
 t3375c9c0 = 隐藏隐藏文件
@@ -1449,6 +1461,9 @@ tdd45c7bb = 添加文件
 
 # Test
 t2ffcbe05 = 测试
+
+# More
+t4f34d900 = 更多
 
 # Reading what’s inside…
 t1bbda9f5 = 正在读取内容…
@@ -1987,11 +2002,14 @@ t0632975a = 访问 hivepaas.com
 # Always
 tad4bbd04 = 总是
 
-# Extensions, apart by spaces
-tc709375f = 扩展名，用空格分隔
-
 # Format of new archives
 t3b50d238 = 新压缩包的格式
+
+# Write straight to a storage above
+ta4975128 = 直接写入上方的存储
+
+# Extensions, apart by spaces
+tc709375f = 扩展名，用空格分隔
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = 新建压缩包时默认使用它；你也可以在那里选择其他格式。
@@ -2001,9 +2019,6 @@ t2595cbcb = 仅存储会原样放入 ZIP 和 7z 压缩包中的文件。tar 格�
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = 级别越高，压缩包越小，但生成时间更长，打开时间不变。
-
-# Write straight to a storage above
-ta4975128 = 直接写入上方的存储
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = 较大的文件不占用此电脑的空间，但连接中断就得重新压缩。S3 以这种方式支持 tar 和 ZIP，SFTP 则支持所有格式。
@@ -2044,8 +2059,17 @@ t983e37f7 = 按名称
 # By number
 tcbbada8d = 按编号
 
+# When a file is already there
+tca514dda = 当文件已存在时
+
 # No limit
 t6de7f47d = 不限制
+
+# Largest an archive may unpack to
+t5957c426 = 压缩包解压后的最大大小
+
+# Owners from a backup
+t38a7cf66 = 备份中的所有者
 
 # Where the files go
 t77e60aba = 文件放到哪里
@@ -2068,14 +2092,8 @@ t4691c928 = 压缩包旁边
 # Straight into its folder
 t99d1df43 = 直接放入其文件夹
 
-# When a file is already there
-tca514dda = 当文件已存在时
-
 # A file of the same name in the folder the files go to
 t296ad686 = 文件要放入的文件夹中已有同名文件
-
-# Largest an archive may unpack to
-t5957c426 = 压缩包解压后的最大大小
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = 防止压缩炸弹：解压后会占满磁盘的小文件
@@ -2085,9 +2103,6 @@ tf47f4968 = 仅接受所有系统都能使用的名称
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = Windows 无法使用的名称（如 a:b.txt）以及仅大小写不同的名称，在这台电脑上也会询问
-
-# Owners from a backup
-t38a7cf66 = 备份中的所有者
 
 # Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
 t46908bee = tar 归档有保留时：你的，或按名称或编号采用归档中的。只有管理员能把文件交给他人
@@ -2116,11 +2131,23 @@ t1d68c60b = 系统的
 # Custom…
 ta391dade = 自定义…
 
+# Language
+t9a73db9b = 语言
+
 # The system’s ({size} px)
 ta51f1877 = 跟随系统（{ $size } px）
 
+# Text size
+t2c041143 = 文字大小
+
 # All ({count})
 tf65ec196 = 全部 ({ $count })
+
+# Processor cores to use
+t2f9c3d17 = 使用的处理器核心数
+
+# Text editor
+t1ca82aab = 文本编辑器
 
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = 例如 code -n，或 /path/to/editor --flag
@@ -2134,20 +2161,8 @@ t9fa95458 = 浅色与深色各有多种样式：背景会改变，文字与强�
 # {name} (default)
 td3f56fa8 = { $name }(默认)
 
-# Language
-t9a73db9b = 语言
-
-# Text size
-t2c041143 = 文字大小
-
-# Processor cores to use
-t2f9c3d17 = 使用的处理器核心数
-
 # More is faster; fewer leaves room for other work.
 t9d71a0bc = 越多越快；越少则为其他工作留出余地。
-
-# Text editor
-t1ca82aab = 文本编辑器
 
 # What Edit opens a file of a storage in
 t62506ced = “编辑”存储中的文件时使用的应用
@@ -2455,14 +2470,14 @@ t76d5d951 = 不解压直接打开文件前先询问
 # Opening a file inside an archive puts a copy in a temporary folder. A program always asks.
 t9173caaa = 打开压缩包内的文件时，会在临时文件夹中放一份副本。程序则始终会先询问。
 
+# Keep its records for
+tf423722f = 记录保留
+
 # Paste a public key
 t0bf72f73 = 粘贴公钥
 
 # What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
 t2162955d = packwing 所做的事，保存在这台电脑上：解压、创建、转换和复制了哪些压缩包，何时、由谁。绝不记录密码或文件内容。
-
-# Keep its records for
-tf423722f = 记录保留
 
 # Older ones are taken away, and that is recorded too
 t7073f273 = 较旧的记录会被删除，删除本身也会记录
@@ -2677,11 +2692,23 @@ t5b9dcaca = 无效的模式
 # No matches
 td29421ef = 无匹配项
 
+# Previous match
+tca660309 = 上一个匹配项
+
+# Next match
+t2e113a49 = 下一个匹配项
+
 # Hide the list of files ({keys})
 t165a997f = 隐藏文件列表 ({ $keys })
 
 # Show the list of files ({keys})
 tde6e8c38 = 显示文件列表 ({ $keys })
+
+# Previous file
+t254b864e = 上一个文件
+
+# Next file
+te3a48d8e = 下一个文件
 
 # Fit the window (0)
 tbe39720a = 适应窗口 (0)
@@ -3196,9 +3223,6 @@ t78956399 = 以列表显示
 # Show a grid
 tb50700d9 = 以网格显示
 
-# More
-t4f34d900 = 更多
-
 # Select
 t3e892b4d = 选择
 
@@ -3240,9 +3264,6 @@ tcde554d0 = 照片
 
 # Add more
 t5d2a8a05 = 继续添加
-
-# Format
-tffb0ff72 = 格式
 
 # Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
 t96cb3408 = 到处都能打开。设置密码后使用 AES-256：Windows 自带的文件资源管理器打不开，7-Zip 和 packwing 可以。

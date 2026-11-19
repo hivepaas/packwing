@@ -573,7 +573,7 @@ fn labelled(label: String, input: Entity<TextInput>) -> gpui::Div {
 impl Render for AddStorageDialog {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
-        let close = icon_button("close", "x", 40.)
+        let close = icon_button("close", "x", 40., tr!("Close"))
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         let card = |id: (&'static str, usize), tag: &'static str, name: String, on: bool| {
             div()

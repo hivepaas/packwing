@@ -658,7 +658,7 @@ impl ArchiveChecksumDialog {
     ) -> Stateful<Div> {
         let on = self.scope == scope;
         let can = scope != Scope::Picked || !self.selection.paths.is_empty();
-        option_card(id, on)
+        option_card(id, on, title.clone())
             .child(titled(title, detail, on).flex_1().min_w_0())
             .when(can, |d| {
                 d.on_click(cx.listener(move |this, _, _, cx| {
@@ -726,7 +726,7 @@ impl ArchiveChecksumDialog {
                 .text_color(rgb(c.muted))
                 .child(said)
         });
-        let close = icon_button("close", "x", 40.)
+        let close = icon_button("close", "x", 40., tr!("Close"))
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         super::card()
             .child(header(
@@ -1188,7 +1188,7 @@ impl ArchiveChecksumDialog {
     fn files(&self, mono: SharedString, cx: &mut Context<Self>) -> Div {
         let c = colors();
         let a = &self.archive;
-        let close = icon_button("close", "x", 40.)
+        let close = icon_button("close", "x", 40., tr!("Close"))
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         let detail = match (&self.made, self.scope) {
             (Some(made), _) => {
@@ -1499,9 +1499,14 @@ fn shown_algorithms(cx: &gpui::App) -> Vec<Algorithm> {
 
 /// The button to Settings › Security, where the checksums shown are chosen.
 fn settings_button(cx: &mut Context<ArchiveChecksumDialog>) -> Stateful<Div> {
-    icon_button("checksum-settings", "sliders", 40.)
-        .tooltip(tip(tr!("Choose the checksums shown")))
-        .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::ShowChecksumSettings)))
+    icon_button(
+        "checksum-settings",
+        "sliders",
+        40.,
+        tr!("Choose the checksums shown"),
+    )
+    .tooltip(tip(tr!("Choose the checksums shown")))
+    .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::ShowChecksumSettings)))
 }
 
 impl Render for ArchiveChecksumDialog {

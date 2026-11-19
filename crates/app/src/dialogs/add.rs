@@ -93,6 +93,7 @@ impl AddDialog {
         let on_existing = cx.new(|_| {
             Select::new(&on_existing().map(|(name, _)| name), 0, SelectLook::Pill)
                 .marked("on-existing")
+                .named(tr!("If a file of that name is there"))
         });
         Some(AddDialog {
             signed: archive
@@ -133,8 +134,10 @@ impl AddDialog {
     /// For the screenshots: the sample's name, with what they choose.
     #[cfg(all(test, feature = "test-hooks"))]
     pub fn sample(archive: &Archive, cx: &mut App) -> AddDialog {
-        let on_existing =
-            cx.new(|_| Select::new(&on_existing().map(|(name, _)| name), 0, SelectLook::Pill));
+        let on_existing = cx.new(|_| {
+            Select::new(&on_existing().map(|(name, _)| name), 0, SelectLook::Pill)
+                .named(tr!("If a file of that name is there"))
+        });
         AddDialog {
             signed: false,
             archive: PathBuf::from("/home/you/Documents/sample.zip"),
@@ -287,7 +290,7 @@ impl Render for AddDialog {
                     .child(text),
             )
         };
-        let close = icon_button("close", "x", 40.)
+        let close = icon_button("close", "x", 40., tr!("Close"))
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         super::card()
             .id("add-dialog")

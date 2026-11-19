@@ -11,7 +11,7 @@ use futures::StreamExt as _;
 
 use gpui::{
     AnyView, App, Context, Entity, EventEmitter, ExternalPaths, FocusHandle, Focusable, FontWeight,
-    KeyDownEvent, MouseButton, NavigationDirection, PathPromptOptions, Render, Subscription,
+    KeyDownEvent, MouseButton, NavigationDirection, PathPromptOptions, Render, Role, Subscription,
     WeakEntity, Window, WindowAppearance, div, prelude::*, rgb, rgba,
 };
 use packwing_core::{Asked, Cancel, Keys, Listen, NewArchive, Source};
@@ -2669,11 +2669,15 @@ impl Workspace {
             ],
             window,
         );
+        // Each page's tab, the one shown chosen, as assistive technology is told.
         let item = |id: &'static str, icon_name: &'static str, label: String, on: bool| {
             let ink = if on { c.on_tonal } else { c.muted };
             div()
                 .debug_selector(|| id.to_owned())
                 .id(id)
+                .role(Role::Tab)
+                .aria_label(label.clone())
+                .aria_selected(on)
                 .group(id)
                 .flex()
                 .flex_col()
@@ -2706,6 +2710,9 @@ impl Workspace {
         // Where the system draws the title bar, the badge has no place: a dot says it.
         let dot = !chrome::draws_title_bar(window) && self.updates.read(cx).badge().is_some();
         div()
+            .id("menu")
+            .role(Role::TabList)
+            .aria_orientation(gpui::Orientation::Vertical)
             .w(ui(MENU_W))
             .flex_shrink_0()
             .flex()
@@ -2720,6 +2727,8 @@ impl Workspace {
                 tile(48., 16., accent_tint())
                     .debug_selector(|| "nav-about".to_owned())
                     .id("nav-about")
+                    .role(Role::Button)
+                    .aria_label(tr!("About"))
                     .mb(ui(12.))
                     .cursor_pointer()
                     .tooltip(tip(tr!("About")))
@@ -2743,11 +2752,12 @@ impl Workspace {
                     .on_click(cx.listener(|this, _, _, cx| this.show_page(Page::Browse, cx))),
             )
             .child(
-                item("nav-new", "plus", tr!("New"), false).on_click(cx.listener(
-                    |this, _, window, cx| {
+                // Not a page: it opens New archive.
+                item("nav-new", "plus", tr!("New"), false)
+                    .role(Role::Button)
+                    .on_click(cx.listener(|this, _, window, cx| {
                         this.open_create(Vec::new(), window, cx);
-                    },
-                )),
+                    })),
             )
             .child(
                 item(

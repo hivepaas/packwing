@@ -180,6 +180,7 @@ impl Security {
                 SelectLook::Pill,
             )
             .marked("audit-retention")
+            .named(tr!("Keep its records for"))
         });
         let retention_chosen = cx.subscribe(&retention, |_, select, _: &Chosen, cx| {
             let days = RETENTION_CHOICES[select.read(cx).chosen().min(RETENTION_CHOICES.len() - 1)];
@@ -207,17 +208,19 @@ impl Security {
             if crate::licensing::plan(cx).has_audit_log() {
                 items.push(
                     setting(
-                        label,
+                        label.clone(),
                         tr!(
                             "What packwing does, kept on this computer: archives extracted, \
                              made, converted and copied, when and by whom. Never a password \
                              or what is in a file."
                         ),
-                        switch("audit-log", kept.audit_log).on_click(cx.listener(|_, _, _, cx| {
-                            prefs::change(cx, |p| p.audit_log = !p.audit_log);
-                            crate::audit_log::apply(cx, By::User);
-                            cx.notify();
-                        })),
+                        switch("audit-log", kept.audit_log, label).on_click(cx.listener(
+                            |_, _, _, cx| {
+                                prefs::change(cx, |p| p.audit_log = !p.audit_log);
+                                crate::audit_log::apply(cx, By::User);
+                                cx.notify();
+                            },
+                        )),
                     )
                     .into_any_element(),
                 );
@@ -600,18 +603,20 @@ impl Render for Security {
                 setting(
                     t.label.clone(),
                     t.detail.clone(),
-                    switch(("security", i), t.on).on_click(cx.listener(move |this, _, _, cx| {
-                        this.toggles[i].on = !this.toggles[i].on;
-                        if this.toggles[i].sets == Sets::KeepMark {
-                            let on = this.toggles[i].on;
-                            crate::prefs::change(cx, |p| p.keep_mark = on);
-                        }
-                        if this.toggles[i].sets == Sets::AskOpen {
-                            let on = this.toggles[i].on;
-                            crate::prefs::change(cx, |p| p.ask_before_open = on);
-                        }
-                        cx.notify();
-                    })),
+                    switch(("security", i), t.on, t.label.clone()).on_click(cx.listener(
+                        move |this, _, _, cx| {
+                            this.toggles[i].on = !this.toggles[i].on;
+                            if this.toggles[i].sets == Sets::KeepMark {
+                                let on = this.toggles[i].on;
+                                crate::prefs::change(cx, |p| p.keep_mark = on);
+                            }
+                            if this.toggles[i].sets == Sets::AskOpen {
+                                let on = this.toggles[i].on;
+                                crate::prefs::change(cx, |p| p.ask_before_open = on);
+                            }
+                            cx.notify();
+                        },
+                    )),
                 )
             });
         if !policy.is_managed() {

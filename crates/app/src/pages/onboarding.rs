@@ -68,64 +68,63 @@ impl Render for Onboarding {
                     )),
             )
             .child(div().flex_1());
-        let steps = self.steps.iter().enumerate().map(|(i, s)| {
-            let tint = if s.on {
-                Tint {
-                    ground: c.tonal,
-                    ink: c.on_tonal,
-                }
-            } else {
-                Tint {
-                    ground: c.field,
-                    ink: c.muted,
-                }
-            };
-            div()
-                .flex()
-                .items_start()
-                .gap(ui(14.))
-                .px(ui(16.))
-                .py(ui(14.))
-                .rounded(ui(20.))
-                .bg(rgb(c.well))
-                .child(
-                    tile(40., 14., tint)
-                        .text_size(ui(15.))
-                        .font_weight(FontWeight::BOLD)
-                        .child((i + 1).to_string()),
-                )
-                .child(
-                    div()
-                        .flex_1()
-                        .min_w_0()
-                        .flex()
-                        .flex_col()
-                        .gap(ui(3.))
-                        .child(
-                            div()
-                                .text_size(ui(16.))
-                                .font_weight(FontWeight::SEMIBOLD)
-                                .child(s.label.clone()),
-                        )
-                        .child(
-                            div()
-                                .text_size(ui(14.))
-                                .line_height(relative(1.45))
-                                .text_color(rgb(c.muted))
-                                .child(s.detail.clone()),
-                        ),
-                )
-                .child(
-                    div()
-                        .pt(ui(4.))
-                        .child(switch(("step", i), s.on).on_click(cx.listener(
+        let steps =
+            self.steps.iter().enumerate().map(|(i, s)| {
+                let tint = if s.on {
+                    Tint {
+                        ground: c.tonal,
+                        ink: c.on_tonal,
+                    }
+                } else {
+                    Tint {
+                        ground: c.field,
+                        ink: c.muted,
+                    }
+                };
+                div()
+                    .flex()
+                    .items_start()
+                    .gap(ui(14.))
+                    .px(ui(16.))
+                    .py(ui(14.))
+                    .rounded(ui(20.))
+                    .bg(rgb(c.well))
+                    .child(
+                        tile(40., 14., tint)
+                            .text_size(ui(15.))
+                            .font_weight(FontWeight::BOLD)
+                            .child((i + 1).to_string()),
+                    )
+                    .child(
+                        div()
+                            .flex_1()
+                            .min_w_0()
+                            .flex()
+                            .flex_col()
+                            .gap(ui(3.))
+                            .child(
+                                div()
+                                    .text_size(ui(16.))
+                                    .font_weight(FontWeight::SEMIBOLD)
+                                    .child(s.label.clone()),
+                            )
+                            .child(
+                                div()
+                                    .text_size(ui(14.))
+                                    .line_height(relative(1.45))
+                                    .text_color(rgb(c.muted))
+                                    .child(s.detail.clone()),
+                            ),
+                    )
+                    .child(div().pt(ui(4.)).child(
+                        switch(("step", i), s.on, s.label.clone()).on_click(cx.listener(
                             move |this, _, _, cx| {
                                 this.steps[i].on = !this.steps[i].on;
                                 cx.notify();
                             },
-                        ))),
-                )
-        });
+                        )),
+                    ))
+            });
         let setup = panel()
             .flex_1()
             .min_w_0()

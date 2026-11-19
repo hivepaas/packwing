@@ -591,15 +591,15 @@ impl Viewer {
                         .child(said),
                 )
                 .child(
-                    icon_button("find-previous", "chevron-up", 36.)
+                    icon_button("find-previous", "chevron-up", 36., tr!("Previous match"))
                         .on_click(cx.listener(|this, _, _, cx| this.find_next(true, cx))),
                 )
                 .child(
-                    icon_button("find-next", "chevron-down", 36.)
+                    icon_button("find-next", "chevron-down", 36., tr!("Next match"))
                         .on_click(cx.listener(|this, _, _, cx| this.find_next(false, cx))),
                 )
                 .child(
-                    icon_button("find-close", "x", 36.)
+                    icon_button("find-close", "x", 36., tr!("Close"))
                         .on_click(cx.listener(|this, _, window, cx| this.close_find(window, cx))),
                 ),
         )
@@ -878,8 +878,8 @@ impl Viewer {
         let picture = matches!(self.shown, Shown::Picture(..));
         let not = matches!(self.shown, Shown::Not(_));
         let (first, last) = (self.neighbour(-1).is_none(), self.neighbour(1).is_none());
-        let step = |id: &'static str, name: &str, by: isize, off: bool| {
-            icon_button(id, name, 40.)
+        let step = |id: &'static str, name: &str, label: String, by: isize, off: bool| {
+            icon_button(id, name, 40., label)
                 .when(off, |d| d.opacity(0.4).cursor_default())
                 .when(!off, |d| {
                     d.on_click(cx.listener(move |this, _, _, cx| this.step(by, cx)))
@@ -936,7 +936,13 @@ impl Viewer {
                     .tooltip(tip(said))
                     .on_click(cx.listener(|this, _, _, cx| this.toggle_sidebar(cx)))
             })
-            .child(step("view-previous", "chevron-left", -1, first))
+            .child(step(
+                "view-previous",
+                "chevron-left",
+                tr!("Previous file"),
+                -1,
+                first,
+            ))
             .child(
                 div()
                     .debug_selector(|| "view-count".to_owned())
@@ -946,7 +952,13 @@ impl Viewer {
                     .font_weight(FontWeight::BOLD)
                     .child(format!("{} / {}", self.at + 1, self.files.len())),
             )
-            .child(step("view-next", "chevron-right", 1, last))
+            .child(step(
+                "view-next",
+                "chevron-right",
+                tr!("Next file"),
+                1,
+                last,
+            ))
             // One button for the picture's size: it says how it shows, and a
             // click goes round to the other.
             .when(picture, |d| {

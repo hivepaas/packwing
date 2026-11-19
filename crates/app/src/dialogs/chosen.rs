@@ -131,7 +131,7 @@ fn row<V: Choosing>(this: &V, at: usize, cx: &mut Context<V>) -> Option<impl Int
                     .child(folder),
             )
             .child(
-                icon_button(("remove-chosen", at), "x", 28.)
+                icon_button(("remove-chosen", at), "x", 28., tr!("Take it out"))
                     .tooltip(tip(tr!("Take it out")))
                     .on_click(cx.listener(move |this, _, _, cx| {
                         this.remove(&remove, cx);

@@ -10,6 +10,15 @@ tab0752f7 = packwing 需要你的允許才能寫入此檔案夾。請選擇「�
 # Allow
 t546d19d2 = 允許
 
+# Minimize
+tf0ffec5d = 最小化
+
+# Maximize
+t604e45af = 最大化
+
+# Close
+tcd86acc3 = 關閉
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = 外觀：{ $name }。按一下切換為{ $name2 }。
 
@@ -70,6 +79,9 @@ t1e17fc0c = 取代
 # Skip it
 tad9909cb = 略過
 
+# If a file of that name is there
+t34c69cec = 若已有同名檔案
+
 # Add
 t9dc3aa14 = 新增
 
@@ -96,9 +108,6 @@ t0d53ac5e = 加入 { $name }
 
 # Goes in
 t36e95c22 = 放入位置
-
-# If a file of that name is there
-t34c69cec = 若已有同名檔案
 
 # This archive is signed. With more in it, it will no longer match its signature, until it is signed again.
 t55ed1cfd = 此封存檔已簽署。加入更多內容後，將不再符合其簽章，直到重新簽署為止。
@@ -418,6 +427,12 @@ tfc6b3ea5 = 4 GB（USB 隨身碟）
 # Custom size…
 t0fcf9e2d = 自訂大小…
 
+# Format
+tffb0ff72 = 格式
+
+# Split into parts
+tca4436bd = 分割成多個部分
+
 # Size
 ta6478e7c = 大小
 
@@ -561,9 +576,6 @@ t32239aa8 = 小區塊讓每個核心都在工作：最多快兩倍，壓縮檔�
 
 # Large blocks make the smallest archive, on fewer cores where there is less to compress.
 t66a490d9 = 大區塊產生最小的壓縮檔，要壓縮的內容較少時，用到的核心較少。
-
-# Split into parts
-tca4436bd = 分割成多個部分
 
 # Each part
 t642c444d = 每個部分
@@ -1024,9 +1036,6 @@ tc1421590 =
        *[other] 已讀取 { $count } 個檔案，共 { $size }，沒有錯誤。
     }
 
-# Close
-tcd86acc3 = 關閉
-
 # “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
 t145d7a09 = 「{ $path }」已損毀：{ $why }。要停止、略過它，還是保留已讀出的部分？
 
@@ -1234,6 +1243,9 @@ ta642b6e3 = 伺服器詢問
 # Send
 tf28e14cf = 傳送
 
+# If a name is taken
+tc99c037f = 若名稱已被使用
+
 # Move {what}
 tc168ca56 = 移動{ $what }
 
@@ -1248,9 +1260,6 @@ t85f0245a = 複製到這裡
 
 # Move
 t7f2c2a34 = 移動
-
-# If a name is taken
-tc99c037f = 若名稱已被使用
 
 # They are in this folder already. Choose another.
 t5318c14e = 它們已在這個資料夾中。請選擇其他位置。
@@ -1300,6 +1309,12 @@ td8d39fb8 = 在文字編輯器中編輯
 # Edit in {editor}
 te44cd57b = 在 { $editor } 中編輯
 
+# Up a folder
+te9124369 = 上一層資料夾
+
+# Refresh
+t0815aad4 = 重新整理
+
 # Modified
 tdd13a6b2 = 修改日期
 
@@ -1314,9 +1329,6 @@ t41f9a787 = 搜尋整個資料夾
 
 # Load {n} more
 t30bed46a = 再載入 { $n } 項
-
-# Refresh
-t0815aad4 = 重新整理
 
 # Hide hidden files
 t3375c9c0 = 隱藏隱藏檔案
@@ -1449,6 +1461,9 @@ tdd45c7bb = 加入檔案
 
 # Test
 t2ffcbe05 = 測試
+
+# More
+t4f34d900 = 更多
 
 # Reading what’s inside…
 t1bbda9f5 = 正在讀取內容…
@@ -1987,11 +2002,14 @@ t0632975a = 前往 hivepaas.com
 # Always
 tad4bbd04 = 一律
 
-# Extensions, apart by spaces
-tc709375f = 副檔名，以空格分隔
-
 # Format of new archives
 t3b50d238 = 新封存檔的格式
+
+# Write straight to a storage above
+ta4975128 = 直接寫入上方的儲存位置
+
+# Extensions, apart by spaces
+tc709375f = 副檔名，以空格分隔
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = 新增封存檔時預設使用此格式；你也可以在該處選擇其他格式。
@@ -2001,9 +2019,6 @@ t2595cbcb = 僅儲存會原樣放入 ZIP 和 7z 封存檔中的檔案。tar 格�
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = 等級越高，封存檔越小，建立時間越長，但開啟時間不變。
-
-# Write straight to a storage above
-ta4975128 = 直接寫入上方的儲存位置
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = 較大的檔案不會佔用這台電腦的空間，但若連線中斷就得重新壓縮。S3 以此方式支援 tar 和 ZIP，SFTP 則支援所有格式。
@@ -2044,8 +2059,17 @@ t983e37f7 = 依名稱
 # By number
 tcbbada8d = 依編號
 
+# When a file is already there
+tca514dda = 若檔案已存在
+
 # No limit
 t6de7f47d = 不限制
+
+# Largest an archive may unpack to
+t5957c426 = 封存檔解開後的大小上限
+
+# Owners from a backup
+t38a7cf66 = 備份中的擁有者
 
 # Where the files go
 t77e60aba = 檔案放置位置
@@ -2068,14 +2092,8 @@ t4691c928 = 封存檔旁邊
 # Straight into its folder
 t99d1df43 = 直接放進它自己的資料夾
 
-# When a file is already there
-tca514dda = 若檔案已存在
-
 # A file of the same name in the folder the files go to
 t296ad686 = 放置檔案的資料夾中已有同名檔案時
-
-# Largest an archive may unpack to
-t5957c426 = 封存檔解開後的大小上限
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = 防範封存檔炸彈：很小的檔案解開後卻會塞滿磁碟
@@ -2085,9 +2103,6 @@ tf47f4968 = 僅接受所有系統都能使用的名稱
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = Windows 無法使用的名稱（如 a:b.txt）以及僅大小寫不同的名稱，在這台電腦上也會詢問
-
-# Owners from a backup
-t38a7cf66 = 備份中的擁有者
 
 # Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
 t46908bee = tar 封存檔有保留時：你的，或依名稱或編號採用封存檔中的。只有管理員能把檔案交給他人
@@ -2116,11 +2131,23 @@ t1d68c60b = 系統預設
 # Custom…
 ta391dade = 自訂…
 
+# Language
+t9a73db9b = 語言
+
 # The system’s ({size} px)
 ta51f1877 = 跟隨系統（{ $size } px）
 
+# Text size
+t2c041143 = 文字大小
+
 # All ({count})
 tf65ec196 = 全部 ({ $count })
+
+# Processor cores to use
+t2f9c3d17 = 使用的處理器核心數
+
+# Text editor
+t1ca82aab = 文字編輯器
 
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = 例如 code -n，或 /path/to/editor --flag
@@ -2134,20 +2161,8 @@ t9fa95458 = 淺色與深色各有多種樣式：背景會改變，文字與強�
 # {name} (default)
 td3f56fa8 = { $name }(預設)
 
-# Language
-t9a73db9b = 語言
-
-# Text size
-t2c041143 = 文字大小
-
-# Processor cores to use
-t2f9c3d17 = 使用的處理器核心數
-
 # More is faster; fewer leaves room for other work.
 t9d71a0bc = 越多越快；越少則為其他工作留出餘裕。
-
-# Text editor
-t1ca82aab = 文字編輯器
 
 # What Edit opens a file of a storage in
 t62506ced = 用來開啟儲存位置中檔案以進行編輯的程式
@@ -2455,14 +2470,14 @@ t76d5d951 = 不解壓縮直接開啟檔案前先詢問
 # Opening a file inside an archive puts a copy in a temporary folder. A program always asks.
 t9173caaa = 開啟封存檔中的檔案時，會在暫存資料夾中放一份副本。程式一律會先詢問。
 
+# Keep its records for
+tf423722f = 記錄保留
+
 # Paste a public key
 t0bf72f73 = 貼上公鑰
 
 # What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
 t2162955d = packwing 所做的事，保存在這台電腦上：解壓縮、建立、轉換與複製了哪些封存檔，何時、由誰。絕不記錄密碼或檔案內容。
-
-# Keep its records for
-tf423722f = 記錄保留
 
 # Older ones are taken away, and that is recorded too
 t7073f273 = 較舊的記錄會被刪除，刪除本身也會記下
@@ -2686,11 +2701,23 @@ t5b9dcaca = 無效的模式
 # No matches
 td29421ef = 沒有符合的結果
 
+# Previous match
+tca660309 = 上一個相符項目
+
+# Next match
+t2e113a49 = 下一個相符項目
+
 # Hide the list of files ({keys})
 t165a997f = 隱藏檔案清單 ({ $keys })
 
 # Show the list of files ({keys})
 tde6e8c38 = 顯示檔案清單 ({ $keys })
+
+# Previous file
+t254b864e = 上一個檔案
+
+# Next file
+te3a48d8e = 下一個檔案
 
 # Fit the window (0)
 tbe39720a = 符合視窗 (0)
@@ -3205,9 +3232,6 @@ t78956399 = 以列表顯示
 # Show a grid
 tb50700d9 = 以格狀顯示
 
-# More
-t4f34d900 = 更多
-
 # Select
 t3e892b4d = 選取
 
@@ -3249,9 +3273,6 @@ tcde554d0 = 照片
 
 # Add more
 t5d2a8a05 = 繼續加入
-
-# Format
-tffb0ff72 = 格式
 
 # Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
 t96cb3408 = 到處都能開啟。設定密碼後使用 AES-256：Windows 內建的檔案總管打不開，7-Zip 和 packwing 可以。

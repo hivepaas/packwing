@@ -115,8 +115,8 @@ impl SshQuestionDialog {
 impl Render for SshQuestionDialog {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
-        let close =
-            icon_button("close", "x", 40.).on_click(cx.listener(|this, _, _, cx| this.no(cx)));
+        let close = icon_button("close", "x", 40., tr!("Close"))
+            .on_click(cx.listener(|this, _, _, cx| this.no(cx)));
         let field = self.field.clone().map(|input| {
             div()
                 .flex()

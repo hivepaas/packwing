@@ -172,7 +172,7 @@ impl About {
                                     "It reads the list of releases from GitHub, and believes it only when its signatures verify. Nothing is downloaded or installed without you."
                                 ))),
                         )
-                        .child(switch("update-auto", on).on_click(move |_, _, cx| {
+                        .child(switch("update-auto", on, tr!("Look for updates once a day")).on_click(move |_, _, cx| {
                             toggle.update(cx, |u, cx| u.set_checks(!on, cx));
                         })),
                 )

@@ -376,8 +376,13 @@ impl CreateDialog {
                 SelectLook::Pill,
             )
             .marked("format")
+            .named(tr!("Format"))
         });
-        let split = cx.new(|_| Select::new(&splits(), 0, SelectLook::Pill).marked("split"));
+        let split = cx.new(|_| {
+            Select::new(&splits(), 0, SelectLook::Pill)
+                .marked("split")
+                .named(tr!("Split into parts"))
+        });
         let part = cx.new(|cx| TextInput::new(tr!("Size"), cx));
         let unit =
             cx.new(|_| Select::new(&UNITS.map(|(u, _)| u), 0, SelectLook::Pill).marked("unit"));
@@ -1396,7 +1401,7 @@ impl CreateDialog {
             this.picking = None;
             cx.notify();
         };
-        let close = icon_button("close", "x", 40.)
+        let close = icon_button("close", "x", 40., tr!("Close"))
             .on_click(cx.listener(move |this, _, _, cx| back(this, cx)));
         let picker = picking.picker.clone();
         super::card()
@@ -1799,7 +1804,15 @@ impl CreateDialog {
                     .child(if required {
                         icon("lock", 18., c.muted).into_any_element()
                     } else {
-                        switch("protect", on)
+                        switch(
+                            "protect",
+                            on,
+                            if age {
+                                tr!("Encrypt with age")
+                            } else {
+                                tr!("Protect with a password")
+                            },
+                        )
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.protect = !this.protect;
                                 cx.notify();
@@ -2070,7 +2083,7 @@ impl Render for CreateDialog {
                 size(s.bytes)
             )
         };
-        let close = icon_button("close", "x", 40.)
+        let close = icon_button("close", "x", 40., tr!("Close"))
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         super::card()
             .id("create-dialog")

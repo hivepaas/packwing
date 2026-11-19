@@ -416,7 +416,7 @@ impl SignDialog {
 impl Render for SignDialog {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
-        let close = icon_button("close", "x", 40.)
+        let close = icon_button("close", "x", 40., tr!("Close"))
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         let refused = self.refused(cx);
         let far = self.storage.local_path(&[]).is_none();

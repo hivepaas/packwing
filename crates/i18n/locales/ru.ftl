@@ -10,6 +10,15 @@ tab0752f7 = packwing нужно ваше разрешение, чтобы зап
 # Allow
 t546d19d2 = Разрешить
 
+# Minimize
+tf0ffec5d = Свернуть
+
+# Maximize
+t604e45af = Развернуть
+
+# Close
+tcd86acc3 = Закрыть
+
 # Appearance: {name}. Click for {name2}.
 t17634ee0 = Оформление: { $name }. Нажмите, чтобы выбрать: { $name2 }.
 
@@ -70,6 +79,9 @@ t1e17fc0c = Заменить
 # Skip it
 tad9909cb = Пропустить
 
+# If a file of that name is there
+t34c69cec = Если файл с таким именем уже есть
+
 # Add
 t9dc3aa14 = Добавить
 
@@ -102,9 +114,6 @@ t0d53ac5e = Добавить в { $name }
 
 # Goes in
 t36e95c22 = Попадёт в
-
-# If a file of that name is there
-t34c69cec = Если файл с таким именем уже есть
 
 # This archive is signed. With more in it, it will no longer match its signature, until it is signed again.
 t55ed1cfd = Этот архив подписан. После добавления файлов он перестанет совпадать с подписью, пока его не подпишут снова.
@@ -442,6 +451,12 @@ tfc6b3ea5 = 4 GB (флешка)
 # Custom size…
 t0fcf9e2d = Свой размер…
 
+# Format
+tffb0ff72 = Формат
+
+# Split into parts
+tca4436bd = Разделить на тома
+
 # Size
 ta6478e7c = Размер
 
@@ -585,9 +600,6 @@ t32239aa8 = Мелкие блоки загружают все ядра: до д�
 
 # Large blocks make the smallest archive, on fewer cores where there is less to compress.
 t66a490d9 = Крупные блоки дают самый маленький архив, на меньшем числе ядер, когда сжимать немного.
-
-# Split into parts
-tca4436bd = Разделить на тома
 
 # Each part
 t642c444d = Каждый том
@@ -1069,9 +1081,6 @@ tc1421590 =
        *[other] Прочитано { $count } файла, { $size }, без ошибок.
     }
 
-# Close
-tcd86acc3 = Закрыть
-
 # “{path}” is damaged: {why}. Stop, leave it out, or keep what could be read of it?
 t145d7a09 = «{ $path }» повреждён: { $why }. Остановить, пропустить его или сохранить то, что удалось прочитать?
 
@@ -1300,6 +1309,9 @@ ta642b6e3 = Сервер спрашивает
 # Send
 tf28e14cf = Отправить
 
+# If a name is taken
+tc99c037f = Если имя занято
+
 # Move {what}
 tc168ca56 = Переместить { $what }
 
@@ -1314,9 +1326,6 @@ t85f0245a = Копировать сюда
 
 # Move
 t7f2c2a34 = Переместить
-
-# If a name is taken
-tc99c037f = Если имя занято
 
 # They are in this folder already. Choose another.
 t5318c14e = Они уже в этой папке. Выберите другую.
@@ -1366,6 +1375,12 @@ td8d39fb8 = Изменить в текстовом редакторе
 # Edit in {editor}
 te44cd57b = Изменить в { $editor }
 
+# Up a folder
+te9124369 = На папку выше
+
+# Refresh
+t0815aad4 = Обновить
+
 # Modified
 tdd13a6b2 = Изменён
 
@@ -1380,9 +1395,6 @@ t41f9a787 = Искать во всей папке
 
 # Load {n} more
 t30bed46a = Загрузить ещё { $n }
-
-# Refresh
-t0815aad4 = Обновить
 
 # Hide hidden files
 t3375c9c0 = Скрыть скрытые файлы
@@ -1518,6 +1530,9 @@ tdd45c7bb = Добавить файлы
 
 # Test
 t2ffcbe05 = Проверить
+
+# More
+t4f34d900 = Ещё
 
 # Reading what’s inside…
 t1bbda9f5 = Чтение содержимого…
@@ -2077,11 +2092,14 @@ t0632975a = Перейти на hivepaas.com
 # Always
 tad4bbd04 = Всегда
 
-# Extensions, apart by spaces
-tc709375f = Расширения через пробел
-
 # Format of new archives
 t3b50d238 = Формат новых архивов
+
+# Write straight to a storage above
+ta4975128 = Записывать прямо в хранилище
+
+# Extensions, apart by spaces
+tc709375f = Расширения через пробел
 
 # New archive starts with it; you can pick another there.
 t7b361b55 = Новый архив начинается с него; там можно выбрать другой.
@@ -2091,9 +2109,6 @@ t2595cbcb = «Без сжатия» кладёт файлы архивов ZIP �
 
 # Higher makes smaller archives, which take longer to make, not to open.
 t9184e778 = Чем выше уровень, тем меньше архивы и дольше их создание, но не открытие.
-
-# Write straight to a storage above
-ta4975128 = Записывать прямо в хранилище
 
 # Larger files take no room on this computer, but a lost connection means compressing again. S3 takes tar and ZIP this way, SFTP every format too.
 t2b8f2459 = Большие файлы не занимают место на этом компьютере, но при обрыве связи сжимать придётся заново. S3 принимает так tar и ZIP, SFTP — и остальные форматы.
@@ -2134,8 +2149,17 @@ t983e37f7 = По имени
 # By number
 tcbbada8d = По номеру
 
+# When a file is already there
+tca514dda = Если файл уже существует
+
 # No limit
 t6de7f47d = Без ограничения
+
+# Largest an archive may unpack to
+t5957c426 = Наибольший размер распакованного архива
+
+# Owners from a backup
+t38a7cf66 = Владельцы из резервной копии
 
 # Where the files go
 t77e60aba = Куда помещать файлы
@@ -2158,14 +2182,8 @@ t4691c928 = Рядом с архивом
 # Straight into its folder
 t99d1df43 = Прямо в его папку
 
-# When a file is already there
-tca514dda = Если файл уже существует
-
 # A file of the same name in the folder the files go to
 t296ad686 = Файл с таким же именем в папке, куда попадают файлы
-
-# Largest an archive may unpack to
-t5957c426 = Наибольший размер распакованного архива
 
 # Stops archive bombs: small files that unpack to fill the disk
 t87a41242 = Защищает от архивных бомб: небольших файлов, которые распаковываются до размера диска
@@ -2175,9 +2193,6 @@ tf47f4968 = Только имена, которые подходят любой 
 
 # Names Windows can’t use, such as a:b.txt, and names differing only in case are asked about on this computer too
 t44f108af = Имена, недопустимые в Windows, например a:b.txt, и имена, отличающиеся только регистром, будут запрошены и на этом компьютере
-
-# Owners from a backup
-t38a7cf66 = Владельцы из резервной копии
 
 # Where a tar archive kept them: yours, or the archive’s by name or by number. Only an administrator gives files to others
 t46908bee = Если tar-архив их сохранил: ваши или из архива — по имени или по номеру. Отдать файлы другим может только администратор
@@ -2206,11 +2221,23 @@ t1d68c60b = Системный
 # Custom…
 ta391dade = Другой…
 
+# Language
+t9a73db9b = Язык
+
 # The system’s ({size} px)
 ta51f1877 = Как в системе ({ $size } px)
 
+# Text size
+t2c041143 = Размер текста
+
 # All ({count})
 tf65ec196 = Все ({ $count })
+
+# Processor cores to use
+t2f9c3d17 = Сколько ядер процессора использовать
+
+# Text editor
+t1ca82aab = Текстовый редактор
 
 # e.g. code -n, or /path/to/editor --flag
 t455dc834 = например, code -n или /path/to/editor --flag
@@ -2224,20 +2251,8 @@ t9fa95458 = У светлого и тёмного оформления есть 
 # {name} (default)
 td3f56fa8 = { $name } (по умолчанию)
 
-# Language
-t9a73db9b = Язык
-
-# Text size
-t2c041143 = Размер текста
-
-# Processor cores to use
-t2f9c3d17 = Сколько ядер процессора использовать
-
 # More is faster; fewer leaves room for other work.
 t9d71a0bc = Больше — быстрее; меньше — останется место для другой работы.
-
-# Text editor
-t1ca82aab = Текстовый редактор
 
 # What Edit opens a file of a storage in
 t62506ced = В чём «Изменить» открывает файл хранилища
@@ -2545,14 +2560,14 @@ t76d5d951 = Спрашивать перед открытием файлов бе
 # Opening a file inside an archive puts a copy in a temporary folder. A program always asks.
 t9173caaa = При открытии файла из архива копия помещается во временную папку. О программе спрашивается всегда.
 
+# Keep its records for
+tf423722f = Хранить записи
+
 # Paste a public key
 t0bf72f73 = Вставьте открытый ключ
 
 # What packwing does, kept on this computer: archives extracted, made, converted and copied, when and by whom. Never a password or what is in a file.
 t2162955d = Действия packwing, записанные на этом компьютере: какие архивы распакованы, созданы, преобразованы и скопированы, когда и кем. Никогда — пароли или содержимое файлов.
-
-# Keep its records for
-tf423722f = Хранить записи
 
 # Older ones are taken away, and that is recorded too
 t7073f273 = Более старые удаляются, и это тоже записывается
@@ -2785,11 +2800,23 @@ t5b9dcaca = Неверный шаблон
 # No matches
 td29421ef = Совпадений нет
 
+# Previous match
+tca660309 = Предыдущее совпадение
+
+# Next match
+t2e113a49 = Следующее совпадение
+
 # Hide the list of files ({keys})
 t165a997f = Скрыть список файлов ({ $keys })
 
 # Show the list of files ({keys})
 tde6e8c38 = Показать список файлов ({ $keys })
+
+# Previous file
+t254b864e = Предыдущий файл
+
+# Next file
+te3a48d8e = Следующий файл
 
 # Fit the window (0)
 tbe39720a = Вписать в окно (0)
@@ -3319,9 +3346,6 @@ t78956399 = Показать списком
 # Show a grid
 tb50700d9 = Показать сеткой
 
-# More
-t4f34d900 = Ещё
-
 # Select
 t3e892b4d = Выбрать
 
@@ -3366,9 +3390,6 @@ tcde554d0 = Фото
 
 # Add more
 t5d2a8a05 = Добавить ещё
-
-# Format
-tffb0ff72 = Формат
 
 # Opens everywhere. With a password, AES-256: Windows’ own Explorer can’t open it, 7-Zip and packwing can.
 t96cb3408 = Открывается везде. С паролем — AES-256: Проводник Windows его не откроет, а 7-Zip и packwing откроют.

@@ -1,11 +1,16 @@
 //! The pieces the screens are built from, drawn as the Soft tonal design draws
 //! them: pill buttons, chips, switches, radio and check marks, option cards,
 //! notes, a segmented choice, and a select with its menu.
+//!
+//! Each control says what it is and what it is called to assistive technology
+//! (a screen reader, voice control): its role, its name, and whether it is on
+//! or chosen, through GPUI's AccessKit tree. A control drawn with an icon alone
+//! is given its name by the caller.
 
 use gpui::{
     AnyView, App, AppContext as _, BoxShadow, Context, Div, ElementId, EventEmitter, FontWeight,
-    IntoElement, MouseButton, Render, SharedString, Stateful, Svg, Window, anchored, deferred, div,
-    point, prelude::*, px, relative, rgb, rgba, svg,
+    IntoElement, MouseButton, Render, Role, SharedString, Stateful, Svg, Toggled, Window, anchored,
+    deferred, div, point, prelude::*, px, relative, rgb, rgba, svg,
 };
 
 use crate::colors::{Tint, colors};
@@ -283,6 +288,7 @@ fn labelled(
         Size::Large => (48., 16., 22.),
         Size::Medium => (40., 15., 18.),
     };
+    let label = label.into();
     let (ground, ink, hover) = match fill {
         Fill::Accent => (Some(c.accent), c.on_accent, c.accent_hover),
         Fill::Tonal => (Some(c.tonal), c.on_tonal, c.tonal_hover),
@@ -293,6 +299,8 @@ fn labelled(
     div()
         .debug_selector(|| selector)
         .id(id)
+        .role(Role::Button)
+        .aria_label(label.clone())
         .flex()
         .flex_shrink_0()
         .items_center()
@@ -312,17 +320,25 @@ fn labelled(
         .cursor_pointer()
         .hover(move |s| s.bg(rgb(hover)))
         .when_some(glyph, |d, glyph| d.child(icon(glyph, 16., ink)))
-        .child(label.into())
+        .child(label)
 }
 
-/// A round button with an icon alone, such as a dialog's close button.
-pub fn icon_button(id: impl Into<ElementId>, name: &str, size: f32) -> Stateful<Div> {
+/// A round button with an icon alone, such as a dialog's close button: `label`
+/// is what it is called, as nothing on it says.
+pub fn icon_button(
+    id: impl Into<ElementId>,
+    name: &str,
+    size: f32,
+    label: impl Into<SharedString>,
+) -> Stateful<Div> {
     let c = colors();
     let id = id.into();
     let selector = id.to_string();
     div()
         .debug_selector(|| selector)
         .id(id)
+        .role(Role::Button)
+        .aria_label(label)
         .size(ui(size))
         .flex_shrink_0()
         .rounded_full()
@@ -353,14 +369,22 @@ pub fn chip(text: impl Into<SharedString>, ground: u32, ink: u32) -> Div {
         .child(text.into())
 }
 
-/// An on/off switch.
-pub fn switch(id: impl Into<ElementId>, on: bool) -> Stateful<Div> {
+/// Whether it is on, as assistive technology is told.
+fn toggled(on: bool) -> Toggled {
+    if on { Toggled::True } else { Toggled::False }
+}
+
+/// An on/off switch: `label` is the setting it turns on, as its row says it.
+pub fn switch(id: impl Into<ElementId>, on: bool, label: impl Into<SharedString>) -> Stateful<Div> {
     let c = colors();
     let id = id.into();
     let selector = id.to_string();
     div()
         .debug_selector(|| selector)
         .id(id)
+        .role(Role::Switch)
+        .aria_label(label)
+        .aria_toggled(toggled(on))
         .flex_shrink_0()
         .w(ui(52.))
         .h(ui(32.))
@@ -419,27 +443,38 @@ pub fn check_row(
 ) -> Stateful<Div> {
     let id = id.into();
     let selector = id.to_string();
+    let label = label.into();
     div()
         .debug_selector(|| selector)
         .id(id)
+        .role(Role::CheckBox)
+        .aria_label(label.clone())
+        .aria_toggled(toggled(on))
         .flex()
         .items_center()
         .gap(ui(10.))
         .text_size(ui(14.))
         .cursor_pointer()
         .child(checkbox(on))
-        .child(label.into())
+        .child(label)
 }
 
 /// A choice drawn as a card with a radio mark: the soft fill when chosen.
-/// The caller adds what it says.
-pub fn option_card(id: impl Into<ElementId>, on: bool) -> Stateful<Div> {
+/// The caller adds what it says; `label` is its title, what it is called.
+pub fn option_card(
+    id: impl Into<ElementId>,
+    on: bool,
+    label: impl Into<SharedString>,
+) -> Stateful<Div> {
     let c = colors();
     let id = id.into();
     let selector = id.to_string();
     div()
         .debug_selector(|| selector)
         .id(id)
+        .role(Role::RadioButton)
+        .aria_label(label)
+        .aria_toggled(toggled(on))
         .flex()
         .min_w_0()
         .items_center()
@@ -489,9 +524,13 @@ pub fn segment(
     let c = colors();
     let id = id.into();
     let selector = id.to_string();
+    let label = label.into();
     div()
         .debug_selector(|| selector)
         .id(id)
+        .role(Role::RadioButton)
+        .aria_label(label.clone())
+        .aria_toggled(toggled(on))
         .flex_1()
         .min_w_0()
         .h(ui(32.))
@@ -509,7 +548,7 @@ pub fn segment(
         .cursor_pointer()
         .when(on, |d| d.bg(rgb(c.surface)))
         .when(!on, |d| d.hover(|s| s.bg(rgb(c.well_hover))))
-        .child(div().min_w_0().truncate().child(label.into()))
+        .child(div().min_w_0().truncate().child(label))
 }
 
 /// The track a row of [`segment`]s sits in.
@@ -569,6 +608,7 @@ pub fn menu_panel(id: impl Into<ElementId>) -> Stateful<Div> {
     div()
         .debug_selector(|| selector)
         .id(id)
+        .role(Role::Menu)
         .occlude()
         .p(ui(6.))
         .flex()
@@ -585,9 +625,15 @@ pub fn menu_panel(id: impl Into<ElementId>) -> Stateful<Div> {
 /// An item of a [`menu_panel`]: what it does, and its keys at the right, if any.
 pub fn menu_item(id: &'static str, label: impl Into<SharedString>, keys: &str) -> Stateful<Div> {
     let c = colors();
+    let label = label.into();
     div()
         .debug_selector(move || id.to_owned())
         .id(id)
+        .role(Role::MenuItem)
+        .aria_label(label.clone())
+        .when(!keys.is_empty(), |d| {
+            d.aria_keyshortcuts(SharedString::from(keys.to_owned()))
+        })
         .h(ui(40.))
         .px(ui(12.))
         .flex()
@@ -598,7 +644,7 @@ pub fn menu_item(id: &'static str, label: impl Into<SharedString>, keys: &str) -
         .cursor_pointer()
         .whitespace_nowrap()
         .hover(|s| s.bg(rgb(c.hover)))
-        .child(label.into())
+        .child(label)
         .child(
             div()
                 .text_size(ui(12.))
@@ -636,6 +682,8 @@ pub struct Select {
     look: SelectLook,
     /// What a test clicks to open it: `select: {mark}`.
     mark: Option<&'static str>,
+    /// What it chooses, as assistive technology is told: the setting's name.
+    name: Option<SharedString>,
 }
 
 /// Another option of a [`Select`] was chosen: [`Select::chosen`] says which.
@@ -654,7 +702,15 @@ impl Select {
             open: false,
             look,
             mark: None,
+            name: None,
         }
+    }
+
+    /// Is called `name` by assistive technology: what it chooses, as the
+    /// label beside it says.
+    pub fn named(mut self, name: impl Into<SharedString>) -> Self {
+        self.name = Some(name.into());
+        self
     }
 
     /// Is clicked by tests as `select: {mark}`, and its options as `option: {name}`.
@@ -709,6 +765,9 @@ impl Select {
             div()
                 .debug_selector(move || format!("option: {name}"))
                 .id(("option", i))
+                .role(Role::ListBoxOption)
+                .aria_label(o.clone())
+                .aria_selected(on)
                 .flex_shrink_0()
                 .h(ui(40.))
                 .px(ui(12.))
@@ -732,6 +791,8 @@ impl Select {
         let menu = div()
             .debug_selector(|| "menu".to_owned())
             .id("menu")
+            .role(Role::ListBox)
+            .when_some(self.name.clone(), |d, name| d.aria_label(name))
             // A press on it is not one elsewhere: the catcher below would close
             // the menu before the press's release chooses the option.
             .occlude()
@@ -788,6 +849,10 @@ impl Render for Select {
                 d.debug_selector(move || format!("select: {mark}"))
             })
             .id("select")
+            .role(Role::ComboBox)
+            .aria_label(self.name.clone().unwrap_or_else(|| label.clone()))
+            .aria_value(label.clone())
+            .aria_expanded(self.open)
             .flex()
             .items_center()
             .gap(ui(6.))
@@ -853,4 +918,69 @@ impl Render for Tip {
 pub fn tip(text: impl Into<SharedString>) -> impl Fn(&mut Window, &mut App) -> AnyView + 'static {
     let text = text.into();
     move |_, cx| cx.new(|_| Tip(text.clone())).into()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use gpui::{Element, accesskit::Node};
+
+    /// What assistive technology is told of `element`: its role and its node.
+    fn told(element: &impl Element) -> (Option<Role>, Node) {
+        let mut node = Node::new(Role::Unknown);
+        element.write_a11y_info(&mut node);
+        (element.a11y_role(), node)
+    }
+
+    #[test]
+    fn a_button_is_called_what_it_says() {
+        let (role, node) = told(&button("ok", "Extract", Fill::Accent, Size::Medium));
+        assert_eq!(role, Some(Role::Button));
+        assert_eq!(node.label(), Some("Extract"));
+        let (role, node) = told(&icon_text_button(
+            "add",
+            "plus",
+            "Add files",
+            Fill::Tonal,
+            Size::Large,
+        ));
+        assert_eq!(role, Some(Role::Button));
+        assert_eq!(node.label(), Some("Add files"));
+    }
+
+    #[test]
+    fn a_button_of_an_icon_alone_is_called_what_the_caller_says() {
+        let (role, node) = told(&icon_button("close", "x", 40., "Close"));
+        assert_eq!(role, Some(Role::Button));
+        assert_eq!(node.label(), Some("Close"));
+    }
+
+    #[test]
+    fn what_turns_on_says_whether_it_is() {
+        for on in [false, true] {
+            let state = if on { Toggled::True } else { Toggled::False };
+            for (element, role) in [
+                (switch("s", on, "Keep the mark"), Role::Switch),
+                (check_row("c", on, "Keep the mark"), Role::CheckBox),
+                (option_card("o", on, "Keep the mark"), Role::RadioButton),
+                (segment("g", "Keep the mark", on), Role::RadioButton),
+            ] {
+                let (got, node) = told(&element);
+                assert_eq!(got, Some(role));
+                assert_eq!(node.label(), Some("Keep the mark"));
+                assert_eq!(node.toggled(), Some(state), "{role:?}");
+            }
+        }
+    }
+
+    #[test]
+    fn a_menu_item_says_its_keys() {
+        let (role, node) = told(&menu_item("copy", "Copy", "Ctrl+C"));
+        assert_eq!(role, Some(Role::MenuItem));
+        assert_eq!(node.label(), Some("Copy"));
+        assert_eq!(node.keyboard_shortcut(), Some("Ctrl+C"));
+        let (_, node) = told(&menu_item("open", "Open", ""));
+        assert_eq!(node.keyboard_shortcut(), None);
+        assert_eq!(told(&menu_panel("menu")).0, Some(Role::Menu));
+    }
 }

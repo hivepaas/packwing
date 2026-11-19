@@ -1190,7 +1190,7 @@ impl ArchivePage {
                         || ArchiveEvent::Test,
                     ))
                     .child(
-                        icon_button("archive-more", "more", 48.)
+                        icon_button("archive-more", "more", 48., tr!("More"))
                             .bg(rgb(c.surface))
                             .when(reading.is_some(), |d| d.opacity(0.5).cursor_default())
                             .when(reading.is_none(), |d| {

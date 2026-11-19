@@ -231,7 +231,7 @@ impl Render for RightClick {
             .child(setting(
                 tr!("Show packwing in the right-click menu"),
                 tr!("Extract and compress from any folder"),
-                switch("shown", shown).on_click(cx.listener(move |this, _, _, cx| {
+                switch("shown", shown, tr!("Show packwing in the right-click menu")).on_click(cx.listener(move |this, _, _, cx| {
                     this.menu.update(cx, |m, cx| m.show(!shown, cx));
                 })),
             ))
@@ -251,7 +251,7 @@ impl Render for RightClick {
                 setting(
                     tr!("Put them in a submenu"),
                     tr!("One packwing item, with these under it"),
-                    switch("submenu", choice.submenu).on_click(cx.listener(|this, _, _, cx| {
+                    switch("submenu", choice.submenu, tr!("Put them in a submenu")).on_click(cx.listener(|this, _, _, cx| {
                         this.menu.update(cx, |m, cx| {
                             let mut c = m.choice().clone();
                             c.submenu = !c.submenu;

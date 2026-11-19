@@ -55,7 +55,7 @@ impl Render for DeleteDialog {
             tr!("This cannot be undone from packwing.")
         };
         let left = self.names.len().saturating_sub(MOST_LISTED) as u64;
-        let close = icon_button("close", "x", 40.)
+        let close = icon_button("close", "x", 40., tr!("Close"))
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         super::card()
             .w(ui(520.))

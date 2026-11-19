@@ -45,7 +45,11 @@ impl EventEmitter<DialogEvent> for SplitDialog {}
 impl SplitDialog {
     /// For the file at `path`, of `bytes`, in the folder the user knows as `shown`.
     pub fn new(path: PathBuf, bytes: u64, shown: String, cx: &mut Context<Self>) -> Self {
-        let sizes = cx.new(|_| Select::new(&sizes(), 0, SelectLook::Pill).marked("part-size"));
+        let sizes = cx.new(|_| {
+            Select::new(&sizes(), 0, SelectLook::Pill)
+                .marked("part-size")
+                .named(tr!("Each part"))
+        });
         let part = cx.new(|cx| TextInput::new(tr!("Size"), cx));
         let unit =
             cx.new(|_| Select::new(&UNITS.map(|(u, _)| u), 0, SelectLook::Pill).marked("unit"));
@@ -112,7 +116,7 @@ impl Render for SplitDialog {
         let typed = !self.part.read(cx).text().trim().is_empty();
         let chosen = self.part(cx);
         let bad = custom && chosen.is_none() && (typed || self.checked);
-        let close = icon_button("close", "x", 40.)
+        let close = icon_button("close", "x", 40., tr!("Close"))
             .on_click(cx.listener(|_, _, _, cx| cx.emit(DialogEvent::Close)));
         super::card()
             .w(ui(560.))

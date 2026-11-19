@@ -349,7 +349,7 @@ impl JobsPage {
         let actions = actions.when(!running, |d| {
             let view = view.clone();
             d.child(
-                icon_button(("job-clear", i), "x", 40.)
+                icon_button(("job-clear", i), "x", 40., tr!("Remove"))
                     .on_click(cx.listener(move |this, _, _, cx| this.remove(&view, cx))),
             )
         });
