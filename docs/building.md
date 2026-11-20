@@ -28,6 +28,12 @@ scripts/a11y_tree.py                    # the window's tree, as it is now
 scripts/a11y_tree.py --click Settings   # press a control by its name, then the tree
 ```
 
+On Windows packwing draws its own title bar, and its three caption buttons exist to Windows only as the answer to a hit test: a drag area over them makes Windows take the press itself, so they go dead while the bar still drags. Nothing fails loudly, and no test on Linux or macOS can see it, because that code is behind `cfg!(target_os = "windows")` — it has been met in all three of these apps. `scripts/check_windows_titlebar.ps1` reads what the window answers along the bar, expects a 46 px band for each button, and clicks minimise for real. It moves the pointer, so it needs the interactive desktop session: over ssh (a network logon) it says so and exits 2 rather than passing.
+
+```powershell
+powershell -NoProfile -File scripts/check_windows_titlebar.ps1 target/release/packwing.exe
+```
+
 To try storages with no account anywhere, Docker runs throwaway servers, reached from this computer only. Stopping one throws away what it holds.
 
 ```sh
