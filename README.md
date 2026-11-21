@@ -30,7 +30,7 @@
 
 - ⚡ **Every core at work.** Compresses and extracts on all of your computer's cores at once: one 3 GB file zipped in 3.2 seconds, where a single core takes 65.
 - 🛡️ **Safe by default.** Nothing is written outside the folder you chose, archive bombs are stopped, and no file is replaced without asking.
-- 📂 **Opens what you come across.** ZIP, RAR, 7z, tar, ISO and UDF images, Debian and RPM packages, snaps, AppImages, macOS packages, self-extracting `.exe` archives, `.age` files, and disk images (a card's `.img`, `.vhd`, `.vhdx`, `.qcow2`, `.vmdk`) down to the files in their partitions.
+- 📂 **Opens what you come across.** ZIP, RAR, 7z, tar, ISO and UDF images, Debian and RPM packages, snaps, AppImages, macOS packages, self-extracting `.exe` archives, `.age` files, and disk images (a card's `.img`, an Android ROM's sparse `super.img`, a `.vhd`, `.vhdx`, `.qcow2`, `.vmdk` or VirtualBox `.vdi`) down to the files in their FAT, exFAT, ext or NTFS partitions.
 - ✏️ **Makes and edits archives.** ZIP, 7z and `.tar.gz`, `.tar.xz`, `.tar.zst`, `.tar.bz2`, with AES-256. Add, delete and rename inside ZIP and 7z archives.
 - 👀 **Look before you extract.** Search inside an archive, preview its files, and step through its pictures and texts in a full-window viewer.
 - ☁️ **Your storages, too.** Browse S3, WebDAV and SFTP like folders, and open an archive there without downloading it.

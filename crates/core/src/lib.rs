@@ -668,7 +668,7 @@ const _: () = assert!(hivepack::zstd::UNSAFE_FAST);
 /// `name` without its archive extensions and a part number: what it unpacks
 /// to (`Báo cáo.part1.rar` → `Báo cáo`, `backup.tar.zst.age` → `backup`).
 pub fn stem(name: &str) -> &str {
-    const EXTENSIONS: [&str; 47] = [
+    const EXTENSIONS: [&str; 48] = [
         ".age",
         ".zst",
         ".gz",
@@ -697,6 +697,7 @@ pub fn stem(name: &str) -> &str {
         ".vhdx",
         ".qcow2",
         ".vmdk",
+        ".vdi",
         ".cpio",
         ".rpm",
         ".xar",

@@ -5,8 +5,10 @@
 //! Linux one holding ext2 (`mke2fs -d` wrote it), and a swap partition,
 //! which holds no file system at all. Zstandard takes the 10 MiB disk to
 //! 1.5 KB, since the rest of it is zeros, so the tests that matter need no
-//! tool and run everywhere. The ones that take a tool (NTFS, and the
-//! containers QEMU writes) say so and are skipped.
+//! tool and run everywhere. An Android sparse image of the same card is
+//! built here, chunk by chunk, for the same reason: no package carries
+//! `img2simg`. The ones that take a tool (NTFS, exFAT, and the containers
+//! QEMU writes) say so and are skipped.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
@@ -284,8 +286,9 @@ fn a_file_system_on_its_own_lists_at_the_root() {
     );
 }
 
-/// The same disk in the containers QEMU writes: a QCOW2 and a VHDX hold the
-/// same partitions and the same files, read through the container.
+/// The same disk in the containers QEMU writes: a QCOW2, a VHDX, a VHD and
+/// a VDI hold the same partitions and the same files, read through the
+/// container.
 #[test]
 fn the_containers_hold_the_same_disk() {
     let Some(qemu) = tool("qemu-img") else {
@@ -298,6 +301,7 @@ fn the_containers_hold_the_same_disk() {
         ("qcow2", "card.qcow2", Container::Qcow2),
         ("vhdx", "card.vhdx", Container::Vhdx),
         ("vpc", "card.vhd", Container::Vhd),
+        ("vdi", "card.vdi", Container::Vdi),
     ] {
         let path = s.0.join(name);
         let out = Command::new(&qemu)
@@ -424,4 +428,157 @@ fn a_partition_holding_ntfs_is_read() {
             b"from windows\n"
         );
     }
+}
+
+/// The same disk as an Android sparse image — a ROM's `super.img`, what
+/// `img2simg` writes — read through the chunks that say what each run of
+/// blocks holds.
+///
+/// **No tool writes it here**: `img2simg` is in AOSP's tools and in no
+/// package this runs on, so the image is built from the committed card,
+/// which is what makes this check run everywhere. Its first 8 MiB, which
+/// hold the table and the three partitions, go in as one raw chunk; the
+/// 2 MiB after them, which are zeros, as one `DONT_CARE` chunk, so that a
+/// hole is read as well as data. The layout is the one in AOSP's
+/// `sparse_format.h`, and hivepack's `docs/image.md` says how it is checked
+/// there.
+#[test]
+fn an_android_sparse_image_holds_the_same_disk() {
+    let raw = card();
+    let block = 4096usize;
+    let data = 8 << 20;
+    assert!(raw.len() == 10 << 20 && data % block == 0);
+    let blocks = (raw.len() / block) as u32;
+
+    let mut sparse = Vec::new();
+    sparse.extend_from_slice(&0xed26_ff3au32.to_le_bytes()); // magic
+    sparse.extend_from_slice(&1u16.to_le_bytes()); // major
+    sparse.extend_from_slice(&0u16.to_le_bytes()); // minor
+    sparse.extend_from_slice(&28u16.to_le_bytes()); // this header
+    sparse.extend_from_slice(&12u16.to_le_bytes()); // every chunk's
+    sparse.extend_from_slice(&(block as u32).to_le_bytes());
+    sparse.extend_from_slice(&blocks.to_le_bytes());
+    sparse.extend_from_slice(&2u32.to_le_bytes()); // two chunks
+    sparse.extend_from_slice(&0u32.to_le_bytes()); // no checksum
+    // The bytes, as themselves.
+    sparse.extend_from_slice(&0xCAC1u16.to_le_bytes());
+    sparse.extend_from_slice(&0u16.to_le_bytes());
+    sparse.extend_from_slice(&((data / block) as u32).to_le_bytes());
+    sparse.extend_from_slice(&((12 + data) as u32).to_le_bytes());
+    sparse.extend_from_slice(&raw[..data]);
+    // And the tail, which was never written.
+    sparse.extend_from_slice(&0xCAC3u16.to_le_bytes());
+    sparse.extend_from_slice(&0u16.to_le_bytes());
+    sparse.extend_from_slice(&(((raw.len() - data) / block) as u32).to_le_bytes());
+    sparse.extend_from_slice(&12u32.to_le_bytes());
+
+    let s = Scratch::new();
+    let path = s.file("super.img", &sparse);
+    let listing = list(&path, &Keys::default()).unwrap();
+    assert_eq!(listing.container, Container::AndroidSparse);
+    let found = paths(&listing.entries);
+    assert!(
+        found.contains(&"2-ext2/etc/hostname".to_owned()),
+        "{found:?}"
+    );
+    assert!(found.contains(&"1-EFI/README.TXT".to_owned()), "{found:?}");
+
+    // And the files come out of it as they come out of the raw disk.
+    let out = s.0.join("out");
+    extract(&path, &out, &Keys::default(), &Control::default()).unwrap();
+    assert_eq!(
+        std::fs::read(out.join("1-EFI").join("README.TXT")).unwrap(),
+        b"hello from the boot partition\n"
+    );
+}
+
+/// A partition holding exFAT — what every memory card larger than 32 GB is
+/// formatted with — is named by the file system, `1-exfat`, and its tree is
+/// read. The type byte in the table says `ntfs` for such a partition, since
+/// that is the one everybody writes there; the file system in it wins.
+///
+/// Tool-gated, and it says so when it skips. **The volume is empty**:
+/// `mkfs.exfat` has no `-d`, and nothing puts a file into an exFAT volume
+/// without mounting it, which takes a driver and the permission to use one.
+/// What this checks is the wiring — told, named, walked, extracted — and
+/// hivepack's own tests read volumes with files in them, built byte by byte.
+#[test]
+fn a_partition_holding_exfat_is_named_by_it() {
+    let (Some(mkfs), Some(sfdisk)) = (tool("mkfs.exfat"), tool("sfdisk")) else {
+        eprintln!("mkfs.exfat or sfdisk cannot be run here: exFAT is not checked");
+        return;
+    };
+    let s = Scratch::new();
+    // 9 MiB of disk for an 8 MiB volume: mkfs.exfat refuses one under 4 MiB.
+    let disk = s.file("card.img", &vec![0u8; 9 << 20]);
+    let mut table = Command::new(&sfdisk)
+        .arg(&disk)
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn()
+        .unwrap();
+    {
+        use std::io::Write;
+        table
+            .stdin
+            .as_mut()
+            .unwrap()
+            .write_all(b"label: dos\nstart=2048, size=16384, type=7\n")
+            .unwrap();
+    }
+    if !table.wait().unwrap().success() {
+        eprintln!("sfdisk wrote no table here: exFAT is not checked");
+        return;
+    }
+
+    // The volume on its own, then put back where the table says it is.
+    let at = 2048 * 512;
+    let size = 16384 * 512;
+    let part = s.0.join("part.img");
+    std::fs::write(&part, vec![0u8; size]).unwrap();
+    let made = Command::new(&mkfs)
+        .args(["-q", "-L", "CARD"])
+        .arg(&part)
+        .output()
+        .unwrap();
+    if !made.status.success() {
+        eprintln!(
+            "this mkfs.exfat wrote no file system: {}",
+            String::from_utf8_lossy(&made.stderr).trim()
+        );
+        return;
+    }
+    // What the tool wrote is a volume its own checker calls clean.
+    if let Some(fsck) = tool("fsck.exfat") {
+        let checked = Command::new(&fsck).arg("-n").arg(&part).output().unwrap();
+        assert!(
+            checked.status.success(),
+            "fsck.exfat: {}",
+            String::from_utf8_lossy(&checked.stdout).trim()
+        );
+    }
+
+    // On its own, with no table in front of it: told as the file system it
+    // is, and read as an archive of no entries.
+    let alone = s.0.join("alone.img");
+    std::fs::copy(&part, &alone).unwrap();
+    let listing = list(&alone, &Keys::default()).unwrap();
+    assert_eq!(listing.container, Container::ExFat);
+    assert_eq!(paths(&listing.entries), Vec::<String>::new());
+
+    // And in the partition the table names.
+    let mut bytes = std::fs::read(&disk).unwrap();
+    bytes[at..at + size].copy_from_slice(&std::fs::read(&part).unwrap());
+    let path = s.file("exfat.img", &bytes);
+    let listing = list(&path, &Keys::default()).unwrap();
+    assert_eq!(listing.container, Container::PartitionedDisk);
+    assert_eq!(paths(&listing.entries), ["1-exfat/"]);
+
+    // Extracted, the job goes through and writes nothing: a folder is made
+    // where an entry lands in it, and this volume holds no entry. What the
+    // listing shows is the partition, which is the name this test is about.
+    let out = s.0.join("out");
+    extract(&path, &out, &Keys::default(), &Control::default()).unwrap();
+    assert_eq!(written(&out), Vec::<String>::new());
 }

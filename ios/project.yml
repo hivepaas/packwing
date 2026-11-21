@@ -93,6 +93,37 @@ targets:
               - public.cpio-archive
               - public.iso-image
               - public.archive
+              - com.hivepaas.packwing.disk-image
+        # A disk image has no type of Apple's own, so packwing declares the one
+        # it reads them by. Without it a `.vhdx` or a `.vdi` tapped in Files
+        # offers nothing, and `public.data` cannot stand in: that would offer
+        # packwing for every file there is. The extensions and the MIME types
+        # are the ones the systems that write these images use.
+        UTImportedTypeDeclarations:
+          - UTTypeIdentifier: com.hivepaas.packwing.disk-image
+            UTTypeDescription: Disk image
+            UTTypeConformsTo:
+              - public.data
+              - public.archive
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - img
+                - dd
+                - vhd
+                - vhdx
+                - qcow2
+                - vmdk
+                - vdi
+              public.mime-type:
+                - application/x-qemu-disk
+                - application/x-vhd-disk
+                - application/x-virtualbox-vhd
+                - application/x-vhdx-disk
+                - application/x-vmdk-disk
+                - application/x-virtualbox-vmdk
+                - application/x-vdi-disk
+                - application/x-virtualbox-vdi
+                - application/vnd.efi.img
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.hivepaas.packwing

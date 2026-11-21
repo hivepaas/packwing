@@ -14,10 +14,11 @@ use hivepack::extract::{
     Cancel, Damaged, Entry as SinkEntry, ErrorKind, LinkOutside, Links, NameDecoder, NameError,
     NameRules, OnDamaged, OnLinksOutside, OnRefused, OnUnnamable, Options, Owners, Permissions,
     Progress, ProgressFn, RarProblem, Select, Sink, Summary, WrittenKind, extract_7z,
-    extract_7z_to, extract_cpio, extract_cpio_to, extract_ext, extract_ext_to, extract_fat,
-    extract_fat_to, extract_iso, extract_iso_to, extract_ntfs, extract_ntfs_to, extract_rar,
-    extract_rar_to, extract_squashfs, extract_squashfs_to, extract_tar, extract_tar_to,
-    extract_udf, extract_udf_to, extract_xar, extract_xar_to, extract_zip, extract_zip_to,
+    extract_7z_to, extract_cpio, extract_cpio_to, extract_exfat, extract_exfat_to, extract_ext,
+    extract_ext_to, extract_fat, extract_fat_to, extract_iso, extract_iso_to, extract_ntfs,
+    extract_ntfs_to, extract_rar, extract_rar_to, extract_squashfs, extract_squashfs_to,
+    extract_tar, extract_tar_to, extract_udf, extract_udf_to, extract_xar, extract_xar_to,
+    extract_zip, extract_zip_to,
 };
 use hivepack::image::Disk;
 use hivepack::open::{Container, Opened, Opener};
@@ -1050,14 +1051,16 @@ fn extract_naming(
         | Container::Vhd
         | Container::Qcow2
         | Container::Vhdx
-        | Container::Vmdk => {
+        | Container::Vmdk
+        | Container::Vdi
+        | Container::AndroidSparse => {
             let blocks = image::blocks(source, &mut opened, &layers)?;
             let image =
                 image::Image::open(container, blocks.file.try_clone()?, blocks.path.as_deref())?;
             extract_disk(&image, into, &options, how, control)
         }
         // One file system with no table in front of it.
-        Container::Fat | Container::Ext | Container::Ntfs => {
+        Container::Fat | Container::ExFat | Container::Ext | Container::Ntfs => {
             let blocks = image::blocks(source, &mut opened, &layers)?;
             let disk: &dyn Disk = &blocks.file;
             let holds = image::holds_at(disk, 0, disk.size()?);
@@ -1485,6 +1488,13 @@ fn extract_file_system(
             let mut taker = Prefixed::new(at, taker);
             extract_ext_to(fs, &mut taker, options)?
         }
+        (image::Holds::ExFat(fs), WriteTo::Folder(destination)) => {
+            extract_exfat(fs, destination, options)?
+        }
+        (image::Holds::ExFat(fs), WriteTo::Taker(taker)) => {
+            let mut taker = Prefixed::new(at, taker);
+            extract_exfat_to(fs, &mut taker, options)?
+        }
         // Behind `catch_unwind`, as every call into that library is.
         (image::Holds::Ntfs(fs), WriteTo::Folder(destination)) => {
             image::caught(|| Ok(extract_ntfs(fs, destination, options)?))?
@@ -1780,13 +1790,15 @@ fn test_source(source: &Source, keys: &Keys, control: &Control) -> Result<Summar
         | Container::Vhd
         | Container::Qcow2
         | Container::Vhdx
-        | Container::Vmdk => {
+        | Container::Vmdk
+        | Container::Vdi
+        | Container::AndroidSparse => {
             let blocks = image::blocks(source, &mut opened, &layers)?;
             let image =
                 image::Image::open(container, blocks.file.try_clone()?, blocks.path.as_deref())?;
             test_disk(&image, control, &mut summary, &mut done)?;
         }
-        Container::Fat | Container::Ext | Container::Ntfs => {
+        Container::Fat | Container::ExFat | Container::Ext | Container::Ntfs => {
             let blocks = image::blocks(source, &mut opened, &layers)?;
             let disk: &dyn Disk = &blocks.file;
             let holds = image::holds_at(disk, 0, disk.size()?);

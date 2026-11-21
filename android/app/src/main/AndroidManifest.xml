@@ -53,6 +53,20 @@
                 <data android:mimeType="application/vnd.comicbook+zip" />
                 <data android:mimeType="application/vnd.debian.binary-package" />
                 <data android:mimeType="application/x-iso9660-image" />
+                <!-- A disk image, by the types the system's MIME database gives
+                     the containers a virtual machine keeps a disk in. A raw
+                     `.img` has no type every provider agrees on, so one tapped
+                     in Files may not offer packwing; chosen inside the app it
+                     is read like anything else. -->
+                <data android:mimeType="application/x-qemu-disk" />
+                <data android:mimeType="application/x-vhd-disk" />
+                <data android:mimeType="application/x-virtualbox-vhd" />
+                <data android:mimeType="application/x-vhdx-disk" />
+                <data android:mimeType="application/x-vmdk-disk" />
+                <data android:mimeType="application/x-virtualbox-vmdk" />
+                <data android:mimeType="application/x-vdi-disk" />
+                <data android:mimeType="application/x-virtualbox-vdi" />
+                <data android:mimeType="application/vnd.efi.img" />
             </intent-filter>
 
             <!-- Share › packwing, from any app. -->

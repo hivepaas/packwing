@@ -40,14 +40,18 @@ gpui_platform = { package = "gpui-pre-platform", version = "=0.3.9", default-fea
 # reads disk images and the file systems in them: a container's block device
 # and the partitions its table names (hivepack::image), FAT12/16/32
 # (hivepack::fat), ext2/3/4 (hivepack::ext) and NTFS (hivepack::ntfs), each
-# extracted by extract_fat, extract_ext and extract_ntfs.
+# extracted by extract_fat, extract_ext and extract_ntfs. 0.13 adds two more
+# containers a disk is kept in — a VirtualBox disk (hivepack::image::Vdi) and
+# an Android sparse image (image::AndroidSparse) — exFAT (hivepack::exfat,
+# extract_exfat), which is what every card larger than 32 GB holds, and WIM
+# archives read to their files (hivepack::wim), XPRESS and LZX decompressed.
 #
 # With `ntfs`, which hivepack leaves off by default: the crate that reads
 # NTFS's structures panics on a damaged directory index, and the fix is in no
 # release of it yet (hivepack's docs/ntfs.md). packwing takes that feature and
 # reads NTFS behind `catch_unwind`, so a damaged image fails its job rather
 # than the program: crates/core/src/image.rs says where.
-hivepack = { version = "0.12.0", features = ["rar", "unsafe-fast", "memory", "ntfs"] }
+hivepack = { version = "0.13.0", features = ["rar", "unsafe-fast", "memory", "ntfs"] }
 packwing-audit = { path = "crates/audit" }
 packwing-core = { path = "crates/core" }
 packwing-remote = { path = "crates/remote" }

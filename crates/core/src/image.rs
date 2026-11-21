@@ -27,9 +27,12 @@ use std::io::{self, Read};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::path::{Path, PathBuf};
 
+use hivepack::exfat::Exfat;
 use hivepack::ext::{self, Ext};
 use hivepack::fat::{self, Fat};
-use hivepack::image::{Disk, Part, Partition, Qcow2, Vhd, Vhdx, Vmdk, partitions};
+use hivepack::image::{
+    AndroidSparse, Disk, Part, Partition, Qcow2, Vdi, Vhd, Vhdx, Vmdk, partitions,
+};
 use hivepack::ntfs::Ntfs;
 use hivepack::open::{Container, Layer};
 
@@ -82,6 +85,9 @@ pub(crate) enum Image {
     Qcow2(Qcow2<File>),
     Vhdx(Vhdx<File>),
     Vmdk(Vmdk<File>),
+    Vdi(Vdi<File>),
+    /// An Android sparse image: a ROM's `super.img`, what `img2simg` writes.
+    Sparse(AndroidSparse<File>),
 }
 
 impl Image {
@@ -104,6 +110,8 @@ impl Image {
                 Some(path) => Vmdk::beside(path).map_err(said)?,
                 None => Vmdk::open(file).map_err(said)?,
             }),
+            Container::Vdi => Image::Vdi(Vdi::open(file).map_err(said)?),
+            Container::AndroidSparse => Image::Sparse(AndroidSparse::open(file).map_err(said)?),
             _ => return Err(Error::NotAnArchive),
         })
     }
@@ -117,6 +125,8 @@ impl Image {
             Image::Qcow2(disk) => disk,
             Image::Vhdx(disk) => disk,
             Image::Vmdk(disk) => disk,
+            Image::Vdi(disk) => disk,
+            Image::Sparse(disk) => disk,
         }
     }
 }
@@ -130,6 +140,7 @@ fn said<E: std::fmt::Display>(e: E) -> Error {
 pub(crate) enum Holds<'d> {
     Fat(Box<Fat<Part<&'d dyn Disk>>>, fat::Kind),
     Ext(Box<Ext<Part<&'d dyn Disk>>>, ext::Kind),
+    ExFat(Box<Exfat<Part<&'d dyn Disk>>>),
     /// Every call into this one is caught: see the module's own note.
     Ntfs(Box<Ntfs<Part<&'d dyn Disk>>>),
     /// None that packwing reads, so the partition's bytes are the file.
@@ -147,6 +158,7 @@ impl Holds<'_> {
             Holds::Ext(_, ext::Kind::Ext2) => "ext2",
             Holds::Ext(_, ext::Kind::Ext3) => "ext3",
             Holds::Ext(_, ext::Kind::Ext4) => "ext4",
+            Holds::ExFat(_) => "exfat",
             Holds::Ntfs(_) => "ntfs",
             Holds::Bytes => return None,
         })
@@ -171,6 +183,12 @@ pub(crate) fn holds_at(disk: &dyn Disk, at: u64, size: u64) -> Holds<'_> {
     if let Ok(fs) = Fat::open(part()) {
         let kind = fs.kind();
         return Holds::Fat(Box::new(fs), kind);
+    }
+    // Not FAT with larger numbers, and not told apart by what is asked
+    // first: a boot sector carries its own name, and hivepack holds each
+    // reader to turning the other's away.
+    if let Ok(fs) = Exfat::open(part()) {
+        return Holds::ExFat(Box::new(fs));
     }
     if let Ok(fs) = Ext::open(part()) {
         let kind = fs.kind();
@@ -349,6 +367,16 @@ pub(crate) fn each_file(holds: &Holds<'_>, each: &mut EachFile<'_>) -> Result<()
                     step.node.size,
                     &mut file,
                 )?;
+            }
+        }
+        Holds::ExFat(fs) => {
+            let mut walk = fs.walk().map_err(said)?;
+            while let Some((path, entry)) = walk.next(fs).map_err(said)? {
+                if entry.is_dir() {
+                    continue;
+                }
+                let mut file = fs.file(&entry).map_err(said)?;
+                each(&path, entry.size, &mut file)?;
             }
         }
         Holds::Ntfs(fs) => caught(|| {

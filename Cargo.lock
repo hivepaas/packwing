@@ -3524,9 +3524,9 @@ checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 
 [[package]]
 name = "hivepack"
-version = "0.12.0"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "498543d29a069d48bae6c6f7a764480e5f772d015f1a739976c8fe1bce86ca26"
+checksum = "5e7e54c5a3804118c09dbfe23c2c31dd244743ee9ac97d6a12f76a7731545c35"
 dependencies = [
  "aes 0.9.3",
  "blake2s_simd",
