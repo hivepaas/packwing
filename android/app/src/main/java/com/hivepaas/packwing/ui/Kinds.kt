@@ -68,8 +68,13 @@ enum class FileKind {
                 "exe", "msi", "dll", "app", "dmg", "pkg", "deb", "udeb", "rpm", "snap", "appimage",
                 "sh", "bat", "cmd", "ps1", "js", "lnk", "jar", "apk" -> Program
                 "zip", "tar", "gz", "tgz", "zst", "tzst", "xz", "txz", "bz2", "tbz2", "tbz", "lz",
-                "lz4", "tlz4", "lzma", "tlz", "7z", "rar", "age", "iso", "cpio", "xar", "cbz",
-                "cbr", "cb7", "squashfs" -> Archive
+                "lz4", "tlz4", "lzma", "tlz", "7z", "rar", "age", "iso", "cpio", "xar", "sqfs",
+                "squashfs", "war", "ear", "xpi", "cbz", "cbr", "cb7", "cbt" -> Archive
+                // A disk image: a raw one, as a card or an Android ROM is
+                // dumped, and the containers a virtual machine keeps one in.
+                // packwing opens them down to the files in their partitions,
+                // as the desktop does.
+                "img", "dd", "vhd", "vhdx", "qcow2", "vmdk", "vdi" -> Archive
                 else -> Other
             }
         }

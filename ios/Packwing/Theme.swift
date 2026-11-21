@@ -83,8 +83,13 @@ enum FileKind {
              "bat", "cmd", "ps1", "js", "lnk", "jar", "apk":
             return .program
         case "zip", "tar", "gz", "tgz", "zst", "tzst", "xz", "txz", "bz2", "tbz2", "tbz", "lz", "lz4",
-             "tlz4", "lzma", "tlz", "7z", "rar", "age", "iso", "cpio", "xar", "cbz", "cbr", "cb7", "squashfs":
+             "tlz4", "lzma", "tlz", "7z", "rar", "age", "iso", "cpio", "xar", "sqfs", "squashfs",
+             "war", "ear", "xpi", "cbz", "cbr", "cb7", "cbt":
             return .archive
+        // A disk image: a raw one, as a card or an Android ROM is dumped, and
+        // the containers a virtual machine keeps one in. packwing opens them
+        // down to the files in their partitions, as the desktop does.
+        case "img", "dd", "vhd", "vhdx", "qcow2", "vmdk", "vdi": return .archive
         default: return .other
         }
     }

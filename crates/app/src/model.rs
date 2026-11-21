@@ -102,7 +102,7 @@ impl Kind {
             // `.img` is the common name for a card dump and for much else;
             // one that holds no disk says so when it is opened, as a file
             // named `.zip` that is not one does.
-            "img" | "dd" | "vhd" | "vhdx" | "qcow2" | "vmdk" => Kind::Archive,
+            "img" | "dd" | "vhd" | "vhdx" | "qcow2" | "vmdk" | "vdi" => Kind::Archive,
             _ => Kind::Other,
         }
     }
@@ -755,6 +755,8 @@ mod tests {
             "ext4.vhdx",
             "vm.qcow2",
             "guest.vmdk",
+            "box.vdi",
+            "super.img",
         ] {
             assert_eq!(Kind::of(name, false), Kind::Archive, "{name}");
             assert!(opens_in_packwing(name), "{name}");
@@ -765,6 +767,7 @@ mod tests {
         assert_eq!(tag_of("card.img", Kind::Archive), "IMG");
         assert_eq!(tag_of("ext4.vhdx", Kind::Archive), "VHDX");
         assert_eq!(tag_of("vm.qcow2", Kind::Archive), "QCOW");
+        assert_eq!(tag_of("box.vdi", Kind::Archive), "VDI");
         assert_eq!(tag_of("rootfs.squashfs", Kind::Archive), "SQFS");
         assert_eq!(tag_of("session.dat", Kind::Other), "DAT");
         assert_eq!(tag_of("a.properties", Kind::Other), "FILE");
@@ -772,6 +775,7 @@ mod tests {
         assert_eq!(stem("card.img"), "card");
         assert_eq!(stem("card.img.zst"), "card");
         assert_eq!(stem("ubuntu-26.04.qcow2"), "ubuntu-26.04");
+        assert_eq!(stem("box.vdi"), "box");
     }
 
     #[test]

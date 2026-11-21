@@ -498,14 +498,16 @@ fn listed(source: Source, keys: &Keys, listen: Listen<'_>) -> Result<Listing, Er
         | Container::Vhd
         | Container::Qcow2
         | Container::Vhdx
-        | Container::Vmdk => {
+        | Container::Vmdk
+        | Container::Vdi
+        | Container::AndroidSparse => {
             let blocks = blocks(source, &mut opened, &layers)?;
             let image = Image::open(container, blocks.file.try_clone()?, blocks.path.as_deref())?;
             disk_entries(&image, &mut gather)?
         }
         // One file system with no table in front of it: an EFI system
         // partition taken out on its own, a camera's card, a floppy image.
-        Container::Fat | Container::Ext | Container::Ntfs => {
+        Container::Fat | Container::ExFat | Container::Ext | Container::Ntfs => {
             let blocks = blocks(source, &mut opened, &layers)?;
             let disk: &dyn Disk = &blocks.file;
             let holds = image::holds_at(disk, 0, disk.size()?);
@@ -915,6 +917,22 @@ fn file_system_entries(holds: &Holds<'_>, at: &[String], gather: &mut Gather) ->
                     },
                     modified: node.modified.map(|t| t.seconds),
                     link,
+                })?;
+            }
+        }
+        // exFAT gives a file one name and no hard links, so every file's
+        // size is counted where it is. How much of it has ever been written
+        // can be less than how long it is: the rest reads as zeroes, and
+        // the listing shows the length the volume gives.
+        Holds::ExFat(fs) => {
+            let mut walk = fs.walk().map_err(failed)?;
+            while let Some((path, entry)) = walk.next(fs).map_err(failed)? {
+                gather.push(Entry {
+                    path: under(&path),
+                    dir: entry.is_dir(),
+                    size: if entry.is_dir() { 0 } else { entry.size },
+                    modified: entry.modified.map(|t| t.unix()),
+                    link: None,
                 })?;
             }
         }

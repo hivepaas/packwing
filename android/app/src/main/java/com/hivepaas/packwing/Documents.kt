@@ -346,6 +346,15 @@ object Documents {
         "application/vnd.comicbook+zip",
         "application/vnd.debian.binary-package",
         "application/x-iso9660-image",
+        "application/x-qemu-disk",
+        "application/x-vhd-disk",
+        "application/x-virtualbox-vhd",
+        "application/x-vhdx-disk",
+        "application/x-vmdk-disk",
+        "application/x-virtualbox-vmdk",
+        "application/x-vdi-disk",
+        "application/x-virtualbox-vdi",
+        "application/vnd.efi.img",
         "application/octet-stream",
     )
 }
