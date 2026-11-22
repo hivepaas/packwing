@@ -303,6 +303,14 @@ jobs:
           path: dist
           merge-multiple: true
 
+      # Every job's artifact comes down together, the Mac App Store's package
+      # among them; it goes to App Store Connect from its own job and is not
+      # the GitHub release's (docs/releasing.md > The Mac App Store). It is
+      # dropped here, before SHA256SUMS is written, so that what the release
+      # holds does not depend on whether that job ran.
+      - name: Leave the store's package out
+        run: rm -f dist/*_macos_appstore.pkg
+
       - name: SHA-256
         run: |
           cd dist
