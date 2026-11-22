@@ -29,7 +29,12 @@ pub const ID: &str = "packwing";
 /// bytes, so what is a ZIP, a RAR or a 7z archive under another name opens as
 /// one: Java's jar, war and ear, Android's apk, Firefox's xpi, an epub book, a
 /// comic book (cbz, cbr, cb7, cbt). `iso` is a disc image, ISO 9660 or UDF;
-/// `xar` a XAR archive; `sqfs` and `squashfs` a SquashFS image. Debian, RPM
+/// `xar` a XAR archive; `sqfs` and `squashfs` a SquashFS image. `wim` is a
+/// Windows image, which opens to the images it holds, and `esd` the
+/// deduplicated one Windows Update ships; a `swm` is one part of a split
+/// image, and opening it says which parts it still needs. A disk image is
+/// not here, though Browse opens one: `img`, `dd` and the rest name any
+/// file at all, and packwing is not the app to offer for them. Debian, RPM
 /// and macOS packages, snaps and AppImages are not here: the system installs
 /// or runs them, and packwing is not offered to open them; the archive items
 /// are for them too ([`PACKAGES`]). The first part of one cut as 7-Zip cuts it, `name.7z.001`,
@@ -38,7 +43,7 @@ pub const ID: &str = "packwing";
 /// With on Windows and macOS, Finder's Quick Actions), they are for every
 /// `.001`; Dolphin, which goes by MIME type, has none for them.
 #[rustfmt::skip]
-pub const ARCHIVES: [&str; 44] = [
+pub const ARCHIVES: [&str; 47] = [
     // ZIP, and what is one under its own name
     "zip", "jar", "war", "ear", "apk", "xpi", "epub", "cbz",
     // RAR and 7z
@@ -48,6 +53,8 @@ pub const ARCHIVES: [&str; 44] = [
     "tlz4", "lz", "lzma", "tlz",
     // Disc images and packages
     "iso", "cpio", "xar", "sqfs", "squashfs",
+    // Windows images
+    "wim", "swm", "esd",
     // The first part of one cut in parts
     "7z.001", "zip.001", "rar.001", "tar.001", "tgz.001", "tar.gz.001", "tar.zst.001",
     "tar.xz.001", "tar.bz2.001", "tar.lz4.001", "iso.001",
@@ -682,7 +689,7 @@ mod tests {
             // extension, are for it.
             let Some(mime) = mime else {
                 assert!(
-                    ["war", "ear", "tlz4", "sqfs", "squashfs"].contains(&ext)
+                    ["war", "ear", "tlz4", "sqfs", "squashfs", "esd"].contains(&ext)
                         || ext.ends_with(".001"),
                     "no type for .{ext}"
                 );
