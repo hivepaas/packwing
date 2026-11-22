@@ -53,6 +53,9 @@
 				<string>xar</string>
 				<string>sqfs</string>
 				<string>squashfs</string>
+				<string>wim</string>
+				<string>swm</string>
+				<string>esd</string>
 				<string>001</string>
 			</array>
 		</dict>
