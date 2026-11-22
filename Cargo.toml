@@ -45,13 +45,19 @@ gpui_platform = { package = "gpui-pre-platform", version = "=0.3.9", default-fea
 # an Android sparse image (image::AndroidSparse) — exFAT (hivepack::exfat,
 # extract_exfat), which is what every card larger than 32 GB holds, and WIM
 # archives read to their files (hivepack::wim), XPRESS and LZX decompressed.
+# 0.14 takes one image of a WIM out (extract_wim, extract_wim_to): a file read
+# a chunk at a time (wim::Wim::file), so an image of a Windows installation
+# extracts on a machine that could not hold one of its files, every file held
+# to the SHA-1 the image names it by, hard links where an image says several
+# names share a file, and a reparse point refused rather than written pointing
+# at nothing.
 #
 # With `ntfs`, which hivepack leaves off by default: the crate that reads
 # NTFS's structures panics on a damaged directory index, and the fix is in no
 # release of it yet (hivepack's docs/ntfs.md). packwing takes that feature and
 # reads NTFS behind `catch_unwind`, so a damaged image fails its job rather
 # than the program: crates/core/src/image.rs says where.
-hivepack = { version = "0.13.0", features = ["rar", "unsafe-fast", "memory", "ntfs"] }
+hivepack = { version = "0.14.0", features = ["rar", "unsafe-fast", "memory", "ntfs"] }
 packwing-audit = { path = "crates/audit" }
 packwing-core = { path = "crates/core" }
 packwing-remote = { path = "crates/remote" }

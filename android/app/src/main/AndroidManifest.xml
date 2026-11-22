@@ -67,6 +67,9 @@
                 <data android:mimeType="application/x-vdi-disk" />
                 <data android:mimeType="application/x-virtualbox-vdi" />
                 <data android:mimeType="application/vnd.efi.img" />
+                <!-- A Windows image, the one type the system's MIME database
+                     gives `.wim` and `.swm`. An `.esd` has none. -->
+                <data android:mimeType="application/x-ms-wim" />
             </intent-filter>
 
             <!-- Share › packwing, from any app. -->

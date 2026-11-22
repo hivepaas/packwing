@@ -3,6 +3,7 @@
 
 use packwing_i18n::tr;
 use serde_json::{Map, Value, json};
+use std::collections::BTreeSet;
 use std::fs::{File, OpenOptions};
 use std::io::{self, Read, Seek, Write};
 use std::path::{Path, PathBuf};
@@ -17,13 +18,14 @@ use hivepack::extract::{
     extract_7z_to, extract_cpio, extract_cpio_to, extract_exfat, extract_exfat_to, extract_ext,
     extract_ext_to, extract_fat, extract_fat_to, extract_iso, extract_iso_to, extract_ntfs,
     extract_ntfs_to, extract_rar, extract_rar_to, extract_squashfs, extract_squashfs_to,
-    extract_tar, extract_tar_to, extract_udf, extract_udf_to, extract_xar, extract_xar_to,
-    extract_zip, extract_zip_to,
+    extract_tar, extract_tar_to, extract_udf, extract_udf_to, extract_wim, extract_wim_to,
+    extract_xar, extract_xar_to, extract_zip, extract_zip_to,
 };
 use hivepack::image::Disk;
 use hivepack::open::{Container, Opened, Opener};
 use hivepack::tar::Reader;
 use hivepack::udf::{Udf, VType};
+use hivepack::wim::{Image as WimImage, Wim};
 use hivepack::zip::{Archive, Flags, OpenFlags, ReadAt, Volumes};
 
 use crate::audit;
@@ -34,6 +36,7 @@ use crate::source::Source;
 use crate::spool::spool;
 use crate::unsupported::named;
 use crate::volume::{squashfs, walk, walk_squashfs};
+use crate::wim;
 use crate::{Error, Keys, opener, opener_of, seven_zip, without_layers};
 
 /// What a job tells how far it is, and what stops it.
@@ -1069,6 +1072,13 @@ fn extract_naming(
             }
             extract_file_system(&holds, None, into, &options)
         }
+        // A WIM archive, read by random access as a disk image is. Each
+        // image is a folder, and the tree of names in it holds the files.
+        Container::Wim => {
+            let blocks = image::blocks(source, &mut opened, &layers)?;
+            let mut archive = Wim::open(blocks.file.try_clone()?)?;
+            extract_images(&mut archive, into, &options, control)
+        }
         // What a later hivepack tells and packwing does not read yet.
         _ => Err(Error::NotAnArchive),
     }
@@ -1403,6 +1413,199 @@ fn extract_disk(
         added(&mut summary, done);
     }
     Ok(summary)
+}
+
+/// Every image of a WIM archive, each into the folder it is, or into a
+/// taker with that folder in front of every path: `crate::wim` says how an
+/// image is named.
+///
+/// An archive of one image is that image's tree alone, with no folder in
+/// front of it, as a disk with no partition table is one file system.
+fn extract_images(
+    archive: &mut Wim<File>,
+    mut into: WriteTo<'_>,
+    options: &Options,
+    control: &Control,
+) -> Result<Summary, Error> {
+    let images = archive.images().to_vec();
+    let [first, rest @ ..] = &images[..] else {
+        return Err(Error::NotAnArchive);
+    };
+    if rest.is_empty() {
+        return extract_image(archive, first.index, None, into, options);
+    }
+
+    let planned = plan_images(archive, &images, options, control)?;
+    let whole = planned.iter().fold((0u64, 0u64), |(e, b), image| {
+        (e + image.entries, b + image.bytes)
+    });
+    let mut summary = Summary::default();
+    for (image, planned) in images.iter().zip(&planned) {
+        control.check()?;
+        // Nothing of this image was picked: no folder for it either.
+        if planned.entries == 0 {
+            continue;
+        }
+        let name = wim::name_of(image);
+        let mut per = options.clone();
+        per.limits.max_total_size = options.limits.max_total_size.saturating_sub(summary.bytes);
+        per.limits.max_entries = options
+            .limits
+            .max_entries
+            .saturating_sub(summary.files + summary.directories);
+        // Told of the whole job, from where the images before it left off,
+        // so that the fraction grows and never goes back.
+        if let Some(told) = options.progress.clone() {
+            let base = (summary.files + summary.directories, summary.bytes);
+            per.progress = Some(Arc::new(move |p: &Progress| {
+                let mut through = *p;
+                through.entries = base.0 + p.entries;
+                through.total_entries = whole.0;
+                through.bytes = base.1 + p.bytes;
+                through.total_bytes = whole.1;
+                told(&through);
+            }));
+        }
+        // The names under this image, as the listing shows them, are what
+        // was picked: the tree knows nothing of the folder its image is,
+        // so the pick is asked of the longer path.
+        if let Some(select) = options.select.clone() {
+            let at = name.clone();
+            per.select = Some(Arc::new(move |path: &[String]| select(&under(&at, path))));
+        }
+        let done = match &mut into {
+            WriteTo::Folder(destination) => extract_image(
+                archive,
+                image.index,
+                Some(&name),
+                WriteTo::Folder(&destination.join(&name)),
+                &per,
+            )?,
+            WriteTo::Taker(taker) => extract_image(
+                archive,
+                image.index,
+                Some(&name),
+                WriteTo::Taker(*taker),
+                &per,
+            )?,
+        };
+        added(&mut summary, done);
+    }
+    Ok(summary)
+}
+
+/// One image into a folder or a taker. `at` is the folder the image is
+/// where the archive holds more than one, and none where its tree is the
+/// whole of what was opened: a taker is given that folder in front of
+/// every path, as the listing shows them.
+fn extract_image(
+    archive: &mut Wim<File>,
+    index: u32,
+    at: Option<&str>,
+    into: WriteTo<'_>,
+    options: &Options,
+) -> Result<Summary, Error> {
+    Ok(match into {
+        WriteTo::Folder(destination) => extract_wim(archive, index, destination, options)?,
+        WriteTo::Taker(taker) => {
+            let mut taker = Prefixed::new(at, taker);
+            extract_wim_to(archive, index, &mut taker, options)?
+        }
+    })
+}
+
+/// What each image of the archive would write, picked entries only: what
+/// the progress is told of, and which images have anything to write.
+///
+/// This reads every image's tree and none of their data. Every entry
+/// counts, as hivepack counts what it writes; the few an image holds that
+/// cannot be written -- a reparse point, a resource in a solid block --
+/// are counted here and left out there, so a job can end a little short of
+/// what it was told.
+fn plan_images(
+    archive: &mut Wim<File>,
+    images: &[WimImage],
+    options: &Options,
+    control: &Control,
+) -> Result<Vec<Planned>, Error> {
+    let picked = |path: &[String]| match &options.select {
+        Some(select) => select(path),
+        None => true,
+    };
+    let mut planned = Vec::with_capacity(images.len());
+    for image in images {
+        control.check()?;
+        let name = wim::name_of(image);
+        let mut one = Planned {
+            entries: 0,
+            bytes: 0,
+        };
+        // A file with more than one name is one file: its bytes are
+        // written at the first name, and the rest are hard links to it.
+        let mut met: BTreeSet<u64> = BTreeSet::new();
+        for entry in archive.entries(image.index)? {
+            let first = entry.hard_link_group.is_none_or(|group| met.insert(group));
+            let components: Vec<String> = entry.path.split('/').map(str::to_owned).collect();
+            if picked(&under(&name, &components)) {
+                one.entries += 1;
+                if entry.is_file() && first {
+                    one.bytes += entry.size;
+                }
+            }
+        }
+        planned.push(one);
+    }
+    Ok(planned)
+}
+
+/// Reads every file of every image through, holding each to the SHA-1 the
+/// image names it by, and writes nothing.
+///
+/// A file with more than one name is read once for each image that names
+/// it, and once within an image: what the archive holds is read through,
+/// and no resource twice over.
+fn test_wim(
+    archive: &mut Wim<File>,
+    control: &Control,
+    summary: &mut Summary,
+    done: &mut Progress,
+) -> Result<(), Error> {
+    let images = archive.images().to_vec();
+    if images.is_empty() {
+        return Err(Error::NotAnArchive);
+    }
+    // What there is to read, so that what is told of the progress is of
+    // the whole archive and not of each image in turn.
+    let mut trees = Vec::with_capacity(images.len());
+    for image in &images {
+        control.check()?;
+        let tree = archive.entries(image.index)?;
+        let mut met: BTreeSet<u64> = BTreeSet::new();
+        let mut reading = Vec::new();
+        for entry in tree {
+            if !entry.is_file() || entry.is_reparse_point() {
+                continue;
+            }
+            if !entry.hard_link_group.is_none_or(|group| met.insert(group)) {
+                continue;
+            }
+            done.total_entries += 1;
+            done.total_bytes += entry.size;
+            reading.push(entry);
+        }
+        trees.push(reading);
+    }
+    for tree in trees {
+        for entry in tree {
+            control.check()?;
+            let mut file = archive.file(&entry)?;
+            summary.bytes += copy(&mut file, &mut io::sink(), control, done)?;
+            summary.files += 1;
+            done.entries += 1;
+            control.report(done);
+        }
+    }
+    Ok(())
 }
 
 /// `path` under `at`, which is a partition's folder.
@@ -1806,6 +2009,11 @@ fn test_source(source: &Source, keys: &Keys, control: &Control) -> Result<Summar
                 return Err(Error::NotAnArchive);
             }
             test_file_system(&holds, control, &mut summary, &mut done)?;
+        }
+        Container::Wim => {
+            let blocks = image::blocks(source, &mut opened, &layers)?;
+            let mut archive = Wim::open(blocks.file.try_clone()?)?;
+            test_wim(&mut archive, control, &mut summary, &mut done)?;
         }
         // What a later hivepack tells and packwing does not read yet.
         _ => return Err(Error::NotAnArchive),

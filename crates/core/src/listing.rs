@@ -7,13 +7,14 @@ use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use hivepack::extract::Cancel;
 use hivepack::image::Disk;
 use hivepack::open::{Container, Layer, Opener};
 use hivepack::tar::{Reader, TYPE_DIR, TYPE_SYMLINK, TYPE_X_GLOBAL_HEADER};
 use hivepack::udf::{Udf, VType};
+use hivepack::wim::Wim;
 use hivepack::zip::{Archive, Flags, OpenFlags, Volumes, em, opsys, volume_paths};
 use unicode_normalization::UnicodeNormalization;
 use unicode_normalization::char::is_combining_mark;
@@ -25,6 +26,7 @@ use crate::source::Source;
 use crate::spool::spool;
 use crate::unsupported::named;
 use crate::volume::{squashfs, walk, walk_squashfs};
+use crate::wim;
 use crate::{Error, Keys, SevenZip, opener_of, seven_zip, without_layers};
 
 /// The names of a macOS package's payloads, which hivepack::extract expands
@@ -517,6 +519,14 @@ fn listed(source: Source, keys: &Keys, listen: Listen<'_>) -> Result<Listing, Er
             file_system_entries(&holds, &[], &mut gather)?;
             std::mem::take(&mut gather.entries)
         }
+        // A WIM archive: read by random access, as a disk image is, so
+        // under layers it is written to a file first. Each image it holds
+        // is a folder, and the tree of names in it holds the files.
+        Container::Wim => {
+            let blocks = blocks(source, &mut opened, &layers)?;
+            let mut archive = Wim::open(blocks.file.try_clone()?)?;
+            wim_entries(&mut archive, &mut gather)?
+        }
         // What a later hivepack tells and packwing does not read yet.
         _ => return Err(Error::NotAnArchive),
     };
@@ -961,6 +971,62 @@ fn file_system_entries(holds: &Holds<'_>, at: &[String], gather: &mut Gather) ->
         Holds::Bytes => {}
     }
     Ok(())
+}
+
+/// Every image of a WIM archive, each under the folder it is where the
+/// archive holds more than one: `crate::wim` says how they are named.
+///
+/// A file with more than one name is counted once, as a disk image's hard
+/// links are: its bytes are at the first name the tree gives. A set of
+/// names is one file of one image, so the next image counts its own again.
+fn wim_entries(archive: &mut Wim<File>, gather: &mut Gather) -> Result<Vec<Entry>, Error> {
+    let images = archive.images().to_vec();
+    let several = images.len() > 1;
+    for image in &images {
+        let at = wim::name_of(image);
+        if several {
+            gather.push(Entry {
+                path: vec![at.clone()],
+                dir: true,
+                size: 0,
+                modified: None,
+                link: None,
+            })?;
+        }
+        let mut met: BTreeSet<u64> = BTreeSet::new();
+        for entry in archive.entries(image.index)? {
+            let first = entry.hard_link_group.is_none_or(|group| met.insert(group));
+            let mut path = Vec::new();
+            if several {
+                path.push(at.clone());
+            }
+            path.extend(components(&entry.path));
+            // A reparse point is shown as the file the tree says it is,
+            // as NTFS's are: what it leads to is in data this does not
+            // read, and extracting refuses it rather than write a link
+            // pointing at nothing.
+            gather.push(Entry {
+                path,
+                dir: entry.is_dir(),
+                size: if entry.is_file() && first {
+                    entry.size
+                } else {
+                    0
+                },
+                modified: entry.modified.map(seconds),
+                link: None,
+            })?;
+        }
+    }
+    Ok(std::mem::take(&mut gather.entries))
+}
+
+/// `time`, in seconds since 1970.
+fn seconds(time: SystemTime) -> i64 {
+    match time.duration_since(UNIX_EPOCH) {
+        Ok(d) => i64::try_from(d.as_secs()).unwrap_or(i64::MAX),
+        Err(e) => -i64::try_from(e.duration().as_secs()).unwrap_or(i64::MAX),
+    }
 }
 
 /// What a reader refused, as packwing carries it.

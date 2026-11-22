@@ -33,7 +33,8 @@ use crate::secrets::Secrets;
         It reads ZIP, 7z, RAR, tar and its compressed kinds, ISO and UDF images, cpio, \
         RPM, XAR, Debian packages, snaps and AppImages (SquashFS), disk images (raw, \
         Android sparse, VHD, VHDX, QCOW2, VMDK, VDI) down to the FAT, exFAT, ext and \
-        NTFS file systems in their partitions, and age, telling each by its bytes, and \
+        NTFS file systems in their partitions, Windows images (WIM) down to the files \
+        of each image they hold, and age, telling each by its bytes, and \
         makes ZIP, 7z and tar ones. \
         Extraction never writes outside where it is told, and keeps the mark of \
         files from the Internet.\n\n\
