@@ -75,6 +75,9 @@ enum class FileKind {
                 // packwing opens them down to the files in their partitions,
                 // as the desktop does.
                 "img", "dd", "vhd", "vhdx", "qcow2", "vmdk", "vdi" -> Archive
+                // A Windows image: a disc's `install.wim`, a split one's
+                // parts, the one Windows Update ships.
+                "wim", "swm", "esd" -> Archive
                 else -> Other
             }
         }

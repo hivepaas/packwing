@@ -13,6 +13,17 @@ packwing-core's tests read them.
   (`mke2fs -d`), and a swap partition, which holds no file system at all. It
   is what `tests/images.rs` reads, so that the disk-image tests need no tool
   and run everywhere. How it was made is at the end of this file.
+- `two-images.wim`: a Windows image archive of **two** images, XPRESS,
+  written by wimlib-imagex 1.14.4 (GPL-3.0-or-later; as hivepack-rs's
+  `scripts/testdata.py` builds it). The first, `Windows 11 Pro`, holds
+  `notes.txt` and `link.txt`, which are one file under two names, and
+  `Windows/explorer.exe` and `Windows/System32/kernel32.dll`; the second,
+  `Windows 11 Home`, holds `notes.txt` and `Users/readme.md`. It is what
+  `tests/wim.rs` reads for the folder each image is, the hard links, and the
+  SHA-1 every file is held to. How it was made is at the end of this file.
+- `one-image.wim`: the same, of one image (`Windows 11 Setup`, holding
+  `root.txt` and `docs/note.txt`), which lists as that tree with no folder
+  in front of it.
 - `sample.7z`: 7-Zip's defaults, LZMA2 in one solid block.
 - `secret.7z`: the same, its files encrypted with AES; password `secret`.
 - `hidden.7z`: the same, its names encrypted too (`-mhe=on`).
@@ -131,4 +142,19 @@ for part, name in zip(table["partitions"], ("p1.img", "p2.img", None)):
 open("card.img", "wb").write(bytes(card))
 '
 zstd -19 card.img -o card.img.zst
+
+# The Windows images. wimlib-imagex is built by hivepack-rs's
+# scripts/testdata.py; nothing of it is in the archives but the format.
+mkdir -p pro/Windows/System32 home/Users one/docs
+printf 'The first image, its note.\n' > pro/notes.txt
+ln pro/notes.txt pro/link.txt
+python3 -c "open('pro/Windows/System32/kernel32.dll','wb').write(b'MZ'+bytes(range(256))*16)"
+printf 'not really a program\n' > pro/Windows/explorer.exe
+printf 'The second image, its note.\n' > home/notes.txt
+printf '# Users\n\nNothing here.\n' > home/Users/readme.md
+printf 'one image only\n' > one/docs/note.txt
+printf 'at the root\n' > one/root.txt
+wimlib-imagex capture pro two-images.wim "Windows 11 Pro" --compress=XPRESS --norpfix
+wimlib-imagex append home two-images.wim "Windows 11 Home" --norpfix
+wimlib-imagex capture one one-image.wim "Windows 11 Setup" --compress=XPRESS --norpfix
 ```

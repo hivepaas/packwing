@@ -103,6 +103,11 @@ impl Kind {
             // one that holds no disk says so when it is opened, as a file
             // named `.zip` that is not one does.
             "img" | "dd" | "vhd" | "vhdx" | "qcow2" | "vmdk" | "vdi" => Kind::Archive,
+            // A Windows image: `install.wim` and `boot.wim` from a disc, the
+            // parts a split one is written in (`.swm`), and the one Windows
+            // Update ships (`.esd`). packwing opens them down to the files of
+            // each image they hold, as it opens a disk image.
+            "wim" | "swm" | "esd" => Kind::Archive,
             _ => Kind::Other,
         }
     }
@@ -776,6 +781,22 @@ mod tests {
         assert_eq!(stem("card.img.zst"), "card");
         assert_eq!(stem("ubuntu-26.04.qcow2"), "ubuntu-26.04");
         assert_eq!(stem("box.vdi"), "box");
+    }
+
+    /// A Windows image is an archive to packwing in the same way: the box,
+    /// a double click that steps inside, and no attempt to show its bytes.
+    #[test]
+    fn a_windows_image_is_an_archive_to_open() {
+        for name in ["install.wim", "BOOT.WIM", "install.swm", "install.esd"] {
+            assert_eq!(Kind::of(name, false), Kind::Archive, "{name}");
+            assert!(opens_in_packwing(name), "{name}");
+            assert!(!reads_as_text(name), "{name}");
+        }
+        assert_eq!(tag_of("install.wim", Kind::Archive), "WIM");
+        assert_eq!(tag_of("install.swm", Kind::Archive), "SWM");
+        assert_eq!(tag_of("install.esd", Kind::Archive), "ESD");
+        assert_eq!(stem("install.wim"), "install");
+        assert_eq!(stem("install.wim.zst"), "install");
     }
 
     #[test]

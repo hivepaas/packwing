@@ -355,6 +355,7 @@ object Documents {
         "application/x-vdi-disk",
         "application/x-virtualbox-vdi",
         "application/vnd.efi.img",
+        "application/x-ms-wim",
         "application/octet-stream",
     )
 }

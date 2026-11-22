@@ -36,6 +36,7 @@ mod storage;
 mod transfer;
 mod unsupported;
 mod volume;
+mod wim;
 
 use packwing_i18n::{tr, tr_n};
 use std::fmt;
@@ -492,6 +493,15 @@ impl From<hivepack::udf::Error> for Error {
     }
 }
 
+impl From<hivepack::wim::Error> for Error {
+    fn from(e: hivepack::wim::Error) -> Error {
+        match e {
+            hivepack::wim::Error::Io(io) => Error::from(io),
+            e => Error::Failed(e.to_string()),
+        }
+    }
+}
+
 /// How many threads compressing and decompressing may take, as
 /// [`use_threads`] was last told: 0 for as many as the machine has.
 static THREADS: AtomicU32 = AtomicU32::new(0);
@@ -668,7 +678,7 @@ const _: () = assert!(hivepack::zstd::UNSAFE_FAST);
 /// `name` without its archive extensions and a part number: what it unpacks
 /// to (`Báo cáo.part1.rar` → `Báo cáo`, `backup.tar.zst.age` → `backup`).
 pub fn stem(name: &str) -> &str {
-    const EXTENSIONS: [&str; 48] = [
+    const EXTENSIONS: [&str; 51] = [
         ".age",
         ".zst",
         ".gz",
@@ -698,6 +708,12 @@ pub fn stem(name: &str) -> &str {
         ".qcow2",
         ".vmdk",
         ".vdi",
+        // A Windows image, and the two other names one is written under: a
+        // split one's parts (`install.swm`), and the encrypted-deduplicated
+        // one Windows Update ships (`install.esd`).
+        ".wim",
+        ".swm",
+        ".esd",
         ".cpio",
         ".rpm",
         ".xar",

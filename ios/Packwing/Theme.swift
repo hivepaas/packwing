@@ -90,6 +90,9 @@ enum FileKind {
         // the containers a virtual machine keeps one in. packwing opens them
         // down to the files in their partitions, as the desktop does.
         case "img", "dd", "vhd", "vhdx", "qcow2", "vmdk", "vdi": return .archive
+        // A Windows image: a disc's `install.wim`, a split one's parts, the
+        // one Windows Update ships.
+        case "wim", "swm", "esd": return .archive
         default: return .other
         }
     }

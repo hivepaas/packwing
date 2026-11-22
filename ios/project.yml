@@ -94,6 +94,7 @@ targets:
               - public.iso-image
               - public.archive
               - com.hivepaas.packwing.disk-image
+              - com.hivepaas.packwing.windows-image
         # A disk image has no type of Apple's own, so packwing declares the one
         # it reads them by. Without it a `.vhdx` or a `.vdi` tapped in Files
         # offers nothing, and `public.data` cannot stand in: that would offer
@@ -124,6 +125,22 @@ targets:
                 - application/x-vdi-disk
                 - application/x-virtualbox-vdi
                 - application/vnd.efi.img
+          # A Windows image has no type of Apple's own either. `.swm` is one
+          # part of a split image and `.esd` holds its data compressed with
+          # LZMS: packwing opens both and says what it cannot read of them,
+          # as it does of an archive it cannot read.
+          - UTTypeIdentifier: com.hivepaas.packwing.windows-image
+            UTTypeDescription: Windows image
+            UTTypeConformsTo:
+              - public.data
+              - public.archive
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - wim
+                - swm
+                - esd
+              public.mime-type:
+                - application/x-ms-wim
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.hivepaas.packwing
